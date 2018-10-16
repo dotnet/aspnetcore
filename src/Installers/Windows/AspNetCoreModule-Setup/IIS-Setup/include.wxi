@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Include>
+  <?define DiscoverabilityKeyRoot = "SOFTWARE\Microsoft\IIS Extensions"?>
+  <?define OOBBuildVersion = $(var.BLDVERMAJOR).$(var.BLDVERMINOR).$(var.BLDNUMMAJOR).$(var.BLDNUMMINOR)?>
+
+  <!-- Allow build number as argument or use default -->
+  <?if $(var.BLDNUMMAJOR) = "" ?>
+    <?error Build number undefined ?>
+  <?endif?>
+
+  <?if $(var.Platform) = "x64"?>
+    <?define IsWin64 = yes ?>
+    <?define PlatformArchitecture = x64 ?>
+    <?define ProgramFilesFolder = ProgramFiles64Folder ?>
+    <?define ProgramFilesFolder32 = ProgramFilesFolder ?>
+    <?define SystemFolder = System64Folder ?>
+    <?define SysWow64Folder = SystemFolder ?>
+    <?define PlatformValue = x64 ?>
+  <?elseif $(var.Platform) = "x86" ?>
+    <?define IsWin64 = no ?>
+    <?define PlatformArchitecture = x86 ?>
+    <?define ProgramFilesFolder = ProgramFilesFolder ?>
+    <?define SystemFolder = SystemFolder ?>
+    <?define PlatformValue = Intel ?>
+  <?endif?>
+
+  <!-- Ensure build target properly initialized -->
+  <?ifndef ProgramFilesFolder ?>
+    <?error ProgramFilesFolder must be defined ?>
+  <?endif?>
+</Include>

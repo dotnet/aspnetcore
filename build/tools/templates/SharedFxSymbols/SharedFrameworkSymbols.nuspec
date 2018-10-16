@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$ID$</id>
+    <version>$VERSION$</version>
+    <description>$DESCRIPTION$</description>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <copyright>Copyright © Microsoft Corporation</copyright>
+    <licenseUrl>https://raw.githubusercontent.com/aspnet/Home/2.0.0/LICENSE.txt</licenseUrl>
+    <iconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <projectUrl>https://asp.net</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <serviceable Condition="'$(Configuration)' == 'Release'">true</serviceable>
+    <tags>aspnetcore</tags>
+  </metadata>
+  <files />
+</package>

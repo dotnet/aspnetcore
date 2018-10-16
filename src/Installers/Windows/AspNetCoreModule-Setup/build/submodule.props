@@ -1,0 +1,11 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Add extension point for hosting as a submodule -->
+
+  <Import Condition="'$(SolutionDir)' != '' AND '$(SolutionDir)build\' != '$(MSBuildThisFileDirectory)' AND Exists('$(SolutionDir)build\submodule.props')" Project="$(SolutionDir)build\submodule.props" />
+
+  <!-- Import this modules properties if not yet declared -->
+
+  <Import Condition="$(IIS-Common) == ''" Project="$(MSBuildThisFileDirectory)exports.props" />
+
+</Project>

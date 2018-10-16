@@ -1,0 +1,87 @@
+<Project>
+  <ItemDefinitionGroup>
+    <Repository>
+      <Build>true</Build>
+
+      <!--
+        Specifies the ruleset used to determine if a repo should build in a patch update, or not.
+        The default is ProductChangesOnly.
+
+        Rulesets:
+          ProductChangeOnly
+            Only produce new package versions if there were changes to product code.
+            Examples: this is the default. Most repos should use this policy.
+
+          CascadeVersion
+            Produce new package versions if there were changes to product code, or if one of the package dependencies has updated.
+            Examples: metapackages which are not top-level, but should still be used to help users get the latest transitive set of dependencies
+
+          AlwaysUpdate
+            Packages should update in every patch.
+            Examples: top-level metapackages and templates.
+
+       -->
+      <PatchPolicy>ProductChangesOnly</PatchPolicy>
+      <RootPath></RootPath>
+    </Repository>
+    <ShippedRepository>
+      <Build>false</Build>
+      <PatchPolicy>ProductChangesOnly</PatchPolicy>
+      <RootPath></RootPath>
+    </ShippedRepository>
+  </ItemDefinitionGroup>
+
+  <PropertyGroup>
+    <TestsRequiredTheSharedRuntime Condition="'$(RepositoryToBuild)' == 'Templating'">true</TestsRequiredTheSharedRuntime>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Repository Include="AADIntegration" />
+    <Repository Include="Antiforgery" />
+    <Repository Include="AzureIntegration" />
+    <Repository Include="BasicMiddleware" />
+    <Repository Include="BrowserLink" />
+    <Repository Include="Caching" />
+    <Repository Include="Common" />
+    <Repository Include="Configuration" />
+    <Repository Include="CORS" />
+    <Repository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
+    <Repository Include="DependencyInjection" />
+    <Repository Include="Diagnostics" />
+    <Repository Include="DotNetTools" />
+    <Repository Include="EntityFrameworkCore" />
+    <Repository Include="EventNotification" />
+    <Repository Include="FileSystem" />
+    <Repository Include="Hosting" />
+    <Repository Include="HtmlAbstractions" />
+    <Repository Include="HttpAbstractions" />
+    <Repository Include="HttpClientFactory" />
+    <Repository Include="HttpSysServer" />
+    <Repository Include="Identity" />
+    <Repository Include="IISIntegration" />
+    <Repository Include="JavaScriptServices" />
+    <Repository Include="JsonPatch" />
+    <Repository Include="KestrelHttpServer" />
+    <Repository Include="Localization" />
+    <Repository Include="Logging" />
+    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <Repository Include="Microsoft.Data.Sqlite" />
+    <Repository Include="Mvc" />
+    <Repository Include="Options" />
+    <Repository Include="Razor" />
+    <Repository Include="ResponseCaching" />
+    <Repository Include="Routing" />
+    <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
+    <Repository Include="Security" />
+    <Repository Include="Session" />
+    <Repository Include="SignalR" />
+    <Repository Include="StaticFiles" />
+    <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="WebSockets" />
+
+    <!-- Test-only repos -->
+    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="MusicStore" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+  </ItemGroup>
+</Project>

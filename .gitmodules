@@ -1,0 +1,176 @@
+[submodule "modules/AADIntegration"]
+	path = modules/AADIntegration
+	url = https://github.com/aspnet/AADIntegration.git
+	branch = master
+[submodule "modules/Antiforgery"]
+	path = modules/Antiforgery
+	url = https://github.com/aspnet/Antiforgery.git
+	branch = master
+[submodule "modules/AuthSamples"]
+	path = modules/AuthSamples
+	url = https://github.com/aspnet/AuthSamples.git
+	branch = master
+[submodule "modules/AzureIntegration"]
+	path = modules/AzureIntegration
+	url = https://github.com/aspnet/AzureIntegration.git
+	branch = master
+[submodule "modules/BasicMiddleware"]
+	path = modules/BasicMiddleware
+	url = https://github.com/aspnet/BasicMiddleware.git
+	branch = master
+[submodule "modules/BrowserLink"]
+	path = modules/BrowserLink
+	url = https://github.com/aspnet/BrowserLink.git
+	branch = master
+[submodule "modules/Caching"]
+	path = modules/Caching
+	url = https://github.com/aspnet/Caching.git
+	branch = master
+[submodule "modules/Common"]
+	path = modules/Common
+	url = https://github.com/aspnet/Common.git
+	branch = master
+[submodule "modules/Configuration"]
+	path = modules/Configuration
+	url = https://github.com/aspnet/Configuration.git
+	branch = master
+[submodule "modules/CORS"]
+	path = modules/CORS
+	url = https://github.com/aspnet/CORS.git
+	branch = master
+[submodule "modules/DependencyInjection"]
+	path = modules/DependencyInjection
+	url = https://github.com/aspnet/DependencyInjection.git
+	branch = master
+[submodule "modules/Diagnostics"]
+	path = modules/Diagnostics
+	url = https://github.com/aspnet/Diagnostics.git
+	branch = master
+[submodule "modules/DotNetTools"]
+	path = modules/DotNetTools
+	url = https://github.com/aspnet/DotNetTools.git
+	branch = master
+[submodule "modules/EntityFrameworkCore"]
+	path = modules/EntityFrameworkCore
+	url = https://github.com/aspnet/EntityFrameworkCore.git
+	branch = master
+[submodule "modules/EventNotification"]
+	path = modules/EventNotification
+	url = https://github.com/aspnet/EventNotification.git
+	branch = master
+[submodule "modules/FileSystem"]
+	path = modules/FileSystem
+	url = https://github.com/aspnet/FileSystem.git
+	branch = master
+[submodule "modules/Hosting"]
+	path = modules/Hosting
+	url = https://github.com/aspnet/Hosting.git
+	branch = master
+[submodule "modules/HtmlAbstractions"]
+	path = modules/HtmlAbstractions
+	url = https://github.com/aspnet/HtmlAbstractions.git
+	branch = master
+[submodule "modules/HttpAbstractions"]
+	path = modules/HttpAbstractions
+	url = https://github.com/aspnet/HttpAbstractions.git
+	branch = master
+[submodule "modules/HttpClientFactory"]
+	path = modules/HttpClientFactory
+	url = https://github.com/aspnet/HttpClientFactory.git
+	branch = master
+[submodule "modules/HttpSysServer"]
+	path = modules/HttpSysServer
+	url = https://github.com/aspnet/HttpSysServer.git
+	branch = master
+[submodule "modules/Identity"]
+	path = modules/Identity
+	url = https://github.com/aspnet/Identity.git
+	branch = master
+[submodule "modules/IISIntegration"]
+	path = modules/IISIntegration
+	url = https://github.com/aspnet/IISIntegration.git
+	branch = master
+[submodule "modules/JavaScriptServices"]
+	path = modules/JavaScriptServices
+	url = https://github.com/aspnet/JavaScriptServices.git
+	branch = master
+[submodule "modules/JsonPatch"]
+	path = modules/JsonPatch
+	url = https://github.com/aspnet/JsonPatch.git
+	branch = master
+[submodule "modules/KestrelHttpServer"]
+	path = modules/KestrelHttpServer
+	url = https://github.com/aspnet/KestrelHttpServer.git
+	branch = master
+[submodule "modules/Localization"]
+	path = modules/Localization
+	url = https://github.com/aspnet/Localization.git
+	branch = master
+[submodule "modules/Logging"]
+	path = modules/Logging
+	url = https://github.com/aspnet/Logging.git
+	branch = master
+[submodule "modules/MetaPackages"]
+	path = modules/MetaPackages
+	url = https://github.com/aspnet/MetaPackages.git
+	branch = master
+[submodule "modules/Microsoft.Data.Sqlite"]
+	path = modules/Microsoft.Data.Sqlite
+	url = https://github.com/aspnet/Microsoft.Data.Sqlite.git
+	branch = master
+[submodule "modules/MusicStore"]
+	path = modules/MusicStore
+	url = https://github.com/aspnet/MusicStore.git
+	branch = master
+[submodule "modules/Mvc"]
+	path = modules/Mvc
+	url = https://github.com/aspnet/Mvc.git
+	branch = master
+[submodule "modules/Options"]
+	path = modules/Options
+	url = https://github.com/aspnet/Options.git
+	branch = master
+[submodule "modules/Razor"]
+	path = modules/Razor
+	url = https://github.com/aspnet/Razor.git
+	branch = master
+[submodule "modules/ResponseCaching"]
+	path = modules/ResponseCaching
+	url = https://github.com/aspnet/ResponseCaching.git
+	branch = master
+[submodule "modules/Routing"]
+	path = modules/Routing
+	url = https://github.com/aspnet/Routing.git
+	branch = master
+[submodule "modules/Scaffolding"]
+	path = modules/Scaffolding
+	url = https://github.com/aspnet/Scaffolding.git
+	branch = master
+[submodule "modules/Security"]
+	path = modules/Security
+	url = https://github.com/aspnet/Security.git
+	branch = master
+[submodule "modules/ServerTests"]
+	path = modules/ServerTests
+	url = https://github.com/aspnet/ServerTests.git
+	branch = master
+[submodule "modules/Session"]
+	path = modules/Session
+	url = https://github.com/aspnet/Session.git
+	branch = master
+[submodule "modules/SignalR"]
+	path = modules/SignalR
+	url = https://github.com/aspnet/SignalR.git
+	branch = master
+[submodule "modules/StaticFiles"]
+	path = modules/StaticFiles
+	url = https://github.com/aspnet/StaticFiles.git
+	branch = master
+[submodule "modules/Templating"]
+	path = modules/Templating
+	url = https://github.com/aspnet/Templating.git
+	branch = master
+[submodule "modules/WebSockets"]
+	path = modules/WebSockets
+	url = https://github.com/aspnet/WebSockets.git
+	branch = master

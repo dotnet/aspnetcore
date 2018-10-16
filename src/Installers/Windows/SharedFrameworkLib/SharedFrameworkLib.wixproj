@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <Name>AspNetCoreSharedFrameworkLib$(Platform)</Name>
+    <OutputName>$(WixlibBaseFileName)-$(PackageVersion)-win-$(Platform)</OutputName>
+    <OutputType>Library</OutputType>
+    <LibBindFiles>true</LibBindFiles>
+    <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
+    <ProjectGuid>5244BC49-2568-4701-80A6-EAB8950AB5FA</ProjectGuid>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>$(DefineConstants);Debug</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharedFramework\SharedFramework.wixproj" SetPlatform="Platform=$(Platform)" />
+    <WixExtension Include="WixBalExtension">
+      <HintPath>$(WixExtDir)\WixBalExtension.dll</HintPath>
+      <Name>WixBalExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+</Project>

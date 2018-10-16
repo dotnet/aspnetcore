@@ -1,0 +1,156 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.DataProtection.AzureStorage, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AzureDataProtectionBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToAzureBlobStorage",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "storageAccount",
+              "Type": "Microsoft.WindowsAzure.Storage.CloudStorageAccount"
+            },
+            {
+              "Name": "relativePath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToAzureBlobStorage",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "blobUri",
+              "Type": "System.Uri"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToAzureBlobStorage",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "blobReference",
+              "Type": "Microsoft.WindowsAzure.Storage.Blob.CloudBlockBlob"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PersistKeysToAzureBlobStorage",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder"
+            },
+            {
+              "Name": "container",
+              "Type": "Microsoft.WindowsAzure.Storage.Blob.CloudBlobContainer"
+            },
+            {
+              "Name": "blobName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.AzureStorage.AzureBlobXmlRepository",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetAllElements",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StoreElement",
+          "Parameters": [
+            {
+              "Name": "element",
+              "Type": "System.Xml.Linq.XElement"
+            },
+            {
+              "Name": "friendlyName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "blobRefFactory",
+              "Type": "System.Func<Microsoft.WindowsAzure.Storage.Blob.ICloudBlob>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

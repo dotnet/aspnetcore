@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Archive" Version="$(MicrosoftDotNetArchivePackageVersion)" />
+    <PackageReference Include="NuGet.Build.Tasks" Version="$(NuGetInMSBuildVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DevDependency_MicrosoftExtensionsDependencyModelPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="WindowsAzure.Storage" Version="$(DevDependency_WindowsAzureStoragePackageVersion)" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion)" ExcludeAssets="Build" />
+  </ItemGroup>
+
+  <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>
+</Project>

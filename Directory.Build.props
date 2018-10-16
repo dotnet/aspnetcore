@@ -1,0 +1,28 @@
+<Project>
+  <Import Project="version.props" />
+
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core</Product>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <RepositoryUrl>https://github.com/aspnet/Universe</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <Import Project="build\external-dependencies.props" />
+  <Import Project="build\sources.props" />
+
+  <PropertyGroup>
+    <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepositoryRoot)artifacts\</ArtifactsDir>
+    <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
+    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
+    <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
+    <PackageOutputPath>$(ArtifactsConfigurationDir)packages\</PackageOutputPath>
+  </PropertyGroup>
+
+  <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
+
+</Project>

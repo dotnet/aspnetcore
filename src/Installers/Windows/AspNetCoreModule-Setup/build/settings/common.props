@@ -1,0 +1,53 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    Use a common version of the Windows SDK
+  -->
+
+  <!-- Define platform shortnames for use in paths without having to rely on cpp props -->
+  <PropertyGroup>
+    <PlatformShortname Condition="'$(PlatformShortname)' == '' AND '$(Platform)' == 'x64'">x64</PlatformShortname>
+    <PlatformShortname Condition="'$(PlatformShortname)' == '' AND ('$(Platform.ToLower())' == 'win32' OR '$(Platform)' == 'x86')">x86</PlatformShortname>
+  </PropertyGroup>
+
+  <!-- General properties -->
+
+  <PropertyGroup>
+    <IisOobWinSdkVersion Condition="'$(IisOobWinSdkVersion)' == ''">10.0.15063.0</IisOobWinSdkVersion>
+    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">$(IisOobWinSdkVersion)</WindowsTargetPlatformVersion>
+    <CharacterSet>Unicode</CharacterSet>
+    <OutDir>bin\$(Configuration)\$(PlatformShortname)\</OutDir>
+    <IntDir>obj\$(Configuration)\$(PlatformShortname)\</IntDir>
+  </PropertyGroup>
+
+  <!--
+    Use common compilation settings
+  -->
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <!--
+    Use common preprocessor definitions
+  -->
+
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>

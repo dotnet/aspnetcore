@@ -1,0 +1,31 @@
+<Project>
+    <PropertyGroup>
+      <BundleNameShort>Microsoft ASP.NET Core $(PackageBrandingVersion)</BundleNameShort>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <BundleNameSub>Shared Framework</BundleNameSub>
+      <BundleName>$(BundleNameShort) - $(BundleNameSub)</BundleName>
+      <BundleNameFull>$(BundleName) ($(Platform))</BundleNameFull>
+      <BundleManufacturer>Microsoft Corporation</BundleManufacturer>
+      <BundleLogPrefix>dd_AspNetCoreSharedFramework_</BundleLogPrefix>
+
+      <!-- Registration -->
+      <BundleRegManufacturer>Microsoft</BundleRegManufacturer>
+      <BundleRegFamily>.NET Core</BundleRegFamily>
+      <BundleRegName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework</BundleRegName>
+      <BundleRegName>$(BundleNameFull)</BundleRegName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);BundleName=$(BundleName)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleNameFull=$(BundleNameFull)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleNameShort=$(BundleNameShort)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleNameSub=$(BundleNameSub)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleManufacturer=$(BundleManufacturer)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleLogPrefix=$(BundleLogPrefix)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
+      <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
+    </PropertyGroup>
+</Project>

@@ -1,0 +1,83 @@
+<Project>
+  <PropertyGroup>
+    <!-- This repo does not have solutions to build -->
+    <DisableDefaultTargets>true</DisableDefaultTargets>
+
+    <SkipTests>false</SkipTests>
+    <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
+    <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
+
+    <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
+
+    <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
+    <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <IntermediateInstaller Include="win-x86" FileExt=".zip" />
+    <IntermediateInstaller Include="win-x86" FileExt=".wixlib" />
+    <IntermediateInstaller Include="win-x64" FileExt=".zip" />
+    <IntermediateInstaller Include="win-x64" FileExt=".wixlib" />
+    <IntermediateInstaller Include="osx-x64" FileExt=".tar.gz" />
+    <IntermediateInstaller Include="linux-x64" FileExt=".tar.gz" />
+    <IntermediateInstaller Include="linux-arm" FileExt=".tar.gz" />
+    <IntermediateInstaller Include="linux-arm64" FileExt=".tar.gz" />
+    <IntermediateInstaller Include="linux-musl-x64" FileExt=".tar.gz" />
+
+    <NativeInstaller Include="win-x86" FileExt=".exe" />
+    <NativeInstaller Include="win-x86" FileExt=".zip" />
+    <NativeInstaller Include="win-x64" FileExt=".exe" />
+    <NativeInstaller Include="win-x64" FileExt=".zip" />
+    <NativeInstaller Include="osx-x64" FileExt=".tar.gz" />
+    <NativeInstaller Include="linux-x64" FileExt=".tar.gz" />
+    <NativeInstaller Include="linux-arm" FileExt=".tar.gz" />
+    <NativeInstaller Include="linux-arm64" FileExt=".tar.gz" />
+    <NativeInstaller Include="linux-musl-x64" FileExt=".tar.gz" />
+    <NativeInstaller Include="x64" FileExt=".deb" />
+    <NativeInstaller Include="x64" FileExt=".rpm" />
+    <NativeInstaller Include="rh.rhel.7-x64" FileExt=".rpm" />
+
+    <SharedFrameworkName Include="Microsoft.AspNetCore.All" />
+    <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+    <!-- These items are temporary, they should be removed when our repos update to netcoreapp3.0 -->
+    <!-- There is no linux-musl in 2.0. This was new in 2.1. -->
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" Condition="'$(SharedFXRid)' != 'linux-musl-x64'" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+
+    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
+      Include="$(MicrosoftNETCoreApp30PackageVersion)"
+      Arch="x86"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+      <!--
+        The build doesn't support compiling the shared runtime on one machine along with running tests,
+        so this is enables installing the shared runtime from a previous build.
+      -->
+      <AspNetCoreRuntime Include="$(PackageVersion)" Feed="$(AspNetCoreFxFeed)" Condition="'$(InstallSharedRuntimeFromPreviousBuild)' == 'true'" />
+  </ItemGroup>
+
+  <!-- Properties for publishing -->
+  <PropertyGroup>
+    <!-- myget = non-orchestrated builds -->
+    <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>
+    <!-- azure = non-orchestrated builds -->
+    <PublishToAzureFeed Condition="$(PublishType.Contains('azure'))">true</PublishToAzureFeed>
+
+    <!-- blob = orchestrated builds -->
+    <PublishToTransportFeed Condition="$(PublishType.Contains('blob'))">true</PublishToTransportFeed>
+  </PropertyGroup>
+
+  <Import Project="sources.props" />
+  <Import Project="external-dependencies.props" />
+  <Import Project="artifacts.props" />
+  <Import Project="submodules.props" />
+</Project>

@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="..\..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Don't restore from any fallback folder -->
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <!-- Projects in this folder should be explicit about the packages they reference -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+
+    <RestorePackagesPath>$([MSBuild]::NormalizePath('$(RepositoryRoot)obj\pkgs\'))</RestorePackagesPath>
+  </PropertyGroup>
+
+</Project>
