@@ -57,6 +57,8 @@ namespace TriageBuildFailures.VSTS.Models
         {
             return config.VSTS;
         }
+
+        public IEnumerable<ValidationResults> ValidationResults => _build.ValidationResults;
     }
 
     public class Build
@@ -71,6 +73,13 @@ namespace TriageBuildFailures.VSTS.Models
         public IDictionary<string, string> TriggerInfo { get; set; }
 
         public Links _Links { get; set; }
+        public IEnumerable<ValidationResults> ValidationResults { get; set; }
+    }
+
+    public class ValidationResults
+    {
+        public string Result { get; set; }
+        public string Message { get; set; }
     }
 
     public class Links

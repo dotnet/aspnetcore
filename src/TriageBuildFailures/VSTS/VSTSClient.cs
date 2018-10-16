@@ -68,17 +68,24 @@ namespace TriageBuildFailures.VSTS
         {
             var vstsBuild = (VSTSBuild)build;
             var logs = await MakeVSTSRequest<VSTSArray<VSTSBuildLog>>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs");
-            StringBuilder builder = new StringBuilder();
-            foreach (var log in logs.Value)
+            if (logs == null)
             {
-                using (var stream = await MakeVSTSRequest(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs/{log.Id}", "text/plain"))
-                using (var streamReader = new StreamReader(stream))
-                {
-                    builder.Append(await streamReader.ReadToEndAsync());
-                }
+                return GetBuildLogFromValidationResult(vstsBuild);
             }
+            else
+            {
+                StringBuilder builder = new StringBuilder();
+                foreach (var log in logs.Value)
+                {
+                    using (var stream = await MakeVSTSRequest(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs/{log.Id}", "text/plain"))
+                    using (var streamReader = new StreamReader(stream))
+                    {
+                        builder.Append(await streamReader.ReadToEndAsync());
+                    }
+                }
 
-            return builder.ToString();
+                return builder.ToString();
+            }
         }
 
         public async Task<IEnumerable<ICITestOccurrence>> GetTests(ICIBuild build, BuildStatus? buildStatus = null)
@@ -100,6 +107,23 @@ namespace TriageBuildFailures.VSTS
             var vstsTest = failure as VSTSTestOccurrence;
 
             return Task.FromResult(vstsTest.TestCaseResult.ErrorMessage);
+        }
+
+        private string GetBuildLogFromValidationResult(VSTSBuild vstsBuild)
+        {
+            if (vstsBuild.ValidationResults != null && vstsBuild.ValidationResults.Any(v => v.Result.Equals("error", StringComparison.OrdinalIgnoreCase)))
+            {
+                var logStr = "";
+                foreach (var validationResult in vstsBuild.ValidationResults.Where(v => v.Result.Equals("error", StringComparison.OrdinalIgnoreCase)))
+                {
+                    logStr += validationResult.Message + Environment.NewLine;
+                }
+                return logStr;
+            }
+            else
+            {
+                throw new NotImplementedException("If there are no logs and no ValidationResults then why did we fail?");
+            }
         }
 
         private async Task<IEnumerable<VSTSTestCaseResult>> GetTestResults(VSTSTestRun run, BuildStatus? buildResult = null)
