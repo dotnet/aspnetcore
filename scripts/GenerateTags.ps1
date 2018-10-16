@@ -60,9 +60,9 @@ function New-GitTag {
 function Get-PackageVersion([string]$repoRoot) {
     $buildScript = if (-not $IsCoreCLR -or $IsWindows) { 'build.ps1' } else { 'build.sh' }
     $inspectTarget = "/p:CustomAfterKoreBuildTargets=$PSScriptRoot/GetPackageVersion.targets"
-    Write-Verbose "Running `"$repoRoot/$buildScript`" $inspectTarget /v:m /p:IsFinalBuild=true /t:Noop /t:GetPackageVersion"
+    Write-Verbose "Running `"$repoRoot/$buildScript`" $inspectTarget /v:m /p:IsFinalBuild=true /t:Noop /t:GetPackageVersion /p:BuildNumber=t000"
     # Add the /t:Noop target which may be used by the bootstrapper to skip unimportant initialization
-    $output = & "$repoRoot/$buildScript" $inspectTarget /v:m /p:IsFinalBuild=true /t:Noop /t:GetPackageVersion
+    $output = & "$repoRoot/$buildScript" $inspectTarget /v:m /p:IsFinalBuild=true /t:Noop /t:GetPackageVersion /p:BuildNumber=t000
     $output | out-string | Write-Verbose
     if (-not $? -or $LASTEXITCODE -ne 0) {
         throw "$buildScript failed on $repoRoot. Exit code $LASTEXITCODE"
@@ -70,6 +70,7 @@ function Get-PackageVersion([string]$repoRoot) {
     $packageVersion = $output | where-object { $_ -like '*PackageVersion=*' } | select-object -first 1
     $packageVersion = $packageVersion -replace 'PackageVersion=', ''
     $packageVersion = $packageVersion -replace '-final', ''
+    $packageVersion = $packageVersion -replace '-t000', ''
     if ($packageVersion) { $packageVersion = $packageVersion.Trim() }
     if (-not $packageVersion) {
         throw "Could not determine final package version for $repoRoot"
