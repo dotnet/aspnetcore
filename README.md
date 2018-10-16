@@ -1,122 +1,40 @@
-Universe
-========
+ASP.NET Core
+============
 
-Build infrastructure used to produce the whole ASP.NET Core stack.
+ASP.NET Core is an open-source and cross-platform framework for building modern cloud based internet connected applications, such as web apps, IoT apps and mobile backends. ASP.NET Core apps can run on .NET Core or on the full .NET Framework. It was architected to provide an optimized development framework for apps that are deployed to the cloud or run on-premises. It consists of modular components with minimal overhead, so you retain flexibility while constructing your solutions. You can develop and run your ASP.NET Core apps cross-platform on Windows, Mac and Linux. [Learn more about ASP.NET Core](https://docs.microsoft.com/aspnet/core/).
 
-## Released Builds
+ASP.NET Core 2.1 is now available! See the [release notes](https://github.com/aspnet/AspNetCore/releases/tag/2.1.0) for further details and check our [releases](https://github.com/aspnet/AspNetCore/releases/) for the latest patch release.
 
-### ASP.NET Core Runtime Store
+## Get Started
 
-The runtime store can be downloaded from [here](https://microsoft.com/net/download).
+Follow the [Getting Started](https://docs.microsoft.com/aspnet/core/getting-started) instructions in the [ASP.NET Core docs](https://docs.microsoft.com/aspnet/index).
 
-### NuGet packages
+Also check out the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
-All published ASP.NET Core packages can be found on <https://www.nuget.org/profiles/aspnet>.
+## How to Engage, Contribute, and Give Feedback
 
-Commonly referenced packages:
+Some of the best ways to contribute are to try things out, file issues, join in design conversations,
+and make pull-requests.
 
-[app-metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore.App
-[app-metapackage-nuget-badge]: https://img.shields.io/nuget/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=nuget
+* [Download our latest daily builds](./docs/daily-builds.md)
+* Follow along with the development of ASP.NET Core:
+    * [Community Standup](http://live.asp.net): The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
+    * [Roadmap](https://github.com/aspnet/AspNetCore/wiki/Roadmap): The schedule and milestone themes for ASP.NET Core.
+* [Build ASP.NET Core source code](./docs/build-from-source.md)
+* Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
-[metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore
-[metapackage-nuget-badge]: https://img.shields.io/nuget/v/Microsoft.AspNetCore.svg?style=flat-square&label=nuget
+## Reporting security issues and bugs
 
-Package                           | NuGet.org
-:---------------------------------|:---------------------------------------------------------
-Microsoft.AspNetCore.App          | [![][app-metapackage-nuget-badge]][app-metapackage-nuget]
-Microsoft.AspNetCore              | [![][metapackage-nuget-badge]][metapackage-nuget]
+Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC)  secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://technet.microsoft.com/en-us/security/ff852094.aspx).
 
+## Related projects
 
-## Daily builds
+These are some other repos for related projects:
 
-### NuGet packages
+* [Documentation](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/aspnet/core/
+* [EntityFrameworkCore](https://github.com/aspnet/EntityFrameworkCore) - data access technology
+* [Tooling](https://github.com/aspnet/Tooling) - Visual Studio tooling, editors, and dialogs
 
-Packages can be found on <https://dotnet.myget.org/gallery/dotnet-core>. This feed may include
-packages that will not be supported in a officially released build.
+## Code of conduct
 
-Commonly referenced packages:
-
-[app-metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore.App
-[app-metapackage-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=myget
-
-[metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore
-[metapackage-myget-badge]: https://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
-
-Package                           | MyGet
-:---------------------------------|:---------------------------------------------------------
-Microsoft.AspNetCore.App          | [![][app-metapackage-myget-badge]][app-metapackage-myget]
-Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-myget]
-
-### ASP.NET Core Shared Framework
-
-[badge-master]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x64-zip]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x64.zip
-[win-x64-exe]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x64.exe
-[win-x86-zip]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.zip
-[win-x86-exe]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.exe
-[linux-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-x64.tar.gz
-[linux-arm-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm.tar.gz
-[linux-arm64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm64.tar.gz
-[osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
-[debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
-[linux-musl-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
-
-[badge-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x64-zip-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x64.zip
-[win-x64-exe-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x64.exe
-[win-x86-zip-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x86.zip
-[win-x86-exe-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x86.exe
-[linux-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-x64.tar.gz
-[osx-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-osx-x64.tar.gz
-[debian-x64-deb-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-x64.rpm
-[linux-arm-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-arm.tar.gz
-[linux-musl-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
-
-[badge-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x64-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.zip
-[win-x64-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.exe
-[win-x86-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.zip
-[win-x86-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.exe
-[linux-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-x64.tar.gz
-[osx-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
-[debian-x64-deb-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.rpm
-[linux-arm-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-arm.tar.gz
-[linux-musl-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
-
-Platform              | Latest (master branch) <br> ![][badge-master]                      | release/2.2 <br> ![][badge-rel-22] | release/2.1 <br> ![][badge-rel-21]
-:---------------------|:----------------------------------------------------------------|:------------------------------------------------------------------------- |:-------------------------------------------------------------------------
-Channel name<sup>1</sup> | `master` | `release/2.2` | `release/2.1`
-Windows (x64)         | [Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x64-zip]   | [Installer (exe)][win-x64-exe-rel-22]<br>[Archive (zip)][win-x64-zip-rel-22] | [Installer (exe)][win-x64-exe-rel-21]<br>[Archive (zip)][win-x64-zip-rel-21]
-Windows (x86)         | [Installer (exe)][win-x86-exe]<br>[Archive (zip)][win-x86-zip]   | [Installer (exe)][win-x86-exe-rel-22]<br>[Archive (zip)][win-x86-zip-rel-22] | [Installer (exe)][win-x86-exe-rel-21]<br>[Archive (zip)][win-x86-zip-rel-21]
-macOS (x64)           | [Archive (tar.gz)][osx-x64-tar]                                  | [Archive (tar.gz)][osx-x64-tar-rel-22] | [Archive (tar.gz)][osx-x64-tar-rel-21]
-Linux (x64)<br>_(for glibc based OS - most common)_ | [Archive (tar.gz)][linux-x64-tar]                                | [Archive (tar.gz)][linux-x64-tar-rel-22] | [Archive (tar.gz)][linux-x64-tar-rel-21]
-Linux (x64 - musl)<br>_(for musl based OS, such as Alpine Linux)_ | [Archive (tar.gz)][linux-musl-x64-tar]                           | [Archive (tar.gz)][linux-musl-x64-tar-rel-22] | [Archive (tar.gz)][linux-musl-x64-tar-rel-21]
-Linux (arm32)         | [Archive (tar.gz)][linux-arm-tar]                                | [Archive (tar.gz)][linux-arm-tar-rel-22] | [Archive (tar.gz)][linux-arm-tar-rel-21]
-Linux (arm64)         | [Archive (tar.gz)][linux-arm64-tar]                                | |
-Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-22] | [Installer (deb)][debian-x64-deb-rel-21]
-RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-22] | [Installer (rpm)][redhat-x64-rpm-rel-21]
-
-> <sup>1</sup> For use with the `-Channel` argument in [dotnet-install.ps1/sh](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script).
-
-## Building from source
-
-```
-git clone --recursive https://github.com/aspnet/Universe.git
-cd Universe
-./build.cmd
-```
-
-### Useful properties and targets
-Property                           | Purpose                                                                        | Example
------------------------------------|--------------------------------------------------------------------------------|--------
-`SkipTests`    | Only build repos, don't run the tests.                                         | `/p:SkipTests=true`
-`TestOnly`                      | Don't package or verify things.                                                | `/p:TestOnly=true`
-`KOREBUILD_REPOSITORY_INCLUDE` | A list of the repositories to include in build (instead of all of them).       | `$env:KOREBUILD_REPOSITORY_INCLUDE='Antiforgery;CORS'`
-`KOREBUILD_REPOSITORY_EXCLUDE` | A list of the repositories to exclude from build (all the rest will be built). | `$env:KOREBUILD_REPOSITORY_EXCLUDE='EntityFramework'`
-
-## More info
-
-This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).  For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
