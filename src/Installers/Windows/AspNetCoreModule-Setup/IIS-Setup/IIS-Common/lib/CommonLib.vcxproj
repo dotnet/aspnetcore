@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(ProjectDir)..\build\submodule.props" Condition="Exists('$(ProjectDir)..\build\submodule.props')" />
-  <Import Project="$(ProjectDir)..\build\versions.props" Condition="Exists('$(ProjectDir)..\build\versions.props')" />
-  <Import Project="$(ProjectDir)..\build\settings.props" Condition="Exists('$(ProjectDir)..\build\settings.props')" />
+  <Import Project="$(MSBuildThisProjectDirectory)..\..\..\build\submodule.props" Condition="Exists('$(MSBuildThisProjectDirectory)..\..\..\build\submodule.props')" />
+  <Import Project="$(MSBuildThisProjectDirectory)..\..\..\build\versions.props" Condition="Exists('$(MSBuildThisProjectDirectory)..\..\..\build\versions.props')" />
+  <Import Project="$(MSBuildThisProjectDirectory)..\..\..\build\settings.props" Condition="Exists('$(MSBuildThisProjectDirectory)..\..\..\build\settings.props')" />
+
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -71,8 +72,8 @@
     <PropertyGroup>
       <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(ProjectDir)..\build\submodule.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\submodule.props'))" />
-    <Error Condition="!Exists('$(ProjectDir)..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\versions.props'))" />
-    <Error Condition="!Exists('$(ProjectDir)..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ProjectDir)..\build\settings.props'))" />
+    <Error Condition="!Exists('$(MSBuildThisProjectDirectory)..\..\..\build\submodule.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisProjectDirectory)..\..\..\build\submodule.props'))" />
+    <Error Condition="!Exists('$(MSBuildThisProjectDirectory)..\..\..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisProjectDirectory)..\..\..\build\versions.props'))" />
+    <Error Condition="!Exists('$(MSBuildThisProjectDirectory)..\..\..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisProjectDirectory)..\..\..\build\settings.props'))" />
   </Target>
 </Project>

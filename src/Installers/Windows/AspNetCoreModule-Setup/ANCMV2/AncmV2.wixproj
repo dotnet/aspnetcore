@@ -3,17 +3,18 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <Name>AspNetCoreModule</Name>
-    <NamespaceGuid>D36FDC38-FE53-48CC-BC82-A17C28F1CEE1</NamespaceGuid> <!-- TODO make this namespace guid different-->
-    <ProjectGuid>D36FDC38-FE53-48CC-BC82-A17C28F1CEE1</ProjectGuid>
+    <Name>AspNetCoreModuleV2</Name>
+    <ProjectGuid>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</ProjectGuid>
     <OutputType>Package</OutputType>
+    <GenerateRandomNamespaceGuid>true</GenerateRandomNamespaceGuid>
+    <DisableGuidGeneration>true</DisableGuidGeneration>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Platform)' == 'x86'">
-    <OutputName>aspnetcoremodule_x86_en</OutputName>
+    <OutputName>aspnetcoremodule_x86_en_v2</OutputName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'x64'">
-    <OutputName>aspnetcoremodule_x64_en</OutputName>
+    <OutputName>aspnetcoremodule_x64_en_v2</OutputName>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(SignType)' != '' ">
@@ -35,8 +36,8 @@
     <PropertyGroup>
       <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(IIS-Common)build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(IIS-Common)build\settings.props'))" />
-    <Error Condition="!Exists('$(IIS-Common)build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(IIS-Common)build\versions.props'))" />
+    <Error Condition="!Exists('..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '..\build\settings.props'))" />
+    <Error Condition="!Exists('..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '..\build\versions.props'))" />
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
@@ -67,7 +68,7 @@
     </Content>
   </ItemGroup>
 
-  <Import Project="$(IIS-Common)build\settings.props" Condition="Exists('$(IIS-Common)build\settings.props')" />
-  <Import Project="$(IIS-Common)build\versions.props" Condition="Exists('$(IIS-Common)build\versions.props')" />
+  <Import Project="..\build\settings.props" Condition="Exists('..\build\settings.props')" />
+  <Import Project="..\build\versions.props" Condition="Exists('..\build\versions.props')" />
   <!-- Overwrite standard versioning scheme -->
 </Project>

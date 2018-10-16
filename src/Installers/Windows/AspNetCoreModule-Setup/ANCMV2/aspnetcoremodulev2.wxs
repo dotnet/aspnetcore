@@ -5,10 +5,9 @@
 -->
 
 <?define Codepage = "1252" ?>
-<?include ..\..\IIS-Setup\include.wxi ?>
+<?include ..\IIS-Setup\include.wxi ?>
 
-<!-- NB: *Must* update the ProductCode GUID on each release! -->
-<?define ANCMProductCode = "*" ?>
+<?define ProductCode = "*" ?>
 <?if $(var.IsWin64)=no ?>
   <?define ANCMUpgradeCode = "d7168f76-9dd0-407d-bf22-0b450139e6a7" ?>
   <?define ANCMDepProviderKey = "IIS_AspNetCore_Module_V2,x86" ?>
@@ -16,7 +15,6 @@
   <?define ANCMUpgradeCode = "8d50fde7-0b84-4900-b60d-bd952979ba0b" ?>
   <?define ANCMDepProviderKey = "IIS_AspNetCore_Module_V2,x64" ?>
 <?endif?>
-<?define MsiVersion = "1$(var.Version)" ?>
 <?define ProductShortName="IIS AspNetCore Module V2" ?>
 <?define ProductNameShort="IIS_ANCM_V2" ?>
 <?define ProductVersionString = "V2"?>
@@ -33,15 +31,15 @@
 
 <?define AspNetCoreTargetPath = "$(var.PreBuiltANCMV2Root)$(var.Platform)\aspnetcorev2.dll" ?>
 <?define AspNetCoreWoW64TargetPath = "$(var.PreBuiltANCMV2Root)x86\aspnetcorev2.dll" ?>
-<?define AspNetCoreHandlerPath = "$(var.PreBuiltANCMV2Root)$(var.Platform)\$(var.ANCMOutOfProcessHandlerVersion)\aspnetcorev2_outofprocess.dll" ?>
-<?define AspNetCoreHandlerWoW64Path = "$(var.PreBuiltANCMV2Root)x86\$(var.ANCMOutOfProcessHandlerVersion)\aspnetcorev2_outofprocess.dll" ?>
+<?define AspNetCoreHandlerPath = "$(var.PreBuiltANCMV2Root)$(var.Platform)\$(var.ANCMOutOfProcessNugetPackageHandlerVersion)\aspnetcorev2_outofprocess.dll" ?>
+<?define AspNetCoreHandlerWoW64Path = "$(var.PreBuiltANCMV2Root)x86\$(var.ANCMOutOfProcessNugetPackageHandlerVersion)\aspnetcorev2_outofprocess.dll" ?>
 <?define AspNetCoreSchemaPath = "$(var.PreBuiltANCMV2Schema)aspnetcore_schema_v2.xml" ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
-    <Product Id="$(var.ANCMProductCode)"
+    <Product Id="$(var.ProductCode)"
           Name="!(loc.AspNetCoreModuleProductNameV2)"
           Manufacturer="!(loc.Manufacturer)"
-          Version="$(var.MsiVersion)"
+          Version="$(var.ANCMMsiVersion)"
           Language="!(loc.Language)"
           Codepage="$(var.Codepage)"
           UpgradeCode="$(var.ANCMUpgradeCode)" >
@@ -57,10 +55,10 @@
         <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high"/>
 
         <!-- include the standard app searches -->
-        <?include  ..\..\IIS-Setup\appsearch\appsearch.wxi ?>
+        <?include  ..\IIS-Setup\appsearch\appsearch.wxi ?>
 
         <!-- make patching UI go from welcome to ready to repair -->
-        <?include  ..\..\IIS-Setup\iisca\wix3\FixPatchingBehavior.wxi ?>
+        <?include  ..\IIS-Setup\iisca\wix3\FixPatchingBehavior.wxi ?>
 
         <Property Id="ARPCONTACT">Microsoft Corporation</Property>
         <Property Id="ARPPRODUCTICON" Value="AspNetCoreModule.ico" />
@@ -70,9 +68,9 @@
         <WixVariable Id="WixUILicenseRtf" Value="..\license\license.rtf" />
 
         <Upgrade Id="$(var.ANCMUpgradeCode)">
-            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(var.MsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
-            <UpgradeVersion OnlyDetect="yes" Property="DUPLICATEVERSIONFOUND" Minimum="$(var.MsiVersion)" Maximum="$(var.MsiVersion)" IncludeMinimum="yes" IncludeMaximum="yes" />
-            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(var.MsiVersion)" IncludeMinimum="no" />
+            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(var.ANCMMsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
+            <UpgradeVersion OnlyDetect="yes" Property="DUPLICATEVERSIONFOUND" Minimum="$(var.ANCMMsiVersion)" Maximum="$(var.ANCMMsiVersion)" IncludeMinimum="yes" IncludeMaximum="yes" />
+            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(var.ANCMMsiVersion)" IncludeMinimum="no" />
         </Upgrade>
 
         <Condition Message="!(loc.NewerVersionFound)">(NOT NEWERVERSIONFOUND)  OR Installed</Condition>
@@ -120,7 +118,7 @@
                 <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
                     <RegistryKey Key="$(var.ProductShortName)">
                         <RegistryValue Type="integer" Name="Install" Value="1" />
-                        <RegistryValue Type="string" Name="Version" Value="$(var.MsiVersion)" />
+                        <RegistryValue Type="string" Name="Version" Value="$(var.ANCMMsiVersion)" />
                     </RegistryKey>
                 </RegistryKey>
             </Component>
@@ -161,7 +159,7 @@
                                    <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
                                </RegistryKey>
                            </Component>
-                           <Directory Id="HandlerVersionDir" Name="$(var.MsiVersion)" >
+                           <Directory Id="HandlerVersionDir" Name="$(var.ANCMMsiVersion)" >
                                <Component Id="AspNetCoreModuleHandler" Guid="4b62060a-deb8-4de3-9557-9c0be21dc844" Win64="$(var.IsWin64)">
                                    <File Id="AspNetCoreModuleHandlerDll"
                                          Name="aspnetcorev2_outofprocess.dll"
@@ -182,7 +180,7 @@
                <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
                     <RegistryKey Key="$(var.ProductShortName)">
                         <RegistryValue Type="integer" Name="Install" Value="1" />
-                        <RegistryValue Type="string" Name="Version" Value="$(var.MsiVersion)" />
+                        <RegistryValue Type="string" Name="Version" Value="$(var.ANCMMsiVersion)" />
                     </RegistryKey>
                 </RegistryKey>
             </Component>
@@ -204,7 +202,7 @@
                                     <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
                                 </RegistryKey>
                             </Component>
-                            <Directory Id="HandlerVersionDir32" Name="$(var.MsiVersion)" SourceName="WowOnly">
+                            <Directory Id="HandlerVersionDir32" Name="$(var.ANCMMsiVersion)" SourceName="WowOnly">
                                 <Component Id="AspNetCoreModuleHandler.wow" Guid="d927e5d3-c8b2-400c-b85c-ae5c2772d6c3" Win64="no">
                                     <File Id="AspNetCoreModuleHandlerDll.wow"
                                           Name="aspnetcorev2_outofprocess.dll"

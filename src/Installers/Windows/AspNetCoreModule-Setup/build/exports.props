@@ -6,4 +6,8 @@
     <IIS-Common Condition="$(IIS-Common) == ''">$(MSBuildThisFileDirectory)..\</IIS-Common>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IIS-Setup Condition="$(IIS-Setup) == ''">$(MSBuildThisFileDirectory)..\</IIS-Setup>
+  </PropertyGroup>
+
 </Project>

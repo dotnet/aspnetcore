@@ -5,10 +5,9 @@
 -->
 
 <?define Codepage = "1252" ?>
-<?include ..\..\IIS-Setup\include.wxi ?>
+<?include ..\IIS-Setup\include.wxi ?>
 
-<!-- NB: *Must* update the ProductCode GUID on each release! -->
-<?define ANCMProductCode = "*" ?>
+<?define ProductCode = "*" ?>
 <?if $(var.IsWin64)=no ?>
   <?define ANCMUpgradeCode = "A9D4A2C7-F290-4065-81FB-067EFDB90043" ?>
   <?define OldX86UpgradeCode = "DC6A6FDC-C18F-4A6F-B12A-1A835472CB33" ?>
@@ -17,7 +16,6 @@
   <?define ANCMUpgradeCode = "DC6A6FDC-C18F-4A6F-B12A-1A835472CB33" ?>
   <?define ANCMDepProviderKey = "IIS_AspNetCore_Module,x64" ?>
 <?endif?>
-<?define MsiVersion = "1$(var.Version)" ?>
 <?define ProductShortName="IIS AspNetCore Module" ?>
 <?define ProductNameShort="IIS_AspNetCore_Module" ?>
 
@@ -36,10 +34,10 @@
 <?define AspNetCoreSchemaPath = "$(var.PreBuiltANCMSchema)aspnetcore_schema.xml" ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
-    <Product Id="$(var.ANCMProductCode)"
+    <Product Id="$(var.ProductCode)"
           Name="!(loc.AspNetCoreModuleProductName)"
           Manufacturer="!(loc.Manufacturer)"
-          Version="$(var.MsiVersion)"
+          Version="$(var.ANCMMsiVersion)"
           Language="!(loc.Language)"
           Codepage="$(var.Codepage)"
           UpgradeCode="$(var.ANCMUpgradeCode)" >
@@ -55,10 +53,10 @@
         <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high"/>
 
         <!-- include the standard app searches -->
-        <?include ..\..\IIS-Setup\appsearch\appsearch.wxi ?>
+        <?include ..\IIS-Setup\appsearch\appsearch.wxi ?>
 
         <!-- make patching UI go from welcome to ready to repair -->
-        <?include ..\..\IIS-Setup\iisca\wix3\FixPatchingBehavior.wxi ?>
+        <?include ..\IIS-Setup\iisca\wix3\FixPatchingBehavior.wxi ?>
 
         <Property Id="ARPCONTACT">Microsoft Corporation</Property>
         <Property Id="ARPPRODUCTICON" Value="AspNetCoreModule.ico" />
@@ -68,14 +66,14 @@
         <WixVariable Id="WixUILicenseRtf" Value="..\license\license.rtf" />
 
         <Upgrade Id="$(var.ANCMUpgradeCode)">
-            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(var.MsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
-            <UpgradeVersion OnlyDetect="yes" Property="DUPLICATEVERSIONFOUND" Minimum="$(var.MsiVersion)" Maximum="$(var.MsiVersion)" IncludeMinimum="yes" IncludeMaximum="yes" />
-            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(var.MsiVersion)" IncludeMinimum="no" />
+            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(var.ANCMMsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
+            <UpgradeVersion OnlyDetect="yes" Property="DUPLICATEVERSIONFOUND" Minimum="$(var.ANCMMsiVersion)" Maximum="$(var.ANCMMsiVersion)" IncludeMinimum="yes" IncludeMaximum="yes" />
+            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(var.ANCMMsiVersion)" IncludeMinimum="no" />
         </Upgrade>
       <?if $(var.Platform) = "x86" ?>
        <Upgrade Id="$(var.OldX86UpgradeCode)">
-            <UpgradeVersion Property="OLDERPRODUCTFOUND" Minimum="0.8.1962" Maximum="$(var.MsiVersion)" IncludeMinimum="yes" IncludeMaximum="yes" MigrateFeatures="yes" />
-            <UpgradeVersion Property="NEWERPRODUCTFOUND" OnlyDetect="yes"  Minimum="$(var.MsiVersion)" IncludeMinimum="no" />
+            <UpgradeVersion Property="OLDERPRODUCTFOUND" Minimum="0.8.1962" Maximum="$(var.ANCMMsiVersion)" IncludeMinimum="yes" IncludeMaximum="yes" MigrateFeatures="yes" />
+            <UpgradeVersion Property="NEWERPRODUCTFOUND" OnlyDetect="yes"  Minimum="$(var.ANCMMsiVersion)" IncludeMinimum="no" />
        </Upgrade>
       <?endif ?>
         <Condition Message="!(loc.NewerVersionFound)">(NOT NEWERVERSIONFOUND)  OR Installed</Condition>
@@ -123,7 +121,7 @@
                 <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
                     <RegistryKey Key="$(var.ProductShortName)">
                         <RegistryValue Type="integer" Name="Install" Value="1" />
-                        <RegistryValue Type="string" Name="Version" Value="$(var.MsiVersion)" />
+                        <RegistryValue Type="string" Name="Version" Value="$(var.ANCMMsiVersion)" />
                     </RegistryKey>
                 </RegistryKey>
             </Component>
@@ -165,7 +163,7 @@
                 <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
                     <RegistryKey Key="$(var.ProductShortName)">
                         <RegistryValue Type="integer" Name="Install" Value="1" />
-                        <RegistryValue Type="string" Name="Version" Value="$(var.MsiVersion)" />
+                        <RegistryValue Type="string" Name="Version" Value="$(var.ANCMMsiVersion)" />
                     </RegistryKey>
                 </RegistryKey>
             </Component>

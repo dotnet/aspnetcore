@@ -3,21 +3,20 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <Name>AspNetCoreModuleIISExpress</Name>
-    <NamespaceGuid>D36FDC38-FE53-48CC-BC82-A17C28F1CEE1</NamespaceGuid> <!-- TODO make this namespace guid different-->
-    <ProjectGuid>2A6A4709-30D2-4716-A597-55DF0FB74D37</ProjectGuid>
+    <Name>AspNetCoreModule</Name>
+    <ProjectGuid>D36FDC38-FE53-48CC-BC82-A17C28F1CEE1</ProjectGuid>
+    <GenerateRandomNamespaceGuid>true</GenerateRandomNamespaceGuid>
     <OutputType>Package</OutputType>
-    <SuppressIces>ICE03</SuppressIces>
+    <DisableGuidGeneration>true</DisableGuidGeneration>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Platform)' == 'x86'">
-    <OutputName>ancm_iis_express_x86_en</OutputName>
-    <ProjectGuid>2A6A4709-30D2-4716-A597-55DF0FB74D37</ProjectGuid>
+    <OutputName>aspnetcoremodule_x86_en</OutputName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'x64'">
-    <OutputName>ancm_iis_express_x64_en</OutputName>
-    <ProjectGuid>2A6A4709-30D2-4716-A597-55DF0FB74D37</ProjectGuid>
+    <OutputName>aspnetcoremodule_x64_en</OutputName>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(SignType)' != '' ">
     <SignOutput>True</SignOutput>
   </PropertyGroup>
@@ -27,6 +26,7 @@
       <Link>iisca.wxs</Link>
     </Compile>
   </ItemGroup>
+
   <Target Name="BeforeBuild">
     <CreateProperty Condition="$(IIS-Setup) != ''" Value="IIS-Setup=$(IIS-Setup);$(DefineConstants)">
       <Output TaskParameter="Value" PropertyName="DefineConstants" />
@@ -36,8 +36,8 @@
     <PropertyGroup>
       <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(IIS-Common)build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(IIS-Common)build\settings.props'))" />
-    <Error Condition="!Exists('$(IIS-Common)build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(IIS-Common)build\versions.props'))" />
+    <Error Condition="!Exists('$(ANCMBuildDirectory)settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ANCMBuildDirectory)settings.props'))" />
+    <Error Condition="!Exists('$(ANCMBuildDirectory)versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ANCMBuildDirectory)versions.props'))" />
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
@@ -68,7 +68,7 @@
     </Content>
   </ItemGroup>
 
-  <Import Project="$(IIS-Common)build\settings.props" Condition="Exists('$(IIS-Common)build\settings.props')" />
-  <Import Project="$(IIS-Common)build\versions.props" Condition="Exists('$(IIS-Common)build\versions.props')" />
+  <Import Project="$(ANCMBuildDirectory)settings.props" Condition="Exists('$(ANCMBuildDirectory)settings.props')" />
+  <Import Project="$(ANCMBuildDirectory)versions.props" Condition="Exists('$(ANCMBuildDirectory)versions.props')" />
   <!-- Overwrite standard versioning scheme -->
 </Project>

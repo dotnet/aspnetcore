@@ -12,8 +12,8 @@
   <Import Condition="$(IIS-Setup) == '' AND Exists('$(_IIS-SetupExportsPath)')" Project="$(_IIS-SetupExportsPath)" />
 
   <!-- Build error if submodule dependencies could not be found. -->
-  <Import Project="$(IIS-Common)build\versions.props" Condition="Exists('$(IIS-Common)build\versions.props')" />
-  <Import Project="$(IIS-Common)build\settings.props" Condition="Exists('$(IIS-Common)build\settings.props')" />
+  <Import Project="$(MSBuildThisprojectdirectory)..\build\versions.props" Condition="Exists('$(MSBuildThisprojectdirectory)..\build\versions.props')" />
+  <Import Project="$(MSBuildThisprojectdirectory)..\build\settings.props" Condition="Exists('$(MSBuildThisprojectdirectory)..\build\settings.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -82,6 +82,7 @@
     <ProjectReference Include="$(IIS-Common)lib\CommonLib.vcxproj">
       <Project>{b54a8f61-60de-4ad9-87ca-d102f230678e}</Project>
     </ProjectReference>
+     <FilesToSign Include="$(OutDir)$(TargetName)$(TargetExt)" Authenticode="Microsoft400" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
@@ -89,10 +90,9 @@
     <PropertyGroup>
       <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(IIS-Common)build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(IIS-Common)build\versions.props'))" />
-    <Error Condition="!Exists('$(IIS-Common)build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(IIS-Common)build\settings.props'))" />
-    <Error Condition="!Exists('$(IIS-Common)build\copy-outputs.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(IIS-Common)build\copy-outputs.targets'))" />
+    <Error Condition="!Exists('$(MSBuildThisprojectdirectory)..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisprojectdirectory)..\build\versions.props'))" />
+    <Error Condition="!Exists('$(MSBuildThisprojectdirectory)..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisprojectdirectory)..\build\settings.props'))" />
+    <Error Condition="!Exists('$(MSBuildThisprojectdirectory)..\build\copy-outputs.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildThisprojectdirectory)..\build\copy-outputs.targets'))" />
   </Target>
-  <Import Project="$(IIS-Common)build\copy-outputs.targets" Condition="Exists('$(IIS-Common)build\copy-outputs.targets')" />
-
+  <Import Project="$(MSBuildThisprojectdirectory)..\build\copy-outputs.targets" Condition="Exists('$(MSBuildThisprojectdirectory)..\build\copy-outputs.targets')" />
 </Project>
