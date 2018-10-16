@@ -24,7 +24,7 @@ public class Chat {
         }, String.class, String.class);
 
         hubConnection.onClosed((ex) -> {
-            if (ex.getMessage() != null) {
+            if (ex != null) {
                 System.out.printf("There was an error: %s", ex.getMessage());
             }
         });
