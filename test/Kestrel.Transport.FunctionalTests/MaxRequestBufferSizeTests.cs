@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     public class MaxRequestBufferSizeTests : LoggedTest
     {
         // The client is typically paused after uploading this many bytes:
-        // 
+        //
         // OS                   MaxRequestBufferSize (MB)   connectionAdapter   Transport   min pause (MB)      max pause (MB)
         // ---------------      -------------------------   -----------------   ---------   --------------      --------------
         // Windows 10 1803      1                           false               Libuv       1.7                 3.3
@@ -100,7 +101,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        private bool LargeUploadRetryPredicate(Exception e)
+            => e is IOException && e.Message.Contains("Unable to read data from the transport connection: The I/O operation has been aborted because of either a thread exit or an application request");
+
         [Theory]
+        [RetryTest(nameof(LargeUploadRetryPredicate),
+            "Active investigation into potential corefx sockets bug: https://github.com/dotnet/corefx/issues/30691",
+            OperatingSystems.Windows,
+            5)]
         [MemberData(nameof(LargeUploadData))]
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {

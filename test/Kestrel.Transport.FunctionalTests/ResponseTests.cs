@@ -17,12 +17,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -802,7 +803,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.False(requestAborted);
         }
 
+        private bool ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeadersRetryPredicate(Exception e)
+            => e is IOException && e.Message.Contains("Unable to read data from the transport connection: The I/O operation has been aborted because of either a thread exit or an application request");
+
         [Fact]
+        [RetryTest(nameof(ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeadersRetryPredicate),
+            "Active investigation into potential corefx sockets bug: https://github.com/dotnet/corefx/issues/30691",
+            OperatingSystems.Windows,
+            5)]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
         {
             var headerSize = 1024 * 1024; // 1 MB for each header value
