@@ -1,0 +1,11 @@
+<!-- Targets for making .vcxproj better. -->
+<Project>
+
+  <PropertyGroup>
+    <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
+  </PropertyGroup>
+
+  <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />
+  <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.props" Condition=" '$(MicroBuildPluginDirectory)' != ''" />
+
+</Project>

@@ -5,10 +5,9 @@
 -->
 
 <?define Codepage = "1252" ?>
-<?include ..\..\IIS-Setup\include.wxi ?>
+<?include ..\IIS-Setup\include.wxi ?>
 
-<!-- NB: *Must* update the ANCMProductCode GUID on each release! -->
-<?define ANCMProductCode = "*" ?>
+<?define ProductCode = "*" ?>
 <?if $(var.IsWin64)=no ?>
   <?define ANCMUpgradeCode = "ADF3781F-5BC7-4D35-8BA6-2029A882210A" ?>
   <?define ANCMDepProviderKey = "IISExpress_AspNetCore_Module,x86" ?>
@@ -17,7 +16,6 @@
   <?define ANCMDepProviderKey = "IISExpress_AspNetCore_Module,x64" ?>
 <?endif?>
 
-<?define MsiVersion = "1$(var.Version)" ?>
 <?define ProductShortName="IIS Express AspNetCore Module" ?>
 <?define ProductNameShort="IISExpress_ANCM" ?>
 
@@ -48,10 +46,10 @@
 <?define AspNetCoreSchemaPath = "$(var.PreBuiltANCMSchema)aspnetcore_schema.xml" ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
-    <Product Id="$(var.ANCMProductCode)"
+    <Product Id="$(var.ProductCode)"
           Name="!(loc.AspNetCoreIISExpressModuleProductName)"
           Manufacturer="!(loc.Manufacturer)"
-          Version="$(var.MsiVersion)"
+          Version="$(var.ANCMMsiVersion)"
           Language="!(loc.Language)"
           Codepage="$(var.Codepage)"
           UpgradeCode="$(var.ANCMUpgradeCode)" >
@@ -73,8 +71,8 @@
         <WixVariable Id="WixUILicenseRtf" Value="..\license\license.rtf" />
 
         <Upgrade Id="$(var.ANCMUpgradeCode)">
-            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(var.MsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
-            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(var.MsiVersion)" IncludeMinimum="no" />
+            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(var.ANCMMsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
+            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(var.ANCMMsiVersion)" IncludeMinimum="no" />
         </Upgrade>
 
         <Condition Message="!(loc.NewerVersionFound)">(NOT NEWERVERSIONFOUND)  OR Installed</Condition>

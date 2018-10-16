@@ -3,6 +3,5 @@
   <Import Project="$(MSBuildThisFileDirectory)settings\common.props" />
   <Import Project="$(MSBuildThisFileDirectory)settings\release.props" />
   <Import Project="$(MSBuildThisFileDirectory)settings\debug.props" />
-  <Import Project="$(MSBuildThisFileDirectory)compiler.props" />
 
 </Project>
