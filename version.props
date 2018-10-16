@@ -1,10 +1,10 @@
 <Project>
   <PropertyGroup>
     <VersionPrefix>2.2.0</VersionPrefix>
-    <VersionSuffix>preview3</VersionSuffix>
+    <VersionSuffix>rtm</VersionSuffix>
 
     <ExperimentalVersionPrefix>0.6.0</ExperimentalVersionPrefix>
-    <ExperimentalVersionSuffix>preview3</ExperimentalVersionSuffix>
+    <ExperimentalVersionSuffix>rtm</ExperimentalVersionSuffix>
 
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
