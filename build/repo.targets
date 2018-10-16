@@ -222,7 +222,7 @@
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
       Repositories="@(Repository);@(ShippedRepository)"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)" />
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);InternalAspNetCoreSdkPackageVersion=$(InternalAspNetCoreSdkPackageVersion)" />
 
     <ItemGroup>
       <_UndeclaredPackageArtifact Include="%(ArtifactInfo.PackageId)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
@@ -239,7 +239,7 @@
       Repositories="@(Repository);@(ShippedRepository)"
       Dependencies="@(ExternalDependency)"
       StartGraphAt="$(BuildGraphOf)"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);InternalAspNetCoreSdkPackageVersion=$(InternalAspNetCoreSdkPackageVersion)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>
 
