@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" PackageName="Microsoft.AspNetCore.AzureAppServices.SiteExtension" />
+    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" PackageName="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" />
   </ItemGroup>
 
   <ItemGroup>
