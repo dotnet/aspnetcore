@@ -1,4 +1,11 @@
 <Project>
+  <ItemDefinitionGroup>
+    <RepositoryBuildOrder>
+      <Order></Order>
+      <RootPath></RootPath>
+    </RepositoryBuildOrder>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <RepositoryBuildOrder Include="Common" Order="1" />
     <RepositoryBuildOrder Include="Microsoft.Data.Sqlite" Order="1" />
@@ -20,7 +27,7 @@
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" />
     <RepositoryBuildOrder Include="BrowserLink" Order="8" />
-    <RepositoryBuildOrder Include="DataProtection" Order="9" />
+    <RepositoryBuildOrder Include="DataProtection" Order="9" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="10" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" />
@@ -46,7 +53,5 @@
     <RepositoryBuildOrder Include="SignalR" Order="16" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" />
     <RepositoryBuildOrder Include="Templating" Order="17" />
-
-    <RepositoryBuildOrder Update="@(RepositoryBuildOrder)" RootPath="$(SubmoduleRoot)%(Identity)" />
   </ItemGroup>
 </Project>

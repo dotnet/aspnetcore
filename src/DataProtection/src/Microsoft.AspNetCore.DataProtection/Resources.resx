@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CryptCommon_GenericError" xml:space="preserve">
+    <value>An error occurred during a cryptographic operation.</value>
+  </data>
+  <data name="Common_BufferIncorrectlySized" xml:space="preserve">
+    <value>The provided buffer is of length {0} byte(s). It must instead be exactly {1} byte(s) in length.</value>
+  </data>
+  <data name="CryptCommon_PayloadInvalid" xml:space="preserve">
+    <value>The payload was invalid.</value>
+  </data>
+  <data name="Common_PropertyCannotBeNullOrEmpty" xml:space="preserve">
+    <value>Property {0} cannot be null or empty.</value>
+  </data>
+  <data name="Common_DecryptionFailed" xml:space="preserve">
+    <value>The provided payload could not be decrypted. Refer to the inner exception for more information.</value>
+  </data>
+  <data name="Common_EncryptionFailed" xml:space="preserve">
+    <value>An error occurred while trying to encrypt the provided data. Refer to the inner exception for more information.</value>
+  </data>
+  <data name="Common_KeyNotFound" xml:space="preserve">
+    <value>The key {0:B} was not found in the key ring.</value>
+  </data>
+  <data name="Common_KeyRevoked" xml:space="preserve">
+    <value>The key {0:B} has been revoked.</value>
+  </data>
+  <data name="ProtectionProvider_BadMagicHeader" xml:space="preserve">
+    <value>The provided payload cannot be decrypted because it was not protected with this protection provider.</value>
+  </data>
+  <data name="ProtectionProvider_BadVersion" xml:space="preserve">
+    <value>The provided payload cannot be decrypted because it was protected with a newer version of the protection provider.</value>
+  </data>
+  <data name="Common_ValueMustBeNonNegative" xml:space="preserve">
+    <value>Value must be non-negative.</value>
+  </data>
+  <data name="TypeExtensions_BadCast" xml:space="preserve">
+    <value>The type '{1}' is not assignable to '{0}'.</value>
+  </data>
+  <data name="KeyManagementOptions_MinNewKeyLifetimeViolated" xml:space="preserve">
+    <value>The new key lifetime must be at least one week.</value>
+  </data>
+  <data name="XmlKeyManager_DuplicateKey" xml:space="preserve">
+    <value>The key {0:B} already exists in the keyring.</value>
+  </data>
+  <data name="Common_ArgumentCannotBeNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
+  <data name="Common_PropertyMustBeNonNegative" xml:space="preserve">
+    <value>Property {0} must have a non-negative value.</value>
+  </data>
+  <data name="Platform_WindowsRequiredForGcm" xml:space="preserve">
+    <value>GCM algorithms require the Windows platform.</value>
+  </data>
+  <data name="CertificateXmlEncryptor_CertificateNotFound" xml:space="preserve">
+    <value>A certificate with the thumbprint '{0}' could not be found.</value>
+  </data>
+  <data name="EncryptedXmlDecryptor_DoesNotWorkOnCoreClr" xml:space="preserve">
+    <value>Decrypting EncryptedXml-encapsulated payloads is not yet supported on Core CLR.</value>
+  </data>
+  <data name="AlgorithmAssert_BadBlockSize" xml:space="preserve">
+    <value>The symmetric algorithm block size of {0} bits is invalid. The block size must be between 64 and 2048 bits, inclusive, and it must be a multiple of 8 bits.</value>
+  </data>
+  <data name="AlgorithmAssert_BadDigestSize" xml:space="preserve">
+    <value>The validation algorithm digest size of {0} bits is invalid. The digest size must be between 128 and 2048 bits, inclusive, and it must be a multiple of 8 bits.</value>
+  </data>
+  <data name="AlgorithmAssert_BadKeySize" xml:space="preserve">
+    <value>The symmetric algorithm key size of {0} bits is invalid. The key size must be between 128 and 2048 bits, inclusive, and it must be a multiple of 8 bits.</value>
+  </data>
+  <data name="KeyRingProvider_NoDefaultKey_AutoGenerateDisabled" xml:space="preserve">
+    <value>The key ring does not contain a valid default protection key. The data protection system cannot create a new key because auto-generation of keys is disabled.</value>
+  </data>
+  <data name="LifetimeMustNotBeNegative" xml:space="preserve">
+    <value>{0} must not be negative</value>
+  </data>
+  <data name="XmlKeyManager_IXmlRepositoryNotFound" xml:space="preserve">
+    <value>The '{0}' instance could not be found. When an '{1}' instance is set, a corresponding '{0}' instance must also be set.</value>
+  </data>
+  <data name="FileSystem_EphemeralKeysLocationInContainer" xml:space="preserve">
+    <value>Storing keys in a directory '{path}' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed.</value>
+  </data>
+</root>

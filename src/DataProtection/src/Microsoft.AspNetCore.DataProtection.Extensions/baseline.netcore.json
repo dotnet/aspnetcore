@@ -1,0 +1,298 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.DataProtection.Extensions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.DataProtectionAdvancedExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector"
+            },
+            {
+              "Name": "plaintext",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "lifetime",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector"
+            },
+            {
+              "Name": "plaintext",
+              "Type": "System.String"
+            },
+            {
+              "Name": "expiration",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector"
+            },
+            {
+              "Name": "plaintext",
+              "Type": "System.String"
+            },
+            {
+              "Name": "lifetime",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToTimeLimitedDataProtector",
+          "Parameters": [
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtector"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector"
+            },
+            {
+              "Name": "protectedData",
+              "Type": "System.String"
+            },
+            {
+              "Name": "expiration",
+              "Type": "System.DateTimeOffset",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.DataProtectionProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "applicationName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "keyDirectory",
+              "Type": "System.IO.DirectoryInfo"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "keyDirectory",
+              "Type": "System.IO.DirectoryInfo"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "applicationName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "keyDirectory",
+              "Type": "System.IO.DirectoryInfo"
+            },
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "keyDirectory",
+              "Type": "System.IO.DirectoryInfo"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder>"
+            },
+            {
+              "Name": "certificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.DataProtection.IDataProtector"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateProtector",
+          "Parameters": [
+            {
+              "Name": "purpose",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.ITimeLimitedDataProtector",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "plaintext",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "expiration",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "protectedData",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "expiration",
+              "Type": "System.DateTimeOffset",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

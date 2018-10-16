@@ -14,6 +14,9 @@ The KoreBuild command to run.
 .PARAMETER Path
 The folder to build. Defaults to the folder containing this script.
 
+.PARAMETER LockFile
+The path to the korebuild-lock.txt file. Defaults to $Path/korebuild-lock.txt
+
 .PARAMETER Channel
 The channel of KoreBuild to download. Overrides the value from the config file.
 
@@ -75,6 +78,7 @@ param(
     [Parameter(Mandatory=$true, Position = 0)]
     [string]$Command,
     [string]$Path = $PSScriptRoot,
+    [string]$LockFile,
     [Alias('c')]
     [string]$Channel,
     [Alias('d')]
@@ -104,15 +108,13 @@ $ErrorActionPreference = 'Stop'
 
 function Get-KoreBuild {
 
-    $lockFile = Join-Path $Path 'korebuild-lock.txt'
-
-    if (!(Test-Path $lockFile) -or $Update) {
-        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $lockFile
+    if (!(Test-Path $LockFile) -or $Update) {
+        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $LockFile
     }
 
-    $version = Get-Content $lockFile | Where-Object { $_ -like 'version:*' } | Select-Object -first 1
+    $version = Get-Content $LockFile | Where-Object { $_ -like 'version:*' } | Select-Object -first 1
     if (!$version) {
-        Write-Error "Failed to parse version from $lockFile. Expected a line that begins with 'version:'"
+        Write-Error "Failed to parse version from $LockFile. Expected a line that begins with 'version:'"
     }
     $version = $version.TrimStart('version:').Trim()
     $korebuildPath = Join-Paths $DotNetHome ('buildtools', 'korebuild', $version)
@@ -207,6 +209,7 @@ if (!$DotNetHome) {
         else { Join-Path $PSScriptRoot '.dotnet'}
 }
 
+if (!$LockFile) { $LockFile = Join-Path $Path 'korebuild-lock.txt' }
 if (!$Channel) { $Channel = 'master' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
