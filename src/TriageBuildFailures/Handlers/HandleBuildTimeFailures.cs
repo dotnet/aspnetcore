@@ -27,6 +27,7 @@ namespace TriageBuildFailures.Handlers
             "Attempting to cancel the build...",
             "Build FAILED.",
             "npm ERR!",
+            "API rate limit exceeded for user ID"
         };
 
         public override async Task<bool> CanHandleFailure(ICIBuild build)
