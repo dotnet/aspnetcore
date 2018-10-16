@@ -106,7 +106,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     return;
                 }
 
-                if (_sourceVersion.HasValue && _sourceVersion == SourceVersion.GetNewerVersion(version))
+                if (_sourceVersion.HasValue &&
+                    _sourceVersion != version &&
+                    _sourceVersion == SourceVersion.GetNewerVersion(version))
                 {
                     // Latest document is newer than the provided document.
                     return;
