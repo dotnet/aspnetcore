@@ -3,8 +3,8 @@
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseLabel>preview3</PreReleaseLabel>
-    <PreReleaseBrandingLabel>Preview 3</PreReleaseBrandingLabel>
+    <PreReleaseLabel>rtm</PreReleaseLabel>
+    <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <ExperimentalVersionPrefix>0.2.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
@@ -18,7 +18,7 @@
 
     <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2 Build 12356". In final builds, it should be "2.0.7" -->
     <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
-    <PackageBrandingVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(PackageBrandingVersion) $(BrandingVersionSuffix)</PackageBrandingVersion>
+    <PackageBrandingVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
 
     <!-- The version in files -->
     <PackageVersion>$(VersionPrefix)</PackageVersion>
