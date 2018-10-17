@@ -87,6 +87,6 @@
     <ShippedRepository Include="SignalR" />
     <ShippedRepository Include="StaticFiles" />
     <ShippedRepository Include="Testing" />
-    <ShippedRepository Include="WebSockets" />
+    <ShippedRepository Include="WebSockets" RootPath="$(RepositoryRoot)src\WebSockets\" />
   </ItemGroup>
 </Project>
