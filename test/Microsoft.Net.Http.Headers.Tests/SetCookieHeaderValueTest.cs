@@ -365,6 +365,18 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(cookies, results);
         }
 
+        [Fact]
+        public void SetCookieHeaderValue_TryParse_SkipExtensionValues()
+        {
+            string cookieHeaderValue = "cookiename=value; extensionname=value;";
+
+            SetCookieHeaderValue setCookieHeaderValue;
+
+            SetCookieHeaderValue.TryParse(cookieHeaderValue, out setCookieHeaderValue);
+
+            Assert.Equal("value", setCookieHeaderValue.Value);
+        }
+
         [Theory]
         [MemberData(nameof(ListOfSetCookieHeaderDataSet))]
         public void SetCookieHeaderValue_ParseStrictList_AcceptsValidValues(IList<SetCookieHeaderValue> cookies, string[] input)

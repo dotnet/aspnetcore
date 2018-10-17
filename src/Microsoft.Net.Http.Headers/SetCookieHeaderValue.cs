@@ -452,9 +452,15 @@ namespace Microsoft.Net.Http.Headers
                     result.HttpOnly = true;
                 }
                 // extension-av = <any CHAR except CTLs or ";">
-                else
-                {
-                    // TODO: skip it? Store it in a list?
+                else 
+                {   
+                    // TODO: skiping it for now to avoid parsing failure? Store it in a list?
+                    // = (no spaces)
+                    if (!ReadEqualsSign(input, ref offset))
+                    {
+                        return 0;
+                    }                    
+                    ReadToSemicolonOrEnd(input, ref offset);
                 }
             }
 
