@@ -67,10 +67,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var buffer = new byte[1024];
                 try
                 {
+                    await context.Request.Body.ReadUntilLengthAsync(buffer, 6, cts.Token).DefaultTimeout();
 
-                    int read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length, cts.Token);
-
-                    Assert.Equal("Hello ", Encoding.UTF8.GetString(buffer, 0, read));
+                    Assert.Equal("Hello ", Encoding.ASCII.GetString(buffer, 0, 6));
 
                     helloTcs.TrySetResult(null);
                 }
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 try
                 {
-                    await context.Request.Body.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+                    await context.Request.Body.ReadAsync(buffer, 0, 1, cts.Token).DefaultTimeout();
 
                     context.Response.ContentLength = 12;
                     await context.Response.WriteAsync("Read success");
@@ -133,12 +132,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var stream = await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync();
                 var data = new byte[3];
-                var bytesRead = 0;
 
-                while (bytesRead < 3)
-                {
-                    bytesRead += await stream.ReadAsync(data, bytesRead, data.Length - bytesRead);
-                }
+                await stream.ReadUntilLengthAsync(data, 3).DefaultTimeout();
 
                 dataRead = Encoding.ASCII.GetString(data, 0, 3) == "abc";
             }, new TestServiceContext(LoggerFactory)))
@@ -284,9 +279,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                            "",
                            "");
 
-                        var read = await connection.Reader.ReadAsync(buffer, 0, identifierLength);
-                        Assert.Equal(identifierLength, read);
-                        var id = new string(buffer, 0, read);
+                        var offset = 0;
+
+                        while (offset < identifierLength)
+                        {
+                            var read = await connection.Reader.ReadAsync(buffer, offset, identifierLength - offset);
+                            offset += read;
+
+                            Assert.NotEqual(0, read);
+                        }
+
+                        Assert.Equal(identifierLength, offset);
+                        var id = new string(buffer, 0, offset);
                         Assert.DoesNotContain(id, usedIds.ToArray());
                         usedIds.Add(id);
                     }
@@ -670,13 +674,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var duplexStream = await upgradeFeature.UpgradeAsync();
 
                 var buffer = new byte[message.Length];
-                var read = 0;
-                while (read < message.Length)
-                {
-                    read += await duplexStream.ReadAsync(buffer, read, buffer.Length - read).DefaultTimeout();
-                }
 
-                await duplexStream.WriteAsync(buffer, 0, read);
+                await duplexStream.ReadUntilLengthAsync(buffer, message.Length).DefaultTimeout();
+
+                await duplexStream.WriteAsync(buffer, 0, buffer.Length);
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1094,14 +1095,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx2.Message);
 
                 var buffer = new byte[5];
-                var offset = 0;
-                while (offset < 5)
-                {
-                    offset += await context.Request.Body.ReadAsync(buffer, offset, 5 - offset);
-                }
+                var read = await context.Request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
 
-                Assert.Equal(0, await context.Request.Body.ReadAsync(new byte[1], 0, 1));
-                Assert.Equal("Hello", Encoding.ASCII.GetString(buffer));
+                Assert.Equal("Hello", Encoding.ASCII.GetString(buffer, 0, read));
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
