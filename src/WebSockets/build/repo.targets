@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <AutobahnReportDir>$(ArtifactsDir)autobahnreports\</AutobahnReportDir>
+  </PropertyGroup>
+
+  <Target Name="SetReportDirectory" BeforeTargets="Test">
+    <SetEnvironmentVariable Variable="AUTOBAHN_SUITES_REPORT_DIR" Value="$(AutobahnReportDir)" />
+  </Target>
+</Project>

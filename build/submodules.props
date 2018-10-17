@@ -78,7 +78,7 @@
     <Repository Include="SignalR" />
     <Repository Include="StaticFiles" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="WebSockets" />
+    <Repository Include="WebSockets" RootPath="$(RepositoryRoot)src\WebSockets\" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />

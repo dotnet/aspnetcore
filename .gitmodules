@@ -174,7 +174,3 @@
 	path = modules/Templating
 	url = https://github.com/aspnet/Templating.git
 	branch = release/2.2
-[submodule "modules/WebSockets"]
-	path = modules/WebSockets
-	url = https://github.com/aspnet/WebSockets.git
-	branch = release/2.2

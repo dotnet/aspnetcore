@@ -39,7 +39,7 @@
     <RepositoryBuildOrder Include="Routing" Order="12" />
     <RepositoryBuildOrder Include="Diagnostics" Order="12" />
     <RepositoryBuildOrder Include="Localization" Order="13" />
-    <RepositoryBuildOrder Include="WebSockets" Order="13" />
+    <RepositoryBuildOrder Include="WebSockets" Order="13" RootPath="$(RepositoryRoot)src\WebSockets\" />
     <RepositoryBuildOrder Include="Security" Order="13" />
     <RepositoryBuildOrder Include="MetaPackages" Order="13" />
     <RepositoryBuildOrder Include="Mvc" Order="14" />
