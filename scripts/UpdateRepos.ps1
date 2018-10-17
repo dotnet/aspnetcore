@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS
-    Updates each repo Universe builds to new dependencies.props.
+    Updates each submodule this repo builds to new dependencies.props.
 .PARAMETER Source
     The NuGet package source to find the lineup on.
 .PARAMETER LineupID
@@ -71,10 +71,10 @@ try {
 
             $koreBuildLock = "korebuild-lock.txt"
 
-            $universeKoreBuildLock = (Join-Path $RepoRoot $koreBuildLock)
+            $repoKoreBuildLock = (Join-Path $RepoRoot $koreBuildLock)
             $submoduleKoreBuildLock = (Join-Path $submodule.path $koreBuildLock)
 
-            Copy-Item $universeKoreBuildLock $submoduleKoreBuildLock -Force
+            Copy-Item $repoKoreBuildLock $submoduleKoreBuildLock -Force
 
             Write-Verbose "About to update dependencies.props for $($submodule.module)"
             & .\run.ps1 upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile

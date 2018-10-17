@@ -88,7 +88,7 @@ if ! __machine_has docker; then
 fi
 
 dockerfile="$DIR/build/docker/$image.Dockerfile"
-tagname="universe-build-$image"
+tagname="aspnetcore-build-$image"
 
 docker build "$(dirname "$dockerfile")" \
     --build-arg "USER=$(whoami)" \

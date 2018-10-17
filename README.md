@@ -1,4 +1,4 @@
-Universe
+ASP.NET Core
 ========
 
 Build infrastructure used to produce the whole ASP.NET Core stack.
@@ -87,8 +87,8 @@ RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                       
 ## Building from source
 
 ```
-git clone --recursive https://github.com/aspnet/Universe.git
-cd Universe
+git clone --recursive https://github.com/aspnet/AspNetCore.git
+cd AspNetCore
 ./build.cmd
 ```
 

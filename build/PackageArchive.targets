@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="CheckForPreviousReleaseArchiveBaseline" BeforeTargets="CheckUniverse">
+  <Target Name="CheckForPreviousReleaseArchiveBaseline" BeforeTargets="FastCheck">
     <MSBuild Projects="@(ArchiveProjects)"
              Targets="CheckForPreviousReleaseArchiveBaseline" />
   </Target>

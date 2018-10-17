@@ -161,7 +161,7 @@ function CreatePR(
     [string]$gitHubToken) {
     $hubLocation = Ensure-Hub
 
-    Invoke-Block { git push -f https://$gitHubToken@github.com/$headFork/Universe.git $destinationBranch }
+    Invoke-Block { git push -f https://$gitHubToken@github.com/$headFork/AspNetCore.git $destinationBranch }
     & $hubLocation pull-request -f -b "${baseFork}:$baseBranch" -h "${headFork}:$destinationBranch" -m $body
 }
 

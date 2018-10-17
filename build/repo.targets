@@ -16,7 +16,7 @@
     <GeneratedBrandingPropsPath>$(IntermediateDir)branding.g.props</GeneratedBrandingPropsPath>
 
     <PrepareDependsOn>PreinstallBundledPackages;SetTeamCityBuildNumberToVersion;$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
-    <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
+    <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;CheckExpectedPackagesExist</PackageDependsOn>
@@ -78,7 +78,7 @@
       <PackageArtifact Remove="@(PackageArtifact)" />
     </ItemGroup>
 
-    <!-- Join required because shipping category is stored in universe (PackageArtifact), but information about package ID and version comes from repos (ArtifactInfo). -->
+    <!-- Join required because shipping category is stored in artifact.props (PackageArtifact), but information about package ID and version comes from repos (ArtifactInfo). -->
     <RepoTasks.JoinItems
       Left="@(_Temp)"
       LeftMetadata="*"
@@ -179,7 +179,7 @@
     </PackNuSpec>
   </Target>
 
-  <Target Name="CleanUniverseArtifacts">
+  <Target Name="CleanRepoArtifacts">
     <RemoveDir Directories="$(RepositoryRoot)obj" Condition="Exists('$(RepositoryRoot)obj')" />
   </Target>
 
@@ -273,7 +273,7 @@
            Condition=" @(ExternalDependency->WithMetadataValue('Version', '')->Count()) != 0 " />
   </Target>
 
-  <Target Name="CheckUniverse"
+  <Target Name="FastCheck"
     DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig;VerifyAllReposHaveNuGetPackageVerifier" />
 
   <Target Name="CheckExpectedPackagesExist">

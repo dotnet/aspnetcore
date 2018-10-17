@@ -85,12 +85,12 @@ if (-not $PSCmdlet.ShouldContinue("Continue?", "This will apply tags to all subm
 }
 
 
-$universeTag = Get-PackageVersion $repoRoot
-New-GitTag $repoRoot $universeTag -WhatIf:$WhatIfPreference
+$repoTag = Get-PackageVersion $repoRoot
+New-GitTag $repoRoot $repoTag -WhatIf:$WhatIfPreference
 
 $tags = @([pscustomobject] @{
         repo   = $(git config remote.origin.url)
-        tag    = $universeTag
+        tag    = $repoTag
         commit = $(git rev-parse HEAD)
     })
 
@@ -104,8 +104,8 @@ Get-Submodules $repoRoot | ForEach-Object {
 
     try {
         $tag = Get-PackageVersion $_.path
-        if ($tag -ne $universeTag) {
-            Write-Warning "${module}: version ($tag) does not match universe ($universeTag)"
+        if ($tag -ne $repoTag) {
+            Write-Warning "${module}: version ($tag) does not match repo ($repoTag)"
         }
         $tags += [pscustomobject] @{
             repo   = $_.remote
