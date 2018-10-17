@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "adapter": "!SSHPATH!",
+    "adapterArgs": "!SSHUSER!@!SSHHOST! !VSDBGPATH! --interpreter=vscode",
+    "languageMappings": {
+        "C#": {
+            "languageId": "3F5162F8-07C6-11D3-9053-00C04FA302A1",
+            "extensions": [ "*" ]
+        }
+    },
+    "exceptionCategoryMappings": {
+        "CLR": "449EC4CC-30D2-4032-9256-EE18EB41B62B",
+        "MDA": "6ECE07A9-0EDE-45C4-8296-818D8FC401D4"
+    },
+    "configurations": [
+        {
+            "name": ".NET Core Launch",
+            "type": "coreclr",
+            "cwd": "!CWD!",
+            "program": "!PROGRAM!",
+            "request": "launch"
+        }
+    ]
+}

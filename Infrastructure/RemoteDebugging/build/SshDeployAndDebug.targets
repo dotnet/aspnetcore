@@ -1,0 +1,59 @@
+<Project>
+    <Target Name="LocateDebuggerFilePrerequisites">
+        <!-- TODO: Locate SSH.exe? -->
+    </Target>
+    <Target Name="VerifyDebuggerFilePrerequisites" DependsOnTargets="LocateDebuggerFilePrerequisites">
+        <Error Text="Missing required property 'SshHost'" Condition="'$(SshHost)' == ''" />
+    </Target>
+    <Target Name="SetRemoteDebugVariables" DependsOnTargets="VerifyDebuggerFilePrerequisites">
+        <PropertyGroup>
+            <_TemplateFilePath>$(RepositoryRoot)/build/launch.json.template</_TemplateFilePath>
+            <_DebugJsonFile>$([System.IO.Path]::Combine($(MSBuildProjectDirectory),$(IntermediateOutputPath),"launch.json"))</_DebugJsonFile>
+            <SshPath Condition="'$(SshPath)' == ''">ssh</SshPath>
+            <ScpPath Condition="'$(ScpPath)' == ''">scp</ScpPath>
+            <SshUser Condition="'$(SshUser)' == ''">pi</SshUser>
+            <VsDbgPath Condition="'$(VsDbgPath)' == ''">/opt/vsdbg/vsdbg</VsDbgPath>
+            <DeploymentDestination Condition="'$(DeploymentDestination)' == ''">/home/pi/app</DeploymentDestination>
+            <AppDll Condition="'$(AppName)' == ''">$(MSBuildProjectName).dll</AppDll>
+        </PropertyGroup>
+        <Message Text="SshPath: $(SshPath)" />
+        <Message Text="ScpPath: $(ScpPath)" />
+        <Message Text="SshHost: $(SshHost)" />
+        <Message Text="SshUser: $(SshUser)" />
+        <Message Text="VsDbgPath: $(VsDbgPath)" />
+        <Message Text="DeploymentDestination: $(DeploymentDestination)" />
+        <Message Text="AppDll: $(AppDll)" />
+    </Target>
+    <Target Name="ScpOutputs" Condition="'$(SshHost)' != ''" DependsOnTargets="SetRemoteDebugVariables">
+        <PropertyGroup>
+            <_ScpWindowsSource>$([System.IO.Path]::Combine($(MSBuildProjectDirectory),$(PublishDir), "*"))</_ScpWindowsSource>
+            <_ScpDestination>$(SshUser)@$(SshHost):$(DeploymentDestination)</_ScpDestination>
+
+            <!-- Translate to an SSH-appropriate path, at least until we get Win32-OpenSSH :) -->
+            <_ScpSource Condition="'$(ScpUseWindowsPath)' == 'true'">$(_ScpWindowsSource)</_ScpSource>
+            <_ScpSource Condition="'$(ScpUseWindowsPath)' != 'false'">$(_ScpWindowsSource.Replace("C:", "/c").Replace("\", "/"))</_ScpSource>
+        </PropertyGroup>
+        <Message Text="Cleaning the destination path" />
+        <Exec Command="$(SshPath) $(SshUser)@$(SshHost) &quot;[ -e $(DeploymentDestination) ] &amp;&amp; rm -Rf $(DeploymentDestination); [ ! -e $(DeploymentDestination) ] &amp;&amp; mkdir -p $(DeploymentDestination)&quot;" Condition="'$(DeploymentDestination)' != ''" />
+        <Message Text="Publishing $(_ScpWindowsSource) to $(_ScpDestination)" />
+        <Exec Command="$(ScpPath) -rp $(_ScpSource) $(_ScpDestination)" />
+        <Message Importance="high" Text="Published $(_ScpWindowsSource) to $(_ScpDestination)" />
+    </Target>
+    <Target Name="GenerateSshDebugFile">
+        <PropertyGroup>
+            <_DebugJsonContent>$([System.IO.File]::ReadAllText($(_TemplateFilePath)))</_DebugJsonContent>
+            <_DebugJsonContent>$(_DebugJsonContent.Replace("!SSHPATH!", "$(SshPath)"))</_DebugJsonContent>
+            <_DebugJsonContent>$(_DebugJsonContent.Replace("!SSHUSER!", "$(SshUser)"))</_DebugJsonContent>
+            <_DebugJsonContent>$(_DebugJsonContent.Replace("!SSHHOST!", "$(SshHost)"))</_DebugJsonContent>
+            <_DebugJsonContent>$(_DebugJsonContent.Replace("!VSDBGPATH!", "$(VsDbgPath)"))</_DebugJsonContent>
+            <_DebugJsonContent>$(_DebugJsonContent.Replace("!CWD!", "$(DeploymentDestination)"))</_DebugJsonContent>
+            <_DebugJsonContent>$(_DebugJsonContent.Replace("!PROGRAM!", "$(AppDll)"))</_DebugJsonContent>
+        </PropertyGroup>
+        <WriteLinesToFile File="$(_DebugJsonFile)" Lines="$(_DebugJsonContent)" Overwrite="true" />
+        <Message Importance="high" Text="Debugger launch.json file written. Use the following Visual Studio Command in the Command Window to launch the app with debugging:" />
+        <Message Importance="high" Text="> DebugAdapterHost.Launch /LaunchJson:&quot;$(_DebugJsonFile)&quot;" />
+    </Target>
+    <Target Name="PublishToSsh" Condition="'$(SshHost)' != ''" AfterTargets="CopyFilesToPublishDirectory" DependsOnTargets="ScpOutputs;GenerateSshDebugFile">
+        
+    </Target>
+</Project>
