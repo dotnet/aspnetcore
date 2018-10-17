@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             serverOptions.ConfigureEndpointDefaults(opt =>
             {
                 // Kestrel default.
-                Assert.Equal(HttpProtocols.Http1, opt.Protocols);
+                Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
                 ranDefault = true;
             });
 
@@ -415,14 +415,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                 .LocalhostEndpoint(5002, opt =>
                 {
                     // Kestrel default.
-                    Assert.Equal(HttpProtocols.Http1, opt.Protocols);
+                    Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
                     ran2 = true;
                 })
                 .Load();
             serverOptions.ListenAnyIP(0, opt =>
             {
                 // Kestrel default.
-                Assert.Equal(HttpProtocols.Http1, opt.Protocols);
+                Assert.Equal(HttpProtocols.Http1AndHttp2, opt.Protocols);
                 ran3 = true;
             });
 
