@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             for (var i = 0; i < httpMethods.Count; i++)
             {
-                if (StringComparer.OrdinalIgnoreCase.Equals(httpMethods[i], httpMethod))
+                if (string.Equals(httpMethods[i], httpMethod, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

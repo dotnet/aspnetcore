@@ -164,9 +164,10 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     return x.IsFallbackMatch.CompareTo(y.IsFallbackMatch);
                 }
 
-                return StringComparer.Ordinal.Compare(
+                return string.Compare(
                     x.Match.Entry.RouteTemplate.TemplateText,
-                    y.Match.Entry.RouteTemplate.TemplateText);
+                    y.Match.Entry.RouteTemplate.TemplateText,
+                    StringComparison.Ordinal);
             }
         }
 
