@@ -471,11 +471,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                     else if (part is RoutePatternParameterPart parameterPart)
                     {
                         // If it's a parameter, get its value
-                        var hasValue = acceptedValues.TryGetValue(parameterPart.Name, out var value);
-                        if (hasValue)
-                        {
-                            acceptedValues.Remove(parameterPart.Name);
-                        }
+                        acceptedValues.Remove(parameterPart.Name, out var value);
 
                         var isSameAsDefault = false;
                         if (_defaults != null &&

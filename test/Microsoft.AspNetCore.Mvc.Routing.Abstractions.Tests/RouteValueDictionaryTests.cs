@@ -1393,6 +1393,235 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
+
+        [Fact]
+        public void Remove_KeyAndOutValue_EmptyStorage()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(removedValue);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_EmptyStringIsAllowed()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary();
+
+            // Act
+            var result = dict.Remove("", out var removedValue);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(removedValue);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_PropertyStorage_Empty()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { });
+
+            // Act
+            var result = dict.Remove("other", out var removedValue);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(removedValue);
+            Assert.Empty(dict);
+            Assert.NotNull(dict._propertyStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_PropertyStorage_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary(new { key = "value" });
+
+            // Act
+            var result = dict.Remove("other", out var removedValue);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(removedValue);
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_PropertyStorage_True()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary(new { key = value });
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Empty(dict);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_PropertyStorage_True_CaseInsensitive()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary(new { key = value });
+
+            // Act
+            var result = dict.Remove("kEy", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Empty(dict);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_False()
+        {
+            // Arrange
+            var dict = new RouteValueDictionary()
+            {
+                { "key", "value" },
+            };
+
+            // Act
+            var result = dict.Remove("other", out var removedValue);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(removedValue);
+            Assert.Collection(dict, kvp => { Assert.Equal("key", kvp.Key); Assert.Equal("value", kvp.Value); });
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_True()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary()
+            {
+                { "key", value }
+            };
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Empty(dict);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_True_CaseInsensitive()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary()
+            {
+                { "key", value }
+            };
+
+            // Act
+            var result = dict.Remove("kEy", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Empty(dict);
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_KeyExists_First()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary()
+            {
+                { "key", value },
+                { "other", 5 },
+                { "dotnet", "rocks" }
+            };
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Equal(2, dict.Count);
+            Assert.False(dict.ContainsKey("key"));
+            Assert.True(dict.ContainsKey("other"));
+            Assert.True(dict.ContainsKey("dotnet"));
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_KeyExists_Middle()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary()
+            {
+                { "other", 5 },
+                { "key", value },
+                { "dotnet", "rocks" }
+            };
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Equal(2, dict.Count);
+            Assert.False(dict.ContainsKey("key"));
+            Assert.True(dict.ContainsKey("other"));
+            Assert.True(dict.ContainsKey("dotnet"));
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_KeyExists_Last()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary()
+            {
+                { "other", 5 },
+                { "dotnet", "rocks" },
+                { "key", value }
+            };
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Equal(2, dict.Count);
+            Assert.False(dict.ContainsKey("key"));
+            Assert.True(dict.ContainsKey("other"));
+            Assert.True(dict.ContainsKey("dotnet"));
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
         [Fact]
         public void TryAdd_EmptyStringIsAllowed()
         {

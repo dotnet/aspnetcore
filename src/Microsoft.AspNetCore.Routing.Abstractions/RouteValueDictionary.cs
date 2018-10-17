@@ -388,7 +388,9 @@ namespace Microsoft.AspNetCore.Routing
                 return false;
             }
 
-            EnsureCapacity(Count);
+            // Ensure property storage is converted to array storage as we'll be
+            // applying the lookup and removal on the array
+            EnsureCapacity(_count);
 
             var index = FindIndex(key);
             if (index >= 0)
@@ -403,6 +405,48 @@ namespace Microsoft.AspNetCore.Routing
 
             return false;
         }
+
+        /// <summary>
+        /// Attempts to remove and return the value that has the specified key from the <see cref="RouteValueDictionary"/>.
+        /// </summary>
+        /// <param name="key">The key of the element to remove and return.</param>
+        /// <param name="value">When this method returns, contains the object removed from the <see cref="RouteValueDictionary"/>, or <c>null</c> if key does not exist.</param>
+        /// <returns>
+        /// <c>true</c> if the object was removed successfully; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Remove(string key, out object value)
+        {
+            if (key == null)
+            {
+                ThrowArgumentNullExceptionForKey();
+            }
+
+            if (_count == 0)
+            {
+                value = default;
+                return false;
+            }
+
+            // Ensure property storage is converted to array storage as we'll be
+            // applying the lookup and removal on the array
+            EnsureCapacity(_count);
+
+            var index = FindIndex(key);
+            if (index >= 0)
+            {
+                _count--;
+                var array = _arrayStorage;
+                value = array[index].Value;
+                Array.Copy(array, index + 1, array, index, _count - index);
+                array[_count] = default;
+
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
+
 
         /// <summary>
         /// Attempts to the add the provided <paramref name="key"/> and <paramref name="value"/> to the dictionary.
