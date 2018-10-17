@@ -1,0 +1,16 @@
+<Project>
+    <PropertyGroup>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    </PropertyGroup>
+
+    <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
+    <PropertyGroup Label="Package Versions: Pinned" >
+        <InternalAspNetCoreAnalyzersPackageVersion>2.2.0-preview1-34967</InternalAspNetCoreAnalyzersPackageVersion>
+        <InternalAspNetCoreSdkPackageVersion>2.2.0-preview1-20180807.2</InternalAspNetCoreSdkPackageVersion>
+        <McMasterExtensionsCommandLineUtility>2.2.2</McMasterExtensionsCommandLineUtility>
+        <MicrosoftNETCoreApp21PackageVersion>2.1.4</MicrosoftNETCoreApp21PackageVersion>
+        <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
+        <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
+        <OctokitPackageVersion>0.29.0</OctokitPackageVersion>
+    </PropertyGroup>
+</Project>

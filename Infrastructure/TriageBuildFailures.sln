@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TriageBuildFailures", "src\TriageBuildFailures\TriageBuildFailures.csproj", "{84FF418A-2AF0-4C0A-961B-8728D53D4CB1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "src\Common\Common.csproj", "{C343E93C-D676-460D-86D5-F089C035A77A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{84FF418A-2AF0-4C0A-961B-8728D53D4CB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84FF418A-2AF0-4C0A-961B-8728D53D4CB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84FF418A-2AF0-4C0A-961B-8728D53D4CB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84FF418A-2AF0-4C0A-961B-8728D53D4CB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C343E93C-D676-460D-86D5-F089C035A77A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C343E93C-D676-460D-86D5-F089C035A77A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C343E93C-D676-460D-86D5-F089C035A77A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C343E93C-D676-460D-86D5-F089C035A77A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8B18ECFC-295B-486E-AF20-0E478F557C6D}
+	EndGlobalSection
+EndGlobal

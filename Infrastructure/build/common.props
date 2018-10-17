@@ -1,0 +1,4 @@
+<Project>
+    <Import Project="sources.props" />
+    <Import Project="repo.props" />
+</Project>
