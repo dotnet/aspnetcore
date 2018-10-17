@@ -9,4 +9,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Custom-Hive.ps1
 
-Test-Template "mvc" "mvc -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.2.2.2.2.0-preview3-t000.nupkg" $false
+Test-Template "mvc" "mvc -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.2.2.2.2.0-rtm-t000.nupkg" $false
