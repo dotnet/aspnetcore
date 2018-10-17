@@ -630,9 +630,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     // Wait for MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
                     await messageBody.StopAsync();
-
-                    // At this point both the request body pipe reader and writer should be completed.
-                    RequestBodyPipe.Reset();
                 }
             }
         }

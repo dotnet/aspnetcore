@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 count = stream.Read(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -73,6 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 count = await stream.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -101,6 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 count = stream.Read(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -127,6 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 count = await stream.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -152,6 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(5, await readTask.DefaultTimeout());
                 Assert.Equal(0, await stream.ReadAsync(buffer, 0, buffer.Length));
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -173,6 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.IsType<OverflowException>(ex.InnerException);
                 Assert.Equal(CoreStrings.BadRequest_BadChunkSizeData, ex.Message);
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -194,6 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 Assert.Equal(CoreStrings.BadRequest_BadChunkSizeData, ex.Message);
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -221,6 +228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -246,6 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -316,6 +325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(8197, requestArray.Length);
                 AssertASCII(largeInput + "Hello", new ArraySegment<byte>(requestArray, 0, requestArray.Length));
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -381,6 +391,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -398,6 +409,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -494,6 +506,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -520,6 +533,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -543,31 +557,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("b");
                 Assert.Equal(1, await stream.ReadAsync(new byte[1], 0, 1));
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
-            }
-        }
-
-        [Fact]
-        public async Task StopAsyncPreventsFurtherDataConsumption()
-        {
-            using (var input = new TestInput())
-            {
-                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
-
-                // Add some input and consume it to ensure PumpAsync is running
-                input.Add("a");
-                Assert.Equal(1, await stream.ReadAsync(new byte[1], 0, 1));
-
-                await body.StopAsync();
-
-                // Add some more data. Checking for cancellation and exiting the loop
-                // should take priority over reading this data.
-                input.Add("b");
-
-                // There shouldn't be any additional data available
-                Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1));
             }
         }
 
@@ -592,6 +583,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await body.ReadAsync(new Memory<byte>(new byte[1])));
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -622,6 +614,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     It.IsAny<string>(),
                     It.Is<BadHttpRequestException>(ex => ex.Reason == RequestRejectionReason.RequestBodyTimeout)));
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -650,6 +643,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
                 }
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -676,6 +670,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -706,6 +701,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await logEvent.Task.DefaultTimeout();
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -765,6 +761,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("a");
                 await readTask;
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -797,6 +794,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.PauseTimingReads(), Times.Never);
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.ResumeTimingReads(), Times.Never);
 
+                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
