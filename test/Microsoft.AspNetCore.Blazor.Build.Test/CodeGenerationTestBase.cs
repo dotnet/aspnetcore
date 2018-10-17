@@ -2443,6 +2443,20 @@ Welcome to your new app.
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void EventHandlerTagHelper_EscapeQuotes()
+        {
+            // Act
+            var generated = CompileToCSharp(@"
+<input onfocus='alert(""Test"");' />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
     }
 }

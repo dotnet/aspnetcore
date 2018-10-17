@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // an expression.
                 var tokens = htmlContentNode.FindDescendantNodes<IntermediateToken>();
 
-                var content = "\"" + string.Join(string.Empty, tokens.Select(t => t.Content))+ "\"";
+                var content = "\"" + string.Join(string.Empty, tokens.Select(t => t.Content.Replace("\"", "\\\""))) + "\"";
                 return new[] { new IntermediateToken() { Content = content, Kind = TokenKind.CSharp, } };
             }
             else
