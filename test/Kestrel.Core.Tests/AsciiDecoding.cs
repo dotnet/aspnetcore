@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Concat(byteRange)
                 .ToArray();
 
-            var s = new Span<byte>(byteArray).GetAsciiStringNonNullCharacters();
+            var s = new ReadOnlySpan<byte>(byteArray).GetAsciiStringNonNullCharacters();
 
             Assert.Equal(s.Length, byteArray.Length);
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     var byteRange = Enumerable.Range(1, length).Select(x => (byte)x).ToArray();
                     byteRange[position] = b;
                     
-                    Assert.Throws<InvalidOperationException>(() => new Span<byte>(byteRange).GetAsciiStringNonNullCharacters());
+                    Assert.Throws<InvalidOperationException>(() => new ReadOnlySpan<byte>(byteRange).GetAsciiStringNonNullCharacters());
                 }
             }
         }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var byteRange = Enumerable.Range(0, 16384 + 64).Select(x => (byte)((x & 0x7f) | 0x01)).ToArray();
             var expectedByteRange = byteRange.Concat(byteRange).ToArray();
             
-            var s = new Span<byte>(expectedByteRange).GetAsciiStringNonNullCharacters();
+            var s = new ReadOnlySpan<byte>(expectedByteRange).GetAsciiStringNonNullCharacters();
 
             Assert.Equal(expectedByteRange.Length, s.Length);
 

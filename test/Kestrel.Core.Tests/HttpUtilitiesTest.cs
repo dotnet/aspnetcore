@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void GetsKnownMethod(string input, bool expectedResult, string expectedKnownString, HttpMethod expectedMethod)
         {
             // Arrange
-            var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
+            var block = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
             var result = block.GetKnownMethod(out var knownMethod, out var length);
@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void GetsKnownVersion(string input, bool expectedResult, string expectedKnownString, HttpVersion version)
         {
             // Arrange
-            var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
+            var block = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
-            var result = block.GetKnownVersion(out HttpVersion knownVersion, out var length);
+            var result = block.GetKnownVersion(out HttpVersion knownVersion);
             string toString = null;
             if (knownVersion != HttpVersion.Unknown)
             {
@@ -74,7 +74,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(version, knownVersion);
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedKnownString, toString);
-            Assert.Equal(expectedKnownString?.Length ?? 0, length);
         }
 
         [Theory]
@@ -84,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             TestKnownStringsInterning(input, expected, span =>
             {
-                HttpUtilities.GetKnownVersion(span, out var version, out var _);
+                HttpUtilities.GetKnownVersion(span, out var version);
                 return HttpUtilities.VersionToString(version);
             });
         }

@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -85,6 +86,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         public static unsafe string GetAsciiStringNonNullCharacters(this Span<byte> span)
+            => GetAsciiStringNonNullCharacters((ReadOnlySpan<byte>)span);
+
+        public static unsafe string GetAsciiStringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -107,6 +111,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
+            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span);
+
+        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
@@ -142,6 +149,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         public static string GetAsciiStringEscaped(this Span<byte> span, int maxChars)
+            => GetAsciiStringEscaped((ReadOnlySpan<byte>)span, maxChars);
+
+        public static string GetAsciiStringEscaped(this ReadOnlySpan<byte> span, int maxChars)
         {
             var sb = new StringBuilder();
 
@@ -172,46 +182,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length)
+        public static bool GetKnownMethod(this ReadOnlySpan<byte> span, out HttpMethod method, out int length)
         {
-            fixed (byte* data = span)
-            {
-                method = GetKnownMethod(data, span.Length, out length);
-                return method != HttpMethod.Custom;
-            }
-        }
+            length = 0;
+            method = HttpMethod.Custom;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe HttpMethod GetKnownMethod(byte* data, int length, out int methodLength)
-        {
-            methodLength = 0;
-            if (length < sizeof(uint))
+            if (span.Length >= sizeof(uint))
             {
-                return HttpMethod.Custom;
-            }
-            else if (*(uint*)data == _httpGetMethodInt)
-            {
-                methodLength = 3;
-                return HttpMethod.Get;
-            }
-            else if (length < sizeof(ulong))
-            {
-                return HttpMethod.Custom;
-            }
-            else
-            {
-                var value = *(ulong*)data;
-                var key = GetKnownMethodIndex(value);
-                var x = _knownMethods[key];
-
-                if (x != null && (value & x.Item1) == x.Item2)
+                if (Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(span)) == _httpGetMethodInt)
                 {
-                    methodLength = x.Item4;
-                    return x.Item3;
+                    length = 3;
+                    method = HttpMethod.Get;
+                }
+                else if (span.Length >= sizeof(ulong))
+                {
+                    ulong value = Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(span));
+
+                    var key = GetKnownMethodIndex(value);
+                    var x = _knownMethods[key];
+
+                    if (x != null && (value & x.Item1) == x.Item2)
+                    {
+                        length = x.Item4;
+                        method = x.Item3;
+                    }
                 }
             }
 
-            return HttpMethod.Custom;
+            return method != HttpMethod.Custom;
         }
 
         /// <summary>
@@ -307,56 +305,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length)
+        public static bool GetKnownVersion(this ReadOnlySpan<byte> span, out HttpVersion knownVersion)
         {
-            fixed (byte* data = span)
+            knownVersion = HttpVersion.Unknown;
+
+            if (span.Length >= sizeof(ulong) + 1 && span[sizeof(ulong)] == (byte)'\r')
             {
-                knownVersion = GetKnownVersion(data, span.Length);
-                if (knownVersion != HttpVersion.Unknown)
+                ulong version = Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(span));
+
+                if (version == _http11VersionLong)
                 {
-                    length = sizeof(ulong);
-                    return true;
+                    knownVersion = HttpVersion.Http11;
                 }
-
-                length = 0;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Checks 9 bytes from <paramref name="location"/>  correspond to a known HTTP version.
-        /// </summary>
-        /// <remarks>
-        /// A "known HTTP version" Is is either HTTP/1.0 or HTTP/1.1.
-        /// Since those fit in 8 bytes, they can be optimally looked up by reading those bytes as a long. Once
-        /// in that format, it can be checked against the known versions.
-        /// The Known versions will be checked with the required '\r'.
-        /// To optimize performance the HTTP/1.1 will be checked first.
-        /// </remarks>
-        /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe HttpVersion GetKnownVersion(byte* location, int length)
-        {
-            HttpVersion knownVersion;
-            var version = *(ulong*)location;
-            if (length < sizeof(ulong) + 1 || location[sizeof(ulong)] != (byte)'\r')
-            {
-                knownVersion = HttpVersion.Unknown;
-            }
-            else if (version == _http11VersionLong)
-            {
-                knownVersion = HttpVersion.Http11;
-            }
-            else if (version == _http10VersionLong)
-            {
-                knownVersion = HttpVersion.Http10;
-            }
-            else
-            {
-                knownVersion = HttpVersion.Unknown;
+                else if (version == _http10VersionLong)
+                {
+                    knownVersion = HttpVersion.Http10;
+                }
             }
 
-            return knownVersion;
+            return knownVersion != HttpVersion.Unknown;
         }
 
         /// <summary>
@@ -548,6 +515,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             public UTF8EncodingSealed() : base(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true) { }
 
             public override byte[] GetPreamble() => Array.Empty<byte>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal unsafe static Span<byte> UnsafeAsSpan(this ref ReadOnlySpan<byte> span)
+        {
+            fixed (byte* b = span)
+            {
+                return new Span<byte>(b, span.Length);
+            }
         }
     }
 }
