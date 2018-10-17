@@ -9,10 +9,10 @@ For full information, see the [official docs for git submodules](https://git-scm
 
 ## Fundamental concept
 
-The parent repo (aspnet/Universe) stores two pieces of info about each submodule.
+The parent repo (aspnet/AspNetCore) stores two pieces of info about each submodule.
 
 1. Where to clone the submodule from. This is stored in the .gitmodules file
-2. The commit hash of the submodule to use. 
+2. The commit hash of the submodule to use.
 
 This means you cannot commit a submodule's branch or a tag to the parent repo.
 Other info may appear in the .gitmodules file, but it is only used when attempting to
@@ -22,7 +22,7 @@ Other info may appear in the .gitmodules file, but it is only used when attempti
 
 By default, submodules will not be present. Use `--recursive` to clone all submodules.
 
-    git clone https://github.com/aspnet/Universe.git --recursive
+    git clone https://github.com/aspnet/AspNetCore.git --recursive
 
 If you have already cloned, run this to initialize all submodules.
 
@@ -53,7 +53,7 @@ Updating all submodules to newer versions can be done like this.
 Updating just one subumodule.
 
     git submodule update --remote modules/EntityFrameworkCore/
-    
+
 This uses the remote url and branch info configuration stored in .gitmodules to pull new commits.
 This does not guarantee the commit is going to be a fast-forward commit.
 
@@ -72,7 +72,7 @@ that contains the new commit.
     git add modules/KestrelhttpServer/
     git commit -m "Update Kestrel to latest version"
 
-## PowerShell is slow in aspnet/Universe
+## PowerShell is slow in aspnet/AspNetCore
 
 Many users have post-git, and extension that shows git status on the prompt line. Because `git status` with submodules
 on Windows is very slow, it can make PowerShell unbearable to use.

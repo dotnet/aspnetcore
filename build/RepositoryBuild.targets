@@ -103,7 +103,7 @@
 
   <Target Name="_UpdateRepoLockFile">
     <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
-    <Message Text="Copying KoreBuild lockfile from Universe to repository $(BuildRepositoryRoot)"/>
+    <Message Text="Copying KoreBuild lockfile from repo to submodule $(BuildRepositoryRoot)"/>
     <Move SourceFiles="$(RepoLockFile)" DestinationFiles="$(BackupRepoLockFile)" Condition="Exists($(RepoLockFile))" />
     <Move SourceFiles="$(RepoGlobalJsonFile)" DestinationFiles="$(BackupRepoGlobalJsonFile)" Condition="Exists($(RepoGlobalJsonFile))" />
     <Copy SourceFiles="$(SourceLockFile)" DestinationFiles="$(RepoLockFile)" />
