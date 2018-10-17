@@ -56,6 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
+            Assert.False(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
         }
 
         [Fact]
@@ -93,6 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
+            Assert.False(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
         }
 
         [Fact]
@@ -130,6 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
+            Assert.True(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
         }
 
         [Fact]
@@ -167,6 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
+            Assert.True(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
         }
 
         // This just does the minimum needed to be able to resolve these options.

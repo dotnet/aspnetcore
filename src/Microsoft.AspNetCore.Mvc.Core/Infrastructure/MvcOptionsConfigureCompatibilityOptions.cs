@@ -38,6 +38,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                     // Matches JsonSerializerSettingsProvider.DefaultMaxDepth
                     values[nameof(MvcOptions.MaxValidationDepth)] = 32;
+
+                    values[nameof(MvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent)] = true;
+
                 }
 
                 return values;

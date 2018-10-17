@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             return new DefaultObjectValidator(
                 metadataProvider,
                 GetModelValidatorProviders(options),
-                options?.Value ?? new MvcOptions());
+                options?.Value ?? new MvcOptions { AllowShortCircuitingValidationWhenNoValidatorsArePresent = true });
         }
 
         private static IList<IModelValidatorProvider> GetModelValidatorProviders(IOptions<MvcOptions> options)
@@ -197,7 +197,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             serviceCollection
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
-                .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>();
+                .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>()
+                .Configure<MvcOptions>(options => options.AllowShortCircuitingValidationWhenNoValidatorsArePresent = true);
 
             if (updateOptions != null)
             {
