@@ -137,9 +137,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.CompletedTask;
             }
 
+            // PumpTask catches all Exceptions internally.
+            if (_pumpTask.IsCompleted)
+            {
+                // At this point both the request body pipe reader and writer should be completed.
+                _context.RequestBodyPipe.Reset();
+                return Task.CompletedTask;
+            }
+
+            return StopAsyncAwaited();
+        }
+
+        private async Task StopAsyncAwaited()
+        {
             _canceled = true;
             _context.Input.CancelPendingRead();
-            return _pumpTask;
+            await _pumpTask;
+
+            // At this point both the request body pipe reader and writer should be completed.
+            _context.RequestBodyPipe.Reset();
         }
 
         protected override Task OnConsumeAsync()
