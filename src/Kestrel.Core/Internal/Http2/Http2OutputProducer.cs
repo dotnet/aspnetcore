@@ -74,10 +74,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        // Review: This is called when a CancellationToken fires mid-write. In HTTP/1.x, this aborts the entire connection.
-        // Should we do that here?
+        // This is called when a CancellationToken fires mid-write. In HTTP/1.x, this aborts the entire connection.
+        // For HTTP/2 we abort the stream.
         void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
         {
+            _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
             Dispose();
         }
 

@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
         }
 
-        private void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
+        internal void ResetAndAbort(ConnectionAbortedException abortReason, Http2ErrorCode error)
         {
             // Future incoming frames will drain for a default grace period to avoid destabilizing the connection.
             var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
