@@ -1,10 +1,10 @@
 Source Location: (10:0,10 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml)
 |foo.bar<baz<biz>>.boz|
-Generated Location: (401:10,0 [21] )
+Generated Location: (485:11,0 [21] )
 |foo.bar<baz<biz>>.boz|
 
 Source Location: (36:2,1 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml)
 |foo()|
-Generated Location: (875:22,6 [5] )
+Generated Location: (990:26,6 [5] )
 |foo()|
 

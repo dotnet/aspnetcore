@@ -22,11 +22,19 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
 NewModel __typeHelper = default(NewModel);
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
 global::System.Object __typeHelper = "*, AppCode";
+
+#line default
+#line hidden
         }
         ))();
         }

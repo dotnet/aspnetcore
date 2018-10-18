@@ -65,15 +65,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         }
 
                         // {node.Content} __typeHelper = default({node.Content});
-
-                        context.AddSourceMappingFor(node);
-                        context.CodeWriter
-                            .Write(node.Content)
-                            .Write(" ")
-                            .WriteStartAssignment(TypeHelper)
-                            .Write("default(")
-                            .Write(node.Content)
-                            .WriteLine(");");
+                        using (context.CodeWriter.BuildLinePragma(node.Source))
+                        {
+                            context.AddSourceMappingFor(node);
+                            context.CodeWriter
+                                .Write(node.Content)
+                                .Write(" ")
+                                .WriteStartAssignment(TypeHelper)
+                                .Write("default(")
+                                .Write(node.Content)
+                                .WriteLine(");");
+                        }
                         break;
 
                     case DirectiveTokenKind.Member:
@@ -86,16 +88,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         }
 
                         // global::System.Object {node.content} = null;
-
-                        context.CodeWriter
+                        using (context.CodeWriter.BuildLinePragma(node.Source))
+                        {
+                            context.CodeWriter
                             .Write("global::")
                             .Write(typeof(object).FullName)
                             .Write(" ");
 
-                        context.AddSourceMappingFor(node);
-                        context.CodeWriter
-                            .Write(node.Content)
-                            .WriteLine(" = null;");
+                            context.AddSourceMappingFor(node);
+                            context.CodeWriter
+                                .Write(node.Content)
+                                .WriteLine(" = null;");
+                        }
                         break;
 
                     case DirectiveTokenKind.Namespace:
@@ -108,46 +112,50 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         }
 
                         // global::System.Object __typeHelper = nameof({node.Content});
-
-                        context.CodeWriter
+                        using (context.CodeWriter.BuildLinePragma(node.Source))
+                        {
+                            context.CodeWriter
                             .Write("global::")
                             .Write(typeof(object).FullName)
                             .Write(" ")
                             .WriteStartAssignment(TypeHelper);
 
-                        context.CodeWriter.Write("nameof(");
+                            context.CodeWriter.Write("nameof(");
 
-                        context.AddSourceMappingFor(node);
-                        context.CodeWriter
-                            .Write(node.Content)
-                            .WriteLine(");");
+                            context.AddSourceMappingFor(node);
+                            context.CodeWriter
+                                .Write(node.Content)
+                                .WriteLine(");");
+                        }
                         break;
 
                     case DirectiveTokenKind.String:
 
                         // global::System.Object __typeHelper = "{node.Content}";
-
-                        context.CodeWriter
+                        using (context.CodeWriter.BuildLinePragma(node.Source))
+                        {
+                            context.CodeWriter
                             .Write("global::")
                             .Write(typeof(object).FullName)
                             .Write(" ")
                             .WriteStartAssignment(TypeHelper);
 
-                        if (node.Content.StartsWith("\"", StringComparison.Ordinal))
-                        {
-                            context.AddSourceMappingFor(node);
-                            context.CodeWriter.Write(node.Content);
-                        }
-                        else
-                        {
-                            context.CodeWriter.Write("\"");
-                            context.AddSourceMappingFor(node);
-                            context.CodeWriter
-                                .Write(node.Content)
-                                .Write("\"");
-                        }
+                            if (node.Content.StartsWith("\"", StringComparison.Ordinal))
+                            {
+                                context.AddSourceMappingFor(node);
+                                context.CodeWriter.Write(node.Content);
+                            }
+                            else
+                            {
+                                context.CodeWriter.Write("\"");
+                                context.AddSourceMappingFor(node);
+                                context.CodeWriter
+                                    .Write(node.Content)
+                                    .Write("\"");
+                            }
 
-                        context.CodeWriter.WriteLine(";");
+                            context.CodeWriter.WriteLine(";");
+                        }
                         break;
                 }
                 context.CodeWriter.CurrentIndent = originalIndent;

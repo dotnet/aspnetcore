@@ -8,7 +8,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
 foo.bar<baz<biz>>.boz __typeHelper = default(foo.bar<baz<biz>>.boz);
+
+#line default
+#line hidden
         }
         ))();
         }

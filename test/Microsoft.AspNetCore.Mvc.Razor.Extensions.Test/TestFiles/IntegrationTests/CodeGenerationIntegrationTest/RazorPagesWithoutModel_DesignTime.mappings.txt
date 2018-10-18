@@ -5,12 +5,12 @@ Generated Location: (487:14,0 [41] )
 
 Source Location: (23:2,14 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml)
 |"*, AppCode"|
-Generated Location: (937:24,37 [12] )
+Generated Location: (1035:25,37 [12] )
 |"*, AppCode"|
 
 Source Location: (566:24,47 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml)
 |Name|
-Generated Location: (1500:37,47 [4] )
+Generated Location: (1629:41,47 [4] )
 |Name|
 
 Source Location: (95:5,12 [283] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml)
@@ -28,7 +28,7 @@ Source Location: (95:5,12 [283] TestFiles/IntegrationTests/CodeGenerationIntegra
         public string Name { get; set; }
     }
 |
-Generated Location: (1981:48,12 [283] )
+Generated Location: (2110:52,12 [283] )
 |
     public IActionResult OnPost(Customer customer)
     {
