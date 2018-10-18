@@ -13,6 +13,18 @@
     <ExcludeSolutions Include="$(RepositoryRoot)IISIntegration.NoV1.sln" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(SkipIISTests)' == 'true'" >
+      <ExcludeFromTest Include="$(RepositoryRoot)test\IIS.FunctionalTests\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipIISExpressTests)' == 'true'" >
+      <ExcludeFromTest Include="$(RepositoryRoot)test\IISExpress.FunctionalTests\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipIISBackwardsCompatibilityTests)' == 'true'" >
+      <ExcludeFromTest Include="$(RepositoryRoot)test\IIS.BackwardsCompatibility.FunctionalTests\*.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>

@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
-    <TestGroupName>IIS.FunctionalTests</TestGroupName>
+    <TestGroupName>IISBackwardsCompatibility.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
   </PropertyGroup>
 
@@ -29,9 +29,9 @@
     <Compile Include="..\IIS.Shared.FunctionalTests\**\*.cs" />
   </ItemGroup>
 
-  <Import Project="..\..\build\functional-test-assets.targets" />
-
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />

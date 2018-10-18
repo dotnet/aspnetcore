@@ -16,7 +16,7 @@ install:
   - git submodule update --init --recursive
   - net start w3svc
 build_script:
-  - ps: .\run.ps1 default-build
+  - ps: .\run.ps1 default-build /p:SkipIISBackwardsCompatibilityTests=true
 clone_depth: 1
 environment:
   global:

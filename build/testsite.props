@@ -23,7 +23,6 @@
     <NativeFolder>x64</NativeFolder>
   </PropertyGroup>
 
-
   <PropertyGroup>
     <!-- For standalone publish, all dlls are flattened to the same folder.
          Set the base path to the request handler

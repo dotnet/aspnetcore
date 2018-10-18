@@ -21,6 +21,8 @@
     <Compile Include="..\Common.FunctionalTests\**\*.cs" />
   </ItemGroup>
 
+  <Import Project="..\..\build\functional-test-assets.targets" />
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />

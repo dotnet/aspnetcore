@@ -54,5 +54,8 @@
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
-  <PropertyGroup Label="Package Versions: Pinned" />
+  <PropertyGroup Label="Package Versions: Pinned" >
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0-preview3-35458</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>2.2.0-preview3-35458</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
+  </PropertyGroup>
 </Project>

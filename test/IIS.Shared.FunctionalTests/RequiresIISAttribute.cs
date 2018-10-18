@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         public RequiresIISAttribute()
-            : this (IISCapability.None) { }
+            : this(IISCapability.None) { }
 
         public RequiresIISAttribute(IISCapability capabilities)
         {
