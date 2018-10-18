@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -121,6 +122,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             catch (Exception ex)
             {
                 error = ex;
+                Log.UnexpectedError(_logger, nameof(IISHttpContext), ex);
             }
             finally
             {
@@ -174,6 +176,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             catch (Exception ex)
             {
                 error = ex;
+                Log.UnexpectedError(_logger, nameof(IISHttpContext), ex);
             }
             finally
             {
@@ -199,9 +202,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     {
                         cts.Cancel();
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        // ignore
+                        Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
                     }
                 });
             }
@@ -219,6 +222,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         internal void ConnectionReset()
         {
             AbortIO();
+            Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
         }
     }
 }

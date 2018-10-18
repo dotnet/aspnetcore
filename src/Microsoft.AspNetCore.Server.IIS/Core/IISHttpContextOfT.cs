@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -14,8 +15,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server)
-            : base(memoryPool, pInProcessHandler, options, server)
+        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server, ILogger logger)
+            : base(memoryPool, pInProcessHandler, options, server, logger)
         {
             _application = application;
         }

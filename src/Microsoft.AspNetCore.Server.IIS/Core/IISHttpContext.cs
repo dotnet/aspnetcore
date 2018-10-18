@@ -17,9 +17,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -50,6 +52,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IISHttpServer _server;
 
+        private readonly ILogger _logger;
+
         private GCHandle _thisHandle;
         protected Task _readBodyTask;
         protected Task _writeBodyTask;
@@ -69,13 +73,15 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             MemoryPool<byte> memoryPool,
             IntPtr pInProcessHandler,
             IISServerOptions options,
-            IISHttpServer server)
+            IISHttpServer server,
+            ILogger logger)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler))
         {
             _memoryPool = memoryPool;
             _pInProcessHandler = pInProcessHandler;
             _options = options;
             _server = server;
+            _logger = logger;
         }
 
         public Version HttpVersion { get; set; }
@@ -450,6 +456,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 _applicationException = new AggregateException(_applicationException, ex);
             }
+
+            Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
         }
 
         public void PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS requestNotificationStatus)

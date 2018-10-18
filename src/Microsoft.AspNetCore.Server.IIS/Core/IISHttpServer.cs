@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             _httpServerHandle = GCHandle.Alloc(this);
 
-            _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this);
+            _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
             _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
             return Task.CompletedTask;
         }
@@ -260,18 +260,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             private readonly MemoryPool<byte> _memoryPool;
             private readonly IISServerOptions _options;
             private readonly IISHttpServer _server;
+            private readonly ILogger _logger;
 
-            public IISContextFactory(MemoryPool<byte> memoryPool, IHttpApplication<T> application, IISServerOptions options, IISHttpServer server)
+            public IISContextFactory(MemoryPool<byte> memoryPool, IHttpApplication<T> application, IISServerOptions options, IISHttpServer server, ILogger logger)
             {
                 _application = application;
                 _memoryPool = memoryPool;
                 _options = options;
                 _server = server;
+                _logger = logger;
             }
 
             public IISHttpContext CreateHttpContext(IntPtr pInProcessHandler)
             {
-                return new IISHttpContextOfT<T>(_memoryPool, _application, pInProcessHandler, _options, _server);
+                return new IISHttpContextOfT<T>(_memoryPool, _application, pInProcessHandler, _options, _server, _logger);
             }
         }
     }

@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
@@ -54,31 +57,51 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
             var handler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (a, b, c, d) => true,
                 ClientCertificateOptions = ClientCertificateOption.Manual,
             };
 
+            X509Certificate2 cert = null;
             if (sendClientCert)
             {
-                Assert.NotNull(_certFixture.Certificate);
-                handler.ClientCertificates.Add(_certFixture.Certificate);
+                cert = _certFixture.GetOrCreateCertificate();
+                handler.ClientCertificates.Add(cert);
             }
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
 
             var client = deploymentResult.CreateClient(handler);
             var response = await client.GetAsync("GetClientCert");
 
             var responseText = await response.Content.ReadAsStringAsync();
 
-            if (sendClientCert)
+            try
             {
-                Assert.Equal($"Enabled;{_certFixture.Certificate.GetCertHashString()}", responseText);
+                if (sendClientCert)
+                {
+                    Assert.Equal($"Enabled;{cert.GetCertHashString()}", responseText);
+                }
+                else
+                {
+                    Assert.Equal("Disabled", responseText);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Assert.Equal("Disabled", responseText);
+                Logger.LogError($"Certificate is invalid. Issuer name: {cert.Issuer}");
+                using (var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
+                {
+                    Logger.LogError($"List of current certificates in root store:");
+                    store.Open(OpenFlags.ReadWrite);
+                    foreach (var otherCert in store.Certificates)
+                    {
+                        Logger.LogError(otherCert.Issuer);
+                    }
+                    store.Close();
+                }
+                throw ex;
             }
         }
     }
