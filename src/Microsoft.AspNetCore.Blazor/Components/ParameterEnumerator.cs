@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
                 _currentIndex = nextIndex;
 
                 ref var frame = ref _frames[_currentIndex];
-                _current = new Parameter(frame.AttributeName, frame.AttributeValue);
+                _current = new Parameter(frame.AttributeName, frame.AttributeValue, false);
 
                 return true;
             }
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
                     _currentIndex = nextIndex;
 
                     var state = _cascadingParameters[_currentIndex];
-                    _current = new Parameter(state.LocalValueName, state.ValueSupplier.CurrentValue);
+                    _current = new Parameter(state.LocalValueName, state.ValueSupplier.CurrentValue, true);
                     return true;
                 }
                 else

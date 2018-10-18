@@ -60,8 +60,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(ToEnumerable(parameterCollection),
-                AssertParameter("attribute 1", attribute1Value),
-                AssertParameter("attribute 2", attribute2Value));
+                AssertParameter("attribute 1", attribute1Value, false),
+                AssertParameter("attribute 2", attribute2Value, false));
         }
 
         [Fact]
@@ -82,8 +82,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(ToEnumerable(parameterCollection),
-                AssertParameter("attribute 1", attribute1Value),
-                AssertParameter("attribute 2", attribute2Value));
+                AssertParameter("attribute 1", attribute1Value, false),
+                AssertParameter("attribute 2", attribute2Value, false));
         }
 
         [Fact]
@@ -105,9 +105,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(ToEnumerable(parameterCollection),
-                AssertParameter("attribute 1", attribute1Value),
-                AssertParameter("attribute 2", attribute2Value),
-                AssertParameter("attribute 3", attribute3Value));
+                AssertParameter("attribute 1", attribute1Value, false),
+                AssertParameter("attribute 2", attribute2Value, true),
+                AssertParameter("attribute 3", attribute3Value, true));
         }
 
         [Fact]
@@ -291,12 +291,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Same(myEntryValue, result);
         }
 
-        private Action<Parameter> AssertParameter(string expectedName, object expectedValue)
+        private Action<Parameter> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
         {
             return parameter =>
             {
                 Assert.Equal(expectedName, parameter.Name);
                 Assert.Same(expectedValue, parameter.Value);
+                Assert.Equal(expectedIsCascading, parameter.Cascading);
             };
         }
 
