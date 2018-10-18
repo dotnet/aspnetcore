@@ -11,68 +11,57 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     public class ClientCertificateFixture : IDisposable
     {
         private X509Certificate2 _certificate;
+        private const string _certIssuerPrefix = "CN=IISIntegrationTest_Root";
 
-        public X509Certificate2 Certificate
+        public X509Certificate2 GetOrCreateCertificate()
         {
-            get
+            if (_certificate != null)
             {
-                if (_certificate != null)
-                {
-                    return _certificate;
-                }
+                return _certificate;
+            }
 
-                using (var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
-                {
-                    store.Open(OpenFlags.ReadWrite);
+            using (var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
+            {
+                store.Open(OpenFlags.ReadWrite);
+                var parentKey = CreateKeyMaterial(2048);
 
-                    foreach (var cert in store.Certificates)
-                    {
-                        if (cert.Issuer != "CN=IISIntegrationTest_Root")
-                        {
-                            continue;
-                        }
-                        _certificate = cert;
-                        store.Close();
-                        return cert;
-                    }
+                // Create a cert name with a random guid to avoid name conflicts
+                var parentRequest = new CertificateRequest(
+                    _certIssuerPrefix + Guid.NewGuid().ToString(),
+                    parentKey, HashAlgorithmName.SHA256,
+                    RSASignaturePadding.Pkcs1);
 
-                    var parentKey = CreateKeyMaterial(2048);
+                parentRequest.CertificateExtensions.Add(
+                    new X509BasicConstraintsExtension(
+                        certificateAuthority: true,
+                        hasPathLengthConstraint: false,
+                        pathLengthConstraint: 0,
+                        critical: true));
 
-                    // On first run of the test, creates the certificate in the trusted root certificate authorities.
-                    var parentRequest = new CertificateRequest("CN=IISIntegrationTest_Root", parentKey, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                parentRequest.CertificateExtensions.Add(
+                    new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.NonRepudiation, critical: true));
 
-                    parentRequest.CertificateExtensions.Add(
-                        new X509BasicConstraintsExtension(
-                            certificateAuthority: true,
-                            hasPathLengthConstraint: false,
-                            pathLengthConstraint: 0,
-                            critical: true));
+                parentRequest.CertificateExtensions.Add(
+                    new X509SubjectKeyIdentifierExtension(parentRequest.PublicKey, false));
 
-                    parentRequest.CertificateExtensions.Add(
-                        new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.NonRepudiation, critical: true));
+                var notBefore = DateTimeOffset.Now.AddDays(-1);
+                var notAfter = DateTimeOffset.Now.AddYears(5);
 
-                    parentRequest.CertificateExtensions.Add(
-                        new X509SubjectKeyIdentifierExtension(parentRequest.PublicKey, false));
+                var parentCert = parentRequest.CreateSelfSigned(notBefore, notAfter);
 
-                    var notBefore = DateTimeOffset.Now.AddDays(-1);
-                    var notAfter = DateTimeOffset.Now.AddYears(5);
+                // Need to export/import the certificate to associate the private key with the cert.
+                var imported = parentCert;
 
-                    var parentCert = parentRequest.CreateSelfSigned(notBefore, notAfter);
+                var export = parentCert.Export(X509ContentType.Pkcs12, "");
+                imported = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+                Array.Clear(export, 0, export.Length);
 
-                    // Need to export/import the certificate to associate the private key with the cert.
-                    var imported = parentCert;
+                // Add the cert to the cert store
+                _certificate = imported;
 
-                    var export = parentCert.Export(X509ContentType.Pkcs12, "");
-                    imported = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
-                    Array.Clear(export, 0, export.Length);
-
-                    // Add the cert to the cert store
-                    _certificate = imported;
-
-                    store.Add(certificate: imported);
-                    store.Close();
-                    return imported;
-                }
+                store.Add(certificate: imported);
+                store.Close();
+                return imported;
             }
         }
 
@@ -86,7 +75,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             using (var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
             {
                 store.Open(OpenFlags.ReadWrite);
-                store.Remove(Certificate);
+                store.Remove(_certificate);
+
+                // Remove any extra certs that were left by previous tests.
+                for (var i = store.Certificates.Count - 1; i >= 0; i--)
+                {
+                    var cert = store.Certificates[i];
+                    if (cert.Issuer.StartsWith(_certIssuerPrefix))
+                    {
+                        store.Remove(cert);
+                    }
+                }
                 store.Close();
             }
         }
