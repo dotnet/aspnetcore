@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 {
                     for (var i = 0; i < node.Children.Count; i++)
                     {
-                        // We allow you to supress this error like:
+                        // We allow you to suppress this error like:
                         // <script suppress-error="BL9992" />
                         var attribute = node.Children[i] as HtmlAttributeIntermediateNode;
                         if (attribute != null && 

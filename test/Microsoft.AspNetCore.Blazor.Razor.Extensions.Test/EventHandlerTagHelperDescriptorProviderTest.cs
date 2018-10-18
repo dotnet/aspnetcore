@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     public class EventHandlerTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
         [Fact]
-        public void Excecute_EventHandler_CreatesDescriptor()
+        public void Execute_EventHandler_CreatesDescriptor()
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
@@ -62,7 +62,7 @@ namespace Test
                 "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>'.",
                 item.Documentation);
 
-            // These are all trivally derived from the assembly/namespace/type name
+            // These are all trivially derived from the assembly/namespace/type name
             Assert.Equal("TestAssembly", item.AssemblyName);
             Assert.Equal("onclick", item.Name);
             Assert.Equal("Test.EventHandlers", item.DisplayName);

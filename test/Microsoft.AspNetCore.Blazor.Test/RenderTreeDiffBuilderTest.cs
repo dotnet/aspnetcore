@@ -1268,7 +1268,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var newComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
 
             // Assert
-            Assert.Equal(1, renderBatch.UpdatedComponents.Count); // Because the diff builder only queues child component renders; it doesn't actually perfom them itself
+            Assert.Equal(1, renderBatch.UpdatedComponents.Count); // Because the diff builder only queues child component renders; it doesn't actually perform them itself
             Assert.Same(originalComponentInstance, newComponentInstance);
             Assert.Equal("String did change", newComponentInstance.StringProperty);
             Assert.Same(objectWillNotChange, newComponentInstance.ObjectProperty);

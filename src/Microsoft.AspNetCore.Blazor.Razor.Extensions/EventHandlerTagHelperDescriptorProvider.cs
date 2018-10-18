@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.EventHandler.RuntimeName;
 
                 // WTE has a bug in 15.7p1 where a Tag Helper without a display-name that looks like
-                // a C# property will crash trying to create the toolips.
+                // a C# property will crash trying to create the tooltips.
                 builder.SetTypeName(entry.TypeName);
 
                 builder.TagMatchingRule(rule =>
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     a.Metadata.Add(BlazorMetadata.Component.WeaklyTypedKey, bool.TrueString);
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
-                    // a C# property will crash trying to create the toolips.
+                    // a C# property will crash trying to create the tooltips.
                     a.SetPropertyName(entry.Attribute);
                 });
 

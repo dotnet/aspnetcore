@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public static readonly RazorDiagnosticDescriptor BindAttribute_InvalidSyntax =
             new RazorDiagnosticDescriptor(
             "BL9991",
-            () => "The attribute names could not be inferred from bind attibute '{0}'. Bind attributes should be of the form" +
+            () => "The attribute names could not be inferred from bind attribute '{0}'. Bind attributes should be of the form" +
                 "'bind', 'bind-value' or 'bind-value-change'",
             RazorDiagnosticSeverity.Error);
 

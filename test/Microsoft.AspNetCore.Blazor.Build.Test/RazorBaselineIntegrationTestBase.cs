@@ -12,7 +12,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
-    [IntializeTestFile]
+    [InitializeTestFile]
     public abstract class RazorBaselineIntegrationTestBase : RazorIntegrationTestBase
     {
         private static readonly AsyncLocal<string> _directoryPath = new AsyncLocal<string>();
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             using (var writer = new StreamWriter(File.Open(filePath, FileMode.Create)))
             {
                 // Force windows-style line endings so that we're consistent. This isn't
-                // required for correctness, but will prevent churcn when developing on OSX.
+                // required for correctness, but will prevent churn when developing on OSX.
                 writer.NewLine = "\r\n";
 
                 for (var i = 0; i < lines.Length; i++)

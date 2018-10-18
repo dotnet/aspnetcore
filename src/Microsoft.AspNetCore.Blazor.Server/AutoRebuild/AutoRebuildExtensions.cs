@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Builder
 
                 if (!_includedSuffixes.Any(ext => eventArgs.Name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
                 {
-                    // Not a candiate file type
+                    // Not a candidate file type
                     return;
                 }
 

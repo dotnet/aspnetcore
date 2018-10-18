@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                             // Happy path.
                                             //
                                             // We need to compute a new source span because when we found the start tag before we knew
-                                            // the end poosition of the tag.
+                                            // the end position of the tag.
                                             var length = end.AbsoluteIndex - popped.Source.Value.AbsoluteIndex;
                                             popped.Source = new SourceSpan(
                                                 popped.Source.Value.FilePath,
@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // in the DOM, which can accept content that has decoded entities.
                 //
                 // In the event that we merge HtmlContent into an HtmlBlock, we need to
-                // re-encode the entites. That's done in the HtmlBlock pass.
+                // re-encode the entities. That's done in the HtmlBlock pass.
                 var tokens = _textSource.Tokenize(HtmlEntityService.Resolver);
                 return tokens;
             }

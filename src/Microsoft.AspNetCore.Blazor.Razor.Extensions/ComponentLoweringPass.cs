@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 //
                 // We don't want to create a child content for this case, because it can conflict
                 // with a child content that's set via an attribute. We don't want the formatting
-                // of insigificant whitespace to be annoying when setting attributes directly.
+                // of insignificant whitespace to be annoying when setting attributes directly.
                 if (node.Children.Count == 1 && IsIgnorableWhitespace(node.Children[0]))
                 {
                     return;
@@ -149,11 +149,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // From here we fork and behave differently based on whether the component's child content is
                 // implicit or explicit.
                 //
-                // Explict child content will look like: <MyComponent><ChildContent><div>...</div></ChildContent></MyComponent>
+                // Explicit child content will look like: <MyComponent><ChildContent><div>...</div></ChildContent></MyComponent>
                 // compared with implicit: <MyComponent><div></div></MyComponent>
                 //
                 // Using implicit child content:
-                // 1. All content is grouped into a single child content lambda, and assiged to the property 'ChildContent'
+                // 1. All content is grouped into a single child content lambda, and assigned to the property 'ChildContent'
                 //
                 // Using explicit child content:
                 // 1. All content must be contained within 'child content' elements that are direct children
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     var child = children[i];
                     if (child is TagHelperBodyIntermediateNode body)
                     {
-                        // The body is all of the content we want to render, the rest of the childen will
+                        // The body is all of the content we want to render, the rest of the children will
                         // be the attributes.
                         for (var j = 0; j < body.Children.Count; j++)
                         {

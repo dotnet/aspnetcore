@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
         }
 
         [Fact]
-        public void Send_CanRunSynchonously()
+        public void Send_CanRunSynchronously()
         {
             // Arrange
             var context = new CircuitSynchronizationContext();

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Shared;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Ref.RuntimeName;
 
             // WTE has a bug in 15.7p1 where a Tag Helper without a display-name that looks like
-            // a C# property will crash trying to create the toolips.
+            // a C# property will crash trying to create the tooltips.
             builder.SetTypeName("Microsoft.AspNetCore.Blazor.Components.Ref");
 
             builder.TagMatchingRule(rule =>
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 attribute.Name = "ref";
 
                 // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
-                // a C# property will crash trying to create the toolips.
+                // a C# property will crash trying to create the tooltips.
                 attribute.SetPropertyName("Ref");
                 attribute.TypeName = typeof(object).FullName;
             });

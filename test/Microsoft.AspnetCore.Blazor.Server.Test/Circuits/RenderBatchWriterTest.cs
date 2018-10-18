@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
 
                     // Testing deduplication
                     RenderTreeFrame.Attribute(134, "Attribute with string value", "String value"),
-                    RenderTreeFrame.Element(135, "Some element") // Will be dedupliated
+                    RenderTreeFrame.Element(135, "Some element") // Will be deduplicated
                         .WithElementSubtreeLength(999),
                     RenderTreeFrame.Text(136, "Some text"), // Will not be deduplicated
                     RenderTreeFrame.Markup(137, "Some markup"), // Will not be deduplicated

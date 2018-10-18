@@ -10,7 +10,7 @@ using Interop = Microsoft.AspNetCore.Blazor.Browser.Services.BrowserUriHelperInt
 namespace Microsoft.AspNetCore.Blazor.Server.Circuits
 {
     /// <summary>
-    /// A Server-Side Blazor implemenation of <see cref="IUriHelper"/>.
+    /// A Server-Side Blazor implementation of <see cref="IUriHelper"/>.
     /// </summary>
     public class RemoteUriHelper : UriHelperBase
     {

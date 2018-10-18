@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public void VisitExtension(ComponentChildContentIntermediateNode node)
             {
                 // Check that each child content has a unique parameter name within its scope. This is important
-                // because the parameter name can be implict, and it doesn't work well when nested.
+                // because the parameter name can be implicit, and it doesn't work well when nested.
                 if (node.IsParameterized)
                 {
                     for (var i = 0; i < Ancestors.Count - 1; i++)
@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                             node.Diagnostics.Add(BlazorDiagnosticFactory.Create_ChildContentRepeatedParameterName(
                                 node.Source,
                                 node,
-                                (ComponentExtensionNode)Ancestors[0], // Encosing component
+                                (ComponentExtensionNode)Ancestors[0], // Enclosing component
                                 ancestor, // conflicting child content node
-                                (ComponentExtensionNode)Ancestors[i + 1]));  // Encosing component of conflicting child content node
+                                (ComponentExtensionNode)Ancestors[i + 1]));  // Enclosing component of conflicting child content node
                         }
                     }
                 }

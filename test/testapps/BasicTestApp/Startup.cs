@@ -21,7 +21,7 @@ namespace BasicTestApp
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
             {
                 // Needed because the test server runs on a different port than the client app,
-                // and we want to test sending/receiving cookies undering this config
+                // and we want to test sending/receiving cookies underling this config
                 BrowserHttpMessageHandler.DefaultCredentials = FetchCredentialsOption.Include;
 
                 GC.KeepAlive(ActivateMonoJSRuntime.EnsureActivated());

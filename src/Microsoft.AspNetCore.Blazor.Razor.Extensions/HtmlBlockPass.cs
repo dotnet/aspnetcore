@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     // Rewrites contiguous subtrees of HTML into a special node type to reduce the
     // size of the Render tree.
     //
-    // Does not preserve insigificant details of the HTML, like tag closing style
+    // Does not preserve insignificant details of the HTML, like tag closing style
     // or quote style.
     internal class HtmlBlockPass : IntermediateNodePassBase, IRazorOptimizationPass
     {

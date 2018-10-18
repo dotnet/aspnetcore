@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     public class BindTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
         [Fact]
-        public void Excecute_FindsBindTagHelperOnComponentType_CreatesDescriptor()
+        public void Execute_FindsBindTagHelperOnComponentType_CreatesDescriptor()
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
@@ -75,7 +75,7 @@ namespace Test
                     "delegate to the 'MyPropertyChanged' property of the component.",
                 bind.Documentation);
 
-            // These are all trivally derived from the assembly/namespace/type name
+            // These are all trivially derived from the assembly/namespace/type name
             Assert.Equal("TestAssembly", bind.AssemblyName);
             Assert.Equal("Test.MyComponent", bind.Name);
             Assert.Equal("Test.MyComponent", bind.DisplayName);
@@ -126,7 +126,7 @@ namespace Test
         }
 
         [Fact]
-        public void Excecute_NoMatchedPropertiesOnComponent_IgnoresComponent()
+        public void Execute_NoMatchedPropertiesOnComponent_IgnoresComponent()
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
@@ -168,7 +168,7 @@ namespace Test
         }
 
         [Fact]
-        public void Excecute_BindOnElement_CreatesDescriptor()
+        public void Execute_BindOnElement_CreatesDescriptor()
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
@@ -221,7 +221,7 @@ namespace Test
                     "delegate to the 'myevent' attribute.",
                 bind.Documentation);
 
-            // These are all trivally derived from the assembly/namespace/type name
+            // These are all trivially derived from the assembly/namespace/type name
             Assert.Equal("TestAssembly", bind.AssemblyName);
             Assert.Equal("Bind", bind.Name);
             Assert.Equal("Test.BindAttributes", bind.DisplayName);
@@ -544,7 +544,7 @@ namespace Test
         }
 
         [Fact]
-        public void Excecute_BindFallback_CreatesDescriptor()
+        public void Execute_BindFallback_CreatesDescriptor()
         {
             // Arrange
             var compilation = BaseCompilation;
@@ -586,7 +586,7 @@ namespace Test
                     "to set the value to the 'onchange' attribute.",
                 bind.Documentation);
 
-            // These are all trivally derived from the assembly/namespace/type name
+            // These are all trivially derived from the assembly/namespace/type name
             Assert.Equal("Microsoft.AspNetCore.Blazor", bind.AssemblyName);
             Assert.Equal("Bind", bind.Name);
             Assert.Equal("Microsoft.AspNetCore.Blazor.Components.Bind", bind.DisplayName);

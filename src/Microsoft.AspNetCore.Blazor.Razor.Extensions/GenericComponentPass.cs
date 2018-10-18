@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // We need to verify that an argument was provided that 'covers' each type parameter.
                 //
                 // For example, consider a repeater where the generic type is the 'item' type, but the developer has
-                // not set the items. We won't be able to do type inference on this and so it will just be nonesense.
+                // not set the items. We won't be able to do type inference on this and so it will just be nonsense.
                 var attributes = node.Attributes.Select(a => a.BoundAttribute).Concat(node.ChildContents.Select(c => c.BoundAttribute));
                 foreach (var attribute in attributes)
                 {
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     node.Diagnostics.Add(BlazorDiagnosticFactory.Create_GenericComponentTypeInferenceUnderspecified(node.Source, node, node.Component.GetTypeParameters()));
                 }
 
-                // Next we need to generate a type inference 'method' node. This repesents a method that we will codegen that
+                // Next we need to generate a type inference 'method' node. This represents a method that we will codegen that
                 // contains all of the operations on the render tree building. Calling a method to operate on the builder
                 // will allow the C# compiler to perform type inference.
                 var documentNode = (DocumentIntermediateNode)Ancestors[Ancestors.Count - 1];
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     Bindings = bindings,
                     Component = node,
 
-                    // Method name is generated and guaraneteed not to collide, since it's unique for each
+                    // Method name is generated and guaranteed not to collide, since it's unique for each
                     // component call site.
                     MethodName = $"Create{node.TagName}_{_id++}",
                     FullTypeName = @namespace + ".TypeInference",

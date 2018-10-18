@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     public class ComponentTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
         [Fact]
-        public void Excecute_FindsIComponentType_CreatesDescriptor()
+        public void Execute_FindsIComponentType_CreatesDescriptor()
         {
             // Arrange
 
@@ -125,7 +125,7 @@ namespace Test
         }
 
         [Fact]
-        public void Excecute_FindsIComponentType_CreatesDescriptor_Generic()
+        public void Execute_FindsIComponentType_CreatesDescriptor_Generic()
         {
             // Arrange
 
@@ -192,7 +192,7 @@ namespace Test
         }
 
         [Fact]
-        public void Excecute_FindsBlazorComponentType_CreatesDescriptor()
+        public void Execute_FindsBlazorComponentType_CreatesDescriptor()
         {
             // Arrange
 
@@ -233,7 +233,7 @@ namespace Test
         }
 
         [Fact] // bool properties support minimized attributes
-        public void Excecute_BoolProperty_CreatesDescriptor()
+        public void Execute_BoolProperty_CreatesDescriptor()
         {
             // Arrange
 
@@ -279,7 +279,7 @@ namespace Test
         }
 
         [Fact] // enum properties have some special intellisense behavior
-        public void Excecute_EnumProperty_CreatesDescriptor()
+        public void Execute_EnumProperty_CreatesDescriptor()
         {
             // Arrange
 
@@ -331,7 +331,7 @@ namespace Test
         }
 
         [Fact]
-        public void Excecute_GenericProperty_CreatesDescriptor()
+        public void Execute_GenericProperty_CreatesDescriptor()
         {
             // Arrange
 
@@ -388,7 +388,7 @@ namespace Test
         }
 
         [Fact]
-        public void Excecute_MultipleGenerics_CreatesDescriptor()
+        public void Execute_MultipleGenerics_CreatesDescriptor()
         {
             // Arrange
 
