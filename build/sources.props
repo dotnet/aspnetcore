@@ -21,5 +21,10 @@
       https://vside.myget.org/F/vssdk/api/v3/index.json;
       https://vside.myget.org/F/vsmac/api/v3/index.json
     </RestoreSources>
+    <!-- Temporary until we can replace PackageRef with ProjectRef -->
+    <RestoreSources Condition=" '$(SubFolderRepoBuild)' == 'true' AND '$(DotNetBuildOffline)' != 'true' AND '$(DisableMyGetRestoreSources)' != 'true' ">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
+    </RestoreSources>
   </PropertyGroup>
 </Project>
