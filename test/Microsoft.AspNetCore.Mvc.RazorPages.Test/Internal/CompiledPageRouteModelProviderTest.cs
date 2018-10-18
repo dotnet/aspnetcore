@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Hosting;
@@ -560,6 +559,57 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     Assert.Equal("/Pages/Home.cshtml", result.RelativePath);
                     Assert.Equal("/Home", result.ViewEnginePath);
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AllowsRazorFilesWithUnderscorePrefix()
+        {
+            // Arrange
+            var descriptors = new[]
+            {
+                CreateVersion_2_1_Descriptor("/Pages/_About.cshtml"),
+                CreateVersion_2_1_Descriptor("/Pages/Home.cshtml"),
+            };
+
+            var provider = CreateProvider(descriptors: descriptors);
+            var context = new PageRouteModelProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(
+                context.RouteModels,
+                result =>
+                {
+                    Assert.Equal("/Pages/_About.cshtml", result.RelativePath);
+                    Assert.Equal("/_About", result.ViewEnginePath);
+                    Assert.Collection(
+                        result.Selectors,
+                        selector => Assert.Equal("_About", selector.AttributeRouteModel.Template));
+                    Assert.Collection(
+                        result.RouteValues.OrderBy(k => k.Key),
+                        kvp =>
+                        {
+                            Assert.Equal("page", kvp.Key);
+                            Assert.Equal("/_About", kvp.Value);
+                        });
+                },
+                result =>
+                {
+                    Assert.Equal("/Pages/Home.cshtml", result.RelativePath);
+                    Assert.Equal("/Home", result.ViewEnginePath);
+                    Assert.Collection(
+                        result.Selectors,
+                        selector => Assert.Equal("Home", selector.AttributeRouteModel.Template));
+                    Assert.Collection(
+                        result.RouteValues.OrderBy(k => k.Key),
+                        kvp =>
+                        {
+                            Assert.Equal("page", kvp.Key);
+                            Assert.Equal("/Home", kvp.Value);
+                        });
                 });
         }
 
