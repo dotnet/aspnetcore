@@ -1,13 +1,13 @@
 ﻿<Project>
   <PropertyGroup>
-    <DotNetMajorVersion>2</DotNetMajorVersion>
-    <DotNetMinorVersion>2</DotNetMinorVersion>
+    <DotNetMajorVersion>3</DotNetMajorVersion>
+    <DotNetMinorVersion>0</DotNetMinorVersion>
     <DotNetPatchVersion>0</DotNetPatchVersion>
     <VersionPrefix>$(DotNetMajorVersion).$(DotNetMinorVersion).$(DotNetPatchVersion)</VersionPrefix>
-    <AspNetCoreModuleVersionMajor>12</AspNetCoreModuleVersionMajor>
+    <AspNetCoreModuleVersionMajor>13</AspNetCoreModuleVersionMajor>
     <AspNetCoreModuleVersionMinor>$(DotNetMinorVersion)</AspNetCoreModuleVersionMinor>
     <AspNetCoreModuleVersionRevision>$(DotNetPatchVersion)</AspNetCoreModuleVersionRevision>
-    <VersionSuffix>rtm</VersionSuffix>
+    <VersionSuffix>alpha1</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>

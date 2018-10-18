@@ -8,20 +8,20 @@ init:
   - git config --global core.autocrlf true
 branches:
   only:
-    - dev
-    - /^release\/.*$/
-    - /^(.*\/)?ci-.*$/
+  - master
+  - /^release\/.*$/
+  - /^(.*\/)?ci-.*$/
 install:
-  - ps: .\tools\update_schema.ps1
-  - git submodule update --init --recursive
-  - net start w3svc
+- ps: .\tools\update_schema.ps1
+- git submodule update --init --recursive
+- net start w3svc
 build_script:
-  - ps: .\run.ps1 default-build
+- ps: .\run.ps1 default-build
 clone_depth: 1
 environment:
   global:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
-test: off
-deploy: off
+test: 'off'
+deploy: 'off'
 os: Visual Studio 2017
