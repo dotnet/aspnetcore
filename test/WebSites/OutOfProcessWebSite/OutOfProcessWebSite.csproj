@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="$(MicrosoftAspNetCoreResponseCompressionPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(MicrosoftAspNetCoreWebUtilitiesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)" />

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,11 @@ namespace TestSite
 {
     public partial class Startup
     {
+        public void ConfigureServices(IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddResponseCompression();
+        }
+
         private async Task HostingEnvironment(HttpContext ctx)
         {
             var hostingEnv = ctx.RequestServices.GetService<IHostingEnvironment>();
@@ -94,6 +100,18 @@ namespace TestSite
         {
             context.Response.Headers["Server"] = "MyServer/7.8";
             return Task.CompletedTask;
+        }
+
+        public void CompressedData(IApplicationBuilder builder)
+        {
+            builder.UseResponseCompression();
+            // write random bytes to check that compressed data is passed through
+            builder.Run(
+                async context =>
+                {
+                    context.Response.ContentType = "text/html";
+                    await context.Response.Body.WriteAsync(new byte[100], 0, 100);
+                });
         }
     }
 }

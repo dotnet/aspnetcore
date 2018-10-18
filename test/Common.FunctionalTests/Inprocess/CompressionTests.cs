@@ -13,11 +13,11 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(IISCompressionSiteCollection.Name)]
-    public class CompressionTests : FixtureLoggedTest
+    public class CompressionModuleTests : FixtureLoggedTest
     {
         private readonly IISCompressionSiteFixture _fixture;
 
-        public CompressionTests(IISCompressionSiteFixture fixture): base(fixture)
+        public CompressionModuleTests(IISCompressionSiteFixture fixture): base(fixture)
         {
             _fixture = fixture;
         }
