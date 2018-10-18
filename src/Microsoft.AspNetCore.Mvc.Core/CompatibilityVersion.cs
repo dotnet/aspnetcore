@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Mvc
         ///     <item><description><c>ApiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses</c></description></item>
         ///     <item><description><c>MvcDataAnnotationsLocalizationOptions.AllowDataAnnotationsLocalizationForEnumDisplayAttributes</c></description></item>
         ///     <item><description><see cref="MvcOptions.EnableEndpointRouting" /></description></item>
+        ///     <item><description><see cref="MvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent"/></description></item>
         ///     <item><description><see cref="MvcOptions.MaxValidationDepth" /></description></item>
         ///     <item><description><c>RazorPagesOptions.AllowDefaultHandlingForOptionsRequests</c></description></item>
         ///     <item><description><c>RazorViewEngineOptions.AllowRecompilingViewsOnFileChange</c></description></item>

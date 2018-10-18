@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
         private readonly CompatibilitySwitch<bool> _enableEndpointRouting;
         private readonly NullableCompatibilitySwitch<int> _maxValidationDepth;
+        private readonly CompatibilitySwitch<bool> _allowShortCircuitingValidationWhenNoValidatorsArePresent;
         private readonly ICompatibilitySwitch[] _switches;
 
         /// <summary>
@@ -58,6 +59,7 @@ namespace Microsoft.AspNetCore.Mvc
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
             _enableEndpointRouting = new CompatibilitySwitch<bool>(nameof(EnableEndpointRouting));
             _maxValidationDepth = new NullableCompatibilitySwitch<int>(nameof(MaxValidationDepth));
+            _allowShortCircuitingValidationWhenNoValidatorsArePresent = new CompatibilitySwitch<bool>(nameof(AllowShortCircuitingValidationWhenNoValidatorsArePresent));
 
             _switches = new ICompatibilitySwitch[]
             {
@@ -68,6 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
                 _suppressBindingUndefinedValueToEnumType,
                 _enableEndpointRouting,
                 _maxValidationDepth,
+                _allowShortCircuitingValidationWhenNoValidatorsArePresent,
             };
         }
 
@@ -440,6 +443,44 @@ namespace Microsoft.AspNetCore.Mvc
 
                 _maxValidationDepth.Value = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines if <see cref="ValidationVisitor"/>
+        /// can short-circuit validation when a model does not have any associated validators.
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="true"/> if the version is
+        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="false"/> otherwise.
+        /// </value>
+        /// <remarks>
+        /// When <see cref="ModelMetadata.HasValidators"/> is <see langword="true"/>, that is, it is determined
+        /// that a model or any of it's properties or collection elements cannot have any validators,
+        /// <see cref="ValidationVisitor"/> can short-circuit validation for the model and mark the object
+        /// graph as valid. Setting this property to <see langword="true"/>, allows <see cref="ValidationVisitor"/> to
+        /// perform this optimization.
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
+        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> then
+        /// this setting will have the value <see langword="true"/> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// earlier then this setting will have the value <see langword="false"/> unless explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent
+        {
+            get => _allowShortCircuitingValidationWhenNoValidatorsArePresent.Value;
+            set => _allowShortCircuitingValidationWhenNoValidatorsArePresent.Value = value;
         }
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()

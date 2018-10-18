@@ -111,6 +111,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public bool ValidateComplexTypesIfChildValidationFails { get; set; }
 
         /// <summary>
+        ///  Gets or sets a value that determines if <see cref="ValidationVisitor"/> can short circuit validation when a model
+        ///  does not have any associated validators.
+        /// </summary>
+        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; }
+
+        /// <summary>
         /// Validates a object.
         /// </summary>
         /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
@@ -267,7 +273,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             }
             // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
             // is not invalid (i.e. is one of Unvalidated, Valid, or Skipped) we can safely mark the graph as valid.
-            else if (metadata.HasValidators == false &&
+            else if (
+                AllowShortCircuitingValidationWhenNoValidatorsArePresent &&
+                metadata.HasValidators == false &&
                 ModelState.GetFieldValidationState(key) != ModelValidationState.Invalid)
             {
                 // No validators will be created for this graph of objects. Mark it as valid if it wasn't previously validated.

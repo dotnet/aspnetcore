@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultObjectValidatorTests
     {
-        private readonly MvcOptions _options = new MvcOptions();
+        private readonly MvcOptions _options = new MvcOptions { AllowShortCircuitingValidationWhenNoValidatorsArePresent = true };
 
         private ModelMetadataProvider MetadataProvider { get; } = TestModelMetadataProvider.CreateDefaultProvider();
 

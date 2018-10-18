@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -46,6 +45,7 @@ namespace Microsoft.AspNetCore.Mvc
                 validationState);
 
             visitor.MaxValidationDepth = _mvcOptions.MaxValidationDepth;
+            visitor.AllowShortCircuitingValidationWhenNoValidatorsArePresent = _mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent;
 
             return visitor;
         }
