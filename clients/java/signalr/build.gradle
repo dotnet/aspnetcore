@@ -38,6 +38,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testCompile 'org.junit.jupiter:junit-jupiter-params'
     testRuntime 'org.junit.jupiter:junit-jupiter-engine'
+    testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
     implementation 'com.google.code.gson:gson'
     implementation 'com.squareup.okhttp3:okhttp'
     implementation 'io.reactivex.rxjava2:rxjava'
