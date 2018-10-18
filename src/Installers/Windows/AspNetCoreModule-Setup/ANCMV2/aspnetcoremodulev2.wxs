@@ -219,12 +219,6 @@
             <?endif ?>
         </Directory>
 
-        <Component Id="RestartServices" Guid="f1ff9f73-1cf2-4493-9331-569679c285be" Directory="IISInstallDir">
-            <CreateFolder/>
-            <ServiceControl Id="NetStopWas" Name="was" Stop="both" Wait="yes" />
-            <ServiceControl Id="NetStartWas" Name="w3svc" Start="both" Wait="yes" />
-        </Component>
-
         <!-- Feature Definition -->
         <Feature Id="AspNetCoreModuleFeature" Title="!(loc.AspNetCoreModuleProductTitle)" Description="!(loc.AspNetCoreModuleProductDescription)" Level="1">
             <ComponentRef Id="C_DiscoverabilityKey"/>
@@ -236,7 +230,6 @@
             <ComponentRef Id="AspNetCoreModuleV2.wow"/>
             <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
             <?endif ?>
-            <ComponentRef Id="RestartServices" />
         </Feature>
 
         <!-- User Interface -->
