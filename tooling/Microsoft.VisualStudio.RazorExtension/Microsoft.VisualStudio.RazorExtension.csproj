@@ -27,6 +27,7 @@
     <IsProductComponent>true</IsProductComponent>
     <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
     <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <IncludePackageReferencesInVSIXContainer>false</IncludePackageReferencesInVSIXContainer>
   </PropertyGroup>
   <Import Project="..\..\version.props" />
   <Import Project="..\..\build\sources.props" />
@@ -41,10 +42,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.VisualStudio.RazorExtension</RootNamespace>
     <AssemblyName>Microsoft.VisualStudio.RazorExtension</AssemblyName>
-    <!--
-    We exclude some facade-only assemblies (i.e. assemblies without any implementation) from the VSIX using the SuppressFromVsix ItemGroup listed in this file.
-    The list is dependent on the framework being targeted. Changes to TargetFrameworkVersion would warrant rebuilding the SuppressFromVsix ItemGroup.
-    -->
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
@@ -239,39 +236,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.8.28010" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.8.3252" />
   </ItemGroup>
-  <ItemDefinitionGroup>
-    <SuppressFromVsix>
-      <Visible>false</Visible>
-    </SuppressFromVsix>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <SuppressFromVsix Include="Esent.Interop.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.CSharp.EditorFeatures.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.EditorFeatures.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.EditorFeatures.Text.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Elfie.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Features.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.VisualBasic.EditorFeatures.dll" />
-    <SuppressFromVsix Include="System.AppContext.dll" />
-    <SuppressFromVsix Include="System.Console.dll" />
-    <SuppressFromVsix Include="System.Diagnostics.FileVersionInfo.dll" />
-    <SuppressFromVsix Include="System.Diagnostics.StackTrace.dll" />
-    <SuppressFromVsix Include="System.IO.Compression.dll" />
-    <SuppressFromVsix Include="System.IO.FileSystem.dll" />
-    <SuppressFromVsix Include="System.IO.FileSystem.Primitives.dll" />
-    <SuppressFromVsix Include="System.Runtime.InteropServices.RuntimeInformation.dll" />
-    <SuppressFromVsix Include="System.Security.Cryptography.Algorithms.dll" />
-    <SuppressFromVsix Include="System.Security.Cryptography.Encoding.dll" />
-    <SuppressFromVsix Include="System.Security.Cryptography.Primitives.dll" />
-    <SuppressFromVsix Include="System.Security.Cryptography.X509Certificates.dll" />
-    <SuppressFromVsix Include="System.Text.Encoding.CodePages.dll" />
-    <SuppressFromVsix Include="System.Threading.Thread.dll" />
-    <SuppressFromVsix Include="System.ValueTuple.dll" />
-    <SuppressFromVsix Include="System.Xml.ReaderWriter.dll" />
-    <SuppressFromVsix Include="System.Xml.XmlDocument.dll" />
-    <SuppressFromVsix Include="System.Xml.XPath.dll" />
-    <SuppressFromVsix Include="System.Xml.XPath.XDocument.dll" />
-  </ItemGroup>
+
   <Target Name="CopySymbolsToOutput" AfterTargets="Build" Condition="'$(SymbolsPublishDir)' != ''">
     <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(SymbolsPublishDir)" />
   </Target>
