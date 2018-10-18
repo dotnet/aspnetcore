@@ -266,6 +266,7 @@
       "51", //EntityFrameworkCore-ci
       "135", //aspnet-Blazor-ci-official
       "66", //KestrelHttpServer-ci
+      "91", //AspNetCore-fast-pr-validation
       // Universe
       "134" //aspnet-Universe-e2e-tests
     ],
