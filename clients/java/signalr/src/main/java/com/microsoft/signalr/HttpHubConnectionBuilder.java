@@ -22,12 +22,12 @@ public class HttpHubConnectionBuilder {
         this.url = url;
     }
 
-    public HttpHubConnectionBuilder withTransport(Transport transport) {
+    HttpHubConnectionBuilder withTransport(Transport transport) {
         this.transport = transport;
         return this;
     }
 
-    public HttpHubConnectionBuilder withHttpClient(HttpClient httpClient) {
+    HttpHubConnectionBuilder withHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
         return this;
     }
