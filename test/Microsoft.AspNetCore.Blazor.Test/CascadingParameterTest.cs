@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
                 builder.OpenComponent<CascadingValue<string>>(0);
                 builder.AddAttribute(1, "Value", providedValue);
-                builder.AddAttribute(2, "Fixed", true);
+                builder.AddAttribute(2, "IsFixed", true);
                 builder.AddAttribute(3, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
                 {
                     if (shouldIncludeChild)
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var component = new TestComponent(builder =>
             {
                 builder.OpenComponent<CascadingValue<object>>(0);
-                builder.AddAttribute(1, "Fixed", isFixed);
+                builder.AddAttribute(1, "IsFixed", isFixed);
                 builder.AddAttribute(2, "Value", new object());
                 builder.CloseComponent();
             });
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             isFixed = true;
             var ex = Assert.Throws<InvalidOperationException>(() => component.TriggerRender());
-            Assert.Equal("The value of Fixed cannot be changed dynamically.", ex.Message);
+            Assert.Equal("The value of IsFixed cannot be changed dynamically.", ex.Message);
         }
 
         [Fact]
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.OpenComponent<CascadingValue<object>>(0);
                 if (isFixed) // Showing also that "unset" is treated as "false"
                 {
-                    builder.AddAttribute(1, "Fixed", true);
+                    builder.AddAttribute(1, "IsFixed", true);
                 }
                 builder.AddAttribute(2, "Value", new object());
                 builder.CloseComponent();
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             isFixed = false;
             var ex = Assert.Throws<InvalidOperationException>(() => component.TriggerRender());
-            Assert.Equal("The value of Fixed cannot be changed dynamically.", ex.Message);
+            Assert.Equal("The value of IsFixed cannot be changed dynamically.", ex.Message);
         }
 
         private static T FindComponent<T>(CapturedBatch batch, out int componentId)

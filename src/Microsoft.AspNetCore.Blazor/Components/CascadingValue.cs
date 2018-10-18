@@ -42,11 +42,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// change notifications. Set this flag only if you will not change
         /// <see cref="Value"/> during the component's lifetime.
         /// </summary>
-        [Parameter] private bool Fixed { get; set; }
+        [Parameter] private bool IsFixed { get; set; }
 
         object ICascadingValueComponent.CurrentValue => Value;
 
-        bool ICascadingValueComponent.CurrentValueIsFixed => Fixed;
+        bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
 
         /// <inheritdoc />
         public void Init(RenderHandle renderHandle)
@@ -63,11 +63,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
             var hasSuppliedValue = false;
             var previousValue = Value;
-            var previousFixed = Fixed;
+            var previousFixed = IsFixed;
             Value = default;
             ChildContent = null;
             Name = null;
-            Fixed = false;
+            IsFixed = false;
 
             foreach (var parameter in parameters)
             {
@@ -88,9 +88,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
                         throw new ArgumentException($"The parameter '{nameof(Name)}' for component '{nameof(CascadingValue<T>)}' does not allow null or empty values.");
                     }
                 }
-                else if (parameter.Name.Equals(nameof(Fixed), StringComparison.OrdinalIgnoreCase))
+                else if (parameter.Name.Equals(nameof(IsFixed), StringComparison.OrdinalIgnoreCase))
                 {
-                    Fixed = (bool)parameter.Value;
+                    IsFixed = (bool)parameter.Value;
                 }
                 else
                 {
@@ -98,9 +98,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
                 }
             }
 
-            if (_hasSetParametersPreviously && Fixed != previousFixed)
+            if (_hasSetParametersPreviously && IsFixed != previousFixed)
             {
-                throw new InvalidOperationException($"The value of {nameof(Fixed)} cannot be changed dynamically.");
+                throw new InvalidOperationException($"The value of {nameof(IsFixed)} cannot be changed dynamically.");
             }
 
             _hasSetParametersPreviously = true;
@@ -145,11 +145,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
         void ICascadingValueComponent.Subscribe(ComponentState subscriber)
         {
 #if DEBUG
-            if (Fixed)
+            if (IsFixed)
             {
                 // Should not be possible. User code cannot trigger this.
                 // Checking only to catch possible future framework bugs.
-                throw new InvalidOperationException($"Cannot subscribe to a {typeof(CascadingValue<>).Name} when {nameof(Fixed)} is true.");
+                throw new InvalidOperationException($"Cannot subscribe to a {typeof(CascadingValue<>).Name} when {nameof(IsFixed)} is true.");
             }
 #endif
 
