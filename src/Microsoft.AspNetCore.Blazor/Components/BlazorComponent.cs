@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.RenderTree;
@@ -71,9 +71,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// Override this method if you will perform an asynchronous operation and
         /// want the component to refresh when that operation is completed.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing any asynchronous operation, or <see langword="null"/>.</returns>
+        /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
         protected virtual Task OnInitAsync()
-            => null;
+            => Task.CompletedTask;
 
         /// <summary>
         /// Method invoked when the component has received parameters from its parent in
@@ -87,9 +87,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// Method invoked when the component has received parameters from its parent in
         /// the render tree, and the incoming values have been assigned to properties.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing any asynchronous operation, or <see langword="null"/>.</returns>
+        /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
         protected virtual Task OnParametersSetAsync()
-            => null;
+            => Task.CompletedTask;
 
         /// <summary>
         /// Notifies the component that its state has changed. When applicable, this will
@@ -128,9 +128,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// not automatically re-render after the completion of any returned <see cref="Task"/>, because
         /// that would cause an infinite render loop.
         /// </summary>
-        /// <returns>A <see cref="Task"/> representing any asynchronous operation, or <see langword="null"/>.</returns>
+        /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
         protected virtual Task OnAfterRenderAsync()
-            => null;
+            => Task.CompletedTask;
 
         void IComponent.Init(RenderHandle renderHandle)
         {
@@ -221,8 +221,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
         {
             OnAfterRender();
 
-            OnAfterRenderAsync()?.ContinueWith(task =>
+            var onAfterRenderTask = OnAfterRenderAsync();
+            if (onAfterRenderTask != null && onAfterRenderTask.Status != TaskStatus.RanToCompletion)
             {
+                onAfterRenderTask.ContinueWith(task =>
+                {
                 // Note that we don't call StateHasChanged to trigger a render after
                 // handling this, because that would be an infinite loop. The only
                 // reason we have OnAfterRenderAsync is so that the developer doesn't
@@ -230,10 +233,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
                 // the case where they want to start an async task.
 
                 if (task.Exception != null)
-                {
-                    HandleException(task.Exception);
-                }
-            });
+                    {
+                        HandleException(task.Exception);
+                    }
+                });
+            }
         }
     }
 }
