@@ -11,7 +11,6 @@ namespace Microsoft.CodeAnalysis.Experiment
     {
         public SpanMapResult(Document document, LinePositionSpan linePositionSpan)
         {
-
         }
 
     }

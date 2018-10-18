@@ -60,6 +60,62 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
+        public void TryGetLinePositionSpan_SpanMatchesSourceMapping_ReturnsTrue()
+        {
+            // Arrange
+            var content = @"
+@SomeProperty
+";
+            var sourceText = SourceText.From(content);
+            var codeDocument = GetCodeDocument(content);
+            var csharpDocument = codeDocument.GetCSharpDocument();
+            var generatedCode = csharpDocument.GeneratedCode;
+
+            var symbol = "SomeProperty";
+            var span = new TextSpan(generatedCode.IndexOf(symbol), symbol.Length);
+
+            // Position of `SomeProperty` in the source code.
+            var expectedLineSpan = new LinePositionSpan(new LinePosition(1, 1), new LinePosition(1, 13));
+
+            // Act
+            var result = GeneratedCodeContainer.TryGetLinePositionSpan(span, sourceText, csharpDocument, out var lineSpan);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedLineSpan, lineSpan);
+        }
+
+        [Fact]
+        public void TryGetLinePositionSpan_SpanMatchesSourceMapping_MatchingOnPosition_ReturnsTrue()
+        {
+            // Arrange
+            var content = @"
+@SomeProperty
+@SomeProperty
+@SomeProperty
+";
+            var sourceText = SourceText.From(content);
+            var codeDocument = GetCodeDocument(content);
+            var csharpDocument = codeDocument.GetCSharpDocument();
+            var generatedCode = csharpDocument.GeneratedCode;
+
+            var symbol = "SomeProperty";
+
+            // Second occurrence
+            var span = new TextSpan(generatedCode.IndexOf(symbol, generatedCode.IndexOf(symbol) + symbol.Length), symbol.Length);
+
+            // Position of `SomeProperty` in the source code.
+            var expectedLineSpan = new LinePositionSpan(new LinePosition(2, 1), new LinePosition(2, 13));
+
+            // Act
+            var result = GeneratedCodeContainer.TryGetLinePositionSpan(span, sourceText, csharpDocument, out var lineSpan);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedLineSpan, lineSpan);
+        }
+
+        [Fact]
         public void TryGetLinePositionSpan_SpanWithinSourceMapping_ReturnsTrue()
         {
             // Arrange
@@ -73,8 +129,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var csharpDocument = codeDocument.GetCSharpDocument();
             var generatedCode = csharpDocument.GeneratedCode;
 
-            // TODO: Make writing these tests a little less manual.
-            // Position of `SomeProperty` in the generated code.
             var symbol = "SomeProperty";
             var span = new TextSpan(generatedCode.IndexOf(symbol), symbol.Length);
 

@@ -153,6 +153,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     results.Add(new SpanMapResult(document, linePositionSpan));
                 }
+                else
+                {
+                    results.Add(null);
+                }
             }
 
             return Task.FromResult(results.ToImmutable());
@@ -161,31 +165,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // Internal for testing.
         internal static bool TryGetLinePositionSpan(TextSpan span, SourceText source, RazorCSharpDocument output, out LinePositionSpan linePositionSpan)
         {
-            for (var i = 0; i < output.SourceMappings.Count; i++)
+            var mappings = output.SourceMappings;
+            for (var i = 0; i < mappings.Count; i++)
             {
-                var mapping = output.SourceMappings[i];
-                if (span.Length > mapping.GeneratedSpan.Length)
-                {
-                    // If the length of the generated span is smaller they can't match. A C# expression
-                    // won't cover multiple generated spans.
-                    //
-                    // This heuristic is useful in the Razor context to filter out zero-length
-                    // spans.
-                    continue;
-                }
-
+                var mapping = mappings[i];
                 var original = mapping.OriginalSpan.AsTextSpan();
                 var generated = mapping.GeneratedSpan.AsTextSpan();
 
+                if (!generated.Contains(span))
+                {
+                    // If the search span isn't contained within the generated span, it is not a match. 
+                    // A C# identifier won't cover multiple generated spans.
+                    continue;
+                }
+
                 var leftOffset = span.Start - generated.Start;
                 var rightOffset = span.End - generated.End;
-                if (leftOffset >= 0 && rightOffset <= 0)
-                {
-                    // This span mapping contains the span.
-                    var adjusted = new TextSpan(original.Start + leftOffset, (original.End + rightOffset) - (original.Start + leftOffset));
-                    linePositionSpan = source.Lines.GetLinePositionSpan(adjusted);
-                    return true;
-                }
+                Debug.Assert(leftOffset >= 0);
+                Debug.Assert(rightOffset <= 0);
+
+                // Note: we don't handle imports here - the assumption is that for all of the scenarios we
+                // support, the span is in the original source document.
+                var adjusted = new TextSpan(original.Start + leftOffset, (original.End + rightOffset) - (original.Start + leftOffset));
+                linePositionSpan = source.Lines.GetLinePositionSpan(adjusted);
+                return true;
             }
 
             linePositionSpan = default;
