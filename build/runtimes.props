@@ -1,0 +1,21 @@
+<Project>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
+      Include="$(MicrosoftNETCoreApp22PackageVersion)"
+      Arch="x86"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+    <!--
+      The build doesn't support compiling the shared runtime on one machine along with running tests,
+      so this is enables installing the shared runtime from a previous build.
+    -->
+    <AspNetCoreRuntime Include="$(PackageVersion)" Feed="$(AspNetCoreFxFeed)" Condition="'$(InstallSharedRuntimeFromPreviousBuild)' == 'true'" />
+  </ItemGroup>
+
+</Project>

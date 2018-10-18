@@ -39,24 +39,6 @@
     <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)"
-      Feed="$(DotNetAssetRootUrl)"
-      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
-
-    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
-      Include="$(MicrosoftNETCoreApp22PackageVersion)"
-      Arch="x86"
-      Feed="$(DotNetAssetRootUrl)"
-      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
-
-      <!--
-        The build doesn't support compiling the shared runtime on one machine along with running tests,
-        so this is enables installing the shared runtime from a previous build.
-      -->
-      <AspNetCoreRuntime Include="$(PackageVersion)" Feed="$(AspNetCoreFxFeed)" Condition="'$(InstallSharedRuntimeFromPreviousBuild)' == 'true'" />
-  </ItemGroup>
-
   <!-- Properties for publishing -->
   <PropertyGroup>
     <!-- myget = non-orchestrated builds -->
@@ -68,6 +50,7 @@
     <PublishToTransportFeed Condition="$(PublishType.Contains('blob'))">true</PublishToTransportFeed>
   </PropertyGroup>
 
+  <Import Project="runtimes.props" />
   <Import Project="sources.props" />
   <Import Project="external-dependencies.props" />
   <Import Project="artifacts.props" />
