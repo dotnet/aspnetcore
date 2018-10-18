@@ -52,7 +52,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             {
                 if (_stopped)
                 {
-                    throw new IOException("IO stopped", NativeMethods.ERROR_OPERATION_ABORTED);
+                    // Abort all operation after IO was stopped
+                    ioOperation.Complete(NativeMethods.ERROR_OPERATION_ABORTED, 0);
+                    return;
                 }
 
                 if (_runningOperation != null)
