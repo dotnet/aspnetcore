@@ -9,28 +9,9 @@ resources:
     name: aspnet-BuildTools
     ref: refs/heads/master
 
-phases:
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+jobs:
+- template: .azure/templates/project-ci.yml@buildtools
   parameters:
-    agentOs: Windows
-    beforeBuild:
-    - task: NodeTool@0
-      displayName: Use Node 8.x
-      inputs:
-        versionSpec: 8.x
-
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
-  parameters:
-    agentOs: macOS
-    beforeBuild:
-    - task: NodeTool@0
-      displayName: Use Node 8.x
-      inputs:
-        versionSpec: 8.x
-
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
-  parameters:
-    agentOs: Linux
     beforeBuild:
     - task: NodeTool@0
       displayName: Use Node 8.x
