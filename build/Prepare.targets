@@ -18,7 +18,6 @@
   <Target Name="ExtractInputs">
     <ItemGroup>
       <_InputPackages Include="$(UnsignedPackagesDir)*.nupkg" />
-      <_InputVSIX Include="$(DepsDirectory)build\*.vsix" />
       <UnsignedSharedFx Include="$(DepsDirectory)runtime\*.zip" />
       <UnsignedOobArchive Include="$(DepsDirectory)build\AspNetCoreModule.zip" Condition="Exists('$(DepsDirectory)build\AspNetCoreModule.zip')" />
       <UnsignedOobArchive Include="$(DepsDirectory)build\runtime-site-extension-*.zip" />
@@ -36,21 +35,8 @@
       SourceFiles="@(AlreadySignedPackages)"
       DestinationFolder="$(PackagesOutputPath)" />
 
-    <!-- Filter already signed .vsix -->
-    <FilterSignedPackagesFiles Files="@(_InputVSIX)">
-      <Output TaskParameter="Signed" ItemName="AlreadySignedVSIX" />
-      <Output TaskParameter="Unsigned" ItemName="UnsignedVSIX" />
-    </FilterSignedPackagesFiles>
-
-    <MakeDir Directories="$(SignedVSIXPath)%(AlreadySignedVSIX.FileName)\" />
-
-    <StupidCopy Condition="'@(AlreadySignedVSIX)' != ''"
-      SourceFiles="%(AlreadySignedVSIX.FullPath);$(DepsDirectory)build\%(AlreadySignedVSIX.FileName).json"
-      DestinationFolder="$(SignedVSIXPath)%(AlreadySignedVSIX.FileName)\" />
-
     <ItemGroup>
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
-      <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
       <_UnzipFiles Include="@(UnsignedSharedFx)" Destination="$(UnsignedSharedFxPath)" />
       <_UnzipFiles Include="@(UnsignedOobArchive)" Destination="$(UnsignedOobArchivePath)" />
       <_UnzipFiles Include="@(PoliCheckPackages)" Destination="$(PoliCheckPath)" />
@@ -64,7 +50,6 @@
     </ItemGroup>
 
     <Warning Text="No archives for signing." Condition="'@(UnsignedOobArchive)'==''" />
-    <Warning Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
     <Warning Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
     <Warning Text="No aspnetcore shared framework found for signing." Condition="'@(UnsignedSharedFx)'==''" />
     <Warning Text="No MPacks found for signing." Condition="'@(UnsignedMPacks)'==''" />

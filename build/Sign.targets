@@ -7,7 +7,6 @@
       RebuildPackages;
       SignNupkgs;
       SignJars;
-      RebuildVSIXes;
       RebuildSharedFxs;
       RepackMPacks;
       SignCheck;
@@ -42,9 +41,6 @@
         $(UnsignedPackagesPath)**\*.psm1;
         $(UnsignedPackagesPath)**\*.ps1;"
         Exclude="@(ThirdPartyBinaries);@(SignExclusions)" />
-
-      <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll"
-        Exclude="@(SignExclusions)" />
 
       <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll"
         Exclude="@(SignExclusions)" />
@@ -82,7 +78,6 @@
     <ItemGroup>
       <AspNetCoreBinaries Include="
         @(PackageBinaries);
-        @(VSIXBinaries);
         @(OobArchiveBinaries);
         @(MPackBinaries);
         @(SharedFxBinaries);" />
@@ -224,54 +219,6 @@
       File="$(OutputFile)"
       SourceFiles="@(Files)"
       WorkingDirectory="$(MPackDirectory)" />
-  </Target>
-
-  <!-- Repacks and signs VSIXes -->
-  <Target Name="RebuildVSIXes">
-    <ItemGroup>
-      <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
-    </ItemGroup>
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="_RebuildVSIXes"
-        Condition="'@(_VSIXManifest)'!=''" />
-  </Target>
-
-  <Target Name="_RebuildVSIXes">
-    <ItemGroup>
-      <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
-      <VSIXManifest Include="@(_VSIXManifest)">
-        <VSIXName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))))</VSIXName>
-        <VSIXDir>$([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))\</VSIXDir>
-      </VSIXManifest>
-    </ItemGroup>
-
-    <MSBuild Condition="'@(VSIXManifest)' != ''"
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="ZipFile"
-        Properties="ZipRoot=%(VSIXManifest.VSIXDir);OutputDir=$(UnsignedVSIXWithSignedBinariesPath);Extension=.vsix" />
-
-    <ItemGroup>
-      <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
-
-      <_SignProject Remove="@(_SignProject)" />
-      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(VSIXToSign)' != ''">
-        <AdditionalProperties>
-          Certificate=$(MicrosoftOpc2);
-          JobName=AspNetCoreVSIX;
-          LocalBuild=$(LocalBuild);
-          Files=@(VSIXToSign)
-        </AdditionalProperties>
-      </_SignProject>
-    </ItemGroup>
-
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
-
-    <MakeDir Directories="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
-
-    <StupidCopy Condition="'@(VSIXToSign)' != ''"
-      SourceFiles="%(VSIXToSign.FullPath);$(DepsDirectory)build\%(VSIXToSign.FileName).json"
-      DestinationFolder="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
   </Target>
 
   <Target Name="SubmitCodeSign">

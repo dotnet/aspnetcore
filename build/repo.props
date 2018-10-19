@@ -15,7 +15,6 @@
     <SignedOutputPath>$(ArtifactsDir)Signed\</SignedOutputPath>
     <PackagesOutputPath>$(SignedOutputPath)Packages\</PackagesOutputPath>
     <SharedFxOutputPath>$(SignedOutputPath)SharedFx\</SharedFxOutputPath>
-    <SignedVSIXPath>$(SignedOutputPath)VSIX\</SignedVSIXPath>
     <SignedMPacksOutputPath>$(SignedOutputPath)MPacks\</SignedMPacksOutputPath>
     <SignedOobArchivePath>$(SignedOutputPath)OobArchives\</SignedOobArchivePath>
 
@@ -23,10 +22,8 @@
     <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
     <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
     <UnsignedPackagesWithSignedBinariesPath>$(IntermediateDir)UnsignedPackagesWithSignedBinaries\</UnsignedPackagesWithSignedBinariesPath>
-    <UnsignedVSIXPath>$(IntermediateDir)UnsignedVSIX\</UnsignedVSIXPath>
     <UnsignedSharedFxPath>$(IntermediateDir)SharedFx\</UnsignedSharedFxPath>
     <UnsignedOobArchivePath>$(IntermediateDir)UnsignedOobArchives\</UnsignedOobArchivePath>
-    <UnsignedVSIXWithSignedBinariesPath>$(IntermediateDir)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
     <UnsignedBinariesPath>$(IntermediateDir)FilesToSign\</UnsignedBinariesPath>
     <UnsignedMPacksPath>$(IntermediateDir)UnsignedMPacks\</UnsignedMPacksPath>
   </PropertyGroup>
