@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             }
         }
 
-        [ConditionalTheory(Skip= "https://github.com/aspnet/SignalR/issues/3058")]
+        [ConditionalTheory]
         [SkipIfDockerNotPresent]
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser(HttpTransportType transportType, string protocolName)
