@@ -1,0 +1,25 @@
+<Project>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+    <!-- These items are temporary, they should be removed when our repos update to netcoreapp3.0 -->
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+
+    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
+      Include="$(MicrosoftNETCoreAppPackageVersion)"
+      Arch="x86"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+      <!--
+        The build doesn't support compiling the shared runtime on one machine along with running tests,
+        so this is enables installing the shared runtime from a previous build.
+      -->
+      <AspNetCoreRuntime Include="$(PackageVersion)" Feed="$(AspNetCoreFxFeed)" Condition="'$(InstallSharedRuntimeFromPreviousBuild)' == 'true'" />
+  </ItemGroup>
+
+</Project>

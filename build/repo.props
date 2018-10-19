@@ -41,30 +41,6 @@
     <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
-      Feed="$(DotNetAssetRootUrl)"
-      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
-
-    <!-- These items are temporary, they should be removed when our repos update to netcoreapp3.0 -->
-    <!-- There is no linux-musl in 2.0. This was new in 2.1. -->
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" Condition="'$(SharedFXRid)' != 'linux-musl-x64'" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
-
-    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
-      Include="$(MicrosoftNETCoreApp30PackageVersion)"
-      Arch="x86"
-      Feed="$(DotNetAssetRootUrl)"
-      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
-
-      <!--
-        The build doesn't support compiling the shared runtime on one machine along with running tests,
-        so this is enables installing the shared runtime from a previous build.
-      -->
-      <AspNetCoreRuntime Include="$(PackageVersion)" Feed="$(AspNetCoreFxFeed)" Condition="'$(InstallSharedRuntimeFromPreviousBuild)' == 'true'" />
-  </ItemGroup>
-
   <!-- Properties for publishing -->
   <PropertyGroup>
     <!-- myget = non-orchestrated builds -->
@@ -76,6 +52,7 @@
     <PublishToTransportFeed Condition="$(PublishType.Contains('blob'))">true</PublishToTransportFeed>
   </PropertyGroup>
 
+  <Import Project="runtimes.props" />
   <Import Project="sources.props" />
   <Import Project="external-dependencies.props" />
   <Import Project="artifacts.props" />

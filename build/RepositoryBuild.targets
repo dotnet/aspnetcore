@@ -73,18 +73,12 @@
       <SkipTestsDueToMissingSharedFx Condition="'$(InstallSharedRuntimeFromPreviousBuild)' != 'true' And '$(TestsRequiredTheSharedRuntime)' == 'true' ">true</SkipTestsDueToMissingSharedFx>
 
       <RepositoryBuildArguments Condition="'$(CI)'== 'true'">$(RepositoryBuildArguments) -ci</RepositoryBuildArguments>
-      <RepositoryBuildArguments Condition="'$(CI)'== 'true' AND '$(OS)' != 'Windows_NT'">$(RepositoryBuildArguments) --dotnet-home '$(DOTNET_HOME)'</RepositoryBuildArguments>
-      <RepositoryBuildArguments Condition="'$(CI)'== 'true' AND '$(OS)' == 'Windows_NT'">$(RepositoryBuildArguments) -DotNetHome '$(DOTNET_HOME)'</RepositoryBuildArguments>
+      <RepositoryBuildArguments Condition="'$(CI)'== 'true'">$(RepositoryBuildArguments) -DotNetHome '$(DOTNET_HOME)'</RepositoryBuildArguments>
       <!-- Should reduce allowable package feeds to only nuget.org. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
-      <!--
-        Temporary: Don't real-sign EntityFrameworkCore inline due issues with SignTool and powershell scripts.
-        TODO: remove when https://github.com/aspnet/BuildTools/pull/788 is merged.
-      -->
-      <RepositoryBuildArguments Condition="'$(RepositoryToBuild)' != 'EntityFrameworkCore'">$(RepositoryBuildArguments) /p:SignType=$(SignType)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
