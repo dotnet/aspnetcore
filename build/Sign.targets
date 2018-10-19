@@ -123,7 +123,7 @@
 
   <Target Name="SignNupkgs">
     <PropertyGroup>
-      <_ManifestOutputPath>$(IntermediateDir)nupkg\</_ManifestOutputPath>
+      <_ManifestOutputPath>$(LogOutputDir)nupkg\</_ManifestOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -153,7 +153,7 @@
 
   <Target Name="SignJars">
     <PropertyGroup>
-      <_ManifestOutputPath>$(IntermediateDir)jar\</_ManifestOutputPath>
+      <_ManifestOutputPath>$(LogOutputDir)jar\</_ManifestOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -226,7 +226,7 @@
     <PropertyGroup>
       <SigningStagingDir>$(IntermediateDir)u\$(JobName)\</SigningStagingDir>
       <SignOutputDir>$(IntermediateDir)s\$(JobName)\</SignOutputDir>
-      <_ManifestOutputPath>$(IntermediateDir)esrpconfig\$(JobName)\</_ManifestOutputPath>
+      <_ManifestOutputPath>$(LogOutputDir)esrpconfig\$(JobName)\</_ManifestOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -247,8 +247,7 @@
       </_FilesToSign>
     </ItemGroup>
 
-    <Message Text="Submitting @(_FilesToSign->Distinct()->Count()) unique files for signing" Importance="High" />
-    <Message Text="Go grab a coffee. This is going to take a while..." Importance="High" Condition="@(_FilesToSign->Distinct()->Count()) > 300" />
+    <Message Text="$(JobName): Submitting @(_FilesToSign->Distinct()->Count()) unique files for signing" Importance="High" />
 
     <StupidCopy SourceFiles="@(_FilesToSign->Distinct()->'%(OriginalFilePath)')" DestinationFiles="%(_FilesToSign.Identity)" />
 
