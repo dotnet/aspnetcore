@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Identity
         /// can be found by the application.
         /// </remarks>
         /// <param name="builder">The <see cref="IdentityBuilder"/>.</param>
+        /// <param name="framework">The <see cref="UIFramework"/>.</param>
         /// <returns>The <see cref="IdentityBuilder"/>.</returns>
         public static IdentityBuilder AddDefaultUI(
             this IdentityBuilder builder,

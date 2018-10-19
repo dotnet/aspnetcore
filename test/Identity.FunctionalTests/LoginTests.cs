@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         [Fact]
-        public async Task UserLockedOut_AfterMaxFailedAccessAttempts_WithGlobalAuthorizeFilter()
+        public async Task UserNotLockedOut_AfterMaxFailedAccessAttempts_WithGlobalAuthorizeFilter()
         {
             // Arrange
             var emailSender = new ContosoEmailSender();
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await UserStories.ConfirmEmailAsync(registrationEmail, client);
 
             // Act & Assert
-            await UserStories.LockoutExistingUserAsync(newClient, userName, wrongPassword);
+            await UserStories.LoginFailsWithWrongPasswordAsync(newClient, userName, wrongPassword);
         }
     }
 }
