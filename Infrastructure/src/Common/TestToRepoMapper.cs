@@ -48,6 +48,10 @@ namespace Common
                 {
                     return "Security";
                 }
+                else if (name.StartsWith("Microsoft.AspNetCore.FunctionalTests.Microsoft.AspNetCore.Tests.WebHostFunctionalTests"))
+                {
+                    return "MetaPackages";
+                }
                 else if (name.StartsWith("Microsoft.AspNetCore.", StringComparison.OrdinalIgnoreCase))
                 {
                     var parts = name.Split('.');
