@@ -57,11 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             foreach (var item in _razorFileSystem.EnumerateItems(_pagesOptions.RootDirectory))
             {
-                if (!IsRouteable(item))
-                {
-                    continue;
-                }
-
                 var relativePath = item.CombinedPath;
                 if (context.RouteModels.Any(m => string.Equals(relativePath, m.RelativePath, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -99,11 +94,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             foreach (var item in _razorFileSystem.EnumerateItems(AreaRootDirectory))
             {
-                if (!IsRouteable(item))
-                {
-                    continue;
-                }
-
                 var relativePath = item.CombinedPath;
                 if (context.RouteModels.Any(m => string.Equals(relativePath, m.RelativePath, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -124,12 +114,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     context.RouteModels.Add(routeModel);
                 }
             }
-        }
-
-        private static bool IsRouteable(RazorProjectItem item)
-        {
-            // Pages like _ViewImports should not be routeable.
-            return !item.FileName.StartsWith("_", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
