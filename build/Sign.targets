@@ -6,7 +6,6 @@
       RebuildOobArchives;
       RebuildPackages;
       SignNupkgs;
-      SignJars;
       RebuildSharedFxs;
       RepackMPacks;
       SignCheck;
@@ -144,44 +143,6 @@
 
     <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
       SourceFiles="@(_UnsignedNupkgs)"
-      DestinationFolder="$(PackagesOutputPath)" />
-  </Target>
-
-  <Target Name="SignJars">
-    <ItemGroup>
-      <_InputJar Include="$(UnsignedPackagesDir)**\*.jar" />
-    </ItemGroup>
-
-    <!-- Filter already signed .jar -->
-    <FilterSignedPackagesFiles Files="@(_InputJar)">
-      <Output TaskParameter="Signed" ItemName="AlreadySignedJar" />
-      <Output TaskParameter="Unsigned" ItemName="_UnsignedJars" />
-    </FilterSignedPackagesFiles>
-
-    <StupidCopy Condition="'@(AlreadySignedJar)' != ''"
-      SourceFiles="@(AlreadySignedJar)"
-      DestinationFolder="$(PackagesOutputPath)" />
-
-    <Microsoft.Build.OOB.ESRP.CreateSignManifests Condition="'@(_UnsignedJars)'!=''"
-       ApplicationId="$(ESRPApplicationId)"
-       DestinationRootDirectory="$(PackagesOutputPath)"
-       Files="@(_UnsignedJars)"
-       ManifestOutputPath="$(LogOutputDir)jar\"
-       KeyCodes="$(MicrosoftJava)">
-      <Output TaskParameter="AuthJson" PropertyName="AuthJson_Jar" />
-      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson_Jar" />
-      <Output TaskParameter="InputJson" PropertyName="InputJson_Jar" />
-      <Output TaskParameter="OutputJson" PropertyName="OutputJson_Jar" />
-    </Microsoft.Build.OOB.ESRP.CreateSignManifests>
-
-    <Warning Text="There are no .jar files to sign." Condition="'@(_UnsignedJars)'!=''" />
-
-    <Exec Condition="'@(_UnsignedJars)'!=''"
-      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson_Jar) -p $(PolicyJson_Jar) -i $(InputJson_Jar) -o $(OutputJson_Jar) -l progress -f $(LogOutputDir)sign-jar.log"
-      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
-
-    <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
-      SourceFiles="@(_UnsignedJars)"
       DestinationFolder="$(PackagesOutputPath)" />
   </Target>
 
