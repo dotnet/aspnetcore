@@ -2,12 +2,14 @@
   <PropertyGroup>
     <DotNetMajorVersion>2</DotNetMajorVersion>
     <DotNetMinorVersion>2</DotNetMinorVersion>
+    <DotNetMinorVersion Condition="'$(BuildServerIIS21)' == 'true'">1</DotNetMinorVersion>
     <DotNetPatchVersion>0</DotNetPatchVersion>
     <VersionPrefix>$(DotNetMajorVersion).$(DotNetMinorVersion).$(DotNetPatchVersion)</VersionPrefix>
     <AspNetCoreModuleVersionMajor>12</AspNetCoreModuleVersionMajor>
-    <AspNetCoreModuleVersionMinor>$(DotNetMinorVersion)</AspNetCoreModuleVersionMinor>
+    <AspNetCoreModuleVersionMinor>2</AspNetCoreModuleVersionMinor>
     <AspNetCoreModuleVersionRevision>$(DotNetPatchVersion)</AspNetCoreModuleVersionRevision>
     <VersionSuffix>rtm</VersionSuffix>
+    <VersionSuffix Condition="'$(BuildServerIIS21)' == 'true'">-ancm-oob</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>

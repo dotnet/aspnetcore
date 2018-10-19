@@ -1,0 +1,32 @@
+trigger:
+- release/2.2
+
+# See https://github.com/aspnet/BuildTools
+resources:
+  repositories:
+  - repository: buildtools
+    type: github
+    endpoint: DotNet-Bot GitHub Connection
+    name: aspnet/BuildTools
+    ref: refs/heads/release/2.2
+
+phases:
+- template: .azure\templates\jobs\default-build.yml@buildtools
+  parameters:
+    agentOs: Windows
+    codeSign: false
+    buildArgs: /p:BuildServerIIS21=true /p:SkipIISExpressTests=true /p:SkipIISBackwardsCompatibilityTests=true
+    beforeBuild:
+      - powershell: "& ./tools/UpdateIISExpressCertificate.ps1; & ./tools/update_schema.ps1; & ./tools/SetupTestEnvironment.ps1 SetupDumps"
+        displayName: Prepare repo
+    afterBuild:
+      - powershell: "& ./tools/SetupTestEnvironment.ps1 Shutdown"
+        displayName: Stop AppVerifier
+        condition: always()
+      - task: PublishBuildArtifacts@1
+        displayName: Upload logs
+        condition: eq(variables['system.pullrequest.isfork'], false)
+        inputs:
+          artifactName: logs
+          artifactType: Container
+          pathtoPublish: artifacts/logs
