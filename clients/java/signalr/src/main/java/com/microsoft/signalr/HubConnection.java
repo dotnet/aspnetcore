@@ -55,18 +55,38 @@ public class HubConnection {
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
 
+    /**
+     * Sets the server timeout interval for the connection.
+     *
+     * @param serverTimeout The server timeout duration.
+     */
     public void setServerTimeout(Duration serverTimeout) {
         this.serverTimeout = serverTimeout;
     }
 
+    /**
+     * Gets the server timeout duration.
+     *
+     * @return The server timeout duration.
+     */
     public Duration getServerTimeout() {
         return this.serverTimeout;
     }
 
+    /**
+     * Sets the keep alive interval duration.
+     *
+     * @param keepAliveInterval The interval at which the connection should send keep alive messages.
+     */
     public void setKeepAliveInterval(Duration keepAliveInterval) {
         this.keepAliveInterval = keepAliveInterval;
     }
 
+    /**
+     * Gets the keep alive interval.
+     *
+     * @return The interval between keep alive messages.
+     */
     public Duration getKeepAliveInterval() {
         return this.keepAliveInterval;
     }
@@ -339,6 +359,7 @@ public class HubConnection {
 
     /**
      * Stops a connection to the server.
+     *
      * @param errorMessage An error message if the connected needs to be stopped because of an error.
      * @return A Completable that completes when the connection has been stopped.
      */
@@ -364,6 +385,7 @@ public class HubConnection {
 
     /**
      * Stops a connection to the server.
+     *
      * @return A Completable that completes when the connection has been stopped.
      */
     public Completable stop() {
@@ -416,6 +438,15 @@ public class HubConnection {
         sendHubMessage(invocationMessage);
     }
 
+    /**
+     * Invokes a hub method on the server using the specified method name and arguments.
+     *
+     * @param returnType The expected return type.
+     * @param method The name of the server method to invoke.
+     * @param args The arguments used to invoke the server method.
+     * @param <T> The expected return type.
+     * @return A Single that yields the return value when the invocation has completed.
+     */
     @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
         String id = connectionState.getNextInvocationId();
@@ -478,6 +509,11 @@ public class HubConnection {
         logger.trace("Removing handlers for client method: {}.", name);
     }
 
+    /**
+     * Registers a callback to run when the connection is closed.
+     *
+     * @param callback A callback to run when the connection closes.
+     */
     public void onClosed(Consumer<Exception> callback) {
         if (onClosedCallbackList == null) {
             onClosedCallbackList = new ArrayList<>();

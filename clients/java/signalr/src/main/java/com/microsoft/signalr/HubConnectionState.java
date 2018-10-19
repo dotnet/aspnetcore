@@ -3,6 +3,9 @@
 
 package com.microsoft.signalr;
 
+/**
+ * Indicates the state of the {@link HubConnection}.
+ */
 public enum HubConnectionState {
     CONNECTED,
     DISCONNECTED,
