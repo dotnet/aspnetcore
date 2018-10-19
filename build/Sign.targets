@@ -122,10 +122,6 @@
   </Target>
 
   <Target Name="SignNupkgs">
-    <PropertyGroup>
-      <_ManifestOutputPath>$(LogOutputDir)nupkg\</_ManifestOutputPath>
-    </PropertyGroup>
-
     <ItemGroup>
       <_UnsignedNupkgs Include="$(UnsignedPackagesWithSignedBinariesPath)**\*.nupkg" />
     </ItemGroup>
@@ -134,16 +130,16 @@
        ApplicationId="$(ESRPApplicationId)"
        DestinationRootDirectory="$(PackagesOutputPath)"
        Files="@(_UnsignedNupkgs)"
-       ManifestOutputPath="$(_ManifestOutputPath)"
+       ManifestOutputPath="$(LogOutputDir)nupkg\"
        KeyCodes="$(MicrosoftNuGet)">
-      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
-      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
-      <Output TaskParameter="InputJson" PropertyName="InputJson" />
-      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
+      <Output TaskParameter="AuthJson" PropertyName="AuthJson_Nupkg" />
+      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson_Nupkg" />
+      <Output TaskParameter="InputJson" PropertyName="InputJson_Nupkg" />
+      <Output TaskParameter="OutputJson" PropertyName="OutputJson_Nupkg" />
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-packages.log"
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson_Nupkg) -p $(PolicyJson_Nupkg) -i $(InputJson_Nupkg) -o $(OutputJson_Nupkg) -l progress -f $(LogOutputDir)sign-nupkg.log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
     <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
@@ -152,10 +148,6 @@
   </Target>
 
   <Target Name="SignJars">
-    <PropertyGroup>
-      <_ManifestOutputPath>$(LogOutputDir)jar\</_ManifestOutputPath>
-    </PropertyGroup>
-
     <ItemGroup>
       <_InputJar Include="$(UnsignedPackagesDir)**\*.jar" />
     </ItemGroup>
@@ -174,16 +166,16 @@
        ApplicationId="$(ESRPApplicationId)"
        DestinationRootDirectory="$(PackagesOutputPath)"
        Files="@(_UnsignedJars)"
-       ManifestOutputPath="$(_ManifestOutputPath)"
+       ManifestOutputPath="$(LogOutputDir)jar\"
        KeyCodes="$(MicrosoftJava)">
-      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
-      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
-      <Output TaskParameter="InputJson" PropertyName="InputJson" />
-      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
+      <Output TaskParameter="AuthJson" PropertyName="AuthJson_Jar" />
+      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson_Jar" />
+      <Output TaskParameter="InputJson" PropertyName="InputJson_Jar" />
+      <Output TaskParameter="OutputJson" PropertyName="OutputJson_Jar" />
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-java.log"
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson_Jar) -p $(PolicyJson_Jar) -i $(InputJson_Jar) -o $(OutputJson_Jar) -l progress -f $(LogOutputDir)sign-jar.log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
     <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
@@ -223,10 +215,10 @@
 
   <Target Name="SubmitCodeSign">
     <Message Text="Executing code sign job $(JobName)" Importance="High" />
+    
     <PropertyGroup>
       <SigningStagingDir>$(IntermediateDir)u\$(JobName)\</SigningStagingDir>
       <SignOutputDir>$(IntermediateDir)s\$(JobName)\</SignOutputDir>
-      <_ManifestOutputPath>$(LogOutputDir)esrpconfig\$(JobName)\</_ManifestOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -255,7 +247,7 @@
        ApplicationId="$(ESRPApplicationId)"
        DestinationRootDirectory="$(SignOutputDir)"
        Files="@(_FilesToSign->Distinct())"
-       ManifestOutputPath="$(_ManifestOutputPath)"
+       ManifestOutputPath="$(LogOutputDir)sign\$(JobName)\"
        KeyCodes="$(Certificate)">
       <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
       <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
