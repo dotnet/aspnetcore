@@ -80,6 +80,7 @@
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:SignType=$(SignType)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
