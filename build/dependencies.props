@@ -23,10 +23,10 @@
     <MicrosoftNETCoreApp30PackageVersion>3.0.0-preview1-26907-05</MicrosoftNETCoreApp30PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>15.8.525</MicrosoftVisualStudioComponentModelHostPackageVersion>
-    <MicrosoftVisualStudioEditorPackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioEditorPackageVersion>
     <MicrosoftVisualStudioImageCatalogPackageVersion>15.8.28010</MicrosoftVisualStudioImageCatalogPackageVersion>
-    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
+    <MicrosoftVisualStudioEditorPackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioEditorPackageVersion>
     <MicrosoftVisualStudioLanguagePackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioLanguagePackageVersion>
+    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
     <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6071</MicrosoftVisualStudioOLEInteropPackageVersion>
     <MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>16.0.201-pre-g7d366164d0</MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>
     <MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>2.0.6142705</MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>
