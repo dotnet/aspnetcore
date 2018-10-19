@@ -221,12 +221,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                var response = await responseTask;
                 cts.Cancel();
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
 
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
+                await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.LoadIntoBufferAsync());
             }
         }
 
@@ -242,12 +243,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                var response = await responseTask;
                 cts.Cancel();
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
 
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
+                await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.LoadIntoBufferAsync());
             }
         }
 
@@ -492,9 +494,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri, CancellationToken cancellationToken = new CancellationToken())
         {
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout })
             {
-                return await client.GetAsync(uri, cancellationToken);
+                return await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             }
         }
     }
