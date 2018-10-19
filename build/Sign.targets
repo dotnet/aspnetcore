@@ -6,8 +6,6 @@
       RebuildOobArchives;
       RebuildPackages;
       SignNupkgs;
-      SignJars;
-      RebuildVSIXes;
       RebuildSharedFxs;
       RepackMPacks;
       SignCheck;
@@ -42,9 +40,6 @@
         $(UnsignedPackagesPath)**\*.psm1;
         $(UnsignedPackagesPath)**\*.ps1;"
         Exclude="@(ThirdPartyBinaries);@(SignExclusions)" />
-
-      <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll"
-        Exclude="@(SignExclusions)" />
 
       <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll"
         Exclude="@(SignExclusions)" />
@@ -82,7 +77,6 @@
     <ItemGroup>
       <AspNetCoreBinaries Include="
         @(PackageBinaries);
-        @(VSIXBinaries);
         @(OobArchiveBinaries);
         @(MPackBinaries);
         @(SharedFxBinaries);" />
@@ -127,10 +121,6 @@
   </Target>
 
   <Target Name="SignNupkgs">
-    <PropertyGroup>
-      <_ManifestOutputPath>$(IntermediateDir)nupkg\</_ManifestOutputPath>
-    </PropertyGroup>
-
     <ItemGroup>
       <_UnsignedNupkgs Include="$(UnsignedPackagesWithSignedBinariesPath)**\*.nupkg" />
     </ItemGroup>
@@ -139,60 +129,20 @@
        ApplicationId="$(ESRPApplicationId)"
        DestinationRootDirectory="$(PackagesOutputPath)"
        Files="@(_UnsignedNupkgs)"
-       ManifestOutputPath="$(_ManifestOutputPath)"
+       ManifestOutputPath="$(LogOutputDir)nupkg\"
        KeyCodes="$(MicrosoftNuGet)">
-      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
-      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
-      <Output TaskParameter="InputJson" PropertyName="InputJson" />
-      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
+      <Output TaskParameter="AuthJson" PropertyName="AuthJson_Nupkg" />
+      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson_Nupkg" />
+      <Output TaskParameter="InputJson" PropertyName="InputJson_Nupkg" />
+      <Output TaskParameter="OutputJson" PropertyName="OutputJson_Nupkg" />
     </Microsoft.Build.OOB.ESRP.CreateSignManifests>
 
     <Exec
-      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-packages.log"
+      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson_Nupkg) -p $(PolicyJson_Nupkg) -i $(InputJson_Nupkg) -o $(OutputJson_Nupkg) -l progress -f $(LogOutputDir)sign-nupkg.log"
       Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
 
     <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
       SourceFiles="@(_UnsignedNupkgs)"
-      DestinationFolder="$(PackagesOutputPath)" />
-  </Target>
-
-  <Target Name="SignJars">
-    <PropertyGroup>
-      <_ManifestOutputPath>$(IntermediateDir)jar\</_ManifestOutputPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_InputJar Include="$(UnsignedPackagesDir)**\*.jar" />
-    </ItemGroup>
-
-    <!-- Filter already signed .jar -->
-    <FilterSignedPackagesFiles Files="@(_InputJar)">
-      <Output TaskParameter="Signed" ItemName="AlreadySignedJar" />
-      <Output TaskParameter="Unsigned" ItemName="_UnsignedJars" />
-    </FilterSignedPackagesFiles>
-
-    <StupidCopy Condition="'@(AlreadySignedJar)' != ''"
-      SourceFiles="@(AlreadySignedJar)"
-      DestinationFolder="$(PackagesOutputPath)" />
-
-    <Microsoft.Build.OOB.ESRP.CreateSignManifests Condition="'@(_UnsignedJars)'!=''"
-       ApplicationId="$(ESRPApplicationId)"
-       DestinationRootDirectory="$(PackagesOutputPath)"
-       Files="@(_UnsignedJars)"
-       ManifestOutputPath="$(_ManifestOutputPath)"
-       KeyCodes="$(MicrosoftJava)">
-      <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
-      <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
-      <Output TaskParameter="InputJson" PropertyName="InputJson" />
-      <Output TaskParameter="OutputJson" PropertyName="OutputJson" />
-    </Microsoft.Build.OOB.ESRP.CreateSignManifests>
-
-    <Exec
-      Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson) -p $(PolicyJson) -i $(InputJson) -o $(OutputJson) -l progress -f $(LogOutputDir)sign-java.log"
-      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
-
-    <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
-      SourceFiles="@(_UnsignedJars)"
       DestinationFolder="$(PackagesOutputPath)" />
   </Target>
 
@@ -226,60 +176,12 @@
       WorkingDirectory="$(MPackDirectory)" />
   </Target>
 
-  <!-- Repacks and signs VSIXes -->
-  <Target Name="RebuildVSIXes">
-    <ItemGroup>
-      <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
-    </ItemGroup>
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="_RebuildVSIXes"
-        Condition="'@(_VSIXManifest)'!=''" />
-  </Target>
-
-  <Target Name="_RebuildVSIXes">
-    <ItemGroup>
-      <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
-      <VSIXManifest Include="@(_VSIXManifest)">
-        <VSIXName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))))</VSIXName>
-        <VSIXDir>$([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))\</VSIXDir>
-      </VSIXManifest>
-    </ItemGroup>
-
-    <MSBuild Condition="'@(VSIXManifest)' != ''"
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="ZipFile"
-        Properties="ZipRoot=%(VSIXManifest.VSIXDir);OutputDir=$(UnsignedVSIXWithSignedBinariesPath);Extension=.vsix" />
-
-    <ItemGroup>
-      <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
-
-      <_SignProject Remove="@(_SignProject)" />
-      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(VSIXToSign)' != ''">
-        <AdditionalProperties>
-          Certificate=$(MicrosoftOpc2);
-          JobName=AspNetCoreVSIX;
-          LocalBuild=$(LocalBuild);
-          Files=@(VSIXToSign)
-        </AdditionalProperties>
-      </_SignProject>
-    </ItemGroup>
-
-    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" Condition="'@(_SignProject)' != '' AND '$(SignType)'=='real' " />
-
-    <MakeDir Directories="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
-
-    <StupidCopy Condition="'@(VSIXToSign)' != ''"
-      SourceFiles="%(VSIXToSign.FullPath);$(DepsDirectory)build\%(VSIXToSign.FileName).json"
-      DestinationFolder="$(SignedVSIXPath)%(VSIXToSign.FileName)\" />
-  </Target>
-
   <Target Name="SubmitCodeSign">
     <Message Text="Executing code sign job $(JobName)" Importance="High" />
+
     <PropertyGroup>
       <SigningStagingDir>$(IntermediateDir)u\$(JobName)\</SigningStagingDir>
       <SignOutputDir>$(IntermediateDir)s\$(JobName)\</SignOutputDir>
-      <_ManifestOutputPath>$(IntermediateDir)esrpconfig\$(JobName)\</_ManifestOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -300,8 +202,7 @@
       </_FilesToSign>
     </ItemGroup>
 
-    <Message Text="Submitting @(_FilesToSign->Distinct()->Count()) unique files for signing" Importance="High" />
-    <Message Text="Go grab a coffee. This is going to take a while..." Importance="High" Condition="@(_FilesToSign->Distinct()->Count()) > 300" />
+    <Message Text="$(JobName): Submitting @(_FilesToSign->Distinct()->Count()) unique files for signing" Importance="High" />
 
     <StupidCopy SourceFiles="@(_FilesToSign->Distinct()->'%(OriginalFilePath)')" DestinationFiles="%(_FilesToSign.Identity)" />
 
@@ -309,7 +210,7 @@
        ApplicationId="$(ESRPApplicationId)"
        DestinationRootDirectory="$(SignOutputDir)"
        Files="@(_FilesToSign->Distinct())"
-       ManifestOutputPath="$(_ManifestOutputPath)"
+       ManifestOutputPath="$(LogOutputDir)sign\$(JobName)\"
        KeyCodes="$(Certificate)">
       <Output TaskParameter="AuthJson" PropertyName="AuthJson" />
       <Output TaskParameter="PolicyJson" PropertyName="PolicyJson" />
