@@ -59,7 +59,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         public Task<CompletionContext> GetCompletionContextAsync(
-            InitialTrigger trigger,
+            IAsyncCompletionSession session,
+            CompletionTrigger trigger,
             SnapshotPoint triggerLocation,
             SnapshotSpan applicableSpan,
             CancellationToken token)
@@ -96,7 +97,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return Task.FromResult(context);
         }
 
-        public Task<object> GetDescriptionAsync(CompletionItem item, CancellationToken token)
+        public Task<object> GetDescriptionAsync(IAsyncCompletionSession session, CompletionItem item, CancellationToken token)
         {
             if (!item.Properties.TryGetProperty<string>(DescriptionKey, out var directiveDescription))
             {
@@ -106,14 +107,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return Task.FromResult<object>(directiveDescription);
         }
 
-        public bool TryGetApplicableToSpan(char typeChar, SnapshotPoint triggerLocation, out SnapshotSpan applicableToSpan, CancellationToken token)
+        public CompletionStartData InitializeCompletion(CompletionTrigger trigger, SnapshotPoint triggerLocation, CancellationToken token)
         {
             // The applicable span for completion is the piece of text a completion is for. For example:
             //      @Date|Time.Now
             // If you trigger completion at the | then the applicable span is the region of 'DateTime'; however, Razor
             // doesn't know this information so we rely on Roslyn to define what the applicable span for a completion is.
-            applicableToSpan = default(SnapshotSpan);
-            return false;
+            return CompletionStartData.ParticipatesInCompletionIfAny;
         }
     }
 }

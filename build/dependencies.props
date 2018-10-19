@@ -24,10 +24,10 @@
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview2-26905-02</MicrosoftNETCoreApp22PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>15.8.525</MicrosoftVisualStudioComponentModelHostPackageVersion>
-    <MicrosoftVisualStudioEditorPackageVersion> 15.8.525</MicrosoftVisualStudioEditorPackageVersion>
     <MicrosoftVisualStudioImageCatalogPackageVersion>15.8.28010</MicrosoftVisualStudioImageCatalogPackageVersion>
-    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>15.8.525</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
-    <MicrosoftVisualStudioLanguagePackageVersion>15.8.525</MicrosoftVisualStudioLanguagePackageVersion>
+    <MicrosoftVisualStudioEditorPackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioEditorPackageVersion>
+    <MicrosoftVisualStudioLanguagePackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioLanguagePackageVersion>
+    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
     <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6071</MicrosoftVisualStudioOLEInteropPackageVersion>
     <MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>15.8.243</MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>
     <MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>2.0.6142705</MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>
@@ -39,7 +39,7 @@
     <MicrosoftVisualStudioShellInterop80PackageVersion>8.0.50728</MicrosoftVisualStudioShellInterop80PackageVersion>
     <MicrosoftVisualStudioShellInterop90PackageVersion>9.0.30730</MicrosoftVisualStudioShellInterop90PackageVersion>
     <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6072</MicrosoftVisualStudioShellInteropPackageVersion>
-    <MicrosoftVisualStudioTextUIPackageVersion>15.8.525</MicrosoftVisualStudioTextUIPackageVersion>
+    <MicrosoftVisualStudioTextUIPackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioTextUIPackageVersion>
     <MicrosoftVisualStudioThreadingPackageVersion>15.8.168</MicrosoftVisualStudioThreadingPackageVersion>
     <MonoAddinsPackageVersion>1.3.8</MonoAddinsPackageVersion>
     <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>

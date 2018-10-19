@@ -41,7 +41,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Act
             var completionContext = await Task.Run(
-                async () => await completionSource.GetCompletionContextAsync(new InitialTrigger(), triggerLocation, applicableSpan, CancellationToken.None));
+                async () => await completionSource.GetCompletionContextAsync(null, new CompletionTrigger(CompletionTriggerReason.Invoke, triggerLocation.Snapshot), triggerLocation, applicableSpan, CancellationToken.None));
 
             // Assert
             Assert.Empty(completionContext.Items);
@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Act
             var completionContext = await Task.Run(
-                async () => await completionSource.GetCompletionContextAsync(new InitialTrigger(), triggerLocation, applicableSpan, CancellationToken.None));
+                async () => await completionSource.GetCompletionContextAsync(null, new CompletionTrigger(CompletionTriggerReason.Invoke, triggerLocation.Snapshot), triggerLocation, applicableSpan, CancellationToken.None));
 
             // Assert
             Assert.Empty(completionContext.Items);
@@ -80,7 +80,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Act
             var completionContext = await Task.Run(
-                async () => await completionSource.GetCompletionContextAsync(new InitialTrigger(), triggerLocation, applicableSpan, CancellationToken.None));
+                async () => await completionSource.GetCompletionContextAsync(null, new CompletionTrigger(CompletionTriggerReason.Invoke, triggerLocation.Snapshot), triggerLocation, applicableSpan, CancellationToken.None));
 
             // Assert
             Assert.Collection(
@@ -101,7 +101,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(), CompletionFactsService);
 
             // Act
-            var descriptionObject = await completionSource.GetDescriptionAsync(completionItem, CancellationToken.None);
+            var descriptionObject = await completionSource.GetDescriptionAsync(null, completionItem, CancellationToken.None);
 
             // Assert
             var description = Assert.IsType<string>(descriptionObject);
@@ -116,7 +116,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var completionSource = new RazorDirectiveCompletionSource(Dispatcher, Mock.Of<VisualStudioRazorParser>(), CompletionFactsService);
 
             // Act
-            var descriptionObject = await completionSource.GetDescriptionAsync(completionItem, CancellationToken.None);
+            var descriptionObject = await completionSource.GetDescriptionAsync(null, completionItem, CancellationToken.None);
 
             // Assert
             var description = Assert.IsType<string>(descriptionObject);
