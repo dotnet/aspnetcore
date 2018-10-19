@@ -1,0 +1,8 @@
+<Project>
+
+
+  <ItemGroup>
+    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.Web.Xdt.Extensions\*.csproj" />
+  </ItemGroup>
+
+</Project>
