@@ -1,0 +1,16 @@
+﻿<?xml version="1.0"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+
+  <xdt:Import path="%XDT_EXTENSIONPATH%\Microsoft.Web.Xdt.Extensions.dll"
+              namespace="Microsoft.Web.Xdt.Extensions" />
+
+    <system.webServer xdt:Transform="InsertIfMissing">
+      <runtime xdt:Transform="InsertIfMissing" >
+        <environmentVariables xdt:Transform="InsertIfMissing">
+          <add name="DOTNET_ADDITIONAL_DEPS" value="%XDT_EXTENSIONPATH%\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\" xdt:Locator="Match(name)" xdt:Transform="InsertOrAppendAttribute(Attribute='value')" />
+          <add name="DOTNET_SHARED_STORE" value="%XDT_EXTENSIONPATH%\store" xdt:Locator="Match(name)" xdt:Transform="InsertOrAppendAttribute(Attribute='value')" />
+          <add name="ASPNETCORE_HOSTINGSTARTUPASSEMBLIES" value="Microsoft.AspNetCore.AzureAppServices.HostingStartup" xdt:Locator="Match(name)" xdt:Transform="InsertOrAppendAttribute(Attribute='value')" />
+        </environmentVariables>
+      </runtime>
+    </system.webServer>
+</configuration>
