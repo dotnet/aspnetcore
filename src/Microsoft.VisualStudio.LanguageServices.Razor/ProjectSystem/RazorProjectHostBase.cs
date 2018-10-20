@@ -302,7 +302,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             projectManager.DocumentAdded(_current, document, new FileTextLoader(document.FilePath, null));
-            _projectContext?.AddSourceFile(document.FilePath, document.GeneratedCodeContainer.SourceTextContainer, true, GetFolders(document), SourceCodeKind.Regular, document.GeneratedCodeContainer);
+            _projectContext?.AddDynamicSourceFile(document.FilePath, GetFolders(document));
             _currentDocuments.Add(document.FilePath, document);
         }
 
@@ -310,7 +310,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             var projectManager = GetProjectManager();
 
-            _projectContext?.RemoveSourceFile(document.FilePath);
+            _projectContext?.RemoveDynamicSourceFile(document.FilePath);
             projectManager.DocumentRemoved(_current, document);
             _currentDocuments.Remove(document.FilePath);
         }

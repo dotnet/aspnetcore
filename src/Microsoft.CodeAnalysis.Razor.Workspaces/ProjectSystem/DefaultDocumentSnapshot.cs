@@ -23,17 +23,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(state));
             }
 
-            Project = project;
+            ProjectInternal = project;
             State = state;
         }
 
-        public DefaultProjectSnapshot Project { get; }
+        public DefaultProjectSnapshot ProjectInternal { get; }
 
         public DocumentState State { get; }
 
         public override string FilePath => State.HostDocument.FilePath;
 
         public override string TargetPath => State.HostDocument.TargetPath;
+
+        public override ProjectSnapshot Project => ProjectInternal;
 
         public override IReadOnlyList<DocumentSnapshot> GetImports()
         {

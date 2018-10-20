@@ -8,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Experiment;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.LanguageServices.Implementation.TaskList;
 using IWorkspaceProjectContextFactory = Microsoft.VisualStudio.LanguageServices.ProjectSystem.IWorkspaceProjectContextFactory2;
 
@@ -56,11 +54,7 @@ namespace Microsoft.VisualStudio.LanguageServices.ProjectSystem
             {
             }
 
-            public void AddSourceFile(string filePath, bool isInCurrentContext = true, IEnumerable<string> folderNames = null, SourceCodeKind sourceCodeKind = SourceCodeKind.Regular, IDocumentServiceFactory documentServiceFactory = null)
-            {
-            }
-
-            public void AddSourceFile(string filePath, SourceTextContainer container, bool isInCurrentContext = true, IEnumerable<string> folderNames = null, SourceCodeKind sourceCodeKind = SourceCodeKind.Regular, IDocumentServiceFactory documentServiceFactory = null)
+            public void AddDynamicSourceFile(string filePath, IEnumerable<string> folderNames = null)
             {
             }
 
@@ -86,6 +80,11 @@ namespace Microsoft.VisualStudio.LanguageServices.ProjectSystem
 
             public void RemoveSourceFile(string filePath)
             {
+            }
+
+            public void RemoveDynamicSourceFile(string filePath)
+            {
+
             }
 
             public void SetOptions(string commandLineForOptions)

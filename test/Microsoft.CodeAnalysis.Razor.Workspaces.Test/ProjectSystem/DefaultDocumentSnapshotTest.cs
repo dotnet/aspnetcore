@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host;
@@ -15,9 +16,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             var projectState = ProjectState.Create(Workspace.Services, TestProjectData.SomeProject);
             var project = new DefaultProjectSnapshot(projectState);
-            HostDocument = TestProjectData.SomeProjectFile1;
+            HostDocument = new HostDocument(TestProjectData.SomeProjectFile1.FilePath, TestProjectData.SomeProjectFile1.TargetPath);
             SourceText = SourceText.From("<p>Hello World</p>");
-            Version = VersionStamp.Default.GetNewerVersion();
+            Version = VersionStamp.Create();
             var textAndVersion = TextAndVersion.Create(SourceText, Version);
             var documentState = DocumentState.Create(Workspace.Services, HostDocument, () => Task.FromResult(textAndVersion));
             Document = new DefaultDocumentSnapshot(project, documentState);
@@ -48,12 +49,31 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
+        public async Task GetGeneratedOutputAsync_SetsOutputWhenDocumentIsNewer()
+        {
+            // Arrange
+            var newSourceText = SourceText.From("NEW!");
+            var newDocumentState = Document.State.WithText(newSourceText, Version.GetNewerVersion());
+            var newDocument = new DefaultDocumentSnapshot(Document.ProjectInternal, newDocumentState);
+
+            // Force the output to be the new output
+            await Document.GetGeneratedOutputAsync();
+
+            // Act
+            await newDocument.GetGeneratedOutputAsync();
+
+            // Assert
+            Assert.NotNull(HostDocument.GeneratedCodeContainer.Output);
+            Assert.Same(newSourceText, HostDocument.GeneratedCodeContainer.Source);
+        }
+
+        [Fact]
         public async Task GetGeneratedOutputAsync_OnlySetsOutputIfDocumentNewer()
         {
             // Arrange
             var newSourceText = SourceText.From("NEW!");
             var newDocumentState = Document.State.WithText(newSourceText, Version.GetNewerVersion());
-            var newDocument = new DefaultDocumentSnapshot(Document.Project, newDocumentState);
+            var newDocument = new DefaultDocumentSnapshot(Document.ProjectInternal, newDocumentState);
 
             // Force the output to be the new output
             await newDocument.GetGeneratedOutputAsync();

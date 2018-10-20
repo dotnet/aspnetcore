@@ -104,6 +104,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             public override string TargetPath => null;
 
+            public override ProjectSnapshot Project => _project;
+
             public override Task<RazorCodeDocument> GetGeneratedOutputAsync()
             {
                 return _generatedOutput.GetGeneratedOutputInitializationTask(_project, this);

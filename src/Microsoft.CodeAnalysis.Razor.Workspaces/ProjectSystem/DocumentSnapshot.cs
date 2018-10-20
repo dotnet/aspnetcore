@@ -14,6 +14,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract string TargetPath { get; }
 
+        public abstract ProjectSnapshot Project { get; }
+
         public abstract IReadOnlyList<DocumentSnapshot> GetImports();
 
         public abstract Task<SourceText> GetTextAsync();

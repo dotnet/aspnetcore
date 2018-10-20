@@ -2,18 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.Experiment;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    internal class GeneratedCodeContainer : IDocumentServiceFactory, ISpanMapper
+    internal class GeneratedCodeContainer
     {
         public event EventHandler<TextChangeEventArgs> GeneratedCodeChanged;
 
@@ -86,16 +81,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public TService GetService<TService>()
-        {
-            if (this is TService service)
-            {
-                return service;
-            }
-
-            return default(TService);
-        }
-
         public void SetOutput(RazorCSharpDocument csharpDocument, DefaultDocumentSnapshot document)
         {
             lock (_setOutputLock)
@@ -126,73 +111,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 _latestDocument = document;
                 _textContainer.SetText(SourceText.From(Output.GeneratedCode));
             }
-        }
-
-        public Task<ImmutableArray<SpanMapResult>> MapSpansAsync(
-            Document document,
-            IEnumerable<TextSpan> spans,
-            CancellationToken cancellationToken)
-        {
-            RazorCSharpDocument output;
-            SourceText source;
-            lock (_setOutputLock)
-            {
-                if (Output == null)
-                {
-                    return Task.FromResult(ImmutableArray<SpanMapResult>.Empty);
-                }
-
-                output = Output;
-                source = Source;
-            }
-
-            var results = ImmutableArray.CreateBuilder<SpanMapResult>();
-            foreach (var span in spans)
-            {
-                if (TryGetLinePositionSpan(span, source, output, out var linePositionSpan))
-                {
-                    results.Add(new SpanMapResult(document, linePositionSpan));
-                }
-                else
-                {
-                    results.Add(null);
-                }
-            }
-
-            return Task.FromResult(results.ToImmutable());
-        }
-
-        // Internal for testing.
-        internal static bool TryGetLinePositionSpan(TextSpan span, SourceText source, RazorCSharpDocument output, out LinePositionSpan linePositionSpan)
-        {
-            var mappings = output.SourceMappings;
-            for (var i = 0; i < mappings.Count; i++)
-            {
-                var mapping = mappings[i];
-                var original = mapping.OriginalSpan.AsTextSpan();
-                var generated = mapping.GeneratedSpan.AsTextSpan();
-
-                if (!generated.Contains(span))
-                {
-                    // If the search span isn't contained within the generated span, it is not a match. 
-                    // A C# identifier won't cover multiple generated spans.
-                    continue;
-                }
-
-                var leftOffset = span.Start - generated.Start;
-                var rightOffset = span.End - generated.End;
-                Debug.Assert(leftOffset >= 0);
-                Debug.Assert(rightOffset <= 0);
-
-                // Note: we don't handle imports here - the assumption is that for all of the scenarios we
-                // support, the span is in the original source document.
-                var adjusted = new TextSpan(original.Start + leftOffset, (original.End + rightOffset) - (original.Start + leftOffset));
-                linePositionSpan = source.Lines.GetLinePositionSpan(adjusted);
-                return true;
-            }
-
-            linePositionSpan = default;
-            return false;
         }
 
         private void TextContainer_TextChanged(object sender, TextChangeEventArgs args)
