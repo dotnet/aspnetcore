@@ -189,17 +189,6 @@ namespace Microsoft.AspNetCore.Routing
                 options: options);
         }
 
-        public override LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address, LinkGenerationTemplateOptions options = default)
-        {
-            var endpoints = GetEndpoints(address);
-            if (endpoints.Count == 0)
-            {
-                return null;
-            }
-
-            return new DefaultLinkGenerationTemplate(this, endpoints, options);
-        }
-
         private List<RouteEndpoint> GetEndpoints<TAddress>(TAddress address)
         {
             var addressingScheme = _serviceProvider.GetRequiredService<IEndpointAddressScheme<TAddress>>();
@@ -217,7 +206,6 @@ namespace Microsoft.AspNetCore.Routing
             return endpoints;
         }
 
-        // Also called from DefaultLinkGenerationTemplate
         public string GetPathByEndpoints(
             List<RouteEndpoint> endpoints,
             RouteValueDictionary values,

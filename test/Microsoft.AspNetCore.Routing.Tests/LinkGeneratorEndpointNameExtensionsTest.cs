@@ -149,24 +149,5 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/some%23-other-endpoint/In%3Fdex/?query=some%3Fquery#Fragment?", uri);
         }
-
-        [Fact]
-        public void GetTemplateByName_CreatesTemplate()
-        {
-            // Arrange
-            var endpoint1 = EndpointFactory.CreateRouteEndpoint("some-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name1"), });
-            var endpoint2 = EndpointFactory.CreateRouteEndpoint("some#-other-endpoint/{p}", metadata: new[] { new EndpointNameMetadata("name2"), });
-
-            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
-
-            // Act
-            var template = linkGenerator.GetTemplateByName(endpointName: "name2");
-
-            // Assert
-            Assert.NotNull(template);
-            Assert.Collection(
-                Assert.IsType<DefaultLinkGenerationTemplate>(template).Endpoints.Cast<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
-                e => Assert.Same(endpoint2, e));
-        }
     }
 }

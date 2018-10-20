@@ -11,11 +11,6 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public static class LinkGeneratorEndpointNameAddressExtensions
     {
-        private static readonly LinkGenerationTemplateOptions _templateOptions = new LinkGenerationTemplateOptions()
-        {
-            UseAmbientValues = false,
-        };
-
         /// <summary>
         /// Generates a URI with an absolute path based on the provided values.
         /// </summary>
@@ -226,29 +221,6 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return generator.GetUriByAddress<string>(endpointName, new RouteValueDictionary(values), scheme, host, pathBase, fragment, options);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> based on the provided <paramref name="endpointName"/>.
-        /// </summary>
-        /// <param name="generator">The <see cref="LinkGenerator"/>.</param>
-        /// <param name="endpointName">The endpoint name. Used to resolve endpoints. Optional.</param>
-        /// <returns>
-        /// A <see cref="LinkGenerationTemplate"/> if one or more endpoints matching the address can be found, otherwise <c>null</c>.
-        /// </returns>
-        public static LinkGenerationTemplate GetTemplateByName(this LinkGenerator generator, string endpointName)
-        {
-            if (generator == null)
-            {
-                throw new ArgumentNullException(nameof(generator));
-            }
-
-            if (endpointName == null)
-            {
-                throw new ArgumentNullException(nameof(endpointName));
-            }
-
-            return generator.GetTemplateByAddress<string>(endpointName, _templateOptions);
         }
     }
 }

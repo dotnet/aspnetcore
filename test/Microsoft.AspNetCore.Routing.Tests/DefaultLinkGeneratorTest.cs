@@ -525,42 +525,6 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void GetTemplateByAddress_WithNoMatch_ReturnsNull()
-        {
-            // Arrange
-            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
-            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
-
-            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
-
-            // Act
-            var template = linkGenerator.GetTemplateByAddress(address: 0);
-
-            // Assert
-            Assert.Null(template);
-        }
-
-        [Fact]
-        public void GetTemplateByAddress_WithMatch_ReturnsTemplate()
-        {
-            // Arrange
-            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
-            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
-
-            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
-
-            // Act
-            var template = linkGenerator.GetTemplateByAddress(address: 1);
-
-            // Assert
-            Assert.NotNull(template);
-            Assert.Collection(
-                Assert.IsType<DefaultLinkGenerationTemplate>(template).Endpoints,
-                e => Assert.Same(endpoint1, e),
-                e => Assert.Same(endpoint2, e));
-        }
-
-        [Fact]
         public void GetTemplateBinder_CanCache()
         {
             // Arrange

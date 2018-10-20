@@ -147,16 +147,5 @@ namespace Microsoft.AspNetCore.Routing
             PathString pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default);
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> based on the provided <paramref name="address"/>.
-        /// </summary>
-        /// <typeparam name="TAddress">The address type.</typeparam>
-        /// <param name="address">The address value. Used to resolve endpoints.</param>
-        /// <param name="options">Options for the created <see cref="LinkGenerationTemplate"/>.</param>
-        /// <returns>
-        /// A <see cref="LinkGenerationTemplate"/> if one or more endpoints matching the address can be found, otherwise <c>null</c>.
-        /// </returns>
-        public abstract LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address, LinkGenerationTemplateOptions options = null);
     }
 }
