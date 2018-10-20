@@ -132,14 +132,6 @@ namespace Microsoft.AspNetCore.Razor.Performance
 
         private class StaticProjectSnapshotProjectEngineFactory : ProjectSnapshotProjectEngineFactory
         {
-            public override RazorProjectEngine Create(ProjectSnapshot project, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
-            {
-                return RazorProjectEngine.Create(project.Configuration, fileSystem, b =>
-                {
-                    RazorExtensions.Register(b);
-                });
-            }
-
             public override IProjectEngineFactory FindFactory(ProjectSnapshot project)
             {
                 throw new NotImplementedException();
@@ -148,6 +140,14 @@ namespace Microsoft.AspNetCore.Razor.Performance
             public override IProjectEngineFactory FindSerializableFactory(ProjectSnapshot project)
             {
                 throw new NotImplementedException();
+            }
+
+            public override RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
+            {
+                return RazorProjectEngine.Create(configuration, fileSystem, b =>
+                {
+                    RazorExtensions.Register(b);
+                });
             }
         }
     }

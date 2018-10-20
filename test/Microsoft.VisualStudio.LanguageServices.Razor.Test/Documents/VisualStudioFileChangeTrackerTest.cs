@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 .Setup(f => f.AdviseFileChange(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<IVsFileChangeEvents>(), out cookie))
                 .Returns(VSConstants.S_OK)
                 .Verifiable();
-            var tracker = new VisualStudioFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker(TestProjectData.SomeProjectImportFile.FilePath, Dispatcher, ErrorReporter, fileChangeService.Object);
 
             // Act
             tracker.StartListening();
@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 .Setup(f => f.AdviseFileChange(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<IVsFileChangeEvents>(), out cookie))
                 .Returns(VSConstants.S_OK)
                 .Callback(() => callCount++);
-            var tracker = new VisualStudioFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker(TestProjectData.SomeProjectImportFile.FilePath, Dispatcher, ErrorReporter, fileChangeService.Object);
             tracker.StartListening();
 
             // Act
@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 .Setup(f => f.UnadviseFileChange(cookie))
                 .Returns(VSConstants.S_OK)
                 .Verifiable();
-            var tracker = new VisualStudioFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker(TestProjectData.SomeProjectImportFile.FilePath, Dispatcher, ErrorReporter, fileChangeService.Object);
             tracker.StartListening(); // Start listening for changes.
 
             // Act
@@ -86,7 +86,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             fileChangeService
                 .Setup(f => f.UnadviseFileChange(cookie))
                 .Throws(new InvalidOperationException());
-            var tracker = new VisualStudioFileChangeTracker("C:/_ViewImports.cshtml", Dispatcher, ErrorReporter, fileChangeService.Object);
+            var tracker = new VisualStudioFileChangeTracker(TestProjectData.SomeProjectImportFile.FilePath, Dispatcher, ErrorReporter, fileChangeService.Object);
 
             // Act & Assert
             tracker.StopListening();
@@ -100,7 +100,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         public void FilesChanged_WithSpecificFlags_InvokesChangedHandler_WithExpectedArguments(uint fileChangeFlag, int expectedKind)
         {
             // Arrange
-            var filePath = "C:\\path\\to\\project\\_ViewImports.cshtml";
+            var filePath = TestProjectData.SomeProjectImportFile.FilePath;
             uint cookie;
             var fileChangeService = new Mock<IVsFileChangeEx>();
             fileChangeService

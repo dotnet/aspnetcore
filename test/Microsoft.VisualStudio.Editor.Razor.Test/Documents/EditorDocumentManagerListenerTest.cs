@@ -17,8 +17,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
     {
         public EditorDocumentManagerListenerTest()
         {
-            ProjectFilePath = "C:\\project1\\project.csproj";
-            DocumentFilePath = "c:\\project1\\file1.cshtml";
+            ProjectFilePath = TestProjectData.SomeProject.FilePath;
+            DocumentFilePath = TestProjectData.SomeProjectFile1.FilePath;
             TextLoader = TextLoader.From(TextAndVersion.Create(SourceText.From("FILE"), VersionStamp.Default));
             FileChangeTracker = new DefaultFileChangeTracker(DocumentFilePath);
 
@@ -58,8 +58,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
 
             var listener = new EditorDocumentManagerListener(editorDocumentManger.Object, changedOnDisk, changedInEditor, opened, closed);
 
+            var project = Mock.Of<ProjectSnapshot>(p => p.FilePath == "/Path/to/project.csproj");
+
             // Act & Assert
-            listener.ProjectManager_Changed(null, new ProjectChangeEventArgs("/Path/to/project.csproj", ProjectChangeKind.DocumentAdded));
+            listener.ProjectManager_Changed(null, new ProjectChangeEventArgs(project, project, ProjectChangeKind.DocumentAdded));
         }
 
         [Fact]
@@ -76,8 +78,10 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
 
             var listener = new EditorDocumentManagerListener(editorDocumentManger.Object, onChangedOnDisk: null, onChangedInEditor: null, onOpened: opened, onClosed: null);
 
+            var project = Mock.Of<ProjectSnapshot>(p => p.FilePath == "/Path/to/project.csproj");
+
             // Act
-            listener.ProjectManager_Changed(null, new ProjectChangeEventArgs("/Path/to/project.csproj", ProjectChangeKind.DocumentAdded));
+            listener.ProjectManager_Changed(null, new ProjectChangeEventArgs(project, project, ProjectChangeKind.DocumentAdded));
 
             // Assert
             Assert.True(called);

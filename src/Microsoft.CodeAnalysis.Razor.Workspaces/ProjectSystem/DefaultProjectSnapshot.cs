@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 
@@ -58,9 +59,37 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
+        public override bool IsImportDocument(DocumentSnapshot document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+            
+            return State.ImportsToRelatedDocuments.ContainsKey(document.TargetPath);
+        }
+
+        public override IEnumerable<DocumentSnapshot> GetRelatedDocuments(DocumentSnapshot document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            if (State.ImportsToRelatedDocuments.TryGetValue(document.TargetPath, out var relatedDocuments))
+            {
+                lock (_lock)
+                {
+                    return relatedDocuments.Select(GetDocument).ToArray();
+                }
+            }
+
+            return Array.Empty<DocumentSnapshot>();
+        }
+
         public override RazorProjectEngine GetProjectEngine()
         {
-            return State.ProjectEngine.GetProjectEngine(this);
+            return State.ProjectEngine.GetProjectEngine(this.State);
         }
 
         public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()

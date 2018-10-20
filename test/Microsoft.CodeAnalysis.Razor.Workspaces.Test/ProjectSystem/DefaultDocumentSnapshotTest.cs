@@ -1,35 +1,27 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class DefaultDocumentSnapshotTest
+    public class DefaultDocumentSnapshotTest : WorkspaceTestBase
     {
         public DefaultDocumentSnapshotTest()
         {
-            var services = TestServices.Create(
-                new[] { new TestProjectSnapshotProjectEngineFactory() },
-                new[] { new TestTagHelperResolver() });
-            Workspace = TestWorkspace.Create(services);
-            var hostProject = new HostProject("C:/some/path/project.csproj", RazorConfiguration.Default);
-            var projectState = ProjectState.Create(Workspace.Services, hostProject);
+            var projectState = ProjectState.Create(Workspace.Services, TestProjectData.SomeProject);
             var project = new DefaultProjectSnapshot(projectState);
-            HostDocument = new HostDocument("C:/some/path/file.cshtml", "C:/some/path/file.cshtml");
-            SourceText = Text.SourceText.From("<p>Hello World</p>");
+            HostDocument = TestProjectData.SomeProjectFile1;
+            SourceText = SourceText.From("<p>Hello World</p>");
             Version = VersionStamp.Default.GetNewerVersion();
             var textAndVersion = TextAndVersion.Create(SourceText, Version);
             var documentState = DocumentState.Create(Workspace.Services, HostDocument, () => Task.FromResult(textAndVersion));
             Document = new DefaultDocumentSnapshot(project, documentState);
-
         }
-
-        private Workspace Workspace { get; }
 
         private SourceText SourceText { get; }
 
@@ -38,6 +30,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private HostDocument HostDocument { get; }
 
         private DefaultDocumentSnapshot Document { get; }
+
+        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        {
+            services.Add(new TestTagHelperResolver());
+        }
 
         [Fact]
         public async Task GetGeneratedOutputAsync_SetsHostDocumentOutput()

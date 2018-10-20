@@ -1,35 +1,23 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.Host;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Host;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class DefaultProjectSnapshotTest
+    public class DefaultProjectSnapshotTest : WorkspaceTestBase
     {
         public DefaultProjectSnapshotTest()
         {
             TagHelperResolver = new TestTagHelperResolver();
 
-            HostServices = TestServices.Create(
-                new IWorkspaceService[]
-                {
-                    new TestProjectSnapshotProjectEngineFactory(),
-                },
-                new ILanguageService[]
-                {
-                    TagHelperResolver,
-                });
-
-            HostProject = new HostProject("c:\\MyProject\\Test.csproj", FallbackRazorConfiguration.MVC_2_0);
-            HostProjectWithConfigurationChange = new HostProject("c:\\MyProject\\Test.csproj", FallbackRazorConfiguration.MVC_1_0);
-
-            Workspace = TestWorkspace.Create(HostServices);
+            HostProject = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
+            HostProjectWithConfigurationChange = new HostProject(TestProjectData.SomeProject.FilePath, FallbackRazorConfiguration.MVC_1_0);
 
             var projectId = ProjectId.CreateNewId("Test");
             var solution = Workspace.CurrentSolution.AddProject(ProjectInfo.Create(
@@ -38,19 +26,21 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 "Test",
                 "Test",
                 LanguageNames.CSharp,
-                "c:\\MyProject\\Test.csproj"));
+                TestProjectData.SomeProject.FilePath));
             WorkspaceProject = solution.GetProject(projectId);
 
-            SomeTagHelpers = new List<TagHelperDescriptor>();
-            SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
+            SomeTagHelpers = new List<TagHelperDescriptor>
+            {
+                TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build()
+            };
 
             Documents = new HostDocument[]
             {
-                new HostDocument("c:\\MyProject\\File.cshtml", "File.cshtml"),
-                new HostDocument("c:\\MyProject\\Index.cshtml", "Index.cshtml"),
+                TestProjectData.SomeProjectFile1,
+                TestProjectData.SomeProjectFile2,
 
                 // linked file
-                new HostDocument("c:\\SomeOtherProject\\Index.cshtml", "Pages\\Index.cshtml"),
+                TestProjectData.AnotherProjectNestedFile3,
             };
         }
 
@@ -64,11 +54,24 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private TestTagHelperResolver TagHelperResolver { get; }
 
-        private HostServices HostServices { get; }
-
-        private Workspace Workspace { get; }
-
         private List<TagHelperDescriptor> SomeTagHelpers { get; }
+
+        private void Configure(RazorProjectEngineBuilder builder)
+        {
+            builder.Features.Remove(builder.Features.OfType<IImportProjectFeature>().Single());
+            builder.Features.Add(new TestImportProjectFeature());
+        }
+
+        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        {
+            services.Add(TagHelperResolver);
+        }
+
+        protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
+        {
+            builder.Features.Remove(builder.Features.OfType<IImportProjectFeature>().Single());
+            builder.Features.Add(new TestImportProjectFeature());
+        }
 
         [Fact]
         public void ProjectSnapshot_CachesDocumentSnapshots()
@@ -113,6 +116,80 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 TagHelperResolver.CompletionSource.SetCanceled();
             }
+        }
+
+        [Fact]
+        public void IsImportDocument_NonImportDocument_ReturnsFalse()
+        {
+            // Arrange
+            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader);
+            var snapshot = new DefaultProjectSnapshot(state);
+
+            var document = snapshot.GetDocument(Documents[0].FilePath);
+
+            // Act
+            var result = snapshot.IsImportDocument(document);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsImportDocument_ImportDocument_ReturnsTrue()
+        {
+            // Arrange
+            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(TestProjectData.SomeProjectImportFile, DocumentState.EmptyLoader);
+            var snapshot = new DefaultProjectSnapshot(state);
+
+            var document = snapshot.GetDocument(TestProjectData.SomeProjectImportFile.FilePath);
+
+            // Act
+            var result = snapshot.IsImportDocument(document);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void GetRelatedDocuments_NonImportDocument_ReturnsEmpty()
+        {
+            // Arrange
+            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader);
+            var snapshot = new DefaultProjectSnapshot(state);
+
+            var document = snapshot.GetDocument(Documents[0].FilePath);
+
+            // Act
+            var documents = snapshot.GetRelatedDocuments(document);
+
+            // Assert
+            Assert.Empty(documents);
+        }
+
+        [Fact]
+        public void GetRelatedDocuments_ImportDocument_ReturnsRelated()
+        {
+            // Arrange
+            var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject)
+                .WithAddedHostDocument(Documents[0], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(Documents[1], DocumentState.EmptyLoader)
+                .WithAddedHostDocument(TestProjectData.SomeProjectImportFile, DocumentState.EmptyLoader);
+            var snapshot = new DefaultProjectSnapshot(state);
+
+            var document = snapshot.GetDocument(TestProjectData.SomeProjectImportFile.FilePath);
+
+            // Act
+            var documents = snapshot.GetRelatedDocuments(document);
+
+            // Assert
+            Assert.Collection(
+                documents.OrderBy(d => d.FilePath),
+                d => Assert.Equal(Documents[0].FilePath, d.FilePath),
+                d => Assert.Equal(Documents[1].FilePath, d.FilePath));
         }
     }
 }

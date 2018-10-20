@@ -26,8 +26,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             RazorCoreContentType = Mock.Of<IContentType>(c => c.IsOfType(RazorLanguage.ContentType) == true);
             TextBuffer = Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType);
 
-            FilePath = "C:/Some/Path/TestDocumentTracker.cshtml";
-            ProjectPath = "C:/Some/Path/TestProject.csproj";
+            FilePath = TestProjectData.SomeProjectFile1.FilePath;
+            ProjectPath = TestProjectData.SomeProject.FilePath;
 
             ImportDocumentManager = Mock.Of<ImportDocumentManager>();
             WorkspaceEditorSettings = new DefaultWorkspaceEditorSettings(Mock.Of<ForegroundDispatcher>(), Mock.Of<EditorSettingsManager>());
@@ -56,7 +56,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace) { AllowNotifyListeners = true };
 
             HostProject = new HostProject(ProjectPath, FallbackRazorConfiguration.MVC_2_1);
-            OtherHostProject = new HostProject(ProjectPath, FallbackRazorConfiguration.MVC_2_0);
+            UpdatedHostProject = new HostProject(ProjectPath, FallbackRazorConfiguration.MVC_2_0);
+            OtherHostProject = new HostProject(TestProjectData.AnotherProject.FilePath, FallbackRazorConfiguration.MVC_2_0);
 
             DocumentTracker = new DefaultVisualStudioDocumentTracker(
                 Dispatcher,
@@ -78,6 +79,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private string ProjectPath { get; }
 
         private HostProject HostProject { get; }
+
+        private HostProject UpdatedHostProject { get; }
 
         private HostProject OtherHostProject { get; }
 
@@ -191,7 +194,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
 
-            var e = new ProjectChangeEventArgs(ProjectPath, ProjectChangeKind.ProjectAdded);
+            var e = new ProjectChangeEventArgs(null, ProjectManager.GetLoadedProject(HostProject.FilePath), ProjectChangeKind.ProjectAdded);
 
             var called = false;
             DocumentTracker.ContextChanged += (sender, args) =>
@@ -215,8 +218,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             ProjectManager.HostProjectAdded(HostProject);
             ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
-
-            var e = new ProjectChangeEventArgs(ProjectPath, ProjectChangeKind.ProjectChanged);
+            
+            var e = new ProjectChangeEventArgs(null, ProjectManager.GetLoadedProject(HostProject.FilePath), ProjectChangeKind.ProjectChanged);
 
             var called = false;
             DocumentTracker.ContextChanged += (sender, args) =>
@@ -238,7 +241,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_ProjectRemoved_TriggersContextChanged_WithEphemeralProject()
         {
             // Arrange
-            var e = new ProjectChangeEventArgs(ProjectPath, ProjectChangeKind.ProjectRemoved);
+            ProjectManager.HostProjectAdded(HostProject);
+            ProjectManager.WorkspaceProjectAdded(WorkspaceProject);
+
+            var project = ProjectManager.GetLoadedProject(HostProject.FilePath);
+            ProjectManager.HostProjectRemoved(HostProject);
+
+            var e = new ProjectChangeEventArgs(project, null, ProjectChangeKind.ProjectRemoved);
 
             var called = false;
             DocumentTracker.ContextChanged += (sender, args) =>
@@ -260,7 +269,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_IgnoresUnknownProject()
         {
             // Arrange
-            var e = new ProjectChangeEventArgs("c:/OtherPath/OtherProject.csproj", ProjectChangeKind.ProjectChanged);
+            ProjectManager.HostProjectAdded(OtherHostProject);
+
+            var e = new ProjectChangeEventArgs(null, ProjectManager.GetLoadedProject(OtherHostProject.FilePath), ProjectChangeKind.ProjectChanged);
 
             var called = false;
             DocumentTracker.ContextChanged += (sender, args) =>
@@ -488,13 +499,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
             DocumentTracker.ContextChanged += (sender, e) => { args.Add(e); };
             
             // Act
-            ProjectManager.HostProjectChanged(OtherHostProject);
+            ProjectManager.HostProjectChanged(UpdatedHostProject);
             await DocumentTracker.PendingTagHelperTask;
 
             // Assert
             var snapshot = Assert.IsType<DefaultProjectSnapshot>(DocumentTracker.ProjectSnapshot);
 
-            Assert.Same(OtherHostProject, snapshot.HostProject);
+            Assert.Same(UpdatedHostProject, snapshot.HostProject);
 
             Assert.Collection(
                 args,

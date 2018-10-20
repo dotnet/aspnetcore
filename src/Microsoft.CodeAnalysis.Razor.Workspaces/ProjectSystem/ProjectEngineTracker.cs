@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Host;
 
@@ -41,11 +45,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return this;
         }
 
-        public RazorProjectEngine GetProjectEngine(ProjectSnapshot snapshot)
+        public RazorProjectEngine GetProjectEngine(ProjectState state)
         {
-            if (snapshot == null)
+            if (state == null)
             {
-                throw new ArgumentNullException(nameof(snapshot));
+                throw new ArgumentNullException(nameof(state));
             }
 
             if (_projectEngine == null)
@@ -55,12 +59,30 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     if (_projectEngine == null)
                     {
                         var factory = _services.GetRequiredService<ProjectSnapshotProjectEngineFactory>();
-                        _projectEngine = factory.Create(snapshot);
+                        _projectEngine = factory.Create(state.HostProject.Configuration, Path.GetDirectoryName(state.HostProject.FilePath), configure: null);
                     }
                 }
             }
 
             return _projectEngine;
+        }
+
+        public List<string> GetImportDocumentTargetPaths(ProjectState state, string targetPath)
+        {
+            var projectEngine = GetProjectEngine(state);
+            var importFeature = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
+            var projectItem = projectEngine.FileSystem.GetItem(targetPath);
+            var importItems = importFeature?.GetImports(projectItem).Where(i => i.FilePath != null);
+
+            // Target path looks like `Foo\\Bar.cshtml`
+            var targetPaths = new List<string>();
+            foreach (var importItem in importItems)
+            {
+                var itemTargetPath = importItem.FilePath.Replace('/', '\\').TrimStart('\\');
+                targetPaths.Add(itemTargetPath);
+            }
+
+            return targetPaths;
         }
     }
 }

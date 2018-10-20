@@ -8,11 +8,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class TestProjectSnapshotProjectEngineFactory : ProjectSnapshotProjectEngineFactory
     {
+        public Action<RazorProjectEngineBuilder> Configure { get; set; }
+
         public RazorProjectEngine Engine { get; set; }
 
-        public override RazorProjectEngine Create(ProjectSnapshot project, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
+        public override RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
         {
-            return Engine ?? RazorProjectEngine.Create(project.Configuration, fileSystem, configure);
+            return Engine ?? RazorProjectEngine.Create(configuration, fileSystem, configure ?? Configure);
         }
 
         public override IProjectEngineFactory FindFactory(ProjectSnapshot project)

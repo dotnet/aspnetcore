@@ -183,6 +183,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return state;
         }
 
+        public virtual DocumentState WithImportsChange()
+        {
+            var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader);
+
+            // The source could not have possibly changed.
+            state._sourceText = _sourceText;
+            state._version = _version;
+            state._loaderTask = _loaderTask;
+
+            return state;
+        }
+
         public virtual DocumentState WithWorkspaceProjectChange()
         {
             var state = new DocumentState(Services, HostDocument, _sourceText, _version, _loader);

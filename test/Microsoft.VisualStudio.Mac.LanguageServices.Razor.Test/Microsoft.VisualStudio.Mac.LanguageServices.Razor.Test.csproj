@@ -8,6 +8,9 @@
     <Compile Include="..\Microsoft.CodeAnalysis.Razor.Workspaces.Test\Shared\**\*.cs">
       <Link>Shared\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Compile>
+    <Compile Include="..\Microsoft.VisualStudio.Editor.Razor.Test\Shared\**\*.cs">
+      <Link>Shared\%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
