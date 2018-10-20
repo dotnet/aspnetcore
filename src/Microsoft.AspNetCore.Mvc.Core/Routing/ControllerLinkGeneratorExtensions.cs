@@ -13,11 +13,6 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public static class ControllerLinkGeneratorExtensions
     {
-        private static readonly LinkGenerationTemplateOptions _templateOptions = new LinkGenerationTemplateOptions()
-        {
-            UseAmbientValues = true,
-        };
-
         /// <summary>
         /// Generates a URI with an absolute path based on the provided values.
         /// </summary>
@@ -222,41 +217,6 @@ namespace Microsoft.AspNetCore.Routing
 
             var address = CreateAddress(httpContext: null, action, controller, values);
             return generator.GetUriByAddress<RouteValuesAddress>(address, address.ExplicitValues, scheme, host, pathBase, fragment, options);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> based on the provided <paramref name="action"/>, <paramref name="controller"/>, and <paramref name="values"/>.
-        /// </summary>
-        /// <param name="generator">The <see cref="LinkGenerator"/>.</param>
-        /// <param name="action">The action name. Used to resolve endpoints.</param>
-        /// <param name="controller">The controller name. Used to resolve endpoints.</param>
-        /// <param name="values">The route values. Optional. Used to resolve endpoints and expand parameters in the route template.</param>
-        /// <returns>
-        /// A <see cref="LinkGenerationTemplate"/> if one or more endpoints matching the address can be found, otherwise <c>null</c>.
-        /// </returns>
-        public static LinkGenerationTemplate GetTemplateByAction(
-            this LinkGenerator generator,
-            string action,
-            string controller,
-            object values = default)
-        {
-            if (generator == null)
-            {
-                throw new ArgumentNullException(nameof(generator));
-            }
-
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
-
-            if (controller == null)
-            {
-                throw new ArgumentNullException(nameof(controller));
-            }
-
-            var address = CreateAddress(httpContext: null, action, controller, values);
-            return generator.GetTemplateByAddress<RouteValuesAddress>(address, _templateOptions);
         }
 
         private static RouteValuesAddress CreateAddress(HttpContext httpContext, string action, string controller, object values)
