@@ -74,14 +74,16 @@ namespace Microsoft.AspNetCore.Routing.DecisionTree
     {
         public static DecisionTreeNode<TItem> GenerateTree(IReadOnlyList<TItem> items, IClassifier<TItem> classifier)
         {
-            var itemDescriptors = new List<ItemDescriptor<TItem>>();
-            for (var i = 0; i < items.Count; i++)
+            var itemCount = items.Count;
+            var itemDescriptors = new List<ItemDescriptor<TItem>>(itemCount);
+            for (var i = 0; i < itemCount; i++)
             {
+                var item = items[i];
                 itemDescriptors.Add(new ItemDescriptor<TItem>()
                 {
-                    Criteria = classifier.GetCriteria(items[i]),
+                    Criteria = classifier.GetCriteria(item),
                     Index = i,
-                    Item = items[i],
+                    Item = item,
                 });
             }
 
@@ -95,7 +97,7 @@ namespace Microsoft.AspNetCore.Routing.DecisionTree
         private static DecisionTreeNode<TItem> GenerateNode(
             TreeBuilderContext context,
             DecisionCriterionValueEqualityComparer comparer,
-            IList<ItemDescriptor<TItem>> items)
+            List<ItemDescriptor<TItem>> items)
         {
             // The extreme use of generics here is intended to reduce the number of intermediate
             // allocations of wrapper classes. Performance testing found that building these trees allocates
@@ -156,16 +158,17 @@ namespace Microsoft.AspNetCore.Routing.DecisionTree
 
                 foreach (var branch in criterion.Value)
                 {
-                    var reducedItems = new List<ItemDescriptor<TItem>>();
+                    bool hasReducedItems = false;
+
                     foreach (var item in branch.Value)
                     {
                         if (context.MatchedItems.Add(item))
                         {
-                            reducedItems.Add(item);
+                            hasReducedItems = true;
                         }
                     }
 
-                    if (reducedItems.Count > 0)
+                    if (hasReducedItems)
                     {
                         var childContext = new TreeBuilderContext(context);
                         childContext.CurrentCriteria.Add(criterion.Key);
@@ -189,7 +192,7 @@ namespace Microsoft.AspNetCore.Routing.DecisionTree
 
             return new DecisionTreeNode<TItem>()
             {
-                Criteria = reducedCriteria.ToList(),
+                Criteria = reducedCriteria,
                 Matches = matches,
             };
         }
