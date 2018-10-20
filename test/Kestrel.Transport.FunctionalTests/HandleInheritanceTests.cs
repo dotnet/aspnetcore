@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     public class HandleInheritanceTests : TestApplicationErrorLoggerLoggedTest
     {
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "No fix available for Mac https://github.com/aspnet/KestrelHttpServer/pull/2944#issuecomment-426397600")]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Fixed in 3.0 https://github.com/aspnet/KestrelHttpServer/issues/3040")]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Fixed in 3.0 https://github.com/aspnet/KestrelHttpServer/issues/3040")]
         public async Task SpawnChildProcess_DoesNotInheritListenHandle()
         {
             var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 var processInfo = new ProcessStartInfo
                 {
-                    FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd.exe" : "vi",
+                    FileName = "cmd.exe",
                     CreateNoWindow = true,
                 };
                 using (var process = Process.Start(processInfo))
