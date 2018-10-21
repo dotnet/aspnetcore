@@ -85,6 +85,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             if (IsCatchAll)
             {
                 builder.Append("*");
+                if (!EncodeSlashes)
+                {
+                    builder.Append("*");
+                }
             }
 
             builder.Append(Name);

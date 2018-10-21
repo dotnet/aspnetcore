@@ -89,17 +89,6 @@ namespace Microsoft.AspNetCore.Routing.Template
             _defaults = defaults;
             _requiredKeys = requiredKeys?.ToArray() ?? Array.Empty<string>();
 
-            for (var i = 0; i < _requiredKeys.Length; i++)
-            {
-                var requiredKey = _requiredKeys[i];
-                if (_pattern.GetParameter(requiredKey) != null)
-                {
-                    throw new InvalidOperationException(
-                        $"The parameter {requiredKey} can not be used as a required key since it appears as " +
-                        $"a parameter in the route pattern.");
-                }
-            }
-
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
             // is provided for that 'filter' it must match the value in defaults.
             var filters = new RouteValueDictionary(_defaults);

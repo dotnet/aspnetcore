@@ -441,9 +441,9 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var uri = linkGenerator.GetPathByAddress(
-                httpContext, 
-                1, 
-                values: new RouteValueDictionary(new { action = "Index", }), 
+                httpContext,
+                1,
+                values: new RouteValueDictionary(new { action = "Index", }),
                 ambientValues: new RouteValueDictionary(new { controller = "Home", }));
 
             // Assert
@@ -465,8 +465,8 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var uri = linkGenerator.GetUriByAddress(
-                httpContext, 
-                1, 
+                httpContext,
+                1,
                 values: new RouteValueDictionary(new { action = "Index", }),
                 ambientValues: new RouteValueDictionary(new { controller = "Home", }));
 
@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.Routing
             var uri = linkGenerator.GetPathByAddress(
                 httpContext,
                 1,
-                values: new RouteValueDictionary(new { action = "Index", controller= "Home", }),
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", }),
                 pathBase: "/");
 
             // Assert
@@ -598,8 +598,11 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotSame(original, actual);
         }
 
-        [Fact]
-        public void GetPathByRouteValues_UsesFirstTemplateThatSucceeds()
+        [Theory]
+        [InlineData(new string[] { }, new string[] { }, "/")]
+        [InlineData(new string[] { "id" }, new string[] { "3" }, "/Home/Index/3")]
+        [InlineData(new string[] { "custom" }, new string[] { "Custom" }, "/?custom=Custom")]
+        public void GetPathByRouteValues_UsesFirstTemplateThatSucceeds(string[] routeNames, string[] routeValues, string expectedPath)
         {
             // Arrange
             var endpointControllerAction = EndpointFactory.CreateRouteEndpoint(
@@ -634,26 +637,103 @@ namespace Microsoft.AspNetCore.Routing
             var httpContext = CreateHttpContext();
             httpContext.Features.Set<IRouteValuesFeature>(context);
 
+            var values = new RouteValueDictionary();
+            for (int i = 0; i < routeNames.Length; i++)
+            {
+                values[routeNames[i]] = routeValues[i];
+            }
+
             // Act
-            var pathWithoutId = linkGenerator.GetPathByRouteValues(
+            var generatedPath = linkGenerator.GetPathByRouteValues(
                 httpContext,
                 routeName: null,
-                values: new RouteValueDictionary());
-
-            var pathWithId = linkGenerator.GetPathByRouteValues(
-                httpContext,
-                routeName: null,
-                values: new RouteValueDictionary(new { id = "3" }));
-
-            var pathWithCustom = linkGenerator.GetPathByRouteValues(
-                httpContext,
-                routeName: null,
-                values: new RouteValueDictionary(new { custom = "Custom" }));
+                values: values);
 
             // Assert
-            Assert.Equal("/", pathWithoutId);
-            Assert.Equal("/Home/Index/3", pathWithId);
-            Assert.Equal("/?custom=Custom", pathWithCustom);
+            Assert.Equal(expectedPath, generatedPath);
+        }
+
+        [Theory]
+        [InlineData(new string[] { }, new string[] { }, "/")]
+        [InlineData(new string[] { "id" }, new string[] { "3" }, "/Home/Index/3")]
+        [InlineData(new string[] { "custom" }, new string[] { "Custom" }, "/?custom=Custom")]
+        [InlineData(new string[] { "controller", "action", "id" }, new string[] { "Home", "Login", "3" }, "/Home/Login/3")]
+        [InlineData(new string[] { "controller", "action", "id" }, new string[] { "Home", "Fake", "3" }, null)]
+        public void GetPathByRouteValues_ParameterMatchesRequireValues_HasAmbientValues(string[] routeNames, string[] routeValues, string expectedPath)
+        {
+            // Arrange
+            var homeIndex = EndpointFactory.CreateRouteEndpoint(
+                "{controller}/{action}/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+            var homeLogin = EndpointFactory.CreateRouteEndpoint(
+                "{controller}/{action}/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Login", })) });
+
+            var linkGenerator = CreateLinkGenerator(homeIndex, homeLogin);
+
+            var context = new EndpointSelectorContext()
+            {
+                RouteValues = new RouteValueDictionary(new { controller = "Home", action = "Index", })
+            };
+            var httpContext = CreateHttpContext();
+            httpContext.Features.Set<IRouteValuesFeature>(context);
+
+            var values = new RouteValueDictionary();
+            for (int i = 0; i < routeNames.Length; i++)
+            {
+                values[routeNames[i]] = routeValues[i];
+            }
+
+            // Act
+            var generatedPath = linkGenerator.GetPathByRouteValues(
+                httpContext,
+                routeName: null,
+                values: values);
+
+            // Assert
+            Assert.Equal(expectedPath, generatedPath);
+        }
+
+        [Theory]
+        [InlineData(new string[] { }, new string[] { }, null)]
+        [InlineData(new string[] { "id" }, new string[] { "3" }, null)]
+        [InlineData(new string[] { "custom" }, new string[] { "Custom" }, null)]
+        [InlineData(new string[] { "controller", "action", "id" }, new string[] { "Home", "Login", "3" }, "/Home/Login/3")]
+        [InlineData(new string[] { "controller", "action", "id" }, new string[] { "Home", "Fake", "3" }, null)]
+        public void GetPathByRouteValues_ParameterMatchesRequireValues_NoAmbientValues(string[] routeNames, string[] routeValues, string expectedPath)
+        {
+            // Arrange
+            var homeIndex = EndpointFactory.CreateRouteEndpoint(
+                "{controller}/{action}/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+            var homeLogin = EndpointFactory.CreateRouteEndpoint(
+                "{controller}/{action}/{id?}",
+                defaults: new { controller = "Home", action = "Index", },
+                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Login", })) });
+
+            var linkGenerator = CreateLinkGenerator(homeIndex, homeLogin);
+
+            var context = new EndpointSelectorContext();
+            var httpContext = CreateHttpContext();
+            httpContext.Features.Set<IRouteValuesFeature>(context);
+
+            var values = new RouteValueDictionary();
+            for (int i = 0; i < routeNames.Length; i++)
+            {
+                values[routeNames[i]] = routeValues[i];
+            }
+
+            // Act
+            var generatedPath = linkGenerator.GetPathByRouteValues(
+                httpContext,
+                routeName: null,
+                values: values);
+
+            // Assert
+            Assert.Equal(expectedPath, generatedPath);
         }
 
         protected override void AddAdditionalServices(IServiceCollection services)
