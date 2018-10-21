@@ -91,9 +91,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
                 if (next.Literals.Count > 0)
                 {
-                    UrlMatchingNode node;
                     Debug.Assert(next.Depth < _tokenizer.Count);
-                    if (next.Literals.TryGetValue(_tokenizer[next.Depth].Value, out node))
+                    if (next.Literals.TryGetValue(_tokenizer[next.Depth].Value, out var node))
                     {
                         _stack.Push(node);
                     }

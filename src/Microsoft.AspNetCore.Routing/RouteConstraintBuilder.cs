@@ -184,8 +184,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private void Add(string key, IRouteConstraint constraint)
         {
-            List<IRouteConstraint> list;
-            if (!_constraints.TryGetValue(key, out list))
+            if (!_constraints.TryGetValue(key, out var list))
             {
                 list = new List<IRouteConstraint>();
                 _constraints.Add(key, list);

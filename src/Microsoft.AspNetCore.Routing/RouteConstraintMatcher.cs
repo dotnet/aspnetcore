@@ -51,8 +51,7 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     if (routeDirection.Equals(RouteDirection.IncomingRequest))
                     {
-                        object routeValue;
-                        routeValues.TryGetValue(kvp.Key, out routeValue);
+                        routeValues.TryGetValue(kvp.Key, out var routeValue);
 
                         logger.RouteValueDoesNotMatchConstraint(routeValue, kvp.Key, kvp.Value);
                     }

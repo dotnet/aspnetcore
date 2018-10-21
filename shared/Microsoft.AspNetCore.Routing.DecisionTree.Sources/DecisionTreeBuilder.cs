@@ -125,15 +125,13 @@ namespace Microsoft.AspNetCore.Routing.DecisionTree
 
                     unsatisfiedCriteria++;
 
-                    Criterion criterion;
-                    if (!criteria.TryGetValue(kvp.Key, out criterion))
+                    if (!criteria.TryGetValue(kvp.Key, out var criterion))
                     {
                         criterion = new Criterion(comparer);
                         criteria.Add(kvp.Key, criterion);
                     }
 
-                    List<ItemDescriptor<TItem>> branch;
-                    if (!criterion.TryGetValue(kvp.Value, out branch))
+                    if (!criterion.TryGetValue(kvp.Value, out var branch))
                     {
                         branch = new List<ItemDescriptor<TItem>>();
                         criterion.Add(kvp.Value, branch);

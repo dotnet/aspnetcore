@@ -30,17 +30,15 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object value;
-            if (values.TryGetValue(routeKey, out value) && value != null)
+            if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 if (value is int)
                 {
                     return true;
                 }
 
-                int result;
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return int.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out result);
+                return int.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
             }
 
             return false;
