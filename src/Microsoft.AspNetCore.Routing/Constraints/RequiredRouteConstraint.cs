@@ -34,8 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object value;
-            if (values.TryGetValue(routeKey, out value) && value != null)
+            if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 // In routing the empty string is equivalent to null, which is equivalent to an unset value.
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);

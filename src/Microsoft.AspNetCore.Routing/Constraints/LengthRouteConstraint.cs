@@ -87,8 +87,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object value;
-            if (values.TryGetValue(routeKey, out value) && value != null)
+            if (values.TryGetValue(routeKey, out var value) && value != null)
             {
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
                 var length = valueString.Length;

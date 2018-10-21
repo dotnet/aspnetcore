@@ -87,11 +87,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var criterion = node.Criteria[i];
                 var key = criterion.Key;
 
-                object value;
-                if (values.TryGetValue(key, out value))
+                if (values.TryGetValue(key, out var value))
                 {
-                    DecisionTreeNode<OutboundMatch> branch;
-                    if (criterion.Branches.TryGetValue(value ?? string.Empty, out branch))
+                    if (criterion.Branches.TryGetValue(value ?? string.Empty, out var branch))
                     {
                         Walk(results, values, ambientValues, branch, isFallbackPath);
                     }
