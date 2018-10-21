@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
@@ -417,7 +415,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     parameter.Name,
                     @default,
                     parameter.ParameterKind,
-                    (IEnumerable<RoutePatternParameterPolicyReference>)parameterConstraints ?? Array.Empty<RoutePatternParameterPolicyReference>(),
+                    parameterConstraints?.ToArray() ?? Array.Empty<RoutePatternParameterPolicyReference>(),
                     parameter.EncodeSlashes);
             }
         }
@@ -435,7 +433,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(parts));
             }
 
-            return SegmentCore(parts);
+            return SegmentCore(parts.ToArray());
         }
 
         /// <summary>
@@ -451,12 +449,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(parts));
             }
 
-            return SegmentCore(parts);
+            return SegmentCore((RoutePatternPart[]) parts.Clone());
         }
 
-        private static RoutePatternPathSegment SegmentCore(IEnumerable<RoutePatternPart> parts)
+        private static RoutePatternPathSegment SegmentCore(RoutePatternPart[] parts)
         {
-            return new RoutePatternPathSegment(parts.ToArray());
+            return new RoutePatternPathSegment(parts);
         }
 
         /// <summary>
@@ -630,7 +628,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 parameterName: parameterName,
                 @default: @default,
                 parameterKind: parameterKind,
-                parameterPolicies: parameterPolicies);
+                parameterPolicies: parameterPolicies.ToArray());
         }
 
         /// <summary>
@@ -672,14 +670,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 parameterName: parameterName,
                 @default: @default,
                 parameterKind: parameterKind,
-                parameterPolicies: parameterPolicies);
+                parameterPolicies: (RoutePatternParameterPolicyReference[]) parameterPolicies.Clone());
         }
 
         private static RoutePatternParameterPart ParameterPartCore(
             string parameterName,
             object @default,
             RoutePatternParameterKind parameterKind,
-            IEnumerable<RoutePatternParameterPolicyReference> parameterPolicies)
+            RoutePatternParameterPolicyReference[] parameterPolicies)
         {
             return ParameterPartCore(parameterName, @default, parameterKind, parameterPolicies, encodeSlashes: true);
         }
@@ -688,14 +686,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             string parameterName,
             object @default,
             RoutePatternParameterKind parameterKind,
-            IEnumerable<RoutePatternParameterPolicyReference> parameterPolicies,
+            RoutePatternParameterPolicyReference[] parameterPolicies,
             bool encodeSlashes)
         {
             return new RoutePatternParameterPart(
                 parameterName,
                 @default,
                 parameterKind,
-                parameterPolicies.ToArray(),
+                parameterPolicies,
                 encodeSlashes);
         }
 

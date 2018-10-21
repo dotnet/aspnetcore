@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Routing.Template;
 using Moq;
 using Xunit;
 
@@ -302,6 +303,238 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Assert.Equal(
                 $"Invalid constraint '17'. A constraint must be of type 'string' or '{typeof(IRouteConstraint)}'.",
                 ex.Message);
+        }
+
+        [Fact]
+        public void Pattern_ArrayOfSegments_ShouldMakeCopyOfArrayOfSegments()
+        {
+            // Arrange
+            var literalPartA = RoutePatternFactory.LiteralPart("A");
+            var paramPartB = RoutePatternFactory.ParameterPart("B");
+            var paramPartC = RoutePatternFactory.ParameterPart("C");
+            var paramPartD = RoutePatternFactory.ParameterPart("D");
+            var segments = new[]
+                {
+                    RoutePatternFactory.Segment(literalPartA, paramPartB),
+                    RoutePatternFactory.Segment(paramPartC, literalPartA),
+                    RoutePatternFactory.Segment(paramPartD),
+                    RoutePatternFactory.Segment(literalPartA)
+                };
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(segments);
+            segments[1] = RoutePatternFactory.Segment(RoutePatternFactory.ParameterPart("E"));
+            Array.Resize(ref segments, 2);
+
+            // Assert
+            Assert.Equal(3, actual.Parameters.Count);
+            Assert.Same(paramPartB, actual.Parameters[0]);
+            Assert.Same(paramPartC, actual.Parameters[1]);
+            Assert.Same(paramPartD, actual.Parameters[2]);
+        }
+
+        [Fact]
+        public void Pattern_RawTextAndArrayOfSegments_ShouldMakeCopyOfArrayOfSegments()
+        {
+            // Arrange
+            var rawText = "raw";
+            var literalPartA = RoutePatternFactory.LiteralPart("A");
+            var paramPartB = RoutePatternFactory.ParameterPart("B");
+            var paramPartC = RoutePatternFactory.ParameterPart("C");
+            var paramPartD = RoutePatternFactory.ParameterPart("D");
+            var segments = new[]
+                {
+                    RoutePatternFactory.Segment(literalPartA, paramPartB),
+                    RoutePatternFactory.Segment(paramPartC, literalPartA),
+                    RoutePatternFactory.Segment(paramPartD),
+                    RoutePatternFactory.Segment(literalPartA)
+                };
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(rawText, segments);
+            segments[1] = RoutePatternFactory.Segment(RoutePatternFactory.ParameterPart("E"));
+            Array.Resize(ref segments, 2);
+
+            // Assert
+            Assert.Equal(3, actual.Parameters.Count);
+            Assert.Same(paramPartB, actual.Parameters[0]);
+            Assert.Same(paramPartC, actual.Parameters[1]);
+            Assert.Same(paramPartD, actual.Parameters[2]);
+        }
+
+        [Fact]
+        public void Pattern_DefaultsAndParameterPoliciesAndArrayOfSegments_ShouldMakeCopyOfArrayOfSegments()
+        {
+            // Arrange
+            object defaults = new { B = 12, C = 4 };
+            object parameterPolicies = null;
+            var literalPartA = RoutePatternFactory.LiteralPart("A");
+            var paramPartB = RoutePatternFactory.ParameterPart("B");
+            var paramPartC = RoutePatternFactory.ParameterPart("C");
+            var paramPartD = RoutePatternFactory.ParameterPart("D");
+            var segments = new[]
+                {
+                    RoutePatternFactory.Segment(literalPartA, paramPartB),
+                    RoutePatternFactory.Segment(paramPartC, literalPartA),
+                    RoutePatternFactory.Segment(paramPartD),
+                    RoutePatternFactory.Segment(literalPartA)
+                };
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(defaults, parameterPolicies, segments);
+            segments[1] = RoutePatternFactory.Segment(RoutePatternFactory.ParameterPart("E"));
+            Array.Resize(ref segments, 2);
+
+            // Assert
+            Assert.Equal(3, actual.Parameters.Count);
+            Assert.Equal(paramPartB.Name, actual.Parameters[0].Name);
+            Assert.Equal(12, actual.Parameters[0].Default);
+            Assert.Null(paramPartB.Default);
+            Assert.NotSame(paramPartB, actual.Parameters[0]);
+            Assert.Equal(paramPartC.Name, actual.Parameters[1].Name);
+            Assert.Equal(4, actual.Parameters[1].Default);
+            Assert.NotSame(paramPartC, actual.Parameters[1]);
+            Assert.Null(paramPartC.Default);
+            Assert.Equal(paramPartD.Name, actual.Parameters[2].Name);
+            Assert.Null(actual.Parameters[2].Default);
+            Assert.Same(paramPartD, actual.Parameters[2]);
+            Assert.Null(paramPartD.Default);
+        }
+
+        [Fact]
+        public void Pattern_RawTextAndDefaultsAndParameterPoliciesAndArrayOfSegments_ShouldMakeCopyOfArrayOfSegments()
+        {
+            // Arrange
+            var rawText = "raw";
+            object defaults = new { B = 12, C = 4 };
+            object parameterPolicies = null;
+            var literalPartA = RoutePatternFactory.LiteralPart("A");
+            var paramPartB = RoutePatternFactory.ParameterPart("B");
+            var paramPartC = RoutePatternFactory.ParameterPart("C");
+            var paramPartD = RoutePatternFactory.ParameterPart("D");
+            var segments = new[]
+                {
+                    RoutePatternFactory.Segment(literalPartA, paramPartB),
+                    RoutePatternFactory.Segment(paramPartC, literalPartA),
+                    RoutePatternFactory.Segment(paramPartD),
+                    RoutePatternFactory.Segment(literalPartA)
+                };
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(rawText, defaults, parameterPolicies, segments);
+            segments[1] = RoutePatternFactory.Segment(RoutePatternFactory.ParameterPart("E"));
+            Array.Resize(ref segments, 2);
+
+            // Assert
+            Assert.Equal(3, actual.Parameters.Count);
+            Assert.Equal(paramPartB.Name, actual.Parameters[0].Name);
+            Assert.Equal(12, actual.Parameters[0].Default);
+            Assert.Null(paramPartB.Default);
+            Assert.NotSame(paramPartB, actual.Parameters[0]);
+            Assert.Equal(paramPartC.Name, actual.Parameters[1].Name);
+            Assert.Equal(4, actual.Parameters[1].Default);
+            Assert.NotSame(paramPartC, actual.Parameters[1]);
+            Assert.Null(paramPartC.Default);
+            Assert.Equal(paramPartD.Name, actual.Parameters[2].Name);
+            Assert.Null(actual.Parameters[2].Default);
+            Assert.Same(paramPartD, actual.Parameters[2]);
+            Assert.Null(paramPartD.Default);
+        }
+
+        [Fact]
+        public void ParameterPart_ParameterNameAndDefaultAndParameterKindAndArrayOfParameterPolicies_ShouldMakeCopyOfParameterPolicies()
+        {
+            // Arrange (going through hoops to get an array of RoutePatternParameterPolicyReference)
+            const string name = "Id";
+            var defaults = new { a = "13", };
+            var x = new InlineConstraint("x");
+            var y = new InlineConstraint("y");
+            var z = new InlineConstraint("z");
+            var constraints = new[] { x, y, z };
+            var templatePart = TemplatePart.CreateParameter("t", false, false, null, constraints);
+            var routePatternParameterPart = (RoutePatternParameterPart) templatePart.ToRoutePatternPart();
+            var policies = routePatternParameterPart.ParameterPolicies.ToArray();
+
+            // Act
+            var parameterPart = RoutePatternFactory.ParameterPart(name, defaults, RoutePatternParameterKind.Standard, policies);
+            policies[0] = null;
+            Array.Resize(ref policies, 2);
+
+            // Assert
+            Assert.NotNull(parameterPart.ParameterPolicies);
+            Assert.Equal(3, parameterPart.ParameterPolicies.Count);
+            Assert.NotNull(parameterPart.ParameterPolicies[0]);
+            Assert.NotNull(parameterPart.ParameterPolicies[1]);
+            Assert.NotNull(parameterPart.ParameterPolicies[2]);
+        }
+
+        [Fact]
+        public void ParameterPart_ParameterNameAndDefaultAndParameterKindAndEnumerableOfParameterPolicies_ShouldMakeCopyOfParameterPolicies()
+        {
+            // Arrange (going through hoops to get an enumerable of RoutePatternParameterPolicyReference)
+            const string name = "Id";
+            var defaults = new { a = "13", };
+            var x = new InlineConstraint("x");
+            var y = new InlineConstraint("y");
+            var z = new InlineConstraint("z");
+            var constraints = new[] { x, y, z };
+            var templatePart = TemplatePart.CreateParameter("t", false, false, null, constraints);
+            var routePatternParameterPart = (RoutePatternParameterPart)templatePart.ToRoutePatternPart();
+            var policies = routePatternParameterPart.ParameterPolicies.ToList();
+
+            // Act
+            var parameterPart = RoutePatternFactory.ParameterPart(name, defaults, RoutePatternParameterKind.Standard, policies);
+            policies[0] = null;
+            policies.RemoveAt(1);
+
+            // Assert
+            Assert.NotNull(parameterPart.ParameterPolicies);
+            Assert.Equal(3, parameterPart.ParameterPolicies.Count);
+            Assert.NotNull(parameterPart.ParameterPolicies[0]);
+            Assert.NotNull(parameterPart.ParameterPolicies[1]);
+            Assert.NotNull(parameterPart.ParameterPolicies[2]);
+        }
+
+        [Fact]
+        public void Segment_EnumerableOfParts()
+        {
+            // Arrange
+            var paramPartB = RoutePatternFactory.ParameterPart("B");
+            var paramPartC = RoutePatternFactory.ParameterPart("C");
+            var paramPartD = RoutePatternFactory.ParameterPart("D");
+            var parts = new[] { paramPartB, paramPartC, paramPartD };
+
+            // Act
+            var actual = RoutePatternFactory.Segment((IEnumerable<RoutePatternParameterPart>) parts);
+            parts[1] = RoutePatternFactory.ParameterPart("E");
+            Array.Resize(ref parts, 2);
+
+            // Assert
+            Assert.Equal(3, actual.Parts.Count);
+            Assert.Same(paramPartB, actual.Parts[0]);
+            Assert.Same(paramPartC, actual.Parts[1]);
+            Assert.Same(paramPartD, actual.Parts[2]);
+        }
+
+        [Fact]
+        public void Segment_ArrayOfParts()
+        {
+            // Arrange
+            var paramPartB = RoutePatternFactory.ParameterPart("B");
+            var paramPartC = RoutePatternFactory.ParameterPart("C");
+            var paramPartD = RoutePatternFactory.ParameterPart("D");
+            var parts = new[] { paramPartB, paramPartC, paramPartD };
+
+            // Act
+            var actual = RoutePatternFactory.Segment(parts);
+            parts[1] = RoutePatternFactory.ParameterPart("E");
+            Array.Resize(ref parts, 2);
+
+            // Assert
+            Assert.Equal(3, actual.Parts.Count);
+            Assert.Same(paramPartB, actual.Parts[0]);
+            Assert.Same(paramPartC, actual.Parts[1]);
+            Assert.Same(paramPartD, actual.Parts[2]);
         }
     }
 }
