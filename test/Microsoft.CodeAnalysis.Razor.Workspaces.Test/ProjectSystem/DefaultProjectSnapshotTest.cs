@@ -95,30 +95,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
-        public void ProjectSnapshot_CachesTagHelperTask()
-        {
-            // Arrange
-            TagHelperResolver.CompletionSource = new TaskCompletionSource<TagHelperResolutionResult>();
-
-            try
-            {
-                var state = ProjectState.Create(Workspace.Services, HostProject, WorkspaceProject);
-                var snapshot = new DefaultProjectSnapshot(state);
-
-                // Act
-                var task1 = snapshot.GetTagHelpersAsync();
-                var task2 = snapshot.GetTagHelpersAsync();
-
-                // Assert
-                Assert.Same(task1, task2);
-            }
-            finally
-            {
-                TagHelperResolver.CompletionSource.SetCanceled();
-            }
-        }
-
-        [Fact]
         public void IsImportDocument_NonImportDocument_ReturnsFalse()
         {
             // Arrange

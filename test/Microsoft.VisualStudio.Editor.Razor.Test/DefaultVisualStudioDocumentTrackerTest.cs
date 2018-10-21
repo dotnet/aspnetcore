@@ -19,7 +19,7 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    public class DefaultVisualStudioDocumentTrackerTest : ForegroundDispatcherTestBase
+    public class DefaultVisualStudioDocumentTrackerTest : ForegroundDispatcherWorkspaceTestBase
     {
         public DefaultVisualStudioDocumentTrackerTest()
         {
@@ -32,27 +32,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ImportDocumentManager = Mock.Of<ImportDocumentManager>();
             WorkspaceEditorSettings = new DefaultWorkspaceEditorSettings(Mock.Of<ForegroundDispatcher>(), Mock.Of<EditorSettingsManager>());
 
-            TagHelperResolver = new TestTagHelperResolver();
             SomeTagHelpers = new List<TagHelperDescriptor>()
             {
                 TagHelperDescriptorBuilder.Create("test", "test").Build(),
             };
-
-            HostServices = TestServices.Create(
-                new IWorkspaceService[] { },
-                new ILanguageService[] { TagHelperResolver, });
-
-            Workspace = TestWorkspace.Create(HostServices, w =>
-            {
-                WorkspaceProject = w.AddProject(ProjectInfo.Create(
-                    ProjectId.CreateNewId(),
-                    new VersionStamp(),
-                    "Test1",
-                    "TestAssembly",
-                    LanguageNames.CSharp,
-                    filePath: ProjectPath));
-            });
-
+            
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace) { AllowNotifyListeners = true };
 
             HostProject = new HostProject(ProjectPath, FallbackRazorConfiguration.MVC_2_1);
@@ -92,15 +76,28 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private List<TagHelperDescriptor> SomeTagHelpers { get; }
 
-        private TestTagHelperResolver TagHelperResolver { get; }
+        private TestTagHelperResolver TagHelperResolver { get; set; }
 
         private ProjectSnapshotManagerBase ProjectManager { get; }
 
-        private HostServices HostServices { get; }
-
-        private Workspace Workspace { get; }
-
         private DefaultVisualStudioDocumentTracker DocumentTracker { get; }
+
+        protected override void ConfigureLanguageServices(List<ILanguageService> services)
+        {
+            TagHelperResolver = new TestTagHelperResolver();
+            services.Add(TagHelperResolver);
+        }
+
+        protected override void ConfigureWorkspace(AdhocWorkspace workspace)
+        {
+            WorkspaceProject = workspace.AddProject(ProjectInfo.Create(
+                ProjectId.CreateNewId(),
+                new VersionStamp(),
+                "Test1",
+                "TestAssembly",
+                LanguageNames.CSharp,
+                filePath: TestProjectData.SomeProject.FilePath));
+        }
 
         [ForegroundFact]
         public void Subscribe_NoopsIfAlreadySubscribed()
@@ -561,7 +558,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             await DocumentTracker.PendingTagHelperTask;
 
             // Assert
-            Assert.Same(DocumentTracker.TagHelpers, SomeTagHelpers);
+            Assert.Same(SomeTagHelpers, DocumentTracker.TagHelpers);
 
             Assert.Collection(
                 args,

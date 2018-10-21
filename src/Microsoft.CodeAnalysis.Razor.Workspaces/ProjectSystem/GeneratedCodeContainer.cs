@@ -13,7 +13,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public event EventHandler<TextChangeEventArgs> GeneratedCodeChanged;
 
         private SourceText _source;
-        private VersionStamp? _sourceVersion;
+        private VersionStamp? _inputVersion;
+        private VersionStamp? _outputVersion;
         private RazorCSharpDocument _output;
         private DocumentSnapshot _latestDocument;
 
@@ -37,13 +38,24 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public VersionStamp SourceVersion
+        public VersionStamp InputVersion
         {
             get
             {
                 lock (_setOutputLock)
                 {
-                    return _sourceVersion.Value;
+                    return _inputVersion.Value;
+                }
+            }
+        }
+
+        public VersionStamp OutputVersion
+        {
+            get
+            {
+                lock (_setOutputLock)
+                {
+                    return _outputVersion.Value;
                 }
             }
         }
@@ -81,19 +93,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public void SetOutput(RazorCSharpDocument csharpDocument, DefaultDocumentSnapshot document)
+        public void SetOutput(
+            DefaultDocumentSnapshot document, 
+            RazorCSharpDocument output,
+            VersionStamp inputVersion,
+            VersionStamp outputVersion)
         {
             lock (_setOutputLock)
             {
-                if (!document.TryGetTextVersion(out var version))
-                {
-                    Debug.Fail("The text version should have already been evaluated.");
-                    return;
-                }
-
-                if (_sourceVersion.HasValue &&
-                    _sourceVersion != version &&
-                    _sourceVersion == SourceVersion.GetNewerVersion(version))
+                if (_inputVersion.HasValue &&
+                    _inputVersion != inputVersion &&
+                    _inputVersion == _inputVersion.Value.GetNewerVersion(inputVersion))
                 {
                     // Latest document is newer than the provided document.
                     return;
@@ -106,10 +116,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
 
                 _source = source;
-                _sourceVersion = version;
-                _output = csharpDocument;
+                _inputVersion = inputVersion;
+                _outputVersion = outputVersion;
+                _output = output;
                 _latestDocument = document;
-                _textContainer.SetText(SourceText.From(Output.GeneratedCode));
+                _textContainer.SetText(SourceText.From(_output.GeneratedCode));
             }
         }
 

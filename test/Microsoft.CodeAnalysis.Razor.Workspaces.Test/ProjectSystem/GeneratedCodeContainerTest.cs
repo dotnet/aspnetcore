@@ -15,22 +15,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void SetOutput_AcceptsSameVersionedDocuments()
         {
             // Arrange
-            var csharpDocument = RazorCSharpDocument.Create("...", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
-            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default);
             var services = TestWorkspace.Create().Services;
+            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default);
             var projectState = ProjectState.Create(services, hostProject);
             var project = new DefaultProjectSnapshot(projectState);
-            var hostDocument = new HostDocument("C:/file.cshtml", "C:/file.cshtml");
+
             var text = SourceText.From("...");
             var textAndVersion = TextAndVersion.Create(text, VersionStamp.Default);
+            var hostDocument = new HostDocument("C:/file.cshtml", "C:/file.cshtml");
             var documentState = new DocumentState(services, hostDocument, text, VersionStamp.Default, () => Task.FromResult(textAndVersion));
             var document = new DefaultDocumentSnapshot(project, documentState);
             var newDocument = new DefaultDocumentSnapshot(project, documentState);
+
+            var csharpDocument = RazorCSharpDocument.Create("...", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+
+            var version = VersionStamp.Create();
             var container = new GeneratedCodeContainer();
-            container.SetOutput(csharpDocument, document);
+            container.SetOutput(document, csharpDocument, version, version);
 
             // Act
-            container.SetOutput(csharpDocument, newDocument);
+            container.SetOutput(newDocument, csharpDocument, version, version);
 
             // Assert
             Assert.Same(newDocument, container.LatestDocument);
@@ -40,20 +44,23 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void SetOutput_AcceptsInitialOutput()
         {
             // Arrange
-            var csharpDocument = RazorCSharpDocument.Create("...", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
-            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default);
             var services = TestWorkspace.Create().Services;
+            var hostProject = new HostProject("C:/project.csproj", RazorConfiguration.Default);
             var projectState = ProjectState.Create(services, hostProject);
             var project = new DefaultProjectSnapshot(projectState);
-            var hostDocument = new HostDocument("C:/file.cshtml", "C:/file.cshtml");
+
             var text = SourceText.From("...");
             var textAndVersion = TextAndVersion.Create(text, VersionStamp.Default);
+            var hostDocument = new HostDocument("C:/file.cshtml", "C:/file.cshtml");
             var documentState = new DocumentState(services, hostDocument, text, VersionStamp.Default, () => Task.FromResult(textAndVersion));
             var document = new DefaultDocumentSnapshot(project, documentState);
+            var csharpDocument = RazorCSharpDocument.Create("...", RazorCodeGenerationOptions.CreateDefault(), Enumerable.Empty<RazorDiagnostic>());
+
+            var version = VersionStamp.Create();
             var container = new GeneratedCodeContainer();
 
             // Act
-            container.SetOutput(csharpDocument, document);
+            container.SetOutput(document, csharpDocument, version, version);
 
             // Assert
             Assert.NotNull(container.LatestDocument);

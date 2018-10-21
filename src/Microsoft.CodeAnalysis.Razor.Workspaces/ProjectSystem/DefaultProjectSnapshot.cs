@@ -89,20 +89,20 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override RazorProjectEngine GetProjectEngine()
         {
-            return State.ProjectEngine.GetProjectEngine(this.State);
+            return State.ProjectEngine;
         }
 
         public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()
         {
             // IMPORTANT: Don't put more code here. We want this to return a cached task.
-            return State.TagHelpers.GetTagHelperInitializationTask(this);
+            return State.GetTagHelpersAsync(this);
         }
 
         public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
         {
-            if (State.TagHelpers.IsResultAvailable)
+            if (State.IsTagHelperResultAvailable)
             {
-                result = State.TagHelpers.GetTagHelperInitializationTask(this).Result;
+                result = State.GetTagHelpersAsync(this).Result;
                 return true;
             }
 

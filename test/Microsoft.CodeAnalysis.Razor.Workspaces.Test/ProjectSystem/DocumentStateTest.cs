@@ -33,13 +33,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             SomeTagHelpers = new List<TagHelperDescriptor>();
             SomeTagHelpers.Add(TagHelperDescriptorBuilder.Create("Test1", "TestAssembly").Build());
 
-            Document = TestProjectData.SomeProjectFile1;
+            HostDocument = TestProjectData.SomeProjectFile1;
 
             Text = SourceText.From("Hello, world!");
             TextLoader = () => Task.FromResult(TextAndVersion.Create(Text, VersionStamp.Create()));
         }
 
-        private HostDocument Document { get; }
+        private HostDocument HostDocument { get; }
 
         private HostProject HostProject { get; }
 
@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task DocumentState_CreatedNew_HasEmptyText()
         {
             // Arrange & Act
-            var state = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader);
+            var state = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader);
             
             // Assert
             var text = await state.GetTextAsync();
@@ -75,7 +75,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task DocumentState_WithText_CreatesNewState()
         {
             // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader);
+            var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader);
 
             // Act
             var state = original.WithText(Text, VersionStamp.Create());
@@ -89,7 +89,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task DocumentState_WithTextLoader_CreatesNewState()
         {
             // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader);
+            var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader);
 
             // Act
             var state = original.WithTextLoader(TextLoader);
@@ -103,7 +103,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void DocumentState_WithConfigurationChange_CachesSnapshotText()
         {
             // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+            var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader)
                 .WithText(Text, VersionStamp.Create());
 
             // Act
@@ -118,7 +118,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task DocumentState_WithConfigurationChange_CachesLoadedText()
         {
             // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+            var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader)
                 .WithTextLoader(TextLoader);
 
             await original.GetTextAsync();
@@ -135,7 +135,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void DocumentState_WithImportsChange_CachesSnapshotText()
         {
             // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+            var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader)
                 .WithText(Text, VersionStamp.Create());
 
             // Act
@@ -150,7 +150,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task DocumentState_WithImportsChange_CachesLoadedText()
         {
             // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+            var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader)
                 .WithTextLoader(TextLoader);
 
             await original.GetTextAsync();
@@ -167,7 +167,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void DocumentState_WithWorkspaceProjectChange_CachesSnapshotText()
         {
             // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+            var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader)
                 .WithText(Text, VersionStamp.Create());
 
             // Act
@@ -182,7 +182,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task DocumentState_WithWorkspaceProjectChange_CachesLoadedText()
         {
             // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader)
+            var original = DocumentState.Create(Workspace.Services, HostDocument, DocumentState.EmptyLoader)
                 .WithTextLoader(TextLoader);
 
             await original.GetTextAsync();
@@ -193,21 +193,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Assert
             Assert.True(state.TryGetText(out _));
             Assert.True(state.TryGetTextVersion(out _));
-        }
-
-        [Fact]
-        public void DocumentState_WithWorkspaceProjectChange_TriesToCacheGeneratedOutput()
-        {
-            // Arrange
-            var original = DocumentState.Create(Workspace.Services, Document, DocumentState.EmptyLoader);
-
-            GC.KeepAlive(original.GeneratedOutput);
-
-            // Act
-            var state = original.WithWorkspaceProjectChange();
-
-            // Assert
-            Assert.Same(state.GeneratedOutput.Older, original.GeneratedOutput);
         }
     }
 }
