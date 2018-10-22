@@ -9,7 +9,7 @@
     <AspNetCoreModuleVersionMinor>2</AspNetCoreModuleVersionMinor>
     <AspNetCoreModuleVersionRevision>$(DotNetPatchVersion)</AspNetCoreModuleVersionRevision>
     <VersionSuffix>rtm</VersionSuffix>
-    <VersionSuffix Condition="'$(BuildServerIIS21)' == 'true'">-ancm-oob</VersionSuffix>
+    <VersionSuffix Condition="'$(BuildServerIIS21)' == 'true'">ancm-oob</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>

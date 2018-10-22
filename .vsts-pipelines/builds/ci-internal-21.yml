@@ -1,13 +1,11 @@
 trigger:
 - release/2.2
 
-# See https://github.com/aspnet/BuildTools
 resources:
   repositories:
   - repository: buildtools
-    type: github
-    endpoint: DotNet-Bot GitHub Connection
-    name: aspnet/BuildTools
+    type: git
+    name: aspnet-BuildTools
     ref: refs/heads/release/2.2
 
 phases:
