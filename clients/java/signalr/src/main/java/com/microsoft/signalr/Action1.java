@@ -8,7 +8,8 @@ package com.microsoft.signalr;
  *
  * @param <T1> The type of the first parameter to the callback.
  */
-@FunctionalInterface
 public interface Action1<T1> {
+    // We can't use the @FunctionalInterface annotation because it's only
+    // available on Android API Level 24 and above.
     void invoke(T1 param1);
 }
