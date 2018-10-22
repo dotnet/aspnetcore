@@ -57,7 +57,6 @@
         <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
       </ArtifactInfo>
       <FilesToSign Include="$(AncmV2PackageOutputPath)" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(RepositoryRoot)tools\installancm.ps1" Container="$(AncmV2PackageOutputPath)" Certificate="$(PowerShellSigningCertName)" />
 
       <ArtifactInfo Include="$(AncmZipOutputPath)">
         <ArtifactType>ZipArchive</ArtifactType>
