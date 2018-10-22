@@ -242,18 +242,29 @@ namespace Microsoft.AspNetCore.Routing.Internal
         // Used by TemplateBinder.TryBindValues - the new code path of LinkGenerator
         public PathString ToPathString()
         {
-            if (_path.Length > 0 && _path[0] != '/')
+            PathString pathString;
+
+            if (_path.Length > 0)
             {
-                // Normalize generated paths so that they always contain a leading slash.
-                _path.Insert(0, '/');
+                if (_path[0] != '/')
+                {
+                    // Normalize generated paths so that they always contain a leading slash.
+                    _path.Insert(0, '/');
+                }
+
+                if (AppendTrailingSlash && _path[_path.Length - 1] != '/')
+                {
+                    _path.Append('/');
+                }
+
+                pathString = new PathString(_path.ToString());
+            }
+            else
+            {
+                pathString = PathString.Empty;
             }
 
-            if (AppendTrailingSlash && _path.Length > 0 && _path[_path.Length - 1] != '/')
-            {
-                _path.Append('/');
-            }
-
-            return new PathString(_path.ToString());
+            return pathString;
         }
 
         // Used by TemplateBinder.TryBindValues - the new code path of LinkGenerator

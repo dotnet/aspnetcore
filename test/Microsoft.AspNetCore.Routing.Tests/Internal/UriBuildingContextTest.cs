@@ -65,5 +65,36 @@ namespace Microsoft.AspNetCore.Routing.Internal
             // Assert
             Assert.Equal(expected, uriBuilldingContext.ToString());
         }
+
+        [Theory]
+        [InlineData("/Author", false, false, "/UrlEncode[[Author]]")]
+        [InlineData("/Author", false, true, "/UrlEncode[[Author]]")]
+        [InlineData("/Author", true, false, "/UrlEncode[[Author]]/")]
+        [InlineData("/Author", true, true, "/UrlEncode[[Author]]/")]
+        [InlineData("/Author/", false, false, "/UrlEncode[[Author]]/")]
+        [InlineData("/Author/", false, true, "/UrlEncode[[Author/]]")]
+        [InlineData("/Author/", true, false, "/UrlEncode[[Author]]/")]
+        [InlineData("/Author/", true, true, "/UrlEncode[[Author/]]/")]
+        [InlineData("Author", false, false, "/UrlEncode[[Author]]")]
+        [InlineData("Author", false, true, "/UrlEncode[[Author]]")]
+        [InlineData("Author", true, false, "/UrlEncode[[Author]]/")]
+        [InlineData("Author", true, true, "/UrlEncode[[Author]]/")]
+        [InlineData("", false, false, "")]
+        [InlineData("", false, true, "")]
+        [InlineData("", true, false, "")]
+        [InlineData("", true, true, "")]
+        public void ToPathString(string url, bool appendTrailingSlash, bool encodeSlashes, string expected)
+        {
+            // Arrange
+            var urlTestEncoder = new UrlTestEncoder();
+            var uriBuilldingContext = new UriBuildingContext(urlTestEncoder);
+            uriBuilldingContext.AppendTrailingSlash = appendTrailingSlash;
+
+            // Act
+            uriBuilldingContext.Accept(url, encodeSlashes);
+
+            // Assert
+            Assert.Equal(expected, uriBuilldingContext.ToPathString().Value);
+        }
     }
 }
