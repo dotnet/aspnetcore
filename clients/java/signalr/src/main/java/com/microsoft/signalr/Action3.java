@@ -10,7 +10,8 @@ package com.microsoft.signalr;
  * @param <T2> The type of the second parameter to the callback.
  * @param <T3> The type of the third parameter to the callback.
  */
-@FunctionalInterface
 public interface Action3<T1, T2, T3> {
+    // We can't use the @FunctionalInterface annotation because it's only
+    // available on Android API Level 24 and above.
     void invoke(T1 param1, T2 param2, T3 param3);
 }

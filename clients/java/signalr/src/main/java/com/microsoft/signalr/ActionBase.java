@@ -3,7 +3,8 @@
 
 package com.microsoft.signalr;
 
-@FunctionalInterface
 interface ActionBase {
+    // We can't use the @FunctionalInterface annotation because it's only
+    // available on Android API Level 24 and above.
     void invoke(Object ... params);
 }
