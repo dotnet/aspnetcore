@@ -260,13 +260,17 @@
       "23", //Extensions-ci
       "26", //SignalR-ci
       "27", //IISIntegration-ci
+      "36", //Templating-ci
       "39", //Caching-ci
       "40", //Razor-ci
       "46", //Routing-ci
       "51", //EntityFrameworkCore-ci
+      "61", //HttpSysServer-ci
       "135", //aspnet-Blazor-ci-official
       "66", //KestrelHttpServer-ci
+      "69", //Logging-ci
       "91", //AspNetCore-fast-pr-validation
+      "180", //IISIntegration-ci-21
       // Universe
       "134" //aspnet-Universe-e2e-tests
     ],
