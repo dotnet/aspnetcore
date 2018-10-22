@@ -272,7 +272,7 @@
     ],
     "BuildIdIgnoreList": [
       "21", //aspnet-Universe-ci-official Due to https://github.com/aspnet/AspNetCore-Internal/issues/878
-      "171" //AspNetCore-SiteExtensions @pakrym is still bringing this online, so it will be too noisy for now.
+      "189" //AspNetCore-site-extensions @pakrym is still bringing this online, so it will be too noisy for now.
     ]
   }
 }
