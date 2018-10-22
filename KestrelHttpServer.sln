@@ -134,6 +134,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Sockets.B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Libuv.BindTests", "test\Kestrel.Transport.Libuv.BindTests\Kestrel.Transport.Libuv.BindTests.csproj", "{FB9C6B61-0A7B-4FFA-B772-A754316B262E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.H2Spec.FunctionalTests", "test\Kestrel.H2Spec.FunctionalTests\Kestrel.H2Spec.FunctionalTests.csproj", "{C4123E55-5760-4557-B89B-39E1258FD7F9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -420,6 +422,18 @@ Global
 		{FB9C6B61-0A7B-4FFA-B772-A754316B262E}.Release|x64.Build.0 = Release|Any CPU
 		{FB9C6B61-0A7B-4FFA-B772-A754316B262E}.Release|x86.ActiveCfg = Release|Any CPU
 		{FB9C6B61-0A7B-4FFA-B772-A754316B262E}.Release|x86.Build.0 = Release|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Debug|x64.Build.0 = Debug|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Debug|x86.Build.0 = Debug|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Release|x64.ActiveCfg = Release|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Release|x64.Build.0 = Release|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Release|x86.ActiveCfg = Release|Any CPU
+		{C4123E55-5760-4557-B89B-39E1258FD7F9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -450,6 +464,7 @@ Global
 		{B5422347-E919-431D-9EF2-C352FFE4D6C1} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
 		{9254C3EB-196B-402F-A059-34FEA6140500} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
 		{FB9C6B61-0A7B-4FFA-B772-A754316B262E} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
+		{C4123E55-5760-4557-B89B-39E1258FD7F9} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2D10D020-6770-47CA-BB8D-2C23FE3AE071}

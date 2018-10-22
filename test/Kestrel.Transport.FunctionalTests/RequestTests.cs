@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         // https://github.com/aspnet/KestrelHttpServer/issues/520#issuecomment-188591242
         // will be lost.
         [InlineData((long)int.MaxValue + 1, false)]
-        public void LargeUpload(long contentLength, bool checkBytes)
+        public async Task LargeUpload(long contentLength, bool checkBytes)
         {
             const int bufferLength = 1024 * 1024;
             Assert.True(contentLength % bufferLength == 0, $"{nameof(contentLength)} sent must be evenly divisible by {bufferLength}.");
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             total += received;
                         }
 
-                        await context.Response.WriteAsync(total.ToString(CultureInfo.InvariantCulture));
+                        await context.Response.WriteAsync($"bytesRead: {total.ToString()}");
                     });
                 });
 
@@ -100,8 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
                     socket.Connect(new IPEndPoint(IPAddress.Loopback, host.GetPort()));
-                    socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n"));
-                    Thread.Sleep(5000);
+                    socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.1\r\nHost: \r\n"));
                     socket.Send(Encoding.ASCII.GetBytes($"Content-Length: {contentLength}\r\n\r\n"));
 
                     var contentBytes = new byte[bufferLength];
@@ -119,15 +118,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         socket.Send(contentBytes);
                     }
 
-                    var response = new StringBuilder();
-                    var responseBytes = new byte[4096];
-                    var received = 0;
-                    while ((received = socket.Receive(responseBytes)) > 0)
+                    using (var stream = new NetworkStream(socket))
                     {
-                        response.Append(Encoding.ASCII.GetString(responseBytes, 0, received));
+                        await AssertStreamContains(stream, $"bytesRead: {contentLength}");
                     }
-
-                    Assert.Contains(contentLength.ToString(CultureInfo.InvariantCulture), response.ToString());
                 }
             }
         }
@@ -904,6 +898,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var facts = JsonConvert.DeserializeObject<JObject>(connectionFacts);
                 Assert.Equal(expectAddress, facts["RemoteIPAddress"].Value<string>());
                 Assert.NotEmpty(facts["RemotePort"].Value<string>());
+            }
+        }
+
+        // THIS IS NOT GENERAL PURPOSE. If the initial characters could repeat, this is broken. However, since we're
+        // looking for /bytesWritten: \d+/ and the initial "b" cannot occur elsewhere in the pattern, this works.
+        private static async Task AssertStreamContains(Stream stream, string expectedSubstring)
+        {
+            var expectedBytes = Encoding.ASCII.GetBytes(expectedSubstring);
+            var exptectedLength = expectedBytes.Length;
+            var responseBuffer = new byte[exptectedLength];
+
+            var matchedChars = 0;
+
+            while (matchedChars < exptectedLength)
+            {
+                var count = await stream.ReadAsync(responseBuffer, 0, exptectedLength - matchedChars).DefaultTimeout();
+
+                if (count == 0)
+                {
+                    Assert.True(false, "Stream completed without expected substring.");
+                }
+
+                for (var i = 0; i < count && matchedChars < exptectedLength; i++)
+                {
+                    if (responseBuffer[i] == expectedBytes[matchedChars])
+                    {
+                        matchedChars++;
+                    }
+                    else
+                    {
+                        matchedChars = 0;
+                    }
+                }
             }
         }
     }

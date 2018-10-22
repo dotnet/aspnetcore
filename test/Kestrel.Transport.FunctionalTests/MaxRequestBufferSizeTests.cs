@@ -51,7 +51,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private static readonly string[] _requestLines = new[]
         {
-            "POST / HTTP/1.0\r\n",
+            "POST / HTTP/1.1\r\n",
+            "Host: \r\n",
             $"Content-Length: {_dataLength}\r\n",
             "\r\n"
         };
@@ -60,11 +61,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             get
             {
+                var totalHeaderSize = 0;
+
+                for (var i = 1; i < _requestLines.Length - 1; i++)
+                {
+                    totalHeaderSize += _requestLines[i].Length;
+                }
+
                 var maxRequestBufferSizeValues = new Tuple<long?, bool>[] {
-                    // Smallest buffer that can hold a test request line without causing
+                    // Smallest buffer that can hold the test request headers without causing
                     // the server to hang waiting for the end of the request line or
                     // a header line.
-                    Tuple.Create((long?)(_requestLines.Max(line => line.Length)), true),
+                    Tuple.Create((long?)totalHeaderSize, true),
 
                     // Small buffer, but large enough to hold all request headers.
                     Tuple.Create((long?)16 * 1024, true),
@@ -194,11 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         startReadingRequestBody.TrySetResult(null);
                     }
 
-                    using (var reader = new StreamReader(stream, Encoding.ASCII))
-                    {
-                        var response = reader.ReadToEnd();
-                        Assert.Contains($"bytesRead: {data.Length}", response);
-                    }
+                    await AssertStreamContains(stream, $"bytesRead: {data.Length}");
                 }
             }
 
@@ -371,6 +375,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 foreach (var line in _requestLines)
                 {
                     await writer.WriteAsync(line).ConfigureAwait(false);
+                }
+            }
+        }
+
+        // THIS IS NOT GENERAL PURPOSE. If the initial characters could repeat, this is broken. However, since we're
+        // looking for /bytesWritten: \d+/ and the initial "b" cannot occur elsewhere in the pattern, this works.
+        private static async Task AssertStreamContains(Stream stream, string expectedSubstring)
+        {
+            var expectedBytes = Encoding.ASCII.GetBytes(expectedSubstring);
+            var exptectedLength = expectedBytes.Length;
+            var responseBuffer = new byte[exptectedLength];
+
+            var matchedChars = 0;
+
+            while (matchedChars < exptectedLength)
+            {
+                var count = await stream.ReadAsync(responseBuffer, 0, exptectedLength - matchedChars).DefaultTimeout();
+
+                if (count == 0)
+                {
+                    Assert.True(false, "Stream completed without expected substring.");
+                }
+
+                for (var i = 0; i < count && matchedChars < exptectedLength; i++)
+                {
+                    if (responseBuffer[i] == expectedBytes[matchedChars])
+                    {
+                        matchedChars++;
+                    }
+                    else
+                    {
+                        matchedChars = 0;
+                    }
                 }
             }
         }

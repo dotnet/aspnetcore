@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
+namespace H2Spec.FunctionalTests
 {
     public static class H2SpecCommands
     {
