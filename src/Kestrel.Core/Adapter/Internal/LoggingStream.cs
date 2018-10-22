@@ -174,13 +174,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 builder.Append(" ");
             }
             builder.AppendLine();
+            builder.Append("{0}");
+
+            var rawDataBuilder = new StringBuilder();
             // Write the bytes as if they were ASCII
             for (int i = 0; i < buffer.Length; i++)
             {
-                builder.Append((char)buffer[i]);
+                rawDataBuilder.Append((char)buffer[i]);
             }
 
-            _logger.LogDebug(builder.ToString());
+            _logger.LogDebug(builder.ToString(), rawDataBuilder.ToString());
         }
 
         // The below APM methods call the underlying Read/WriteAsync methods which will still be logged.
