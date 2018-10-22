@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -69,6 +70,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -96,6 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -125,6 +128,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -156,6 +160,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -188,6 +193,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -222,6 +228,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -256,6 +263,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -290,6 +298,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -317,6 +326,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -348,6 +358,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -379,6 +390,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 server.Options.AllowSynchronousIO = true;
@@ -413,6 +425,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -447,6 +460,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -478,6 +492,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -511,6 +526,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -542,6 +558,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 // Http.Sys will cache almost any status code.
                 for (int status = 200; status < 600; status++)
                 {
@@ -618,6 +635,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address, method);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -676,6 +694,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 // Cache the first response
                 var responseTask = SendRequestAsync(address);
 
@@ -722,6 +741,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address, "GET", "x-vary", "vary1");
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -753,6 +773,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address, "GET", "Authorization", "Basic abc123");
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -787,6 +808,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -823,6 +845,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address, "GET", "Pragma", "no-cache");
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -852,6 +875,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -880,6 +904,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address, "GET", "Cache-Control", "no-cache");
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -908,6 +933,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -936,6 +962,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -964,6 +991,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -991,6 +1019,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address, "GET", "Range", "bytes=0-10");
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -1035,6 +1064,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -1065,6 +1095,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
@@ -1093,6 +1124,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseLength = _fileLength / 2; // Make sure it handles partial files.
                 var responseTask = SendRequestAsync(address);
 
@@ -1125,6 +1157,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 var responseLength = _fileLength / 2; // Make sure it handles partial files.
                 var responseTask = SendRequestAsync(address);
 
