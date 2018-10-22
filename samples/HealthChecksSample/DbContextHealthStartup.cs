@@ -78,7 +78,7 @@ namespace HealthChecksSample
             {
                 await context.Response.WriteAsync("Go to /health to see the health status\n");
                 await context.Response.WriteAsync("Go to /createdatabase to create the database\n");
-                await context.Response.WriteAsync("Go to /deletedatabase to create the database\n");
+                await context.Response.WriteAsync("Go to /deletedatabase to delete the database\n");
             });
         }
     }
