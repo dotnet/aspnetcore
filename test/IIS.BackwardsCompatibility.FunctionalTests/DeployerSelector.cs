@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public static class DeployerSelector
     {
-        public static ServerType ServerType => ServerType.IISExpress;
-        public static bool IsBackwardsCompatiblityTest => false;
+        public static ServerType ServerType => ServerType.IIS;
+        public static bool IsBackwardsCompatiblityTest => true;
     }
 }
