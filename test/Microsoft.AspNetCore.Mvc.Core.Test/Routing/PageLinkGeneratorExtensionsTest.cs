@@ -166,29 +166,6 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Admin/ManageUsers/?query=some%3Fquery#Fragment?", uri);
         }
 
-        [Fact]
-        public void GetTemplateByAction_CreatesTemplate()
-        {
-            // Arrange
-            var endpoint1 = CreateEndpoint(
-                "About/{id}",
-                defaults: new { page = "/About", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/About", })) });
-            var endpoint2 = CreateEndpoint(
-                "Admin/ManageUsers",
-                defaults: new { page = "/Admin/ManageUsers", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/Admin/ManageUsers", })) });
-
-            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
-
-            // Act
-            var template = linkGenerator.GetTemplateByPage(page: "/About");
-
-            // Assert
-            Assert.NotNull(template);
-            Assert.Equal("/About/17", template.GetPath(new { id = 17 }));
-        }
-
         private RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
