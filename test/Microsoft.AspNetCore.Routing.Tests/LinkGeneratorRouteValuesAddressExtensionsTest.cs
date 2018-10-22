@@ -201,31 +201,5 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             Assert.Equal("http://example.com/Foo/Bar%3Fencodeme%3F/Home/Index/?query=some%3Fquery#Fragment?", uri);
         }
-
-        [Fact]
-        public void GetTemplateByRouteValues_CreatesTemplate()
-        {
-            // Arrange
-            var endpoint1 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id}",
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
-            var endpoint2 = EndpointFactory.CreateRouteEndpoint(
-                "{controller}/{action}/{id?}",
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "In?dex", })) });
-
-            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
-
-            // Act
-            var template = linkGenerator.GetTemplateByRouteValues(
-                routeName: null,
-                values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }));
-
-            // Assert
-            Assert.NotNull(template);
-            Assert.Collection(
-                Assert.IsType<DefaultLinkGenerationTemplate>(template).Endpoints.Cast<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
-                e => Assert.Same(endpoint2, e),
-                e => Assert.Same(endpoint1, e));
-        }
     }
 }

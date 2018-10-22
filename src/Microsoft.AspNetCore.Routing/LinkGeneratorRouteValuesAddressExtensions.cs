@@ -11,11 +11,6 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public static class LinkGeneratorRouteValuesAddressExtensions
     {
-        private static readonly LinkGenerationTemplateOptions _templateOptions = new LinkGenerationTemplateOptions()
-        {
-            UseAmbientValues = true,
-        };
-
         /// <summary>
         /// Generates a URI with an absolute path based on the provided values.
         /// </summary>
@@ -200,29 +195,6 @@ namespace Microsoft.AspNetCore.Routing
 
             var address = CreateAddress(httpContext: null, routeName, values);
             return generator.GetUriByAddress<RouteValuesAddress>(address, address.ExplicitValues, scheme, host, pathBase, fragment, options);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="LinkGenerationTemplate"/> based on the provided <paramref name="routeName"/> and <paramref name="values"/>.
-        /// </summary>
-        /// <param name="generator">The <see cref="LinkGenerator"/>.</param>
-        /// <param name="routeName">The route name. Used to resolve endpoints. Optional.</param>
-        /// <param name="values">The route values. Used to resolve endpoints and expand parameters in the route template. Optional.</param>
-        /// <returns>
-        /// A <see cref="LinkGenerationTemplate"/> if one or more endpoints matching the address can be found, otherwise <c>null</c>.
-        /// </returns>
-        public static LinkGenerationTemplate GetTemplateByRouteValues(
-            this LinkGenerator generator,
-            string routeName,
-            object values)
-        {
-            if (generator == null)
-            {
-                throw new ArgumentNullException(nameof(generator));
-            }
-
-            var address = CreateAddress(httpContext: null, routeName, values);
-            return generator.GetTemplateByAddress<RouteValuesAddress>(address, _templateOptions);
         }
 
         private static RouteValuesAddress CreateAddress(HttpContext httpContext, string routeName, object values)
