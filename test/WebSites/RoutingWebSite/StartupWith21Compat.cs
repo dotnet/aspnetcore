@@ -1,14 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -48,7 +45,7 @@ namespace RoutingWebSite
                 new ControllerToRemove
                 {
                     ControllerType = typeof(PageRouteController),
-                    Actions = new [] { nameof(PageRouteController.AttributeRoute) }
+                    Actions = new[] { nameof(PageRouteController.AttributeRoute) }
                 });
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IActionDescriptorProvider>(actionDescriptorProvider));
         }
@@ -63,6 +60,18 @@ namespace RoutingWebSite
                     defaults: null,
                     constraints: new { controller = "DataTokens" },
                     dataTokens: new { hasDataTokens = true });
+
+                routes.MapRoute(
+                    "DefaultValuesRoute_OptionalParameter",
+                    "DefaultValuesRoute/Optional/{controller=DEFAULTVALUES}/{action=OPTIONALPARAMETER}/{id?}/{**catchAll}",
+                    defaults: null,
+                    constraints: new { controller = "DefaultValues", action = "OptionalParameter" });
+
+                routes.MapRoute(
+                    "DefaultValuesRoute_DefaultParameter",
+                    "DefaultValuesRoute/Default/{controller=DEFAULTVALUES}/{action=DEFAULTPARAMETER}/{id=17}/{**catchAll}",
+                    defaults: null,
+                    constraints: new { controller = "DefaultValues", action = "DefaultParameter" });
 
                 routes.MapAreaRoute(
                     "flightRoute",
