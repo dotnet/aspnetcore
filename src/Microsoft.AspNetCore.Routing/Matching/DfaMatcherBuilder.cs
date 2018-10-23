@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private readonly ILoggerFactory _loggerFactory;
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly EndpointSelector _selector;
-        private readonly MatcherPolicy[] _policies;
+        private readonly IEndpointSelectorPolicy[] _endpointSelectorPolicies;
         private readonly INodeBuilderPolicy[] _nodeBuilders;
         private readonly EndpointComparer _comparer;
 
@@ -39,11 +39,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _loggerFactory = loggerFactory;
             _parameterPolicyFactory = parameterPolicyFactory;
             _selector = selector;
-            _policies = policies.OrderBy(p => p.Order).ToArray();
 
-            // Taking care to use _policies, which has been sorted.
-            _nodeBuilders = _policies.OfType<INodeBuilderPolicy>().ToArray();
-            _comparer = new EndpointComparer(_policies.OfType<IEndpointComparerPolicy>().ToArray());
+            var (nodeBuilderPolicies, endpointComparerPolicies, endpointSelectorPolicies) = ExtractPolicies(policies.OrderBy(p => p.Order));
+            _endpointSelectorPolicies = endpointSelectorPolicies;
+            _nodeBuilders = nodeBuilderPolicies;
+            _comparer = new EndpointComparer(endpointComparerPolicies);
 
             _assignments = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _slots = new List<KeyValuePair<string, object>>();
@@ -383,10 +383,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             List<IEndpointSelectorPolicy> endpointSelectorPolicies = null;
             if (node.Matches?.Count > 0)
             {
-                for (var i = 0; i < _policies.Length; i++)
+                for (var i = 0; i < _endpointSelectorPolicies.Length; i++)
                 {
-                    if (_policies[i] is IEndpointSelectorPolicy endpointSelectorPolicy &&
-                        endpointSelectorPolicy.AppliesToEndpoints(node.Matches))
+                    var endpointSelectorPolicy = _endpointSelectorPolicies[i];
+                    if (endpointSelectorPolicy.AppliesToEndpoints(node.Matches))
                     {
                         if (endpointSelectorPolicies == null)
                         {
@@ -465,16 +465,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // internal for tests
         internal Candidate CreateCandidate(Endpoint endpoint, int score)
         {
-            _assignments.Clear();
-            _slots.Clear();
-            _captures.Clear();
-            _complexSegments.Clear();
-            _constraints.Clear();
-
             (string parameterName, int segmentIndex, int slotIndex) catchAll = default;
 
             if (endpoint is RouteEndpoint routeEndpoint)
             {
+                _assignments.Clear();
+                _slots.Clear();
+                _captures.Clear();
+                _complexSegments.Clear();
+                _constraints.Clear();
+
                 foreach (var kvp in routeEndpoint.RoutePattern.Defaults)
                 {
                     _assignments.Add(kvp.Key, _assignments.Count);
@@ -539,16 +539,27 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         }
                     }
                 }
-            }
 
-            return new Candidate(
-                endpoint,
-                score,
-                _slots.ToArray(),
-                _captures.ToArray(),
-                catchAll,
-                _complexSegments.ToArray(),
-                _constraints.ToArray());
+                return new Candidate(
+                    endpoint,
+                    score,
+                    _slots.ToArray(),
+                    _captures.ToArray(),
+                    catchAll,
+                    _complexSegments.ToArray(),
+                    _constraints.ToArray());
+            }
+            else
+            {
+                return new Candidate(
+                    endpoint,
+                    score,
+                    Array.Empty<KeyValuePair<string, object>>(),
+                    Array.Empty<(string parameterName, int segmentIndex, int slotIndex)>(),
+                    catchAll,
+                    Array.Empty<(RoutePatternPathSegment pathSegment, int segmentIndex)>(),
+                    Array.Empty<KeyValuePair<string, IRouteConstraint>>());
+            }
         }
 
         private int[] GetGroupLengths(DfaNode node)
@@ -681,6 +692,33 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 previousWork = work;
                 work = nextWork;
             }
+        }
+
+        private static (INodeBuilderPolicy[] nodeBuilderPolicies, IEndpointComparerPolicy[] endpointComparerPolicies, IEndpointSelectorPolicy[] endpointSelectorPolicies) ExtractPolicies(IEnumerable<MatcherPolicy> policies)
+        {
+            var nodeBuilderPolicies = new List<INodeBuilderPolicy>();
+            var endpointComparerPolicies = new List<IEndpointComparerPolicy>();
+            var endpointSelectorPolicies = new List<IEndpointSelectorPolicy>();
+
+            foreach (var policy in policies)
+            {
+                if (policy is INodeBuilderPolicy nodeBuilderPolicy)
+                {
+                    nodeBuilderPolicies.Add(nodeBuilderPolicy);
+                }
+
+                if (policy is IEndpointComparerPolicy endpointComparerPolicy)
+                {
+                    endpointComparerPolicies.Add(endpointComparerPolicy);
+                }
+
+                if (policy is IEndpointSelectorPolicy endpointSelectorPolicy)
+                {
+                    endpointSelectorPolicies.Add(endpointSelectorPolicy);
+                }
+            }
+
+            return (nodeBuilderPolicies.ToArray(), endpointComparerPolicies.ToArray(), endpointSelectorPolicies.ToArray());
         }
     }
 }
