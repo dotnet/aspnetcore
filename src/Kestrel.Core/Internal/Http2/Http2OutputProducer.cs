@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly object _dataWriterLock = new object();
         private readonly Pipe _dataPipe;
         private readonly Task _dataWriteProcessingTask;
+        private bool _startedWritingDataFrames;
         private bool _completed;
         private bool _disposed;
 
@@ -100,7 +101,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return Task.CompletedTask;
                 }
 
-                return _flusher.FlushAsync(this, cancellationToken);
+                if (_startedWritingDataFrames)
+                {
+                    // If there's already been response data written to the stream, just wait for that. Any header
+                    // should be in front of the data frames in the connection pipe. Trailers could change things.
+                    return _flusher.FlushAsync(this, cancellationToken);
+                }
+                else
+                {
+                    // Flushing the connection pipe ensures headers already in the pipe are flushed even if no data
+                    // frames have been written.
+                    return _frameWriter.FlushAsync(this, cancellationToken);
+                }
             }
         }
 
@@ -147,6 +159,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     return Task.CompletedTask;
                 }
+
+                _startedWritingDataFrames = true;
 
                 _dataPipe.Writer.Write(data);
                 return _flusher.FlushAsync(this, cancellationToken);
@@ -198,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             await _frameWriter.WriteDataAsync(_streamId, _flowControl, _stream.MinResponseDataRate, readResult.Buffer, endStream: false);
                         }
 
-                        await _frameWriter.WriteResponseTrailersAsync(_streamId, _stream.Trailers);
+                        await _frameWriter.WriteResponseTrailers(_streamId, _stream.Trailers);
                     }
                     else
                     {

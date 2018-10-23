@@ -104,6 +104,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public Task FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        {
+            lock (_writeLock)
+            {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
+                return _flusher.FlushAsync(outputAborter, cancellationToken);
+            }
+        }
+
         public Task Write100ContinueAsync(int streamId)
         {
             lock (_writeLock)
@@ -158,11 +171,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw new InvalidOperationException(hex.Message, hex); // Report the error to the user if this was the first write.
                 }
             }
-
-            _ = _flusher.FlushAsync();
         }
 
-        public Task WriteResponseTrailersAsync(int streamId, HttpResponseTrailers headers)
+        public Task WriteResponseTrailers(int streamId, HttpResponseTrailers headers)
         {
             lock (_writeLock)
             {
