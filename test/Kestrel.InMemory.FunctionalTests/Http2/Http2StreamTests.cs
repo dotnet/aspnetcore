@@ -2083,54 +2083,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
-
-        [Fact]
-        public async Task ResponseHeaders_NotBlockedByFlowControl()
-        {
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-            };
-            await InitializeConnectionAsync(context =>
-            {
-                return context.Response.WriteAsync("hello world");
-            });
-
-            _clientSettings.InitialWindowSize = 0;
-            await SendSettingsAsync();
-            await ExpectAsync(Http2FrameType.SETTINGS,
-                withLength: 0,
-                withFlags: (byte)Http2SettingsFrameFlags.ACK,
-                withStreamId: 0);
-
-            await StartStreamAsync(1, headers, endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 37,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-
-            await SendWindowUpdateAsync(1, 11);
-
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 11,
-                withFlags: (byte)Http2DataFrameFlags.NONE,
-                withStreamId: 1);
-
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
-
-            Assert.Equal(2, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
-        }
     }
 }
