@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <VersionPrefix>3.0.0</VersionPrefix>
-    <VsixVersion>15.6</VsixVersion>
+    <VsixVersion>16.0</VsixVersion>
     <VersionSuffix>alpha1</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
