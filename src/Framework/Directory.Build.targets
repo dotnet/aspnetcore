@@ -1,16 +1,16 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.shfxproj' ">
     <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</RestoreSources>
   </PropertyGroup>
 
-  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" Condition=" '$(MSBuildProjectExtension)' == '.shfxproj' ">
     <PropertyGroup>
       <NuspecProperties>
         id=$(RuntimePackageId);
         version=$(PackageVersion);
         authors=$(Authors);
-        rid=$(RuntimeIdentifier);
+        rid=$(SharedFxRid);
         description=$(RuntimePackageDescription);
         tags=$(PackageTags.Replace(';', ' '));
         licenseUrl=$(PackageLicenseUrl);

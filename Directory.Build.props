@@ -37,12 +37,13 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
     <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
+    <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
     <PackageOutputPath>$(ArtifactsConfigurationDir)packages\</PackageOutputPath>
 
-    <TargetPlatform Condition="'$(TargetPlatform)' == ''">AnyCPU</TargetPlatform>
-    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win-$(TargetPlatform)</HostRid>
-    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx-$(TargetPlatform)</HostRid>
-    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux-$(TargetPlatform)</HostRid>
+    <!-- Defines the default RID of the platform currently running the build. -->
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win-x64</HostRid>
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx-x64</HostRid>
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux-x64</HostRid>
 
     <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework. -->
     <SupportedRuntimeIdentifiers>

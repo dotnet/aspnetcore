@@ -2,7 +2,7 @@
   <Import Project="SharedFx.props" />
 
   <PropertyGroup>
-    <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))runtime\</SharedFxOutputPath>
+    <UnitTestFxProject>$(RepositoryRoot)\src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
   </PropertyGroup>
 
   <Target Name="GetMetapackageArtifactInfo">
@@ -108,172 +108,46 @@
       BuildInParallel="false" />
   </Target>
 
-  <Target Name="DefineSharedFxPrerequisites" DependsOnTargets="ResolveCommitHash">
-     <PropertyGroup>
-      <SharedFxIntermediateOutputPath>$(_WorkRoot)Publish\</SharedFxIntermediateOutputPath>
-      <SharedFxCrossGenDirectory>$(_WorkRoot)CrossGen\</SharedFxCrossGenDirectory>
-      <AppSharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.App\$(PackageVersion)\</AppSharedFxPublishDirectory>
-      <AllSharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</AllSharedFxPublishDirectory>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="_BuildSharedFxSymbols">
-    <PropertyGroup>
-      <SymbolsPackageId>runtime.$(SharedFxRID).$(SymbolsNuspecIdSuffix)</SymbolsPackageId>
-    </PropertyGroup>
-
+  <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
     <ItemGroup>
-      <_SymbolFiles Include="$(SymbolsWorkDir)**\*.pdb;$(SymbolsWorkDir)**\*.map;$(SymbolsWorkDir)**\*.dll" />
-      <SymbolFiles Include="@(_SymbolFiles)">
-        <PackagePath>%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
-      </SymbolFiles>
+      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Framework\*\*.shfxproj" />
+      <SharedFxProjectToBuild Include="$(UnitTestFxProject)" />
     </ItemGroup>
 
-    <!-- Create Layout -->
-    <Copy
-      SourceFiles="$(_TemplatesDir)SharedFxSymbols\SharedFrameworkSymbols.nuspec"
-      DestinationFiles="$(SymbolsWorkDir)$(SymbolsPackageId).nuspec"
-      OverwriteReadOnlyFiles="True" />
+    <MSBuild Projects="@(SharedFxProjectToBuild)"
+             Targets="Restore"
+             Properties="$(SolutionProperties);_DummyTarget=Restore"
+             BuildInParallel="true" />
 
-    <!-- Produce symbols nupkg -->
-    <PackNuspec NuspecPath="$(SymbolsWorkDir)$(SymbolsPackageId).nuspec"
-      OutputPath="$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))symbols\$(SymbolsPackageId).$(PackageVersion).symbols.nupkg"
-      Properties="version=$(PackageVersion);id=$(SymbolsPackageId);description=$(Description);Configuration=$(Configuration)"
-      Overwrite="true"
-      PackageFiles="@(SymbolFiles)"
-      BasePath="$(SymbolsWorkDir)" />
+    <MSBuild Projects="@(SharedFxProjectToBuild)"
+             Properties="$(SolutionProperties)"
+             BuildInParallel="true" />
   </Target>
 
-  <Target Name="PackSharedFx" DependsOnTargets="DefineSharedFxPrerequisites" >
+  <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;_BuildSharedFxProjects;TestSharedFx"/>
+
+  <Target Name="TestSharedFx" DependsOnTargets="GeneratePropsFiles;InstallDotNet">
     <PropertyGroup>
-      <AppSharedFxCrossgenDirectory>$(SharedFxCrossGenDirectory)shared\Microsoft.AspNetCore.App\$(PackageVersion)\</AppSharedFxCrossgenDirectory>
-      <AllSharedFxCrossgenDirectory>$(SharedFxCrossGenDirectory)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</AllSharedFxCrossgenDirectory>
-      <AppSharedFxSymbolsDirectory>$(_WorkRoot)Symbols\Microsoft.AspNetCore.App\</AppSharedFxSymbolsDirectory>
-      <AllSharedFxSymbolsDirectory>$(_WorkRoot)Symbols\Microsoft.AspNetCore.All\</AllSharedFxSymbolsDirectory>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <AppCrossGenOutput Include="$(AppSharedFxCrossgenDirectory)**\*.dll" />
-      <AllCrossGenOutput Include="$(AllSharedFxCrossgenDirectory)**\*.dll" />
-      <AppCrossGenSymbols Include="$(AppSharedFxCrossgenDirectory)**\*" Exclude="@(AppCrossGenOutput)" />
-      <AllCrossGenSymbols Include="$(AllSharedFxCrossgenDirectory)**\*" Exclude="@(AllCrossGenOutput)" />
-    </ItemGroup>
-
-    <!-- Extract symbols package and copy over PDBs -->
-    <UnzipArchive
-      File="$(_SymbolsSourceDir)%(AppPortablePDBsToPublish.SymbolsPackageFilename)"
-      Destination="$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)"
-      Condition="Exists('$(_SymbolsSourceDir)%(AppPortablePDBsToPublish.SymbolsPackageFilename)')" />
-    <UnzipArchive
-      File="$(_SymbolsSourceDir)%(AllPortablePDBsToPublish.SymbolsPackageFilename)"
-      Destination="$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)"
-      Condition="Exists('$(_SymbolsSourceDir)%(AllPortablePDBsToPublish.SymbolsPackageFilename)')" />
-    <Copy
-      SourceFiles="$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)%(AppPortablePDBsToPublish.SymbolsRecursivePath)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
-      OverwriteReadOnlyFiles="True"
-      Condition="Exists('$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)\%(AppPortablePDBsToPublish.SymbolsRecursivePath)')" />
-    <Copy
-      SourceFiles="$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)%(AllPortablePDBsToPublish.SymbolsRecursivePath)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
-      OverwriteReadOnlyFiles="True"
-      Condition="Exists('$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)\%(AllPortablePDBsToPublish.SymbolsRecursivePath)')" />
-
-    <!-- Copy over DLLs and PDBs -->
-    <Copy
-      SourceFiles="%(AppPortablePDBsToPublish.PortablePDB)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
-      OverwriteReadOnlyFiles="True"
-      Condition="Exists('%(AppPortablePDBsToPublish.PortablePDB)')" />
-    <Copy
-      SourceFiles="%(AllPortablePDBsToPublish.PortablePDB)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
-      OverwriteReadOnlyFiles="True"
-      Condition="Exists('%(AllPortablePDBsToPublish.PortablePDB)')" />
-    <Copy
-      SourceFiles="@(AppCrossGenSymbols)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
-      OverwriteReadOnlyFiles="True" />
-    <Copy
-      SourceFiles="@(AllCrossGenSymbols)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
-      OverwriteReadOnlyFiles="True" />
-    <Copy
-      SourceFiles="$(AppSharedFxCrossgenDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
-      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
-      OverwriteReadOnlyFiles="True" />
-    <Copy
-      SourceFiles="$(AllSharedFxCrossgenDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
-      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\$(SharedFrameworkTargetFramework)"
-      OverwriteReadOnlyFiles="True" />
-
-    <!-- Create symbols nupkg -->
-    <PropertyGroup>
-      <AppSymbolsArguments>SymbolsWorkDir=$(AppSharedFxSymbolsDirectory)</AppSymbolsArguments>
-      <AppSymbolsArguments>$(AppSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.App</AppSymbolsArguments>
-      <AppSymbolsArguments>$(AppSymbolsArguments);Description=Symbol packages for Microsoft.AspNetCore.App shared framework</AppSymbolsArguments>
-      <AllSymbolsArguments>SymbolsWorkDir=$(AllSharedFxSymbolsDirectory)</AllSymbolsArguments>
-      <AllSymbolsArguments>$(AllSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.All</AllSymbolsArguments>
-      <AllSymbolsArguments>$(AllSymbolsArguments);Description=Symbol packages for Microsoft.AspNetCore.All shared framework</AllSymbolsArguments>
-    </PropertyGroup>
-
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildSharedFxSymbols" Properties="$(AppSymbolsArguments)" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildSharedFxSymbols" Properties="$(AllSymbolsArguments)" />
-
-    <!-- Replace assemblies with crossgen output -->
-    <Copy
-      SourceFiles="$(AppSharedFxCrossgenDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
-      DestinationFiles="$(AppSharedFxPublishDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
-      OverwriteReadOnlyFiles="True" />
-    <Copy
-      SourceFiles="$(AllSharedFxCrossgenDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
-      DestinationFiles="$(AllSharedFxPublishDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
-      OverwriteReadOnlyFiles="True" />
-
-    <ItemGroup>
-      <OutputZipFiles Include="$(SharedFxIntermediateOutputPath)**\*" />
-    </ItemGroup>
-
-    <!-- Create internal archive file -->
-    <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
-      Command="tar -czf $(SharedFxOutputPath)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)-$(SharedFxRID)$(ArchiveExtension) -C $(SharedFxIntermediateOutputPath) ." />
-    <ZipArchive Condition="'$(ArchiveExtension)' == '.zip'"
-      File="$(SharedFxOutputPath)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)-$(SharedFxRID).zip"
-      SourceFiles="@(OutputZipFiles)"
-      WorkingDirectory="$(SharedFxIntermediateOutputPath)"
-      Overwrite="true"/>
-  </Target>
-
-  <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx;TestSharedFx"/>
-
-  <Target Name="TestSharedFx" DependsOnTargets="GeneratePropsFiles;DefineSharedFxPrerequisites;ResolveCommitHash;InstallDotNet">
-    <PropertyGroup>
-      <UnitTestFxProject>$(RepositoryRoot)\test\SharedFx.UnitTests\SharedFx.UnitTests.csproj</UnitTestFxProject>
 
       <!-- The file path to the log file, from within the container -->
       <UnitTestFxTrxLogFile>$(LogOutputDir)SharedFx-UnitTests-$(Version).trx</UnitTestFxTrxLogFile>
       <!-- The trx file path from the perspective of the TeamCity agent -->
       <UnitTestFxTrxPhysicalFilePath>$(UnitTestFxTrxLogFile)</UnitTestFxTrxPhysicalFilePath>
       <UnitTestFxTrxPhysicalFilePath Condition="'$(HostMachineRepositoryRoot)' != ''">$(HostMachineRepositoryRoot)/artifacts/logs/SharedFx-UnitTests.trx</UnitTestFxTrxPhysicalFilePath>
-
-      <UnitTestFxTestProps>
-        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
-        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
-        SharedFxOutputPath=$(SharedFxIntermediateOutputPath);
-        RepositoryCommit=$(RepositoryCommit);
-        VSTestLogger=$([MSBuild]::Escape('trx;LogFileName=$(UnitTestFxTrxLogFile)'));
-        SharedFxRuntimeIdentifier=$(SharedFXRid)
-      </UnitTestFxTestProps>
     </PropertyGroup>
-    <MSBuild Projects="$(UnitTestFxProject)" Targets="Restore" Properties="_Dummy=restore;$(UnitTestFxTestProps)" />
-    <MSBuild Projects="$(UnitTestFxProject)" Targets="Build" Properties="$(UnitTestFxTestProps)">
+
+    <MSBuild Projects="$(UnitTestFxProject)" Targets="GetTargetPath" Properties="$(SolutionProperties)">
       <Output TaskParameter="TargetOutputs" ItemName="SharedFxTestAssembly" />
     </MSBuild>
-    <RunDotNet Arguments="vstest;
+
+    <RunDotNet
+      IgnoreStandardErrorWarningFormat="true"
+      IgnoreExitCode="true"
+      Arguments="vstest;
       --Framework:%(TargetFrameworkIdentifier),Version=v%(TargetFrameworkVersion);
       --Logger:$([MSBuild]::Escape('trx;LogFileName=$(UnitTestFxTrxLogFile)'));
       %(SharedFxTestAssembly.Identity);
-      --;RunConfiguration.NoAutoReporters=true" IgnoreExitCode="true">
+      --;RunConfiguration.NoAutoReporters=true">
       <Output TaskParameter="ExitCode" PropertyName="VsTestExitCode" />
     </RunDotNet>
 

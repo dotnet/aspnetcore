@@ -21,5 +21,10 @@
       https://vside.myget.org/F/vssdk/api/v3/index.json;
       https://vside.myget.org/F/vsmac/api/v3/index.json
     </RestoreSources>
+
+    <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet/</PublicCoreFeedPrefix>
+
+    <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
+    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>
   </PropertyGroup>
 </Project>

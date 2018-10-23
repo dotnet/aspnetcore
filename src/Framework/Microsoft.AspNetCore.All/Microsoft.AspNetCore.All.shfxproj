@@ -8,7 +8,7 @@
     <!-- Package ID must be set to the name of the shared . -->
     <PackageId>$(MSBuildProjectName)</PackageId>
     <!-- The runtime Package ID is for self-contained assets. -->
-    <RuntimePackageId>runtime.$(RuntimeIdentifier).$(MSBuildProjectName)</RuntimePackageId>
+    <RuntimePackageId>runtime.$(SharedFxRid).$(MSBuildProjectName)</RuntimePackageId>
     <RuntimePackageDescription>This package provides assets used for self-contained deployments of an ASP.NET Core application. It is an internal implementation package not meant for direct consumption. Please do not reference directly.
 
 $(PackageId) provides a default set of APIs for building an ASP.NET Core application, and also includes API for third-party integrations with ASP.NET Core.

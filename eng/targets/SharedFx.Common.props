@@ -7,8 +7,6 @@ This targets file should only be imported by .shfxproj files.
     <!-- shfxproj must be explicit about its dependencies. -->
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
 
-    <!-- Use _RuntimeIdentifier to get around limitations in RID's applying accross ProjectReferences. -->
-    <RuntimeIdentifier>$([MSBuild]::ValueOrDefault('$(RuntimeIdentifier)', '$(_RuntimeIdentifier)'))</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(SharedFxRID)</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(HostRid)</RuntimeIdentifier>
 
@@ -35,8 +33,6 @@ This targets file should only be imported by .shfxproj files.
 
   <ItemDefinitionGroup>
     <FrameworkProjectReference>
-      <!-- Set _RuntimeIdentifier to get around limitations in RID's applying accross ProjectReferences. -->
-      <AdditionalProperties>_RuntimeIdentifier=$(RuntimeIdentifier)</AdditionalProperties>
       <OutputItemType>_ResolvedFrameworkProjectReferencePaths</OutputItemType>
     </FrameworkProjectReference>
   </ItemDefinitionGroup>
