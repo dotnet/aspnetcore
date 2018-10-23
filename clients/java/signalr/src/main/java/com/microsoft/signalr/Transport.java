@@ -3,14 +3,15 @@
 
 package com.microsoft.signalr;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import io.reactivex.Completable;
+
 interface Transport {
-    CompletableFuture<Void> start(String url);
-    CompletableFuture<Void> send(String message);
+    Completable start(String url);
+    Completable send(String message);
     void setOnReceive(OnReceiveCallBack callback);
     void onReceive(String message);
     void setOnClose(Consumer<String> onCloseCallback);
-    CompletableFuture<Void> stop();
+    Completable stop();
 }

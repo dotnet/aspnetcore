@@ -6,7 +6,6 @@ package com.microsoft.signalr;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,7 @@ class WebSocketTransportTest {
     @Test
     public void WebsocketThrowsIfItCantConnect() {
         Transport transport = new WebSocketTransport(new HashMap<>(), new DefaultHttpClient());
-        ExecutionException exception = assertThrows(ExecutionException.class, () -> transport.start("http://www.example.com").get(1, TimeUnit.SECONDS));
-        assertEquals("There was an error starting the Websockets transport.", exception.getCause().getMessage());
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> transport.start("http://www.example.com").blockingAwait(1, TimeUnit.SECONDS));
+        assertEquals("There was an error starting the Websockets transport.", exception.getMessage());
     }
 }

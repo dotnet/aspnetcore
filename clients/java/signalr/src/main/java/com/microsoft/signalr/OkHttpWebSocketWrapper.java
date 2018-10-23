@@ -4,12 +4,13 @@
 package com.microsoft.signalr;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.reactivex.Completable;
+import io.reactivex.subjects.CompletableSubject;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -24,8 +25,8 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private OkHttpClient client;
     private OnReceiveCallBack onReceive;
     private BiConsumer<Integer, String> onClose;
-    private CompletableFuture<Void> startFuture = new CompletableFuture<>();
-    private CompletableFuture<Void> closeFuture = new CompletableFuture<>();
+    private CompletableSubject startSubject = CompletableSubject.create();
+    private CompletableSubject closeSubject = CompletableSubject.create();
 
     private final Logger logger = LoggerFactory.getLogger(OkHttpWebSocketWrapper.class);
 
@@ -36,7 +37,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     }
 
     @Override
-    public CompletableFuture<Void> start() {
+    public Completable start() {
         Headers.Builder headerBuilder = new Headers.Builder();
         for (String key : headers.keySet()) {
             headerBuilder.add(key, headers.get(key));
@@ -48,19 +49,19 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
             .build();
 
         this.websocketClient = client.newWebSocket(request, new SignalRWebSocketListener());
-        return startFuture;
+        return startSubject;
     }
 
     @Override
-    public CompletableFuture<Void> stop() {
+    public Completable stop() {
         websocketClient.close(1000, "HubConnection stopped.");
-        return closeFuture;
+        return closeSubject;
     }
 
     @Override
-    public CompletableFuture<Void> send(String message) {
+    public Completable send(String message) {
         websocketClient.send(message);
-        return CompletableFuture.completedFuture(null);
+        return Completable.complete();
     }
 
     @Override
@@ -76,7 +77,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private class SignalRWebSocketListener extends WebSocketListener {
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
-            startFuture.complete(null);
+            startSubject.onComplete();
         }
 
         @Override
@@ -92,25 +93,25 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
             onClose.accept(code, reason);
-            closeFuture.complete(null);
+            closeSubject.onComplete();
             checkStartFailure();
         }
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             logger.error("Websocket closed from an error: {}.", t.getMessage());
-            closeFuture.completeExceptionally(new RuntimeException(t));
+            closeSubject.onError(new RuntimeException(t));
             onClose.accept(null, t.getMessage());
             checkStartFailure();
         }
 
         private void checkStartFailure() {
-            // If the start future hasn't completed yet, then we need to complete it
+            // If the start task hasn't completed yet, then we need to complete it
             // exceptionally.
-            if (!startFuture.isDone()) {
+            if (!startSubject.hasComplete()) {
                 String errorMessage = "There was an error starting the Websockets transport.";
                 logger.error("Websocket closed from an error: {}.", errorMessage);
-                startFuture.completeExceptionally(new RuntimeException(errorMessage));
+                startSubject.onError(new RuntimeException(errorMessage));
             }
         }
     }

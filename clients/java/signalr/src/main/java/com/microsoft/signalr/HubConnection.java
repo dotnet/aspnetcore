@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.subjects.CompletableSubject;
+import io.reactivex.subjects.SingleSubject;
 
 public class HubConnection {
     private static final String RECORD_SEPARATOR = "\u001e";
@@ -49,7 +51,7 @@ public class HubConnection {
     private long keepAliveInterval = 15*1000;
     private long serverTimeout = 30*1000;
     private long tickRate = 1000;
-    private CompletableFuture<Void> handshakeResponseFuture;
+    private CompletableSubject handshakeResponseSubject;
     private long handshakeResponseTimeout = 15*1000;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
@@ -140,18 +142,18 @@ public class HubConnection {
                     handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
                 } catch (RuntimeException ex) {
                     RuntimeException exception = new RuntimeException("An invalid handshake response was received from the server.", ex);
-                    handshakeResponseFuture.completeExceptionally(exception);
+                    handshakeResponseSubject.onError(exception);
                     throw exception;
                 }
                 if (handshakeResponse.getHandshakeError() != null) {
                     String errorMessage = "Error in handshake " + handshakeResponse.getHandshakeError();
                     logger.error(errorMessage);
                     RuntimeException exception = new RuntimeException(errorMessage);
-                    handshakeResponseFuture.completeExceptionally(exception);
+                    handshakeResponseSubject.onError(exception);
                     throw exception;
                 }
                 handshakeReceived = true;
-                handshakeResponseFuture.complete(null);
+                handshakeResponseSubject.onComplete();
 
                 payload = payload.substring(handshakeLength);
                 // The payload only contained the handshake response so we can return.
@@ -206,15 +208,21 @@ public class HubConnection {
 
     private void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
         ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
-        scheduledThreadPool.schedule(() -> handshakeResponseFuture.completeExceptionally(
-                new TimeoutException("Timed out waiting for the server to respond to the handshake message.")), timeout, unit);
+        scheduledThreadPool.schedule(() -> {
+            // If onError is called on a completed subject the global error handler is called
+            if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable()))
+            {
+                handshakeResponseSubject.onError(
+                    new TimeoutException("Timed out waiting for the server to respond to the handshake message."));
+            }
+        }, timeout, unit);
     }
 
-    private CompletableFuture<NegotiateResponse> handleNegotiate(String url) {
+    private Single<NegotiateResponse> handleNegotiate(String url) {
         HttpRequest request = new HttpRequest();
         request.addHeaders(this.headers);
 
-        return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).thenCompose((response) -> {
+        return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).map((response) -> {
             if (response.getStatusCode() != 200) {
                 throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.", response.getStatusCode(), response.getStatusText()));
             }
@@ -233,7 +241,7 @@ public class HubConnection {
                 this.headers.put("Authorization", "Bearer " + token);
             }
 
-            return CompletableFuture.completedFuture(negotiateResponse);
+            return negotiateResponse;
         });
     }
 
@@ -256,25 +264,27 @@ public class HubConnection {
             return Completable.complete();
         }
 
-        handshakeResponseFuture = new CompletableFuture<>();
+        handshakeResponseSubject = CompletableSubject.create();
         handshakeReceived = false;
-        CompletableFuture<Void> tokenFuture = new CompletableFuture<>();
+        CompletableSubject tokenCompletable = CompletableSubject.create();
         accessTokenProvider.subscribe(token -> {
             if (token != null && !token.isEmpty()) {
                 this.headers.put("Authorization", "Bearer " + token);
             }
-            tokenFuture.complete(null);
+            tokenCompletable.onComplete();
         });
 
         stopError = null;
-        CompletableFuture<String> negotiate = null;
+        Single<String> negotiate = null;
         if (!skipNegotiate) {
-            negotiate = tokenFuture.thenCompose((v) -> startNegotiate(baseUrl, 0));
+            negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(baseUrl, 0)));
         } else {
-            negotiate = tokenFuture.thenCompose((v) -> CompletableFuture.completedFuture(baseUrl));
+            negotiate = tokenCompletable.andThen(Single.defer(() -> Single.just(baseUrl)));
         }
 
-        return Completable.fromFuture(negotiate.thenCompose(url -> {
+        CompletableSubject start = CompletableSubject.create();
+
+        negotiate.flatMapCompletable(url -> {
             logger.debug("Starting HubConnection.");
             if (transport == null) {
                 transport = new WebSocketTransport(headers, httpClient);
@@ -283,16 +293,17 @@ public class HubConnection {
             transport.setOnReceive(this.callback);
             transport.setOnClose((message) -> stopConnection(message));
 
-            return transport.start(url).thenCompose((future) -> {
+            return transport.start(url).andThen(Completable.defer(() -> {
                 String handshake = HandshakeProtocol.createHandshakeRequestMessage(
                         new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
-                return transport.send(handshake).thenCompose((innerFuture) -> {
+
+                return transport.send(handshake).andThen(Completable.defer(() -> {
                     timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
-                    return handshakeResponseFuture.thenRun(() -> {
+                    return handshakeResponseSubject.andThen(Completable.defer(() -> {
                         hubConnectionStateLock.lock();
                         try {
-                            hubConnectionState = HubConnectionState.CONNECTED;
                             connectionState = new ConnectionState(this);
+                            hubConnectionState = HubConnectionState.CONNECTED;
                             logger.info("HubConnection started.");
 
                             resetServerTimeout();
@@ -320,18 +331,23 @@ public class HubConnection {
                         } finally {
                             hubConnectionStateLock.unlock();
                         }
-                    });
-                });
-            });
-        }));
+
+                        return Completable.complete();
+                    }));
+                }));
+            }));
+        // subscribe makes this a "hot" completable so this runs immediately
+        }).subscribeWith(start);
+
+        return start;
     }
 
-    private CompletableFuture<String> startNegotiate(String url, int negotiateAttempts) {
+    private Single<String> startNegotiate(String url, int negotiateAttempts) {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-            return CompletableFuture.completedFuture(null);
+            return Single.just(null);
         }
 
-        return handleNegotiate(url).thenCompose((response) -> {
+        return handleNegotiate(url).flatMap(response -> {
             if (response.getRedirectUrl() != null && negotiateAttempts >= MAX_NEGOTIATE_ATTEMPTS) {
                 throw new RuntimeException("Negotiate redirection limit exceeded.");
             }
@@ -350,7 +366,7 @@ public class HubConnection {
                     }
                 }
 
-                return CompletableFuture.completedFuture(finalUrl);
+                return Single.just(finalUrl);
             }
 
             return startNegotiate(response.getRedirectUrl(), negotiateAttempts + 1);
@@ -363,11 +379,11 @@ public class HubConnection {
      * @param errorMessage An error message if the connected needs to be stopped because of an error.
      * @return A Completable that completes when the connection has been stopped.
      */
-    private CompletableFuture<Void> stop(String errorMessage) {
+    private Completable stop(String errorMessage) {
         hubConnectionStateLock.lock();
         try {
             if (hubConnectionState == HubConnectionState.DISCONNECTED) {
-                return CompletableFuture.completedFuture(null);
+                return Completable.complete();
             }
 
             if (errorMessage != null) {
@@ -389,7 +405,7 @@ public class HubConnection {
      * @return A Completable that completes when the connection has been stopped.
      */
     public Completable stop() {
-        return Completable.fromFuture(stop(null));
+        return stop(null);
     }
 
     private void stopConnection(String errorMessage) {
@@ -409,7 +425,7 @@ public class HubConnection {
             connectionState = null;
             logger.info("HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
-            handshakeResponseFuture.complete(null);
+            handshakeResponseSubject.onComplete();
         } finally {
             hubConnectionStateLock.unlock();
         }
@@ -452,31 +468,27 @@ public class HubConnection {
         String id = connectionState.getNextInvocationId();
         InvocationMessage invocationMessage = new InvocationMessage(id, method, args);
 
-        CompletableFuture<T> future = new CompletableFuture<>();
+        SingleSubject<T> subject = SingleSubject.create();
         InvocationRequest irq = new InvocationRequest(returnType, id);
         connectionState.addInvocation(irq);
 
         // forward the invocation result or error to the user
         // run continuations on a separate thread
-        CompletableFuture<Object> pendingCall = irq.getPendingCall();
-        pendingCall.whenCompleteAsync((result, error) -> {
-            if (error == null) {
-                // Primitive types can't be cast with the Class cast function
-                if (returnType.isPrimitive()) {
-                    future.complete((T)result);
-                } else {
-                    future.complete(returnType.cast(result));
-                }
+        Single<Object> pendingCall = irq.getPendingCall();
+        pendingCall.subscribe(result -> {
+            // Primitive types can't be cast with the Class cast function
+            if (returnType.isPrimitive()) {
+                subject.onSuccess((T)result);
             } else {
-                future.completeExceptionally(error);
+                subject.onSuccess(returnType.cast(result));
             }
-        });
+        }, error -> subject.onError(error));
 
-        // Make sure the actual send is after setting up the future otherwise there is a race
-        // where the map doesn't have the future yet when the response is returned
+        // Make sure the actual send is after setting up the callbacks otherwise there is a race
+        // where the map doesn't have the callbacks yet when the response is returned
         sendHubMessage(invocationMessage);
 
-        return Single.fromFuture(future);
+        return subject;
     }
 
     private void sendHubMessage(HubMessage message) {
