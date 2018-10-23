@@ -9,6 +9,7 @@
       https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
       https://vside.myget.org/F/vssdk/api/v3/index.json;
+      https://vside.myget.org/F/devcore/api/v3/index.json
     </RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
       $(RestoreSources);
