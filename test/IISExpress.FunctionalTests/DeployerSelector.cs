@@ -9,5 +9,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     {
         public static ServerType ServerType => ServerType.IISExpress;
         public static bool IsBackwardsCompatiblityTest => false;
+        public static bool IsForwardsCompatibilityTest => false;
     }
 }

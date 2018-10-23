@@ -35,14 +35,4 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="AppHostConfig\HostableWebCore.config" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="AppHostConfig\HostableWebCore.config">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>

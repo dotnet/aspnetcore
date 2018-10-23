@@ -10,31 +10,29 @@ using Xunit.Sdk;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
-    public class BackwardsCompatibilityTests : FixtureLoggedTest
+    public class ForwardsCompatibilityTests : FixtureLoggedTest
     {
         private readonly IISTestSiteFixture _fixture;
 
-        public BackwardsCompatibilityTests(IISTestSiteFixture fixture) : base(fixture)
+        public ForwardsCompatibilityTests(IISTestSiteFixture fixture) : base(fixture)
         {
             _fixture = fixture;
         }
 
         [ConditionalFact]
-        public async Task CheckBackwardsCompatibilityIsUsed()
+        public async Task CheckForwardsCompatibilityIsUsed()
         {
-
             var response = await _fixture.Client.GetAsync("/HelloWorld");
             var handles = _fixture.DeploymentResult.HostProcess.Modules;
-
             foreach (ProcessModule handle in handles)
             {
-                if (handle.ModuleName == "aspnetcorev2.dll")
+                if (handle.ModuleName == "aspnetcorev2_inprocess.dll")
                 {
                     Assert.Equal("12.2.18289.0", handle.FileVersionInfo.FileVersion);
                     return;
                 }
             }
-            throw new XunitException($"Could not find aspnetcorev2.dll loaded in process {_fixture.DeploymentResult.HostProcess.ProcessName}");
+            throw new XunitException($"Could not find aspnetcorev2_inprocess.dll loaded in process {_fixture.DeploymentResult.HostProcess.ProcessName}");
         }
     }
 }

@@ -24,6 +24,10 @@
       <ExcludeFromTest Include="$(RepositoryRoot)test\IIS.BackwardsCompatibility.FunctionalTests\*.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(SkipIISForwardsCompatibilityTests)' == 'true'" >
+      <ExcludeFromTest Include="$(RepositoryRoot)test\IIS.ForwardsCompatibility.FunctionalTests\*.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>

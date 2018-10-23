@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -27,7 +28,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"test", "WebSites", name);
         }
 
-        public static string GetInProcessTestSitesPath() => GetTestWebSitePath("InProcessWebSite");
+        public static string GetInProcessTestSitesPath()
+        {
+            return DeployerSelector.IsForwardsCompatibilityTest ? GetTestWebSitePath("InProcessForwardsCompatWebSite") : GetTestWebSitePath("InProcessWebSite");
+        }
 
         public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
 
@@ -208,6 +212,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             File.AppendAllText(
                 Path.Combine(deploymentResult.DeploymentParameters.PublishedApplicationRootPath, "aspnetcore-debug.log"),
                 "Running test allowed log file to be empty." + Environment.NewLine);
+        }
+
+        public static string ReadAllTextFromFile(string filename, ILogger logger)
+        {
+            try
+            {
+                return File.ReadAllText(filename);
+            }
+            catch (Exception ex)
+            {
+                // check if there is a dotnet.exe, iisexpress.exe, or w3wp.exe processes still running.
+                var hostingProcesses = Process.GetProcessesByName("dotnet")
+                    .Concat(Process.GetProcessesByName("iisexpress"))
+                    .Concat(Process.GetProcessesByName("w3wp"));
+
+                logger.LogError($"Could not read file content. Exception message {ex.Message}");
+                logger.LogError("Current hosting exes running:");
+
+                foreach (var hostingProcess in hostingProcesses)
+                {
+                    logger.LogError($"{hostingProcess.ProcessName} pid: {hostingProcess.Id} hasExited: {hostingProcess.HasExited.ToString()}");
+                }
+                throw ex;
+            }
         }
     }
 }
