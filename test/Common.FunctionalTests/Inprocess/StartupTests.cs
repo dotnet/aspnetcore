@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));
             Assert.False(File.Exists(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll")));
-            Assert.Contains("InProcessWebSite.exe", File.ReadAllText(Path.Combine(deploymentResult.ContentRoot, "web.config")));
+            Assert.Contains("InProcessWebSite.exe", Helpers.ReadAllTextFromFile(Path.Combine(deploymentResult.ContentRoot, "web.config"), Logger));
 
             await deploymentResult.AssertStarts();
         }

@@ -13,24 +13,13 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class LoggingTests : IISFunctionalTestBase
+    public class LoggingTests : LogFileTestBase
     {
         private readonly PublishedSitesFixture _fixture;
-        private readonly string _logFolderPath;
 
         public LoggingTests(PublishedSitesFixture fixture)
         {
-            _logFolderPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _fixture = fixture;
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            if (Directory.Exists(_logFolderPath))
-            {
-                Directory.Delete(_logFolderPath, true);
-            }
         }
 
         public static TestMatrix TestVariants
@@ -65,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 
             StopServer();
 
-            var contents = File.ReadAllText(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
+            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath), Logger);
 
             Assert.Contains("TEST MESSAGE", contents);
         }
@@ -158,7 +147,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var response = await deploymentResult.HttpClient.GetAsync("/");
 
                 StopServer();
-                var logContents = File.ReadAllText(firstTempFile);
+                var logContents = Helpers.ReadAllTextFromFile(firstTempFile, Logger);
+
                 Assert.Contains("Switching debug log files to", logContents);
 
                 AssertLogs(secondTempFile);
@@ -202,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            var contents = File.ReadAllText(Helpers.GetExpectedLogName(deploymentResult, logFolderPath));
+            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, logFolderPath), Logger);
             Assert.Contains("彡⾔", contents);
 
             if (variant.HostingModel == HostingModel.InProcess)

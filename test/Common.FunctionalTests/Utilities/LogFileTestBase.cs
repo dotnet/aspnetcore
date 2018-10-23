@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities
 
         public string GetLogFileContent(IISDeploymentResult deploymentResult)
         {
-            return File.ReadAllText(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
+            return Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath), Logger);
         }
     }
 }

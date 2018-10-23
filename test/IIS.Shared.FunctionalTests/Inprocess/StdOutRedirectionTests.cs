@@ -61,7 +61,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             StopServer();
 
-            var contents = File.ReadAllText(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
+            var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath), Logger);
             var expectedString = "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.";
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, expectedString);
             Assert.Contains(expectedString, contents);
@@ -88,7 +88,7 @@ namespace IIS.FunctionalTests.Inprocess
             StopServer();
 
             var fileInDirectory = Directory.GetFiles(_logFolderPath).Single();
-            var contents = File.ReadAllText(fileInDirectory);
+            var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr");
             Assert.Contains("Invoked hostfxr", contents);
         }
@@ -141,7 +141,7 @@ namespace IIS.FunctionalTests.Inprocess
             StopServer();
 
             var fileInDirectory = Directory.GetFiles(_logFolderPath).First();
-            var contents = File.ReadAllText(fileInDirectory);
+            var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr");
             Assert.Contains("Invoked hostfxr", contents);
