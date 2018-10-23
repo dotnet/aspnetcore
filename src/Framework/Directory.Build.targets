@@ -3,4 +3,27 @@
   <PropertyGroup>
     <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</RestoreSources>
   </PropertyGroup>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(RuntimePackageId);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        rid=$(RuntimeIdentifier);
+        description=$(RuntimePackageDescription);
+        tags=$(PackageTags.Replace(';', ' '));
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        copyright=$(Copyright);
+        targetFramework=$(TargetFramework);
+        symbolsAssets=$(SymbolsOutputPath);
+        nativeAssets=$(NativeAssetsOutputPath);
+        runtimeAssets=$(RuntimeAssetsOutputPath);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
 </Project>

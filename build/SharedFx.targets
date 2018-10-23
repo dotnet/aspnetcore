@@ -110,21 +110,10 @@
 
   <Target Name="DefineSharedFxPrerequisites" DependsOnTargets="ResolveCommitHash">
      <PropertyGroup>
-      <AppSharedFxWorkDirectory>$(_WorkRoot)AppSharedFx\</AppSharedFxWorkDirectory>
-      <AllSharedFxWorkDirectory>$(_WorkRoot)AllSharedFx\</AllSharedFxWorkDirectory>
       <SharedFxIntermediateOutputPath>$(_WorkRoot)Publish\</SharedFxIntermediateOutputPath>
       <SharedFxCrossGenDirectory>$(_WorkRoot)CrossGen\</SharedFxCrossGenDirectory>
-      <SharedFxCrossGenSymbolsDirectory>$(_WorkRoot)CrossGenSymbols\</SharedFxCrossGenSymbolsDirectory>
-      <SharedFxCrossGenToolDirectory>$(_WorkRoot)CrossGenTool\</SharedFxCrossGenToolDirectory>
-      <SharedFxCrossGenRspDirectory>$(_WorkRoot)CrossGenRsp\</SharedFxCrossGenRspDirectory>
       <AppSharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.App\$(PackageVersion)\</AppSharedFxPublishDirectory>
       <AllSharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</AllSharedFxPublishDirectory>
-      <SharedFxRestoreRid>$(SharedFxRID)</SharedFxRestoreRid>
-
-      <CommonSharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRestoreRid)</CommonSharedFxProps>
-      <CommonSharedFxProps>$(CommonSharedFxProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonSharedFxProps>
-      <CommonSharedFxProps>$(CommonSharedFxProps);DotNetBuildOffline=true</CommonSharedFxProps>
-      <CommonSharedFxProps>$(CommonSharedFxProps);AspNetUniverseBuildOffline=true</CommonSharedFxProps>
     </PropertyGroup>
   </Target>
 

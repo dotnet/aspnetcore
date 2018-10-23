@@ -3,12 +3,29 @@
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
+
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft Corporation.</Company>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
+    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageProjectUrl>https://asp.net</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Serviceable>true</Serviceable>
+
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+    <!-- Suppress the message about using a preview version of .NET Core SDK. We are okay with this and don't need the warning. -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
   <Import Project="build\external-dependencies.props" />

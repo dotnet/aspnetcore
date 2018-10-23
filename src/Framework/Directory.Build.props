@@ -13,6 +13,10 @@
 
     <CrossgenOutput Condition="'$(RuntimeIdentifier)' == 'linux-arm'">false</CrossgenOutput>
     <CrossgenSymbolOutput Condition=" '$(CrossgenOutput)' == 'false' OR '$(RuntimeIdentifier)' == 'osx-x64'">false</CrossgenSymbolOutput>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <NuspecFile>$(MSBuildThisFileDirectory)runtime.fx.nuspec</NuspecFile>
+    <PackageTags>aspnetcore;shared-framework</PackageTags>
   </PropertyGroup>
 
 </Project>
