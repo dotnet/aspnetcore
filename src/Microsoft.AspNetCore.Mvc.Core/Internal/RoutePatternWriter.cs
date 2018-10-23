@@ -40,6 +40,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 if (parameterPart.IsCatchAll)
                 {
                     sb.Append("*");
+                    if (!parameterPart.EncodeSlashes)
+                    {
+                        sb.Append("*");
+                    }
                 }
                 sb.Append(parameterPart.Name);
                 foreach (var item in parameterPart.ParameterPolicies)
