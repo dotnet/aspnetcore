@@ -22,7 +22,7 @@ $(PackageId) provides a default set of APIs for building an ASP.NET Core applica
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <FrameworkProjectReference Include="..\Microsoft.AspNetCore.App\Microsoft.AspNetCore.App.shfxproj" />
+    <FrameworkProjectReference Include="..\..\Microsoft.AspNetCore.App\src\Microsoft.AspNetCore.App.shfxproj" />
   </ItemGroup>
 
   <ItemGroup>

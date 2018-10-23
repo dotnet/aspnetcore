@@ -110,8 +110,10 @@
 
   <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
     <ItemGroup>
-      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Framework\*\*.shfxproj" />
+      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
       <SharedFxProjectToBuild Include="$(UnitTestFxProject)" />
+      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Internal\*.*proj" />
+      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" />
     </ItemGroup>
 
     <MSBuild Projects="@(SharedFxProjectToBuild)"

@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\*\*.shfxproj">
+    <ProjectReference Include="..\**\*.shfxproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <OutputItemType>_ResolvedFrameworkReference</OutputItemType>
     </ProjectReference>
