@@ -26,6 +26,9 @@
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
     <!-- Suppress the message about using a preview version of .NET Core SDK. We are okay with this and don't need the warning. -->
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+
+    <!-- Fixes a common error in targets implementing a NoBuild mode. -->
+    <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
   </PropertyGroup>
 
   <Import Project="build\external-dependencies.props" />

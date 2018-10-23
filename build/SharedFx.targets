@@ -124,6 +124,12 @@
     <MSBuild Projects="@(SharedFxProjectToBuild)"
              Properties="$(SolutionProperties)"
              BuildInParallel="true" />
+
+    <MSBuild Projects="@(SharedFxProjectToBuild)"
+             Targets="Pack"
+             Properties="$(SolutionProperties);NoBuild=true"
+             BuildInParallel="true"
+             SkipNonexistentTargets="true" />
   </Target>
 
   <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;_BuildSharedFxProjects;TestSharedFx"/>
