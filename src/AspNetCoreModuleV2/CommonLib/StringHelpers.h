@@ -22,8 +22,8 @@ std::wstring format(const std::wstring& format, Args ... args)
     if (!format.empty())
     {
         const size_t size = swprintf(nullptr, 0, format.c_str(), args ...); // Extra char for '\0'
-        result.resize(size + 1);
-        if (swprintf(result.data(), result.size(), format.c_str(), args ... ) == -1)
+        result.resize(size);
+        if (swprintf(result.data(), result.size() + 1, format.c_str(), args ... ) == -1)
         {
             throw std::system_error(std::error_code(errno, std::system_category()));
         }
@@ -39,8 +39,8 @@ std::string format(const std::string& format, Args ... args)
     if (!format.empty())
     {
         const size_t size = snprintf(nullptr, 0, format.c_str(), args ...); // Extra char for '\0'
-        result.resize(size + 1);
-        if (snprintf(result.data(), result.size(), format.c_str(), args ... ) == -1)
+        result.resize(size);
+        if (snprintf(result.data(), result.size() + 1, format.c_str(), args ... ) == -1)
         {
             throw std::system_error(std::error_code(errno, std::system_category()));
         }

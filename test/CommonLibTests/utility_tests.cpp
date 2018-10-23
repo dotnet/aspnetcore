@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Environment.h"
+#include "StringHelpers.h"
 
 TEST(PassUnexpandedEnvString, ExpandsResult)
 {
@@ -57,4 +58,18 @@ TEST(GetEnvironmentVariableValue, ReturnsNulloptWhenNotFound)
 {
     auto result = Environment::GetEnvironmentVariableValue(L"RANDOM_ENV_VAR_2");
     EXPECT_FALSE(result.has_value());
+}
+
+TEST(CheckStringHelpers, FormatWithoutContentDoesNotIncreaseSizeString)
+{
+    std::string testString = "test";
+    auto result = format(testString);
+    EXPECT_EQ(testString.size(), result.size());
+}
+
+TEST(CheckStringHelpers, FormatWithoutContentDoesNotIncreaseSizeWstring)
+{
+    std::wstring testString = L"test";
+    auto result = format(testString);
+    EXPECT_EQ(testString.size(), result.size());
 }

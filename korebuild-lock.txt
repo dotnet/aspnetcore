@@ -1,2 +1,7 @@
+<<<<<<< HEAD
 version:3.0.0-alpha1-20181011.11
 commithash:f57aa8ddda0abdd74ada55853587bedb4f364065
+=======
+version:2.2.0-preview2-20181019.5
+commithash:84a1c04b13bd7127728fee91989db8f2f58c8781
+>>>>>>> 61f1a70784dc0a32cf98f8ddd169c0293b0390ab

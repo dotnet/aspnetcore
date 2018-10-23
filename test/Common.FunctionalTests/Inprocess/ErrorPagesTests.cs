@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        public async Task IncludesAdditionalErrorPageTextInProcessHandlerLoadFailure()
+        public async Task IncludesAdditionalErrorPageTextInProcessHandlerLoadFailure_CorrectString()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             var response = await DeployAppWithStartupFailure(deploymentParameters);
@@ -33,13 +33,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", responseString);
+            VerifyNoExtraTrailingBytes(responseString);
+
             await AssertLink(response);
         }
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        public async Task IncludesAdditionalErrorPageTextOutOfProcessStartupFailure()
+        public async Task IncludesAdditionalErrorPageTextOutOfProcessStartupFailure_CorrectString()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
             var response = await DeployAppWithStartupFailure(deploymentParameters);
@@ -48,13 +51,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            Assert.Contains("HTTP Error 502.5 - ANCM Out-Of-Process Startup Failure", await response.Content.ReadAsStringAsync());
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Contains("HTTP Error 502.5 - ANCM Out-Of-Process Startup Failure", responseString);
+            VerifyNoExtraTrailingBytes(responseString);
+
             await AssertLink(response);
         }
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        public async Task IncludesAdditionalErrorPageTextOutOfProcessHandlerLoadFailure()
+        public async Task IncludesAdditionalErrorPageTextOutOfProcessHandlerLoadFailure_CorrectString()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
             deploymentParameters.HandlerSettings["handlerVersion"] = "88.93";
@@ -67,13 +73,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            Assert.Contains("HTTP Error 500.0 - ANCM Out-Of-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Contains("HTTP Error 500.0 - ANCM Out-Of-Process Handler Load Failure", responseString);
+            VerifyNoExtraTrailingBytes(responseString);
+
             await AssertLink(response);
         }
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        public async Task IncludesAdditionalErrorPageTextInProcessStartupFailure()
+        public async Task IncludesAdditionalErrorPageTextInProcessStartupFailure_CorrectString()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.TransformArguments((a, _) => $"{a} EarlyReturn");
@@ -86,8 +95,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            Assert.Contains("HTTP Error 500.30 - ANCM In-Process Start Failure", await response.Content.ReadAsStringAsync());
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Contains("HTTP Error 500.30 - ANCM In-Process Start Failure", responseString);
+            VerifyNoExtraTrailingBytes(responseString);
+
             await AssertLink(response);
+        }
+
+        private static void VerifyNoExtraTrailingBytes(string responseString)
+        {
+            if (!DeployerSelector.IsBackwardsCompatiblityTest)
+            {
+                Assert.EndsWith("</html>\r\n", responseString);
+            }
         }
 
         private static async Task AssertLink(HttpResponseMessage response)

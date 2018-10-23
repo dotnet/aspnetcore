@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -24,39 +24,24 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(VCTargetsPath)' != ''">
-    <ProjectReference Include="..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" >
+    <ProjectReference Include="..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" >
+    <ProjectReference Include="..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj " >
+    <ProjectReference Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj ">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
 
   <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
-      <Content Include="%(ShimComponents.DllLocation)"
-            PackageCopyToOutput="true"
-            PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)"/>
+      <Content Include="%(ShimComponents.DllLocation)" PackageCopyToOutput="true" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
 
-      <SignedPackageFile Include="%(ShimComponents.DllLocation)"
-                         PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll"
-                         Certificate="$(AssemblySigningCertName)" />
+      <SignedPackageFile Include="%(ShimComponents.DllLocation)" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll" Certificate="$(AssemblySigningCertName)" />
 
     </ItemGroup>
   </Target>
-
-  <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="$(PackNativeAssets) == 'true'">
-    <ItemGroup>
-      <None Include="%(RunShimComponents.DllLocation)"
-            CopyToOutputDirectory="PreserveNewest"
-            Link="%(RunShimComponents.Platform)\%(RunShimComponents.PackageSubPath)%(RunShimComponents.NativeAsset).dll" />
-
-      <None Include="%(RunShimComponents.PdbLocation)"
-            CopyToOutputDirectory="PreserveNewest"
-            Link="%(RunShimComponents.Platform)\%(RunShimComponents.PackageSubPath)%(RunShimComponents.NativeAsset).pdb" />
-    </ItemGroup>
-  </Target>
+  
 </Project>

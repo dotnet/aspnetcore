@@ -184,11 +184,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private void AbortIO()
+        private bool AbortIO()
         {
             if (Interlocked.CompareExchange(ref _requestAborted, 1, 0) != 0)
             {
-                return;
+                return false;
             }
 
             _bodyOutput.Dispose();
@@ -208,6 +208,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                 });
             }
+
+            return true;
         }
 
         public void Abort(Exception reason)
@@ -221,8 +223,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         internal void ConnectionReset()
         {
-            AbortIO();
-            Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
+            if (AbortIO())
+            {
+                Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
+            }
         }
     }
 }
