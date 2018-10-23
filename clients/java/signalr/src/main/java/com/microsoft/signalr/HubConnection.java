@@ -3,7 +3,6 @@
 
 package com.microsoft.signalr;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,57 +46,57 @@ public class HubConnection {
     private Timer pingTimer = null;
     private final AtomicLong nextServerTimeout = new AtomicLong();
     private final AtomicLong nextPingActivation = new AtomicLong();
-    private Duration keepAliveInterval = Duration.ofSeconds(15);
-    private Duration serverTimeout = Duration.ofSeconds(30);
-    private Duration tickRate = Duration.ofSeconds(1);
+    private long keepAliveInterval = 15*1000;
+    private long serverTimeout = 30*1000;
+    private long tickRate = 1000;
     private CompletableFuture<Void> handshakeResponseFuture;
-    private Duration handshakeResponseTimeout = Duration.ofSeconds(15);
+    private long handshakeResponseTimeout = 15*1000;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
 
     /**
      * Sets the server timeout interval for the connection.
      *
-     * @param serverTimeout The server timeout duration.
+     * @param serverTimeoutInMilliseconds The server timeout duration (specified in milliseconds).
      */
-    public void setServerTimeout(Duration serverTimeout) {
-        this.serverTimeout = serverTimeout;
+    public void setServerTimeout(long serverTimeoutInMilliseconds) {
+        this.serverTimeout = serverTimeoutInMilliseconds;
     }
 
     /**
      * Gets the server timeout duration.
      *
-     * @return The server timeout duration.
+     * @return The server timeout duration (specified in milliseconds).
      */
-    public Duration getServerTimeout() {
+    public long getServerTimeout() {
         return this.serverTimeout;
     }
 
     /**
      * Sets the keep alive interval duration.
      *
-     * @param keepAliveInterval The interval at which the connection should send keep alive messages.
+     * @param keepAliveIntervalInMilliseconds The interval (specified in milliseconds) at which the connection should send keep alive messages.
      */
-    public void setKeepAliveInterval(Duration keepAliveInterval) {
-        this.keepAliveInterval = keepAliveInterval;
+    public void setKeepAliveInterval(long keepAliveIntervalInMilliseconds) {
+        this.keepAliveInterval = keepAliveIntervalInMilliseconds;
     }
 
     /**
      * Gets the keep alive interval.
      *
-     * @return The interval between keep alive messages.
+     * @return The interval (specified in milliseconds) between keep alive messages.
      */
-    public Duration getKeepAliveInterval() {
+    public long getKeepAliveInterval() {
         return this.keepAliveInterval;
     }
 
     // For testing purposes
-    void setTickRate(Duration tickRate) {
-        this.tickRate = tickRate;
+    void setTickRate(long tickRateInMilliseconds) {
+        this.tickRate = tickRateInMilliseconds;
     }
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient,
-                  Single<String> accessTokenProvider, Duration handshakeResponseTimeout, Map<String, String> headers) {
+                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -121,7 +120,7 @@ public class HubConnection {
             this.transport = transport;
         }
 
-        if (handshakeResponseTimeout != null) {
+        if (handshakeResponseTimeout > 0) {
             this.handshakeResponseTimeout = handshakeResponseTimeout;
         }
 
@@ -249,6 +248,7 @@ public class HubConnection {
 
     /**
      * Starts a connection to the server.
+     *
      * @return A Completable that completes when the connection has been established.
      */
     public Completable start() {
@@ -287,7 +287,7 @@ public class HubConnection {
                 String handshake = HandshakeProtocol.createHandshakeRequestMessage(
                         new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
                 return transport.send(handshake).thenCompose((innerFuture) -> {
-                    timeoutHandshakeResponse(handshakeResponseTimeout.toMillis(), TimeUnit.MILLISECONDS);
+                    timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
                     return handshakeResponseFuture.thenRun(() -> {
                         hubConnectionStateLock.lock();
                         try {
@@ -316,7 +316,7 @@ public class HubConnection {
                                         pingTimer.cancel();
                                     }
                                 }
-                            }, new Date(0), tickRate.toMillis());
+                            }, new Date(0), tickRate);
                         } finally {
                             hubConnectionStateLock.unlock();
                         }
@@ -492,11 +492,11 @@ public class HubConnection {
     }
 
     private void resetServerTimeout() {
-        this.nextServerTimeout.set(System.currentTimeMillis() + serverTimeout.toMillis());
+        this.nextServerTimeout.set(System.currentTimeMillis() + serverTimeout);
     }
 
     private void resetKeepAlive() {
-        this.nextPingActivation.set(System.currentTimeMillis() + keepAliveInterval.toMillis());
+        this.nextPingActivation.set(System.currentTimeMillis() + keepAliveInterval);
     }
 
     /**

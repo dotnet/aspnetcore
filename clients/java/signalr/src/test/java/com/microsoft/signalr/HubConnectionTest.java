@@ -5,7 +5,6 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -68,7 +67,7 @@ class HubConnectionTest {
                 .withTransport(mockTransport)
                 .withHttpClient(new TestHttpClient())
                 .shouldSkipNegotiate(true)
-                .withHandshakeResponseTimeout(Duration.ofMillis(100))
+                .withHandshakeResponseTimeout(100)
                 .build();
         Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS));
         assertEquals(ExecutionException.class, exception.getCause().getClass());
@@ -1066,8 +1065,8 @@ class HubConnectionTest {
     @Test
     public void connectionTimesOutIfServerDoesNotSendMessage() throws InterruptedException, ExecutionException, TimeoutException {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
-        hubConnection.setServerTimeout(Duration.ofMillis(1));
-        hubConnection.setTickRate(Duration.ofMillis(1));
+        hubConnection.setServerTimeout(1);
+        hubConnection.setTickRate(1);
         CompletableFuture<Exception> closedFuture = new CompletableFuture<>();
         hubConnection.onClosed((e) -> {
             closedFuture.complete(e);
@@ -1082,8 +1081,8 @@ class HubConnectionTest {
     public void connectionSendsPingsRegularly() throws InterruptedException {
         MockTransport mockTransport = new MockTransport(true, false);
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
-        hubConnection.setKeepAliveInterval(Duration.ofMillis(1));
-        hubConnection.setTickRate(Duration.ofMillis(1));
+        hubConnection.setKeepAliveInterval(1);
+        hubConnection.setTickRate(1);
 
         hubConnection.start().blockingAwait(1000, TimeUnit.MILLISECONDS);
 
