@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal class RouteValuesAddressScheme : IEndpointAddressScheme<RouteValuesAddress>
     {
-        private readonly CompositeEndpointDataSource _dataSource;
+        private readonly EndpointDataSource _dataSource;
         private LinkGenerationDecisionTree _allMatchesLinkGenerationTree;
         private Dictionary<string, List<OutboundMatchResult>> _namedMatchResults;
 
-        public RouteValuesAddressScheme(CompositeEndpointDataSource dataSource)
+        public RouteValuesAddressScheme(EndpointDataSource dataSource)
         {
             _dataSource = dataSource;
 

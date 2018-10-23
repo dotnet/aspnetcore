@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing
     {
         private readonly DataSourceDependentCache<Dictionary<string, Endpoint[]>> _cache;
 
-        public EndpointNameAddressScheme(CompositeEndpointDataSource dataSource)
+        public EndpointNameAddressScheme(EndpointDataSource dataSource)
         {
             _cache = new DataSourceDependentCache<Dictionary<string, Endpoint[]>>(dataSource, Initialize);
         }

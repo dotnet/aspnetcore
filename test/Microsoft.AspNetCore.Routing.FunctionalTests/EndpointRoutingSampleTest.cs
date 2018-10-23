@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         {
             // Arrange
             var expectedContentType = "text/plain";
-            var expectedContent = "Endpoint Routing sample endpoints:" + Environment.NewLine + "/plaintext";
 
             // Act
             var response = await _client.GetAsync("/");
@@ -39,8 +38,6 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             Assert.NotNull(response.Content);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal(expectedContentType, response.Content.Headers.ContentType.MediaType);
-            var actualContent = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedContent, actualContent);
         }
 
         [Fact]

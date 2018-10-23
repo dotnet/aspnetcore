@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Benchmarks
 {
@@ -18,8 +17,13 @@ namespace Benchmarks
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
+        }
 
-            var endpointDataSource = new DefaultEndpointDataSource(new[]
+        public void Configure(IApplicationBuilder app)
+        {
+            app.UseEndpointRouting(builder =>
+            {
+                var endpointDataSource = new DefaultEndpointDataSource(new[]
                 {
                     new RouteEndpoint(
                         requestDelegate: (httpContext) =>
@@ -37,12 +41,8 @@ namespace Benchmarks
                         displayName: "Plaintext"),
                 });
 
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));
-        }
-
-        public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)
-        {
-            app.UseEndpointRouting();
+                builder.DataSources.Add(endpointDataSource);
+            });
 
             app.UseEndpoint();
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -36,19 +37,29 @@ namespace RoutingSample.Web
             {
                 builder.MapHello("/helloworld", "World");
 
-                builder.MapEndpoint(
+                builder.MapHello("/helloworld-secret", "Secret World")
+                    .RequireAuthorization("swordfish");
+
+                builder.MapGet(
+                    "/",
                     (httpContext) =>
                     {
+                        var dataSource = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
+
+                        var sb = new StringBuilder();
+                        sb.AppendLine("Endpoints:");
+                        foreach (var endpoint in dataSource.Endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText, StringComparer.OrdinalIgnoreCase))
+                        {
+                            sb.AppendLine($"- {endpoint.RoutePattern.RawText}");
+                        }
+
                         var response = httpContext.Response;
-                        var payloadLength = _homePayload.Length;
                         response.StatusCode = 200;
                         response.ContentType = "text/plain";
-                        response.ContentLength = payloadLength;
-                        return response.Body.WriteAsync(_homePayload, 0, payloadLength);
-                    },
-                    "/",
-                    "Home");
-                builder.MapEndpoint(
+                        return response.WriteAsync(sb.ToString());
+                    });
+                builder.MapGet(
+                    "/plaintext",
                     (httpContext) =>
                     {
                         var response = httpContext.Response;
@@ -57,30 +68,28 @@ namespace RoutingSample.Web
                         response.ContentType = "text/plain";
                         response.ContentLength = payloadLength;
                         return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
-                    },
-                    "/plaintext",
-                    "Plaintext");
-                builder.MapEndpoint(
+                    });
+                builder.MapGet(
+                    "/withconstraints/{id:endsWith(_001)}",
                     (httpContext) =>
                     {
                         var response = httpContext.Response;
                         response.StatusCode = 200;
                         response.ContentType = "text/plain";
                         return response.WriteAsync("WithConstraints");
-                    },
-                    "/withconstraints/{id:endsWith(_001)}",
-                    "withconstraints");
-                builder.MapEndpoint(
+                    });
+                builder.MapGet(
+                    "/withoptionalconstraints/{id:endsWith(_001)?}",
                     (httpContext) =>
                     {
                         var response = httpContext.Response;
                         response.StatusCode = 200;
                         response.ContentType = "text/plain";
                         return response.WriteAsync("withoptionalconstraints");
-                    },
-                    "/withoptionalconstraints/{id:endsWith(_001)?}",
-                    "withoptionalconstraints");
-                builder.MapEndpoint(
+                    });
+                builder.MapGet(
+                    "/graph",
+                    "DFA Graph",
                     (httpContext) =>
                     {
                         using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
@@ -91,11 +100,9 @@ namespace RoutingSample.Web
                         }
 
                         return Task.CompletedTask;
-                    },
-                    "/graph",
-                    "DFA Graph",
-                    new HttpMethodMetadata(new[] { "GET", }));
-                builder.MapEndpoint(
+                    });
+                builder.MapGet(
+                    "/WithSingleAsteriskCatchAll/{*path}",
                     (httpContext) =>
                     {
                         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
@@ -106,10 +113,9 @@ namespace RoutingSample.Web
                         return response.WriteAsync(
                             "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
                     },
-                    "/WithSingleAsteriskCatchAll/{*path}",
-                    "WithSingleAsteriskCatchAll",
                     new RouteValuesAddressMetadata(routeName: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
-                builder.MapEndpoint(
+                builder.MapGet(
+                    "/WithDoubleAsteriskCatchAll/{**path}",
                     (httpContext) =>
                     {
                         var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
@@ -120,12 +126,12 @@ namespace RoutingSample.Web
                         return response.WriteAsync(
                             "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
                     },
-                    "/WithDoubleAsteriskCatchAll/{**path}",
-                    "WithDoubleAsteriskCatchAll",
                     new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
             });
 
             app.UseStaticFiles();
+			
+			app.UseAuthorization();
 
             app.UseEndpoint();
         }

@@ -177,10 +177,15 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
 
-            var routeOptions = new RouteOptions();
-            routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+            Action<IServiceCollection> configureServices = s =>
+            {
+                s.Configure<RouteOptions>(o =>
+                {
+                    o.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+                });
+            };
 
-            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, configureServices: null, endpoint1, endpoint2);
+            var linkGenerator = CreateLinkGenerator(configureServices, endpoint1, endpoint2);
 
             // Act
             var path = linkGenerator.GetPathByAddress(
@@ -198,10 +203,15 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
             var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
 
-            var routeOptions = new RouteOptions();
-            routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+            Action<IServiceCollection> configureServices = s =>
+            {
+                s.Configure<RouteOptions>(o =>
+                {
+                    o.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+                });
+            };
 
-            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, configureServices: null, endpoint1, endpoint2);
+            var linkGenerator = CreateLinkGenerator(configureServices, endpoint1, endpoint2);
 
             // Act
             var path = linkGenerator.GetPathByAddress(
@@ -313,15 +323,15 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller:upper-case}/{name}");
 
-            var routeOptions = new RouteOptions();
-            routeOptions.ConstraintMap["upper-case"] = typeof(UpperCaseParameterTransform);
-
             Action<IServiceCollection> configure = (s) =>
             {
-                s.AddSingleton(typeof(UpperCaseParameterTransform), new UpperCaseParameterTransform());
+                s.Configure<RouteOptions>(o =>
+                {
+                    o.ConstraintMap["upper-case"] = typeof(UpperCaseParameterTransform);
+                });
             };
 
-            var linkGenerator = CreateLinkGenerator(routeOptions, configure, endpoint);
+            var linkGenerator = CreateLinkGenerator(configure, endpoint);
 
             // Act
             var link = linkGenerator.GetPathByRouteValues(routeName: null, new { controller = "Home", name = "Test" });
@@ -336,15 +346,15 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller:upper-case}/{name}", policies: new { c = new UpperCaseParameterTransform(), });
 
-            var routeOptions = new RouteOptions();
-            routeOptions.ConstraintMap["upper-case"] = typeof(UpperCaseParameterTransform);
-
             Action<IServiceCollection> configure = (s) =>
             {
-                s.AddSingleton(typeof(UpperCaseParameterTransform), new UpperCaseParameterTransform());
+                s.Configure<RouteOptions>(o =>
+                {
+                    o.ConstraintMap["upper-case"] = typeof(UpperCaseParameterTransform);
+                });
             };
 
-            var linkGenerator = CreateLinkGenerator(routeOptions, configure, endpoint);
+            var linkGenerator = CreateLinkGenerator(configure, endpoint);
 
             // Act
             var link = linkGenerator.GetPathByRouteValues(routeName: null, new { controller = "Home", name = "Test", c = "hithere", });
@@ -707,9 +717,9 @@ namespace Microsoft.AspNetCore.Routing
 
         private class IntAddressScheme : IEndpointAddressScheme<int>
         {
-            private readonly CompositeEndpointDataSource _dataSource;
+            private readonly EndpointDataSource _dataSource;
 
-            public IntAddressScheme(CompositeEndpointDataSource dataSource)
+            public IntAddressScheme(EndpointDataSource dataSource)
             {
                 _dataSource = dataSource;
             }

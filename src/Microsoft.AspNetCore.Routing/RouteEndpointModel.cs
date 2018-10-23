@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public sealed class RouteEndpointBuilder : EndpointBuilder
+    public sealed class RouteEndpointModel : EndpointModel
     {
         public RoutePattern RoutePattern { get; set; }
 
         public int Order { get; set; }
 
-        public RouteEndpointBuilder(
+        public RouteEndpointModel(
            RequestDelegate requestDelegate,
            RoutePattern routePattern,
            int order)
@@ -24,14 +24,14 @@ namespace Microsoft.AspNetCore.Routing
 
         public override Endpoint Build()
         {
-            var matcherEndpoint = new RouteEndpoint(
+            var routeEndpoint = new RouteEndpoint(
                 RequestDelegate,
                 RoutePattern,
                 Order,
                 new EndpointMetadataCollection(Metadata),
                 DisplayName);
 
-            return matcherEndpoint;
+            return routeEndpoint;
         }
     }
 }

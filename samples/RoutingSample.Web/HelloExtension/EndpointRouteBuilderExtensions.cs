@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public static class EndpointDataSourceBuilderExtensions
+    public static class EndpointRouteBuilderExtensions
     {
-        public static EndpointBuilder MapHello(this EndpointDataSourceBuilder builder, string template, string greeter)
+        public static IEndpointConventionBuilder MapHello(this IEndpointRouteBuilder builder, string template, string greeter)
         {
             if (builder == null)
             {
@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Builder
                .UseHello(greeter)
                .Build();
 
-            return builder.MapEndpoint(
-                pipeline,
+            return builder.Map(
                 template,
-                "Hello");
+                "Hello " + greeter,
+                pipeline);
         }
     }
 }

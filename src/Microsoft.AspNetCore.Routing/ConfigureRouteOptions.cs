@@ -3,16 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
-    internal class ConfigureEndpointOptions : IConfigureOptions<EndpointOptions>
+    internal class ConfigureRouteOptions : IConfigureOptions<RouteOptions>
     {
-        private readonly IEnumerable<EndpointDataSource> _dataSources;
+        private readonly ICollection<EndpointDataSource> _dataSources;
 
-        public ConfigureEndpointOptions(IEnumerable<EndpointDataSource> dataSources)
+        public ConfigureRouteOptions(ICollection<EndpointDataSource> dataSources)
         {
             if (dataSources == null)
             {
@@ -22,17 +23,14 @@ namespace Microsoft.Extensions.DependencyInjection
             _dataSources = dataSources;
         }
 
-        public void Configure(EndpointOptions options)
+        public void Configure(RouteOptions options)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            foreach (var dataSource in _dataSources)
-            {
-                options.DataSources.Add(dataSource);
-            }
+            options.EndpointDataSources = _dataSources;
         }
     }
 }

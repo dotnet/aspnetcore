@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public abstract class EndpointBuilder
+    public abstract class EndpointModel
     {
         public RequestDelegate RequestDelegate { get; set; }
 

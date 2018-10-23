@@ -14,38 +14,50 @@ namespace Microsoft.AspNetCore.Builder
 {
     public class MapEndpointEndpointDataSourceBuilderExtensionsTest
     {
+        private ModelEndpointDataSource GetBuilderEndpointDataSource(IEndpointRouteBuilder endpointRouteBuilder)
+        {
+            return Assert.IsType<ModelEndpointDataSource>(Assert.Single(endpointRouteBuilder.DataSources));
+        }
+
+        private RouteEndpointModel GetRouteEndpointBuilder(IEndpointRouteBuilder endpointRouteBuilder)
+        {
+            return Assert.IsType<RouteEndpointModel>(Assert.Single(GetBuilderEndpointDataSource(endpointRouteBuilder).EndpointModels));
+        }
+
         [Fact]
         public void MapEndpoint_StringPattern_BuildsEndpoint()
         {
             // Arrange
-            var builder = new DefaultEndpointDataSourceBuilder();
+            var builder = new DefaultEndpointRouteBuilder();
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
-            var endpointBuilder = builder.MapEndpoint(requestDelegate, "/", "Display name!");
+            var endpointBuilder = builder.Map("/", "Display name!", requestDelegate);
 
             // Assert
-            Assert.Equal(endpointBuilder, Assert.Single(builder.Endpoints));
-            Assert.Equal(requestDelegate, endpointBuilder.RequestDelegate);
-            Assert.Equal("Display name!", endpointBuilder.DisplayName);
-            Assert.Equal("/", endpointBuilder.RoutePattern.RawText);
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+
+            Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
         }
 
         [Fact]
         public void MapEndpoint_TypedPattern_BuildsEndpoint()
         {
             // Arrange
-            var builder = new DefaultEndpointDataSourceBuilder();
+            var builder = new DefaultEndpointRouteBuilder();
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
-            var endpointBuilder = builder.MapEndpoint(requestDelegate, RoutePatternFactory.Parse("/"), "Display name!");
+            var endpointBuilder = builder.Map(RoutePatternFactory.Parse("/"), "Display name!", requestDelegate);
 
             // Assert
-            Assert.Equal(endpointBuilder, Assert.Single(builder.Endpoints));
-            Assert.Equal(requestDelegate, endpointBuilder.RequestDelegate);
-            Assert.Equal("Display name!", endpointBuilder.DisplayName);
-            Assert.Equal("/", endpointBuilder.RoutePattern.RawText);
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+
+            Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
         }
 
         [Fact]
@@ -53,18 +65,18 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Arrange
             var metadata = new object();
-            var builder = new DefaultEndpointDataSourceBuilder();
+            var builder = new DefaultEndpointRouteBuilder();
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
-            var endpointBuilder = builder.MapEndpoint(requestDelegate, "/", "Display name!", new[] { metadata });
+            var endpointBuilder = builder.Map("/", "Display name!", requestDelegate, new[] { metadata });
 
             // Assert
-            Assert.Equal(endpointBuilder, Assert.Single(builder.Endpoints));
-            Assert.Equal(requestDelegate, endpointBuilder.RequestDelegate);
-            Assert.Equal("Display name!", endpointBuilder.DisplayName);
-            Assert.Equal("/", endpointBuilder.RoutePattern.RawText);
-            Assert.Equal(metadata, Assert.Single(endpointBuilder.Metadata));
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+            Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
+            Assert.Equal(metadata, Assert.Single(endpointBuilder1.Metadata));
         }
 
         [Fact]
@@ -72,18 +84,18 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Arrange
             var metadata = new object();
-            var builder = new DefaultEndpointDataSourceBuilder();
+            var builder = new DefaultEndpointRouteBuilder();
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
-            var endpointBuilder = builder.MapEndpoint(requestDelegate, RoutePatternFactory.Parse("/"), "Display name!", new[] { metadata });
+            var endpointBuilder = builder.Map(RoutePatternFactory.Parse("/"), "Display name!", requestDelegate, new[] { metadata });
 
             // Assert
-            Assert.Equal(endpointBuilder, Assert.Single(builder.Endpoints));
-            Assert.Equal(requestDelegate, endpointBuilder.RequestDelegate);
-            Assert.Equal("Display name!", endpointBuilder.DisplayName);
-            Assert.Equal("/", endpointBuilder.RoutePattern.RawText);
-            Assert.Equal(metadata, Assert.Single(endpointBuilder.Metadata));
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+            Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
+            Assert.Equal(metadata, Assert.Single(endpointBuilder1.Metadata));
         }
     }
 }

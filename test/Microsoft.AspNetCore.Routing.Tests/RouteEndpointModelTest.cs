@@ -8,18 +8,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing
 {
-    public class MatcherEndpointBuilderTest
+    public class RouteEndpointModelTest
     {
         [Fact]
         public void Build_AllValuesSet_EndpointCreated()
         {
             const int defaultOrder = 0;
-            object metadata = new object();
+            var metadata = new object();
             RequestDelegate requestDelegate = (d) => null;
 
-            var builder = new RouteEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
+            var builder = new RouteEndpointModel(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
             {
                 DisplayName = "Display name!",
                 Metadata = { metadata }

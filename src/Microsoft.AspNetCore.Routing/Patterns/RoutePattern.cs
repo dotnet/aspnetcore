@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return null;
         }
 
-        private string DebuggerToString()
+        internal string DebuggerToString()
         {
             return RawText ?? string.Join(SeparatorString, PathSegments.Select(s => s.DebuggerToString()));
         }

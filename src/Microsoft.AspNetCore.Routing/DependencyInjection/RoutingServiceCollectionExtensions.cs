@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
@@ -49,21 +50,22 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
 
-            // Collect all data sources from DI.
-            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<EndpointOptions>, ConfigureEndpointOptions>());
+            // Setup global collection of endpoint data sources
+            var dataSources = new ObservableCollection<EndpointDataSource>();
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, ConfigureRouteOptions>(
+                serviceProvider => new ConfigureRouteOptions(dataSources)));
 
             // Allow global access to the list of endpoints.
-            services.TryAddSingleton<CompositeEndpointDataSource>(s =>
+            services.TryAddSingleton<EndpointDataSource>(s =>
             {
-                var options = s.GetRequiredService<IOptions<EndpointOptions>>();
-                return new CompositeEndpointDataSource(options.Value.DataSources);
+                // Call internal ctor and pass global collection
+                return new CompositeEndpointDataSource(dataSources);
             });
 
             //
             // Endpoint Infrastructure
             //
-            services.TryAddSingleton<EndpointDataSource, BuilderEndpointDataSource>();
-            services.TryAddSingleton<EndpointDataSourceBuilder, DefaultEndpointDataSourceBuilder>();
+            services.TryAddTransient<IEndpointRouteBuilder, DefaultEndpointRouteBuilder>();
 
             //
             // Default matcher implementation
