@@ -1,0 +1,43 @@
+<!--
+This file defines properties for building a shared framework.
+This targets file should only be imported by .shfxproj files.
+-->
+<Project>
+  <PropertyGroup>
+    <!-- shfxproj must be explicit about its dependencies. -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+
+    <!-- Use _RuntimeIdentifier to get around limitations in RID's applying accross ProjectReferences. -->
+    <RuntimeIdentifier>$([MSBuild]::ValueOrDefault('$(RuntimeIdentifier)', '$(_RuntimeIdentifier)'))</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(SharedFxRID)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(HostRid)</RuntimeIdentifier>
+
+    <!-- Optimize the framework using the crossgen tool -->
+    <CrossgenOutput>true</CrossgenOutput>
+
+    <!-- Produce crossgen symbols when running the crossgen tool -->
+    <CrossgenSymbolsOutput>true</CrossgenSymbolsOutput>
+
+    <!-- Always generated, even though output type == Library -->
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <!-- Even though RuntimeIdentifier is set, shared framework projects are not self-contained projects -->
+    <SelfContained>false</SelfContained>
+
+    <!-- Don't add TFM to the project output path of shared framework projects -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+    <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols -->
+    <DebugType>none</DebugType>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <FrameworkProjectReference>
+      <!-- Set _RuntimeIdentifier to get around limitations in RID's applying accross ProjectReferences. -->
+      <AdditionalProperties>_RuntimeIdentifier=$(RuntimeIdentifier)</AdditionalProperties>
+      <OutputItemType>_ResolvedFrameworkProjectReferencePaths</OutputItemType>
+    </FrameworkProjectReference>
+  </ItemDefinitionGroup>
+</Project>

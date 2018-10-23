@@ -17,12 +17,29 @@
   <PropertyGroup>
     <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepositoryRoot)artifacts\</ArtifactsDir>
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
     <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
     <PackageOutputPath>$(ArtifactsConfigurationDir)packages\</PackageOutputPath>
+
+    <TargetPlatform Condition="'$(TargetPlatform)' == ''">AnyCPU</TargetPlatform>
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win-$(TargetPlatform)</HostRid>
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx-$(TargetPlatform)</HostRid>
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux-$(TargetPlatform)</HostRid>
+
+    <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework. -->
+    <SupportedRuntimeIdentifiers>
+      win-x64;
+      win-x86;
+      osx-x64;
+      linux-musl-x64;
+      linux-x64;
+      linux-arm
+    </SupportedRuntimeIdentifiers>
   </PropertyGroup>
 
-  <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
+  <Import Project="eng\targets\SharedFx.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.shfxproj'" />
+  <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
 
 </Project>

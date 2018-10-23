@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <!-- The project default is 'AnyCPU', but shared frameworks are architecture specific -->
+    <TargetPlatform Condition=" '$(TargetPlatform)' == '' ">x64</TargetPlatform>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+  <Import Condition="Exists('..\..\obj\dependencies.g.props')" Project="..\..\obj\dependencies.g.props" />
+
+  <PropertyGroup>
+    <OutputPath>$(ArtifactsConfigurationDir)$(RuntimeIdentifier)\$(MSBuildProjectName)\</OutputPath>
+    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\fx\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+
+    <CrossgenOutput Condition="'$(RuntimeIdentifier)' == 'linux-arm'">false</CrossgenOutput>
+    <CrossgenSymbolOutput Condition=" '$(CrossgenOutput)' == 'false' OR '$(RuntimeIdentifier)' == 'osx-x64'">false</CrossgenSymbolOutput>
+  </PropertyGroup>
+
+</Project>

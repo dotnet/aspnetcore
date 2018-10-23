@@ -14,7 +14,6 @@
   <UsingTask TaskName="RepoTasks.ProcessSharedFrameworkDeps" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.PublishToAzureBlob" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.ResolveSymbolsRecursivePath" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.TrimDeps" AssemblyFile="$(_RepoTaskAssembly)" />
 
   <!-- tools from dotnet-buildtools -->
   <PropertyGroup>

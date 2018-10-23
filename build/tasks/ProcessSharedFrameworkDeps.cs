@@ -14,13 +14,19 @@ using RepoTasks.Utilities;
 
 namespace RepoTasks
 {
-    public partial class ProcessSharedFrameworkDeps : Task
+    public class ProcessSharedFrameworkDeps : Task
     {
         [Required]
         public string AssetsFilePath { get; set; }
 
         [Required]
         public string DepsFilePath { get; set; }
+
+        [Required]
+        public string OutputPath { get; set; }
+
+        [Required]
+        public string FrameworkName { get; set; }
 
         public string[] PackagesToRemove { get; set; }
 
@@ -52,7 +58,8 @@ namespace RepoTasks
             var graph = manager.Collect(lockFile);
             var expandedGraph = manager.Expand(graph, Runtime);
 
-            var trimmedRuntimeLibraries = context.RuntimeLibraries;
+            // Remove the runtime entry for the project which generates the original deps.json. For example, there is no Microsoft.AspNetCore.App.dll.
+            var trimmedRuntimeLibraries = RuntimeReference.RemoveSharedFxRuntimeEntry(context.RuntimeLibraries, FrameworkName);
 
             if (PackagesToRemove != null && PackagesToRemove.Any())
             {
@@ -67,7 +74,7 @@ namespace RepoTasks
                 expandedGraph
                 );
 
-            using (var depsStream = File.Create(DepsFilePath))
+            using (var depsStream = File.Create(OutputPath))
             {
                 new DependencyContextWriter().Write(context, depsStream);
             }

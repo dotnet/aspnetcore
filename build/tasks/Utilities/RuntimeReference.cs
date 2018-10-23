@@ -11,6 +11,29 @@ namespace RepoTasks.Utilities
 {
     internal class RuntimeReference
     {
+        public static IEnumerable<RuntimeLibrary> RemoveSharedFxRuntimeEntry(IEnumerable<RuntimeLibrary> runtimeLibraries, string fxName)
+        {
+            foreach (var runtimeLib in runtimeLibraries)
+            {
+                if (string.Equals(runtimeLib.Name, fxName, StringComparison.OrdinalIgnoreCase))
+                {
+                    yield return new RuntimeLibrary(runtimeLib.Type,
+                                                    runtimeLib.Name,
+                                                    runtimeLib.Version,
+                                                    runtimeLib.Hash,
+                                                    Array.Empty<RuntimeAssetGroup>(), // runtimeLib.RuntimeAssemblyGroups,
+                                                    runtimeLib.NativeLibraryGroups,
+                                                    runtimeLib.ResourceAssemblies,
+                                                    runtimeLib.Dependencies,
+                                                    runtimeLib.Serviceable);
+                }
+                else
+                {
+                    yield return runtimeLib;
+                }
+            }
+        }
+
         public static List<RuntimeLibrary> RemoveReferences(IReadOnlyList<RuntimeLibrary> runtimeLibraries, IEnumerable<string> packages)
         {
             List<RuntimeLibrary> result = new List<RuntimeLibrary>();
