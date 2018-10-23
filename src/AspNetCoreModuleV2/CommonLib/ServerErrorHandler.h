@@ -63,13 +63,15 @@ private:
         {
             HRSRC rc = nullptr;
             HGLOBAL rcData = nullptr;
-            const char* data = nullptr;
+            std::string data;
+            const char* pTempData = nullptr;
 
             THROW_LAST_ERROR_IF_NULL(rc = FindResource(module, MAKEINTRESOURCE(page), RT_HTML));
             THROW_LAST_ERROR_IF_NULL(rcData = LoadResource(module, rc));
             auto const size = SizeofResource(module, rc);
             THROW_LAST_ERROR_IF(size == 0);
-            THROW_LAST_ERROR_IF_NULL(data = static_cast<const char*>(LockResource(rcData)));
+            THROW_LAST_ERROR_IF_NULL(pTempData = static_cast<const char*>(LockResource(rcData)));
+            data = std::string(pTempData, size);
 
             auto additionalErrorLink = Environment::GetEnvironmentVariableValue(L"ANCM_ADDITIONAL_ERROR_PAGE_LINK");
             std::string additionalHtml;

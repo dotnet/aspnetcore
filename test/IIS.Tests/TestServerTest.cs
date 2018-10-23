@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [SkipIfHostableWebCoreNotAvailable]
     [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, "https://github.com/aspnet/IISIntegration/issues/866")]
-    public class TestServerTest : LoggedTest
+    public class TestServerTest : StrictTestServerTests
     {
         [ConditionalFact]
         public async Task SingleProcessTestServer_HelloWorld()

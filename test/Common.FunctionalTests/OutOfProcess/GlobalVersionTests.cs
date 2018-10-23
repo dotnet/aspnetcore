@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
         public async Task GlobalVersion_EnvironmentVariableWorks()
         {
             var temporaryFile = Path.GetTempFileName();

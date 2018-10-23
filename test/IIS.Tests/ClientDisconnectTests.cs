@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -207,8 +205,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
                 Assert.IsType<OperationCanceledException>(exception);
             }
-
-            AssertConnectionDisconnectLog();
         }
 
         [ConditionalFact]
@@ -289,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private void AssertConnectionDisconnectLog()
         {
-            Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ConnectionDisconnect");
+            Assert.Single(TestSink.Writes, w => w.EventId.Name == "ConnectionDisconnect");
         }
 
         private static async Task SendContentLength1Post(TestConnection connection)

@@ -36,10 +36,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7E80C58E
 	ProjectSection(SolutionItems) = preProject
 		build\applicationhost.config = build\applicationhost.config
 		build\applicationhost.iis.config = build\applicationhost.iis.config
-		build\build.msbuild = build\build.msbuild
 		build\Build.Settings = build\Build.Settings
 		build\Config.Definitions.Props = build\Config.Definitions.Props
 		build\dependencies.props = build\dependencies.props
+		build\functional-test-assets.targets = build\functional-test-assets.targets
 		build\Key.snk = build\Key.snk
 		build\launchSettings.json = build\launchSettings.json
 		build\native.targets = build\native.targets
@@ -112,6 +112,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.Tests", "test\IIS.Tests\IIS.Tests.csproj", "{C0310D84-BC2F-4B2E-870E-D35044DB3E3E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Tests", "test\Common.Tests\Common.Tests.csproj", "{D17B7B35-5361-4A50-B499-E03E5C3CC095}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.BackwardsCompatibility.FunctionalTests", "test\IIS.BackwardsCompatibility.FunctionalTests\IIS.BackwardsCompatibility.FunctionalTests.csproj", "{582B07BC-73F4-4689-8557-B039298BD82C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -383,6 +385,18 @@ Global
 		{D17B7B35-5361-4A50-B499-E03E5C3CC095}.Release|x64.Build.0 = Release|Any CPU
 		{D17B7B35-5361-4A50-B499-E03E5C3CC095}.Release|x86.ActiveCfg = Release|Any CPU
 		{D17B7B35-5361-4A50-B499-E03E5C3CC095}.Release|x86.Build.0 = Release|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Debug|x64.Build.0 = Debug|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Debug|x86.Build.0 = Debug|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Release|x64.ActiveCfg = Release|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Release|x64.Build.0 = Release|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Release|x86.ActiveCfg = Release|Any CPU
+		{582B07BC-73F4-4689-8557-B039298BD82C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -413,6 +427,7 @@ Global
 		{34135ED7-313D-4E68-860C-D6B51AA28523} = {04B1EDB6-E967-4D25-89B9-E6F8304038CD}
 		{C0310D84-BC2F-4B2E-870E-D35044DB3E3E} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 		{D17B7B35-5361-4A50-B499-E03E5C3CC095} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
+		{582B07BC-73F4-4689-8557-B039298BD82C} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DB4F868D-E1AE-4FD7-9333-69FA15B268C5}
