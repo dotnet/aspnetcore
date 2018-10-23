@@ -353,6 +353,7 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(MvcCoreRouteOptionsSetup),
+                            typeof(MvcCoreRouteOptionsSetup),
                         }
                     },
                     {

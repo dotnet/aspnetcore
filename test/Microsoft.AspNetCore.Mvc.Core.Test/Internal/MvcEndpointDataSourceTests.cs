@@ -804,6 +804,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 mvcEndpointInvokerFactory ?? new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())),
                 serviceProvider.GetRequiredService<ParameterPolicyFactory>());
 
+            var defaultEndpointConventionBuilder = new DefaultEndpointConventionBuilder();
+            dataSource.AttributeRoutingConventionResolvers.Add((actionDescriptor) =>
+            {
+                return defaultEndpointConventionBuilder;
+            });
+
             return dataSource;
         }
 

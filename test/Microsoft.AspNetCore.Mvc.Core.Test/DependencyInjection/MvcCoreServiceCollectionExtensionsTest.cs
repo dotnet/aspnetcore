@@ -316,13 +316,6 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
-                        typeof(EndpointDataSource),
-                        new Type[]
-                        {
-                            typeof(MvcEndpointDataSource),
-                        }
-                    },
-                    {
                         typeof(IStartupFilter),
                         new Type[]
                         {

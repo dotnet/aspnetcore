@@ -90,9 +90,7 @@ namespace Microsoft.AspNetCore.Builder
             if (options.Value.EnableEndpointRouting)
             {
                 var mvcEndpointDataSource = app.ApplicationServices
-                    .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                    .OfType<MvcEndpointDataSource>()
-                    .First();
+                    .GetRequiredService<MvcEndpointDataSource>();
                 var parameterPolicyFactory = app.ApplicationServices
                     .GetRequiredService<ParameterPolicyFactory>();
 
@@ -122,11 +120,21 @@ namespace Microsoft.AspNetCore.Builder
                     }
                 }
 
+                // Include all controllers with attribute routing and Razor pages
+                var defaultEndpointConventionBuilder = new DefaultEndpointConventionBuilder();
+                mvcEndpointDataSource.AttributeRoutingConventionResolvers.Add((actionDescriptor) =>
+                {
+                    return defaultEndpointConventionBuilder;
+                });
+
                 if (!app.Properties.TryGetValue(EndpointRoutingRegisteredKey, out _))
                 {
                     // Matching middleware has not been registered yet
                     // For back-compat register middleware so an endpoint is matched and then immediately used
-                    app.UseEndpointRouting();
+                    app.UseEndpointRouting(routerBuilder =>
+                    {
+                        routerBuilder.DataSources.Add(mvcEndpointDataSource);
+                    });
                 }
 
                 return app.UseEndpoint();
