@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import * as http from "http";
+import * as https from "https";
 import { URL } from "url";
 
 import { AbortError, HttpError, TimeoutError } from "./Errors";
@@ -33,7 +34,12 @@ export class NodeHttpClient extends HttpClient {
                 port: url.port,
             };
 
-            const req = http.request(options, (res: http.IncomingMessage) => {
+            // "any" is used here because require() can't be correctly resolved by the compiler
+            // when httpOrHttps is typeof http | typeof https. Change to http when editing to get
+            // intellisense.
+            const httpOrHttps: any = url.protocol === "https" ? https : http;
+
+            const req = httpOrHttps.request(options, (res: http.IncomingMessage) => {
                 const data: Buffer[] = [];
                 let dataLength = 0;
                 res.on("data", (chunk: any) => {
@@ -76,7 +82,7 @@ export class NodeHttpClient extends HttpClient {
                 });
             }
 
-            req.on("error", (e) => {
+            req.on("error", (e: Error) => {
                 this.logger.log(LogLevel.Warning, `Error from HTTP request. ${e}`);
                 reject(e);
             });
