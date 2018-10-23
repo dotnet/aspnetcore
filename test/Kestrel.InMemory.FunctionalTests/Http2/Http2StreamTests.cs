@@ -1998,5 +1998,139 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForConnectionErrorAsync<HPackEncodingException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.INTERNAL_ERROR,
                 CoreStrings.HPackErrorNotEnoughBuffer);
         }
+
+        [Fact]
+        public async Task WriteAsync_PreCancelledCancellationToken_DoesNotAbort()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                // The cancellation is checked at the start of WriteAsync and no application state is changed.
+                await Assert.ThrowsAsync<OperationCanceledException>(() => context.Response.WriteAsync("hello,", new CancellationToken(true)));
+                Assert.False(context.Response.HasStarted);
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task WriteAsync_CancellationTokenTriggeredDueToFlowControl_SendRST()
+        {
+            var cts = new CancellationTokenSource();
+            var writeStarted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.Body.FlushAsync(); // https://github.com/aspnet/KestrelHttpServer/issues/3031
+                var writeTask = context.Response.WriteAsync("hello,", cts.Token);
+                writeStarted.SetResult(0);
+                await Assert.ThrowsAsync<OperationCanceledException>(() => writeTask);
+            });
+
+            _clientSettings.InitialWindowSize = 0;
+            await SendSettingsAsync();
+            await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 0,
+                withFlags: (byte)Http2SettingsFrameFlags.ACK,
+                withStreamId: 0);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await writeStarted.Task;
+
+            cts.Cancel();
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, null);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task ResponseHeaders_NotBlockedByFlowControl()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(context =>
+            {
+                return context.Response.WriteAsync("hello world");
+            });
+
+            _clientSettings.InitialWindowSize = 0;
+            await SendSettingsAsync();
+            await ExpectAsync(Http2FrameType.SETTINGS,
+                withLength: 0,
+                withFlags: (byte)Http2SettingsFrameFlags.ACK,
+                withStreamId: 0);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await SendWindowUpdateAsync(1, 11);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 11,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
     }
 }

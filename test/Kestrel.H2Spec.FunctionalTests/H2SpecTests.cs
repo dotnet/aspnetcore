@@ -1,33 +1,35 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETCOREAPP2_2
-
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
+namespace H2Spec.FunctionalTests
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81,
         SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
-    public class H2SpecTests : TestApplicationErrorLoggerLoggedTest
+    public class H2SpecTests : LoggedTest
     {
+        private static readonly string _testCertPath = Path.Combine(Directory.GetCurrentDirectory(), "shared", "TestCertificates", "testCert.pfx");
+
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(IPAddress.Loopback, 0, listenOptions =>
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                         listenOptions.Protocols = HttpProtocols.Http2;
                         if (testCase.Https)
                         {
-                            listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                            listenOptions.UseHttps(_testCertPath, "testPassword");
                         }
                     });
                 })
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             {
                 await host.StartAsync();
 
-                H2SpecCommands.RunTest(testCase.Id, host.GetPort(), testCase.Https, Logger);
+                H2SpecCommands.RunTest(testCase.Id, GetPort(host), testCase.Https, Logger);
             }
         }
 
@@ -129,9 +131,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 await context.Response.WriteAsync("Hello World");
             });
         }
+
+        private static int GetPort(IWebHost host)
+        {
+            return host.ServerFeatures.Get<IServerAddressesFeature>().Addresses
+                .Select(a => new Uri(a))
+                .First()
+                .Port;
+        }
     }
 }
-#elif NET461 // HTTP/2 is not supported
-#else
-#error TFMs need updating
-#endif
