@@ -13,7 +13,7 @@ phases:
   parameters:
     agentOs: Windows
     codeSign: false
-    buildArgs: /p:BuildServerIIS21=true /p:SkipIISExpressTests=true /p:SkipIISBackwardsCompatibilityTests=true
+    buildArgs: /p:BuildServerIIS21=true /p:SkipIISExpressTests=true /p:SkipIISBackwardsCompatibilityTests=true /p:SkipIISForwardsCompatibilityTests=true
     beforeBuild:
       - powershell: "& ./tools/UpdateIISExpressCertificate.ps1; & ./tools/update_schema.ps1; & ./tools/SetupTestEnvironment.ps1 SetupDumps"
         displayName: Prepare repo

@@ -233,7 +233,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+            if (DeployerSelector.IsForwardsCompatibilityTest)
+            {
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
+            }
+            else
+            {
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+            }
         }
 
         [ConditionalFact]

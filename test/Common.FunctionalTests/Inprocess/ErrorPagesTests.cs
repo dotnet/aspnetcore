@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
         public async Task IncludesAdditionalErrorPageTextInProcessStartupFailure_CorrectString()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);

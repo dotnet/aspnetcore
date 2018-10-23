@@ -28,7 +28,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"test", "WebSites", name);
         }
 
-        public static string GetInProcessTestSitesPath() => GetTestWebSitePath("InProcessWebSite");
+        public static string GetInProcessTestSitesPath()
+        {
+            return DeployerSelector.IsForwardsCompatibilityTest ? GetTestWebSitePath("InProcessForwardsCompatWebSite") : GetTestWebSitePath("InProcessWebSite");
+        }
 
         public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
 
