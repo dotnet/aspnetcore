@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing
     {
         private readonly CompositeEndpointDataSource _dataSource;
         private LinkGenerationDecisionTree _allMatchesLinkGenerationTree;
-        private IDictionary<string, List<OutboundMatchResult>> _namedMatchResults;
+        private Dictionary<string, List<OutboundMatchResult>> _namedMatchResults;
 
         public RouteValuesAddressScheme(CompositeEndpointDataSource dataSource)
         {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public IEnumerable<Endpoint> FindEndpoints(RouteValuesAddress address)
         {
-            IEnumerable<OutboundMatchResult> matchResults = null;
+            IList<OutboundMatchResult> matchResults = null;
             if (string.IsNullOrEmpty(address.RouteName))
             {
                 matchResults = _allMatchesLinkGenerationTree.GetMatches(
@@ -45,14 +45,33 @@ namespace Microsoft.AspNetCore.Routing
                 matchResults = namedMatchResults;
             }
 
-            if (matchResults == null || !matchResults.Any())
+            if (matchResults != null)
             {
-                return Array.Empty<Endpoint>();
+                var matchCount = matchResults.Count;
+                if (matchCount > 0)
+                {
+                    if (matchResults.Count == 1)
+                    {
+                        // Special case having a single result to avoid creating iterator state machine
+                        return new[] { (RouteEndpoint)matchResults[0].Match.Entry.Data };
+                    }
+                    else
+                    {
+                        // Use separate method since one cannot have regular returns in an iterator method
+                        return GetEndpoints(matchResults, matchCount);
+                    }
+                }
             }
 
-            return matchResults
-                .Select(matchResult => matchResult.Match)
-                .Select(match => (RouteEndpoint)match.Entry.Data);
+            return Array.Empty<Endpoint>();
+        }
+
+        private static IEnumerable<Endpoint> GetEndpoints(IList<OutboundMatchResult> matchResults, int matchCount)
+        {
+            for (var i = 0; i < matchCount; i++)
+            {
+                yield return (RouteEndpoint)matchResults[i].Match.Entry.Data;
+            }
         }
 
         private void HandleChange()
@@ -73,7 +92,7 @@ namespace Microsoft.AspNetCore.Routing
             // as refresh of new endpoints happens within a lock and also these fields are not publicly accessible.
             var (allMatches, namedMatchResults) = GetOutboundMatches();
             _namedMatchResults = namedMatchResults;
-            _allMatchesLinkGenerationTree = new LinkGenerationDecisionTree(allMatches.ToArray());
+            _allMatchesLinkGenerationTree = new LinkGenerationDecisionTree(allMatches);
         }
 
         /// Decision tree is built using the 'required values' of actions.
@@ -93,21 +112,25 @@ namespace Microsoft.AspNetCore.Routing
         ///     requiredValues: new { controller = "Orders", action = "GetById" },
         ///   A call to GetLink("OrdersApi", new { id = "10" }) cannot generate url as neither the supplied values or
         ///   current ambient values do not satisfy the decision tree that is built based on the required values.
-        protected virtual (IEnumerable<OutboundMatch>, IDictionary<string, List<OutboundMatchResult>>) GetOutboundMatches()
+        protected virtual (List<OutboundMatch>, Dictionary<string, List<OutboundMatchResult>>) GetOutboundMatches()
         {
             var allOutboundMatches = new List<OutboundMatch>();
             var namedOutboundMatchResults = new Dictionary<string, List<OutboundMatchResult>>(
                 StringComparer.OrdinalIgnoreCase);
 
-            var endpoints = _dataSource.Endpoints.OfType<RouteEndpoint>();
-            foreach (var endpoint in endpoints)
+            foreach (var endpoint in _dataSource.Endpoints)
             {
+                if (!(endpoint is RouteEndpoint routeEndpoint))
+                {
+                    continue;
+                }
+
                 if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
                 {
                     continue;
                 }
 
-                var entry = CreateOutboundRouteEntry(endpoint);
+                var entry = CreateOutboundRouteEntry(routeEndpoint);
 
                 var outboundMatch = new OutboundMatch() { Entry = entry };
                 allOutboundMatches.Add(outboundMatch);
@@ -117,8 +140,7 @@ namespace Microsoft.AspNetCore.Routing
                     continue;
                 }
 
-                List<OutboundMatchResult> matchResults;
-                if (!namedOutboundMatchResults.TryGetValue(entry.RouteName, out matchResults))
+                if (!namedOutboundMatchResults.TryGetValue(entry.RouteName, out var matchResults))
                 {
                     matchResults = new List<OutboundMatchResult>();
                     namedOutboundMatchResults.Add(entry.RouteName, matchResults);
