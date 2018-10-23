@@ -6,24 +6,23 @@ package com.microsoft.signalr;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import io.reactivex.Single;
+
 class TestHttpClient extends HttpClient {
-    private Function<HttpRequest, CompletableFuture<HttpResponse>> handler;
+    private Function<HttpRequest, Single<HttpResponse>> handler;
     private List<HttpRequest> sentRequests;
 
     public TestHttpClient() {
         this.sentRequests = new ArrayList<>();
         this.handler = (req) -> {
-            CompletableFuture<HttpResponse> future = new CompletableFuture<>();
-            future.completeExceptionally(new RuntimeException(String.format("Request has no handler: %s %s", req.getMethod(), req.getUrl())));
-            return future;
+            return Single.error(new RuntimeException(String.format("Request has no handler: %s %s", req.getMethod(), req.getUrl())));
         };
     }
 
     @Override
-    public CompletableFuture<HttpResponse> send(HttpRequest request) {
+    public Single<HttpResponse> send(HttpRequest request) {
         this.sentRequests.add(request);
         return this.handler.apply(request);
     }
@@ -32,13 +31,13 @@ class TestHttpClient extends HttpClient {
         return sentRequests;
     }
 
-    public TestHttpClient on(Function<HttpRequest, CompletableFuture<HttpResponse>> handler) {
+    public TestHttpClient on(Function<HttpRequest, Single<HttpResponse>> handler) {
         this.handler = (req) -> handler.apply(req);
         return this;
     }
 
-    public TestHttpClient on(String method, Function<HttpRequest, CompletableFuture<HttpResponse>> handler) {
-        Function<HttpRequest, CompletableFuture<HttpResponse>> oldHandler = this.handler;
+    public TestHttpClient on(String method, Function<HttpRequest, Single<HttpResponse>> handler) {
+        Function<HttpRequest, Single<HttpResponse>> oldHandler = this.handler;
         this.handler = (req) -> {
             if (req.getMethod().equals(method)) {
                 return handler.apply(req);
@@ -50,8 +49,8 @@ class TestHttpClient extends HttpClient {
         return this;
     }
 
-    public TestHttpClient on(String method, String url, Function<HttpRequest, CompletableFuture<HttpResponse>> handler) {
-        Function<HttpRequest, CompletableFuture<HttpResponse>> oldHandler = this.handler;
+    public TestHttpClient on(String method, String url, Function<HttpRequest, Single<HttpResponse>> handler) {
+        Function<HttpRequest, Single<HttpResponse>> oldHandler = this.handler;
         this.handler = (req) -> {
             if (req.getMethod().equals(method) && req.getUrl().equals(url)) {
                 return handler.apply(req);

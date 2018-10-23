@@ -4,8 +4,10 @@
 package com.microsoft.signalr;
 
 import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+
+import io.reactivex.Completable;
+import io.reactivex.subjects.CompletableSubject;
 
 class MockTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
@@ -14,6 +16,8 @@ class MockTransport implements Transport {
     private Consumer<String> onClose;
     final private boolean ignorePings;
     final private boolean autoHandshake;
+    final private CompletableSubject startSubject = CompletableSubject.create();
+    final private CompletableSubject stopSubject = CompletableSubject.create();
 
     private static final String RECORD_SEPARATOR = "\u001e";
 
@@ -31,7 +35,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture<Void> start(String url) {
+    public Completable start(String url) {
         this.url = url;
         if (autoHandshake) {
             try {
@@ -40,15 +44,16 @@ class MockTransport implements Transport {
                 throw new RuntimeException(e);
             }
         }
-        return CompletableFuture.completedFuture(null);
+        startSubject.onComplete();
+        return startSubject;
     }
 
     @Override
-    public CompletableFuture<Void> send(String message) {
+    public Completable send(String message) {
         if (!(ignorePings && message.equals("{\"type\":6}" + RECORD_SEPARATOR))) {
             sentMessages.add(message);
         }
-        return CompletableFuture.completedFuture(null);
+        return Completable.complete();
     }
 
     @Override
@@ -67,9 +72,10 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture<Void> stop() {
+    public Completable stop() {
         onClose.accept(null);
-        return CompletableFuture.completedFuture(null);
+        stopSubject.onComplete();
+        return stopSubject;
     }
 
     public void stopWithError(String errorMessage) {
@@ -86,5 +92,13 @@ class MockTransport implements Transport {
 
     public String getUrl() {
         return this.url;
+    }
+
+    public Completable getStartTask() {
+        return startSubject;
+    }
+
+    public Completable getStopTask() {
+        return stopSubject;
     }
 }

@@ -4,11 +4,12 @@
 package com.microsoft.signalr;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.reactivex.Completable;
 
 class WebSocketTransport implements Transport {
     private WebSocketWrapper webSocketClient;
@@ -46,7 +47,7 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture<Void> start(String url) {
+    public Completable start(String url) {
         this.url = formatUrl(url);
         logger.debug("Starting Websocket connection.");
         this.webSocketClient = client.createWebSocket(this.url, this.headers);
@@ -57,11 +58,11 @@ class WebSocketTransport implements Transport {
             }
         });
 
-        return webSocketClient.start().thenRun(() -> logger.info("WebSocket transport connected to: {}.", this.url));
+        return webSocketClient.start().doOnComplete(() -> logger.info("WebSocket transport connected to: {}.", this.url));
     }
 
     @Override
-    public CompletableFuture<Void> send(String message) {
+    public Completable send(String message) {
         return webSocketClient.send(message);
     }
 
@@ -82,8 +83,8 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public CompletableFuture<Void> stop() {
-        return webSocketClient.stop().whenComplete((i, j) -> logger.info("WebSocket connection stopped."));
+    public Completable stop() {
+        return webSocketClient.stop().doOnEvent(t -> logger.info("WebSocket connection stopped."));
     }
 
     void onClose(int code, String reason) {
