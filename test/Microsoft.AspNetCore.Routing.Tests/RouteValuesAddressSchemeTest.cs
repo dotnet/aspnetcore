@@ -140,6 +140,94 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void FindEndpoints_LookedUpByCriteria_NoMatch()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                requiredValues: new { id = 7 },
+                routeName: "OrdersApi");
+            var endpoint2 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { id = 12 },
+                requiredValues: new { zipCode = 3510 },
+                routeName: "OrdersApi");
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 8 }),
+                    AmbientValues = new RouteValueDictionary(new { urgent = false }),
+                });
+
+            // Assert
+            Assert.Empty(foundEndpoints);
+        }
+
+        [Fact]
+        public void FindEndpoints_LookedUpByCriteria_OneMatch()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                requiredValues: new { id = 7 },
+                routeName: "OrdersApi");
+            var endpoint2 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { id = 12 },
+                routeName: "OrdersApi");
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 13 }),
+                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
+                });
+
+            // Assert
+            var actual = Assert.Single(foundEndpoints);
+            Assert.Same(endpoint2, actual);
+        }
+
+        [Fact]
+        public void FindEndpoints_LookedUpByCriteria_MultipleMatches()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                requiredValues: new { id = 7 },
+                routeName: "OrdersApi");
+            var endpoint2 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent}/{zipCode}",
+                defaults: new { id = 12 },
+                routeName: "OrdersApi");
+            var endpoint3 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { id = 12 },
+                routeName: "OrdersApi");
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 7 }),
+                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
+                });
+
+            // Assert
+            Assert.Contains(endpoint1, foundEndpoints);
+            Assert.Contains(endpoint1, foundEndpoints);
+        }
+
+        [Fact]
         public void FindEndpoints_ReturnsEndpoint_WhenLookedUpByRouteName()
         {
             // Arrange
@@ -270,7 +358,7 @@ namespace Microsoft.AspNetCore.Routing
 
             public IDictionary<string, List<OutboundMatchResult>> NamedMatches { get; private set; }
 
-            protected override (IEnumerable<OutboundMatch>, IDictionary<string, List<OutboundMatchResult>>) GetOutboundMatches()
+            protected override (List<OutboundMatch>, Dictionary<string, List<OutboundMatchResult>>) GetOutboundMatches()
             {
                 var matches = base.GetOutboundMatches();
                 AllMatches = matches.Item1;
