@@ -5,25 +5,26 @@
     <UnitTestFxProject>$(RepositoryRoot)\src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
   </PropertyGroup>
 
-  <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
-    <ItemGroup>
-      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.pkgproj" />
-      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
-      <SharedFxProjectToBuild Include="$(UnitTestFxProject)" />
-      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Internal\*.*proj" />
-      <SharedFxProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.pkgproj" />
+    <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
+    <ProjectToBuild Include="$(UnitTestFxProject)" />
+    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Internal\*.*proj" />
+    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" />
+  </ItemGroup>
 
-    <MSBuild Projects="@(SharedFxProjectToBuild)"
+  <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
+
+    <MSBuild Projects="@(ProjectToBuild)"
              Targets="Restore"
              Properties="$(SolutionProperties);_DummyTarget=Restore"
              BuildInParallel="true" />
 
-    <MSBuild Projects="@(SharedFxProjectToBuild)"
+    <MSBuild Projects="@(ProjectToBuild)"
              Properties="$(SolutionProperties)"
              BuildInParallel="true" />
 
-    <MSBuild Projects="@(SharedFxProjectToBuild)"
+    <MSBuild Projects="@(ProjectToBuild)"
              Targets="Pack"
              Properties="$(SolutionProperties);NoBuild=true"
              BuildInParallel="true"

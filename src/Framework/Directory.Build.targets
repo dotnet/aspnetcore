@@ -3,10 +3,6 @@
 
   <Import Condition=" '$(MSBuildProjectExtension)' == '.pkgproj' " Project="Metapackage.targets" />
 
-  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.shfxproj' ">
-    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</RestoreSources>
-  </PropertyGroup>
-
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" Condition=" '$(MSBuildProjectExtension)' == '.shfxproj' ">
     <PropertyGroup>
       <NuspecProperties>

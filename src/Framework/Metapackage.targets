@@ -44,7 +44,7 @@
   </Target>
 
   <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
-    <ItemGroup>
+    <ItemGroup Condition=" '$(IsPackable)' == 'true' AND '$(PackageId)' != '' ">
       <ArtifactInfo Include="$(TargetPath)">
         <ArtifactType>NuGetPackage</ArtifactType>
         <PackageId>$(PackageId)</PackageId>

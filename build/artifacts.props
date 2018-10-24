@@ -23,8 +23,8 @@
     <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
@@ -101,8 +101,8 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Localization" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.MiddlewareAnalysis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Category="ship" Analyzer="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Category="ship" Analyzer="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Cors" Category="ship" />
@@ -175,7 +175,7 @@
     <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.2" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" Analyzer="true" />
+    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Cosmos" Category="noship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Design" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.InMemory" Category="ship" />
@@ -233,7 +233,7 @@
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.Analyzers" Category="shipoob" Analyzer="true" />
+    <PackageArtifact Include="Microsoft.Extensions.Logging.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.AzureAppServices" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Configuration" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Console" Category="ship" />

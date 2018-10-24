@@ -15,7 +15,7 @@
     <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
-    <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
+    <CompileDependsOn>$(CompileDependsOn);BuildRepositories;BuildSharedFx</CompileDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;CheckExpectedPackagesExist</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);_TestRepositories</TestDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
@@ -25,7 +25,7 @@
     <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
   </Target>
 
-  <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories;GetMetapackageArtifactInfo;GetLineupPackageInfo">
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories;GetLineupPackageInfo">
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
@@ -39,6 +39,14 @@
              Properties="$(DesignTimeBuildProps);RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
              ContinueOnError="WarnAndContinue"
              Condition="'%(Repository.Identity)' != ''">
+      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
+    </MSBuild>
+
+    <MSBuild Projects="@(ProjectToBuild)"
+             Targets="GetArtifactInfo"
+             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
+             SkipNonexistentTargets="true"
+             Condition="'@(ProjectToBuild)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
