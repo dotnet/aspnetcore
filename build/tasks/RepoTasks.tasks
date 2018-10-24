@@ -3,7 +3,6 @@
     <_RepoTaskAssembly>$(MSBuildThisFileDirectory)bin\publish\RepoTasks.dll</_RepoTaskAssembly>
   </PropertyGroup>
 
-  <UsingTask TaskName="RepoTasks.AddMetapackageReferences" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CheckExpectedPackagesExist" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CheckVersionOverrides" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CreateLzma" AssemblyFile="$(_RepoTaskAssembly)" />
@@ -12,6 +11,7 @@
   <UsingTask TaskName="RepoTasks.JoinItems" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.OrderBy" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.ProcessSharedFrameworkDeps" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.ResolveVersionRange" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.PublishToAzureBlob" AssemblyFile="$(_RepoTaskAssembly)" />
 
   <!-- tools from dotnet-buildtools -->

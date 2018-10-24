@@ -43,6 +43,13 @@ namespace Microsoft.AspNetCore
             Assert.NotNull(depsFile["compilationOptions"]);
             Assert.Empty(depsFile["compilationOptions"]);
             Assert.NotEmpty(depsFile["runtimes"][config.RuntimeIdentifier]);
+            Assert.All(depsFile["libraries"], item =>
+            {
+                var prop = Assert.IsType<JProperty>(item);
+                var lib = Assert.IsType<JObject>(prop.Value);
+                Assert.Equal("package", lib["type"].Value<string>());
+                Assert.StartsWith("sha512-", lib["sha512"].Value<string>());
+            });
         }
 
         [Theory]
@@ -56,7 +63,6 @@ namespace Microsoft.AspNetCore
             Assert.Equal(TestData.GetRepositoryCommit(), lines[0]);
             Assert.Equal(config.Version, lines[1]);
         }
-
 
         public static TheoryData<SharedFxConfig> GetSharedFxConfig()
             => new TheoryData<SharedFxConfig>

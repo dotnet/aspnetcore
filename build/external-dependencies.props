@@ -5,10 +5,6 @@
     <ExternalDependency>
       <!-- The NuGet package version. Floating versions not allowed. -->
       <Version></Version>
-      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.App metapackage. -->
-      <AppMetapackage>false</AppMetapackage>
-      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
-      <AllMetapackage>false</AllMetapackage>
     </ExternalDependency>
   </ItemDefinitionGroup>
 
@@ -24,7 +20,7 @@
     <ExternalDependency Include="Libuv" Version="$(LibuvPackageVersion)" />
     <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(MicrosoftApplicationInsightsAspNetCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNet.Identity.EntityFramework" Version="$(MicrosoftAspNetIdentityEntityFrameworkPackageVersion)" />
-    <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" AppMetapackage="true" AllMetapackage="true"/>
+    <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.DocumentDB.Core" Version="$(MicrosoftAzureDocumentDBCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.Management.Fluent" Version="$(MicrosoftAzureManagementFluentPackageVersion)" />
@@ -151,7 +147,7 @@
     <ExternalDependency Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <ExternalDependency Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtPackageVersion)" />
     <ExternalDependency Include="System.Interactive.Async" Version="$(SystemInteractiveAsyncPackageVersion)" />
-    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" AppMetapackage="true" AllMetapackage="true" MetapackageVersionRangeType="Minimum" />
+    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalDependency Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
     <ExternalDependency Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />

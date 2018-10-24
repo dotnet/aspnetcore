@@ -97,6 +97,15 @@ This targets file should only be imported by .shfxproj files.
   </PropertyGroup>
 
   <ItemDefinitionGroup>
+    <!-- Defines different types of project references. -->
+    <FrameworkProjectReference>
+      <OutputItemType>_ResolvedFrameworkProjectReferencePaths</OutputItemType>
+    </FrameworkProjectReference>
+
+    <PackageProjectReference>
+      <OutputItemType>_ResolvedPackageProjectReferencePaths</OutputItemType>
+    </PackageProjectReference>
+
     <TargetPathWithTargetPlatformMoniker>
       <!--
         This lists all folders of assets which should be collected into the same folder in a shared framework installer.
@@ -111,6 +120,7 @@ This targets file should only be imported by .shfxproj files.
       <RuntimeAssetsOutputPath>$(RuntimeAssetsOutputPath)</RuntimeAssetsOutputPath>
       <NativeAssetsOutputPath>$(NativeAssetsOutputPath)</NativeAssetsOutputPath>
       <SharedFxName>$(SharedFxName)</SharedFxName>
+      <PackageId>$(PackageId)</PackageId>
     </TargetPathWithTargetPlatformMoniker>
   </ItemDefinitionGroup>
 
@@ -128,6 +138,7 @@ This targets file should only be imported by .shfxproj files.
     </PackageReference>
 
     <ProjectReference Include="@(FrameworkProjectReference)" />
+    <ProjectReference Include="@(PackageProjectReference)" />
   </ItemGroup>
 
   <!-- Check some required properties before building a shared framework/ -->
@@ -175,6 +186,8 @@ This targets file should only be imported by .shfxproj files.
       AssetsFilePath="$(ProjectAssetsFile)"
       DepsFilePath="$(PublishDepsFilePath)"
       OutputPath="$(SharedFxDepsFilePath)"
+      PackagesToRemove="@(_ResolvedFrameworkProjectReferencePaths->'%(PackageId)')"
+      ResolvedPackageProjectReferences="@(_ResolvedPackageProjectReferencePaths)"
       Runtime="$(BaseSharedFxRid)" />
   </Target>
 

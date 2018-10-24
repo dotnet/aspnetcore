@@ -34,7 +34,7 @@ namespace RepoTasks.Utilities
             }
         }
 
-        public static List<RuntimeLibrary> RemoveReferences(IReadOnlyList<RuntimeLibrary> runtimeLibraries, IEnumerable<string> packages)
+        public static List<RuntimeLibrary> RemoveReferences(IEnumerable<RuntimeLibrary> runtimeLibraries, IEnumerable<string> packages)
         {
             List<RuntimeLibrary> result = new List<RuntimeLibrary>();
 

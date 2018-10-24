@@ -9,6 +9,7 @@ This targets file should only be imported by .shfxproj files.
 
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(SharedFxRID)</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(HostRid)</RuntimeIdentifier>
+    <SharedFxRid Condition="'$(SharedFxRid)' == ''">$(RuntimeIdentifier)</SharedFxRid>
 
     <!-- Optimize the framework using the crossgen tool -->
     <CrossgenOutput>true</CrossgenOutput>
@@ -29,11 +30,7 @@ This targets file should only be imported by .shfxproj files.
     <DebugType>none</DebugType>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IncludeMainProjectInDepsFile>false</IncludeMainProjectInDepsFile>
   </PropertyGroup>
 
-  <ItemDefinitionGroup>
-    <FrameworkProjectReference>
-      <OutputItemType>_ResolvedFrameworkProjectReferencePaths</OutputItemType>
-    </FrameworkProjectReference>
-  </ItemDefinitionGroup>
 </Project>

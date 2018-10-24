@@ -1,0 +1,59 @@
+<Project>
+  <PropertyGroup>
+    <!-- There is no build output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- There are no symbols. -->
+    <IncludeSymbols>false</IncludeSymbols>
+    <!-- There is no API to check -->
+    <EnableApiCheck>false</EnableApiCheck>
+    <!-- Manually control dependencies -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- The only build output of a pkgproj is the project -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <TargetPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</TargetPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" PrivateAssets="All" Publish="false" />
+  </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <TargetPathWithTargetPlatformMoniker>
+      <PackageId>$(PackageId)</PackageId>
+    </TargetPathWithTargetPlatformMoniker>
+  </ItemDefinitionGroup>
+
+  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
+
+  <Target Name="ResolveDependenciesToPackageReferences" BeforeTargets="CollectPackageReferences">
+    <RepoTasks.ResolveVersionRange
+      Items="@(Dependency)"
+      Version="%(Version)"
+      RangeType="%(VersionRangeType)">
+      <Output TaskParameter="Items" ItemName="_CustomPackageReference" />
+    </RepoTasks.ResolveVersionRange>
+
+    <ItemGroup>
+      <PackageReference Include="@(_CustomPackageReference)">
+        <!-- Ensure that the metapackage does not exclude build or analyzer assets. -->
+        <PrivateAssets>None</PrivateAssets>
+      </PackageReference>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
+    <ItemGroup>
+      <ArtifactInfo Include="$(TargetPath)">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyFilesToOutputDirectory" />
+  <Target Name="CoreCompile" />
+  <Target Name="CreateManifestResourceNames" />
+</Project>
