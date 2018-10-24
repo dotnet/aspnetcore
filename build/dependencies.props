@@ -6,6 +6,7 @@
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.0-rtm-27023-02</MicrosoftNETCoreDotNetAppHostPackageVersion>
     <SystemDataSqlClientPackageVersion>4.6.0-rtm-27023-03</SystemDataSqlClientPackageVersion>
     <!-- Packages from aspnet/Extensions -->
+    <InternalAspNetCoreAnalyzersPackageVersion>2.2.0-rtm-35542</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-rtm-35542</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0-rtm-35542</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-rtm-35542</MicrosoftAspNetCoreTestingPackageVersion>
@@ -13,6 +14,8 @@
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-rtm-35542</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0-rtm-35542</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-rtm-35542</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0-rtm-35542</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>2.2.0-rtm-35542</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.2.0-rtm-35542</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>2.2.0-rtm-35542</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>2.2.0-rtm-35542</MicrosoftExtensionsPrimitivesPackageVersion>
