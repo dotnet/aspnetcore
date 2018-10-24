@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj" />
-    <ProjectReference Include="..\..\samples\RoutingSample.Web\RoutingSample.Web.csproj" />
+    <ProjectReference Include="..\WebSites\RoutingWebSite\RoutingWebSite.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,7 +6,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace RoutingSample.Web
+namespace RoutingWebSite
 {
     internal class EndsWithStringRouteConstraint : IRouteConstraint
     {

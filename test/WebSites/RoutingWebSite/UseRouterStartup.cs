@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RoutingSandbox
+namespace RoutingWebSite
 {
     public class UseRouterStartup
     {
