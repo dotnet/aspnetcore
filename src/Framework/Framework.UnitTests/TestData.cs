@@ -12,13 +12,11 @@ namespace Microsoft.AspNetCore
 
         public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppPackageVersion");
 
-        public static string GetDotNetRoot() => GetTestDataValue("DotNetRoot");
-
         public static string GetRepositoryCommit() => GetTestDataValue("RepositoryCommit");
 
-        public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("SharedFxRuntimeIdentifier");
+        public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("SharedFxRid");
 
-        private static string GetTestDataValue(string key)
+        public static string GetTestDataValue(string key)
              => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;
     }
 }

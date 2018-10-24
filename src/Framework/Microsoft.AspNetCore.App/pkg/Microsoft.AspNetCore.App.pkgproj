@@ -1,11 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <IncludeSymbols>false</IncludeSymbols>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application.
 
 This package requires the ASP.NET Core runtime. This runtime is installed by the .NET Core SDK, or can be acquired separately using installers available at https://aka.ms/dotnet-download.
@@ -17,5 +14,13 @@ This package requires the ASP.NET Core runtime. This runtime is installed by the
     <Content Include="build\$(TargetFramework)\*.targets" PackagePath="%(Identity)" />
     <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
   </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <Dependency>
+      <VersionRangeType>MajorMinor</VersionRangeType>
+    </Dependency>
+  </ItemDefinitionGroup>
+
+  <Import Project="..\Microsoft.AspNetCore.App.props" />
 
 </Project>

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,12 +12,8 @@
       <_Parameter2>$(PackageVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>DotNetRoot</_Parameter1>
-      <_Parameter2>$(SharedFxOutputPath)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>SharedFxRuntimeIdentifier</_Parameter1>
-      <_Parameter2>$(SharedFxRuntimeIdentifier)</_Parameter2>
+      <_Parameter1>SharedFxRid</_Parameter1>
+      <_Parameter2>$(SharedFxRid)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>RepositoryCommit</_Parameter1>
@@ -35,5 +32,21 @@
     <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\**\*.shfxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>_ResolvedFrameworkReference</OutputItemType>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData" Condition="'%(_ResolvedFrameworkReference.Identity)' != ''">
+        <_Parameter1>SharedFxMetadataOutput:%(_ResolvedFrameworkReference.SharedFxName)</_Parameter1>
+        <_Parameter2>%(_ResolvedFrameworkReference.MetadataOutputPath)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
 
 </Project>

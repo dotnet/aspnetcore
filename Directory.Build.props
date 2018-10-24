@@ -3,12 +3,32 @@
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
+
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft Corporation.</Company>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
+    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageProjectUrl>https://asp.net</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Serviceable>true</Serviceable>
+
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+    <!-- Suppress the message about using a preview version of .NET Core SDK. We are okay with this and don't need the warning. -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+
+    <!-- Fixes a common error in targets implementing a NoBuild mode. -->
+    <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
   </PropertyGroup>
 
   <Import Project="build\external-dependencies.props" />
@@ -17,12 +37,30 @@
   <PropertyGroup>
     <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepositoryRoot)artifacts\</ArtifactsDir>
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
     <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
+    <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
     <PackageOutputPath>$(ArtifactsConfigurationDir)packages\</PackageOutputPath>
+
+    <!-- Defines the default RID of the platform currently running the build. -->
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win-x64</HostRid>
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx-x64</HostRid>
+    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux-x64</HostRid>
+
+    <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework. -->
+    <SupportedRuntimeIdentifiers>
+      win-x64;
+      win-x86;
+      osx-x64;
+      linux-musl-x64;
+      linux-x64;
+      linux-arm
+    </SupportedRuntimeIdentifiers>
   </PropertyGroup>
 
-  <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
+  <Import Project="eng\targets\SharedFx.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.shfxproj'" />
+  <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
 
 </Project>

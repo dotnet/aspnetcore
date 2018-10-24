@@ -1,0 +1,28 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <Import Condition=" '$(MSBuildProjectExtension)' == '.pkgproj' " Project="Metapackage.targets" />
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" Condition=" '$(MSBuildProjectExtension)' == '.shfxproj' ">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        rid=$(SharedFxRid);
+        description=$(PackageDescription);
+        tags=$(PackageTags.Replace(';', ' '));
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        copyright=$(Copyright);
+        targetFramework=$(TargetFramework);
+        symbolsAssets=$(SymbolsOutputPath);
+        nativeAssets=$(NativeAssetsOutputPath);
+        runtimeAssets=$(RuntimeAssetsOutputPath);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>
