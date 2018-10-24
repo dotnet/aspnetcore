@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Tests", "test\Microsoft.AspNetCore.Routing.Tests\Microsoft.AspNetCore.Routing.Tests.csproj", "{636D79ED-7B32-487C-BDA5-D2A1AAA97371}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoutingSample.Web", "samples\RoutingSample.Web\RoutingSample.Web.csproj", "{DB94E647-C73A-4F52-A126-AA7544CCF33B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoutingSandbox", "samples\RoutingSample.Web\RoutingSandbox.csproj", "{DB94E647-C73A-4F52-A126-AA7544CCF33B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C430C499-382D-47BD-B351-CF8F89C08CD2}"
 	ProjectSection(SolutionItems) = preProject
@@ -54,6 +54,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{6824486A-3EFF-45D1-BEE8-8B137639C890}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swaggatherer", "tools\Swaggatherer\Swaggatherer.csproj", "{B8516771-E850-4724-BEC3-63FC00C2AE57}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{8E5E51D4-6B03-4FC6-9F34-6E9FA24702BD}"
+	ProjectSection(SolutionItems) = preProject
+		test\WebSites\Directory.Build.props = test\WebSites\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoutingWebSite", "test\WebSites\RoutingWebSite\RoutingWebSite.csproj", "{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -179,6 +186,18 @@ Global
 		{B8516771-E850-4724-BEC3-63FC00C2AE57}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B8516771-E850-4724-BEC3-63FC00C2AE57}.Release|x86.ActiveCfg = Release|Any CPU
 		{B8516771-E850-4724-BEC3-63FC00C2AE57}.Release|x86.Build.0 = Release|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Debug|x86.Build.0 = Debug|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Release|x86.ActiveCfg = Release|Any CPU
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -194,6 +213,8 @@ Global
 		{F3D86714-4E64-41A6-9B36-A47B3683CF5D} = {D5F39F59-5725-4127-82E7-67028D006185}
 		{91F47A60-9A78-4968-B10D-157D9BFAC37F} = {7F5914E2-C63F-4759-898E-462804357C90}
 		{B8516771-E850-4724-BEC3-63FC00C2AE57} = {6824486A-3EFF-45D1-BEE8-8B137639C890}
+		{8E5E51D4-6B03-4FC6-9F34-6E9FA24702BD} = {95359B4B-4C85-4B44-A75B-0621905C4CF6}
+		{E91EC5EC-30A8-45EC-9B2F-67E2D6C39D74} = {8E5E51D4-6B03-4FC6-9F34-6E9FA24702BD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36C8D815-B7F1-479D-894B-E606FB8DECDA}

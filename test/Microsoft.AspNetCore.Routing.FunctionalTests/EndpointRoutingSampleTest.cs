@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
-using RoutingSample.Web;
+using RoutingWebSite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests

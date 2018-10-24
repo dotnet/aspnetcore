@@ -8,13 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace RoutingSandbox
+namespace RoutingWebSite
 {
     public class UseEndpointRoutingStartup
     {
@@ -23,7 +24,12 @@ namespace RoutingSandbox
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
+            services.AddTransient<EndsWithStringRouteConstraint>();
+
+            services.AddRouting(options =>
+            {
+                options.ConstraintMap.Add("endsWith", typeof(EndsWithStringRouteConstraint));
+            });
         }
 
         public void Configure(IApplicationBuilder app)
@@ -31,9 +37,6 @@ namespace RoutingSandbox
             app.UseEndpointRouting(builder =>
             {
                 builder.MapHello("/helloworld", "World");
-
-                builder.MapHello("/helloworld-secret", "Secret World")
-                    .RequireAuthorization("swordfish");
 
                 builder.MapGet(
                     "/",
@@ -65,24 +68,54 @@ namespace RoutingSandbox
                         return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
                     });
                 builder.MapGet(
-                    "/graph",
-                    "DFA Graph",
+                    "/withconstraints/{id:endsWith(_001)}",
                     (httpContext) =>
                     {
-                        using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
-                        {
-                            var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
-                            var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
-                            graphWriter.Write(dataSource, writer);
-                        }
-
-                        return Task.CompletedTask;
+                        var response = httpContext.Response;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        return response.WriteAsync("WithConstraints");
                     });
+                builder.MapGet(
+                    "/withoptionalconstraints/{id:endsWith(_001)?}",
+                    (httpContext) =>
+                    {
+                        var response = httpContext.Response;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        return response.WriteAsync("withoptionalconstraints");
+                    });
+                builder.MapGet(
+                    "/WithSingleAsteriskCatchAll/{*path}",
+                    (httpContext) =>
+                    {
+                        var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
+
+                        var response = httpContext.Response;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        return response.WriteAsync(
+                            "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
+                    },
+                    new RouteValuesAddressMetadata(routeName: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
+                builder.MapGet(
+                    "/WithDoubleAsteriskCatchAll/{**path}",
+                    (httpContext) =>
+                    {
+                        var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
+
+                        var response = httpContext.Response;
+                        response.StatusCode = 200;
+                        response.ContentType = "text/plain";
+                        return response.WriteAsync(
+                            "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
+                    },
+                    new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
             });
 
             app.UseStaticFiles();
-			
-			app.UseAuthorization();
+
+            // Imagine some more stuff here...
 
             app.UseEndpoint();
         }
