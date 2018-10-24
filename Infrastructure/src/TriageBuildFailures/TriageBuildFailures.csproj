@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <PackageReference Include="Octokit" Version="$(OctokitPackageVersion)" />
+    <PackageReference Include="System.Runtime.Caching" Version="$(SystemRuntimeCachingPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

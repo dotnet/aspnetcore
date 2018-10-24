@@ -12,5 +12,6 @@
         <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview1-26618-02</MicrosoftNETCoreApp22PackageVersion>
         <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
         <OctokitPackageVersion>0.29.0</OctokitPackageVersion>
+        <SystemRuntimeCachingPackageVersion>4.5.0</SystemRuntimeCachingPackageVersion>
     </PropertyGroup>
 </Project>

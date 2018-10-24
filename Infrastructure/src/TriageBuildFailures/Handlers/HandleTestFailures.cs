@@ -95,10 +95,10 @@ namespace TriageBuildFailures.Handlers
 
                 var errors = client.GetTestFailureText(failure);
 
-                var applicableIssues = await GetApplicableIssues(client, await issuesTask, failure);
+                var applicableIssue = await GetApplicableIssue(client, await issuesTask, failure);
 
                 var shortTestName = GetTestName(failure);
-                if (applicableIssues.Count() == 0)
+                if (applicableIssue == null)
                 {
                     var subject = $"Test failure: {shortTestName}";
                     // TODO: CC area experts
@@ -130,10 +130,10 @@ CC {GetManagerMentions(repo)}";
                 // The issue already exists, comment on it if we haven't already done so for this build.
                 else
                 {
-                    if (!testAggregates.TryGetValue(applicableIssues.First(), out var testNames))
+                    if (!testAggregates.TryGetValue(applicableIssue, out var testNames))
                     {
                         testNames = new List<string>() { shortTestName };
-                        testAggregates.Add(applicableIssues.First(), testNames);
+                        testAggregates.Add(applicableIssue, testNames);
                     }
                     else
                     {
@@ -212,13 +212,12 @@ CC {GetManagerMentions(repo)}";
             }
         }
 
-        private async Task<IEnumerable<GitHubIssue>> GetApplicableIssues(ICIClient client, IEnumerable<GitHubIssue> issues, ICITestOccurrence failure)
+        private async Task<GitHubIssue> GetApplicableIssue(ICIClient client, IEnumerable<GitHubIssue> issues, ICITestOccurrence failure)
         {
             var testError = await client.GetTestFailureText(failure);
             var testException = SafeGetExceptionMessage(testError); ;
             var shortTestName = GetTestName(failure);
 
-            var result = new List<GitHubIssue>();
             foreach (var issue in issues)
             {
                 Reporter.Output($"Considering issue {issue.HtmlUrl}...");
@@ -232,11 +231,11 @@ CC {GetManagerMentions(repo)}";
                     || MessagesAreClose(issueException, testException))
                 {
                     Reporter.Output($"\t^^^ This issue is applicable");
-                    result.Add(issue);
+                    return issue;
                 }
             }
 
-            return result;
+            return null;
         }
     }
 }

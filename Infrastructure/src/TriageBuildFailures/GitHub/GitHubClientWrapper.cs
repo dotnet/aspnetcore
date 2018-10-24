@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
+using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Octokit;
 
@@ -43,19 +44,33 @@ namespace TriageBuildFailures.GitHub
         /// <remarks>We take care of repos which keep their issues on the home repo within this function.</remarks>
         public async Task<IEnumerable<GitHubIssue>> GetIssues(string owner, string repo)
         {
-            var request = new RepositoryIssueRequest
+            var key = GetIssueCacheKey(owner, repo);
+            if (!MemoryCache.Default.Contains(key))
             {
-                State = ItemStateFilter.Open
-            };
+                var request = new RepositoryIssueRequest
+                {
+                    State = ItemStateFilter.Open
+                };
 
-            if (IssuesOnHomeRepo(repo))
-            {
-                request.Labels.Add($"repo:{repo}");
-                repo = GitHubUtils.HomeRepo;
+                if (IssuesOnHomeRepo(repo))
+                {
+                    request.Labels.Add($"repo:{repo}");
+                    repo = GitHubUtils.HomeRepo;
+                }
+
+                var issues = await Client.Issue.GetAllForRepository(owner, repo, request);
+                var results = issues.Select(i => new GitHubIssue(i));
+
+                var policy = new CacheItemPolicy
+                {
+                    AbsoluteExpiration = new DateTimeOffset(DateTime.Now.AddMinutes(2))
+                };
+
+                MemoryCache.Default.Set(new CacheItem(key, results), policy);
             }
 
-            var issues = await Client.Issue.GetAllForRepository(owner, repo, request);
-            return issues.Select(i => new GitHubIssue(i));
+
+            return MemoryCache.Default[key] as IEnumerable<GitHubIssue>;
         }
 
         /// <summary>
@@ -144,7 +159,13 @@ namespace TriageBuildFailures.GitHub
                 }
             }
 
+            MemoryCache.Default.Remove(GetIssueCacheKey(owner, repo));
             return new GitHubIssue(await Client.Issue.Create(owner, repo, newIssue));
+        }
+
+        private string GetIssueCacheKey(string owner, string repo)
+        {
+            return $"{owner}/{repo}";
         }
 
         private bool IssuesOnHomeRepo(string repoName)
