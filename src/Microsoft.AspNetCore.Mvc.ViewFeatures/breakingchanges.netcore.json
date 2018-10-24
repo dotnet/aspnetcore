@@ -1,0 +1,16 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionaryControllerPropertyActivator : Microsoft.AspNetCore.Mvc.Internal.IControllerPropertyActivator",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewComponents.DefaultViewComponentActivator : Microsoft.AspNetCore.Mvc.ViewComponents.IViewComponentActivator",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Internal.ITypeActivatorCache typeActivatorCache)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultValidationHtmlAttributeProvider : Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider",
+    "MemberId": "public .ctor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> optionsAccessor, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.Internal.ClientValidatorCache clientValidatorCache)",
+    "Kind": "Removal"
+  }
+]

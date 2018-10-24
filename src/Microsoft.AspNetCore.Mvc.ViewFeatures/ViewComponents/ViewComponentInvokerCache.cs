@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.Extensions.Internal;
 
@@ -42,8 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var cache = CurrentCache;
             var viewComponentDescriptor = viewComponentContext.ViewComponentDescriptor;
 
-            ObjectMethodExecutor executor;
-            if (cache.Entries.TryGetValue(viewComponentDescriptor, out executor))
+            if (cache.Entries.TryGetValue(viewComponentDescriptor, out var executor))
             {
                 return executor;
             }

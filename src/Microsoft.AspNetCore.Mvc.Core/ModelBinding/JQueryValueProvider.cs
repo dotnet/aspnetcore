@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -52,9 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public CultureInfo Culture { get; }
 
         /// <inheritdoc />
-#pragma warning disable PUB0001 // Pubternal type in public API
         protected PrefixContainer PrefixContainer
-#pragma warning restore PUB0001
         {
             get
             {
@@ -82,8 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override ValueProviderResult GetValue(string key)
         {
-            StringValues values;
-            if (_values.TryGetValue(key, out values) && values.Count > 0)
+            if (_values.TryGetValue(key, out var values) && values.Count > 0)
             {
                 return new ValueProviderResult(values, Culture);
             }

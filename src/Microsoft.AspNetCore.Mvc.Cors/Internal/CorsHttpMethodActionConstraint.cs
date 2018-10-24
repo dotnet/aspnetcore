@@ -2,16 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.Extensions.Primitives;
-using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.Cors.Internal
+namespace Microsoft.AspNetCore.Mvc.Cors
 {
     // Don't casually change the name of this. We reference the full type name in ActionConstraintCache.
-    public class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
+    internal class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
     {
         private readonly string OriginHeader = "Origin";
         private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";

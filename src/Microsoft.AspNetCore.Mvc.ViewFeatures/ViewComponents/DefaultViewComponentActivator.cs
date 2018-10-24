@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -25,9 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <param name="typeActivatorCache">
         /// The <see cref="ITypeActivatorCache"/> used to create new view component instances.
         /// </param>
-#pragma warning disable PUB0001 // Pubternal type in public API
         public DefaultViewComponentActivator(ITypeActivatorCache typeActivatorCache)
-#pragma warning restore PUB0001
         {
             if (typeActivatorCache == null)
             {
@@ -74,8 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new InvalidOperationException(nameof(viewComponent));
             }
 
-            var disposable = viewComponent as IDisposable;
-            if (disposable != null)
+            if (viewComponent is IDisposable disposable)
             {
                 disposable.Dispose();
             }

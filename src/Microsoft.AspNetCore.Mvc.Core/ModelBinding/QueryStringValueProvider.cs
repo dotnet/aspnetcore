@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -46,9 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         public CultureInfo Culture => _culture;
 
-#pragma warning disable PUB0001 // Pubternal type in public API
         protected PrefixContainer PrefixContainer
-#pragma warning restore PUB0001
         {
             get
             {

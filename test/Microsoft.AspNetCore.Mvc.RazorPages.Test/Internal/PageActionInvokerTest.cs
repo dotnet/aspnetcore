@@ -1391,7 +1391,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         #endregion
 
-        protected override ResourceInvoker CreateInvoker(
+        protected override IActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
             Exception exception = null,
             IActionResult result = null,

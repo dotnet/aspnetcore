@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -30,9 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public DefaultValidationHtmlAttributeProvider(
             IOptions<MvcViewOptions> optionsAccessor,
             IModelMetadataProvider metadataProvider,
-#pragma warning disable PUB0001 // Pubternal type in public API
             ClientValidatorCache clientValidatorCache
-#pragma warning restore PUB0001
             )
         {
             if (optionsAccessor == null)

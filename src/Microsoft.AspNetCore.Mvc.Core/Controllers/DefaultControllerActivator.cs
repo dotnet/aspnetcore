@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
@@ -18,9 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// Creates a new <see cref="DefaultControllerActivator"/>.
         /// </summary>
         /// <param name="typeActivatorCache">The <see cref="ITypeActivatorCache"/>.</param>
-#pragma warning disable PUB0001 // Pubternal type in public API
         public DefaultControllerActivator(ITypeActivatorCache typeActivatorCache)
-#pragma warning restore PUB0001
         {
             if (typeActivatorCache == null)
             {
@@ -71,8 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            var disposable = controller as IDisposable;
-            if (disposable != null)
+            if (controller is IDisposable disposable)
             {
                 disposable.Dispose();
             }

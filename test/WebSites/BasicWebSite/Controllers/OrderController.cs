@@ -19,7 +19,7 @@ namespace BasicWebSite
             var services = (IEnumerable<object>)HttpContext?.RequestServices.GetService(queryType);
             foreach (var service in services)
             {
-                if (actualType != null && service.GetType().AssemblyQualifiedName == actualType)
+                if (actualType != null && service.GetType().FullName == actualType)
                 {
                     var orderProperty = elementType.GetTypeInfo().GetDeclaredProperty("Order");
                     return (int)orderProperty.GetValue(service);

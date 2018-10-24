@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <param name="context">The <see cref="RouteContext"/> associated with the current request.</param>
         /// <param name="candidates">The set of <see cref="ActionDescriptor"/> candidates.</param>
         /// <returns>The best <see cref="ActionDescriptor"/> candidate for the current request or <c>null</c>.</returns>
-        /// <exception cref="Internal.AmbiguousActionException">
+        /// <exception cref="AmbiguousActionException">
         /// Thrown when action selection results in an ambiguity.
         /// </exception>
         /// <remarks>

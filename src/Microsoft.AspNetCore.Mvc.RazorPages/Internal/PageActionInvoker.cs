@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
-    public class PageActionInvoker : ResourceInvoker, IActionInvoker
+    internal class PageActionInvoker : ResourceInvoker, IActionInvoker
     {
         private readonly IPageHandlerMethodSelector _selector;
         private readonly PageContext _pageContext;

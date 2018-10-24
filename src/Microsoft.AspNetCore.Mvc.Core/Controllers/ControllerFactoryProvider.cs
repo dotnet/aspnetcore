@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
@@ -19,10 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         public ControllerFactoryProvider(
             IControllerActivatorProvider activatorProvider,
             IControllerFactory controllerFactory,
-#pragma warning disable PUB0001 // Pubternal type in public API
-            IEnumerable<IControllerPropertyActivator> propertyActivators
-#pragma warning restore PUB0001
-            )
+            IEnumerable<IControllerPropertyActivator> propertyActivators)
         {
             if (activatorProvider == null)
             {

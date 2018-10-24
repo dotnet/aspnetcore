@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -26,19 +24,19 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Theory]
-        [InlineData(typeof(IActionDescriptorProvider), typeof(ControllerActionDescriptorProvider), -1000)]
+        [InlineData(typeof(IActionDescriptorProvider), "Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerActionDescriptorProvider", -1000)]
         [InlineData(typeof(IActionInvokerProvider), null, -1000)]
         [InlineData(typeof(IApiDescriptionProvider), null, -1000)]
         [InlineData(typeof(IFilterProvider), null, -1000)]
         [InlineData(typeof(IActionConstraintProvider), null, -1000)]
-        public async Task ServiceOrder_GetOrder(Type serviceType, Type actualType, int order)
+        public async Task ServiceOrder_GetOrder(Type serviceType, string actualType, int order)
         {
             // Arrange
             var url = "http://localhost/Order/GetServiceOrder?serviceType=" + serviceType.AssemblyQualifiedName;
 
             if (actualType != null)
             {
-                url += "&actualType=" + actualType.AssemblyQualifiedName;
+                url += "&actualType=" + actualType;
             }
 
             // Act
