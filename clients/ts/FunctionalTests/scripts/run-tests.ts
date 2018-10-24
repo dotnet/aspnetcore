@@ -17,6 +17,7 @@ const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
 
 // Promisify things from fs we want to use.
 const fs = {
+    createWriteStream: _fs.createWriteStream,
     exists: promisify(_fs.exists),
     mkdir: promisify(_fs.mkdir),
 };
@@ -110,7 +111,7 @@ for (let i = 2; i < process.argv.length; i += 1) {
             console.log("Running on SauceLabs.");
             break;
         case "-a":
-        case "--all":
+        case "--all-browsers":
             allBrowsers = true;
             break;
         case "--no-color":
@@ -169,7 +170,7 @@ function runJest(url: string) {
         console.log(error.message);
         console.log(error.stderr);
         console.log(error.stdout);
-        return error.status;
+        return error.status || 1;
     }
 }
 
@@ -206,6 +207,9 @@ function runJest(url: string) {
                 dotnet.kill();
             }
         }
+
+        const logStream = fs.createWriteStream(path.resolve(__dirname, "..", "..", "..", "..", "artifacts", "logs", "ts.functionaltests.dotnet.log"));
+        dotnet.stdout.pipe(logStream);
 
         process.on("SIGINT", cleanup);
         process.on("exit", cleanup);
@@ -245,6 +249,7 @@ function runJest(url: string) {
 
         console.log(`karma exit code: ${results.exitCode}`);
         console.log(`jest exit code: ${jestExit}`);
+
         process.exit(results.exitCode !== 0 ? results.exitCode : jestExit);
     } catch (e) {
         console.error(e);
