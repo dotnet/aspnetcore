@@ -18,54 +18,53 @@
       "DefaultCompositeRule"
     ],
     "packages": {
-      "Microsoft.AspNetCore.Razor.Design": {
+      "Microsoft.NET.Sdk.Razor": {
         "exclusions": {
           "ASSEMBLY_DESCRIPTION": {
-            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions."
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions."
           },
           "NEUTRAL_RESOURCES_LANGUAGE": {
-            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions."
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions."
           },
           "ASSEMBLY_PRODUCT": {
-            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions."
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions."
           },
           "SERVICING_ATTRIBUTE": {
-            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions."
-          },
-          "VERSION_INFORMATIONALVERSION": {
-            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions."
+            "tools/netcoreapp2.0/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions."
           },
           "WRONG_PUBLICKEYTOKEN": {
-            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
           },
           "ASSEMBLY_INFORMATIONAL_VERSION_MISMATCH": {
-            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
           },
           "ASSEMBLY_FILE_VERSION_MISMATCH": {
-            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
           },
           "ASSEMBLY_VERSION_MISMATCH": {
-            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
-            "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "BUILD_ITEMS_FRAMEWORK": {
+            "*": "Razor SDK does not contain any dependencies or binaries and consequently does not have a dependency group."
           }
         }
       }

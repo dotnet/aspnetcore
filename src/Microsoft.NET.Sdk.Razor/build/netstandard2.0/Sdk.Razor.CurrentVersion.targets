@@ -22,10 +22,15 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(CustomBeforeRazorSdkTargets)" Condition="'$(CustomBeforeRazorSdkTargets)' != '' and Exists('$(CustomBeforeRazorSdkTargets)')"/>
 
   <PropertyGroup>
-    <RazorSdkBuildTasksDirectoryRoot Condition="'$(RazorSdkBuildTasksDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\..\tasks\</RazorSdkBuildTasksDirectoryRoot>
+    <!-- Paths to tools, tasks, and extensions are calculated relative to the RazorSdkDirectoryRoot. This can be modified to test a local build. -->
+    <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\..\</RazorSdkDirectoryRoot>
+    <RazorSdkBuildTasksDirectoryRoot Condition="'$(RazorSdkBuildTasksDirectoryRoot)'==''">$(RazorSdkDirectoryRoot)tasks\</RazorSdkBuildTasksDirectoryRoot>
     <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net46</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
+
+    <_TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</_TargetFrameworkVersionWithoutV>
+    <_EnableAllInclusiveRazorSdk Condition="'$(_EnableInclusiveRazorSdk)' == '' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">true</_EnableAllInclusiveRazorSdk>
   </PropertyGroup>
 
   <!--
@@ -123,6 +128,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Output directory used for generated files -->
     <RazorGenerateIntermediateOutputPath Condition="'$(RazorGenerateIntermediateOutputPath)'==''">$(IntermediateOutputPath)Razor\</RazorGenerateIntermediateOutputPath>
 
+    <!--
+      Use the suffix .Views when producing compiled view assemblies. This matches the requirements for Mvc's ViewsFeatureProvider.
+    -->
+    <RazorTargetNameSuffix Condition="'$(_EnableInclusiveRazorSdk)' == '' AND '$(RazorTargetNameSuffix)'==''">.Views</RazorTargetNameSuffix>
+
     <!-- Suffix appended to $(TargetName) to produce $(RazorTargetName), the name of the assembly produced by Razor -->
     <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)' == ''">.Razor</RazorTargetNameSuffix>
     
@@ -187,8 +197,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == '' AND '$(RazorCompileToolset)' == 'PrecompilationTool'">$(RazorCompileToolset)</ResolvedRazorCompileToolset>
     <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == '' AND '$(RazorCompileToolset)' == 'RazorSdk'">$(RazorCompileToolset)</ResolvedRazorCompileToolset>
 
-    <!-- If RazorSdk is not referenced, fall-back to Precompilation tool -->
-    <ResolvedRazorCompileToolset Condition="'$(ResolvedRazorCompileToolset)' == 'RazorSdk' And '$(IsRazorCompilerReferenced)' != 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
+    <!-- If RazorSdk is not referenced, fall-back to Precompilation tool when referenced by a 2.2 or earlier targeting project. -->
+    <ResolvedRazorCompileToolset Condition="'$(ResolvedRazorCompileToolset)' == 'RazorSdk' And '$(IsRazorCompilerReferenced)' != 'true' AND '$(_EnableAllInclusiveRazorSdk)' != 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
 
     <!-- Previous versions of the precompilation tool still depends on the msbuild property 'MvcRazorCompileOnPublish'. Hence, setting it to the old default value -->
     <MvcRazorCompileOnPublish Condition="'$(MvcRazorCompileOnPublish)' == ''">true</MvcRazorCompileOnPublish>
@@ -219,13 +229,22 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" />
   </ItemGroup>
 
-
   <!--
     These are the targets that generate code using Razor, separated from the main file for ease of maintenance.
     Most targets related to Razor code generation are defined there.
   -->
+
+  <!-- Determine what compiler and versions of the language to target. For 2.x targeting projects, these are carried by packages referenced by the project. Use this -->
+
+  <!-- Use the 2.x compiler if we're building an application that references Microsoft.AspNetCore.Razor.Design. -->
   <Import Project="$(RazorCodeGenerationTargetsPath)"
-    Condition="'$(RazorCodeGenerationTargetsPath)' != '' AND Exists('$(RazorCodeGenerationTargetsPath)')" />
+    Condition="'$(IsRazorCompilerReferenced)' == 'true' AND '$(RazorCodeGenerationTargetsPath)' != '' AND Exists('$(RazorCodeGenerationTargetsPath)')" />
+
+  <!-- When targeting 3.x and later projects, we have to infer configuration by inspecting the project. -->
+  <Import Project="Microsoft.NET.Sdk.Razor.Configuration.targets" Condition="'$(_EnableAllInclusiveRazorSdk)' == 'true'" />
+
+  <!-- For projects targeting 3.x and later, use the compiler that ships in the Sdk -->
+  <Import Project="Microsoft.NET.Sdk.Razor.CodeGeneration.targets" Condition="'$(_EnableAllInclusiveRazorSdk)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 

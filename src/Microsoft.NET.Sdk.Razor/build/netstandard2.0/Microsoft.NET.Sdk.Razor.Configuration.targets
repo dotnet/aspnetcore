@@ -1,0 +1,92 @@
+<!--
+***********************************************************************************************
+Microsoft.Net.Sdk.Razor.Versions.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0">
+  <!--
+      Initialize properties and items inferred using the project version. This file is not imported in projects referencing
+      MVC \ Razor 2.2 or earlier since values specified here are provided via targets and props imported from NuGet packages
+      such as Microsoft.AspNetCore.Razor.Design.
+
+      The properties and items here are designed to be read by CPS so they should be just simple evaluation-time values
+      and should not require targets to initialize.
+  -->
+  <PropertyGroup>
+    <!--
+      MVC uses a ProvideApplicationPartFactoryAttribute on the generated assembly to load compiled views from assembly. Set this to false, to prevent generating this attribute.
+    -->
+    <GenerateProvideApplicationPartFactoryAttribute Condition="'$(GenerateProvideApplicationPartFactoryAttribute)'==''">true</GenerateProvideApplicationPartFactoryAttribute>
+
+    <!--
+      Determines if the Sdk is allowed to add additional attributes to the project assembly.
+      For instance, MVC will generally want to add attributes to support view discovery and runtime compilation.
+    -->
+    <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'==''">true</GenerateRazorAssemblyInfo>
+
+    <!--
+      MVC will generally want to add support for runtime compilation, but only for applications.
+    -->
+    <GenerateRazorHostingAssemblyInfo Condition="'$(GenerateRazorHostingAssemblyInfo)'=='' AND '$(OutputType)'=='exe'">$(GenerateRazorAssemblyInfo)</GenerateRazorHostingAssemblyInfo>
+
+    <!--
+      The type name of the ApplicationPartFactory applied to the generated Razor file.
+    -->
+    <ProvideApplicationPartFactoryAttributeTypeName Condition="'$(ProvideApplicationPartFactoryAttributeTypeName)' == ''">Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor</ProvideApplicationPartFactoryAttributeTypeName>
+
+    <!-- Continue setting this property to maintain compat with legacy Razor.Design -->
+    <IsRazorCompilerReferenced Condition="'$(IsRazorCompilerReferenced)'==''">true</IsRazorCompilerReferenced>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_TargetingNETCoreApp30OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">true</_TargetingNETCoreApp30OrLater>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RazorLangVersion)'==''">
+    <RazorLangVersion Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'">2.1</RazorLangVersion>
+  </PropertyGroup>
+
+  <!--
+    Set the primary configuration supported by this SDK as the default configuration for Razor.
+  -->
+  <PropertyGroup Condition="'$(RazorDefaultConfiguration)'==''">
+    <RazorDefaultConfiguration Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'">MVC-2.1</RazorDefaultConfiguration>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      While technically the assembly in this package can provide support for the MVC-2.0 configuration, don't declare
+      it here. The IDE is hardcoded to inject 2.0 support when needed. The settings flowing through MSBuild should reflect
+      the project's runtime.
+    -->
+    <RazorConfiguration Include="MVC-2.1">
+      <Extensions>MVC-2.1;$(CustomRazorExtension)</Extensions>
+    </RazorConfiguration>
+  </ItemGroup>
+
+  <ItemGroup>
+    <RazorExtension Include="MVC-2.1">
+      <AssemblyName>Microsoft.AspNetCore.Mvc.Razor.Extensions</AssemblyName>
+      <AssemblyFilePath>$(RazorSdkDirectoryRoot)extensions\mvc-2-1\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</AssemblyFilePath>
+    </RazorExtension>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true' AND '$(ResolvedRazorCompileToolset)'=='RazorSdk' AND ('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' == 'true')">
+    <_RazorAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute">
+      <_Parameter1>$(RazorTargetName)</_Parameter1>
+    </_RazorAssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GenerateProvideApplicationPartFactoryAttribute)' == 'true' AND '$(ProvideApplicationPartFactoryAttributeTypeName)'!=''">
+    <RazorTargetAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute">
+      <_Parameter1>$(ProvideApplicationPartFactoryAttributeTypeName)</_Parameter1>
+    </RazorTargetAssemblyAttribute>
+  </ItemGroup>
+
+</Project>

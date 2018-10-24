@@ -1,20 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   
   <PropertyGroup>
-    <_RazorMSBuildRoot>$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\bin\$(Configuration)\</_RazorMSBuildRoot>
-    <RazorSdkBuildTasksDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\</RazorSdkBuildTasksDirectoryRoot>
+    <RazorSdkDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
   </PropertyGroup>
 
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
-
   <PropertyGroup>
-    <!-- Override for the MVC extension -->
-    <_MvcExtensionAssemblyPath>$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>
-  </PropertyGroup>
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.props" />
-
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
@@ -26,7 +17,6 @@
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Design\Microsoft.AspNetCore.Razor.Design.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
@@ -37,7 +27,5 @@
   </ItemGroup>
 
   <!-- Test Placeholder -->
-
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />
 
 </Project>

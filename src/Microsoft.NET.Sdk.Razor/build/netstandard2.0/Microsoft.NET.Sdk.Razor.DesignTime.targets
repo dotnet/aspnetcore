@@ -21,6 +21,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       we use the lack of the capability to detect downlevel scenarios.
     -->
     <ProjectCapability Include="DotNetCoreRazor"/>
+
+    <!--
+      Defines the ability to understand the configuration for the Razor language service provided by
+      the runtime/toolset packages. Introduced in 2.1
+    -->
+    <ProjectCapability Include="DotNetCoreRazorConfiguration"/>
   </ItemGroup>
 
   <!--

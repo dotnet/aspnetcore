@@ -1,19 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   
   <PropertyGroup>
-    <_RazorMSBuildRoot>$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\bin\$(Configuration)\</_RazorMSBuildRoot>
-    <RazorSdkBuildTasksDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\</RazorSdkBuildTasksDirectoryRoot>
+    <RazorSdkDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
   </PropertyGroup>
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
 
   <PropertyGroup>
-    <!-- Override for the MVC extension -->
-    <_MvcExtensionAssemblyPath>$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>
-  </PropertyGroup>
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.props" />
-
-  <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
@@ -40,6 +32,4 @@
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
   </ItemGroup>
-
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />
 </Project>

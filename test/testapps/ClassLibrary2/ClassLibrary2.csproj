@@ -1,20 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   
   <PropertyGroup>
-    <_RazorMSBuildRoot>$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\bin\$(Configuration)\</_RazorMSBuildRoot>
-    <RazorSdkBuildTasksDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\</RazorSdkBuildTasksDirectoryRoot>
+    <RazorSdkDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
   </PropertyGroup>
-
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
-
-  <PropertyGroup>
-    <!-- Override for the MVC extension -->
-    <_MvcExtensionAssemblyPath>$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>
-  </PropertyGroup>
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.props" />
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+
+    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
+    <RazorLangVersion>2.1</RazorLangVersion>
+    <RazorDefaultConfiguration>MVC-2.1</RazorDefaultConfiguration>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
@@ -41,7 +36,5 @@
   </ItemGroup>
 
   <!-- Test Placeholder -->
-
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />
 
 </Project>

@@ -25,8 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
   </ItemGroup>
 </Project>

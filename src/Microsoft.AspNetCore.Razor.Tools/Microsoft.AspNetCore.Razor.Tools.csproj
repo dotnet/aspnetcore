@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>rzc</AssemblyName>
 
-    <!-- This is not a package, it is part of Microsoft.AspNetCore.Razor.Design. -->
+    <!-- This is not a package, it is part of Razor SDK. -->
     <IsPackable>false</IsPackable>
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
