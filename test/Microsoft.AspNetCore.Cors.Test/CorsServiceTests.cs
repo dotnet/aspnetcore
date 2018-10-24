@@ -492,7 +492,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             policy.Origins.Add(CorsConstants.AnyOrigin);
             policy.Methods.Add("*");
             policy.Headers.Add("*");
-            policy.SupportsCredentials = true;
 
             // Act
             var result = corsService.EvaluatePolicy(requestContext, policy);
@@ -527,7 +526,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
-        public void EvaluatePolicy_PreflightRequest_WithCredentials_ReturnsWildCard()
+        public void EvaluatePolicy_PreflightRequest_WithCredentials_ReflectsHeaders()
         {
             // Arrange
             var corsService = GetCorsService();
@@ -543,8 +542,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(new[] { "*" }, result.AllowedMethods);
-            Assert.Equal(new[] { "*" }, result.AllowedHeaders);
+            Assert.Equal(new[] { "PUT" }, result.AllowedMethods);
+            Assert.Empty(result.AllowedHeaders);
             Assert.True(result.SupportsCredentials);
         }
 

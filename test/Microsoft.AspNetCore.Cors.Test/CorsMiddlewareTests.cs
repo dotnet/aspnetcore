@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
-        public async Task PreFlight_WithCredentialsAllowed_ReturnsWildcardValues()
+        public async Task PreFlight_WithCredentialsAllowed_ReflectsRequestHeaders()
         {
             // Arrange
             var policy = new CorsPolicyBuilder(OriginUrl)
@@ -240,12 +240,12 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                     kvp =>
                     {
                         Assert.Equal(CorsConstants.AccessControlAllowHeaders, kvp.Key);
-                        Assert.Equal(new[] { "*" }, kvp.Value);
+                        Assert.Equal(new[] { "X-Test1,X-Test2" }, kvp.Value);
                     },
                     kvp =>
                     {
                         Assert.Equal(CorsConstants.AccessControlAllowMethods, kvp.Key);
-                        Assert.Equal(new[] { "*" }, kvp.Value);
+                        Assert.Equal(new[] { "PUT" }, kvp.Value);
                     },
                     kvp =>
                     {

@@ -6,7 +6,7 @@ const corsServerPath = `http://${hostname}:9000`;
 
 // e.g., npm test --debug
 // In debug mode we show the editor, slow down operations, and increase the timeout for each test
-const debug = process.env.npm_config_debug || false;
+let debug = process.env.npm_config_debug || false;
 jest.setTimeout(debug ? 60000 : 30000);
 
 let browser;
@@ -38,8 +38,8 @@ describe('Browser is initialized', () => {
     test('no errors on launch', () => {
         expect(error).toBeUndefined();
         expect(browser).toBeDefined();
-    })
-})
+    });
+});
 
 describe('CORS allowed origin tests ', () => {
     const testPagePath = `http://${hostname}:9001/`;
@@ -176,7 +176,11 @@ describe('CORS allowed origin tests ', () => {
     test('allows Preflighted request with credentials', async () => {
         const result = await page.evaluate(async (corsServerPath) => {
             const url = `${corsServerPath}/allow-credentials`;
-            const options = { method: 'PUT', mode: 'cors', credentials: 'include' };
+            const options = {
+                method: 'PUT', mode: 'cors', credentials: 'include', headers: new Headers({
+                    'X-Custom-Header': 'X-Custom-Value'
+                })
+            };
 
             const response = await fetch(url, options);
             return response.status;

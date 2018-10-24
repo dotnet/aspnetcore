@@ -136,10 +136,17 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             result.SupportsCredentials = policy.SupportsCredentials;
             result.PreflightMaxAge = policy.PreflightMaxAge;
 
-
+            // https://fetch.spec.whatwg.org/#http-new-header-syntax
             AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
-            AddHeaderValues(result.AllowedMethods, policy.Methods);
-            AddHeaderValues(result.AllowedHeaders, policy.Headers);
+
+            var allowedMethods = policy.AllowAnyMethod && policy.SupportsCredentials ?
+                new[] { result.IsPreflightRequest ? (string)context.Request.Headers[CorsConstants.AccessControlRequestMethod] : context.Request.Method }
+                : policy.Methods;
+            AddHeaderValues(result.AllowedMethods, allowedMethods);
+
+            var allowedHeaders = policy.AllowAnyHeader && policy.SupportsCredentials ?
+                context.Request.Headers.GetCommaSeparatedValues(CorsConstants.AccessControlRequestHeaders) : policy.Headers;
+            AddHeaderValues(result.AllowedHeaders, allowedHeaders);
         }
 
         public virtual void EvaluateRequest(HttpContext context, CorsPolicy policy, CorsResult result)
