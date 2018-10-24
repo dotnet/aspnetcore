@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
 
     <TargetName>Microsoft.NET.Sdk.Razor.Tasks</TargetName>
-    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks sicne they need to be backwards compatible. -->
   </PropertyGroup>
@@ -13,12 +13,18 @@
     <None Include="Sdk\*" Pack="true" PackagePath="Sdk\" />
     <None Include="build\**\*" Pack="true" PackagePath="build" />
     <None Include="buildMultiTargeting\**\*" Pack="true" PackagePath="buildMultiTargeting" />
+    <None Include="bin\$(Configuration)\net46\$(TargetName).*" Pack="true" PackagePath="tasks\net46" />
+    <None Include="bin\$(Configuration)\netstandard2.0\$(TargetName).*" Pack="true" PackagePath="tasks\netstandard2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+   <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="tasks/$(TargetFramework)/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <ItemGroup>
