@@ -25,12 +25,10 @@
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
     <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
     <PackageArtifact Include="dotnet-watch" Category="ship" />
-    <PackageArtifact Include="Internal.AspNetCore.Analyzers" Category="noship" />
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" PackageType="Lineup" />
     <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Analyzer.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
@@ -252,7 +250,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Logging.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.TraceSource" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.Extensions.NonCapturingTimer.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Options.ConfigurationExtensions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Options.DataAnnotations" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Options" Category="ship" AppMetapackage="true" AllMetapackage="true" />
