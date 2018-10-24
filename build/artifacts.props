@@ -21,7 +21,6 @@
     <PackageArtifact Include="dotnet-aspnet-codegenerator" Category="ship" />
     <PackageArtifact Include="dotnet-dev-certs" Category="ship" />
     <PackageArtifact Include="dotnet-ef" Category="ship" />
-    <PackageArtifact Include="dotnet-httprepl" Category="ship" />
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
     <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
     <PackageArtifact Include="dotnet-watch" Category="ship" />
