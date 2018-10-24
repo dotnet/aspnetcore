@@ -26,10 +26,6 @@
 	path = modules/Caching
 	url = https://github.com/aspnet/Caching.git
 	branch = master
-[submodule "modules/Common"]
-	path = modules/Common
-	url = https://github.com/aspnet/Common.git
-	branch = master
 [submodule "modules/Configuration"]
 	path = modules/Configuration
 	url = https://github.com/aspnet/Configuration.git
