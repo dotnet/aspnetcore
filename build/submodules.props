@@ -42,7 +42,6 @@
     <Repository Include="BasicMiddleware" />
     <Repository Include="BrowserLink" />
     <Repository Include="Caching" />
-    <Repository Include="Common" />
     <Repository Include="Configuration" />
     <Repository Include="CORS" />
     <Repository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />

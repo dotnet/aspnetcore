@@ -7,7 +7,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="Common" Order="1" />
     <RepositoryBuildOrder Include="Microsoft.Data.Sqlite" Order="1" />
     <RepositoryBuildOrder Include="DependencyInjection" Order="2" />
     <RepositoryBuildOrder Include="FileSystem" Order="2" />

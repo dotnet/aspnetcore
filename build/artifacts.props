@@ -25,12 +25,10 @@
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
     <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
     <PackageArtifact Include="dotnet-watch" Category="ship" />
-    <PackageArtifact Include="Internal.AspNetCore.Analyzers" Category="noship" />
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" PackageType="Lineup" />
     <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Analyzer.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
@@ -55,9 +53,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Buffering" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.CookiePolicy" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -173,7 +169,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.StaticFiles" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.TestHost" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -212,8 +207,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Caching.Redis" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.SqlServer" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.CommandLineUtils.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.AzureKeyVault" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.Binder" Category="ship" AppMetapackage="true" AllMetapackage="true" />
@@ -226,7 +219,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Configuration.UserSecrets" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.Xml" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection" Category="ship" AppMetapackage="true" AllMetapackage="true" />
@@ -239,7 +231,6 @@
     <PackageArtifact Include="Microsoft.Extensions.FileProviders.Embedded" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.FileProviders.Physical" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.FileSystemGlobbing" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.Extensions.HashCodeCombiner.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Hosting.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Hosting" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Http.Polly" Category="ship" AppMetapackage="false" AllMetapackage="false" />
@@ -259,23 +250,10 @@
     <PackageArtifact Include="Microsoft.Extensions.Logging.Testing" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.TraceSource" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.Extensions.NonCapturingTimer.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.ObjectPool" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Options.ConfigurationExtensions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Options.DataAnnotations" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Options" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Primitives" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.Extensions.Process.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.PropertyActivator.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.PropertyHelper.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.RazorViews.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.SecurityHelper.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.StackTrace.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.TypeNameHelper.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.ValueStopwatch.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.WebEncoders.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.WebEncoders" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />
