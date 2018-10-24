@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 if (handle.ModuleName == "aspnetcorev2.dll")
                 {
-                    Assert.Equal("12.2.18289.0", handle.FileVersionInfo.FileVersion);
+                    Assert.Equal("12.2.18287.0", handle.FileVersionInfo.FileVersion);
                     return;
                 }
             }
