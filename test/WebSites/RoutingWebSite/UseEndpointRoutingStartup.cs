@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace RoutingSandbox
+namespace RoutingWebSite
 {
     public class UseEndpointRoutingStartup
     {
@@ -23,6 +23,13 @@ namespace RoutingSandbox
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<EndsWithStringRouteConstraint>();
+
+            services.AddRouting(options =>
+            {
+                options.ConstraintMap.Add("endsWith", typeof(EndsWithStringRouteConstraint));
+            });
+
             var endpointDataSource = new DefaultEndpointDataSource(new[]
                 {
                     new RouteEndpoint((httpContext) =>
@@ -53,6 +60,28 @@ namespace RoutingSandbox
                         "Plaintext"),
                     new RouteEndpoint((httpContext) =>
                         {
+                            var response = httpContext.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            return response.WriteAsync("WithConstraints");
+                        },
+                        RoutePatternFactory.Parse("/withconstraints/{id:endsWith(_001)}"),
+                        0,
+                        EndpointMetadataCollection.Empty,
+                        "withconstraints"),
+                    new RouteEndpoint((httpContext) =>
+                        {
+                            var response = httpContext.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            return response.WriteAsync("withoptionalconstraints");
+                        },
+                        RoutePatternFactory.Parse("/withoptionalconstraints/{id:endsWith(_001)?}"),
+                        0,
+                        EndpointMetadataCollection.Empty,
+                        "withoptionalconstraints"),
+                    new RouteEndpoint((httpContext) =>
+                        {
                             using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                             {
                                 var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
@@ -66,6 +95,40 @@ namespace RoutingSandbox
                         0,
                         new EndpointMetadataCollection(new HttpMethodMetadata(new[]{ "GET", })),
                         "DFA Graph"),
+                    new RouteEndpoint((httpContext) =>
+                        {
+                            var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
+
+                            var response = httpContext.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            return response.WriteAsync(
+                                "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
+                        },
+                        RoutePatternFactory.Parse("/WithSingleAsteriskCatchAll/{*path}"),
+                        0,
+                        new EndpointMetadataCollection(
+                            new RouteValuesAddressMetadata(
+                                routeName: "WithSingleAsteriskCatchAll",
+                                requiredValues: new RouteValueDictionary())),
+                        "WithSingleAsteriskCatchAll"),
+                    new RouteEndpoint((httpContext) =>
+                        {
+                            var linkGenerator = httpContext.RequestServices.GetRequiredService<LinkGenerator>();
+
+                            var response = httpContext.Response;
+                            response.StatusCode = 200;
+                            response.ContentType = "text/plain";
+                            return response.WriteAsync(
+                                "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
+                        },
+                        RoutePatternFactory.Parse("/WithDoubleAsteriskCatchAll/{**path}"),
+                        0,
+                        new EndpointMetadataCollection(
+                            new RouteValuesAddressMetadata(
+                                routeName: "WithDoubleAsteriskCatchAll",
+                                requiredValues: new RouteValueDictionary())),
+                        "WithDoubleAsteriskCatchAll"),
                 });
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(endpointDataSource));
