@@ -16,10 +16,7 @@ To use the client in a browser, copy `*.js` files from the `dist/browser` folder
 
 ### Node.js
 
-The following polyfills are required to use the client in Node.js applications:
-- `XmlHttpRequest` - always
-- `WebSockets` - to use the WebSockets transport
-- `EventSource` - to use the ServerSentEvents transport
+To use the client in a NodeJS application, install the package to your `node_modules` folder and use `require('@aspnet/signalr')` to load the module. The object returned by `require('@aspnet/signalr')` has the same members as the global `signalR` object (when used in a browser).
 
 ### Example (Browser)
 
