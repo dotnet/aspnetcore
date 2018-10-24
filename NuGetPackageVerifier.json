@@ -24,20 +24,6 @@
           "DotnetTool"
         ]
       },
-      "dotnet-httprepl": {
-        "packageTypes": [
-          "DotnetTool"
-        ],
-        "Exclusions": {
-          "ASSEMBLY_DESCRIPTION": {
-            "tools/netcoreapp2.1/any/System.Net.Http.Formatting.dll": "Referenced assembly, not built as part of this process"
-          },
-          "VERSION_INFORMATIONALVERSION": {
-            "tools/netcoreapp2.1/any/Newtonsoft.Json.dll": "Referenced assembly, not built as part of this process",
-            "tools/netcoreapp2.1/any/Newtonsoft.Json.Bson.dll": "Referenced assembly, not built as part of this process"
-          }
-        }
-      },
       "Microsoft.AspNetCore.DeveloperCertificates.XPlat": {
         "Exclusions": {
           "DOC_MISSING": {
