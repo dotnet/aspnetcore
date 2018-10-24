@@ -113,15 +113,35 @@ namespace TriageBuildFailures.Commands
 
                 foreach (var failedBuild in failedBuilds)
                 {
-                    var tags = await ciClient.GetTags(failedBuild);
-                    if (!tags.Contains(TriagedTag))
+                    if (IsWatchedBuild(failedBuild))
                     {
-                        result.Add(failedBuild);
+                        var tags = await ciClient.GetTags(failedBuild);
+                        if (!tags.Contains(TriagedTag))
+                        {
+                            result.Add(failedBuild);
+                        }
                     }
                 }
             }
 
             return result;
+        }
+
+        private static readonly IEnumerable<string> _watchedBranches = new List<string> {
+            "master",
+            "release/"
+        };
+
+        private bool IsWatchedBuild(ICIBuild build)
+        {
+            if (_watchedBranches.Any(b => build.Branch.StartsWith(b)))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private void MarkTriaged(ICIBuild build)
