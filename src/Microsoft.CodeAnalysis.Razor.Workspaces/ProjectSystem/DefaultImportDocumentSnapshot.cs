@@ -37,6 +37,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             throw new NotSupportedException();
         }
 
+        public override Task<VersionStamp> GetGeneratedOutputVersionAsync()
+        {
+            throw new NotSupportedException();
+        }
+
         public override IReadOnlyList<DocumentSnapshot> GetImports()
         {
             return Array.Empty<DocumentSnapshot>();
@@ -78,6 +83,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         public override bool TryGetGeneratedOutput(out RazorCodeDocument result)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override bool TryGetGeneratedOutputVersionAsync(out VersionStamp result)
         {
             throw new NotSupportedException();
         }

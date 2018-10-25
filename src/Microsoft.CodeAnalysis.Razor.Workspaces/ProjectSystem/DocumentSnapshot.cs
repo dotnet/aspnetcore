@@ -26,10 +26,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract Task<RazorCodeDocument> GetGeneratedOutputAsync();
 
+        public abstract Task<VersionStamp> GetGeneratedOutputVersionAsync();
+
         public abstract bool TryGetText(out SourceText result);
 
         public abstract bool TryGetTextVersion(out VersionStamp result);
 
         public abstract bool TryGetGeneratedOutput(out RazorCodeDocument result);
+
+        public abstract bool TryGetGeneratedOutputVersionAsync(out VersionStamp result);
     }
 }

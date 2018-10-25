@@ -60,6 +60,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return output;
         }
 
+        public override async Task<VersionStamp> GetGeneratedOutputVersionAsync()
+        {
+            var (_, _, version) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            return version;
+        }
+
         public override bool TryGetText(out SourceText result)
         {
             return State.TryGetText(out result);
@@ -79,6 +85,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             result = null;
+            return false;
+        }
+
+        public override bool TryGetGeneratedOutputVersionAsync(out VersionStamp result)
+        {
+            if (State.IsGeneratedOutputResultAvailable)
+            {
+                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputVersion;
+                return true;
+            }
+
+            result = default(VersionStamp);
             return false;
         }
     }
