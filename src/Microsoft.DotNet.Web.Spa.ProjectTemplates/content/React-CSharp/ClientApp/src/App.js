@@ -6,9 +6,9 @@ import { FetchData } from './components/FetchData';
 import { Counter } from './components/Counter';
 
 export default class App extends Component {
-  displayName = App.name
+  static displayName = App.name;
 
-  render() {
+  render () {
     return (
       <Layout>
         <Route exact path='/' component={Home} />

@@ -5,5 +5,7 @@
   },
   "[json]": {
     "editor.tabSize": 2
-  }
+  },
+  "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+  "javascript.format.insertSpaceAfterConstructor": true
 }

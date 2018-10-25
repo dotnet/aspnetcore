@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,7 +21,7 @@ namespace Templates.Test
         [Theory]
         [InlineData("Microsoft.DotNet.Web.ProjectTemplates")]
         [InlineData("Microsoft.DotNet.Web.Spa.ProjectTemplates")]
-        public void CheckForByteOrderMark_InJsonFiles_ForAllTemplates(string projectType)
+        public void CheckForByteOrderMark_ForAllTemplates(string projectType)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
             var repositoryPath = Directory.GetParent(currentDirectory).Parent.Parent.Parent.Parent.FullName;
@@ -30,7 +32,8 @@ namespace Templates.Test
             var filesWithBOMCharactersPresent = false;
             foreach (var directory in directories)
             {
-                var files = Directory.GetFiles(directory, "*.json");
+                var files = (IEnumerable<string>)Directory.GetFiles(directory, "*.json");
+                files = files.Concat(Directory.GetFiles(directory, "*.js"));
                 foreach (var file in files)
                 {
                     var filePath = Path.GetFullPath(file);
