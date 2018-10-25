@@ -212,12 +212,6 @@
       "defaultValue": "false",
       "description": "Whether to exclude launchSettings.json from the generated template."
     },
-    "UseBrowserLink": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "Whether or not to include BrowserLink in the project"
-    },
     "HttpPort": {
       "type": "parameter",
       "datatype": "integer",

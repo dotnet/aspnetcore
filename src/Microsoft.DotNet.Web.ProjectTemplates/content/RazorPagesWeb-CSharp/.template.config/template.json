@@ -222,12 +222,6 @@
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
     },
-    "UseBrowserLink": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "Whether or not to include BrowserLink in the project"
-    },
     "HttpPort": {
       "type": "parameter",
       "datatype": "integer",
