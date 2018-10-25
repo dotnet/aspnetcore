@@ -3,8 +3,6 @@
 
 package com.microsoft.signalr;
 
-import java.util.function.BiConsumer;
-
 import io.reactivex.Completable;
 
 abstract class WebSocketWrapper {
@@ -16,5 +14,5 @@ abstract class WebSocketWrapper {
 
     public abstract void setOnReceive(OnReceiveCallBack onReceive);
 
-    public abstract void setOnClose(BiConsumer<Integer, String> onClose);
+    public abstract void setOnClose(WebSocketOnClosedCallback onClose);
 }
