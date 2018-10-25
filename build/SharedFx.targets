@@ -1,6 +1,12 @@
 <Project>
   <Import Project="SharedFx.props" />
 
+  <ItemDefinitionGroup>
+    <ProjectToBuild>
+      <Restore>true</Restore>
+    </ProjectToBuild>
+  </ItemDefinitionGroup>
+
   <PropertyGroup>
     <UnitTestFxProject>$(RepositoryRoot)\src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
   </PropertyGroup>
@@ -9,8 +15,8 @@
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.pkgproj" />
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
     <ProjectToBuild Include="$(UnitTestFxProject)" />
-    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Internal\*.*proj" />
-    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" />
+    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Internal\*.*proj" Restore="false" />
+    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" Restore="false" />
   </ItemGroup>
 
   <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
@@ -18,7 +24,9 @@
     <MSBuild Projects="@(ProjectToBuild)"
              Targets="Restore"
              Properties="$(SolutionProperties);_DummyTarget=Restore"
-             BuildInParallel="true" />
+             BuildInParallel="true"
+             SkipNonexistentTargets="true"
+             Condition=" '%(Restore)' != 'false' " />
 
     <MSBuild Projects="@(ProjectToBuild)"
              Properties="$(SolutionProperties)"
