@@ -3,5 +3,5 @@ Markup block - Gen<None> - 9 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<None> - 2 - (3:0,3)
             Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];

@@ -1,9 +1,9 @@
 Directive block - Gen<Directive:{functions;CodeBlock;Unrestricted} [RZ1006(10:0,10 [1] )]> - 11 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [functions] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        CSharpTokenType.Identifier;[functions];
+        SyntaxKind.Identifier;[functions];
     MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (10:0,10) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [] - CodeBlockEditHandler;Accepts:Any;CodeBlock - (11:0,11) - Tokens:1
-        CSharpTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

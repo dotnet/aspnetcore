@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -10,73 +11,73 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void Simple_Identifier_Is_Recognized()
         {
-            TestTokenizer("foo", new CSharpToken("foo", CSharpTokenType.Identifier));
+            TestTokenizer("foo", SyntaxFactory.Token(SyntaxKind.Identifier, "foo"));
         }
 
         [Fact]
         public void Identifier_Starting_With_Underscore_Is_Recognized()
         {
-            TestTokenizer("_foo", new CSharpToken("_foo", CSharpTokenType.Identifier));
+            TestTokenizer("_foo", SyntaxFactory.Token(SyntaxKind.Identifier, "_foo"));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Digits()
         {
-            TestTokenizer("foo4", new CSharpToken("foo4", CSharpTokenType.Identifier));
+            TestTokenizer("foo4", SyntaxFactory.Token(SyntaxKind.Identifier, "foo4"));
         }
 
         [Fact]
         public void Identifier_Can_Start_With_Titlecase_Letter()
         {
-            TestTokenizer("ῼfoo", new CSharpToken("ῼfoo", CSharpTokenType.Identifier));
+            TestTokenizer("ῼfoo", SyntaxFactory.Token(SyntaxKind.Identifier, "ῼfoo"));
         }
 
         [Fact]
         public void Identifier_Can_Start_With_Letter_Modifier()
         {
-            TestTokenizer("ᵊfoo", new CSharpToken("ᵊfoo", CSharpTokenType.Identifier));
+            TestTokenizer("ᵊfoo", SyntaxFactory.Token(SyntaxKind.Identifier, "ᵊfoo"));
         }
 
         [Fact]
         public void Identifier_Can_Start_With_Other_Letter()
         {
-            TestTokenizer("ƻfoo", new CSharpToken("ƻfoo", CSharpTokenType.Identifier));
+            TestTokenizer("ƻfoo", SyntaxFactory.Token(SyntaxKind.Identifier, "ƻfoo"));
         }
 
         [Fact]
         public void Identifier_Can_Start_With_Number_Letter()
         {
-            TestTokenizer("Ⅽool", new CSharpToken("Ⅽool", CSharpTokenType.Identifier));
+            TestTokenizer("Ⅽool", SyntaxFactory.Token(SyntaxKind.Identifier, "Ⅽool"));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Non_Spacing_Mark()
         {
-            TestTokenizer("foo\u0300", new CSharpToken("foo\u0300", CSharpTokenType.Identifier));
+            TestTokenizer("foo\u0300", SyntaxFactory.Token(SyntaxKind.Identifier, "foo\u0300"));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Spacing_Combining_Mark()
         {
-            TestTokenizer("fooः", new CSharpToken("fooः", CSharpTokenType.Identifier));
+            TestTokenizer("fooः", SyntaxFactory.Token(SyntaxKind.Identifier, "fooः"));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Non_English_Digit()
         {
-            TestTokenizer("foo١", new CSharpToken("foo١", CSharpTokenType.Identifier));
+            TestTokenizer("foo١", SyntaxFactory.Token(SyntaxKind.Identifier, "foo١"));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Connector_Punctuation()
         {
-            TestTokenizer("foo‿bar", new CSharpToken("foo‿bar", CSharpTokenType.Identifier));
+            TestTokenizer("foo‿bar", SyntaxFactory.Token(SyntaxKind.Identifier, "foo‿bar"));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Format_Character()
         {
-            TestTokenizer("foo؃bar", new CSharpToken("foo؃bar", CSharpTokenType.Identifier));
+            TestTokenizer("foo؃bar", SyntaxFactory.Token(SyntaxKind.Identifier, "foo؃bar"));
         }
 
         [Fact]
@@ -164,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void TestKeyword(string keyword, CSharpKeyword keywordType)
         {
-            TestTokenizer(keyword, new CSharpToken(keyword, CSharpTokenType.Keyword) { Keyword = keywordType });
+            TestTokenizer(keyword, SyntaxFactory.Token(SyntaxKind.Keyword, keyword));
         }
     }
 }

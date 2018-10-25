@@ -4,18 +4,19 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DirectiveTokenEditHandler : SpanEditHandler
     {
-        public DirectiveTokenEditHandler(Func<string, IEnumerable<IToken>> tokenizer) : base(tokenizer)
+        public DirectiveTokenEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer) : base(tokenizer)
         {
         }
 
         protected override PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
         {
-            if (AcceptedCharacters == AcceptedCharactersInternal.NonWhiteSpace)
+            if (AcceptedCharacters == AcceptedCharactersInternal.NonWhitespace)
             {
                 var originalText = change.GetOriginalText(target);
                 var editedContent = change.GetEditedContent(target);

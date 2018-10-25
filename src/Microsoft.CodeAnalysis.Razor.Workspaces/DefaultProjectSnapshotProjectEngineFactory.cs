@@ -32,13 +32,8 @@ namespace Microsoft.CodeAnalysis.Razor
             _factories = factories;
         }
 
-        public override RazorProjectEngine Create(ProjectSnapshot project, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
+        public override RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem, Action<RazorProjectEngineBuilder> configure)
         {
-            if (project == null)
-            {
-                throw new ArgumentNullException(nameof(project));
-            }
-
             if (fileSystem == null)
             {
                 throw new ArgumentNullException(nameof(fileSystem));
@@ -55,7 +50,7 @@ namespace Microsoft.CodeAnalysis.Razor
             //
             // We typically want this because the language adds features over time - we don't want to a bunch of errors
             // to show up when a document is first opened, and then go away when the configuration loads, we'd prefer the opposite.
-            var configuration = project.Configuration ?? DefaultConfiguration;
+            configuration = configuration ?? DefaultConfiguration;
 
             // If there's no factory to handle the configuration then fall back to a very basic configuration.
             //

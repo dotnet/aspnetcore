@@ -5,12 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal abstract partial class Tokenizer<TToken, TTokenType> : ITokenizer
-        where TTokenType : struct
-        where TToken : TokenBase<TTokenType>
+    internal abstract class Tokenizer : ITokenizer
     {
         protected Tokenizer(ITextDocument source)
         {
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected int? CurrentState { get; set; }
 
-        protected TToken CurrentToken { get; private set; }
+        protected SyntaxToken CurrenSyntaxToken { get; private set; }
 
         public ITextDocument Source { get; private set; }
 
@@ -42,9 +41,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get { return Source.Peek() == -1; }
         }
 
-        public abstract TTokenType RazorCommentStarType { get; }
-        public abstract TTokenType RazorCommentType { get; }
-        public abstract TTokenType RazorCommentTransitionType { get; }
+        public abstract SyntaxKind RazorCommentStarKind { get; }
+        public abstract SyntaxKind RazorCommentKind { get; }
+        public abstract SyntaxKind RazorCommentTransitionKind { get; }
 
         protected bool HaveContent
         {
@@ -64,16 +63,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SourceLocation CurrentStart { get; private set; }
 
-        protected abstract TToken CreateToken(string content, TTokenType type, IReadOnlyList<RazorDiagnostic> errors);
+        protected abstract SyntaxToken CreateToken(string content, SyntaxKind type, IReadOnlyList<RazorDiagnostic> errors);
 
         protected abstract StateResult Dispatch();
 
-        IToken ITokenizer.NextToken()
+        SyntaxToken ITokenizer.NextToken()
         {
             return NextToken();
         }
 
-        public virtual TToken NextToken()
+        public virtual SyntaxToken NextToken()
         {
             // Post-Condition: Buffer should be empty at the start of Next()
             Debug.Assert(Buffer.Length == 0);
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return token;
         }
 
-        protected virtual TToken Turn()
+        protected virtual SyntaxToken Turn()
         {
             if (CurrentState != null)
             {
@@ -105,19 +104,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var next = Dispatch();
 
                     CurrentState = next.State;
-                    CurrentToken = next.Result;
+                    CurrenSyntaxToken = next.Result;
                 }
-                while (CurrentState != null && CurrentToken == null);
+                while (CurrentState != null && CurrenSyntaxToken == null);
 
                 if (CurrentState == null)
                 {
-                    return default(TToken); // Terminated
+                    return default(SyntaxToken); // Terminated
                 }
 
-                return CurrentToken;
+                return CurrenSyntaxToken;
             }
 
-            return default(TToken);
+            return default(SyntaxToken);
         }
 
         public void Reset()
@@ -149,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// Returns a result containing the specified output and indicating that the next call to
         /// <see cref="Turn"/> should invoke the provided state.
         /// </summary>
-        protected StateResult Transition(int state, TToken result)
+        protected StateResult Transition(int state, SyntaxToken result)
         {
             return new StateResult(state, result);
         }
@@ -159,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new StateResult((int)state, result: null);
         }
 
-        protected StateResult Transition(RazorCommentTokenizerState state, TToken result)
+        protected StateResult Transition(RazorCommentTokenizerState state, SyntaxToken result)
         {
             return new StateResult((int)state, result);
         }
@@ -180,12 +179,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// Returns a result containing the specified output and indicating that the next call to
         /// <see cref="Turn"/> should re-invoke the current state.
         /// </summary>
-        protected StateResult Stay(TToken result)
+        protected StateResult Stay(SyntaxToken result)
         {
             return new StateResult(CurrentState, result);
         }
 
-        protected TToken Single(TTokenType type)
+        protected SyntaxToken Single(SyntaxKind type)
         {
             TakeCurrent();
             return EndToken(type);
@@ -199,9 +198,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             CurrentStart = CurrentLocation;
         }
 
-        protected TToken EndToken(TTokenType type)
+        protected SyntaxToken EndToken(SyntaxKind type)
         {
-            TToken token = null;
+            SyntaxToken token = null;
             if (HaveContent)
             {
                 // Perf: Don't allocate a new errors array unless necessary.
@@ -222,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return token;
         }
 
-        protected virtual string GetTokenContent(TTokenType type)
+        protected virtual string GetTokenContent(SyntaxKind type)
         {
             return Buffer.ToString();
         }
@@ -278,7 +277,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             AssertCurrent('*');
             TakeCurrent();
-            return Transition(1002, EndToken(RazorCommentStarType));
+            return Transition(1002, EndToken(RazorCommentStarKind));
         }
 
         protected StateResult RazorCommentBody()
@@ -292,7 +291,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         return Transition(
                             RazorCommentTokenizerState.StarAfterRazorCommentBody,
-                            EndToken(RazorCommentType));
+                            EndToken(RazorCommentKind));
                     }
                     else
                     {
@@ -306,7 +305,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            return Transition(StartState, EndToken(RazorCommentType));
+            return Transition(StartState, EndToken(RazorCommentKind));
         }
 
         protected StateResult StarAfterRazorCommentBody()
@@ -315,14 +314,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             TakeCurrent();
             return Transition(
                 RazorCommentTokenizerState.AtTokenAfterRazorCommentBody,
-                EndToken(RazorCommentStarType));
+                EndToken(RazorCommentStarKind));
         }
 
         protected StateResult AtTokenAfterRazorCommentBody()
         {
             AssertCurrent('@');
             TakeCurrent();
-            return Transition(StartState, EndToken(RazorCommentTransitionType));
+            return Transition(StartState, EndToken(RazorCommentTransitionKind));
         }
 
         /// <summary>
@@ -397,7 +396,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected struct StateResult
         {
-            public StateResult(int? state, TToken result)
+            public StateResult(int? state, SyntaxToken result)
             {
                 State = state;
                 Result = result;
@@ -405,7 +404,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             public int? State { get; }
 
-            public TToken Result { get; }
+            public SyntaxToken Result { get; }
         }
 
         private static LookaheadToken BeginLookahead(ITextBuffer buffer)

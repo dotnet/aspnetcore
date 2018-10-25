@@ -1,21 +1,21 @@
 Statement block - Gen<None> - 41 - (0:0,0)
     Code span - Gen<Stmt> - [if(foo) {LF    var p = "foo bar bazLF;LF}] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:19
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.WhiteSpace;[    ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[p];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.StringLiteral;["foo bar baz];RZ1000(23:1,12 [1] )
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Whitespace;[    ];
+        SyntaxKind.Identifier;[var];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[p];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.StringLiteral;["foo bar baz];RZ1000(23:1,12 [1] )
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.RightBrace;[}];

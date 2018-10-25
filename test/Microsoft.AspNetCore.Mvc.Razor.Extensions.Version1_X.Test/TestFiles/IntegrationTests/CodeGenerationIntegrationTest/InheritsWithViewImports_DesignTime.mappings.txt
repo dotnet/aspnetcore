@@ -1,5 +1,5 @@
 Source Location: (7:0,7 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InheritsWithViewImports.cshtml)
 |MyModel|
-Generated Location: (653:18,0 [7] )
+Generated Location: (752:19,0 [7] )
 |MyModel|
 

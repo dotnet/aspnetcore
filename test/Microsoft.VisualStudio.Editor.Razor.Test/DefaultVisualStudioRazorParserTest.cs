@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var engine = RazorProjectEngine.Create(RazorConfiguration.Default, RazorProjectFileSystem.Empty);
             ProjectEngineFactory = Mock.Of<ProjectSnapshotProjectEngineFactory>(
                 f => f.Create(
-                    It.IsAny<ProjectSnapshot>(),
+                    It.IsAny<RazorConfiguration>(),
                     It.IsAny<RazorProjectFileSystem>(),
                     It.IsAny<Action<RazorProjectEngineBuilder>>()) == engine);
         }

@@ -3,37 +3,38 @@ Markup block - Gen<None> - 69 - (0:0,0)
         StartTagAndEndTag - <p> ... </p>
         Tag block - Gen<None> - 8 - (3:0,3)
             Markup span - Gen<Markup> - [<custom>] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[custom];
-                HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Title:] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-            HtmlTokenType.Text;[Title:];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.Text;[custom];
+                SyntaxKind.CloseAngle;[>];
+        SyntaxKind.HtmlTextLiteral - [Title:] - [11..17) - FullWidth: 6 - Slots: 1
+            SyntaxKind.Text;[Title:];
         Tag block - Gen<TagHelper> - 4 - (17:0,17) - br - BRTagHelper
             StartTagOnly - <br>
         Tag block - Gen<None> - 4 - (21:0,21)
             Markup span - Gen<Markup> - [<em>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[em];
-                HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [A Very Cool] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:5
-            HtmlTokenType.Text;[A];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[Very];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[Cool];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.Text;[em];
+                SyntaxKind.CloseAngle;[>];
+        SyntaxKind.HtmlTextLiteral - [A Very Cool] - [25..36) - FullWidth: 11 - Slots: 1
+            SyntaxKind.List - [A Very Cool] - [25..36) - FullWidth: 11 - Slots: 5
+                SyntaxKind.Text;[A];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Text;[Very];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Text;[Cool];
         Tag block - Gen<None> - 5 - (36:0,36)
             Markup span - Gen<Markup> - [</em>] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[em];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.Text;[em];
+                SyntaxKind.CloseAngle;[>];
         Tag block - Gen<None> - 9 - (41:0,41)
             Markup span - Gen<Markup> - [</custom>] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[custom];
-                HtmlTokenType.CloseAngle;[>];
+                SyntaxKind.OpenAngle;[<];
+                SyntaxKind.ForwardSlash;[/];
+                SyntaxKind.Text;[custom];
+                SyntaxKind.CloseAngle;[>];
         Tag block - Gen<TagHelper> - 6 - (50:0,50) - br - BRTagHelper
             SelfClosing - <br />
-        Markup span - Gen<Markup> - [Something] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:1
-            HtmlTokenType.Text;[Something];
+        SyntaxKind.HtmlTextLiteral - [Something] - [56..65) - FullWidth: 9 - Slots: 1
+            SyntaxKind.Text;[Something];

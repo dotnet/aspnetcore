@@ -56,6 +56,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return null;
         }
 
+        public override bool IsImportDocument(DocumentSnapshot document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return false;
+        }
+
+        public override IEnumerable<DocumentSnapshot> GetRelatedDocuments(DocumentSnapshot document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return Array.Empty<DocumentSnapshot>();
+        }
+
         public override RazorProjectEngine GetProjectEngine()
         {
             return _projectEngine.Value;

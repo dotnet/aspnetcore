@@ -4,22 +4,22 @@ Markup block - Gen<None> - 73 - (0:0,0)
         class - DoubleQuotes
             Markup block - Gen<None> - 8 - (14:0,14)
                 Markup span - Gen<Markup> - [   foo] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[   ];
-                    HtmlTokenType.Text;[foo];
+                    SyntaxKind.Whitespace;[   ];
+                    SyntaxKind.Text;[foo];
                 Markup span - Gen<Markup> - [  ] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
-                    HtmlTokenType.WhiteSpace;[  ];
-        Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:1
-            HtmlTokenType.Text;[Hello];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (34:0,34) - Tokens:1
-        HtmlTokenType.WhiteSpace;[ ];
+                    SyntaxKind.Whitespace;[  ];
+        SyntaxKind.HtmlTextLiteral - [Hello] - [25..30) - FullWidth: 5 - Slots: 1
+            SyntaxKind.Text;[Hello];
+    SyntaxKind.HtmlTextLiteral - [ ] - [34..35) - FullWidth: 1 - Slots: 1
+        SyntaxKind.Whitespace;[ ];
     Tag block - Gen<TagHelper> - 38 - (35:0,35) - p - ptaghelper
         StartTagAndEndTag - <p    style="  color:red; " > ... </p>
         style - DoubleQuotes
             Markup block - Gen<None> - 13 - (48:0,48)
                 Markup span - Gen<Markup> - [  color:red;] - SpanEditHandler;Accepts:Any - (48:0,48) - Tokens:2
-                    HtmlTokenType.WhiteSpace;[  ];
-                    HtmlTokenType.Text;[color:red;];
+                    SyntaxKind.Whitespace;[  ];
+                    SyntaxKind.Text;[color:red;];
                 Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (60:0,60) - Tokens:1
-                    HtmlTokenType.WhiteSpace;[ ];
-        Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (64:0,64) - Tokens:1
-            HtmlTokenType.Text;[World];
+                    SyntaxKind.Whitespace;[ ];
+        SyntaxKind.HtmlTextLiteral - [World] - [64..69) - FullWidth: 5 - Slots: 1
+            SyntaxKind.Text;[World];

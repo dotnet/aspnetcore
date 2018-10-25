@@ -4,50 +4,42 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Extensions;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Options;
-using Microsoft.CodeAnalysis.Tags;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.Language.Intellisense.AsyncCompletion;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Utilities;
 using Moq;
 using Xunit;
+using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class RazorDirectiveCompletionProviderTest
     {
-        private static readonly IReadOnlyList<DirectiveDescriptor> DefaultDirectives = new[]
+        public RazorDirectiveCompletionProviderTest()
         {
-            CSharpCodeParser.AddTagHelperDirectiveDescriptor,
-            CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
-            CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
-        };
-
-        [Fact]
-        public void AtDirectiveCompletionPoint_ReturnsFalseIfChangeHasNoOwner()
-        {
-            // Arrange
-            var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
-            var document = CreateDocument();
-            codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
-            var syntaxTree = codeDocument.GetSyntaxTree();
-            var completionContext = CreateContext(2, completionProvider, document);
-
-            // Act
-            var result = completionProvider.AtDirectiveCompletionPoint(syntaxTree, completionContext);
-
-            // Assert
-            Assert.False(result);
+            CompletionBroker = Mock.Of<IAsyncCompletionBroker>(broker => broker.IsCompletionSupported(It.IsAny<IContentType>()) == true);
+            var razorBuffer = Mock.Of<ITextBuffer>(buffer => buffer.ContentType == Mock.Of<IContentType>());
+            TextBufferProvider = Mock.Of<RazorTextBufferProvider>(provider => provider.TryGetFromDocument(It.IsAny<TextDocument>(), out razorBuffer) == true);
+            CompletionFactsService = new DefaultRazorCompletionFactsService();
+            CompletionProviderDependencies = new Lazy<CompletionProviderDependencies>(() => new DefaultCompletionProviderDependencies(CompletionFactsService, CompletionBroker));
         }
+
+        private Lazy<CompletionProviderDependencies> CompletionProviderDependencies { get; }
+
+        private IAsyncCompletionBroker CompletionBroker { get; }
+
+        private RazorTextBufferProvider TextBufferProvider { get; }
+
+        private RazorCompletionFactsService CompletionFactsService { get; }
 
         [Fact]
         public async Task GetDescriptionAsync_AddsDirectiveDescriptionIfPropertyExists()
@@ -61,7 +53,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     [RazorDirectiveCompletionProvider.DescriptionKey] = expectedDescription,
                 }).ToImmutableDictionary());
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
-            var completionProvider = new RazorDirectiveCompletionProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new RazorDirectiveCompletionProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionProviderDependencies,
+                TextBufferProvider);
 
             // Act
             var description = await completionProvider.GetDescriptionAsync(document, item, CancellationToken.None);
@@ -80,7 +75,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var document = CreateDocument();
             var item = CompletionItem.Create("TestDirective");
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
-            var completionProvider = new RazorDirectiveCompletionProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new RazorDirectiveCompletionProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionProviderDependencies,
+                TextBufferProvider);
 
             // Act
             var description = await completionProvider.GetDescriptionAsync(document, item, CancellationToken.None);
@@ -95,7 +93,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>(MockBehavior.Strict);
-            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new FailOnGetCompletionsProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionProviderDependencies,
+                TextBufferProvider);
             var document = CreateDocument();
             document = document.WithFilePath("NotRazor.cs");
             var context = CreateContext(1, completionProvider, document);
@@ -103,7 +104,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Act & Assert
             await completionProvider.ProvideCompletionsAsync(context);
         }
-
 
         [Fact]
         public async Task ProvideCompletionAsync_DoesNotProvideCompletionsForDocumentWithoutPath()
@@ -121,7 +121,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             });
 
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>(MockBehavior.Strict);
-            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new FailOnGetCompletionsProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionProviderDependencies,
+                TextBufferProvider);
             var context = CreateContext(1, completionProvider, document);
 
             // Act & Assert
@@ -136,7 +139,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
             codeDocumentProvider.Setup(provider => provider.TryGetFromDocument(It.IsAny<TextDocument>(), out codeDocument))
                 .Returns(false);
-            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var completionProvider = new FailOnGetCompletionsProvider(
+                new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object),
+                CompletionProviderDependencies,
+                TextBufferProvider);
             var document = CreateDocument();
             var context = CreateContext(1, completionProvider, document);
 
@@ -149,148 +155,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider, false);
+            var completionProvider = new FailOnGetCompletionsProvider(
+                codeDocumentProvider,
+                CompletionProviderDependencies,
+                TextBufferProvider,
+                canGetSnapshotPoint: false);
             var document = CreateDocument();
             var context = CreateContext(0, completionProvider, document);
 
             // Act & Assert
             await completionProvider.ProvideCompletionsAsync(context);
-        }
-
-        [Fact]
-        public async Task ProvideCompletionAsync_DoesNotProvideCompletionsWhenNotAtCompletionPoint()
-        {
-            // Arrange
-            var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
-            var document = CreateDocument();
-            var context = CreateContext(0, completionProvider, document);
-
-            // Act & Assert
-            await completionProvider.ProvideCompletionsAsync(context);
-        }
-
-        [Theory]
-        [InlineData("DateTime.Now")]
-        [InlineData("SomeMethod()")]
-        public async Task ProvideCompletionAsync_DoesNotProvideCompletionsWhenAtComplexExpressions(string content)
-        {
-            // Arrange
-            var codeDocumentProvider = CreateCodeDocumentProvider("@" + content, Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
-            var document = CreateDocument();
-            var context = CreateContext(1, completionProvider, document);
-
-            // Act & Assert
-            await completionProvider.ProvideCompletionsAsync(context);
-        }
-
-        [Fact]
-        public async Task ProvideCompletionAsync_DoesNotProvideCompletionsForExplicitExpressions()
-        {
-            // Arrange
-            var codeDocumentProvider = CreateCodeDocumentProvider("@()", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
-            var document = CreateDocument();
-            var context = CreateContext(2, completionProvider, document);
-
-            // Act & Assert
-            await completionProvider.ProvideCompletionsAsync(context);
-        }
-
-        [Fact]
-        public async Task ProvideCompletionAsync_DoesNotProvideCompletionsForCodeDocumentWithoutSyntaxTree()
-        {
-            // Arrange
-            var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>();
-            var codeDocument = TestRazorCodeDocument.CreateEmpty();
-            codeDocumentProvider.Setup(provider => provider.TryGetFromDocument(It.IsAny<TextDocument>(), out codeDocument))
-                .Returns(true);
-            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
-            var document = CreateDocument();
-            var context = CreateContext(2, completionProvider, document);
-
-            // Act & Assert
-            await completionProvider.ProvideCompletionsAsync(context);
-        }
-
-        [Fact]
-        public void GetCompletionItems_ProvidesCompletionsForDefaultDirectives()
-        {
-            // Arrange
-            var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
-            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider);
-            var document = CreateDocument();
-            codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
-            var syntaxTree = codeDocument.GetSyntaxTree();
-
-            // Act
-            var completionItems = completionProvider.GetCompletionItems(syntaxTree);
-
-            // Assert
-            Assert.Collection(
-                completionItems,
-                item => AssertRazorCompletionItem(DefaultDirectives[0].Description, item),
-                item => AssertRazorCompletionItem(DefaultDirectives[1].Description, item),
-                item => AssertRazorCompletionItem(DefaultDirectives[2].Description, item));
-        }
-
-        [Fact]
-        public void GetCompletionItems_ProvidesCompletionsForDefaultAndExtensibleDirectives()
-        {
-            // Arrange
-            var codeDocumentProvider = CreateCodeDocumentProvider("@", new[] { SectionDirective.Directive });
-            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider);
-            var document = CreateDocument();
-            codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
-            var syntaxTree = codeDocument.GetSyntaxTree();
-
-            // Act
-            var completionItems = completionProvider.GetCompletionItems(syntaxTree);
-
-            // Assert
-            Assert.Collection(
-                completionItems,
-                item => AssertRazorCompletionItem(SectionDirective.Directive.Description, item),
-                item => AssertRazorCompletionItem(DefaultDirectives[0].Description, item),
-                item => AssertRazorCompletionItem(DefaultDirectives[1].Description, item),
-                item => AssertRazorCompletionItem(DefaultDirectives[2].Description, item));
-        }
-
-        [Fact]
-        public void GetCompletionItems_ProvidesCompletionsForDirectivesWithoutDescription()
-        {
-            // Arrange
-            var customDirective = DirectiveDescriptor.CreateSingleLineDirective("custom");
-            var codeDocumentProvider = CreateCodeDocumentProvider("@", new[] { customDirective });
-            var completionProvider = new RazorDirectiveCompletionProvider(codeDocumentProvider);
-            var document = CreateDocument();
-            codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
-            var syntaxTree = codeDocument.GetSyntaxTree();
-
-            // Act
-            var completionItems = completionProvider.GetCompletionItems(syntaxTree);
-
-            // Assert
-            var customDirectiveCompletion = Assert.Single(completionItems, item => item.DisplayText == customDirective.Directive);
-            AssertRazorCompletionItemDefaults(customDirectiveCompletion);
-            Assert.DoesNotContain(customDirectiveCompletion.Properties, property => property.Key == RazorDirectiveCompletionProvider.DescriptionKey);
-        }
-
-        private static void AssertRazorCompletionItem(string expectedDescription, CompletionItem item)
-        {
-            Assert.True(item.Properties.TryGetValue(RazorDirectiveCompletionProvider.DescriptionKey, out var actualDescription));
-            Assert.Equal(expectedDescription, actualDescription);
-
-            AssertRazorCompletionItemDefaults(item);
-        }
-
-        private static void AssertRazorCompletionItemDefaults(CompletionItem item)
-        {
-            Assert.Equal("_RazorDirective_", item.SortText);
-            Assert.False(item.Rules.FormatOnCommit);
-            var tag = Assert.Single(item.Tags);
-            Assert.Equal(WellKnownTags.Intrinsic, tag);
         }
 
         private static Lazy<RazorCodeDocumentProvider> CreateCodeDocumentProvider(string text, IEnumerable<DirectiveDescriptor> directives)
@@ -348,16 +222,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             private readonly bool _canGetSnapshotPoint;
 
-            public FailOnGetCompletionsProvider(Lazy<RazorCodeDocumentProvider> codeDocumentProvider, bool canGetSnapshotPoint = true)
-                : base(codeDocumentProvider)
+            public FailOnGetCompletionsProvider(
+                Lazy<RazorCodeDocumentProvider> codeDocumentProvider,
+                Lazy<CompletionProviderDependencies> completionProviderDependencies,
+                RazorTextBufferProvider textBufferProvider,
+                bool canGetSnapshotPoint = true)
+                : base(codeDocumentProvider, completionProviderDependencies, textBufferProvider)
             {
                 _canGetSnapshotPoint = canGetSnapshotPoint;
-            }
-
-            internal override IEnumerable<CompletionItem> GetCompletionItems(RazorSyntaxTree syntaxTree)
-            {
-                Assert.False(true, "Completions should not have been attempted.");
-                return null;
             }
 
             protected override bool TryGetRazorSnapshotPoint(CompletionContext context, out SnapshotPoint snapshotPoint)

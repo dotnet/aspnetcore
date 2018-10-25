@@ -1,10 +1,10 @@
 Source Location: (14:0,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithBoundAttributes.cshtml)
 |*, TestAssembly|
-Generated Location: (494:11,38 [15] )
+Generated Location: (599:12,38 [15] )
 |*, TestAssembly|
 
 Source Location: (57:2,18 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithBoundAttributes.cshtml)
 |Hello|
-Generated Location: (1025:24,18 [5] )
+Generated Location: (1161:28,18 [5] )
 |Hello|
 

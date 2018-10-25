@@ -21,13 +21,13 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
 
         private TestEditorDocumentManager Manager { get; }
 
-        public string Project1 => "c:\\Project1";
+        public string Project1 => TestProjectData.SomeProject.FilePath;
 
-        public string Project2 => "c:\\Project2";
+        public string Project2 => TestProjectData.AnotherProject.FilePath;
 
-        public string File1 => "c:\\Project1\\File1.cshtml";
+        public string File1 => TestProjectData.SomeProjectFile1.FilePath;
 
-        public string File2 => "c:\\Project2\\File2.cshtml";
+        public string File2 => TestProjectData.AnotherProjectFile2.FilePath;
 
         public TestTextBuffer TextBuffer => new TestTextBuffer(new StringTextSnapshot("HI"));
 
@@ -113,8 +113,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             // Assert
             Assert.Collection(
                 documents.OrderBy(d => d.ProjectFilePath),
-                d => Assert.Same(document1, d),
-                d => Assert.Same(document2, d));
+                d => Assert.Same(document2, d),
+                d => Assert.Same(document1, d));
         }
 
         [ForegroundFact]
@@ -147,8 +147,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             // Assert
             Assert.Collection(
                 Manager.Opened.OrderBy(d => d.ProjectFilePath),
-                d => Assert.Same(document1, d),
-                d => Assert.Same(document2, d));
+                d => Assert.Same(document2, d),
+                d => Assert.Same(document1, d));
         }
 
         [ForegroundFact]
@@ -165,8 +165,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             // Assert
             Assert.Collection(
                 Manager.Closed.OrderBy(d => d.ProjectFilePath),
-                d => Assert.Same(document1, d),
-                d => Assert.Same(document2, d));
+                d => Assert.Same(document2, d),
+                d => Assert.Same(document1, d));
         }
 
         private class TestEditorDocumentManager : EditorDocumentManagerBase

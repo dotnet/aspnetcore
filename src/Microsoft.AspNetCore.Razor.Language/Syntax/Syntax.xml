@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Tree Root="SyntaxNode">
+  <PredefinedNode Name="SyntaxToken" Base="SyntaxNode" />
+  
+  <!-- Common -->
+  <AbstractNode Name="RazorSyntaxNode" Base="SyntaxNode" />
+  <Node Name="RazorCommentBlockSyntax" Base="RazorSyntaxNode">
+    <Kind Name="RazorComment" />
+    <Field Name="StartCommentTransition" Type="SyntaxToken">
+      <Kind Name="RazorCommentTransition" />
+    </Field>
+    <Field Name="StartCommentStar" Type="SyntaxToken">
+      <Kind Name="RazorCommentStar" />
+    </Field>
+    <Field Name="Comment" Type="SyntaxToken" Optional="true">
+      <Kind Name="RazorComment" />
+    </Field>
+    <Field Name="EndCommentStar" Type="SyntaxToken">
+      <Kind Name="RazorCommentStar" />
+    </Field>
+    <Field Name="EndCommentTransition" Type="SyntaxToken">
+      <Kind Name="RazorCommentTransition" />
+    </Field>
+  </Node>
+
+  <!-- HTML -->
+  <AbstractNode Name="HtmlSyntaxNode" Base="RazorSyntaxNode" />
+  <Node Name="HtmlTextLiteralSyntax" Base="HtmlSyntaxNode">
+    <Kind Name="HtmlTextLiteral" />
+    <Field Name="TextTokens" Type="SyntaxList&lt;SyntaxToken&gt;" />
+  </Node>
+  
+  <!-- CSharp -->
+  <AbstractNode Name="CSharpSyntaxNode" Base="RazorSyntaxNode" />
+  <Node Name="CSharpTransitionSyntax" Base="CSharpSyntaxNode">
+    <Kind Name="CSharpTransition" />
+    <Field Name="Transition" Type="SyntaxToken">
+      <Kind Name="Transition" />
+    </Field>
+  </Node>
+  <Node Name="CSharpMetaCodeSyntax" Base="CSharpSyntaxNode">
+    <Kind Name="CSharpMetaCode" />
+    <Field Name="MetaCode" Type="SyntaxList&lt;SyntaxToken&gt;" />
+  </Node>
+  <Node Name="CSharpCodeLiteralSyntax" Base="CSharpSyntaxNode">
+    <Kind Name="CSharpCodeLiteral" />
+    <Field Name="CSharpTokens" Type="SyntaxList&lt;SyntaxToken&gt;" />
+  </Node>
+  <Node Name="CSharpCodeBlockSyntax" Base="CSharpSyntaxNode">
+    <Kind Name="CSharpCodeBlock" />
+    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" />
+  </Node>
+  <AbstractNode Name="CSharpBlockSyntax" Base="CSharpSyntaxNode">
+    <Field Name="Transition" Type="CSharpTransitionSyntax" />
+    <Field Name="Body" Type="CSharpSyntaxNode" />
+  </AbstractNode>
+  <Node Name="CSharpStatement" Base="CSharpBlockSyntax">
+    <Kind Name="CSharpStatement" />
+    <Field Name="Transition" Type="CSharpTransitionSyntax" Override="true">
+      <Kind Name="CSharpTransition" />
+    </Field>
+    <Field Name="Body" Type="CSharpSyntaxNode" Override="true">
+      <Kind Name="CSharpStatementBody" />
+    </Field>
+  </Node>
+  <Node Name="CSharpStatementBodySyntax" Base="CSharpSyntaxNode">
+    <Kind Name="CSharpStatementBody" />
+    <Field Name="OpenBrace" Type="CSharpMetaCodeSyntax" />
+    <Field Name="CSharpCode" Type="CSharpCodeBlockSyntax" />
+    <Field Name="CloseBrace" Type="CSharpMetaCodeSyntax" />
+  </Node>
+  <Node Name="CSharpExpression" Base="CSharpBlockSyntax">
+    <Kind Name="CSharpExpression" />
+    <Field Name="Transition" Type="CSharpTransitionSyntax" Override="true">
+      <Kind Name="CSharpTransition" />
+    </Field>
+    <Field Name="Body" Type="CSharpSyntaxNode" Override="true">
+      <Kind Name="CSharpExpressionBody" />
+    </Field>
+  </Node>
+  <Node Name="CSharpExpressionBodySyntax" Base="CSharpSyntaxNode">
+    <Kind Name="CSharpExpressionBody" />
+    <Field Name="OpenParen" Type="CSharpMetaCodeSyntax" Optional="true" />
+    <Field Name="CSharpCode" Type="CSharpCodeBlockSyntax" />
+    <Field Name="CloseParen" Type="CSharpMetaCodeSyntax" Optional="true" />
+  </Node>
+  <Node Name="CSharpDirectiveSyntax" Base="CSharpBlockSyntax">
+    <Kind Name="CSharpDirective" />
+    <Field Name="Transition" Type="CSharpTransitionSyntax" Override="true">
+      <Kind Name="CSharpTransition" />
+    </Field>
+    <Field Name="Body" Type="CSharpSyntaxNode" Override="true">
+      <Kind Name="CSharpDirectiveBody" />
+    </Field>
+  </Node>
+  <Node Name="CSharpDirectiveBodySyntax" Base="CSharpSyntaxNode">
+    <Kind Name="CSharpDirectiveBody" />
+    <Field Name="Keyword" Type="CSharpMetaCodeSyntax" />
+    <Field Name="CSharpCode" Type="CSharpCodeBlockSyntax" />
+  </Node>
+</Tree>

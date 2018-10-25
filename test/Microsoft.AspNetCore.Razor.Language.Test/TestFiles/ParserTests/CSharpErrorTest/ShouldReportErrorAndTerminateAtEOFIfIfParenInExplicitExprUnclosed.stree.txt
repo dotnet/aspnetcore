@@ -1,9 +1,9 @@
 Expression block - Gen<Expr> - 13 - (0:0,0)
     MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftParenthesis;[(];
+        SyntaxKind.LeftParenthesis;[(];
     Code span - Gen<Expr> - [foo barLFbaz] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:5
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.Identifier;[baz];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[bar];
+        SyntaxKind.NewLine;[LF];
+        SyntaxKind.Identifier;[baz];

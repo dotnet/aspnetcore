@@ -12,11 +12,10 @@ using ItemReference = Microsoft.CodeAnalysis.Razor.ProjectSystem.ManagedProjectS
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class FallbackRazorProjectHostTest : ForegroundDispatcherTestBase
+    public class FallbackRazorProjectHostTest : ForegroundDispatcherWorkspaceTestBase
     {
         public FallbackRazorProjectHostTest()
         {
-            Workspace = new AdhocWorkspace();
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
 
             ReferenceItems = new ItemCollection(ManagedProjectSystemSchema.ResolvedCompilationReference.SchemaName);
@@ -31,8 +30,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private ItemCollection ContentItems { get; }
 
         private ItemCollection NoneItems { get; }
-
-        private Workspace Workspace { get; }
 
         [Fact]
         public void GetChangedAndRemovedDocuments_ReturnsChangedContentAndNoneItems()

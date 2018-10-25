@@ -5,13 +5,13 @@ Markup block - Gen<None> - 36 - (0:0,0)
             Markup block - Gen<None> - 19 - (13:0,13)
                 Markup block - Gen<None> - 19 - (13:0,13)
                     Code span - Gen<Expr> - [ ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                        HtmlTokenType.WhiteSpace;[ ];
+                        SyntaxKind.Whitespace;[ ];
                     Expression block - Gen<Expr> - 18 - (14:0,14)
                         Code span - Gen<Expr> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (14:0,14) - Tokens:1
-                            CSharpTokenType.Transition;[@];
+                            SyntaxKind.Transition;[@];
                         Code span - Gen<Expr> - [DateTime.Now.Year] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (15:0,15) - Tokens:5
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Year];
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Year];

@@ -1,4 +1,4 @@
 Statement block - Gen<None> - 25 - (0:0,0)
     Code span - Gen<Stmt> - [using                    ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-        CSharpTokenType.Keyword;[using];
-        CSharpTokenType.WhiteSpace;[                    ];
+        SyntaxKind.Keyword;[using];
+        SyntaxKind.Whitespace;[                    ];

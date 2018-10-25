@@ -3,4 +3,4 @@ Markup block - Gen<None> - 21 - (0:0,0)
         SelfClosing - <myth bound='    ' />
         bound - SingleQuotes
             Code span - Gen<Expr> - [    ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                HtmlTokenType.WhiteSpace;[    ];
+                SyntaxKind.Whitespace;[    ];

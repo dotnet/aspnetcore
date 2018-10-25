@@ -1,7 +1,7 @@
 Markup block - Gen<None> - 28 - (0:0,0)
     Tag block - Gen<None> - 28 - (0:0,0)
         Markup span - Gen<Markup> - [<                      LF   ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.WhiteSpace;[                      ];
-            HtmlTokenType.NewLine;[LF];
-            HtmlTokenType.WhiteSpace;[   ];
+            SyntaxKind.OpenAngle;[<];
+            SyntaxKind.Whitespace;[                      ];
+            SyntaxKind.NewLine;[LF];
+            SyntaxKind.Whitespace;[   ];

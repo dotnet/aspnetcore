@@ -8,7 +8,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 1 "TestFiles/IntegrationTests/ExtensibleDirectiveTest/NamespaceToken.cshtml"
 global::System.Object __typeHelper = nameof(System.Globalization);
+
+#line default
+#line hidden
         }
         ))();
         }

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var directiveTokenHandler = new TestDirectiveTokenEditHandler();
             var target = factory.Span(SpanKindInternal.Code, "SomeNamespace", markup: false)
                 .With(directiveTokenHandler)
-                .Accepts(AcceptedCharactersInternal.NonWhiteSpace);
+                .Accepts(AcceptedCharactersInternal.NonWhitespace);
             var sourceChange = new SourceChange(index, length, newText);
 
             // Act
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var directiveTokenHandler = new TestDirectiveTokenEditHandler();
             var target = factory.Span(SpanKindInternal.Code, "Some Namespace", markup: false)
                 .With(directiveTokenHandler)
-                .Accepts(AcceptedCharactersInternal.NonWhiteSpace);
+                .Accepts(AcceptedCharactersInternal.NonWhitespace);
             var sourceChange = new SourceChange(index, length, newText);
 
             // Act

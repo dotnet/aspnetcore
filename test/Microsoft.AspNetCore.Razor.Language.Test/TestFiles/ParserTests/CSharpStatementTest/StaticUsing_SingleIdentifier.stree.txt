@@ -1,9 +1,9 @@
 Directive block - Gen<None> - 20 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     Code span - Gen<Import: static System;> - [using static System] - SpanEditHandler;Accepts:AnyExceptNewline - (1:0,1) - Tokens:5
-        CSharpTokenType.Keyword;[using];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[static];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[System];
+        SyntaxKind.Keyword;[using];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[static];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[System];

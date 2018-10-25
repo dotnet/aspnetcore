@@ -1,6 +1,6 @@
 Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
 |"*, TestAssembly"|
-Generated Location: (540:12,37 [17] )
+Generated Location: (638:13,37 [17] )
 |"*, TestAssembly"|
 
 Source Location: (333:12,6 [66] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
@@ -8,7 +8,7 @@ Source Location: (333:12,6 [66] TestFiles/IntegrationTests/CodeGenerationIntegra
         RenderTemplate(
             "Template: ",
             |
-Generated Location: (979:24,6 [66] )
+Generated Location: (1108:28,6 [66] )
 |
         RenderTemplate(
             "Template: ",
@@ -16,13 +16,13 @@ Generated Location: (979:24,6 [66] )
 
 Source Location: (427:15,40 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
 |item|
-Generated Location: (1287:33,40 [4] )
+Generated Location: (1416:37,40 [4] )
 |item|
 
 Source Location: (482:15,95 [8] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithTemplate.cshtml)
 |);
     |
-Generated Location: (1703:42,95 [8] )
+Generated Location: (1832:46,95 [8] )
 |);
     |
 
@@ -35,7 +35,7 @@ Source Location: (47:2,12 [268] TestFiles/IntegrationTests/CodeGenerationIntegra
         helperResult.WriteTo(Output, HtmlEncoder);
     }
 |
-Generated Location: (1974:51,12 [268] )
+Generated Location: (2103:55,12 [268] )
 |
     public void RenderTemplate(string title, Func<string, HelperResult> template)
     {

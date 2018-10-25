@@ -21,10 +21,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             FilePath = filePath;
             TargetPath = targetPath;
+            GeneratedCodeContainer = new GeneratedCodeContainer();
         }
 
         public string FilePath { get; }
 
         public string TargetPath { get; }
+
+        public GeneratedCodeContainer GeneratedCodeContainer { get; }
     }
 }

@@ -1,11 +1,11 @@
 Markup block - Gen<None> - 70 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Statement block - Gen<None> - 70 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            CSharpTokenType.LeftBrace;[{];
+            SyntaxKind.LeftBrace;[{];
         Markup block - Gen<None> - 67 - (2:0,2)
             Tag block - Gen<TagHelper> - 67 - (2:0,2) - input - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
                 SelfClosing - <input bound-required-int unbound-required bound-required-string />
@@ -13,8 +13,8 @@ Markup block - Gen<None> - 70 - (0:0,0)
                 unbound-required - Minimized
                 bound-required-string - Minimized
         Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (69:0,69) - Tokens:1
-            CSharpTokenType.Unknown;[];
+            SyntaxKind.Unknown;[];
         MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (69:0,69) - Tokens:1
-            CSharpTokenType.RightBrace;[}];
+            SyntaxKind.RightBrace;[}];
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (70:0,70) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];

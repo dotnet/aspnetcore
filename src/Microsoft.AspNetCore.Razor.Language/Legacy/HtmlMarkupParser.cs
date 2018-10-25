@@ -5,22 +5,31 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class HtmlMarkupParser : TokenizerBackedParser<HtmlTokenizer, HtmlToken, HtmlTokenType>
+    internal class HtmlMarkupParser : TokenizerBackedParser<HtmlTokenizer>
     {
         private const string ScriptTagName = "script";
 
-        private static readonly HtmlToken[] nonAllowedHtmlCommentEnding = new[] { HtmlToken.Hyphen, new HtmlToken("!", HtmlTokenType.Bang), new HtmlToken("<", HtmlTokenType.OpenAngle) };
-        private static readonly HtmlToken[] singleHyphenArray = new[] { HtmlToken.Hyphen };
+        private static readonly SyntaxToken[] nonAllowedHtmlCommentEnding = new[]
+        {
+            SyntaxFactory.Token(SyntaxKind.Text, "-"),
+            SyntaxFactory.Token(SyntaxKind.Bang, "!"),
+            SyntaxFactory.Token(SyntaxKind.OpenAngle, "<"),
+        };
+        private static readonly SyntaxToken[] singleHyphenArray = new[]
+        {
+            SyntaxFactory.Token(SyntaxKind.Text, "-")
+        };
 
         private static readonly char[] ValidAfterTypeAttributeNameCharacters = { ' ', '\t', '\r', '\n', '\f', '=' };
         private SourceLocation _lastTagStart = SourceLocation.Zero;
-        private HtmlToken _bufferedOpenAngle;
+        private SyntaxToken _bufferedOpenAngle;
 
         //From http://dev.w3.org/html5/spec/Overview.html#elements-0
-        private ISet<string> _voidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private readonly ISet<string> _voidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "area",
             "base",
@@ -59,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get { return CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase; }
         }
 
-        protected override bool TokenTypeEquals(HtmlTokenType x, HtmlTokenType y) => x == y;
+        protected override bool TokenKindEquals(SyntaxKind x, SyntaxKind y) => x == y;
 
         public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
         {
@@ -73,14 +82,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Output(SpanKindInternal.Markup);
         }
 
-        protected void SkipToAndParseCode(HtmlTokenType type)
+        protected void SkipToAndParseCode(SyntaxKind type)
         {
-            SkipToAndParseCode(token => token.Type == type);
+            SkipToAndParseCode(token => token.Kind == type);
         }
 
-        protected void SkipToAndParseCode(Func<HtmlToken, bool> condition)
+        protected void SkipToAndParseCode(Func<SyntaxToken, bool> condition)
         {
-            HtmlToken last = null;
+            SyntaxToken last = null;
             var startOfLine = false;
             while (!EndOfFile && !condition(CurrentToken))
             {
@@ -88,15 +97,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     Context.NullGenerateWhitespaceAndNewLine = false;
                     Span.ChunkGenerator = SpanChunkGenerator.Null;
-                    AcceptWhile(token => token.Type == HtmlTokenType.WhiteSpace);
-                    if (At(HtmlTokenType.NewLine))
+                    AcceptWhile(token => token.Kind == SyntaxKind.Whitespace);
+                    if (At(SyntaxKind.NewLine))
                     {
                         AcceptAndMoveNext();
                     }
 
                     Output(SpanKindInternal.Markup);
                 }
-                else if (At(HtmlTokenType.NewLine))
+                else if (At(SyntaxKind.NewLine))
                 {
                     if (last != null)
                     {
@@ -108,11 +117,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     last = null;
                     AcceptAndMoveNext();
                 }
-                else if (At(HtmlTokenType.Transition))
+                else if (At(SyntaxKind.Transition))
                 {
                     var transition = CurrentToken;
                     NextToken();
-                    if (At(HtmlTokenType.Transition))
+                    if (At(SyntaxKind.Transition))
                     {
                         if (last != null)
                         {
@@ -138,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // Handle whitespace rewriting
                     if (last != null)
                     {
-                        if (!Context.DesignTimeMode && last.Type == HtmlTokenType.WhiteSpace && startOfLine)
+                        if (!Context.DesignTimeMode && last.Kind == SyntaxKind.Whitespace && startOfLine)
                         {
                             // Put the whitespace back too
                             startOfLine = false;
@@ -155,12 +164,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     OtherParserBlock();
                 }
-                else if (At(HtmlTokenType.RazorCommentTransition))
+                else if (At(SyntaxKind.RazorCommentTransition))
                 {
                     if (last != null)
                     {
                         // Don't render the whitespace between the start of the line and the razor comment.
-                        if (startOfLine && last.Type == HtmlTokenType.WhiteSpace)
+                        if (startOfLine && last.Kind == SyntaxKind.Whitespace)
                         {
                             AddMarkerTokenIfNecessary();
                             // Output the tokens that may have been accepted prior to the whitespace.
@@ -180,8 +189,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     // Handle the whitespace and newline at the end of a razor comment.
                     if (startOfLine &&
-                        (At(HtmlTokenType.NewLine) ||
-                        (At(HtmlTokenType.WhiteSpace) && NextIs(HtmlTokenType.NewLine))))
+                        (At(SyntaxKind.NewLine) ||
+                        (At(SyntaxKind.Whitespace) && NextIs(SyntaxKind.NewLine))))
                     {
                         AcceptWhile(IsSpacingToken(includeNewLines: false));
                         AcceptAndMoveNext();
@@ -192,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 else
                 {
                     // As long as we see whitespace, we're still at the "start" of the line
-                    startOfLine &= At(HtmlTokenType.WhiteSpace);
+                    startOfLine &= At(SyntaxKind.Whitespace);
 
                     // If there's a last token, accept it
                     if (last != null)
@@ -213,9 +222,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected static Func<HtmlToken, bool> IsSpacingToken(bool includeNewLines)
+        protected static Func<SyntaxToken, bool> IsSpacingToken(bool includeNewLines)
         {
-            return token => token.Type == HtmlTokenType.WhiteSpace || (includeNewLines && token.Type == HtmlTokenType.NewLine);
+            return token => token.Kind == SyntaxKind.Whitespace || (includeNewLines && token.Kind == SyntaxKind.NewLine);
         }
 
         private void OtherParserBlock()
@@ -238,12 +247,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var potentialBang = Lookahead(lookahead);
 
             if (potentialBang != null &&
-                potentialBang.Type == HtmlTokenType.Bang)
+                potentialBang.Kind == SyntaxKind.Bang)
             {
                 var afterBang = Lookahead(lookahead + 1);
 
                 return afterBang != null &&
-                    afterBang.Type == HtmlTokenType.Text &&
+                    afterBang.Kind == SyntaxKind.Text &&
                     !string.Equals(afterBang.Content, "DOCTYPE", StringComparison.OrdinalIgnoreCase);
             }
 
@@ -257,7 +266,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Output(SpanKindInternal.Markup);
 
                 // Accept the parser escape character '!'.
-                Assert(HtmlTokenType.Bang);
+                Assert(SyntaxKind.Bang);
                 AcceptAndMoveNext();
 
                 // Setup the metacode span that we will be outputing.
@@ -286,23 +295,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     AcceptWhile(IsSpacingToken(includeNewLines: true));
 
-                    if (CurrentToken.Type == HtmlTokenType.OpenAngle)
+                    if (CurrentToken.Kind == SyntaxKind.OpenAngle)
                     {
                         // "<" => Implicit Tag Block
-                        TagBlock(new Stack<Tuple<HtmlToken, SourceLocation>>());
+                        TagBlock(new Stack<Tuple<SyntaxToken, SourceLocation>>());
                     }
-                    else if (CurrentToken.Type == HtmlTokenType.Transition)
+                    else if (CurrentToken.Kind == SyntaxKind.Transition)
                     {
                         // "@" => Explicit Tag/Single Line Block OR Template
                         Output(SpanKindInternal.Markup);
 
                         // Definitely have a transition span
-                        Assert(HtmlTokenType.Transition);
+                        Assert(SyntaxKind.Transition);
                         AcceptAndMoveNext();
                         Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
                         Output(SpanKindInternal.Transition);
-                        if (At(HtmlTokenType.Transition))
+                        if (At(SyntaxKind.Transition))
                         {
                             Span.ChunkGenerator = SpanChunkGenerator.Null;
                             AcceptAndMoveNext();
@@ -330,10 +339,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void AfterTransition()
         {
             // "@:" => Explicit Single Line Block
-            if (CurrentToken.Type == HtmlTokenType.Text && CurrentToken.Content.Length > 0 && CurrentToken.Content[0] == ':')
+            if (CurrentToken.Kind == SyntaxKind.Text && CurrentToken.Content.Length > 0 && CurrentToken.Content[0] == ':')
             {
                 // Split the token
-                Tuple<HtmlToken, HtmlToken> split = Language.SplitToken(CurrentToken, 1, HtmlTokenType.Colon);
+                var split = Language.SplitToken(CurrentToken, 1, SyntaxKind.Colon);
 
                 // The first part (left) is added to this span and we return a MetaCode span
                 Accept(split.Item1);
@@ -346,9 +355,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 NextToken();
                 SingleLineMarkup();
             }
-            else if (CurrentToken.Type == HtmlTokenType.OpenAngle)
+            else if (CurrentToken.Kind == SyntaxKind.OpenAngle)
             {
-                TagBlock(new Stack<Tuple<HtmlToken, SourceLocation>>());
+                TagBlock(new Stack<Tuple<SyntaxToken, SourceLocation>>());
             }
         }
 
@@ -359,8 +368,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var old = Context.WhiteSpaceIsSignificantToAncestorBlock;
             Context.WhiteSpaceIsSignificantToAncestorBlock = true;
             Span.EditHandler = new SpanEditHandler(Language.TokenizeString);
-            SkipToAndParseCode(HtmlTokenType.NewLine);
-            if (!EndOfFile && CurrentToken.Type == HtmlTokenType.NewLine)
+            SkipToAndParseCode(SyntaxKind.NewLine);
+            if (!EndOfFile && CurrentToken.Kind == SyntaxKind.NewLine)
             {
                 AcceptAndMoveNext();
                 Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
@@ -370,13 +379,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Output(SpanKindInternal.Markup);
         }
 
-        private void TagBlock(Stack<Tuple<HtmlToken, SourceLocation>> tags)
+        private void TagBlock(Stack<Tuple<SyntaxToken, SourceLocation>> tags)
         {
             // Skip Whitespace and Text
             var complete = false;
             do
             {
-                SkipToAndParseCode(HtmlTokenType.OpenAngle);
+                SkipToAndParseCode(SyntaxKind.OpenAngle);
 
                 // Output everything prior to the OpenAngle into a markup span
                 Output(SpanKindInternal.Markup);
@@ -401,7 +410,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         _bufferedOpenAngle = null;
                         _lastTagStart = CurrentStart;
-                        Assert(HtmlTokenType.OpenAngle);
+                        Assert(SyntaxKind.OpenAngle);
                         _bufferedOpenAngle = CurrentToken;
                         var tagStart = CurrentStart;
                         if (!NextToken())
@@ -440,18 +449,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         private bool AfterTagStart(SourceLocation tagStart,
-                                   Stack<Tuple<HtmlToken, SourceLocation>> tags,
+                                   Stack<Tuple<SyntaxToken, SourceLocation>> tags,
                                    bool atSpecialTag,
                                    IDisposable tagBlockWrapper)
         {
             if (!EndOfFile)
             {
-                switch (CurrentToken.Type)
+                switch (CurrentToken.Kind)
                 {
-                    case HtmlTokenType.ForwardSlash:
+                    case SyntaxKind.ForwardSlash:
                         // End Tag
                         return EndTag(tagStart, tags, tagBlockWrapper);
-                    case HtmlTokenType.Bang:
+                    case SyntaxKind.Bang:
                         // Comment, CDATA, DOCTYPE, or a parser-escaped HTML tag.
                         if (atSpecialTag)
                         {
@@ -462,7 +471,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             goto default;
                         }
-                    case HtmlTokenType.QuestionMark:
+                    case SyntaxKind.QuestionMark:
                         // XML PI
                         Accept(_bufferedOpenAngle);
                         return XmlPI();
@@ -483,15 +492,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private bool XmlPI()
         {
             // Accept "?"
-            Assert(HtmlTokenType.QuestionMark);
+            Assert(SyntaxKind.QuestionMark);
             AcceptAndMoveNext();
-            return AcceptUntilAll(HtmlTokenType.QuestionMark, HtmlTokenType.CloseAngle);
+            return AcceptUntilAll(SyntaxKind.QuestionMark, SyntaxKind.CloseAngle);
         }
 
         private bool BangTag()
         {
             // Accept "!"
-            Assert(HtmlTokenType.Bang);
+            Assert(SyntaxKind.Bang);
 
             if (AcceptAndMoveNext())
             {
@@ -503,16 +512,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         AcceptAndMoveNext();
                         Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
 
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.WhiteSpace;
+                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
                         while (!EndOfFile)
                         {
-                            SkipToAndParseCode(HtmlTokenType.DoubleHyphen);
+                            SkipToAndParseCode(SyntaxKind.DoubleHyphen);
                             var lastDoubleHyphen = AcceptAllButLastDoubleHyphens();
 
-                            if (At(HtmlTokenType.CloseAngle))
+                            if (At(SyntaxKind.CloseAngle))
                             {
                                 // Output the content in the comment block as a separate markup
-                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.Whitespace);
 
                                 // This is the end of a comment block
                                 Accept(lastDoubleHyphen);
@@ -527,7 +536,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
                     }
                 }
-                else if (CurrentToken.Type == HtmlTokenType.LeftBracket)
+                else if (CurrentToken.Kind == SyntaxKind.LeftBracket)
                 {
                     if (AcceptAndMoveNext())
                     {
@@ -537,19 +546,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 else
                 {
                     AcceptAndMoveNext();
-                    return AcceptUntilAll(HtmlTokenType.CloseAngle);
+                    return AcceptUntilAll(SyntaxKind.CloseAngle);
                 }
             }
 
             return false;
         }
 
-        protected HtmlToken AcceptAllButLastDoubleHyphens()
+        protected SyntaxToken AcceptAllButLastDoubleHyphens()
         {
             var lastDoubleHyphen = CurrentToken;
             AcceptWhile(s =>
             {
-                if (NextIs(HtmlTokenType.DoubleHyphen))
+                if (NextIs(SyntaxKind.DoubleHyphen))
                 {
                     lastDoubleHyphen = s;
                     return true;
@@ -560,10 +569,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             NextToken();
 
-            if (At(HtmlTokenType.Text) && IsHyphen(CurrentToken))
+            if (At(SyntaxKind.Text) && IsHyphen(CurrentToken))
             {
                 // Doing this here to maintain the order of tokens
-                if (!NextIs(HtmlTokenType.CloseAngle))
+                if (!NextIs(SyntaxKind.CloseAngle))
                 {
                     Accept(lastDoubleHyphen);
                     lastDoubleHyphen = null;
@@ -575,9 +584,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return lastDoubleHyphen;
         }
 
-        internal static bool IsHyphen(HtmlToken token)
+        internal static bool IsHyphen(SyntaxToken token)
         {
-            return token.Equals(HtmlToken.Hyphen);
+            return token.Kind == SyntaxKind.Text && token.Content == "-";
         }
 
         protected bool IsHtmlCommentAhead()
@@ -595,13 +604,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             //      2.3 nor end with the string "<!-".
             // 3. The string "-->"
 
-            if (CurrentToken.Type != HtmlTokenType.DoubleHyphen)
+            if (CurrentToken.Kind != SyntaxKind.DoubleHyphen)
             {
                 return false;
             }
 
             // Check condition 2.1
-            if (NextIs(HtmlTokenType.CloseAngle) || NextIs(next => IsHyphen(next) && NextIs(HtmlTokenType.CloseAngle)))
+            if (NextIs(SyntaxKind.CloseAngle) || NextIs(next => IsHyphen(next) && NextIs(SyntaxKind.CloseAngle)))
             {
                 return false;
             }
@@ -610,15 +619,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var isValidComment = false;
             LookaheadUntil((token, prevTokens) =>
             {
-                if (token.Type == HtmlTokenType.DoubleHyphen)
+                if (token.Kind == SyntaxKind.DoubleHyphen)
                 {
-                    if (NextIs(HtmlTokenType.CloseAngle))
+                    if (NextIs(SyntaxKind.CloseAngle))
                     {
                         // Check condition 2.3: We're at the end of a comment. Check to make sure the text ending is allowed.
                         isValidComment = !IsCommentContentEndingInvalid(prevTokens);
                         return true;
                     }
-                    else if (NextIs(ns => IsHyphen(ns) && NextIs(HtmlTokenType.CloseAngle)))
+                    else if (NextIs(ns => IsHyphen(ns) && NextIs(SyntaxKind.CloseAngle)))
                     {
                         // Check condition 2.3: we're at the end of a comment, which has an extra dash.
                         // Need to treat the dash as part of the content and check the ending.
@@ -627,17 +636,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         isValidComment = true;
                         return true;
                     }
-                    else if (NextIs(ns => ns.Type == HtmlTokenType.Bang && NextIs(HtmlTokenType.CloseAngle)))
+                    else if (NextIs(ns => ns.Kind == SyntaxKind.Bang && NextIs(SyntaxKind.CloseAngle)))
                     {
                         // This is condition 2.2.3
                         isValidComment = false;
                         return true;
                     }
                 }
-                else if (token.Type == HtmlTokenType.OpenAngle)
+                else if (token.Kind == SyntaxKind.OpenAngle)
                 {
                     // Checking condition 2.2.1
-                    if (NextIs(ns => ns.Type == HtmlTokenType.Bang && NextIs(HtmlTokenType.DoubleHyphen)))
+                    if (NextIs(ns => ns.Kind == SyntaxKind.Bang && NextIs(SyntaxKind.DoubleHyphen)))
                     {
                         isValidComment = false;
                         return true;
@@ -653,13 +662,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// <summary>
         /// Verifies, that the sequence doesn't end with the "&lt;!-" HtmlTokens. Note, the first token is an opening bracket token
         /// </summary>
-        internal static bool IsCommentContentEndingInvalid(IEnumerable<HtmlToken> sequence)
+        internal static bool IsCommentContentEndingInvalid(IEnumerable<SyntaxToken> sequence)
         {
             var reversedSequence = sequence.Reverse();
             var index = 0;
             foreach (var item in reversedSequence)
             {
-                if (!item.Equals(nonAllowedHtmlCommentEnding[index++]))
+                if (!item.IsEquivalentTo(nonAllowedHtmlCommentEnding[index++]))
                 {
                     return false;
                 }
@@ -675,13 +684,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private bool CData()
         {
-            if (CurrentToken.Type == HtmlTokenType.Text && string.Equals(CurrentToken.Content, "cdata", StringComparison.OrdinalIgnoreCase))
+            if (CurrentToken.Kind == SyntaxKind.Text && string.Equals(CurrentToken.Content, "cdata", StringComparison.OrdinalIgnoreCase))
             {
                 if (AcceptAndMoveNext())
                 {
-                    if (CurrentToken.Type == HtmlTokenType.LeftBracket)
+                    if (CurrentToken.Kind == SyntaxKind.LeftBracket)
                     {
-                        return AcceptUntilAll(HtmlTokenType.RightBracket, HtmlTokenType.RightBracket, HtmlTokenType.CloseAngle);
+                        return AcceptUntilAll(SyntaxKind.RightBracket, SyntaxKind.RightBracket, SyntaxKind.CloseAngle);
                     }
                 }
             }
@@ -690,11 +699,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         private bool EndTag(SourceLocation tagStart,
-                            Stack<Tuple<HtmlToken, SourceLocation>> tags,
+                            Stack<Tuple<SyntaxToken, SourceLocation>> tags,
                             IDisposable tagBlockWrapper)
         {
             // Accept "/" and move next
-            Assert(HtmlTokenType.ForwardSlash);
+            Assert(SyntaxKind.ForwardSlash);
             var forwardSlash = CurrentToken;
             if (!NextToken())
             {
@@ -705,20 +714,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             else
             {
                 var tagName = string.Empty;
-                HtmlToken bangToken = null;
+                SyntaxToken bangToken = null;
 
-                if (At(HtmlTokenType.Bang))
+                if (At(SyntaxKind.Bang))
                 {
                     bangToken = CurrentToken;
 
                     var nextToken = Lookahead(count: 1);
 
-                    if (nextToken != null && nextToken.Type == HtmlTokenType.Text)
+                    if (nextToken != null && nextToken.Kind == SyntaxKind.Text)
                     {
                         tagName = "!" + nextToken.Content;
                     }
                 }
-                else if (At(HtmlTokenType.Text))
+                else if (At(SyntaxKind.Text))
                 {
                     tagName = CurrentToken.Content;
                 }
@@ -738,32 +747,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 OptionalBangEscape();
 
-                AcceptUntil(HtmlTokenType.CloseAngle);
+                AcceptUntil(SyntaxKind.CloseAngle);
 
                 // Accept the ">"
-                return Optional(HtmlTokenType.CloseAngle);
+                return Optional(SyntaxKind.CloseAngle);
             }
         }
 
         private void RecoverTextTag()
         {
             // We don't want to skip-to and parse because there shouldn't be anything in the body of text tags.
-            AcceptUntil(HtmlTokenType.CloseAngle, HtmlTokenType.NewLine);
+            AcceptUntil(SyntaxKind.CloseAngle, SyntaxKind.NewLine);
 
             // Include the close angle in the text tag block if it's there, otherwise just move on
-            Optional(HtmlTokenType.CloseAngle);
+            Optional(SyntaxKind.CloseAngle);
         }
 
-        private bool EndTextTag(HtmlToken solidus, IDisposable tagBlockWrapper)
+        private bool EndTextTag(SyntaxToken solidus, IDisposable tagBlockWrapper)
         {
             Accept(_bufferedOpenAngle);
             Accept(solidus);
 
             var textLocation = CurrentStart;
-            Assert(HtmlTokenType.Text);
+            Assert(SyntaxKind.Text);
             AcceptAndMoveNext();
 
-            var seenCloseAngle = Optional(HtmlTokenType.CloseAngle);
+            var seenCloseAngle = Optional(SyntaxKind.CloseAngle);
 
             if (!seenCloseAngle)
             {
@@ -791,32 +800,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             get
             {
-                if (At(HtmlTokenType.OpenAngle))
+                if (At(SyntaxKind.OpenAngle))
                 {
-                    if (NextIs(HtmlTokenType.Bang))
+                    if (NextIs(SyntaxKind.Bang))
                     {
                         return !IsBangEscape(lookahead: 1);
                     }
 
-                    return NextIs(HtmlTokenType.QuestionMark);
+                    return NextIs(SyntaxKind.QuestionMark);
                 }
 
                 return false;
             }
         }
 
-        private bool IsTagRecoveryStopPoint(HtmlToken token)
+        private bool IsTagRecoveryStopPoint(SyntaxToken token)
         {
-            return token.Type == HtmlTokenType.CloseAngle ||
-                   token.Type == HtmlTokenType.ForwardSlash ||
-                   token.Type == HtmlTokenType.OpenAngle ||
-                   token.Type == HtmlTokenType.SingleQuote ||
-                   token.Type == HtmlTokenType.DoubleQuote;
+            return token.Kind == SyntaxKind.CloseAngle ||
+                   token.Kind == SyntaxKind.ForwardSlash ||
+                   token.Kind == SyntaxKind.OpenAngle ||
+                   token.Kind == SyntaxKind.SingleQuote ||
+                   token.Kind == SyntaxKind.DoubleQuote;
         }
 
         private void TagContent()
         {
-            if (!At(HtmlTokenType.WhiteSpace) && !At(HtmlTokenType.NewLine))
+            if (!At(SyntaxKind.Whitespace) && !At(SyntaxKind.NewLine))
             {
                 // We should be right after the tag name, so if there's no whitespace or new line, something is wrong
                 RecoverToEndOfTag();
@@ -833,9 +842,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private bool IsEndOfTag()
         {
-            if (At(HtmlTokenType.ForwardSlash))
+            if (At(SyntaxKind.ForwardSlash))
             {
-                if (NextIs(HtmlTokenType.CloseAngle))
+                if (NextIs(SyntaxKind.CloseAngle))
                 {
                     return true;
                 }
@@ -844,16 +853,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     AcceptAndMoveNext();
                 }
             }
-            return At(HtmlTokenType.CloseAngle) || At(HtmlTokenType.OpenAngle);
+            return At(SyntaxKind.CloseAngle) || At(SyntaxKind.OpenAngle);
         }
 
         private void BeforeAttribute()
         {
             // http://dev.w3.org/html5/spec/tokenization.html#before-attribute-name-state
             // Capture whitespace
-            var whitespace = ReadWhile(token => token.Type == HtmlTokenType.WhiteSpace || token.Type == HtmlTokenType.NewLine);
+            var whitespace = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
 
-            if (At(HtmlTokenType.Transition))
+            if (At(SyntaxKind.Transition) || At(SyntaxKind.RazorCommentTransition))
             {
                 // Transition outside of attribute value => Switch to recovery mode
                 Accept(whitespace);
@@ -863,21 +872,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // http://dev.w3.org/html5/spec/tokenization.html#attribute-name-state
             // Read the 'name' (i.e. read until the '=' or whitespace/newline)
-            var name = Enumerable.Empty<HtmlToken>();
-            var whitespaceAfterAttributeName = Enumerable.Empty<HtmlToken>();
+            var name = Enumerable.Empty<SyntaxToken>();
+            var whitespaceAfterAttributeName = Enumerable.Empty<SyntaxToken>();
             if (IsValidAttributeNameToken(CurrentToken))
             {
                 name = ReadWhile(token =>
-                                 token.Type != HtmlTokenType.WhiteSpace &&
-                                 token.Type != HtmlTokenType.NewLine &&
-                                 token.Type != HtmlTokenType.Equals &&
-                                 token.Type != HtmlTokenType.CloseAngle &&
-                                 token.Type != HtmlTokenType.OpenAngle &&
-                                 (token.Type != HtmlTokenType.ForwardSlash || !NextIs(HtmlTokenType.CloseAngle)));
+                                 token.Kind != SyntaxKind.Whitespace &&
+                                 token.Kind != SyntaxKind.NewLine &&
+                                 token.Kind != SyntaxKind.Equals &&
+                                 token.Kind != SyntaxKind.CloseAngle &&
+                                 token.Kind != SyntaxKind.OpenAngle &&
+                                 (token.Kind != SyntaxKind.ForwardSlash || !NextIs(SyntaxKind.CloseAngle)));
 
                 // capture whitespace after attribute name (if any)
                 whitespaceAfterAttributeName = ReadWhile(
-                    token => token.Type == HtmlTokenType.WhiteSpace || token.Type == HtmlTokenType.NewLine);
+                    token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
             }
             else
             {
@@ -887,7 +896,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return;
             }
 
-            if (!At(HtmlTokenType.Equals))
+            if (!At(SyntaxKind.Equals))
             {
                 // Minimized attribute
 
@@ -922,13 +931,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         private void AttributePrefix(
-            IEnumerable<HtmlToken> whitespace,
-            IEnumerable<HtmlToken> nameTokens,
-            IEnumerable<HtmlToken> whitespaceAfterAttributeName)
+            IEnumerable<SyntaxToken> whitespace,
+            IEnumerable<SyntaxToken> nameTokens,
+            IEnumerable<SyntaxToken> whitespaceAfterAttributeName)
         {
             // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
             var name = string.Concat(nameTokens.Select(s => s.Content));
-            var attributeCanBeConditional = 
+            var attributeCanBeConditional =
                 Context.FeatureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes ||
                 !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
 
@@ -938,16 +947,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // Since this is not a minimized attribute, the whitespace after attribute name belongs to this attribute.
             Accept(whitespaceAfterAttributeName);
-            Assert(HtmlTokenType.Equals); // We should be at "="
+            Assert(SyntaxKind.Equals); // We should be at "="
             AcceptAndMoveNext();
 
-            var whitespaceAfterEquals = ReadWhile(token => token.Type == HtmlTokenType.WhiteSpace || token.Type == HtmlTokenType.NewLine);
-            var quote = HtmlTokenType.Unknown;
-            if (At(HtmlTokenType.SingleQuote) || At(HtmlTokenType.DoubleQuote))
+            var whitespaceAfterEquals = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+            var quote = SyntaxKind.Unknown;
+            if (At(SyntaxKind.SingleQuote) || At(SyntaxKind.DoubleQuote))
             {
                 // Found a quote, the whitespace belongs to this attribute.
                 Accept(whitespaceAfterEquals);
-                quote = CurrentToken.Type;
+                quote = CurrentToken.Kind;
                 AcceptAndMoveNext();
             }
             else if (whitespaceAfterEquals.Any())
@@ -967,7 +976,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 // Read the attribute value only if the value is quoted
                 // or if there is no whitespace between '=' and the unquoted value.
-                if (quote != HtmlTokenType.Unknown || !whitespaceAfterEquals.Any())
+                if (quote != SyntaxKind.Unknown || !whitespaceAfterEquals.Any())
                 {
                     // Read the attribute value.
                     while (!EndOfFile && !IsEndOfAttributeValue(quote, CurrentToken))
@@ -978,7 +987,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 // Capture the suffix
                 var suffix = new LocationTagged<string>(string.Empty, CurrentStart);
-                if (quote != HtmlTokenType.Unknown && At(quote))
+                if (quote != SyntaxKind.Unknown && At(quote))
                 {
                     suffix = new LocationTagged<string>(CurrentToken.Content, CurrentStart);
                     AcceptAndMoveNext();
@@ -1000,7 +1009,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // Output the attribute name, the equals and optional quote. Ex: foo="
                 Output(SpanKindInternal.Markup);
 
-                if (quote == HtmlTokenType.Unknown && whitespaceAfterEquals.Any())
+                if (quote == SyntaxKind.Unknown && whitespaceAfterEquals.Any())
                 {
                     return;
                 }
@@ -1011,7 +1020,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // Output the attribute value (will include everything in-between the attribute's quotes).
                 Output(SpanKindInternal.Markup);
 
-                if (quote != HtmlTokenType.Unknown)
+                if (quote != SyntaxKind.Unknown)
                 {
                     Optional(quote);
                 }
@@ -1019,14 +1028,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private void AttributeValue(HtmlTokenType quote)
+        private void AttributeValue(SyntaxKind quote)
         {
             var prefixStart = CurrentStart;
-            var prefix = ReadWhile(token => token.Type == HtmlTokenType.WhiteSpace || token.Type == HtmlTokenType.NewLine);
+            var prefix = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
 
-            if (At(HtmlTokenType.Transition))
+            if (At(SyntaxKind.Transition))
             {
-                if (NextIs(HtmlTokenType.Transition))
+                if (NextIs(SyntaxKind.Transition))
                 {
                     // Wrapping this in a block so that the ConditionalAttributeCollapser doesn't rewrite it.
                     using (Context.Builder.StartBlock(BlockKindInternal.Markup))
@@ -1076,9 +1085,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var valueStart = CurrentStart;
                 var value = ReadWhile(token =>
                     // These three conditions find separators which break the attribute value into portions
-                    token.Type != HtmlTokenType.WhiteSpace &&
-                    token.Type != HtmlTokenType.NewLine &&
-                    token.Type != HtmlTokenType.Transition &&
+                    token.Kind != SyntaxKind.Whitespace &&
+                    token.Kind != SyntaxKind.NewLine &&
+                    token.Kind != SyntaxKind.Transition &&
                     // This condition checks for the end of the attribute value (it repeats some of the checks above
                     // but for now that's ok)
                     !IsEndOfAttributeValue(quote, token));
@@ -1090,27 +1099,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Output(SpanKindInternal.Markup);
         }
 
-        private bool IsEndOfAttributeValue(HtmlTokenType quote, HtmlToken token)
+        private bool IsEndOfAttributeValue(SyntaxKind quote, SyntaxToken token)
         {
             return EndOfFile || token == null ||
-                   (quote != HtmlTokenType.Unknown
-                        ? token.Type == quote // If quoted, just wait for the quote
+                   (quote != SyntaxKind.Unknown
+                        ? token.Kind == quote // If quoted, just wait for the quote
                         : IsUnquotedEndOfAttributeValue(token));
         }
 
-        private bool IsUnquotedEndOfAttributeValue(HtmlToken token)
+        private bool IsUnquotedEndOfAttributeValue(SyntaxToken token)
         {
             // If unquoted, we have a larger set of terminating characters:
             // http://dev.w3.org/html5/spec/tokenization.html#attribute-value-unquoted-state
             // Also we need to detect "/" and ">"
-            return token.Type == HtmlTokenType.DoubleQuote ||
-                   token.Type == HtmlTokenType.SingleQuote ||
-                   token.Type == HtmlTokenType.OpenAngle ||
-                   token.Type == HtmlTokenType.Equals ||
-                   (token.Type == HtmlTokenType.ForwardSlash && NextIs(HtmlTokenType.CloseAngle)) ||
-                   token.Type == HtmlTokenType.CloseAngle ||
-                   token.Type == HtmlTokenType.WhiteSpace ||
-                   token.Type == HtmlTokenType.NewLine;
+            return token.Kind == SyntaxKind.DoubleQuote ||
+                   token.Kind == SyntaxKind.SingleQuote ||
+                   token.Kind == SyntaxKind.OpenAngle ||
+                   token.Kind == SyntaxKind.Equals ||
+                   (token.Kind == SyntaxKind.ForwardSlash && NextIs(SyntaxKind.CloseAngle)) ||
+                   token.Kind == SyntaxKind.CloseAngle ||
+                   token.Kind == SyntaxKind.Whitespace ||
+                   token.Kind == SyntaxKind.NewLine;
         }
 
         private void RecoverToEndOfTag()
@@ -1122,17 +1131,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (!EndOfFile)
                 {
                     EnsureCurrent();
-                    switch (CurrentToken.Type)
+                    switch (CurrentToken.Kind)
                     {
-                        case HtmlTokenType.SingleQuote:
-                        case HtmlTokenType.DoubleQuote:
+                        case SyntaxKind.SingleQuote:
+                        case SyntaxKind.DoubleQuote:
                             ParseQuoted();
                             break;
-                        case HtmlTokenType.OpenAngle:
+                        case SyntaxKind.OpenAngle:
                         // Another "<" means this tag is invalid.
-                        case HtmlTokenType.ForwardSlash:
+                        case SyntaxKind.ForwardSlash:
                         // Empty tag
-                        case HtmlTokenType.CloseAngle:
+                        case SyntaxKind.CloseAngle:
                             // End of tag
                             return;
                         default:
@@ -1145,12 +1154,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ParseQuoted()
         {
-            var type = CurrentToken.Type;
+            var type = CurrentToken.Kind;
             AcceptAndMoveNext();
             ParseQuoted(type);
         }
 
-        private void ParseQuoted(HtmlTokenType type)
+        private void ParseQuoted(SyntaxKind type)
         {
             SkipToAndParseCode(type);
             if (!EndOfFile)
@@ -1160,12 +1169,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private bool StartTag(Stack<Tuple<HtmlToken, SourceLocation>> tags, IDisposable tagBlockWrapper)
+        private bool StartTag(Stack<Tuple<SyntaxToken, SourceLocation>> tags, IDisposable tagBlockWrapper)
         {
-            HtmlToken bangToken = null;
-            HtmlToken potentialTagNameToken;
+            SyntaxToken bangToken = null;
+            SyntaxToken potentialTagNameToken;
 
-            if (At(HtmlTokenType.Bang))
+            if (At(SyntaxKind.Bang))
             {
                 bangToken = CurrentToken;
 
@@ -1176,22 +1185,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 potentialTagNameToken = CurrentToken;
             }
 
-            HtmlToken tagName;
+            SyntaxToken tagName;
 
-            if (potentialTagNameToken == null || potentialTagNameToken.Type != HtmlTokenType.Text)
+            if (potentialTagNameToken == null || potentialTagNameToken.Kind != SyntaxKind.Text)
             {
-                tagName = new HtmlToken(string.Empty, HtmlTokenType.Unknown);
+                tagName = SyntaxFactory.Token(SyntaxKind.Unknown, string.Empty);
             }
             else if (bangToken != null)
             {
-                tagName = new HtmlToken("!" + potentialTagNameToken.Content, HtmlTokenType.Text);
+                tagName = SyntaxFactory.Token(SyntaxKind.Text, "!" + potentialTagNameToken.Content);
             }
             else
             {
                 tagName = potentialTagNameToken;
             }
 
-            Tuple<HtmlToken, SourceLocation> tag = Tuple.Create(tagName, _lastTagStart);
+            var tag = Tuple.Create(tagName, _lastTagStart);
 
             if (tags.Count == 0 &&
                 // Note tagName may contain a '!' escape character. This ensures <!text> doesn't match here.
@@ -1203,23 +1212,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 Accept(_bufferedOpenAngle);
                 var textLocation = CurrentStart;
-                Assert(HtmlTokenType.Text);
+                Assert(SyntaxKind.Text);
 
                 AcceptAndMoveNext();
 
                 var bookmark = CurrentStart.AbsoluteIndex;
-                IEnumerable<HtmlToken> tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
-                var empty = At(HtmlTokenType.ForwardSlash);
+                var tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
+                var empty = At(SyntaxKind.ForwardSlash);
                 if (empty)
                 {
                     Accept(tokens);
-                    Assert(HtmlTokenType.ForwardSlash);
+                    Assert(SyntaxKind.ForwardSlash);
                     AcceptAndMoveNext();
                     bookmark = CurrentStart.AbsoluteIndex;
                     tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
                 }
 
-                if (!Optional(HtmlTokenType.CloseAngle))
+                if (!Optional(SyntaxKind.CloseAngle))
                 {
                     Context.Source.Position = bookmark;
                     NextToken();
@@ -1247,24 +1256,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             Accept(_bufferedOpenAngle);
             OptionalBangEscape();
-            Optional(HtmlTokenType.Text);
+            Optional(SyntaxKind.Text);
             return RestOfTag(tag, tags, tagBlockWrapper);
         }
 
-        private bool RestOfTag(Tuple<HtmlToken, SourceLocation> tag,
-                               Stack<Tuple<HtmlToken, SourceLocation>> tags,
+        private bool RestOfTag(Tuple<SyntaxToken, SourceLocation> tag,
+                               Stack<Tuple<SyntaxToken, SourceLocation>> tags,
                                IDisposable tagBlockWrapper)
         {
             TagContent();
 
             // We are now at a possible end of the tag
             // Found '<', so we just abort this tag.
-            if (At(HtmlTokenType.OpenAngle))
+            if (At(SyntaxKind.OpenAngle))
             {
                 return false;
             }
 
-            var isEmpty = At(HtmlTokenType.ForwardSlash);
+            var isEmpty = At(SyntaxKind.ForwardSlash);
             // Found a solidus, so don't accept it but DON'T push the tag to the stack
             if (isEmpty)
             {
@@ -1272,7 +1281,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Check for the '>' to determine if the tag is finished
-            var seenClose = Optional(HtmlTokenType.CloseAngle);
+            var seenClose = Optional(SyntaxKind.CloseAngle);
             if (!seenClose)
             {
                 Context.ErrorSink.OnError(
@@ -1298,17 +1307,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         var bookmark = CurrentStart.AbsoluteIndex;
 
                         // Skip whitespace
-                        IEnumerable<HtmlToken> whiteSpace = ReadWhile(IsSpacingToken(includeNewLines: true));
+                        var whiteSpace = ReadWhile(IsSpacingToken(includeNewLines: true));
 
                         // Open Angle
-                        if (At(HtmlTokenType.OpenAngle) && NextIs(HtmlTokenType.ForwardSlash))
+                        if (At(SyntaxKind.OpenAngle) && NextIs(SyntaxKind.ForwardSlash))
                         {
                             var openAngle = CurrentToken;
                             NextToken();
-                            Assert(HtmlTokenType.ForwardSlash);
+                            Assert(SyntaxKind.ForwardSlash);
                             var solidus = CurrentToken;
                             NextToken();
-                            if (At(HtmlTokenType.Text) && string.Equals(CurrentToken.Content, tagName, StringComparison.OrdinalIgnoreCase))
+                            if (At(SyntaxKind.Text) && string.Equals(CurrentToken.Content, tagName, StringComparison.OrdinalIgnoreCase))
                             {
                                 // Accept up to here
                                 Accept(whiteSpace);
@@ -1321,9 +1330,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     AcceptAndMoveNext();
 
                                     // Accept to '>', '<' or EOF
-                                    AcceptUntil(HtmlTokenType.CloseAngle, HtmlTokenType.OpenAngle);
+                                    AcceptUntil(SyntaxKind.CloseAngle, SyntaxKind.OpenAngle);
                                     // Accept the '>' if we saw it. And if we do see it, we're complete
-                                    var complete = Optional(HtmlTokenType.CloseAngle);
+                                    var complete = Optional(SyntaxKind.CloseAngle);
 
                                     if (complete)
                                     {
@@ -1373,17 +1382,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             while (!seenEndScript && !EndOfFile)
             {
-                SkipToAndParseCode(HtmlTokenType.OpenAngle);
+                SkipToAndParseCode(SyntaxKind.OpenAngle);
                 var tagStart = CurrentStart;
 
-                if (NextIs(HtmlTokenType.ForwardSlash))
+                if (NextIs(SyntaxKind.ForwardSlash))
                 {
                     var openAngle = CurrentToken;
                     NextToken(); // Skip over '<', current is '/'
                     var solidus = CurrentToken;
                     NextToken(); // Skip over '/', current should be text
 
-                    if (At(HtmlTokenType.Text) &&
+                    if (At(SyntaxKind.Text) &&
                         string.Equals(CurrentToken.Content, ScriptTagName, StringComparison.OrdinalIgnoreCase))
                     {
                         seenEndScript = true;
@@ -1409,8 +1418,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                         AcceptAndMoveNext(); // '<'
                         AcceptAndMoveNext(); // '/'
-                        SkipToAndParseCode(HtmlTokenType.CloseAngle);
-                        if (!Optional(HtmlTokenType.CloseAngle))
+                        SkipToAndParseCode(SyntaxKind.CloseAngle);
+                        if (!Optional(SyntaxKind.CloseAngle))
                         {
                             Context.ErrorSink.OnError(
                                 RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
@@ -1441,7 +1450,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             tagBlockWrapper.Dispose();
         }
 
-        private bool AcceptUntilAll(params HtmlTokenType[] endSequence)
+        private bool AcceptUntilAll(params SyntaxKind[] endSequence)
         {
             while (!EndOfFile)
             {
@@ -1456,9 +1465,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        private bool RemoveTag(Stack<Tuple<HtmlToken, SourceLocation>> tags, string tagName, SourceLocation tagStart)
+        private bool RemoveTag(Stack<Tuple<SyntaxToken, SourceLocation>> tags, string tagName, SourceLocation tagStart)
         {
-            Tuple<HtmlToken, SourceLocation> currentTag = null;
+            Tuple<SyntaxToken, SourceLocation> currentTag = null;
             while (tags.Count > 0)
             {
                 currentTag = tags.Pop();
@@ -1486,7 +1495,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        private void EndTagBlock(Stack<Tuple<HtmlToken, SourceLocation>> tags, bool complete)
+        private void EndTagBlock(Stack<Tuple<SyntaxToken, SourceLocation>> tags, bool complete)
         {
             if (tags.Count > 0)
             {
@@ -1515,11 +1524,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (Context.Builder.LastSpan.Kind == SpanKindInternal.Transition)
                 {
                     var tokens = ReadWhile(
-                        f => (f.Type == HtmlTokenType.WhiteSpace) || (f.Type == HtmlTokenType.NewLine));
+                        f => (f.Kind == SyntaxKind.Whitespace) || (f.Kind == SyntaxKind.NewLine));
 
                     // Make sure the current token is not markup, which can be html start tag or @:
-                    if (!(At(HtmlTokenType.OpenAngle) ||
-                        (At(HtmlTokenType.Transition) && Lookahead(count: 1).Content.StartsWith(":"))))
+                    if (!(At(SyntaxKind.OpenAngle) ||
+                        (At(SyntaxKind.Transition) && Lookahead(count: 1).Content.StartsWith(":"))))
                     {
                         // Don't accept whitespace as markup if the end text tag is followed by csharp.
                         shouldAcceptWhitespaceAndNewLine = false;
@@ -1533,14 +1542,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (shouldAcceptWhitespaceAndNewLine)
                 {
                     // Accept whitespace and a single newline if present
-                    AcceptWhile(HtmlTokenType.WhiteSpace);
-                    Optional(HtmlTokenType.NewLine);
+                    AcceptWhile(SyntaxKind.Whitespace);
+                    Optional(SyntaxKind.NewLine);
                 }
             }
             else if (Span.EditHandler.AcceptedCharacters == AcceptedCharactersInternal.Any)
             {
-                AcceptWhile(HtmlTokenType.WhiteSpace);
-                Optional(HtmlTokenType.NewLine);
+                AcceptWhile(SyntaxKind.Whitespace);
+                Optional(SyntaxKind.NewLine);
             }
             PutCurrentBack();
 
@@ -1551,7 +1560,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Output(SpanKindInternal.Markup);
         }
 
-        internal static bool IsValidAttributeNameToken(HtmlToken token)
+        internal static bool IsValidAttributeNameToken(SyntaxToken token)
         {
             if (token == null)
             {
@@ -1562,16 +1571,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // However, it's not all of it. For instance we don't special case control characters or allow OpenAngle.
             // It also doesn't try to exclude Razor specific features such as the @ transition. This is based on the
             // expectation that the parser handles such scenarios prior to falling through to name resolution.
-            var tokenType = token.Type;
-            return tokenType != HtmlTokenType.WhiteSpace &&
-                tokenType != HtmlTokenType.NewLine &&
-                tokenType != HtmlTokenType.CloseAngle &&
-                tokenType != HtmlTokenType.OpenAngle &&
-                tokenType != HtmlTokenType.ForwardSlash &&
-                tokenType != HtmlTokenType.DoubleQuote &&
-                tokenType != HtmlTokenType.SingleQuote &&
-                tokenType != HtmlTokenType.Equals &&
-                tokenType != HtmlTokenType.Unknown;
+            var tokenType = token.Kind;
+            return tokenType != SyntaxKind.Whitespace &&
+                tokenType != SyntaxKind.NewLine &&
+                tokenType != SyntaxKind.CloseAngle &&
+                tokenType != SyntaxKind.OpenAngle &&
+                tokenType != SyntaxKind.ForwardSlash &&
+                tokenType != SyntaxKind.DoubleQuote &&
+                tokenType != SyntaxKind.SingleQuote &&
+                tokenType != SyntaxKind.Equals &&
+                tokenType != SyntaxKind.Unknown;
         }
 
         public void ParseDocument()
@@ -1587,10 +1596,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     Span.Start = CurrentLocation;
 
+                    ParserState = ParserState.Misc;
                     NextToken();
                     while (!EndOfFile)
                     {
-                        SkipToAndParseCode(HtmlTokenType.OpenAngle);
+                        SkipToAndParseCode(SyntaxKind.OpenAngle);
                         ScanTagInDocumentContext();
                     }
                     AddMarkerTokenIfNecessary();
@@ -1605,14 +1615,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// </summary>
         private void ScanTagInDocumentContext()
         {
-            if (At(HtmlTokenType.OpenAngle))
+            if (At(SyntaxKind.OpenAngle))
             {
-                if (NextIs(HtmlTokenType.Bang))
+                if (NextIs(SyntaxKind.Bang))
                 {
                     // Checking to see if we meet the conditions of a special '!' tag: <!DOCTYPE, <![CDATA[, <!--.
                     if (!IsBangEscape(lookahead: 1))
                     {
-                        if (Lookahead(2)?.Type == HtmlTokenType.DoubleHyphen)
+                        if (Lookahead(2)?.Kind == SyntaxKind.DoubleHyphen)
                         {
                             Output(SpanKindInternal.Markup);
                         }
@@ -1626,31 +1636,41 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // We should behave like a normal tag that has a parser escape, fall through to the normal
                     // tag logic.
                 }
-                else if (NextIs(HtmlTokenType.QuestionMark))
+                else if (NextIs(SyntaxKind.QuestionMark))
                 {
                     AcceptAndMoveNext(); // Accept '<'
                     XmlPI();
                     return;
                 }
 
-                Output(SpanKindInternal.Markup);
+                if (ParserState == ParserState.Content)
+                {
+                    Output(SpanKindInternal.Markup, SyntaxKind.HtmlTextLiteral);
+                }
+                else
+                {
+                    Output(SpanKindInternal.Markup);
+                }
 
                 // Start tag block
                 var tagBlock = Context.Builder.StartBlock(BlockKindInternal.Tag);
 
                 AcceptAndMoveNext(); // Accept '<'
 
-                if (!At(HtmlTokenType.ForwardSlash))
+                if (!At(SyntaxKind.ForwardSlash))
                 {
+                    ParserState = ParserState.StartTag;
                     OptionalBangEscape();
 
                     // Parsing a start tag
-                    var scriptTag = At(HtmlTokenType.Text) &&
+                    var scriptTag = At(SyntaxKind.Text) &&
                                     string.Equals(CurrentToken.Content, "script", StringComparison.OrdinalIgnoreCase);
-                    Optional(HtmlTokenType.Text);
+                    Optional(SyntaxKind.Text);
                     TagContent(); // Parse the tag, don't care about the content
-                    Optional(HtmlTokenType.ForwardSlash);
-                    Optional(HtmlTokenType.CloseAngle);
+                    Optional(SyntaxKind.ForwardSlash);
+                    Optional(SyntaxKind.CloseAngle);
+
+                    ParserState = ParserState.Content;
 
                     // If the script tag expects javascript content then we should do minimal parsing until we reach
                     // the end script tag. Don't want to incorrectly parse a "var tag = '<input />';" as an HTML tag.
@@ -1667,13 +1687,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     // Parsing an end tag
                     // This section can accept things like: '</p  >' or '</p>' etc.
-                    Optional(HtmlTokenType.ForwardSlash);
+                    ParserState = ParserState.EndTag;
+                    Optional(SyntaxKind.ForwardSlash);
 
                     // Whitespace here is invalid (according to the spec)
                     OptionalBangEscape();
-                    Optional(HtmlTokenType.Text);
-                    Optional(HtmlTokenType.WhiteSpace);
-                    Optional(HtmlTokenType.CloseAngle);
+                    Optional(SyntaxKind.Text);
+                    Optional(SyntaxKind.Whitespace);
+                    Optional(SyntaxKind.CloseAngle);
+                    ParserState = ParserState.Content;
                 }
 
                 Output(SpanKindInternal.Markup);
@@ -1714,9 +1736,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private static bool IsTypeAttribute(Block block)
         {
-            var span = block.Children.First() as Span;
 
-            if (span == null)
+            if (!(block.Children.First() is Span span))
             {
                 return false;
             }
@@ -1765,7 +1786,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             do
             {
-                SkipToAndParseCode(token => token.Type == HtmlTokenType.OpenAngle || AtEnd(nestingSequenceComponents));
+                SkipToAndParseCode(token => token.Kind == SyntaxKind.OpenAngle || AtEnd(nestingSequenceComponents));
                 ScanTagInDocumentContext();
                 if (!EndOfFile && AtEnd(nestingSequenceComponents))
                 {
@@ -1783,9 +1804,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             while (nesting > 0 && !EndOfFile)
             {
                 SkipToAndParseCode(token =>
-                    token.Type == HtmlTokenType.Text ||
-                    token.Type == HtmlTokenType.OpenAngle);
-                if (At(HtmlTokenType.Text))
+                    token.Kind == SyntaxKind.Text ||
+                    token.Kind == SyntaxKind.OpenAngle);
+                if (At(SyntaxKind.Text))
                 {
                     nesting += ProcessTextToken(nestingSequences, nesting);
                     if (CurrentToken != null)
@@ -1812,7 +1833,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var bookmark = Context.Source.Position - CurrentToken.Content.Length;
                 try
                 {
-                    foreach (string component in nestingSequenceComponents)
+                    foreach (var component in nestingSequenceComponents)
                     {
                         if (!EndOfFile && !string.Equals(CurrentToken.Content, component, Comparison))
                         {
@@ -1837,7 +1858,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private int ProcessTextToken(Tuple<string, string> nestingSequences, int currentNesting)
         {
-            for (int i = 0; i < CurrentToken.Content.Length; i++)
+            for (var i = 0; i < CurrentToken.Content.Length; i++)
             {
                 var nestingDelta = HandleNestingSequence(nestingSequences.Item1, i, currentNesting, 1);
                 if (nestingDelta == 0)
@@ -1868,10 +1889,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     PutCurrentBack();
 
                     // Carve up the token
-                    Tuple<HtmlToken, HtmlToken> pair = Language.SplitToken(token, position, HtmlTokenType.Text);
+                    var pair = Language.SplitToken(token, position, SyntaxKind.Text);
                     var preSequence = pair.Item1;
                     Debug.Assert(pair.Item2 != null);
-                    pair = Language.SplitToken(pair.Item2, sequence.Length, HtmlTokenType.Text);
+                    pair = Language.SplitToken(pair.Item2, sequence.Length, SyntaxKind.Text);
                     var sequenceToken = pair.Item1;
                     var postSequence = pair.Item2;
                     var postSequenceBookmark = bookmark.AbsoluteIndex + preSequence.Content.Length + pair.Item1.Content.Length;

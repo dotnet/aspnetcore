@@ -1,17 +1,17 @@
 Expression block - Gen<Expr> - 46 - (0:0,0)
     MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftParenthesis;[(];
+        SyntaxKind.LeftParenthesis;[(];
     Code span - Gen<Expr> - [Request["description"] ?? @photo.Description] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:11
-        CSharpTokenType.Identifier;[Request];
-        CSharpTokenType.LeftBracket;[[];
-        CSharpTokenType.StringLiteral;["description"];
-        CSharpTokenType.RightBracket;[]];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.NullCoalesce;[??];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Transition;[@];
-        CSharpTokenType.Identifier;[photo];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Description];
+        SyntaxKind.Identifier;[Request];
+        SyntaxKind.LeftBracket;[[];
+        SyntaxKind.StringLiteral;["description"];
+        SyntaxKind.RightBracket;[]];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.NullCoalesce;[??];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Transition;[@];
+        SyntaxKind.Identifier;[photo];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Description];
     MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (45:0,45) - Tokens:1
-        CSharpTokenType.RightParenthesis;[)];
+        SyntaxKind.RightParenthesis;[)];

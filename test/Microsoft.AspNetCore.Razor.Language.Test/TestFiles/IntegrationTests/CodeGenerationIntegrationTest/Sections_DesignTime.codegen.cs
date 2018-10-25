@@ -8,15 +8,27 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object Section2 = null;
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object Section1 = null;
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object NestedDelegates = null;
+
+#line default
+#line hidden
         }
         ))();
         }

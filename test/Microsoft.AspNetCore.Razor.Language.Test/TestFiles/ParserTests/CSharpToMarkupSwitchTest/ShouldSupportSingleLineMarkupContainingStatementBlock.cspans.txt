@@ -7,4 +7,4 @@ MetaCode span at (20:1,8 [1] ) (Accepts:None) - Parent: Statement block at (19:1
 Code span at (21:1,9 [0] ) (Accepts:Any) - Parent: Statement block at (19:1,7 [3] )
 MetaCode span at (21:1,9 [1] ) (Accepts:None) - Parent: Statement block at (19:1,7 [3] )
 Markup span at (22:1,10 [2] ) (Accepts:None) - Parent: Markup block at (16:1,4 [8] )
-Code span at (24:2,0 [1] ) (Accepts:NonWhiteSpace) - Parent: Expression block at (0:0,0 [25] )
+Code span at (24:2,0 [1] ) (Accepts:NonWhitespace) - Parent: Expression block at (0:0,0 [25] )

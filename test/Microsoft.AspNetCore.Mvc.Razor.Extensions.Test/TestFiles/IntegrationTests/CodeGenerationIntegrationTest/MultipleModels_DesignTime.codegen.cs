@@ -16,11 +16,19 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MultipleModels.cshtml"
 ThisShouldBeGenerated __typeHelper = default(ThisShouldBeGenerated);
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MultipleModels.cshtml"
 System.Collections.IEnumerable __typeHelper = default(System.Collections.IEnumerable);
+
+#line default
+#line hidden
         }
         ))();
         }

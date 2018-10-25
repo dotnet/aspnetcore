@@ -1,6 +1,6 @@
 Markup block - Gen<None> - 6 - (0:0,0)
     Tag block - Gen<None> - 1 - (0:0,0)
         Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-            HtmlTokenType.OpenAngle;[<];
+            SyntaxKind.OpenAngle;[<];
     Tag block - Gen<TagHelper> - 5 - (1:0,1) - p - ptaghelper
         SelfClosing - <p />

@@ -27,6 +27,10 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces.ProjectSystem
 
         public override DocumentSnapshot GetDocument(string filePath) => throw new NotImplementedException();
 
+        public override bool IsImportDocument(DocumentSnapshot document) => throw new NotImplementedException();
+
+        public override IEnumerable<DocumentSnapshot> GetRelatedDocuments(DocumentSnapshot document) => throw new NotImplementedException();
+
         public override RazorProjectEngine GetProjectEngine() => throw new NotImplementedException();
 
         public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync() => throw new NotImplementedException();

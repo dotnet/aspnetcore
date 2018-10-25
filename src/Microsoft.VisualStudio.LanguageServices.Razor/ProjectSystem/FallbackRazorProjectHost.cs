@@ -38,7 +38,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public FallbackRazorProjectHost(
             IUnconfiguredProjectCommonServices commonServices,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
-            : base(commonServices, workspace)
+            : base(commonServices, workspace, projectContextFactory: null)
         {
         }
 

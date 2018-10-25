@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
+
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public abstract class HtmlTokenizerTestBase : TokenizerTestBase
     {
-        private static HtmlToken _ignoreRemaining = new HtmlToken(string.Empty, HtmlTokenType.Unknown);
+        private static SyntaxToken _ignoreRemaining = SyntaxFactory.Token(SyntaxKind.Unknown, string.Empty);
 
         internal override object IgnoreRemaining
         {
@@ -17,14 +19,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new HtmlTokenizer(source);
         }
 
-        internal void TestSingleToken(string text, HtmlTokenType expectedTokenType)
+        internal void TestSingleToken(string text, SyntaxKind expectedTokenKind)
         {
-            TestTokenizer(text, new HtmlToken(text, expectedTokenType));
-        }
-
-        internal void TestTokenizer(string input, params HtmlToken[] expectedTokens)
-        {
-            base.TestTokenizer<HtmlToken, HtmlTokenType>(input, expectedTokens);
+            TestTokenizer(text, SyntaxFactory.Token(expectedTokenKind, text));
         }
     }
 }

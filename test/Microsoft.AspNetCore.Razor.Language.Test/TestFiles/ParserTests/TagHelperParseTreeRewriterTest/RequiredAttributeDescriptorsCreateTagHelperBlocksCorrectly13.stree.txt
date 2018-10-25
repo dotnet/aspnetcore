@@ -6,14 +6,15 @@ Markup block - Gen<None> - 58 - (0:0,0)
                 Markup block - Gen<DynAttr:@(18:0,18)> - 13 - (18:0,18)
                     Expression block - Gen<Expr> - 13 - (18:0,18)
                         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (18:0,18) - Tokens:1
-                            CSharpTokenType.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhiteSpace;ImplicitExpression[RTD];K14 - (19:0,19) - Tokens:3
-                            CSharpTokenType.Identifier;[DateTime];
-                            CSharpTokenType.Dot;[.];
-                            CSharpTokenType.Identifier;[Now];
-        Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:5
-            HtmlTokenType.Text;[words];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[and];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[spaces];
+                            SyntaxKind.Transition;[@];
+                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (19:0,19) - Tokens:3
+                            SyntaxKind.Identifier;[DateTime];
+                            SyntaxKind.Dot;[.];
+                            SyntaxKind.Identifier;[Now];
+        SyntaxKind.HtmlTextLiteral - [words and spaces] - [33..49) - FullWidth: 16 - Slots: 1
+            SyntaxKind.List - [words and spaces] - [33..49) - FullWidth: 16 - Slots: 5
+                SyntaxKind.Text;[words];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Text;[and];
+                SyntaxKind.Whitespace;[ ];
+                SyntaxKind.Text;[spaces];

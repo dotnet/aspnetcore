@@ -11,7 +11,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyAttributeTagHelpers.cshtml"
 global::System.Object __typeHelper = "*, TestAssembly";
+
+#line default
+#line hidden
         }
         ))();
         }

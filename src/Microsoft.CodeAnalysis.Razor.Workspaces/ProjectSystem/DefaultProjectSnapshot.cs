@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 
@@ -58,22 +59,50 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
+        public override bool IsImportDocument(DocumentSnapshot document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+            
+            return State.ImportsToRelatedDocuments.ContainsKey(document.TargetPath);
+        }
+
+        public override IEnumerable<DocumentSnapshot> GetRelatedDocuments(DocumentSnapshot document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            if (State.ImportsToRelatedDocuments.TryGetValue(document.TargetPath, out var relatedDocuments))
+            {
+                lock (_lock)
+                {
+                    return relatedDocuments.Select(GetDocument).ToArray();
+                }
+            }
+
+            return Array.Empty<DocumentSnapshot>();
+        }
+
         public override RazorProjectEngine GetProjectEngine()
         {
-            return State.ProjectEngine.GetProjectEngine(this);
+            return State.ProjectEngine;
         }
 
         public override Task<IReadOnlyList<TagHelperDescriptor>> GetTagHelpersAsync()
         {
             // IMPORTANT: Don't put more code here. We want this to return a cached task.
-            return State.TagHelpers.GetTagHelperInitializationTask(this);
+            return State.GetTagHelpersAsync(this);
         }
 
         public override bool TryGetTagHelpers(out IReadOnlyList<TagHelperDescriptor> result)
         {
-            if (State.TagHelpers.IsResultAvailable)
+            if (State.IsTagHelperResultAvailable)
             {
-                result = State.TagHelpers.GetTagHelperInitializationTask(this).Result;
+                result = State.GetTagHelpersAsync(this).Result;
                 return true;
             }
 

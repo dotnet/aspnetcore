@@ -1,8 +1,8 @@
 Statement block - Gen<None> - 12 - (0:0,0)
     Code span - Gen<Stmt> - [if(foo barLF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:6
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.NewLine;[LF];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[bar];
+        SyntaxKind.NewLine;[LF];

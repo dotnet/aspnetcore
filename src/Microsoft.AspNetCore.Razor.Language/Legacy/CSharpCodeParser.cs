@@ -5,17 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class CSharpCodeParser : TokenizerBackedParser<CSharpTokenizer, CSharpToken, CSharpTokenType>
+    internal class CSharpCodeParser : TokenizerBackedParser<CSharpTokenizer>
     {
         private static HashSet<char> InvalidNonWhitespaceNameCharacters = new HashSet<char>(new[]
         {
             '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*'
         });
 
-        private static readonly Func<CSharpToken, bool> IsValidStatementSpacingToken =
+        private static readonly Func<SyntaxToken, bool> IsValidStatementSpacingToken =
             IsSpacingToken(includeNewLines: true, includeComments: true);
 
         internal static readonly DirectiveDescriptor AddTagHelperDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public bool IsNested { get; set; }
 
-        protected override bool TokenTypeEquals(CSharpTokenType x, CSharpTokenType y) => x == y;
+        protected override bool TokenKindEquals(SyntaxKind x, SyntaxKind y) => x == y;
 
         protected void MapDirectives(Action handler, params string[] directives)
         {
@@ -161,16 +162,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Conditional("DEBUG")]
         internal void Assert(CSharpKeyword expectedKeyword)
         {
-            Debug.Assert(CurrentToken.Type == CSharpTokenType.Keyword &&
-                CurrentToken.Keyword.HasValue &&
-                CurrentToken.Keyword.Value == expectedKeyword);
+            var result = CSharpTokenizer.GetTokenKeyword(CurrentToken);
+            Debug.Assert(CurrentToken.Kind == SyntaxKind.Keyword &&
+                result.HasValue &&
+                result.Value == expectedKeyword);
         }
 
         protected internal bool At(CSharpKeyword keyword)
         {
-            return At(CSharpTokenType.Keyword) &&
-                CurrentToken.Keyword.HasValue &&
-                CurrentToken.Keyword.Value == keyword;
+            var result = CSharpTokenizer.GetTokenKeyword(CurrentToken);
+            return At(SyntaxKind.Keyword) &&
+                result.HasValue &&
+                result.Value == keyword;
         }
 
         protected internal bool AcceptIf(CSharpKeyword keyword)
@@ -183,11 +186,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        protected static Func<CSharpToken, bool> IsSpacingToken(bool includeNewLines, bool includeComments)
+        protected static Func<SyntaxToken, bool> IsSpacingToken(bool includeNewLines, bool includeComments)
         {
-            return token => token.Type == CSharpTokenType.WhiteSpace ||
-                          (includeNewLines && token.Type == CSharpTokenType.NewLine) ||
-                          (includeComments && token.Type == CSharpTokenType.Comment);
+            return token => token.Kind == SyntaxKind.Whitespace ||
+                          (includeNewLines && token.Kind == SyntaxKind.NewLine) ||
+                          (includeComments && token.Kind == SyntaxKind.CSharpComment);
         }
 
         public override void ParseBlock()
@@ -209,24 +212,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
 
                     var current = CurrentToken;
-                    if (At(CSharpTokenType.StringLiteral) &&
+                    if (At(SyntaxKind.StringLiteral) &&
                         CurrentToken.Content.Length > 0 &&
                         CurrentToken.Content[0] == SyntaxConstants.TransitionCharacter)
                     {
-                        var split = Language.SplitToken(CurrentToken, 1, CSharpTokenType.Transition);
+                        var split = Language.SplitToken(CurrentToken, 1, SyntaxKind.Transition);
                         current = split.Item1;
 
                         // Back up to the end of the transition
                         Context.Source.Position -= split.Item2.Content.Length;
                         NextToken();
                     }
-                    else if (At(CSharpTokenType.Transition))
+                    else if (At(SyntaxKind.Transition))
                     {
                         NextToken();
                     }
 
                     // Accept "@" if we see it, but if we don't, that's OK. We assume we were started for a good reason
-                    if (current.Type == CSharpTokenType.Transition)
+                    if (current.Kind == SyntaxKind.Transition)
                     {
                         if (Span.Tokens.Count > 0)
                         {
@@ -251,9 +254,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             span.ChunkGenerator = new StatementChunkGenerator();
         }
 
-        private void AtTransition(CSharpToken current)
+        private void AtTransition(SyntaxToken current)
         {
-            Debug.Assert(current.Type == CSharpTokenType.Transition);
+            Debug.Assert(current.Kind == SyntaxKind.Transition);
             Accept(current);
             Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             Span.ChunkGenerator = SpanChunkGenerator.Null;
@@ -273,14 +276,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // What type of block is this?
                     if (!EndOfFile)
                     {
-                        if (CurrentToken.Type == CSharpTokenType.LeftParenthesis)
+                        if (CurrentToken.Kind == SyntaxKind.LeftParenthesis)
                         {
                             Context.Builder.CurrentBlock.Type = BlockKindInternal.Expression;
                             Context.Builder.CurrentBlock.ChunkGenerator = new ExpressionChunkGenerator();
                             ExplicitExpression();
                             return;
                         }
-                        else if (CurrentToken.Type == CSharpTokenType.Identifier)
+                        else if (CurrentToken.Kind == SyntaxKind.Identifier)
                         {
                             if (TryGetDirectiveHandler(CurrentToken.Content, out var handler))
                             {
@@ -306,7 +309,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 return;
                             }
                         }
-                        else if (CurrentToken.Type == CSharpTokenType.Keyword)
+                        else if (CurrentToken.Kind == SyntaxKind.Keyword)
                         {
                             if (TryGetDirectiveHandler(CurrentToken.Content, out var handler))
                             {
@@ -320,7 +323,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 return;
                             }
                         }
-                        else if (CurrentToken.Type == CSharpTokenType.LeftBrace)
+                        else if (CurrentToken.Kind == SyntaxKind.LeftBrace)
                         {
                             VerbatimBlock();
                             return;
@@ -337,9 +340,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         CurrentKeywords,
                         acceptTrailingDot: IsNested)
                     {
-                        AcceptedCharacters = AcceptedCharactersInternal.NonWhiteSpace
+                        AcceptedCharacters = AcceptedCharactersInternal.NonWhitespace
                     };
-                    if (At(CSharpTokenType.WhiteSpace) || At(CSharpTokenType.NewLine))
+                    if (At(SyntaxKind.Whitespace) || At(SyntaxKind.NewLine))
                     {
                         Context.ErrorSink.OnError(
                             RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
@@ -369,7 +372,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void VerbatimBlock()
         {
-            Assert(CSharpTokenType.LeftBrace);
+            Assert(SyntaxKind.LeftBrace);
             var block = new Block(Resources.BlockName_Code, CurrentStart);
             AcceptAndMoveNext();
 
@@ -385,13 +388,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             Span.ChunkGenerator = new StatementChunkGenerator();
             AddMarkerTokenIfNecessary();
-            if (!At(CSharpTokenType.RightBrace))
+            if (!At(SyntaxKind.RightBrace))
             {
                 editHandler.AutoCompleteString = "}";
             }
             Output(SpanKindInternal.Code);
 
-            if (Optional(CSharpTokenType.RightBrace))
+            if (Optional(SyntaxKind.RightBrace))
             {
                 // Set up the "}" span
                 Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
@@ -401,8 +404,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (!IsNested)
             {
                 EnsureCurrent();
-                if (At(CSharpTokenType.NewLine) ||
-                    (At(CSharpTokenType.WhiteSpace) && NextIs(CSharpTokenType.NewLine)))
+                if (At(SyntaxKind.NewLine) ||
+                    (At(SyntaxKind.Whitespace) && NextIs(SyntaxKind.NewLine)))
                 {
                     Context.NullGenerateWhitespaceAndNewLine = true;
                 }
@@ -413,7 +416,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ImplicitExpression()
         {
-            ImplicitExpression(AcceptedCharactersInternal.NonWhiteSpace);
+            ImplicitExpression(AcceptedCharactersInternal.NonWhitespace);
         }
 
         // Async implicit expressions include the "await" keyword and therefore need to allow spaces to
@@ -456,13 +459,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (!EndOfFile)
             {
-                if (CurrentToken.Type == CSharpTokenType.LeftParenthesis ||
-                    CurrentToken.Type == CSharpTokenType.LeftBracket)
+                if (CurrentToken.Kind == SyntaxKind.LeftParenthesis ||
+                    CurrentToken.Kind == SyntaxKind.LeftBracket)
                 {
                     // If we end within "(", whitespace is fine
                     Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
 
-                    CSharpTokenType right;
+                    SyntaxKind right;
                     bool success;
 
                     using (PushSpanConfig((span, prev) =>
@@ -471,13 +474,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
                     }))
                     {
-                        right = Language.FlipBracket(CurrentToken.Type);
+                        right = Language.FlipBracket(CurrentToken.Kind);
                         success = Balance(BalancingModes.BacktrackOnFailure | BalancingModes.AllowCommentsAndTemplates);
                     }
 
                     if (!success)
                     {
-                        AcceptUntil(CSharpTokenType.LessThan);
+                        AcceptUntil(SyntaxKind.LessThan);
                     }
                     if (At(right))
                     {
@@ -488,22 +491,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     return MethodCallOrArrayIndex(acceptedCharacters);
                 }
-                if (At(CSharpTokenType.QuestionMark))
+                if (At(SyntaxKind.QuestionMark))
                 {
                     var next = Lookahead(count: 1);
 
                     if (next != null)
                     {
-                        if (next.Type == CSharpTokenType.Dot)
+                        if (next.Kind == SyntaxKind.Dot)
                         {
                             // Accept null conditional dot operator (?.).
                             AcceptAndMoveNext();
                             AcceptAndMoveNext();
 
                             // If the next piece after the ?. is a keyword or identifier then we want to continue.
-                            return At(CSharpTokenType.Identifier) || At(CSharpTokenType.Keyword);
+                            return At(SyntaxKind.Identifier) || At(SyntaxKind.Keyword);
                         }
-                        else if (next.Type == CSharpTokenType.LeftBracket)
+                        else if (next.Kind == SyntaxKind.LeftBracket)
                         {
                             // We're at the ? for a null conditional bracket operator (?[).
                             AcceptAndMoveNext();
@@ -513,12 +516,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
                     }
                 }
-                else if (At(CSharpTokenType.Dot))
+                else if (At(SyntaxKind.Dot))
                 {
                     var dot = CurrentToken;
                     if (NextToken())
                     {
-                        if (At(CSharpTokenType.Identifier) || At(CSharpTokenType.Keyword))
+                        if (At(SyntaxKind.Identifier) || At(SyntaxKind.Keyword))
                         {
                             // Accept the dot and return to the start
                             Accept(dot);
@@ -540,7 +543,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Accept(dot);
                     }
                 }
-                else if (!At(CSharpTokenType.WhiteSpace) && !At(CSharpTokenType.NewLine))
+                else if (!At(SyntaxKind.Whitespace) && !At(SyntaxKind.NewLine))
                 {
                     PutCurrentBack();
                 }
@@ -587,8 +590,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void CaptureWhitespaceAtEndOfCodeOnlyLine()
         {
-            var whitespace = ReadWhile(token => token.Type == CSharpTokenType.WhiteSpace);
-            if (At(CSharpTokenType.NewLine))
+            var whitespace = ReadWhile(token => token.Kind == SyntaxKind.Whitespace);
+            if (At(SyntaxKind.NewLine))
             {
                 Accept(whitespace);
                 AcceptAndMoveNext();
@@ -610,7 +613,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void ExplicitExpression()
         {
             var block = new Block(Resources.BlockName_ExplicitExpression, CurrentStart);
-            Assert(CSharpTokenType.LeftParenthesis);
+            Assert(SyntaxKind.LeftParenthesis);
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             Span.ChunkGenerator = SpanChunkGenerator.Null;
@@ -621,13 +624,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     BalancingModes.BacktrackOnFailure |
                         BalancingModes.NoErrorOnFailure |
                         BalancingModes.AllowCommentsAndTemplates,
-                    CSharpTokenType.LeftParenthesis,
-                    CSharpTokenType.RightParenthesis,
+                    SyntaxKind.LeftParenthesis,
+                    SyntaxKind.RightParenthesis,
                     block.Start);
 
                 if (!success)
                 {
-                    AcceptUntil(CSharpTokenType.LessThan);
+                    AcceptUntil(SyntaxKind.LessThan);
                     Context.ErrorSink.OnError(
                         RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
                             new SourceSpan(block.Start, contentLength: 1 /* ( */), block.Name, ")", "("));
@@ -636,13 +639,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // If necessary, put an empty-content marker token here
                 if (Span.Tokens.Count == 0)
                 {
-                    Accept(new CSharpToken(string.Empty, CSharpTokenType.Unknown));
+                    Accept(SyntaxFactory.Token(SyntaxKind.Unknown, string.Empty));
                 }
 
                 // Output the content span and then capture the ")"
                 Output(SpanKindInternal.Code);
             }
-            Optional(CSharpTokenType.RightParenthesis);
+            Optional(SyntaxKind.RightParenthesis);
             if (!EndOfFile)
             {
                 PutCurrentBack();
@@ -702,7 +705,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // No embedded transitions in C#, so ignore that param
             return allowTemplatesAndComments
                    && ((Language.IsTransition(CurrentToken)
-                        && NextIs(CSharpTokenType.LessThan, CSharpTokenType.Colon, CSharpTokenType.DoubleColon))
+                        && NextIs(SyntaxKind.LessThan, SyntaxKind.Colon, SyntaxKind.DoubleColon))
                        || Language.IsCommentStart(CurrentToken));
         }
 
@@ -783,12 +786,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void CaseStatement(bool topLevel)
         {
-            Assert(CSharpTokenType.Keyword);
-            Debug.Assert(CurrentToken.Keyword != null &&
-                         (CurrentToken.Keyword.Value == CSharpKeyword.Case ||
-                          CurrentToken.Keyword.Value == CSharpKeyword.Default));
-            AcceptUntil(CSharpTokenType.Colon);
-            Optional(CSharpTokenType.Colon);
+            Assert(SyntaxKind.Keyword);
+            var result = CSharpTokenizer.GetTokenKeyword(CurrentToken);
+            Debug.Assert(result.HasValue &&
+                         (result.Value == CSharpKeyword.Case ||
+                          result.Value == CSharpKeyword.Default));
+            AcceptUntil(SyntaxKind.Colon);
+            Optional(SyntaxKind.Colon);
         }
 
         private void DoStatement(bool topLevel)
@@ -813,7 +817,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Assert(CSharpKeyword.While);
                 AcceptAndMoveNext();
                 AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                if (AcceptCondition() && Optional(CSharpTokenType.Semicolon))
+                if (AcceptCondition() && Optional(SyntaxKind.Semicolon))
                 {
                     Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                 }
@@ -832,12 +836,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
-            if (At(CSharpTokenType.LeftParenthesis))
+            if (At(SyntaxKind.LeftParenthesis))
             {
                 // using ( ==> Using Statement
                 UsingStatement(block);
             }
-            else if (At(CSharpTokenType.Identifier) || At(CSharpKeyword.Static))
+            else if (At(SyntaxKind.Identifier) || At(CSharpKeyword.Static))
             {
                 // using Identifier ==> Using Declaration
                 if (!topLevel)
@@ -865,16 +869,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Context.Builder.CurrentBlock.Type = BlockKindInternal.Directive;
 
             var start = CurrentStart;
-            if (At(CSharpTokenType.Identifier))
+            if (At(SyntaxKind.Identifier))
             {
                 // non-static using
                 NamespaceOrTypeName();
                 var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                if (At(CSharpTokenType.Assign))
+                if (At(SyntaxKind.Assign))
                 {
                     // Alias
                     Accept(whitespace);
-                    Assert(CSharpTokenType.Assign);
+                    Assert(SyntaxKind.Assign);
                     AcceptAndMoveNext();
 
                     AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
@@ -904,7 +908,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Optional ";"
             if (EnsureCurrent())
             {
-                Optional(CSharpTokenType.Semicolon);
+                Optional(SyntaxKind.Semicolon);
             }
         }
 
@@ -919,16 +923,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expectingDot = false;
             var tokens = ReadWhile(token =>
             {
-                var type = token.Type;
-                if ((expectingDot && type == CSharpTokenType.Dot) ||
-                    (!expectingDot && type == CSharpTokenType.Identifier))
+                var type = token.Kind;
+                if ((expectingDot && type == SyntaxKind.Dot) ||
+                    (!expectingDot && type == SyntaxKind.Identifier))
                 {
                     expectingDot = !expectingDot;
                     return true;
                 }
 
-                if (type != CSharpTokenType.WhiteSpace &&
-                    type != CSharpTokenType.NewLine)
+                if (type != SyntaxKind.Whitespace &&
+                    type != SyntaxKind.NewLine)
                 {
                     expectingDot = false;
                     currentIdentifierLength += token.Content.Length;
@@ -966,69 +970,69 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected bool NamespaceOrTypeName()
         {
-            if (Optional(CSharpTokenType.LeftParenthesis))
+            if (Optional(SyntaxKind.LeftParenthesis))
             {
-                while (!Optional(CSharpTokenType.RightParenthesis) && !EndOfFile)
+                while (!Optional(SyntaxKind.RightParenthesis) && !EndOfFile)
                 {
-                    Optional(CSharpTokenType.WhiteSpace);
+                    Optional(SyntaxKind.Whitespace);
 
                     if (!NamespaceOrTypeName())
                     {
                         return false;
                     }
 
-                    Optional(CSharpTokenType.WhiteSpace);
-                    Optional(CSharpTokenType.Identifier);
-                    Optional(CSharpTokenType.WhiteSpace);
-                    Optional(CSharpTokenType.Comma);
+                    Optional(SyntaxKind.Whitespace);
+                    Optional(SyntaxKind.Identifier);
+                    Optional(SyntaxKind.Whitespace);
+                    Optional(SyntaxKind.Comma);
                 }
 
-                if (At(CSharpTokenType.WhiteSpace) && NextIs(CSharpTokenType.QuestionMark))
+                if (At(SyntaxKind.Whitespace) && NextIs(SyntaxKind.QuestionMark))
                 {
                     // Only accept the whitespace if we are going to consume the next token.
                     AcceptAndMoveNext();
                 }
 
-                Optional(CSharpTokenType.QuestionMark); // Nullable
+                Optional(SyntaxKind.QuestionMark); // Nullable
 
                 return true;
             }
-            else if (Optional(CSharpTokenType.Identifier) || Optional(CSharpTokenType.Keyword))
+            else if (Optional(SyntaxKind.Identifier) || Optional(SyntaxKind.Keyword))
             {
-                if (Optional(CSharpTokenType.DoubleColon))
+                if (Optional(SyntaxKind.DoubleColon))
                 {
-                    if (!Optional(CSharpTokenType.Identifier))
+                    if (!Optional(SyntaxKind.Identifier))
                     {
-                        Optional(CSharpTokenType.Keyword);
+                        Optional(SyntaxKind.Keyword);
                     }
                 }
-                if (At(CSharpTokenType.LessThan))
+                if (At(SyntaxKind.LessThan))
                 {
                     TypeArgumentList();
                 }
-                if (Optional(CSharpTokenType.Dot))
+                if (Optional(SyntaxKind.Dot))
                 {
                     NamespaceOrTypeName();
                 }
 
-                if (At(CSharpTokenType.WhiteSpace) && NextIs(CSharpTokenType.QuestionMark))
+                if (At(SyntaxKind.Whitespace) && NextIs(SyntaxKind.QuestionMark))
                 {
                     // Only accept the whitespace if we are going to consume the next token.
                     AcceptAndMoveNext();
                 }
 
-                Optional(CSharpTokenType.QuestionMark); // Nullable
+                Optional(SyntaxKind.QuestionMark); // Nullable
 
-                if (At(CSharpTokenType.WhiteSpace) && NextIs(CSharpTokenType.LeftBracket))
+                if (At(SyntaxKind.Whitespace) && NextIs(SyntaxKind.LeftBracket))
                 {
                     // Only accept the whitespace if we are going to consume the next token.
                     AcceptAndMoveNext();
                 }
 
-                while (At(CSharpTokenType.LeftBracket))
+                while (At(SyntaxKind.LeftBracket))
                 {
                     Balance(BalancingModes.None);
-                    Optional(CSharpTokenType.RightBracket);
+                    Optional(SyntaxKind.RightBracket);
                 }
                 return true;
             }
@@ -1040,14 +1044,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void TypeArgumentList()
         {
-            Assert(CSharpTokenType.LessThan);
+            Assert(SyntaxKind.LessThan);
             Balance(BalancingModes.None);
-            Optional(CSharpTokenType.GreaterThan);
+            Optional(SyntaxKind.GreaterThan);
         }
 
         private void UsingStatement(Block block)
         {
-            Assert(CSharpTokenType.LeftParenthesis);
+            Assert(SyntaxKind.LeftParenthesis);
 
             // Parse condition
             if (AcceptCondition())
@@ -1159,12 +1163,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (!EndOfFile)
             {
                 // Check for "{" to make sure we're at a block
-                if (!At(CSharpTokenType.LeftBrace))
+                if (!At(SyntaxKind.LeftBrace))
                 {
                     Context.ErrorSink.OnError(
                         RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsNotAllowed(
                             new SourceSpan(CurrentStart, CurrentToken.Content.Length),
-                            Language.GetSample(CSharpTokenType.LeftBrace),
+                            Language.GetSample(SyntaxKind.LeftBrace),
                             CurrentToken.Content));
                 }
 
@@ -1175,7 +1179,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void UnconditionalBlock()
         {
-            Assert(CSharpTokenType.Keyword);
+            Assert(SyntaxKind.Keyword);
             var block = new Block(CurrentToken, CurrentStart);
             AcceptAndMoveNext();
             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
@@ -1219,7 +1223,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ConditionalBlock(bool topLevel)
         {
-            Assert(CSharpTokenType.Keyword);
+            Assert(SyntaxKind.Keyword);
             var block = new Block(CurrentToken, CurrentStart);
             ConditionalBlock(block);
             if (topLevel)
@@ -1243,16 +1247,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private bool AcceptCondition()
         {
-            if (At(CSharpTokenType.LeftParenthesis))
+            if (At(SyntaxKind.LeftParenthesis))
             {
                 var complete = Balance(BalancingModes.BacktrackOnFailure | BalancingModes.AllowCommentsAndTemplates);
                 if (!complete)
                 {
-                    AcceptUntil(CSharpTokenType.NewLine);
+                    AcceptUntil(SyntaxKind.NewLine);
                 }
                 else
                 {
-                    Optional(CSharpTokenType.RightParenthesis);
+                    Optional(SyntaxKind.RightParenthesis);
                 }
                 return complete;
             }
@@ -1280,16 +1284,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return;
             }
 
-            var type = CurrentToken.Type;
+            var type = CurrentToken.Kind;
             var loc = CurrentStart;
 
             // Both cases @: and @:: are triggered as markup, second colon in second case will be triggered as a plain text
-            var isSingleLineMarkup = type == CSharpTokenType.Transition &&
-                (NextIs(CSharpTokenType.Colon, CSharpTokenType.DoubleColon));
+            var isSingleLineMarkup = type == SyntaxKind.Transition &&
+                (NextIs(SyntaxKind.Colon, SyntaxKind.DoubleColon));
 
             var isMarkup = isSingleLineMarkup ||
-                type == CSharpTokenType.LessThan ||
-                (type == CSharpTokenType.Transition && NextIs(CSharpTokenType.LessThan));
+                type == SyntaxKind.LessThan ||
+                (type == SyntaxKind.Transition && NextIs(SyntaxKind.LessThan));
 
             if (Context.DesignTimeMode || !isMarkup)
             {
@@ -1321,7 +1325,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (isMarkup)
             {
-                if (type == CSharpTokenType.Transition && !isSingleLineMarkup)
+                if (type == SyntaxKind.Transition && !isSingleLineMarkup)
                 {
                     Context.ErrorSink.OnError(
                         RazorDiagnosticFactory.CreateParsing_AtInCodeMustBeFollowedByColonParenOrIdentifierStart(
@@ -1331,7 +1335,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // Markup block
                 Output(SpanKindInternal.Code);
                 if (Context.DesignTimeMode && CurrentToken != null &&
-                    (CurrentToken.Type == CSharpTokenType.LessThan || CurrentToken.Type == CSharpTokenType.Transition))
+                    (CurrentToken.Kind == SyntaxKind.LessThan || CurrentToken.Kind == SyntaxKind.Transition))
                 {
                     PutCurrentBack();
                 }
@@ -1344,33 +1348,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private void HandleStatement(Block block, CSharpTokenType type)
+        private void HandleStatement(Block block, SyntaxKind type)
         {
             switch (type)
             {
-                case CSharpTokenType.RazorCommentTransition:
+                case SyntaxKind.RazorCommentTransition:
                     Output(SpanKindInternal.Code);
                     RazorComment();
                     Statement(block);
                     break;
-                case CSharpTokenType.LeftBrace:
+                case SyntaxKind.LeftBrace:
                     // Verbatim Block
                     block = block ?? new Block(Resources.BlockName_Code, CurrentStart);
                     AcceptAndMoveNext();
                     CodeBlock(block);
                     break;
-                case CSharpTokenType.Keyword:
+                case SyntaxKind.Keyword:
                     // Keyword block
                     HandleKeyword(false, StandardStatement);
                     break;
-                case CSharpTokenType.Transition:
+                case SyntaxKind.Transition:
                     // Embedded Expression block
                     EmbeddedExpression();
                     break;
-                case CSharpTokenType.RightBrace:
+                case SyntaxKind.RightBrace:
                     // Possible end of Code Block, just run the continuation
                     break;
-                case CSharpTokenType.Comment:
+                case SyntaxKind.CSharpComment:
                     AcceptAndMoveNext();
                     break;
                 default:
@@ -1383,11 +1387,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void EmbeddedExpression()
         {
             // First, verify the type of the block
-            Assert(CSharpTokenType.Transition);
+            Assert(SyntaxKind.Transition);
             var transition = CurrentToken;
             NextToken();
 
-            if (At(CSharpTokenType.Transition))
+            if (At(SyntaxKind.Transition))
             {
                 // Escaped "@"
                 Output(SpanKindInternal.Code);
@@ -1397,14 +1401,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Span.ChunkGenerator = SpanChunkGenerator.Null;
                 Output(SpanKindInternal.Code);
 
-                Assert(CSharpTokenType.Transition);
+                Assert(SyntaxKind.Transition);
                 AcceptAndMoveNext();
                 StandardStatement();
             }
             else
             {
                 // Throw errors as necessary, but continue parsing
-                if (At(CSharpTokenType.LeftBrace))
+                if (At(SyntaxKind.LeftBrace))
                 {
                     Context.ErrorSink.OnError(
                         RazorDiagnosticFactory.CreateParsing_UnexpectedNestedCodeBlock(
@@ -1428,48 +1432,48 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var bookmark = CurrentStart.AbsoluteIndex;
                 var read = ReadWhile(token =>
-                    token.Type != CSharpTokenType.Semicolon &&
-                    token.Type != CSharpTokenType.RazorCommentTransition &&
-                    token.Type != CSharpTokenType.Transition &&
-                    token.Type != CSharpTokenType.LeftBrace &&
-                    token.Type != CSharpTokenType.LeftParenthesis &&
-                    token.Type != CSharpTokenType.LeftBracket &&
-                    token.Type != CSharpTokenType.RightBrace);
+                    token.Kind != SyntaxKind.Semicolon &&
+                    token.Kind != SyntaxKind.RazorCommentTransition &&
+                    token.Kind != SyntaxKind.Transition &&
+                    token.Kind != SyntaxKind.LeftBrace &&
+                    token.Kind != SyntaxKind.LeftParenthesis &&
+                    token.Kind != SyntaxKind.LeftBracket &&
+                    token.Kind != SyntaxKind.RightBrace);
 
-                if (At(CSharpTokenType.LeftBrace) ||
-                    At(CSharpTokenType.LeftParenthesis) ||
-                    At(CSharpTokenType.LeftBracket))
+                if (At(SyntaxKind.LeftBrace) ||
+                    At(SyntaxKind.LeftParenthesis) ||
+                    At(SyntaxKind.LeftBracket))
                 {
                     Accept(read);
                     if (Balance(BalancingModes.AllowCommentsAndTemplates | BalancingModes.BacktrackOnFailure))
                     {
-                        Optional(CSharpTokenType.RightBrace);
+                        Optional(SyntaxKind.RightBrace);
                     }
                     else
                     {
                         // Recovery
-                        AcceptUntil(CSharpTokenType.LessThan, CSharpTokenType.RightBrace);
+                        AcceptUntil(SyntaxKind.LessThan, SyntaxKind.RightBrace);
                         return;
                     }
                 }
-                else if (At(CSharpTokenType.Transition) && (NextIs(CSharpTokenType.LessThan, CSharpTokenType.Colon)))
+                else if (At(SyntaxKind.Transition) && (NextIs(SyntaxKind.LessThan, SyntaxKind.Colon)))
                 {
                     Accept(read);
                     Output(SpanKindInternal.Code);
                     Template();
                 }
-                else if (At(CSharpTokenType.RazorCommentTransition))
+                else if (At(SyntaxKind.RazorCommentTransition))
                 {
                     Accept(read);
                     RazorComment();
                 }
-                else if (At(CSharpTokenType.Semicolon))
+                else if (At(SyntaxKind.Semicolon))
                 {
                     Accept(read);
                     AcceptAndMoveNext();
                     return;
                 }
-                else if (At(CSharpTokenType.RightBrace))
+                else if (At(SyntaxKind.RightBrace))
                 {
                     Accept(read);
                     return;
@@ -1478,7 +1482,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     Context.Source.Position = bookmark;
                     NextToken();
-                    AcceptUntil(CSharpTokenType.LessThan, CSharpTokenType.LeftBrace, CSharpTokenType.RightBrace);
+                    AcceptUntil(SyntaxKind.LessThan, SyntaxKind.LeftBrace, SyntaxKind.RightBrace);
                     return;
                 }
             }
@@ -1492,7 +1496,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void CodeBlock(bool acceptTerminatingBrace, Block block)
         {
             EnsureCurrent();
-            while (!EndOfFile && !At(CSharpTokenType.RightBrace))
+            while (!EndOfFile && !At(SyntaxKind.RightBrace))
             {
                 // Parse a statement, then return here
                 Statement();
@@ -1507,7 +1511,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else if (acceptTerminatingBrace)
             {
-                Assert(CSharpTokenType.RightBrace);
+                Assert(SyntaxKind.RightBrace);
                 Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                 AcceptAndMoveNext();
             }
@@ -1515,8 +1519,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void HandleKeyword(bool topLevel, Action fallback)
         {
-            Debug.Assert(CurrentToken.Type == CSharpTokenType.Keyword && CurrentToken.Keyword != null);
-            if (_keywordParsers.TryGetValue(CurrentToken.Keyword.Value, out var handler))
+            var result = CSharpTokenizer.GetTokenKeyword(CurrentToken);
+            Debug.Assert(CurrentToken.Kind == SyntaxKind.Keyword && result.HasValue);
+            if (_keywordParsers.TryGetValue(result.Value, out var handler))
             {
                 handler(topLevel);
             }
@@ -1526,12 +1531,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private IEnumerable<CSharpToken> SkipToNextImportantToken()
+        private IEnumerable<SyntaxToken> SkipToNextImportantToken()
         {
             while (!EndOfFile)
             {
                 var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                if (At(CSharpTokenType.RazorCommentTransition))
+                if (At(SyntaxKind.RazorCommentTransition))
                 {
                     Accept(whitespace);
                     Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
@@ -1542,7 +1547,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return whitespace;
                 }
             }
-            return Enumerable.Empty<CSharpToken>();
+            return Enumerable.Empty<SyntaxToken>();
         }
 
         // Common code for Parsers, but FxCop REALLY doesn't like it in the base class.. moving it here for now.
@@ -1644,8 +1649,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 for (var i = 0; i < descriptor.Tokens.Count; i++)
                 {
-                    if (!At(CSharpTokenType.WhiteSpace) &&
-                        !At(CSharpTokenType.NewLine) &&
+                    if (!At(SyntaxKind.Whitespace) &&
+                        !At(SyntaxKind.NewLine) &&
                         !EndOfFile)
                     {
                         Context.ErrorSink.OnError(
@@ -1662,24 +1667,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         tokenDescriptor.Kind == DirectiveTokenKind.Type)
                     {
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.Code, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.Code, AcceptedCharactersInternal.Whitespace);
 
-                        if (EndOfFile || At(CSharpTokenType.NewLine))
+                        if (EndOfFile || At(SyntaxKind.NewLine))
                         {
                             // Add a marker token to provide CSharp intellisense when we start typing the directive token.
                             AddMarkerTokenIfNecessary();
                             Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
                             Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
-                            Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
+                            Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhitespace);
                         }
                     }
                     else
                     {
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.Whitespace);
                     }
 
-                    if (tokenDescriptor.Optional && (EndOfFile || At(CSharpTokenType.NewLine)))
+                    if (tokenDescriptor.Optional && (EndOfFile || At(SyntaxKind.NewLine)))
                     {
                         break;
                     }
@@ -1718,7 +1723,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             break;
 
                         case DirectiveTokenKind.Member:
-                            if (At(CSharpTokenType.Identifier))
+                            if (At(SyntaxKind.Identifier))
                             {
                                 AcceptAndMoveNext();
                             }
@@ -1732,7 +1737,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             break;
 
                         case DirectiveTokenKind.String:
-                            if (At(CSharpTokenType.StringLiteral) && CurrentToken.Errors.Count == 0)
+                            if (At(SyntaxKind.StringLiteral) && !CurrentToken.ContainsDiagnostics)
                             {
                                 AcceptAndMoveNext();
                             }
@@ -1748,7 +1753,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
                     Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
-                    Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
+                    Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhitespace);
                 }
 
                 AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
@@ -1757,15 +1762,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 switch (descriptor.Kind)
                 {
                     case DirectiveKind.SingleLine:
-                        Output(SpanKindInternal.None, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.None, AcceptedCharactersInternal.Whitespace);
 
-                        Optional(CSharpTokenType.Semicolon);
+                        Optional(SyntaxKind.Semicolon);
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.Whitespace);
 
                         AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
-                        if (At(CSharpTokenType.NewLine))
+                        if (At(SyntaxKind.NewLine))
                         {
                             AcceptAndMoveNext();
                         }
@@ -1782,11 +1787,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                         // This should contain the optional whitespace after the optional semicolon and the new line.
                         // Output as Markup as we want intellisense here.
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.Whitespace);
                         break;
                     case DirectiveKind.RazorBlock:
                         AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhiteSpace);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhitespace);
 
                         ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
                         {
@@ -1811,12 +1816,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         break;
                     case DirectiveKind.CodeBlock:
                         AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhiteSpace);
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.AllWhitespace);
 
                         ParseDirectiveBlock(descriptor, parseChildren: (startingBraceLocation) =>
                         {
                             NextToken();
-                            Balance(BalancingModes.NoErrorOnFailure, CSharpTokenType.LeftBrace, CSharpTokenType.RightBrace, startingBraceLocation);
+                            Balance(BalancingModes.NoErrorOnFailure, SyntaxKind.LeftBrace, SyntaxKind.RightBrace, startingBraceLocation);
                             Span.ChunkGenerator = new StatementChunkGenerator();
                             var existingEditHandler = Span.EditHandler;
                             Span.EditHandler = new CodeBlockEditHandler(Language.TokenizeString);
@@ -1868,7 +1873,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     RazorDiagnosticFactory.CreateParsing_UnexpectedEOFAfterDirective(
                         new SourceSpan(CurrentStart, contentLength: 1 /* { */), descriptor.Directive, "{"));
             }
-            else if (!At(CSharpTokenType.LeftBrace))
+            else if (!At(SyntaxKind.LeftBrace))
             {
                 Context.ErrorSink.OnError(
                     RazorDiagnosticFactory.CreateParsing_UnexpectedDirectiveLiteral(
@@ -1886,7 +1891,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 parseChildren(startingBraceLocation);
 
                 Span.ChunkGenerator = SpanChunkGenerator.Null;
-                if (!Optional(CSharpTokenType.RightBrace))
+                if (!Optional(SyntaxKind.RightBrace))
                 {
                     editHandler.AutoCompleteString = "}";
                     Context.ErrorSink.OnError(
@@ -1982,7 +1987,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Ex: @addTagHelper "*, Microsoft.AspNetCore.CoolLibrary"
             //                    ^                                 ^
             //                  Start                              End
-            if (Span.Tokens.Count == 1 && (Span.Tokens[0] as CSharpToken)?.Type == CSharpTokenType.StringLiteral)
+            if (Span.Tokens.Count == 1 && (Span.Tokens[0] as SyntaxToken)?.Kind == SyntaxKind.StringLiteral)
             {
                 offset += Span.Tokens[0].Content.IndexOf(directiveText, StringComparison.Ordinal);
 
@@ -2081,7 +2086,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Conditional("DEBUG")]
         protected void AssertDirective(string directive)
         {
-            Debug.Assert(CurrentToken.Type == CSharpTokenType.Identifier || CurrentToken.Type == CSharpTokenType.Keyword);
+            Debug.Assert(CurrentToken.Kind == SyntaxKind.Identifier || CurrentToken.Kind == SyntaxKind.Keyword);
             Debug.Assert(string.Equals(CurrentToken.Content, directive, StringComparison.Ordinal));
         }
 
@@ -2108,18 +2113,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 var keywordLength = Span.End.AbsoluteIndex - Span.Start.AbsoluteIndex;
 
-                var foundWhitespace = At(CSharpTokenType.WhiteSpace);
+                var foundWhitespace = At(SyntaxKind.Whitespace);
 
                 // If we found whitespace then any content placed within the whitespace MAY cause a destructive change
                 // to the document.  We can't accept it.
                 var acceptedCharacters = foundWhitespace ? AcceptedCharactersInternal.None : AcceptedCharactersInternal.AnyExceptNewline;
                 Output(SpanKindInternal.MetaCode, acceptedCharacters);
 
-                AcceptWhile(CSharpTokenType.WhiteSpace);
+                AcceptWhile(SyntaxKind.Whitespace);
                 Span.ChunkGenerator = SpanChunkGenerator.Null;
                 Output(SpanKindInternal.Markup, acceptedCharacters);
 
-                if (EndOfFile || At(CSharpTokenType.NewLine))
+                if (EndOfFile || At(SyntaxKind.NewLine))
                 {
                     Context.ErrorSink.OnError(
                         RazorDiagnosticFactory.CreateParsing_DirectiveMustHaveValue(
@@ -2134,7 +2139,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     // Parse to the end of the line. Essentially accepts anything until end of line, comments, invalid code
                     // etc.
-                    AcceptUntil(CSharpTokenType.NewLine);
+                    AcceptUntil(SyntaxKind.NewLine);
 
                     // Pull out the value and remove whitespaces and optional quotes
                     var rawValue = string.Concat(Span.Tokens.Select(s => s.Content)).Trim();
@@ -2170,7 +2175,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Start = start;
             }
 
-            public Block(CSharpToken token, SourceLocation start)
+            public Block(SyntaxToken token, SourceLocation start)
                 : this(GetName(token), start)
             {
             }
@@ -2178,11 +2183,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             public string Name { get; set; }
             public SourceLocation Start { get; set; }
 
-            private static string GetName(CSharpToken token)
+            private static string GetName(SyntaxToken token)
             {
-                if (token.Type == CSharpTokenType.Keyword)
+                var result = CSharpTokenizer.GetTokenKeyword(token);
+                if (result.HasValue && token.Kind == SyntaxKind.Keyword)
                 {
-                    return CSharpLanguageCharacteristics.GetKeyword(token.Keyword.Value);
+                    return CSharpLanguageCharacteristics.GetKeyword(result.Value);
                 }
                 return token.Content;
             }

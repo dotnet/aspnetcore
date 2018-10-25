@@ -1,17 +1,17 @@
 Statement block - Gen<None> - 30 - (0:0,0)
     Code span - Gen<Stmt> - [if(foo) { @"Foo".ToString(); }] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:15
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.StringLiteral;[@"Foo"];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[ToString];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.Keyword;[if];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.LeftBrace;[{];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.StringLiteral;[@"Foo"];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[ToString];
+        SyntaxKind.LeftParenthesis;[(];
+        SyntaxKind.RightParenthesis;[)];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.RightBrace;[}];

@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.CodeTransition(),
                         factory.Code("bar")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                     factory.Markup(" baz")));
         }
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.CodeTransition(),
                         factory.Code("bar")
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                               .Accepts(AcceptedCharactersInternal.NonWhitespace)),
                     factory.Markup(" baz")));
         }
 

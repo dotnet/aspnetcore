@@ -1,15 +1,15 @@
 Source Location: (17:0,17 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers_Prefixed.cshtml)
 |"THS"|
-Generated Location: (682:13,37 [5] )
+Generated Location: (782:14,37 [5] )
 |"THS"|
 
 Source Location: (38:1,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers_Prefixed.cshtml)
 |"*, TestAssembly"|
-Generated Location: (787:17,37 [17] )
+Generated Location: (1018:22,37 [17] )
 |"*, TestAssembly"|
 
 Source Location: (226:7,43 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers_Prefixed.cshtml)
 |true|
-Generated Location: (1624:33,43 [4] )
+Generated Location: (1886:41,43 [4] )
 |true|
 

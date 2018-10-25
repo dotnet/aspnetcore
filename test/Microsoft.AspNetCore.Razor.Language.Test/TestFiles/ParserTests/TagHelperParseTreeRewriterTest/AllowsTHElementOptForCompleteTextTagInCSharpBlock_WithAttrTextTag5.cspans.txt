@@ -8,7 +8,7 @@ Markup span at (8:0,8 [8] ) (Accepts:Any) - Parent: Markup block at (8:0,8 [32] 
 Markup span at (16:0,16 [4] ) (Accepts:Any) - Parent: Markup block at (8:0,8 [32] )
 Markup span at (20:0,20 [1] ) (Accepts:Any) - Parent: Markup block at (20:0,20 [14] )
 Transition span at (21:0,21 [1] ) (Accepts:None) - Parent: Expression block at (21:0,21 [13] )
-Code span at (22:0,22 [12] ) (Accepts:NonWhiteSpace) - Parent: Expression block at (21:0,21 [13] )
+Code span at (22:0,22 [12] ) (Accepts:NonWhitespace) - Parent: Expression block at (21:0,21 [13] )
 Markup span at (34:0,34 [5] ) (Accepts:Any) - Parent: Markup block at (8:0,8 [32] )
 Markup span at (39:0,39 [1] ) (Accepts:Any) - Parent: Markup block at (8:0,8 [32] )
 Markup span at (40:0,40 [1] ) (Accepts:None) - Parent: Tag block at (2:0,2 [39] )

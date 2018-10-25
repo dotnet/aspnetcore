@@ -1,9 +1,9 @@
 Expression block - Gen<Expr> - 22 - (0:0,0)
     Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
+        SyntaxKind.Transition;[@];
     MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        CSharpTokenType.LeftParenthesis;[(];
+        SyntaxKind.LeftParenthesis;[(];
     Code span - Gen<Expr> - [@"""hello, world"""] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-        CSharpTokenType.StringLiteral;[@"""hello, world"""];
+        SyntaxKind.StringLiteral;[@"""hello, world"""];
     MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:1
-        CSharpTokenType.RightParenthesis;[)];
+        SyntaxKind.RightParenthesis;[)];

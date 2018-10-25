@@ -1,25 +1,25 @@
 Statement block - Gen<None> - 37 - (0:0,0)
     MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
+        SyntaxKind.LeftBrace;[{];
     Code span - Gen<Stmt> - [ using Foo.Bar.Baz; var foo = bar; ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:19
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[using];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Bar];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Baz];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Keyword;[using];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Bar];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Baz];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[var];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[foo];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[bar];
+        SyntaxKind.Semicolon;[;];
+        SyntaxKind.Whitespace;[ ];
     MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+        SyntaxKind.RightBrace;[}];

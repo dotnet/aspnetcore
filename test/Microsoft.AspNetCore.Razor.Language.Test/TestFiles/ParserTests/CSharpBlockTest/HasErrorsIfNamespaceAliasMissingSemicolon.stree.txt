@@ -1,13 +1,13 @@
 Directive block - Gen<None> - 29 - (0:0,0)
     Code span - Gen<Import: Foo.Bar.Baz = FooBarBaz;> - [using Foo.Bar.Baz = FooBarBaz] - SpanEditHandler;Accepts:AnyExceptNewline - (0:0,0) - Tokens:11
-        CSharpTokenType.Keyword;[using];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Bar];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Baz];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[FooBarBaz];
+        SyntaxKind.Keyword;[using];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Bar];
+        SyntaxKind.Dot;[.];
+        SyntaxKind.Identifier;[Baz];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Assign;[=];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[FooBarBaz];

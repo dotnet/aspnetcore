@@ -1,6 +1,6 @@
 Directive block - Gen<None> - 11 - (0:0,0)
     Code span - Gen<Import: Foo;> - [using FooLF] - SpanEditHandler;Accepts:AnyExceptNewline - (0:0,0) - Tokens:4
-        CSharpTokenType.Keyword;[using];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.NewLine;[LF];
+        SyntaxKind.Keyword;[using];
+        SyntaxKind.Whitespace;[ ];
+        SyntaxKind.Identifier;[Foo];
+        SyntaxKind.NewLine;[LF];

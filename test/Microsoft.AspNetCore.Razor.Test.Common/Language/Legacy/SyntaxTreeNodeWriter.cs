@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -173,6 +175,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected void WriteSpan(Span span)
         {
+            if (span.SyntaxNode != null)
+            {
+                WriteSyntaxNode(span.SyntaxNode);
+                return;
+            }
+
             WriteIndent();
             Write($"{span.Kind} span");
             WriteSeparator();
@@ -191,29 +199,51 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             foreach (var token in span.Tokens)
             {
                 WriteNewLine();
-                WriteIndent();
-                WriteToken(token);
+                WriteSyntaxToken(token);
             }
             Depth--;
         }
 
-        protected void WriteToken(IToken token)
+        private void WriteSyntaxNode(SyntaxNode syntaxNode)
         {
-            var tokenType = string.Empty;
-            IEnumerable<RazorDiagnostic> diagnostics = RazorDiagnostic.EmptyArray;
+            WriteIndent();
+            Write($"{typeof(SyntaxKind).Name}.{syntaxNode.Kind}");
+            WriteSeparator();
+            Write($"[{syntaxNode.ToFullString()}]");
+            WriteSeparator();
+            Write($"[{syntaxNode.Position}..{syntaxNode.EndPosition})");
+            WriteSeparator();
+            Write($"FullWidth: {syntaxNode.FullWidth}");
+            WriteSeparator();
+            Write($"Slots: {syntaxNode.SlotCount}");
 
-            if (token is HtmlToken htmlToken)
+            // Write tokens
+            Depth++;
+            for (var i = 0; i < syntaxNode.SlotCount; i++)
             {
-                tokenType = $"{htmlToken.Type.GetType().Name}.{htmlToken.Type}";
-                diagnostics = htmlToken.Errors;
-            }
-            else if (token is CSharpToken csharpToken)
-            {
-                tokenType = $"{csharpToken.Type.GetType().Name}.{csharpToken.Type}";
-                diagnostics = csharpToken.Errors;
-            }
+                var slot = syntaxNode.GetNodeSlot(i);
+                if (slot == null)
+                {
+                    continue;
+                }
 
-            var tokenString = $"{tokenType};[{token.Content}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
+                WriteNewLine();
+                if (slot.IsList || !(slot is SyntaxToken syntaxToken))
+                {
+                    WriteSyntaxNode(slot);
+                    continue;
+                }
+
+                WriteSyntaxToken(syntaxToken);
+            }
+            Depth--;
+        }
+
+        protected void WriteSyntaxToken(SyntaxToken syntaxToken)
+        {
+            WriteIndent();
+            var diagnostics = syntaxToken.GetDiagnostics();
+            var tokenString = $"{typeof(SyntaxKind).Name}.{syntaxToken.Kind};[{syntaxToken.Content}];{string.Join(", ", diagnostics.Select(diagnostic => diagnostic.Id + diagnostic.Span))}";
             Write(tokenString);
         }
 

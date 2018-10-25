@@ -14,7 +14,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
     {
         public DefaultImportDocumentManagerIntegrationTest()
         {
-            ProjectPath = "C:\\path\\to\\project\\project.csproj";
+            ProjectPath = TestProjectData.SomeProject.FilePath;
+            DirectoryPath = Path.GetDirectoryName(ProjectPath);
 
             FileSystem = RazorProjectFileSystem.Create(Path.GetDirectoryName(ProjectPath));
             ProjectEngine = RazorProjectEngine.Create(FallbackRazorConfiguration.MVC_2_1, FileSystem, b =>
@@ -24,7 +25,7 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             });
         }
 
-        private string FilePath { get; }
+        private string DirectoryPath { get; }
 
         private string ProjectPath { get; }
 
@@ -36,15 +37,15 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         public void Changed_TrackerChanged_ResultsInChangedHavingCorrectArgs()
         {
             // Arrange
-            var testImportsPath = "C:\\path\\to\\project\\_ViewImports.cshtml";
-
+            var testImportsPath = Path.Combine(DirectoryPath, "_ViewImports.cshtml");
+            
             var tracker = Mock.Of<VisualStudioDocumentTracker>(
-                t => t.FilePath == "C:\\path\\to\\project\\Views\\Home\\file.cshtml" &&
+                t => t.FilePath == Path.Combine(DirectoryPath, "Views", "Home", "_ViewImports.cshtml") &&
                 t.ProjectPath == ProjectPath &&
                 t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
 
             var anotherTracker = Mock.Of<VisualStudioDocumentTracker>(
-                t => t.FilePath == "C:\\path\\to\\project\\anotherFile.cshtml" &&
+                t => t.FilePath == Path.Combine(DirectoryPath, "anotherFile.cshtml") &&
                 t.ProjectPath == ProjectPath &&
                 t.ProjectSnapshot == Mock.Of<ProjectSnapshot>(p => p.GetProjectEngine() == ProjectEngine));
 
@@ -56,12 +57,12 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
             fileChangeTrackerFactory
                 .Setup(f => f.Create(testImportsPath))
                 .Returns(fileChangeTracker.Object);
-
+            
             fileChangeTrackerFactory
-                .Setup(f => f.Create("C:\\path\\to\\project\\Views\\_ViewImports.cshtml"))
+                .Setup(f => f.Create(Path.Combine(DirectoryPath, "Views", "_ViewImports.cshtml")))
                 .Returns(Mock.Of<FileChangeTracker>());
             fileChangeTrackerFactory
-                .Setup(f => f.Create("C:\\path\\to\\project\\Views\\Home\\_ViewImports.cshtml"))
+                .Setup(f => f.Create(Path.Combine(DirectoryPath, "Views", "Home", "_ViewImports.cshtml")))
                 .Returns(Mock.Of<FileChangeTracker>());
 
             var called = false;
@@ -76,8 +77,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
                 Assert.Equal(FileChangeKind.Changed, args.Kind);
                 Assert.Collection(
                     args.AssociatedDocuments,
-                    f => Assert.Equal("C:\\path\\to\\project\\Views\\Home\\file.cshtml", f),
-                    f => Assert.Equal("C:\\path\\to\\project\\anotherFile.cshtml", f));
+                    f => Assert.Equal(Path.Combine(DirectoryPath, "Views", "Home", "_ViewImports.cshtml"), f),
+                    f => Assert.Equal(Path.Combine(DirectoryPath, "anotherFile.cshtml"), f));
             };
 
             // Act

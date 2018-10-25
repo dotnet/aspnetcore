@@ -1,16 +1,16 @@
 Markup block - Gen<None> - 7 - (0:0,0)
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        HtmlTokenType.Unknown;[];
+        SyntaxKind.Unknown;[];
     Expression block - Gen<Expr> - 7 - (0:0,0)
         Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            CSharpTokenType.Transition;[@];
+            SyntaxKind.Transition;[@];
         Code span - Gen<Expr> - [foo(] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:2
-            CSharpTokenType.Identifier;[foo];
-            CSharpTokenType.LeftParenthesis;[(];
+            SyntaxKind.Identifier;[foo];
+            SyntaxKind.LeftParenthesis;[(];
         Comment block - Gen<RazorComment> - 2 - (5:0,5)
             Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:1
-                CSharpTokenType.RazorCommentTransition;[@];
+                SyntaxKind.RazorCommentTransition;[@];
             MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (6:0,6) - Tokens:1
-                CSharpTokenType.RazorCommentStar;[*];
+                SyntaxKind.RazorCommentStar;[*];
             Comment span - Gen<None> - [] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:1
-                CSharpTokenType.Unknown;[];
+                SyntaxKind.Unknown;[];

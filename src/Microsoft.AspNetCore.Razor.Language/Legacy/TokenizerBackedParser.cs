@@ -5,36 +5,37 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal abstract partial class TokenizerBackedParser<TTokenizer, TToken, TTokenType> : ParserBase
-        where TTokenType : struct
-        where TTokenizer : Tokenizer<TToken, TTokenType>
-        where TToken : TokenBase<TTokenType>
+    internal abstract class TokenizerBackedParser<TTokenizer> : ParserBase
+        where TTokenizer : Tokenizer
     {
-        private readonly TokenizerView<TTokenizer, TToken, TTokenType> _tokenizer;
+        private readonly TokenizerView<TTokenizer> _tokenizer;
 
-        protected TokenizerBackedParser(LanguageCharacteristics<TTokenizer, TToken, TTokenType> language, ParserContext context)
+        protected TokenizerBackedParser(LanguageCharacteristics<TTokenizer> language, ParserContext context)
             : base(context)
         {
             Language = language;
 
             var languageTokenizer = Language.CreateTokenizer(Context.Source);
-            _tokenizer = new TokenizerView<TTokenizer, TToken, TTokenType>(languageTokenizer);
+            _tokenizer = new TokenizerView<TTokenizer>(languageTokenizer);
             Span = new SpanBuilder(CurrentLocation);
         }
+
+        protected ParserState ParserState { get; set; }
 
         protected SpanBuilder Span { get; private set; }
 
         protected Action<SpanBuilder> SpanConfig { get; set; }
 
-        protected TToken CurrentToken
+        protected SyntaxToken CurrentToken
         {
             get { return _tokenizer.Current; }
         }
 
-        protected TToken PreviousToken { get; private set; }
+        protected SyntaxToken PreviousToken { get; private set; }
 
         protected SourceLocation CurrentLocation => _tokenizer.Tokenizer.CurrentLocation;
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get { return _tokenizer.EndOfFile; }
         }
 
-        protected LanguageCharacteristics<TTokenizer, TToken, TTokenType> Language { get; }
+        protected LanguageCharacteristics<TTokenizer> Language { get; }
 
         protected virtual void HandleEmbeddedTransition()
         {
@@ -58,21 +59,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
         {
-            foreach (IToken sym in Language.TokenizeString(start, content))
+            foreach (var token in Language.TokenizeString(start, content))
             {
-                span.Accept(sym);
+                span.Accept(token);
             }
         }
 
         protected void Initialize(SpanBuilder span)
         {
-            if (SpanConfig != null)
-            {
-                SpanConfig(span);
-            }
+            SpanConfig?.Invoke(span);
         }
 
-        protected TToken Lookahead(int count)
+        protected SyntaxToken Lookahead(int count)
         {
             if (count < 0)
             {
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // We add 1 in order to store the current token.
-            var tokens = new TToken[count + 1];
+            var tokens = new SyntaxToken[count + 1];
             var currentToken = CurrentToken;
 
             tokens[0] = currentToken;
@@ -115,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// <param name="condition">A predicate accepting the token being evaluated and the list of tokens which have been looped through.</param>
         /// <returns>true, if the condition was met. false - if the condition wasn't met and the last token has already been processed.</returns>
         /// <remarks>The list of previous tokens is passed in the reverse order. So the last processed element will be the first one in the list.</remarks>
-        protected bool LookaheadUntil(Func<TToken, IEnumerable<TToken>, bool> condition)
+        protected bool LookaheadUntil(Func<SyntaxToken, IEnumerable<SyntaxToken>, bool> condition)
         {
             if (condition == null)
             {
@@ -124,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var matchFound = false;
 
-            var tokens = new List<TToken>();
+            var tokens = new List<SyntaxToken>();
             tokens.Add(CurrentToken);
 
             while (true)
@@ -163,14 +161,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         // Helpers
         [Conditional("DEBUG")]
-        internal void Assert(TTokenType expectedType)
+        internal void Assert(SyntaxKind expectedType)
         {
-            Debug.Assert(!EndOfFile && TokenTypeEquals(CurrentToken.Type, expectedType));
+            Debug.Assert(!EndOfFile && TokenKindEquals(CurrentToken.Kind, expectedType));
         }
 
-        abstract protected bool TokenTypeEquals(TTokenType x, TTokenType y);
+        protected abstract bool TokenKindEquals(SyntaxKind x, SyntaxKind y);
 
-        protected internal void PutBack(TToken token)
+        protected internal void PutBack(SyntaxToken token)
         {
             if (token != null)
             {
@@ -180,7 +178,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         /// <summary>
         /// Put the specified tokens back in the input stream. The provided list MUST be in the ORDER THE TOKENS WERE READ. The
-        /// list WILL be reversed and the Putback(TToken) will be called on each item.
+        /// list WILL be reversed and the Putback(SyntaxToken) will be called on each item.
         /// </summary>
         /// <remarks>
         /// If a document contains tokens: a, b, c, d, e, f
@@ -189,9 +187,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// that is the correct format for providing to this method. The caller of this method would,
         /// in that case, want to put c, b and a back into the stream, so "a, b, c" is the CORRECT order
         /// </remarks>
-        protected internal void PutBack(IEnumerable<TToken> tokens)
+        protected internal void PutBack(IEnumerable<SyntaxToken> tokens)
         {
-            foreach (TToken token in tokens.Reverse())
+            foreach (var token in tokens.Reverse())
             {
                 PutBack(token);
             }
@@ -207,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected internal bool Balance(BalancingModes mode)
         {
-            var left = CurrentToken.Type;
+            var left = CurrentToken.Kind;
             var right = Language.FlipBracket(left);
             var start = CurrentStart;
             AcceptAndMoveNext();
@@ -223,21 +221,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Balance(mode, left, right, start);
         }
 
-        protected internal bool Balance(BalancingModes mode, TTokenType left, TTokenType right, SourceLocation start)
+        protected internal bool Balance(BalancingModes mode, SyntaxKind left, SyntaxKind right, SourceLocation start)
         {
             var startPosition = CurrentStart.AbsoluteIndex;
             var nesting = 1;
             if (!EndOfFile)
             {
-                var syms = new List<TToken>();
+                var tokens = new List<SyntaxToken>();
                 do
                 {
                     if (IsAtEmbeddedTransition(
                         (mode & BalancingModes.AllowCommentsAndTemplates) == BalancingModes.AllowCommentsAndTemplates,
                         (mode & BalancingModes.AllowEmbeddedTransitions) == BalancingModes.AllowEmbeddedTransitions))
                     {
-                        Accept(syms);
-                        syms.Clear();
+                        Accept(tokens);
+                        tokens.Clear();
                         HandleEmbeddedTransition();
 
                         // Reset backtracking since we've already outputted some spans.
@@ -253,7 +251,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     if (nesting > 0)
                     {
-                        syms.Add(CurrentToken);
+                        tokens.Add(CurrentToken);
                     }
                 }
                 while (nesting > 0 && NextToken());
@@ -275,29 +273,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     else
                     {
-                        Accept(syms);
+                        Accept(tokens);
                     }
                 }
                 else
                 {
                     // Accept all the tokens we saw
-                    Accept(syms);
+                    Accept(tokens);
                 }
             }
             return nesting == 0;
         }
 
-        protected internal bool NextIs(TTokenType type)
+        protected internal bool NextIs(SyntaxKind type)
         {
-            return NextIs(sym => sym != null && TokenTypeEquals(type, sym.Type));
+            return NextIs(token => token != null && TokenKindEquals(type, token.Kind));
         }
 
-        protected internal bool NextIs(params TTokenType[] types)
+        protected internal bool NextIs(params SyntaxKind[] types)
         {
-            return NextIs(sym => sym != null && types.Any(t => TokenTypeEquals(t, sym.Type)));
+            return NextIs(token => token != null && types.Any(t => TokenKindEquals(t, token.Kind)));
         }
 
-        protected internal bool NextIs(Func<TToken, bool> condition)
+        protected internal bool NextIs(Func<SyntaxToken, bool> condition)
         {
             var cur = CurrentToken;
             if (NextToken())
@@ -317,14 +315,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        protected internal bool Was(TTokenType type)
+        protected internal bool Was(SyntaxKind type)
         {
-            return PreviousToken != null && TokenTypeEquals(PreviousToken.Type, type);
+            return PreviousToken != null && TokenKindEquals(PreviousToken.Kind, type);
         }
 
-        protected internal bool At(TTokenType type)
+        protected internal bool At(SyntaxKind type)
         {
-            return !EndOfFile && CurrentToken != null && TokenTypeEquals(CurrentToken.Type, type);
+            return !EndOfFile && CurrentToken != null && TokenKindEquals(CurrentToken.Kind, type);
         }
 
         protected internal bool AcceptAndMoveNext()
@@ -333,11 +331,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return NextToken();
         }
 
-        protected TToken AcceptSingleWhiteSpaceCharacter()
+        protected SyntaxToken AcceptSingleWhiteSpaceCharacter()
         {
             if (Language.IsWhiteSpace(CurrentToken))
             {
-                Tuple<TToken, TToken> pair = Language.SplitToken(CurrentToken, 1, Language.GetKnownTokenType(KnownTokenType.WhiteSpace));
+                var pair = Language.SplitToken(CurrentToken, 1, Language.GetKnownTokenType(KnownTokenType.WhiteSpace));
                 Accept(pair.Item1);
                 Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                 NextToken();
@@ -346,19 +344,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return null;
         }
 
-        protected internal void Accept(IEnumerable<TToken> tokens)
+        protected internal void Accept(IEnumerable<SyntaxToken> tokens)
         {
-            foreach (TToken token in tokens)
+            foreach (var token in tokens)
             {
                 Accept(token);
             }
         }
 
-        protected internal void Accept(TToken token)
+        protected internal void Accept(SyntaxToken token)
         {
             if (token != null)
             {
-                foreach (var error in token.Errors)
+                foreach (var error in token.GetDiagnostics())
                 {
                     Context.ErrorSink.OnError(error);
                 }
@@ -367,11 +365,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected internal bool AcceptAll(params TTokenType[] types)
+        protected internal bool AcceptAll(params SyntaxKind[] kinds)
         {
-            foreach (TTokenType type in types)
+            foreach (var kind in kinds)
             {
-                if (CurrentToken == null || !TokenTypeEquals(CurrentToken.Type, type))
+                if (CurrentToken == null || !TokenKindEquals(CurrentToken.Kind, kind))
                 {
                     return false;
                 }
@@ -388,31 +386,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected internal void Output(SpanKindInternal kind)
+        protected internal void Output(SpanKindInternal kind, SyntaxKind syntaxKind = SyntaxKind.Unknown)
         {
             Configure(kind, null);
-            Output();
+            Output(syntaxKind);
         }
 
-        protected internal void Output(SpanKindInternal kind, AcceptedCharactersInternal accepts)
+        protected internal void Output(SpanKindInternal kind, AcceptedCharactersInternal accepts, SyntaxKind syntaxKind = SyntaxKind.Unknown)
         {
             Configure(kind, accepts);
-            Output();
+            Output(syntaxKind);
         }
 
-        protected internal void Output(AcceptedCharactersInternal accepts)
+        protected internal void Output(AcceptedCharactersInternal accepts, SyntaxKind syntaxKind = SyntaxKind.Unknown)
         {
             Configure(null, accepts);
-            Output();
+            Output(syntaxKind);
         }
 
-        private void Output()
+        private void Output(SyntaxKind syntaxKind)
         {
             if (Span.Tokens.Count > 0)
             {
                 var nextStart = Span.End;
 
-                var builtSpan = Span.Build();
+                var builtSpan = Span.Build(syntaxKind);
                 Context.Builder.Add(builtSpan);
                 Initialize(Span);
 
@@ -437,7 +435,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected IDisposable PushSpanConfig(Action<SpanBuilder, Action<SpanBuilder>> newConfig)
         {
-            Action<SpanBuilder> old = SpanConfig;
+            var old = SpanConfig;
             ConfigureSpan(newConfig);
             return new DisposableAction(() => SpanConfig = old);
         }
@@ -450,7 +448,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected void ConfigureSpan(Action<SpanBuilder, Action<SpanBuilder>> config)
         {
-            Action<SpanBuilder> prev = SpanConfig;
+            var prev = SpanConfig;
             if (config == null)
             {
                 SpanConfig = null;
@@ -467,9 +465,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Expected(Language.GetKnownTokenType(type));
         }
 
-        protected internal void Expected(params TTokenType[] types)
+        protected internal void Expected(params SyntaxKind[] types)
         {
-            Debug.Assert(!EndOfFile && CurrentToken != null && types.Contains(CurrentToken.Type));
+            Debug.Assert(!EndOfFile && CurrentToken != null && types.Contains(CurrentToken.Kind));
             AcceptAndMoveNext();
         }
 
@@ -478,7 +476,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Optional(Language.GetKnownTokenType(type));
         }
 
-        protected internal bool Optional(TTokenType type)
+        protected internal bool Optional(SyntaxKind type)
         {
             if (At(type))
             {
@@ -498,61 +496,61 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return true;
         }
 
-        protected internal void AcceptWhile(TTokenType type)
+        protected internal void AcceptWhile(SyntaxKind type)
         {
-            AcceptWhile(sym => TokenTypeEquals(type, sym.Type));
+            AcceptWhile(token => TokenKindEquals(type, token.Kind));
         }
 
         // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
-        protected internal void AcceptWhile(TTokenType type1, TTokenType type2)
+        protected internal void AcceptWhile(SyntaxKind type1, SyntaxKind type2)
         {
-            AcceptWhile(sym => TokenTypeEquals(type1, sym.Type) || TokenTypeEquals(type2, sym.Type));
+            AcceptWhile(token => TokenKindEquals(type1, token.Kind) || TokenKindEquals(type2, token.Kind));
         }
 
-        protected internal void AcceptWhile(TTokenType type1, TTokenType type2, TTokenType type3)
+        protected internal void AcceptWhile(SyntaxKind type1, SyntaxKind type2, SyntaxKind type3)
         {
-            AcceptWhile(sym => TokenTypeEquals(type1, sym.Type) || TokenTypeEquals(type2, sym.Type) || TokenTypeEquals(type3, sym.Type));
+            AcceptWhile(token => TokenKindEquals(type1, token.Kind) || TokenKindEquals(type2, token.Kind) || TokenKindEquals(type3, token.Kind));
         }
 
-        protected internal void AcceptWhile(params TTokenType[] types)
+        protected internal void AcceptWhile(params SyntaxKind[] types)
         {
-            AcceptWhile(sym => types.Any(expected => TokenTypeEquals(expected, sym.Type)));
+            AcceptWhile(token => types.Any(expected => TokenKindEquals(expected, token.Kind)));
         }
 
-        protected internal void AcceptUntil(TTokenType type)
+        protected internal void AcceptUntil(SyntaxKind type)
         {
-            AcceptWhile(sym => !TokenTypeEquals(type, sym.Type));
+            AcceptWhile(token => !TokenKindEquals(type, token.Kind));
         }
 
         // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
-        protected internal void AcceptUntil(TTokenType type1, TTokenType type2)
+        protected internal void AcceptUntil(SyntaxKind type1, SyntaxKind type2)
         {
-            AcceptWhile(sym => !TokenTypeEquals(type1, sym.Type) && !TokenTypeEquals(type2, sym.Type));
+            AcceptWhile(token => !TokenKindEquals(type1, token.Kind) && !TokenKindEquals(type2, token.Kind));
         }
 
-        protected internal void AcceptUntil(TTokenType type1, TTokenType type2, TTokenType type3)
+        protected internal void AcceptUntil(SyntaxKind type1, SyntaxKind type2, SyntaxKind type3)
         {
-            AcceptWhile(sym => !TokenTypeEquals(type1, sym.Type) && !TokenTypeEquals(type2, sym.Type) && !TokenTypeEquals(type3, sym.Type));
+            AcceptWhile(token => !TokenKindEquals(type1, token.Kind) && !TokenKindEquals(type2, token.Kind) && !TokenKindEquals(type3, token.Kind));
         }
 
-        protected internal void AcceptUntil(params TTokenType[] types)
+        protected internal void AcceptUntil(params SyntaxKind[] types)
         {
-            AcceptWhile(sym => types.All(expected => !TokenTypeEquals(expected, sym.Type)));
+            AcceptWhile(token => types.All(expected => !TokenKindEquals(expected, token.Kind)));
         }
 
-        protected internal void AcceptWhile(Func<TToken, bool> condition)
+        protected internal void AcceptWhile(Func<SyntaxToken, bool> condition)
         {
             Accept(ReadWhileLazy(condition));
         }
 
-        protected internal IEnumerable<TToken> ReadWhile(Func<TToken, bool> condition)
+        protected internal IEnumerable<SyntaxToken> ReadWhile(Func<SyntaxToken, bool> condition)
         {
             return ReadWhileLazy(condition).ToList();
         }
 
-        protected TToken AcceptWhiteSpaceInLines()
+        protected SyntaxToken AcceptWhiteSpaceInLines()
         {
-            TToken lastWs = null;
+            SyntaxToken lastWs = null;
             while (Language.IsWhiteSpace(CurrentToken) || Language.IsNewLine(CurrentToken))
             {
                 // Capture the previous whitespace node
@@ -586,7 +584,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         // Don't open this to sub classes because it's lazy but it looks eager.
         // You have to advance the Enumerable to read the next characters.
-        internal IEnumerable<TToken> ReadWhileLazy(Func<TToken, bool> condition)
+        internal IEnumerable<SyntaxToken> ReadWhileLazy(Func<SyntaxToken, bool> condition)
         {
             while (EnsureCurrent() && condition(CurrentToken))
             {
