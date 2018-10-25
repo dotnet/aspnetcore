@@ -27,12 +27,6 @@
     <RemoveDir Directories="$(SiteExtensionWorkingDirectory)" Condition="Exists($(SiteExtensionWorkingDirectory))" />
   </Target>
 
-  <Target Name="_AddSiteExtensionSdk">
-    <ItemGroup>
-      <DotNetCoreSdk Include="$(_SdkVersion)" Feed="$(_SdkFeed)" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="$(SiteExtensionArch)" />
-    </ItemGroup>
-  </Target>
-
   <Target Name="_AddSiteExtensionRuntime">
     <ItemGroup>
       <DotNetCoreRuntime
@@ -44,46 +38,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ComposeSiteExtensions" Condition="'$(ComposeSdk)' == 'True'" DependsOnTargets="_AddSiteExtensionSdk;_AddSiteExtensionRuntime;InstallDotNet">
-    <ItemGroup>
-      <RuntimeArchiveItems Include="$(RuntimeArchives)" />
-      <DotNetCacheArchiveItems Include="$(DotNetCacheArchives)" />
-
-      <_CleanupFiles
-        Include="$(SiteExtensionWorkingDirectory)additionalDeps;$(SiteExtensionWorkingDirectory)store" />
-
-      <_CleanupFiles
-        Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\'))"
-        Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\$(SiteExtensionNETCoreAppPackageVersion)" />
-
-      <_CleanupFiles
-        Condition="Exists('$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.App\')"
-        Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.App\'))"
-        Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.App\$(PackageVersion)" />
-
-      <_CleanupFiles
-        Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.All\'))"
-        Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.All\$(PackageVersion)" />
-
-      <_CleanupFiles
-        Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)host\fxr'))"
-        Exclude="$(SiteExtensionWorkingDirectory)host\fxr\$(SiteExtensionNETCoreAppPackageVersion)" />
-
-      <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates" Version="$(PackageVersion)" />
-      <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Version="$(PackageVersion)" />
-      <BundledTemplate Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Version="$(PackageVersion)" />
-    </ItemGroup>
-
-    <Message Text="Removing %(_CleanupFiles.Identity)" Importance="High" />
-    <RemoveDir Directories="@(_CleanupFiles)" />
-
+  <Target Name="PrepareSiteExtensionSdk" DependsOnTargets="_AddSiteExtensionRuntime;InstallDotNet">
     <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-runtime-internal-$(PackageVersion)-win-$(SiteExtensionArch).zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
-    <UnzipArchive File="%(RuntimeArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)" Condition="'$(RuntimeArchives)' != ''" Overwrite="true" />
-    <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
-
-  </Target>
-
-  <Target Name="PrepareSiteExtensionSdk" DependsOnTargets="ComposeSiteExtensions;_AddSiteExtensionSdk;InstallDotNet">
   </Target>
 
   <Target Name="PrepareSiteExtensionSdks">
@@ -92,11 +48,6 @@
   </Target>
 
   <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;PrepareSiteExtensionSdks">
-    <ItemGroup>
-      <LZMAFiles Include="$(SiteExtensionWorkingDirectory)**\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
-    </ItemGroup>
-    <!-- Strip LZMA from sdk -->
-    <Delete Files="%(LZMAFiles.Identity)" />
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Restore"
       Properties="BuildNumber=$(BuildNumber)" />
@@ -104,7 +55,6 @@
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Pack"
       Properties="%(SiteExtensions.BuildProperties);DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber);PackageOutputPath=$(SiteExtensionOutputDirectory)" />
-
   </Target>
 
   <Target Name="PushSiteExtension" DependsOnTargets="BuildSiteExtension">
