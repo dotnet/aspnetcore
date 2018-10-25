@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 listenOptions =>
                 {
                     listenOptions.UseConnectionLogging();
-                    listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                     listenOptions.UseConnectionLogging();
                 }))
             {

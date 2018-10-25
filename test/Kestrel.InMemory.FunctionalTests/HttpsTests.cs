@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public void UseHttpsDefaultsToDefaultCert()
         {
             var serverOptions = CreateServerOptions();
-            var defaultCert = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+            var defaultCert = TestResources.GetTestCertificate();
             serverOptions.DefaultCertificate = defaultCert;
 
             serverOptions.ListenLocalhost(5000, options =>
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public void ConfigureHttpsDefaultsNeverLoadsDefaultCert()
         {
             var serverOptions = CreateServerOptions();
-            var testCert = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+            var testCert = TestResources.GetTestCertificate();
             serverOptions.ConfigureHttpsDefaults(options =>
             {
                 Assert.Null(options.ServerCertificate);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public void ConfigureCertSelectorNeverLoadsDefaultCert()
         {
             var serverOptions = CreateServerOptions();
-            var testCert = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+            var testCert = TestResources.GetTestCertificate();
             serverOptions.ConfigureHttpsDefaults(options =>
             {
                 Assert.Null(options.ServerCertificate);
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                 }))
             {
                 using (var connection = server.CreateConnection())
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                 }))
             {
                 using (var connection = server.CreateConnection())
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                 }))
             {
                 using (var connection = server.CreateConnection())
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                 }))
             {
                 using (var connection = server.CreateConnection())
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                 }))
             {
                 using (var connection = server.CreateConnection())
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                 }))
             {
                 using (var connection = server.CreateConnection())
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     listenOptions.UseHttps(o =>
                     {
-                        o.ServerCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+                        o.ServerCertificate = new X509Certificate2(TestResources.GetTestCertificate());
                         o.OnHandshakeStarted = () => handshakeStartedTcs.SetResult(null);
 
                         handshakeTimeout = o.HandshakeTimeout;
@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
+                    listenOptions.UseHttps(TestResources.GetTestCertificate());
                 }))
             {
                 using (var connection = server.CreateConnection())

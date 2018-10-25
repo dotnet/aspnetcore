@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureHttpsDefaults(opt =>
             {
-                opt.ServerCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+                opt.ServerCertificate = TestResources.GetTestCertificate();
                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
             });
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             serverOptions.ConfigureEndpointDefaults(opt =>
             {
                 opt.NoDelay = false;
-                opt.UseHttps(new X509Certificate2(TestResources.TestCertificatePath, "testPassword"));
+                opt.UseHttps(TestResources.GetTestCertificate());
             });
 
             serverOptions.ConfigureHttpsDefaults(opt =>
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureHttpsDefaults(opt =>
             {
-                opt.ServerCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+                opt.ServerCertificate = TestResources.GetTestCertificate();
                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
             });
 
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureHttpsDefaults(opt =>
             {
-                opt.ServerCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+                opt.ServerCertificate = TestResources.GetTestCertificate();
                 opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
             });
 
