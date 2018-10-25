@@ -18,7 +18,7 @@
     <EmbeddedResource Include="wwwroot/**/*" />
     <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
     <None Remove="wwwroot/**/LICENSE*" />
-    <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/" />
+    <None Include="THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="/THIRD-PARTY-NOTICES.txt" />
 
     <Content Update="**\*.cshtml" Pack="false" />
   </ItemGroup>
