@@ -6,6 +6,7 @@ ASP.NET Core SignalR
 [![Build Status](https://dnceng.visualstudio.com/public/_apis/build/status/aspnet/SignalR/SignalR-ci)](https://dnceng.visualstudio.com/public/_build/latest?definitionId=26)
 [![NuGet version](https://badge.fury.io/nu/microsoft.aspnetcore.signalr.svg)](https://badge.fury.io/nu/microsoft.aspnetcore.signalr)
 [![npm version](https://badge.fury.io/js/%40aspnet%2Fsignalr.svg)](https://badge.fury.io/js/%40aspnet%2Fsignalr)
+[![Maven Version](https://maven-badges.herokuapp.com/maven-central/com.microsoft.signalr/signalr/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.microsoft.signalr/signalr)
 
 [![Join the chat at https://gitter.im/aspnet/SignalR](https://badges.gitter.im/aspnet/SignalR.svg)](https://gitter.im/aspnet/SignalR?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
