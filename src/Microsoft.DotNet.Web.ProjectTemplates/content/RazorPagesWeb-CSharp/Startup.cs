@@ -137,9 +137,6 @@ namespace Company.WebApplication1
         {
             if (env.IsDevelopment())
             {
-#if (UseBrowserLink)
-                app.UseBrowserLink();
-#endif
                 app.UseDeveloperExceptionPage();
 #if (IndividualLocalAuth)
                 app.UseDatabaseErrorPage();
