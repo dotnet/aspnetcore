@@ -20,6 +20,7 @@
 inline HANDLE g_logFile = INVALID_HANDLE_VALUE;
 inline HMODULE g_hModule;
 inline SRWLOCK g_logFileLock;
+inline HANDLE g_stdOutHandle = INVALID_HANDLE_VALUE;
 
 HRESULT
 PrintDebugHeader()
@@ -162,6 +163,14 @@ VOID
 DebugInitialize(HMODULE hModule)
 {
     g_hModule = hModule;
+    DuplicateHandle(
+        /* hSourceProcessHandle*/ GetCurrentProcess(),
+        /* hSourceHandle */ GetStdHandle(STD_OUTPUT_HANDLE),
+        /* hTargetProcessHandle */ GetCurrentProcess(),
+        /* lpTargetHandle */&g_stdOutHandle,
+        /* dwDesiredAccess */ 0, // dwDesired is ignored if DUPLICATE_SAME_ACCESS is specified
+        /* bInheritHandle */ TRUE,
+        /* dwOptions  */ DUPLICATE_SAME_ACCESS);
 
     HKEY hKey;
     InitializeSRWLock(&g_logFileLock);
@@ -270,6 +279,11 @@ DebugStop()
     {
         CloseHandle(g_logFile);
     }
+
+    if (g_stdOutHandle != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(g_stdOutHandle);
+    }
 }
 
 BOOL
@@ -316,7 +330,7 @@ DebugPrintW(
         {
             if (IsEnabled(ASPNETCORE_DEBUG_FLAG_CONSOLE))
             {
-                WriteFileEncoded(GetConsoleOutputCP(), GetStdHandle(STD_OUTPUT_HANDLE), strOutput.QueryStr());
+                WriteFileEncoded(GetConsoleOutputCP(), g_stdOutHandle, strOutput.QueryStr());
             }
 
             if (g_logFile != INVALID_HANDLE_VALUE)
