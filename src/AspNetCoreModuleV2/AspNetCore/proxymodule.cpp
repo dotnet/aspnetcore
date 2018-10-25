@@ -86,6 +86,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     HRESULT hr = S_OK;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
 
+    TraceContextScope traceScope(pHttpContext->GetTraceContext());
     // We don't want OnAsyncCompletion to complete request before OnExecuteRequestHandler exits
     auto lock = SRWExclusiveLock(m_requestLock);
 
@@ -131,13 +132,14 @@ Finished:
 __override
 REQUEST_NOTIFICATION_STATUS
 ASPNET_CORE_PROXY_MODULE::OnAsyncCompletion(
-    IHttpContext *,
+    IHttpContext * pHttpContext,
     DWORD,
     BOOL,
     IHttpEventProvider *,
     IHttpCompletionInfo *   pCompletionInfo
 )
 {
+    TraceContextScope traceScope(pHttpContext->GetTraceContext());
     // We don't want OnAsyncCompletion to complete request before OnExecuteRequestHandler exits
     auto lock = SRWExclusiveLock(m_requestLock);
 

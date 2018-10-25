@@ -57,7 +57,7 @@
 #include "requesthandler.h"
 #include "application.h"
 #include "resources.h"
-#include "aspnetcore_event.h"
+#include "EventTracing.h"
 #include "aspnetcore_msg.h"
 #include "requesthandler_config.h"
 

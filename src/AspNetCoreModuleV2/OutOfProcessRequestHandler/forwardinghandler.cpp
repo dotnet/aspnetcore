@@ -26,7 +26,7 @@ RESPONSE_HEADER_HASH *      FORWARDING_HANDLER::sm_pResponseHeaderHash = NULL;
 FORWARDING_HANDLER::FORWARDING_HANDLER(
     _In_ IHttpContext                  *pW3Context,
     _In_ std::unique_ptr<OUT_OF_PROCESS_APPLICATION, IAPPLICATION_DELETER> pApplication
-) : REQUEST_HANDLER(),
+) : REQUEST_HANDLER(*pW3Context),
     m_Signature(FORWARDING_HANDLER_SIGNATURE),
     m_RequestStatus(FORWARDER_START),
     m_fClientDisconnected(FALSE),
@@ -90,7 +90,7 @@ FORWARDING_HANDLER::~FORWARDING_HANDLER(
 
 __override
 REQUEST_NOTIFICATION_STATUS
-FORWARDING_HANDLER::OnExecuteRequestHandler()
+FORWARDING_HANDLER::ExecuteRequestHandler()
 {
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     HRESULT                     hr = S_OK;
@@ -320,7 +320,7 @@ Failure:
     else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
         ServerErrorHandler handler(*m_pW3Context, 502, 5, "Bad Gateway", hr, g_hOutOfProcessRHModule, m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(), OUT_OF_PROCESS_RH_STATIC_HTML);
-        handler.OnExecuteRequestHandler();
+        handler.ExecuteRequestHandler();
     }
     else
     {
@@ -353,7 +353,7 @@ Finished:
 
 __override
 REQUEST_NOTIFICATION_STATUS
-FORWARDING_HANDLER::OnAsyncCompletion(
+FORWARDING_HANDLER::AsyncCompletion(
     DWORD           cbCompletion,
     HRESULT         hrCompletionStatus
 )

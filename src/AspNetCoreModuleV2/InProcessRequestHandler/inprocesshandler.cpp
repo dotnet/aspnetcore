@@ -6,18 +6,18 @@
 #include "IOutputManager.h"
 #include "ShuttingDownApplication.h"
 #include "ntassert.h"
-#include "ModuleTracer.h"
 
 ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = NULL;
 
 IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
     _In_ std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> pApplication,
-    _In_ IHttpContext   *pW3Context,
+    _In_ IHttpContext *pW3Context,
     _In_ PFN_REQUEST_HANDLER pRequestHandler,
     _In_ void * pRequestHandlerContext,
     _In_ PFN_DISCONNECT_HANDLER pDisconnectHandler,
     _In_ PFN_ASYNC_COMPLETION_HANDLER pAsyncCompletion
-): m_pManagedHttpContext(nullptr),
+): REQUEST_HANDLER(*pW3Context),
+   m_pManagedHttpContext(nullptr),
    m_requestNotificationStatus(RQ_NOTIFICATION_PENDING),
    m_fManagedRequestComplete(FALSE),
    m_pW3Context(pW3Context),
@@ -26,7 +26,6 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
    m_pRequestHandlerContext(pRequestHandlerContext),
    m_pAsyncCompletionHandler(pAsyncCompletion),
    m_pDisconnectHandler(pDisconnectHandler),
-   m_moduleTracer(pW3Context->GetTraceContext()),
    m_disconnectFired(false)
 {
     InitializeSRWLock(&m_srwDisconnectLock);
@@ -34,14 +33,13 @@ IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
 
 __override
 REQUEST_NOTIFICATION_STATUS
-IN_PROCESS_HANDLER::OnExecuteRequestHandler()
+IN_PROCESS_HANDLER::ExecuteRequestHandler()
 {
-    // FREB log
-    m_moduleTracer.ExecuteRequestStart();
+    ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_START>(m_pW3Context, nullptr);
 
     if (m_pRequestHandler == NULL)
     {
-        m_moduleTracer.ExecuteRequestEnd(RQ_NOTIFICATION_FINISH_REQUEST);
+        ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_COMPLETION>(m_pW3Context, nullptr, RQ_NOTIFICATION_FINISH_REQUEST);
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
     else if (m_pApplication->QueryBlockCallbacksIntoManaged())
@@ -50,24 +48,25 @@ IN_PROCESS_HANDLER::OnExecuteRequestHandler()
     }
 
     auto status = m_pRequestHandler(this, m_pRequestHandlerContext);
-    m_moduleTracer.ExecuteRequestEnd(status);
+    ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_COMPLETION>(m_pW3Context, nullptr, status);
     return status;
 }
 
 __override
 REQUEST_NOTIFICATION_STATUS
-IN_PROCESS_HANDLER::OnAsyncCompletion(
+IN_PROCESS_HANDLER::AsyncCompletion(
     DWORD       cbCompletion,
     HRESULT     hrCompletionStatus
 )
 {
-    m_moduleTracer.AsyncCompletionStart();
+
+    ::RaiseEvent<ANCMEvents::ANCM_INPROC_ASYNC_COMPLETION_START>(m_pW3Context, nullptr);
 
     if (m_fManagedRequestComplete)
     {
         // means PostCompletion has been called and this is the associated callback.
-        m_moduleTracer.AsyncCompletionEnd(m_requestNotificationStatus);
-        return m_requestNotificationStatus; 
+        ::RaiseEvent<ANCMEvents::ANCM_INPROC_ASYNC_COMPLETION_COMPLETION>(m_pW3Context, nullptr, m_requestNotificationStatus);
+        return m_requestNotificationStatus;
     }
     if (m_pApplication->QueryBlockCallbacksIntoManaged())
     {
@@ -81,20 +80,20 @@ IN_PROCESS_HANDLER::OnAsyncCompletion(
     // Call the managed handler for async completion.
 
     auto status = m_pAsyncCompletionHandler(m_pManagedHttpContext, hrCompletionStatus, cbCompletion);
-    m_moduleTracer.AsyncCompletionEnd(status);
+    ::RaiseEvent<ANCMEvents::ANCM_INPROC_ASYNC_COMPLETION_COMPLETION>(m_pW3Context, nullptr, status);
     return status;
 }
 
-REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage()
+REQUEST_NOTIFICATION_STATUS IN_PROCESS_HANDLER::ServerShutdownMessage() const
 {
-    m_moduleTracer.RequestShutdown();
+    ::RaiseEvent<ANCMEvents::ANCM_INPROC_REQUEST_SHUTDOWN>(m_pW3Context, nullptr);
     return ShuttingDownHandler::ServerShutdownMessage(m_pW3Context);
 }
 
 VOID
 IN_PROCESS_HANDLER::NotifyDisconnect()
 {
-    m_moduleTracer.RequestDisconnect();
+    ::RaiseEvent<ANCMEvents::ANCM_INPROC_REQUEST_DISCONNECT>(m_pW3Context, nullptr);
 
     if (m_pApplication->QueryBlockCallbacksIntoManaged() ||
         m_fManagedRequestComplete)
@@ -126,7 +125,7 @@ IN_PROCESS_HANDLER::IndicateManagedRequestComplete(
 {
     m_fManagedRequestComplete = TRUE;
     m_pManagedHttpContext = nullptr;
-    m_moduleTracer.ManagedCompletion();
+    ::RaiseEvent<ANCMEvents::ANCM_INPROC_MANAGED_REQUEST_COMPLETION>(m_pW3Context, nullptr);
 }
 
 VOID

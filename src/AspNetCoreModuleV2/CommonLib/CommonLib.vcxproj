@@ -205,6 +205,7 @@
     <ClInclude Include="config_utility.h" />
     <ClInclude Include="Environment.h" />
     <ClInclude Include="EventLog.h" />
+    <ClInclude Include="EventTracing.h" />
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="file_utility.h" />
     <ClInclude Include="FileOutputManager.h" />
@@ -219,8 +220,7 @@
     <ClInclude Include="IOutputManager.h" />
     <ClInclude Include="irequesthandler.h" />
     <ClInclude Include="LoggingHelpers.h" />
-    <ClInclude Include="ModuleHelpers.h" />    
-    <ClInclude Include="ModuleTracer.h" />
+    <ClInclude Include="ModuleHelpers.h" />
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="PipeOutputManager.h" />

@@ -34,9 +34,11 @@ public:
         _In_  IHttpContext          *pHttpContext,
         _Outptr_ IAPPLICATION       **pApplication) const
     {
+        // m_location.data() is const ptr copy to local to get mutable pointer
+        auto location = m_location;
         std::array<APPLICATION_PARAMETER, 2> parameters {
             {
-                {"InProcessExeLocation", m_location.data()},
+                {"InProcessExeLocation", location.data()},
                 {"TraceContext", pHttpContext->GetTraceContext()}
             }
         };

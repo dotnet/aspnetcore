@@ -50,6 +50,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewShim]
+        [RequiresIIS(IISCapability.FailedRequestTracingModule)]
+        public async Task FrebIncludesHResultFailures()
+        {
+            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            parameters.TransformArguments((args, _) => string.Empty);
+            var result = await SetupFrebApp(parameters);
+
+            await result.HttpClient.GetAsync("HelloWorld");
+
+            StopServer();
+
+            AssertFrebLogs(result, new FrebLogItem("ANCM_HRESULT_FAILED"), new FrebLogItem("ANCM_EXCEPTION_CAUGHT"));
+        }
+
+        [ConditionalFact]
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task CheckFailedRequestEvents()
         {
@@ -86,9 +102,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             AssertFrebLogs(result, new FrebLogItem("ANCM_INPROC_REQUEST_DISCONNECT"), new FrebLogItem("ANCM_INPROC_MANAGED_REQUEST_COMPLETION"));
         }
 
-        private async Task<IISDeploymentResult> SetupFrebApp()
+        private async Task<IISDeploymentResult> SetupFrebApp(IISDeploymentParameters parameters = null)
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            parameters = parameters ?? _fixture.GetBaseDeploymentParameters(publish: true);
             parameters.EnableFreb("Verbose", _logFolderPath);
 
             Directory.CreateDirectory(_logFolderPath);

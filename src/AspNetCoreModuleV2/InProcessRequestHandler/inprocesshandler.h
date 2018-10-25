@@ -7,7 +7,6 @@
 #include <memory>
 #include "iapplication.h"
 #include "inprocessapplication.h"
-#include "ModuleTracer.h"
 
 class IN_PROCESS_APPLICATION;
 
@@ -26,11 +25,11 @@ public:
 
     __override
     REQUEST_NOTIFICATION_STATUS
-    OnExecuteRequestHandler() override;
+    ExecuteRequestHandler() override;
 
     __override
     REQUEST_NOTIFICATION_STATUS
-    OnAsyncCompletion(
+    AsyncCompletion(
         DWORD       cbCompletion,
         HRESULT     hrCompletionStatus
     ) override;
@@ -72,7 +71,7 @@ public:
 
 private:
     REQUEST_NOTIFICATION_STATUS
-    ServerShutdownMessage();
+    ServerShutdownMessage() const;
 
     PVOID m_pManagedHttpContext;
     BOOL m_fManagedRequestComplete;
@@ -84,7 +83,6 @@ private:
     PFN_ASYNC_COMPLETION_HANDLER m_pAsyncCompletionHandler;
     PFN_DISCONNECT_HANDLER       m_pDisconnectHandler;
     static ALLOC_CACHE_HANDLER *   sm_pAlloc;
-    ModuleTracer m_moduleTracer;
     bool m_disconnectFired;
     SRWLOCK m_srwDisconnectLock;
 };

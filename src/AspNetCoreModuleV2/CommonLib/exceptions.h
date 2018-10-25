@@ -9,6 +9,9 @@
 #include "debugutil.h"
 #include "StringHelpers.h"
 #include "InvalidOperationException.h"
+#include "ntassert.h"
+#include "NonCopyable.h"
+#include "EventTracing.h"
 
 #define LOCATION_INFO_ENABLED TRUE
 
@@ -53,7 +56,7 @@
     __pragma(warning(pop))
 
 
-#define FINISHED(hrr)                                           do { _HR_RET(hrr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } hr = __hrRet; _GOTO_FINISHED(); } while (0, 0) 
+#define FINISHED(hrr)                                           do { _HR_RET(hrr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } hr = __hrRet; _GOTO_FINISHED(); } while (0, 0)
 #define FINISHED_IF_FAILED(hrr)                                 do { _HR_RET(hrr); if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; _GOTO_FINISHED(); }} while (0, 0)
 #define FINISHED_IF_NULL_ALLOC(ptr)                             do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); _GOTO_FINISHED(); }} while (0, 0)
 #define FINISHED_LAST_ERROR_IF(condition)                       do { if (condition) { hr = LogLastError(LOCATION_INFO); _GOTO_FINISHED(); }} while (0, 0)
@@ -74,6 +77,18 @@
 #define SUCCEEDED_LOG(hr)                                       SUCCEEDED(LOG_IF_FAILED(hr))
 #define FAILED_LOG(hr)                                          FAILED(LOG_IF_FAILED(hr))
 
+inline thread_local IHttpTraceContext* g_traceContext;
+
+ __declspec(noinline) inline VOID TraceHRESULT(LOCATION_ARGUMENTS HRESULT hr)
+{
+    ::RaiseEvent<ANCMEvents::ANCM_HRESULT_FAILED>(g_traceContext, nullptr, fileName, lineNumber, hr);
+}
+
+ __declspec(noinline) inline VOID TraceException(LOCATION_ARGUMENTS const std::exception& exception)
+{
+     ::RaiseEvent<ANCMEvents::ANCM_EXCEPTION_CAUGHT>(g_traceContext, nullptr, fileName, lineNumber, exception.what());
+}
+
 class ResultException: public std::runtime_error
 {
 public:
@@ -86,7 +101,7 @@ public:
     HRESULT GetResult() const noexcept { return m_hr; }
 
 private:
-    
+
 #pragma warning( push )
 #pragma warning ( disable : 26495 ) // bug in CA: m_hr is reported as uninitialized
     const HRESULT m_hr = S_OK;
@@ -103,6 +118,7 @@ private:
     const auto lastError = GetLastError();
     const auto hr = HRESULT_FROM_WIN32(lastError);
 
+    TraceHRESULT(LOCATION_CALL hr);
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, LOCATION_FORMAT "Operation failed with LastError: %d HR: 0x%x", LOCATION_CALL lastError, hr);
 
     return hr;
@@ -120,6 +136,7 @@ private:
 
  __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS const std::exception& exception)
 {
+    TraceException(LOCATION_CALL exception);
     DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, "Exception '%s' caught at " LOCATION_FORMAT, exception.what(), LOCATION_CALL_ONLY);
 }
 
@@ -127,6 +144,7 @@ private:
 {
     if (FAILED(hr))
     {
+        TraceHRESULT(LOCATION_CALL hr);
         DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,  "Failed HRESULT returned: 0x%x at " LOCATION_FORMAT, hr, LOCATION_CALL_ONLY);
     }
     return hr;
@@ -178,3 +196,21 @@ __declspec(noinline) inline std::wstring GetUnexpectedExceptionMessage(const std
 {
     return format(L"Unexpected exception: %S", ex.what());
 }
+
+class TraceContextScope: NonCopyable
+{
+public:
+    TraceContextScope(IHttpTraceContext* pTraceContext) noexcept
+    {
+        m_pPreviousTraceContext = g_traceContext;
+        g_traceContext = pTraceContext;
+    }
+
+    ~TraceContextScope()
+    {
+        g_traceContext = m_pPreviousTraceContext;
+    }
+ private:
+     IHttpTraceContext* m_pPreviousTraceContext;
+};
+
