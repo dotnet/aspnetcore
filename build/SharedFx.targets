@@ -1,12 +1,6 @@
 <Project>
   <Import Project="SharedFx.props" />
 
-  <ItemDefinitionGroup>
-    <ProjectToBuild>
-      <Restore>true</Restore>
-    </ProjectToBuild>
-  </ItemDefinitionGroup>
-
   <PropertyGroup>
     <UnitTestFxProject>$(RepositoryRoot)\src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
   </PropertyGroup>
@@ -15,18 +9,19 @@
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.pkgproj" />
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
     <ProjectToBuild Include="$(UnitTestFxProject)" />
-    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Internal\*.*proj" Restore="false" />
-    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" Restore="false" />
+    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Internal\*.*proj" />
+    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" />
   </ItemGroup>
 
   <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
 
-    <MSBuild Projects="@(ProjectToBuild)"
+    <PropertyGroup>
+      <_RestoreGraphProjectInput>@(ProjectToBuild)</_RestoreGraphProjectInput>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(MSBuildToolsPath)\NuGet.targets"
              Targets="Restore"
-             Properties="$(SolutionProperties);_DummyTarget=Restore"
-             BuildInParallel="true"
-             SkipNonexistentTargets="true"
-             Condition=" '%(Restore)' != 'false' " />
+             Properties="$(SolutionProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
 
     <MSBuild Projects="@(ProjectToBuild)"
              Properties="$(SolutionProperties)"
