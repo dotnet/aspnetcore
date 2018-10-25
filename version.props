@@ -5,7 +5,7 @@
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
     <PreReleaseLabel>rtm</PreReleaseLabel>
     <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
-    <BuildNumber Condition="'$(BuildNumber)' == ''">$([System.DateTime]::Now.ToString('yyMMdd'))-99</BuildNumber>
+    <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">$([System.DateTime]::Now.ToString('yyMMdd'))-99</BuildNumber>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <ExperimentalVersionPrefix>0.2.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
     <VersionSuffix>$(PreReleaseLabel)-$(BuildNumber)</VersionSuffix>

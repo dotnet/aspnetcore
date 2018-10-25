@@ -7,6 +7,10 @@
       $(DotNetAdditionalRestoreSources);
       $(DotNetRestoreSources);
     </RestoreSources>
+    <RestoreSources Condition="Exists('$(RepositoryRoot)artifacts/build/')">
+      $(RepositoryRoot)artifacts/build/;
+      $(DotNetRestoreSources);
+    </RestoreSources>
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' ">
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
