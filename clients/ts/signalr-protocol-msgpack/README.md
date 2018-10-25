@@ -14,6 +14,9 @@ See the [SignalR Documentation](https://docs.microsoft.com/en-us/aspnet/core/sig
 
 To use the client in a browser, copy `*.js` files from the `dist/browser` folder to your script folder include on your page using the `<script>` tag.
 
+### NodeJS
+
+To use the client in a NodeJS application, install the package to your `node_modules` folder and use `require('@aspnet/signalr-protocol-msgpack')` to load the module. The object returned by `require('@aspnet/signalr-protocol-msgpack')` has the same members as the global `signalR.protocols.msgpack` object (when used in a browser).
 
 ### Example (Browser)
 

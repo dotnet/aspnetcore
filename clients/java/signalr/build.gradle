@@ -25,24 +25,17 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    // add sonatype repository (temporary, due to java-8-parent being a snapshot)
-    maven {
-        url 'https://oss.sonatype.org/content/repositories/snapshots/'
-    }
 }
 
 dependencies {
-    implementation 'com.microsoft.maven:java-8-parent:8.0.0-SNAPSHOT'
-
-    // dependency versions imported from java-8-parent POM imported above
-    testImplementation 'org.junit.jupiter:junit-jupiter-api'
-    testCompile 'org.junit.jupiter:junit-jupiter-params'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
-    implementation 'com.google.code.gson:gson'
-    implementation 'com.squareup.okhttp3:okhttp'
-    implementation 'io.reactivex.rxjava2:rxjava'
-    implementation 'org.slf4j:slf4j-api'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.2'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
 }
 
 spotless {

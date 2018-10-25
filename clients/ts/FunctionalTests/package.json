@@ -44,7 +44,7 @@
     "test": "tsc --noEmit && npm run test:local --",
     "test:inner": "npm run build && dotnet build && npm run test:local --",
     "test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
-    "test:all": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
+    "test:all": "npm run pretest && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
     "test:sauce": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
     "sauce": "npm run pretest && npm run test:sauce"
   },
