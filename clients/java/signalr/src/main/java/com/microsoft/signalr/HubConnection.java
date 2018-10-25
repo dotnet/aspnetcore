@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,7 @@ public class HubConnection {
     private Boolean handshakeReceived = false;
     private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
     private final Lock hubConnectionStateLock = new ReentrantLock();
-    private List<Consumer<Exception>> onClosedCallbackList;
+    private List<OnClosedCallback> onClosedCallbackList;
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private final Map<String, String> headers = new HashMap<>();
@@ -432,8 +431,8 @@ public class HubConnection {
 
         // Do not run these callbacks inside the hubConnectionStateLock
         if (onClosedCallbackList != null) {
-            for (Consumer<Exception> callback : onClosedCallbackList) {
-                callback.accept(exception);
+            for (OnClosedCallback callback : onClosedCallbackList) {
+                callback.invoke(exception);
             }
         }
     }
@@ -526,7 +525,7 @@ public class HubConnection {
      *
      * @param callback A callback to run when the connection closes.
      */
-    public void onClosed(Consumer<Exception> callback) {
+    public void onClosed(OnClosedCallback callback) {
         if (onClosedCallbackList == null) {
             onClosedCallbackList = new ArrayList<>();
         }

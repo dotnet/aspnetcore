@@ -4,7 +4,6 @@
 package com.microsoft.signalr;
 
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private Map<String, String> headers;
     private OkHttpClient client;
     private OnReceiveCallBack onReceive;
-    private BiConsumer<Integer, String> onClose;
+    private WebSocketOnClosedCallback onClose;
     private CompletableSubject startSubject = CompletableSubject.create();
     private CompletableSubject closeSubject = CompletableSubject.create();
 
@@ -70,7 +69,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     }
 
     @Override
-    public void setOnClose(BiConsumer<Integer, String> onClose) {
+    public void setOnClose(WebSocketOnClosedCallback onClose) {
         this.onClose = onClose;
     }
 
@@ -92,7 +91,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
-            onClose.accept(code, reason);
+            onClose.invoke(code, reason);
             closeSubject.onComplete();
             checkStartFailure();
         }
@@ -101,7 +100,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             logger.error("Websocket closed from an error: {}.", t.getMessage());
             closeSubject.onError(new RuntimeException(t));
-            onClose.accept(null, t.getMessage());
+            onClose.invoke(null, t.getMessage());
             checkStartFailure();
         }
 

@@ -4,7 +4,6 @@
 package com.microsoft.signalr;
 
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +13,7 @@ import io.reactivex.Completable;
 class WebSocketTransport implements Transport {
     private WebSocketWrapper webSocketClient;
     private OnReceiveCallBack onReceiveCallBack;
-    private Consumer<String> onClose;
+    private TransportOnClosedCallback onClose;
     private String url;
     private final HttpClient client;
     private final Map<String, String> headers;
@@ -78,7 +77,7 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public void setOnClose(Consumer<String> onCloseCallback) {
+    public void setOnClose(TransportOnClosedCallback onCloseCallback) {
         this.onClose = onCloseCallback;
     }
 
@@ -91,10 +90,10 @@ class WebSocketTransport implements Transport {
         logger.info("WebSocket connection stopping with " +
                 "code {} and reason '{}'.", code, reason);
         if (code != 1000) {
-            onClose.accept(reason);
+            onClose.invoke(reason);
         }
         else {
-            onClose.accept(null);
+            onClose.invoke(null);
         }
     }
 }

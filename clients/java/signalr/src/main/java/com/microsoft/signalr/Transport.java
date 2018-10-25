@@ -3,8 +3,6 @@
 
 package com.microsoft.signalr;
 
-import java.util.function.Consumer;
-
 import io.reactivex.Completable;
 
 interface Transport {
@@ -12,6 +10,6 @@ interface Transport {
     Completable send(String message);
     void setOnReceive(OnReceiveCallBack callback);
     void onReceive(String message);
-    void setOnClose(Consumer<String> onCloseCallback);
+    void setOnClose(TransportOnClosedCallback onCloseCallback);
     Completable stop();
 }
