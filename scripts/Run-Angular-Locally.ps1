@@ -7,6 +7,6 @@ param()
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
-. $PSScriptRoot\Custom-Hive.ps1
+. $PSScriptRoot\Test-Template.ps1
 
 Test-Template "angular" "angular" "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0.0-alpha1.nupkg" $true
