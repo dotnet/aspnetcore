@@ -2,7 +2,8 @@
   <Import Project="SharedFx.props" />
 
   <PropertyGroup>
-    <UnitTestFxProject>$(RepositoryRoot)\src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
+    <UnitTestFxProject>$(RepositoryRoot)src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
+    <UnitTestFxProject>$([MSBuild]::NormalizePath($(UnitTestFxProject)))</UnitTestFxProject>
   </PropertyGroup>
 
   <ItemGroup>

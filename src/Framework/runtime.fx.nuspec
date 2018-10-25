@@ -15,10 +15,10 @@
     <serviceable>true</serviceable>
   </metadata>
   <files>
-    <file src="$symbolsAssets$" target="runtimes\$rid$\lib\$targetFramework$\" />
-    <file src="$runtimeAssets$" target="runtimes\$rid$\lib\$targetFramework$\" />
-    <file src="$nativeAssets$" target="runtimes\$rid$\native\" />
+    <file src="$symbolsAssets$" target="runtimes/$rid$/lib/$targetFramework$/" />
+    <file src="$runtimeAssets$" target="runtimes/$rid$/lib/$targetFramework$/" />
+    <file src="$nativeAssets$" target="runtimes/$rid$/native/" />
     <!-- This is a dummy reference which prevents NuGet from adding any compilation references when this package is imported. -->
-    <file src="_._" target="ref\netstandard\" />
+    <file src="_._" target="ref/netstandard/" />
   </files>
 </package>

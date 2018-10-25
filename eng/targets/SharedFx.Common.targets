@@ -75,6 +75,9 @@ This targets file should only be imported by .shfxproj files.
     <PublishDir Condition=" '$(CrossGenOutput)' != 'true' ">$(OutputPath)</PublishDir>
     <PublishDir Condition=" '$(CrossGenOutput)' == 'true' ">$(IntermediateOutputPath)u\</PublishDir>
 
+    <!-- If symbols generation is disabled, there is no use in producing a symbols.nupkg files. -->
+    <IncludeSymbols Condition="'$(CrossgenSymbolsOutput)' == 'false'">false</IncludeSymbols>
+
     <MetadataOutputPath Condition="'$(MetadataOutputPath)' == ''">$(OutputPath)files\</MetadataOutputPath>
     <SymbolsOutputPath Condition="'$(SymbolsOutputPath)' == ''">$(OutputPath)symbols\</SymbolsOutputPath>
     <NativeAssetsOutputPath Condition="'$(NativeAssetsOutputPath)' == ''">$(OutputPath)native\</NativeAssetsOutputPath>

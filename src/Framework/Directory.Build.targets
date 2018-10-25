@@ -19,9 +19,9 @@
         repositoryCommit=$(RepositoryCommit);
         copyright=$(Copyright);
         targetFramework=$(TargetFramework);
-        symbolsAssets=$(SymbolsOutputPath);
-        nativeAssets=$(NativeAssetsOutputPath);
-        runtimeAssets=$(RuntimeAssetsOutputPath);
+        symbolsAssets=$([MSBuild]::NormalizeDirectory($(SymbolsOutputPath)));
+        nativeAssets=$([MSBuild]::NormalizeDirectory($(NativeAssetsOutputPath)));
+        runtimeAssets=$([MSBuild]::NormalizeDirectory($(RuntimeAssetsOutputPath)));
       </NuspecProperties>
     </PropertyGroup>
   </Target>
