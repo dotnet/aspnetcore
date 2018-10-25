@@ -4,6 +4,6 @@
 [CmdletBinding(PositionalBinding = $false)]
 param()
 
-. $PSScriptRoot\Custom-Hive.ps1
+. $PSScriptRoot\Test-Template.ps1
 
 Test-Template "webapp" "webapp -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.2.2.2.2.0-rtm-t000.nupkg" $false
