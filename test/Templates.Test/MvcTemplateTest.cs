@@ -37,7 +37,7 @@ namespace Templates.Test
         public void MvcTemplate_NoAuth_Works_NetCore_ForDefaultTemplate()
             => MvcTemplate_NoAuthImpl(null, languageOverride: default);
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Templating/issues/673")]
         public void MvcTemplate_NoAuth_Works_NetCore_ForFSharpTemplate()
             => MvcTemplate_NoAuthImpl(null, languageOverride: "F#");
 

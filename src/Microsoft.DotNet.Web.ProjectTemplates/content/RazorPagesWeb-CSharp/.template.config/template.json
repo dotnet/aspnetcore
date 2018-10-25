@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Razor Pages content",
   "groupIdentity": "Microsoft.Web.RazorPages",
-  "precedence": "4000",
-  "identity": "Microsoft.Web.RazorPages.CSharp.2.2",
+  "precedence": "5000",
+  "identity": "Microsoft.Web.RazorPages.CSharp.3.0",
   "shortName": [
     "webapp",
     "razor"
@@ -308,7 +308,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to turn off HTTPS. This option only applies if IndividualAuth or OrganizationalAuth are not being used."
+      "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
     },
     "UseLocalDB": {
       "type": "parameter",
@@ -329,12 +329,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.2",
-          "description": "Target netcoreapp2.2"
+          "choice": "netcoreapp3.0",
+          "description": "Target netcoreapp3.0"
         }
       ],
-      "replaces": "netcoreapp2.2",
-      "defaultValue": "netcoreapp2.2"
+      "replaces": "netcoreapp3.0",
+      "defaultValue": "netcoreapp3.0"
     },
     "copyrightYear": {
       "type": "generated",

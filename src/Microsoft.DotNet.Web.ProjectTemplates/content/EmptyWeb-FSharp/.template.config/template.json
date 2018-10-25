@@ -8,8 +8,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Empty",
-  "precedence": "4000",
-  "identity": "Microsoft.Web.Empty.FSharp.2.2",
+  "precedence": "5000",
+  "identity": "Microsoft.Web.Empty.FSharp.3.0",
   "shortName": "web",
   "tags": {
     "language": "F#",
@@ -95,12 +95,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.2",
-          "description": "Target netcoreapp2.2"
+          "choice": "netcoreapp3.0",
+          "description": "Target netcoreapp3.0"
         }
       ],
-      "replaces": "netcoreapp2.2",
-      "defaultValue": "netcoreapp2.2"
+      "replaces": "netcoreapp3.0",
+      "defaultValue": "netcoreapp3.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -120,7 +120,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to turn off HTTPS. This option only applies if IndividualAuth or OrganizationalAuth are not being used."
+      "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
     }
   },
   "primaryOutputs": [
