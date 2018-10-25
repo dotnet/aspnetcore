@@ -25,4 +25,15 @@
       </NuspecProperties>
     </PropertyGroup>
   </Target>
+
+  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
+    <ItemGroup Condition=" '$(IsPackable)' == 'true' AND '$(PackageId)' != '' ">
+      <ArtifactInfo Include="$(TargetPath)">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
+
 </Project>
