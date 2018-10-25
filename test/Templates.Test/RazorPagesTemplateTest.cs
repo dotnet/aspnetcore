@@ -91,7 +91,6 @@ namespace Templates.Test
             {
                 Assert.Contains(".db", projectFileContents);
             }
-            Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
 
             if (targetFrameworkOverride != null)
             {
