@@ -9,7 +9,7 @@
 struct APPLICATION_PARAMETER
 {
     LPCSTR pzName;
-    const void *pValue;
+    void *pValue;
 };
 
 class IAPPLICATION
@@ -61,3 +61,15 @@ std::unique_ptr<IAPPLICATION, IAPPLICATION_DELETER> make_application(Params&&...
 #pragma warning( pop )
 }
 
+template< class TYPE >
+TYPE FindParameter(LPCSTR sRequiredParameter, APPLICATION_PARAMETER *pParameters, DWORD nParameters)
+{
+    for (DWORD i = 0; i < nParameters; i++)
+    {
+        if (_stricmp(pParameters[i].pzName, sRequiredParameter) == 0)
+        {
+            return reinterpret_cast<TYPE>(pParameters[i].pValue);
+        }
+    }
+    return nullptr;
+}

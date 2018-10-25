@@ -8,11 +8,13 @@
 class ShuttingDownHandler : public REQUEST_HANDLER
 {
 public:
-    ShuttingDownHandler(IHttpContext* pContext) : m_pContext(pContext)
+    ShuttingDownHandler(IHttpContext* pContext)
+        : REQUEST_HANDLER(*pContext),
+          m_pContext(pContext)
     {
     }
 
-    REQUEST_NOTIFICATION_STATUS OnExecuteRequestHandler() override
+    REQUEST_NOTIFICATION_STATUS ExecuteRequestHandler() override
     {
         return ServerShutdownMessage(m_pContext);
     }

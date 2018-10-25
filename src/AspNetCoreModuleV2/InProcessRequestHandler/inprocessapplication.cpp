@@ -28,12 +28,10 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
 {
     DBG_ASSERT(m_pConfig);
 
-    for (DWORD i = 0; i < nParameters; i++)
+    const auto knownLocation = FindParameter<PCWSTR>(s_exeLocationParameterName, pParameters, nParameters);
+    if (knownLocation != nullptr)
     {
-        if (_stricmp(pParameters[i].pzName, s_exeLocationParameterName) == 0)
-        {
-            m_dotnetExeKnownLocation = reinterpret_cast<PCWSTR>(pParameters[i].pValue);
-        }
+        m_dotnetExeKnownLocation = knownLocation;
     }
 }
 

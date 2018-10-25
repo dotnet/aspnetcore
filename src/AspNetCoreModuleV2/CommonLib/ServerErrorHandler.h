@@ -10,8 +10,9 @@ class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
 
-    ServerErrorHandler(IHttpContext &pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE moduleInstance, bool disableStartupPage, int page)
-        : m_pContext(pContext),
+    ServerErrorHandler(IHttpContext &pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE moduleInstance, bool disableStartupPage, int page) noexcept
+        : REQUEST_HANDLER(pContext),
+          m_pContext(pContext),
           m_HR(hr),
           m_disableStartupPage(disableStartupPage),
           m_page(page),
@@ -22,7 +23,7 @@ public:
     {
     }
 
-    REQUEST_NOTIFICATION_STATUS OnExecuteRequestHandler() override
+    REQUEST_NOTIFICATION_STATUS ExecuteRequestHandler() override
     {
         static std::string s_html500Page = GetHtml(m_moduleInstance, m_page);
 

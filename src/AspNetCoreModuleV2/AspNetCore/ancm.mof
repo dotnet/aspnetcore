@@ -5,7 +5,7 @@
 /*
  * AspNetCore module trace events layout
  * Uncomment the following class to run mof2trace to generate header file
- * comment it back before checking it in 
+ * comment it back before checking it in
 [Dynamic,
   Description("IIS: WWW Server"),
   Guid("{3a2a4e84-4c21-4981-ae10-3fda0d9b0f83}"),
@@ -187,7 +187,7 @@ class ANCMWinHttpCallBack:ANCM_Events
 
 [Dynamic,
  Description("Starting inprocess execute request") : amended,
- EventType(8),
+ EventType(7),
  EventLevel(4),
  EventTypeName("ANCM_INPROC_EXECUTE_REQUEST_START") : amended
 ]
@@ -203,7 +203,7 @@ class ANCMExecuteStart:ANCM_Events
 
 [Dynamic,
  Description("Ending inprocess execute request") : amended,
- EventType(10),
+ EventType(8),
  EventLevel(5),
  EventTypeName("ANCM_INPROC_EXECUTE_REQUEST_COMPLETION") : amended
 ]
@@ -224,7 +224,7 @@ class ANCMExecuteEnd:ANCM_Events
 
 [Dynamic,
  Description("Starting inprocess async completion") : amended,
- EventType(8),
+ EventType(9),
  EventLevel(5),
  EventTypeName("ANCM_INPROC_ASYNC_COMPLETION_START") : amended
 ]
@@ -293,7 +293,7 @@ class ANCMRequestDisconnect:ANCM_Events
 
 [Dynamic,
  Description("Indicate managed request complete") : amended,
- EventType(12),
+ EventType(13),
  EventLevel(4),
  EventTypeName("ANCM_INPROC_MANAGED_REQUEST_COMPLETION") : amended
 ]
@@ -306,3 +306,66 @@ class ANCMManagedRequestCompletion:ANCM_Events
      read]
      object  ContextId;
 };
+
+[Dynamic,
+ Description("Failed HRESULT") : amended,
+ EventType(14),
+ EventLevel(3),
+ EventTypeName("ANCM_HRESULT_FAILED") : amended
+]
+class ANCMHRESULTFailed:ANCM_Events
+{
+    [WmiDataId(1),
+     Description("Context ID") : amended,
+     extension("Guid"),
+     ActivityID,
+     read]
+     object  ContextId;
+     [WmiDataId(2),
+     Description("Failed source file location") : amended,
+     StringTermination("NullTerminated"),
+     read]
+     string File;
+     [WmiDataId(3),
+     Description("Failed line number") : amended,
+     format("d"),
+     read]
+     uint32 Line;
+     [WmiDataId(4),
+     Description("HResult") : amended,
+     format("x"),
+     read]
+     uint32 HResult;
+};
+
+[Dynamic,
+ Description("Caught exception") : amended,
+ EventType(15),
+ EventLevel(3),
+ EventTypeName("ANCM_EXCEPTION_CAUGHT") : amended
+]
+class ANCMExceptionCaughFailed:ANCM_Events
+{
+    [WmiDataId(1),
+     Description("Context ID") : amended,
+     extension("Guid"),
+     ActivityID,
+     read]
+     object  ContextId;
+     [WmiDataId(2),
+     Description("Exception catch file location") : amended,
+     StringTermination("NullTerminated"),
+     read]
+     string File;
+     [WmiDataId(3),
+     Description("Exception catch line number") : amended,
+     format("d"),
+     read]
+     uint32 Line;
+     [WmiDataId(2),
+     Description("Exception description") : amended,
+     StringTermination("NullTerminated"),
+     read]
+     string Description;
+};
+

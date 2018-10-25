@@ -30,11 +30,11 @@ public:
 
     __override
     REQUEST_NOTIFICATION_STATUS
-    OnExecuteRequestHandler();
+    ExecuteRequestHandler();
 
     __override
     REQUEST_NOTIFICATION_STATUS
-    OnAsyncCompletion(
+    AsyncCompletion(
         DWORD       cbCompletion,
         HRESULT     hrCompletionStatus
     );

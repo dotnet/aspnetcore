@@ -250,8 +250,7 @@ CreateApplication(
     _Out_ IAPPLICATION      **ppApplication
 )
 {
-    UNREFERENCED_PARAMETER(pParameters);
-    UNREFERENCED_PARAMETER(nParameters);
+    TraceContextScope traceScope(FindParameter<IHttpTraceContext*>("TraceContext", pParameters, nParameters));
 
     InitializeGlobalConfiguration(pServer);
 

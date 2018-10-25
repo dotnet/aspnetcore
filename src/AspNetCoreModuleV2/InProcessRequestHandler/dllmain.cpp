@@ -17,7 +17,6 @@
 #include "WebConfigConfigurationSource.h"
 #include "ConfigurationLoadException.h"
 #include "StartupExceptionApplication.h"
-#include "aspnetcore_event.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 
@@ -100,6 +99,7 @@ CreateApplication(
     _Out_ IAPPLICATION          **ppApplication
 )
 {
+    TraceContextScope traceScope(FindParameter<IHttpTraceContext*>("TraceContext", pParameters, nParameters));
     try
     {
         HRESULT hr = S_OK;

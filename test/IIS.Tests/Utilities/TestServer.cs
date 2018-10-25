@@ -146,7 +146,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public void Dispose()
         {
             HttpClient.Dispose();
-            WebCoreShutdown(false);
+
+            // WebCoreShutdown occasionally AVs
+            // This causes the dotnet test process to crash
+            // To avoid this, we have to wait to shutdown 
+            // and pass in true to immediately shutdown the hostable web core
+            // Both of these seem to be required.
+            Thread.Sleep(100);
+            WebCoreShutdown(immediate: true);
             WebCoreLock.Release();
         }
 

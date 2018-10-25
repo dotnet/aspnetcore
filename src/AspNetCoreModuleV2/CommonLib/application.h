@@ -7,6 +7,7 @@
 #include "iapplication.h"
 #include "ntassert.h"
 #include "SRWExclusiveLock.h"
+#include "exceptions.h"
 
 class APPLICATION : public IAPPLICATION
 {
@@ -20,6 +21,7 @@ public:
         _In_  IHttpContext       *pHttpContext,
         _Outptr_result_maybenull_ IREQUEST_HANDLER  **pRequestHandler) override
     {
+        TraceContextScope traceScope(pHttpContext->GetTraceContext());
         *pRequestHandler = nullptr;
 
         if (m_fStopCalled)
