@@ -16,7 +16,7 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories;BuildSharedFx</CompileDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;CheckExpectedPackagesExist</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CheckExpectedPackagesExist</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);_TestRepositories</TestDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
