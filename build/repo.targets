@@ -39,6 +39,7 @@
   </Target>
 
   <Target Name="PrepareSiteExtensionSdk" DependsOnTargets="_AddSiteExtensionRuntime;InstallDotNet">
+    <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-runtime-internal-$(PackageVersion)-win-$(SiteExtensionArch).zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
   </Target>
 
   <Target Name="PrepareSiteExtensionSdks">
