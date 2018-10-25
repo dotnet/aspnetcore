@@ -19,7 +19,7 @@ namespace Interop.FunctionalTests
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                return Path.Combine("/usr", "bin", "chromium-browser");
+                return Path.Combine("/usr", "bin", "google-chrome");
             }
 
             throw new PlatformNotSupportedException();
