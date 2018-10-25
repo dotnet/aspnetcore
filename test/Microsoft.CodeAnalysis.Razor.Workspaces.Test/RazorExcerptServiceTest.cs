@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
+using static Microsoft.CodeAnalysis.Razor.RazorDocumentExcerptService;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -33,7 +34,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
-        public async Task TryExcerptAsync_SingleLine_CanClassifyCSharp()
+        public async Task TryGetExcerptInternalAsync_SingleLine_CanClassifyCSharp()
         {
             // Arrange
             var (sourceText, primarySpan) = CreateText(
@@ -53,12 +54,18 @@ namespace Microsoft.CodeAnalysis.Razor
             var secondarySpan = await GetSecondarySpanAsync(primary, primarySpan, secondary);
             
             // Act
-            var result = await service.TryExcerptAsync(secondary, secondarySpan, ExcerptMode.SingleLine, CancellationToken.None);
+            var result = await service.TryGetExcerptInternalAsync(secondary, secondarySpan, ExcerptModeInternal.SingleLine, CancellationToken.None);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(secondarySpan, result.Value.Span);
             Assert.Same(secondary, result.Value.Document);
+
+            // Verifies that the right part of the primary document will be highlighted.
+            Assert.Equal(
+                (await secondary.GetTextAsync()).GetSubText(secondarySpan).ToString(),
+                result.Value.Content.GetSubText(result.Value.MappedSpan).ToString(),
+                ignoreLineEndingDifferences: true);
 
             Assert.Equal(@"    var foo = ""Hello, World!"";", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
             Assert.Collection(
@@ -91,7 +98,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
-        public async Task TryExcerptAsync_SingleLine_CanClassifyCSharp_ImplicitExpression()
+        public async Task TryGetExcerptInternalAsync_SingleLine_CanClassifyCSharp_ImplicitExpression()
         {
             // Arrange
             var (sourceText, primarySpan) = CreateText(
@@ -111,12 +118,18 @@ namespace Microsoft.CodeAnalysis.Razor
             var secondarySpan = await GetSecondarySpanAsync(primary, primarySpan, secondary);
 
             // Act
-            var result = await service.TryExcerptAsync(secondary, secondarySpan, ExcerptMode.SingleLine, CancellationToken.None);
+            var result = await service.TryGetExcerptInternalAsync(secondary, secondarySpan, ExcerptModeInternal.SingleLine, CancellationToken.None);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(secondarySpan, result.Value.Span);
             Assert.Same(secondary, result.Value.Document);
+
+            // Verifies that the right part of the primary document will be highlighted.
+            Assert.Equal(
+                (await secondary.GetTextAsync()).GetSubText(secondarySpan).ToString(),
+                result.Value.Content.GetSubText(result.Value.MappedSpan).ToString(),
+                ignoreLineEndingDifferences: true);
 
             Assert.Equal(@"  <body>@foo</body>", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
             Assert.Collection(
@@ -139,7 +152,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
-        public async Task TryExcerptAsync_SingleLine_CanClassifyCSharp_ComplexLine()
+        public async Task TryGetExcerptInternalAsync_SingleLine_CanClassifyCSharp_ComplexLine()
         {
             // Arrange
             var (sourceText, primarySpan) = CreateText(
@@ -159,12 +172,18 @@ namespace Microsoft.CodeAnalysis.Razor
             var secondarySpan = await GetSecondarySpanAsync(primary, primarySpan, secondary);
 
             // Act
-            var result = await service.TryExcerptAsync(secondary, secondarySpan, ExcerptMode.SingleLine, CancellationToken.None);
+            var result = await service.TryGetExcerptInternalAsync(secondary, secondarySpan, ExcerptModeInternal.SingleLine, CancellationToken.None);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(secondarySpan, result.Value.Span);
             Assert.Same(secondary, result.Value.Document);
+
+            // Verifies that the right part of the primary document will be highlighted.
+            Assert.Equal(
+                (await secondary.GetTextAsync()).GetSubText(secondarySpan).ToString(),
+                result.Value.Content.GetSubText(result.Value.MappedSpan).ToString(),
+                ignoreLineEndingDifferences: true);
 
             Assert.Equal(@"  <div>@(3 + 4)</div><div>@(foo + foo)</div>", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
             Assert.Collection(
@@ -217,7 +236,7 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
-        public async Task TryExcerptAsync_MultiLine_CanClassifyCSharp()
+        public async Task TryGetExcerptInternalAsync_MultiLine_CanClassifyCSharp()
         {
             // Arrange
             var (sourceText, primarySpan) = CreateText(
@@ -226,8 +245,8 @@ namespace Microsoft.CodeAnalysis.Razor
 @{
     var |foo| = ""Hello, World!"";
 }
-  <body>@foo</body>
-  <div>@(3 + 4)</div><div>@(foo + foo)</div>
+  <body></body>
+  <div></div>
 </html>
 ");
 
@@ -237,17 +256,27 @@ namespace Microsoft.CodeAnalysis.Razor
             var secondarySpan = await GetSecondarySpanAsync(primary, primarySpan, secondary);
 
             // Act
-            var result = await service.TryExcerptAsync(secondary, secondarySpan, ExcerptMode.Tooltip, CancellationToken.None);
+            var result = await service.TryGetExcerptInternalAsync(secondary, secondarySpan, ExcerptModeInternal.Tooltip, CancellationToken.None);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(secondarySpan, result.Value.Span);
             Assert.Same(secondary, result.Value.Document);
 
+            // Verifies that the right part of the primary document will be highlighted.
             Assert.Equal(
-@"@{
+                (await secondary.GetTextAsync()).GetSubText(secondarySpan).ToString(),
+                result.Value.Content.GetSubText(result.Value.MappedSpan).ToString(),
+                ignoreLineEndingDifferences: true);
+
+            Assert.Equal(
+@"
+<html>
+@{
     var foo = ""Hello, World!"";
-}", 
+}
+  <body></body>
+  <div></div>", 
                 result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
 
             Assert.Collection(
@@ -255,7 +284,12 @@ namespace Microsoft.CodeAnalysis.Razor
                 c =>
                 {
                     Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
-                    Assert.Equal("@{", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                    Assert.Equal(
+@"
+<html>
+@{", 
+                            result.Value.Content.GetSubText(c.TextSpan).ToString(),
+                            ignoreLineEndingDifferences: true);
                 },
                 c =>
                 {
@@ -285,12 +319,17 @@ namespace Microsoft.CodeAnalysis.Razor
                 c =>
                 {
                     Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
-                    Assert.Equal("}", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                    Assert.Equal(
+@"}
+  <body></body>
+  <div></div>", 
+                        result.Value.Content.GetSubText(c.TextSpan).ToString(), 
+                        ignoreLineEndingDifferences: true);
                 });
         }
 
         [Fact]
-        public async Task TryExcerptAsync_MultiLine_Boundaries_CanClassifyCSharp()
+        public async Task TryGetExcerptInternalAsync_MultiLine_Boundaries_CanClassifyCSharp()
         {
             // Arrange
             var (sourceText, primarySpan) = CreateText(@"@{ var |foo| = ""Hello, World!""; }");
@@ -301,12 +340,18 @@ namespace Microsoft.CodeAnalysis.Razor
             var secondarySpan = await GetSecondarySpanAsync(primary, primarySpan, secondary);
 
             // Act
-            var result = await service.TryExcerptAsync(secondary, secondarySpan, ExcerptMode.Tooltip, CancellationToken.None);
+            var result = await service.TryGetExcerptInternalAsync(secondary, secondarySpan, ExcerptModeInternal.Tooltip, CancellationToken.None);
 
             // Assert
             Assert.NotNull(result);
             Assert.Equal(secondarySpan, result.Value.Span);
             Assert.Same(secondary, result.Value.Document);
+
+            // Verifies that the right part of the primary document will be highlighted.
+            Assert.Equal(
+                (await secondary.GetTextAsync()).GetSubText(secondarySpan).ToString(),
+                result.Value.Content.GetSubText(result.Value.MappedSpan).ToString(),
+                ignoreLineEndingDifferences: true);
 
             Assert.Equal(
 @"@{ var foo = ""Hello, World!""; }",

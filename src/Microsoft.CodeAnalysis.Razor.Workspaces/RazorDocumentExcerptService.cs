@@ -37,6 +37,16 @@ namespace Microsoft.CodeAnalysis.Razor
             ExcerptMode mode,
             CancellationToken cancellationToken)
         {
+            var result = await TryGetExcerptInternalAsync(document, span, (ExcerptModeInternal)mode, cancellationToken).ConfigureAwait(false);
+            return result?.ToExcerptResult();
+        }
+
+        public async Task<ExcerptResultInternal?> TryGetExcerptInternalAsync(
+            Document document,
+            TextSpan span,
+            ExcerptModeInternal mode,
+            CancellationToken cancellationToken)
+        { 
             if (_document == null)
             {
                 return null;
@@ -78,7 +88,8 @@ namespace Microsoft.CodeAnalysis.Razor
             // Now translate everything to be relative to the excerpt
             var offset = 0 - excerptSpan.Start;
             var excerptText = primaryText.GetSubText(excerptSpan);
-            excerptSpan = new TextSpan(excerptSpan.Start + offset, excerptSpan.Length);
+            excerptSpan = new TextSpan(0, excerptSpan.Length);
+            primarySpan = new TextSpan(primarySpan.Start + offset, primarySpan.Length);
 
             for (var i = 0; i < classifiedSpans.Count; i++)
             {
@@ -89,24 +100,26 @@ namespace Microsoft.CodeAnalysis.Razor
                 classifiedSpans[i] = new ClassifiedSpan(classifiedSpan.ClassificationType, updated);
             }
 
-            return new ExcerptResult(excerptText, excerptSpan, classifiedSpans.ToImmutable(), document, span);
+            return new ExcerptResultInternal(excerptText, primarySpan, classifiedSpans.ToImmutable(), document, span);
         }
-
-        private TextSpan ChooseExcerptSpan(SourceText primaryText, TextSpan primarySpan, ExcerptMode mode)
+        
+        private TextSpan ChooseExcerptSpan(SourceText primaryText, TextSpan primarySpan, ExcerptModeInternal mode)
         {
             var startLine = primaryText.Lines.GetLineFromPosition(primarySpan.Start);
             var endLine = primaryText.Lines.GetLineFromPosition(primarySpan.End);
 
-            // If we're showing a single line then this will do. Otherwise expand the range by 1 in
+            // If we're showing a single line then this will do. Otherwise expand the range by 3 in
             // each direction (if possible).
-            if (mode == ExcerptMode.Tooltip && startLine.LineNumber > 0)
+            if (mode == ExcerptModeInternal.Tooltip)
             {
-                startLine = primaryText.Lines[startLine.LineNumber - 1];
+                var index = Math.Max(startLine.LineNumber - 3, 0);
+                startLine = primaryText.Lines[index];
             }
 
-            if (mode == ExcerptMode.Tooltip && endLine.LineNumber < primaryText.Lines.Count - 1)
+            if (mode == ExcerptModeInternal.Tooltip)
             {
-                endLine = primaryText.Lines[endLine.LineNumber + 1];
+                var index = Math.Min(endLine.LineNumber + 3, primaryText.Lines.Count - 1);
+                endLine = primaryText.Lines[index];
             }
 
             return new TextSpan(startLine.Start, endLine.End - startLine.Start);
@@ -187,6 +200,46 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             return builder;
+        }
+
+        // We have IVT access to the Roslyn APIs for product code, but not for testing.
+        public enum ExcerptModeInternal
+        {
+            SingleLine = ExcerptMode.SingleLine,
+            Tooltip = ExcerptMode.Tooltip,
+        }
+
+        // We have IVT access to the Roslyn APIs for product code, but not for testing.
+        public readonly struct ExcerptResultInternal
+        {
+            public readonly SourceText Content;
+
+            public readonly TextSpan MappedSpan;
+
+            public readonly ImmutableArray<ClassifiedSpan> ClassifiedSpans;
+
+            public readonly Document Document;
+
+            public readonly TextSpan Span;
+
+            public ExcerptResultInternal(
+                SourceText content,
+                TextSpan mappedSpan,
+                ImmutableArray<ClassifiedSpan> classifiedSpans,
+                Document document,
+                TextSpan span)
+            {
+                Content = content;
+                MappedSpan = mappedSpan;
+                ClassifiedSpans = classifiedSpans;
+                Document = document;
+                Span = span;
+            }
+
+            public ExcerptResult ToExcerptResult()
+            {
+                return new ExcerptResult(Content, MappedSpan, ClassifiedSpans, Document, Span);
+            }
         }
     }
 }
