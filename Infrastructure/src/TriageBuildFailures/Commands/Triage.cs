@@ -92,7 +92,7 @@ namespace TriageBuildFailures.Commands
                 if (await handler.CanHandleFailure(build))
                 {
                     await handler.HandleFailure(build);
-                    MarkTriaged(build);
+                    await MarkTriaged(build);
                     return;
                 }
             }
@@ -144,9 +144,9 @@ namespace TriageBuildFailures.Commands
             }
         }
 
-        private void MarkTriaged(ICIBuild build)
+        private async Task MarkTriaged(ICIBuild build)
         {
-            _ciClients[build.CIType].SetTag(build, TriagedTag);
+            await _ciClients[build.CIType].SetTag(build, TriagedTag);
         }
 
         private GitHubClientWrapper GetGitHubClient(Config config)
