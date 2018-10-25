@@ -41,7 +41,7 @@
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
     <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
     <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
-    <PackageOutputPath>$(ArtifactsConfigurationDir)packages\</PackageOutputPath>
+    <PackageOutputPath>$(ArtifactsDir)build\</PackageOutputPath>
 
     <!-- Defines the default RID of the platform currently running the build. -->
     <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win-x64</HostRid>
