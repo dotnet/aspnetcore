@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                new[] { "true" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
             Assert.Equal(
-               new[] { "*" },
+               new[] { "header1,header2" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
             Assert.Equal(
                new[] { "PUT,POST" },
@@ -306,8 +306,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                new[] { "true" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
             Assert.Equal(
-               new[] { "*" },
+               new[] { "Custom" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
+            Assert.Equal(
+               new[] { "GET" },
+               responseHeaders.GetValues(CorsConstants.AccessControlAllowMethods).ToArray());
 
             var content = await response.Content.ReadAsStringAsync();
             Assert.Empty(content);
@@ -338,8 +341,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                new[] { "true" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
             Assert.Equal(
-               new[] { "*" },
+               new[] { "Custom" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
+            Assert.Equal(
+               new[] { "GET" },
+               responseHeaders.GetValues(CorsConstants.AccessControlAllowMethods).ToArray());
 
             var content = await response.Content.ReadAsStringAsync();
             Assert.Empty(content);
