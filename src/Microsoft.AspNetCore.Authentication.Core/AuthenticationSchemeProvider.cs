@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -49,6 +50,9 @@ namespace Microsoft.AspNetCore.Authentication
 
         private readonly IDictionary<string, AuthenticationScheme> _schemes;
         private readonly List<AuthenticationScheme> _requestHandlers;
+        // Used as a safe return value for enumeration apis
+        private IEnumerable<AuthenticationScheme> _schemesCopy = Array.Empty<AuthenticationScheme>();
+        private IEnumerable<AuthenticationScheme> _requestHandlersCopy = Array.Empty<AuthenticationScheme>();
 
         private Task<AuthenticationScheme> GetDefaultSchemeAsync()
             => _options.DefaultScheme != null
@@ -123,7 +127,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <returns>The schemes in priority order for request handling</returns>
         public virtual Task<IEnumerable<AuthenticationScheme>> GetRequestHandlerSchemesAsync()
-            => Task.FromResult<IEnumerable<AuthenticationScheme>>(_requestHandlers);
+            => Task.FromResult(_requestHandlersCopy);
 
         /// <summary>
         /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
@@ -144,8 +148,10 @@ namespace Microsoft.AspNetCore.Authentication
                 if (typeof(IAuthenticationRequestHandler).IsAssignableFrom(scheme.HandlerType))
                 {
                     _requestHandlers.Add(scheme);
+                    _requestHandlersCopy = _requestHandlers.ToArray();
                 }
                 _schemes[scheme.Name] = scheme;
+                _schemesCopy = _schemes.Values.ToArray();
             }
         }
 
@@ -164,13 +170,17 @@ namespace Microsoft.AspNetCore.Authentication
                 if (_schemes.ContainsKey(name))
                 {
                     var scheme = _schemes[name];
-                    _requestHandlers.Remove(scheme);
+                    if (_requestHandlers.Remove(scheme))
+                    {
+                        _requestHandlersCopy = _requestHandlers.ToArray();
+                    }
                     _schemes.Remove(name);
+                    _schemesCopy = _schemes.Values.ToArray();
                 }
             }
         }
 
         public virtual Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync()
-            => Task.FromResult<IEnumerable<AuthenticationScheme>>(_schemes.Values);
+            => Task.FromResult(_schemesCopy);
     }
 }
