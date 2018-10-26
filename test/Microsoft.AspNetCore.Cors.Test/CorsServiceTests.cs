@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
             // Assert
-            Assert.Equal(new[] { "*" }, result.AllowedMethods);
+            Assert.Equal(new[] { "GET" }, result.AllowedMethods);
         }
 
         [Theory]
@@ -474,12 +474,12 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
             // Assert
-            Assert.Equal(new[] { "*" }, result.AllowedHeaders);
-            Assert.Equal(new[] { "*" }, result.AllowedMethods);
+            Assert.Empty(result.AllowedHeaders);
+            Assert.Equal(new[] { "PUT" }, result.AllowedMethods);
         }
 
         [Fact]
-        public void EvaluatePolicy_PreflightRequest_AllowAllHeaders()
+        public void EvaluatePolicy_PreflightRequest_AllowAllHeaders_ReflectsRequestHeaders()
         {
             // Arrange
             var corsService = GetCorsService();
@@ -497,8 +497,8 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var result = corsService.EvaluatePolicy(requestContext, policy);
 
             // Assert
-            Assert.Equal(new[] { "*" }, result.AllowedHeaders);
-            Assert.Equal(new[] { "*" }, result.AllowedMethods);
+            Assert.Equal(new[] { "foo", "bar" }, result.AllowedHeaders);
+            Assert.Equal(new[] { "PUT" }, result.AllowedMethods);
         }
 
         [Fact]
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             // Assert
             Assert.Equal(new[] { "match", "foo" }, result.AllowedHeaders);
-            Assert.Equal(new[] { "*" }, result.AllowedMethods);
+            Assert.Equal(new[] { "PUT" }, result.AllowedMethods);
         }
 
         [Fact]
