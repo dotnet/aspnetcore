@@ -1305,6 +1305,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
         }
 
+        [Fact]
+        public void Endpoints_AttributeRoutes_ActionMetadataDoesNotOverrideDataSourceMetadata()
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                CreateActionDescriptor(new { controller = "TestController", action = "TestAction" },
+                "{controller}/{action}/{id?}",
+                new List<object> { new RouteValuesAddressMetadata("fakeroutename", new RouteValueDictionary(new { fake = "Fake!" })) })
+                );
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            Assert.Collection(
+                endpoints,
+                (ep) =>
+                {
+                    var matcherEndpoint = Assert.IsType<RouteEndpoint>(ep);
+                    Assert.Equal("TestController/TestAction/{id?}", matcherEndpoint.RoutePattern.RawText);
+                    Assert.Equal(0, matcherEndpoint.Order);
+
+                    var routeValuesAddress = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+                    Assert.Equal("{controller}/{action}/{id?}", routeValuesAddress.RouteName);
+                    Assert.Equal("TestController", routeValuesAddress.RequiredValues["controller"]);
+                    Assert.Equal("TestAction", routeValuesAddress.RequiredValues["action"]);
+                });
+        }
+
         private MvcEndpointDataSource CreateMvcEndpointDataSource(
             IActionDescriptorCollectionProvider actionDescriptorCollectionProvider = null,
             MvcEndpointInvokerFactory mvcEndpointInvokerFactory = null)
@@ -1387,6 +1417,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionDescriptors.Add(CreateActionDescriptor(requiredValue, attributeRouteTemplate));
             }
 
+            return GetActionDescriptorCollection(actionDescriptors.ToArray());
+        }
+
+        private IActionDescriptorCollectionProvider GetActionDescriptorCollection(params ActionDescriptor[] actionDescriptors)
+        {
             var actionDescriptorCollectionProviderMock = new Mock<IActionDescriptorCollectionProvider>();
             actionDescriptorCollectionProviderMock
                 .Setup(m => m.ActionDescriptors)
@@ -1394,12 +1429,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return actionDescriptorCollectionProviderMock.Object;
         }
 
-        private ActionDescriptor CreateActionDescriptor(string controller, string action, string area = null)
-        {
-            return CreateActionDescriptor(new { controller = controller, action = action, area = area }, attributeRouteTemplate: null);
-        }
-
-        private ActionDescriptor CreateActionDescriptor(object requiredValues, string attributeRouteTemplate = null)
+        private ActionDescriptor CreateActionDescriptor(
+            object requiredValues,
+            string attributeRouteTemplate = null,
+            IList<object> metadata = null)
         {
             var actionDescriptor = new ActionDescriptor();
             var routeValues = new RouteValueDictionary(requiredValues);
@@ -1415,6 +1448,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Template = attributeRouteTemplate
                 };
             }
+            actionDescriptor.EndpointMetadata = metadata;
             return actionDescriptor;
         }
 
