@@ -22,6 +22,10 @@ namespace Microsoft.AspNetCore.Mvc
             Title = Resources.ValidationProblemDescription_Title;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ValidationProblemDetails"/> using the specified <paramref name="modelState"/>.
+        /// </summary>
+        /// <param name="modelState"><see cref="ModelStateDictionary"/> containing the validation errors.</param>
         public ValidationProblemDetails(ModelStateDictionary modelState)
             : this()
         {
@@ -63,7 +67,22 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Gets or sets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
+        /// Initializes a new instance of <see cref="ValidationProblemDetails"/> using the specified <paramref name="errors"/>.
+        /// </summary>
+        /// <param name="errors">The validation errors.</param>
+        public ValidationProblemDetails(IDictionary<string, string[]> errors)
+            : this()
+        {
+            if (errors == null)
+            {
+                throw new ArgumentNullException(nameof(errors));
+            }
+
+            Errors = new Dictionary<string, string[]>(errors, StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// Gets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
         /// </summary>
         [JsonProperty(PropertyName = "errors")]
         public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
