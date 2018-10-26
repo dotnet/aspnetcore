@@ -90,14 +90,14 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         private readonly UserManager<TUser> _userManager;
         private readonly IUserStore<TUser> _userStore;
         private readonly IUserEmailStore<TUser> _emailStore;
-        private readonly ILogger<LoginModel> _logger;
+        private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
             UserManager<TUser> userManager,
             IUserStore<TUser> userStore,
             SignInManager<TUser> signInManager,
-            ILogger<LoginModel> logger,
+            ILogger<RegisterModel> logger,
             IEmailSender emailSender)
         {
             _userManager = userManager;
