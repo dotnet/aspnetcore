@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             _minWindowSizeIncrement = (int)minWindowSizeIncrement;
         }
 
+        public bool IsAvailabilityLow => _flow.Available < _minWindowSizeIncrement;
+
         public bool TryAdvance(int bytes)
         {
             lock (_flowLock)
@@ -90,10 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
 
         public void StopWindowUpdates()
         {
-            lock (_flowLock)
-            {
-                _windowUpdatesDisabled = true;
-            }
+            _windowUpdatesDisabled = true;
         }
 
         public int Abort()

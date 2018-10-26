@@ -71,8 +71,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpRequestLifetimeFeature = this;
             _currentIHttpConnectionFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
-            _currentIHttpMinRequestBodyDataRateFeature = this;
-            _currentIHttpMinResponseDataRateFeature = this;
             _currentIHttpBodyControlFeature = this;
 
             _currentIServiceProvidersFeature = null;
@@ -87,6 +85,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentITlsConnectionFeature = null;
             _currentIHttpWebSocketFeature = null;
             _currentISessionFeature = null;
+            _currentIHttpMinRequestBodyDataRateFeature = null;
+            _currentIHttpMinResponseDataRateFeature = null;
             _currentIHttpSendFileFeature = null;
         }
 

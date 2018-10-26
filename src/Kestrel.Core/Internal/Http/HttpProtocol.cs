@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
         private IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
+        public ITimeoutControl TimeoutControl => _context.TimeoutControl;
 
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
         public IHttpOutputProducer Output { get; protected set; }
@@ -275,10 +276,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
-        public MinDataRate MinRequestBodyDataRate { get; set; }
-
-        public MinDataRate MinResponseDataRate { get; set; }
-
         public void InitializeStreams(MessageBody messageBody)
         {
             if (_streams == null)
@@ -362,9 +359,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
-
-            MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
-            MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 
             OnReset();
         }
@@ -628,7 +622,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     RequestBodyPipe.Reader.Complete();
 
-                    // Wait for MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
+                    // Wait for Http1MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
                     await messageBody.StopAsync();
                 }
             }

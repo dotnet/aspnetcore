@@ -19,9 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                         IHttpRequestLifetimeFeature,
                                         IHttpRequestIdentifierFeature,
                                         IHttpBodyControlFeature,
-                                        IHttpMaxRequestBodySizeFeature,
-                                        IHttpMinRequestBodyDataRateFeature,
-                                        IHttpMinResponseDataRateFeature
+                                        IHttpMaxRequestBodySizeFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -192,21 +190,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        MinDataRate IHttpMinRequestBodyDataRateFeature.MinDataRate
-        {
-            get => MinRequestBodyDataRate;
-            set => MinRequestBodyDataRate = value;
-        }
-
-        MinDataRate IHttpMinResponseDataRateFeature.MinDataRate
-        {
-            get => MinResponseDataRate;
-            set => MinResponseDataRate = value;
-        }
-
-        protected void ResetIHttpUpgradeFeature()
+        protected void ResetHttp1Features()
         {
             _currentIHttpUpgradeFeature = this;
+            _currentIHttpMinRequestBodyDataRateFeature = this;
+            _currentIHttpMinResponseDataRateFeature = this;
         }
 
         protected void ResetHttp2Features()

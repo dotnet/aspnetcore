@@ -2,65 +2,39 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.IO.Pipelines;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class HttpProtocolFeatureCollectionTests : IDisposable
+    public class HttpProtocolFeatureCollectionTests
     {
-        private readonly IDuplexPipe _transport;
-        private readonly IDuplexPipe _application;
         private readonly TestHttp1Connection _http1Connection;
-        private readonly ServiceContext _serviceContext;
         private readonly HttpConnectionContext _http1ConnectionContext;
-        private readonly MemoryPool<byte> _memoryPool;
-
         private readonly IFeatureCollection _collection;
 
         public HttpProtocolFeatureCollectionTests()
         {
-            _memoryPool = KestrelMemoryPool.Create();
-            var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
-
-            _transport = pair.Transport;
-            _application = pair.Application;
-
-            _serviceContext = new TestServiceContext();
             _http1ConnectionContext = new HttpConnectionContext
             {
-                ServiceContext = _serviceContext,
+                ServiceContext = new TestServiceContext(),
                 ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
-                Transport = pair.Transport
+                Transport = Mock.Of<IDuplexPipe>(),
             };
 
             _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
             _http1Connection.Reset();
             _collection = _http1Connection;
-        }
-
-        public void Dispose()
-        {
-            _transport.Input.Complete();
-            _transport.Output.Complete();
-
-            _application.Input.Complete();
-            _application.Output.Complete();
-
-            _memoryPool.Dispose();
         }
 
         [Fact]
@@ -166,6 +140,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             EachHttpProtocolFeatureSetAndUnique();
         }
 
+        [Fact]
+        public void Http2StreamFeatureCollectionDoesNotIncludeMinRateFeatures()
+        {
+            var http2Stream = new Http2Stream(new Http2StreamContext
+            {
+                ServiceContext = new TestServiceContext(),
+                ConnectionFeatures = new FeatureCollection(),
+                TimeoutControl = Mock.Of<ITimeoutControl>(),
+                Transport = Mock.Of<IDuplexPipe>(),
+                ServerPeerSettings = new Http2PeerSettings(),
+                ClientPeerSettings = new Http2PeerSettings(),
+            });
+            var http2StreamCollection = (IFeatureCollection)http2Stream;
+
+            Assert.Null(http2StreamCollection.Get<IHttpMinRequestBodyDataRateFeature>());
+            Assert.Null(http2StreamCollection.Get<IHttpMinResponseDataRateFeature>());
+
+            Assert.NotNull(_collection.Get<IHttpMinRequestBodyDataRateFeature>());
+            Assert.NotNull(_collection.Get<IHttpMinResponseDataRateFeature>());
+        }
+
         private void CompareGenericGetterToIndexer()
         {
             Assert.Same(_collection.Get<IHttpRequestFeature>(), _collection[typeof(IHttpRequestFeature)]);
@@ -218,6 +213,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return featureCount;
         }
 
-        private HttpProtocol CreateHttp1Connection() => new TestHttp1Connection(_http1ConnectionContext);
+        private Http1Connection CreateHttp1Connection() => new TestHttp1Connection(_http1ConnectionContext);
     }
 }

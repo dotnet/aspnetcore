@@ -699,10 +699,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                await logEvent.Task.DefaultTimeout();
-
                 input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
+
+                await logEvent.Task.DefaultTimeout();
             }
         }
 
@@ -717,46 +717,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "12" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
+                var readTask1 = body.ReadAsync(new ArraySegment<byte>(new byte[6]));
                 input.Add("hello,");
-                Assert.Equal(6, await body.ReadAsync(new ArraySegment<byte>(new byte[6])));
+                Assert.Equal(6, await readTask1);
 
+                var readTask2 = body.ReadAsync(new ArraySegment<byte>(new byte[6]));
                 input.Add(" world");
-                Assert.Equal(6, await body.ReadAsync(new ArraySegment<byte>(new byte[6])));
+                Assert.Equal(6, await readTask2);
 
                 // Due to the limits set on HttpProtocol.RequestBodyPipe, backpressure should be triggered on every write to that pipe.
-                mockTimeoutControl.Verify(timeoutControl => timeoutControl.PauseTimingReads(), Times.Exactly(2));
-                mockTimeoutControl.Verify(timeoutControl => timeoutControl.ResumeTimingReads(), Times.Exactly(2));
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingRead(), Times.Exactly(2));
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingRead(), Times.Exactly(2));
             }
         }
 
         [Fact]
-        public async Task OnlyEnforcesRequestBodyTimeoutAfterSending100Continue()
+        public async Task OnlyEnforcesRequestBodyTimeoutAfterFirstRead()
         {
             using (var input = new TestInput())
             {
-                var produceContinueCalled = false;
-                var startTimingReadsCalledAfterProduceContinue = false;
-
-                var mockHttpResponseControl = new Mock<IHttpResponseControl>();
-                mockHttpResponseControl
-                    .Setup(httpResponseControl => httpResponseControl.ProduceContinue())
-                    .Callback(() => produceContinueCalled = true);
-                input.Http1Connection.HttpResponseControl = mockHttpResponseControl.Object;
+                var startRequestBodyCalled = false;
 
                 var minReadRate = input.Http1Connection.MinRequestBodyDataRate;
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
                 mockTimeoutControl
-                    .Setup(timeoutControl => timeoutControl.StartTimingReads(minReadRate))
-                    .Callback(() => startTimingReadsCalledAfterProduceContinue = produceContinueCalled);
+                    .Setup(timeoutControl => timeoutControl.StartRequestBody(minReadRate))
+                    .Callback(() => startRequestBodyCalled = true);
 
                 input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
+                Assert.False(startRequestBodyCalled);
+
                 // Add some input and read it to start PumpAsync
                 var readTask = body.ReadAsync(new ArraySegment<byte>(new byte[1]));
 
-                Assert.True(startTimingReadsCalledAfterProduceContinue);
+                Assert.True(startRequestBodyCalled);
 
                 input.Add("a");
                 await readTask;
@@ -785,14 +782,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
-                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingReads(minReadRate), Times.Never);
-                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingReads(), Times.Never);
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartRequestBody(minReadRate), Times.Never);
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopRequestBody(), Times.Never);
 
                 // Due to the limits set on HttpProtocol.RequestBodyPipe, backpressure should be triggered on every
                 // write to that pipe. Verify that read timing pause and resume are not called on upgrade
                 // requests.
-                mockTimeoutControl.Verify(timeoutControl => timeoutControl.PauseTimingReads(), Times.Never);
-                mockTimeoutControl.Verify(timeoutControl => timeoutControl.ResumeTimingReads(), Times.Never);
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingRead(), Times.Never);
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingRead(), Times.Never);
 
                 input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();

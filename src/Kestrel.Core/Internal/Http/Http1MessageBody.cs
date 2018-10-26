@@ -18,10 +18,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private volatile bool _canceled;
         private Task _pumpTask;
-        private bool _timingReads;
 
         protected Http1MessageBody(Http1Connection context)
-            : base(context)
+            : base(context, context.MinRequestBodyDataRate)
         {
             _context = context;
         }
@@ -38,8 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     TryProduceContinue();
                 }
-
-                TryStartTimingReads();
 
                 while (true)
                 {
@@ -66,22 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             bool done;
                             done = Read(readableBuffer, _context.RequestBodyPipe.Writer, out consumed, out examined);
 
-                            var writeAwaitable = _context.RequestBodyPipe.Writer.FlushAsync();
-                            var backpressure = false;
-
-                            if (!writeAwaitable.IsCompleted)
-                            {
-                                // Backpressure, stop controlling incoming data rate until data is read.
-                                backpressure = true;
-                                TryPauseTimingReads();
-                            }
-
-                            await writeAwaitable;
-
-                            if (backpressure)
-                            {
-                                TryResumeTimingReads();
-                            }
+                            await _context.RequestBodyPipe.Writer.FlushAsync();
 
                             if (done)
                             {
@@ -109,7 +91,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                             BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
                         }
-
                     }
                     finally
                     {
@@ -126,11 +107,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             finally
             {
                 _context.RequestBodyPipe.Writer.Complete(error);
-                TryStopTimingReads();
             }
         }
 
-        public override Task StopAsync()
+        protected override Task OnStopAsync()
         {
             if (!_context.HasStartedConsumingRequestBody)
             {
@@ -219,8 +199,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
         {
-            _context.TimeoutControl.BytesRead(readableBuffer.Length);
-
             if (readableBuffer.IsSingleSegment)
             {
                 writableBuffer.Write(readableBuffer.First.Span);
@@ -242,53 +220,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected virtual bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             throw new NotImplementedException();
-        }
-
-        private void TryStartTimingReads()
-        {
-            if (!RequestUpgrade)
-            {
-                Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
-
-                // REVIEW: This makes it no longer effective to change the min rate after the app starts reading.
-                // Is this OK? Should we throw from the MinRequestBodyDataRate setter in this case?
-                var minRate = _context.MinRequestBodyDataRate;
-
-                if (minRate != null)
-                {
-                    _timingReads = true;
-                    _context.TimeoutControl.StartTimingReads(minRate);
-                }
-            }
-        }
-
-        private void TryPauseTimingReads()
-        {
-            if (_timingReads)
-            {
-                _context.TimeoutControl.PauseTimingReads();
-            }
-        }
-
-        private void TryResumeTimingReads()
-        {
-            if (_timingReads)
-            {
-                _context.TimeoutControl.ResumeTimingReads();
-            }
-        }
-
-        private void TryStopTimingReads()
-        {
-            if (!RequestUpgrade)
-            {
-                Log.RequestBodyDone(_context.ConnectionIdFeature, _context.TraceIdentifier);
-
-                if (_timingReads)
-                {
-                    _context.TimeoutControl.StopTimingReads();
-                }
-            }
         }
 
         public static MessageBody For(
