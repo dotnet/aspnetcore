@@ -577,15 +577,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             bool suppressLinkGeneration,
             bool suppressPathMatching)
         {
-            var metadata = new List<object>
-            {
-                action
-            };
+            var metadata = new List<object>();
 
+            // Add action metadata first so it has a low precedence
             if (action.EndpointMetadata != null)
             {
                 metadata.AddRange(action.EndpointMetadata);
             }
+
+            metadata.Add(action);
 
             if (dataTokens != null)
             {
