@@ -618,6 +618,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             model.DisplayName = action.DisplayName;
 
+            // REVIEW: When should conventions be run
+            // Metadata should have lower precedence that data source metadata
             if (conventions != null)
             {
                 foreach (var convention in conventions)
@@ -638,8 +640,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             bool suppressLinkGeneration,
             bool suppressPathMatching)
         {
-            metadata.Add(action);
-
+            // Add action metadata first so it has a low precedence
             if (action.EndpointMetadata != null)
             {
                 foreach (var d in action.EndpointMetadata)
@@ -647,6 +648,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     metadata.Add(d);
                 }
             }
+			
+            metadata.Add(action);
 
             if (dataTokens != null)
             {
