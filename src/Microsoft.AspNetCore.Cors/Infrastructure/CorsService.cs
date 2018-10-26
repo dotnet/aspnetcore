@@ -139,13 +139,14 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // https://fetch.spec.whatwg.org/#http-new-header-syntax
             AddHeaderValues(result.AllowedExposedHeaders, policy.ExposedHeaders);
 
-            var allowedMethods = policy.AllowAnyMethod && policy.SupportsCredentials ?
-                new[] { result.IsPreflightRequest ? (string)context.Request.Headers[CorsConstants.AccessControlRequestMethod] : context.Request.Method }
-                : policy.Methods;
+            var allowedMethods = policy.AllowAnyMethod ?
+                new[] { result.IsPreflightRequest ? (string)context.Request.Headers[CorsConstants.AccessControlRequestMethod] : context.Request.Method } :
+                policy.Methods;
             AddHeaderValues(result.AllowedMethods, allowedMethods);
 
-            var allowedHeaders = policy.AllowAnyHeader && policy.SupportsCredentials ?
-                context.Request.Headers.GetCommaSeparatedValues(CorsConstants.AccessControlRequestHeaders) : policy.Headers;
+            var allowedHeaders = policy.AllowAnyHeader ?
+                context.Request.Headers.GetCommaSeparatedValues(CorsConstants.AccessControlRequestHeaders) :
+                policy.Headers;
             AddHeaderValues(result.AllowedHeaders, allowedHeaders);
         }
 
