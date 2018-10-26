@@ -25,7 +25,6 @@
     <RepositoryBuildOrder Include="KestrelHttpServer" Order="8" />
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" />
-    <RepositoryBuildOrder Include="BrowserLink" Order="8" />
     <RepositoryBuildOrder Include="DataProtection" Order="9" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="10" />
@@ -45,7 +44,6 @@
     <RepositoryBuildOrder Include="AADIntegration" Order="15" />
     <RepositoryBuildOrder Include="Identity" Order="15" />
     <RepositoryBuildOrder Include="JavaScriptServices" Order="15" />
-    <RepositoryBuildOrder Include="Scaffolding" Order="15" />
     <RepositoryBuildOrder Include="AzureIntegration" Order="15" />
     <RepositoryBuildOrder Include="MusicStore" Order="16" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />

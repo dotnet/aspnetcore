@@ -18,7 +18,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="dotnet-aspnet-codegenerator" Category="ship" />
     <PackageArtifact Include="dotnet-dev-certs" Category="ship" />
     <PackageArtifact Include="dotnet-ef" Category="ship" />
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
@@ -259,15 +258,6 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Editor.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.Mac.LanguageServices.Razor" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.BrowserLink" Category="ship" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
   </ItemGroup>

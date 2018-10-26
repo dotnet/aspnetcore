@@ -6,7 +6,6 @@
     <Node Id="AuthSamples" Label="AuthSamples" />
     <Node Id="AzureIntegration" Label="AzureIntegration" />
     <Node Id="BasicMiddleware" Label="BasicMiddleware" />
-    <Node Id="BrowserLink" Label="BrowserLink" />
     <Node Id="Caching" Label="Caching" />
     <Node Id="Common" Label="Common" />
     <Node Id="Configuration" Label="Configuration" />
@@ -39,7 +38,6 @@
     <Node Id="Razor" Label="Razor" />
     <Node Id="ResponseCaching" Label="ResponseCaching" />
     <Node Id="Routing" Label="Routing" />
-    <Node Id="Scaffolding" Label="Scaffolding" />
     <Node Id="Security" Label="Security" />
     <Node Id="ServerTests" Label="ServerTests" />
     <Node Id="Session" Label="Session" />
@@ -96,10 +94,6 @@
     <Link Source="BasicMiddleware" Target="KestrelHttpServer" />
     <Link Source="BasicMiddleware" Target="Logging" />
     <Link Source="BasicMiddleware" Target="Options" />
-    <Link Source="BrowserLink" Target="Common" />
-    <Link Source="BrowserLink" Target="FileSystem" />
-    <Link Source="BrowserLink" Target="Hosting" />
-    <Link Source="BrowserLink" Target="HttpAbstractions" />
     <Link Source="Caching" Target="Common" />
     <Link Source="Caching" Target="Configuration" />
     <Link Source="Caching" Target="DependencyInjection" />
@@ -302,18 +296,6 @@
     <Link Source="Routing" Target="KestrelHttpServer" />
     <Link Source="Routing" Target="Logging" />
     <Link Source="Routing" Target="Options" />
-    <Link Source="Scaffolding" Target="Common" />
-    <Link Source="Scaffolding" Target="Configuration" />
-    <Link Source="Scaffolding" Target="DependencyInjection" />
-    <Link Source="Scaffolding" Target="EntityFrameworkCore" />
-    <Link Source="Scaffolding" Target="FileSystem" />
-    <Link Source="Scaffolding" Target="Hosting" />
-    <Link Source="Scaffolding" Target="IISIntegration" />
-    <Link Source="Scaffolding" Target="KestrelHttpServer" />
-    <Link Source="Scaffolding" Target="Logging" />
-    <Link Source="Scaffolding" Target="Mvc" />
-    <Link Source="Scaffolding" Target="Razor" />
-    <Link Source="Scaffolding" Target="StaticFiles" />
     <Link Source="Security" Target="Caching" />
     <Link Source="Security" Target="Common" />
     <Link Source="Security" Target="Configuration" />

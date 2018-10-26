@@ -18,10 +18,6 @@
 	path = modules/BasicMiddleware
 	url = https://github.com/aspnet/BasicMiddleware.git
 	branch = master
-[submodule "modules/BrowserLink"]
-	path = modules/BrowserLink
-	url = https://github.com/aspnet/BrowserLink.git
-	branch = master
 [submodule "modules/Caching"]
 	path = modules/Caching
 	url = https://github.com/aspnet/Caching.git
@@ -137,10 +133,6 @@
 [submodule "modules/Routing"]
 	path = modules/Routing
 	url = https://github.com/aspnet/Routing.git
-	branch = master
-[submodule "modules/Scaffolding"]
-	path = modules/Scaffolding
-	url = https://github.com/aspnet/Scaffolding.git
 	branch = master
 [submodule "modules/Security"]
 	path = modules/Security
