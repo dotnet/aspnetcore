@@ -14,28 +14,33 @@
     <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" />
   </ItemGroup>
 
-  <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
+  <Target Name="BuildSharedFx" DependsOnTargets="_BuildSharedFxProjects;TestSharedFx"/>
+
+  <Target Name="_BuildSharedFxProjects" DependsOnTargets="GeneratePropsFiles;ResolveCommitHash">
 
     <PropertyGroup>
       <_RestoreGraphProjectInput>@(ProjectToBuild)</_RestoreGraphProjectInput>
+      <SharedFxBuildProperties>
+        $(SolutionProperties);
+        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)
+      </SharedFxBuildProperties>
     </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildToolsPath)\NuGet.targets"
              Targets="Restore"
-             Properties="$(SolutionProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
+             Properties="$(SharedFxBuildProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
 
     <MSBuild Projects="@(ProjectToBuild)"
-             Properties="$(SolutionProperties)"
+             Properties="$(SharedFxBuildProperties)"
              BuildInParallel="true" />
 
     <MSBuild Projects="@(ProjectToBuild)"
              Targets="Pack"
-             Properties="$(SolutionProperties);NoBuild=true"
+             Properties="$(SharedFxBuildProperties);NoBuild=true"
              BuildInParallel="true"
              SkipNonexistentTargets="true" />
   </Target>
-
-  <Target Name="BuildSharedFx" DependsOnTargets="GeneratePropsFiles;_BuildSharedFxProjects;TestSharedFx"/>
 
   <Target Name="TestSharedFx" DependsOnTargets="GeneratePropsFiles;InstallDotNet">
     <PropertyGroup>
