@@ -28,7 +28,7 @@
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreChunkingCookieManagerSourcesPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreChunkingCookieManagerSourcesPackageVersion>
     <MicrosoftAspNetCoreCookiePolicyPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreCookiePolicyPackageVersion>
-    <MicrosoftAspNetCoreCorsPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreCorsPackageVersion>
+    <MicrosoftAspNetCoreCorsPackageVersion>2.2.0-a-rtm-fix-wildcard-16567</MicrosoftAspNetCoreCorsPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreDiagnosticsPackageVersion>
     <MicrosoftAspNetCoreHostingAbstractions20PackageVersion>2.0.0</MicrosoftAspNetCoreHostingAbstractions20PackageVersion>
