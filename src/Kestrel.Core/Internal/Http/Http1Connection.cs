@@ -59,10 +59,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public PipeReader Input => _context.Transport.Input;
 
-        public ITimeoutControl TimeoutControl => _context.TimeoutControl;
         public bool RequestTimedOut => _requestTimedOut;
 
         public override bool IsUpgradableRequest => _upgradeAvailable;
+
+        public MinDataRate MinRequestBodyDataRate { get; set; }
+
+        public MinDataRate MinResponseDataRate { get; set; }
 
         protected override void OnRequestProcessingEnded()
         {
@@ -124,6 +127,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void HandleRequestHeadersTimeout()
             => SendTimeoutResponse();
+
+        public void HandleReadDataRateTimeout()
+        {
+            Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, TraceIdentifier, MinRequestBodyDataRate.BytesPerSecond);
+            SendTimeoutResponse();
+        }
 
         public void ParseRequest(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
@@ -423,13 +432,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnReset()
         {
-            ResetIHttpUpgradeFeature();
+            ResetHttp1Features();
 
             _requestTimedOut = false;
             _requestTargetForm = HttpRequestTarget.Unknown;
             _absoluteRequestTarget = null;
             _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
             _requestCount++;
+
+            MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
+            MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
         }
 
         protected override void OnRequestProcessingEnding()

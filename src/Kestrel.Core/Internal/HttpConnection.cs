@@ -384,8 +384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     _requestProcessor.HandleRequestHeadersTimeout();
                     break;
                 case TimeoutReason.ReadDataRate:
-                    Log.RequestBodyMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection.TraceIdentifier, _http1Connection.MinRequestBodyDataRate.BytesPerSecond);
-                    _http1Connection.SendTimeoutResponse();
+                    _requestProcessor.HandleReadDataRateTimeout();
                     break;
                 case TimeoutReason.WriteDataRate:
                     Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection?.TraceIdentifier);

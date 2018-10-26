@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -10,8 +11,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private readonly Http2Stream _context;
 
-        private Http2MessageBody(Http2Stream context)
-            : base(context)
+        private Http2MessageBody(Http2Stream context, MinDataRate minRequestBodyDataRate)
+            : base(context, minRequestBodyDataRate)
         {
             _context = context;
         }
@@ -34,26 +35,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        protected override void OnDataRead(int bytesRead)
+        protected override void OnDataRead(long bytesRead)
         {
-            _context.OnDataRead(bytesRead);
+            // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
+            _context.OnDataRead((int)bytesRead);
             AddAndCheckConsumedBytes(bytesRead);
         }
 
-        protected override Task OnConsumeAsync() => Task.CompletedTask;
-
-        public override Task StopAsync() => Task.CompletedTask;
-
-        public static MessageBody For(
-            HttpRequestHeaders headers,
-            Http2Stream context)
+        public static MessageBody For(Http2Stream context, MinDataRate minRequestBodyDataRate)
         {
             if (context.EndStreamReceived && !context.RequestBodyStarted)
             {
                 return ZeroContentLengthClose;
             }
 
-            return new Http2MessageBody(context);
+            return new Http2MessageBody(context, minRequestBodyDataRate);
         }
     }
 }

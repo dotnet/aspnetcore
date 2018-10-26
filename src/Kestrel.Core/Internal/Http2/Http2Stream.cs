@@ -35,16 +35,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _context = context;
 
             _inputFlowControl = new StreamInputFlowControl(
-                _context.StreamId,
-                _context.FrameWriter,
+                context.StreamId,
+                context.FrameWriter,
                 context.ConnectionInputFlowControl,
-                _context.ServerPeerSettings.InitialWindowSize,
-                _context.ServerPeerSettings.InitialWindowSize / 2);
+                context.ServerPeerSettings.InitialWindowSize,
+                context.ServerPeerSettings.InitialWindowSize / 2);
 
-            _outputFlowControl = new StreamOutputFlowControl(context.ConnectionOutputFlowControl, context.ClientPeerSettings.InitialWindowSize);
-            _http2Output = new Http2OutputProducer(context.StreamId, context.FrameWriter, _outputFlowControl, context.TimeoutControl, context.MemoryPool, this);
+            _outputFlowControl = new StreamOutputFlowControl(
+                context.ConnectionOutputFlowControl,
+                context.ClientPeerSettings.InitialWindowSize);
 
-            RequestBodyPipe = CreateRequestBodyPipe(_context.ServerPeerSettings.InitialWindowSize);
+            _http2Output = new Http2OutputProducer(
+                context.StreamId,
+                context.FrameWriter,
+                _outputFlowControl,
+                context.TimeoutControl,
+                context.ServiceContext.ServerOptions.Limits.MinResponseDataRate,
+                context.MemoryPool,
+                this);
+
+            RequestBodyPipe = CreateRequestBodyPipe(context.ServerPeerSettings.InitialWindowSize);
             Output = _http2Output;
         }
 
@@ -106,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', (uint)StreamId);
 
         protected override MessageBody CreateMessageBody()
-            => Http2MessageBody.For(HttpRequestHeaders, this);
+            => Http2MessageBody.For(this, ServerOptions.Limits.MinRequestBodyDataRate);
 
         // Compare to Http1Connection.OnStartLine
         protected override bool TryParseRequest(ReadResult result, out bool endConnection)
@@ -185,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // Approximate MaxRequestLineSize by totaling the required pseudo header field lengths.
             var requestLineLength = _methodText.Length + Scheme.Length + hostText.Length + path.Length;
-            if (requestLineLength > ServiceContext.ServerOptions.Limits.MaxRequestLineSize)
+            if (requestLineLength > ServerOptions.Limits.MaxRequestLineSize)
             {
                 ResetAndAbort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestLineTooLong), Http2ErrorCode.PROTOCOL_ERROR);
                 return false;

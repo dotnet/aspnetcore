@@ -853,7 +853,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var buffer = new byte[10];
                 await context.Response.Body.WriteAsync(buffer, 0, 10);
             });
-            var mockMessageBody = new Mock<MessageBody>(null);
+            var mockMessageBody = new Mock<MessageBody>(null, null);
             _http1Connection.NextMessageBody = mockMessageBody.Object;
 
             var requestProcessingTask = _http1Connection.ProcessRequestsAsync(httpApplication);

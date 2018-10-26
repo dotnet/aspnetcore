@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -1196,24 +1197,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
 
-            public virtual void StartTimingReads(MinDataRate minRate)
+            public virtual void InitializeHttp2(InputFlowControl connectionInputFlowControl)
             {
-                _realTimeoutControl.StartTimingReads(minRate);
+                _realTimeoutControl.InitializeHttp2(connectionInputFlowControl);
             }
 
-            public virtual void PauseTimingReads()
+            public virtual void StartRequestBody(MinDataRate minRate)
             {
-                _realTimeoutControl.PauseTimingReads();
+                _realTimeoutControl.StartRequestBody(minRate);
             }
 
-            public virtual void ResumeTimingReads()
+            public virtual void StopTimingRead()
             {
-                _realTimeoutControl.ResumeTimingReads();
+                _realTimeoutControl.StopTimingRead();
             }
 
-            public virtual void StopTimingReads()
+            public virtual void StartTimingRead()
             {
-                _realTimeoutControl.StopTimingReads();
+                _realTimeoutControl.StartTimingRead();
+            }
+
+            public virtual void StopRequestBody()
+            {
+                _realTimeoutControl.StopRequestBody();
             }
 
             public virtual void BytesRead(long count)

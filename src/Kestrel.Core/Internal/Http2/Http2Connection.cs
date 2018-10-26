@@ -149,6 +149,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestHeadersTimeout));
         }
 
+        public void HandleReadDataRateTimeout()
+        {
+            Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, null, Limits.MinRequestBodyDataRate.BytesPerSecond);
+            Abort(new ConnectionAbortedException(CoreStrings.BadRequest_RequestBodyTimeout));
+        }
+
         public void StopProcessingNextRequest(bool sendGracefulGoAway = false)
         {
             lock (_stateLock)
@@ -184,6 +190,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             try
             {
                 ValidateTlsRequirements();
+
+                TimeoutControl.InitializeHttp2(_inputFlowControl);
                 TimeoutControl.SetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
 
                 if (!await TryReadPrefaceAsync())

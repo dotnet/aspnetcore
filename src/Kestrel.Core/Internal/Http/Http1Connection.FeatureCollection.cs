@@ -11,7 +11,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class Http1Connection : IHttpUpgradeFeature
+    public partial class Http1Connection : IHttpUpgradeFeature,
+                                           IHttpMinRequestBodyDataRateFeature,
+                                           IHttpMinResponseDataRateFeature
     {
         bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
@@ -43,6 +45,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             await FlushAsync(default(CancellationToken));
 
             return _streams.Upgrade();
+        }
+
+        MinDataRate IHttpMinRequestBodyDataRateFeature.MinDataRate
+        {
+            get => MinRequestBodyDataRate;
+            set => MinRequestBodyDataRate = value;
+        }
+
+        MinDataRate IHttpMinResponseDataRateFeature.MinDataRate
+        {
+            get => MinResponseDataRate;
+            set => MinResponseDataRate = value;
         }
     }
 }

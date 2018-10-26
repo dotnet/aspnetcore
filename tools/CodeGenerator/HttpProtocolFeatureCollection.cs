@@ -63,8 +63,6 @@ namespace CodeGenerator
                 "IHttpRequestLifetimeFeature",
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
-                "IHttpMinRequestBodyDataRateFeature",
-                "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
             };
 
