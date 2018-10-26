@@ -35,6 +35,8 @@
   <PropertyGroup>
     <!-- Assign this variable last because it may be updated from DotNetPackageVersionPropsPath as MicrosoftNETCoreAppPackageVersion. -->
     <MicrosoftNETCoreApp22PackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' != ''">$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp22PackageVersion>
+    <!-- Assign this variable to ensure they are consistent. -->
+    <MicrosoftNETCoreAppPackageVersion>$(MicrosoftNETCoreApp22PackageVersion)</MicrosoftNETCoreAppPackageVersion>
 
     <!-- Determined by build tools -->
     <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(KoreBuildVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
