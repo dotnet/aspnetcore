@@ -22,6 +22,7 @@
       <_RestoreGraphProjectInput>@(ProjectToBuild)</_RestoreGraphProjectInput>
       <SharedFxBuildProperties>
         $(SolutionProperties);
+        SharedFxRid=$(SharedFxRid);
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)
       </SharedFxBuildProperties>

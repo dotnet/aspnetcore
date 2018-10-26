@@ -20,20 +20,21 @@ This targets file should only be imported by .shfxproj files.
       GeneratePublishDependencyFile;
       GenerateSharedFxDependencyFile;
       GeneratePublishRuntimeConfigurationFile;
-      OptimizeOutput;
+      CopySharedFxToOutput;
+      CollectSharedFxOutput;
       PostBuildEvent;
       GetTargetPath;
     </CoreBuildDependsOn>
 
-    <OptimizeOutputDependsOn Condition=" '$(CrossGenOutput)' != 'false' ">
+    <CollectOutputSharedFxDependsOn Condition=" '$(CrossGenOutput)' != 'false' ">
       PrepareForCrossGen;
       CrossGenAssemblies;
-    </OptimizeOutputDependsOn>
+    </CollectOutputSharedFxDependsOn>
 
-    <OptimizeOutputDependsOn Condition=" '$(CrossgenSymbolsOutput)' != 'false' ">
-      $(OptimizeOutputDependsOn);
+    <CollectOutputSharedFxDependsOn Condition=" '$(CrossgenSymbolsOutput)' != 'false' ">
+      $(CollectOutputSharedFxDependsOn);
       CrossGenSymbols;
-    </OptimizeOutputDependsOn>
+    </CollectOutputSharedFxDependsOn>
 
     <PrepareForBuildDependsOn>
       PrepareOutputPaths;
@@ -71,9 +72,8 @@ This targets file should only be imported by .shfxproj files.
 
     <IntermediateOutputPath>$(IntermediateOutputPath)$(SharedFxRid)\</IntermediateOutputPath>
 
-    <!-- Override the SDK Default for this location based on whether crossgen happens or not. -->
-    <PublishDir Condition=" '$(CrossGenOutput)' != 'true' ">$(OutputPath)</PublishDir>
-    <PublishDir Condition=" '$(CrossGenOutput)' == 'true' ">$(IntermediateOutputPath)u\</PublishDir>
+    <!-- Override the SDK Default for this location for copying published output. -->
+    <PublishDir>$(IntermediateOutputPath)u\</PublishDir>
 
     <!-- If symbols generation is disabled, there is no use in producing a symbols.nupkg files. -->
     <IncludeSymbols Condition="'$(CrossgenSymbolsOutput)' == 'false'">false</IncludeSymbols>
@@ -195,14 +195,30 @@ This targets file should only be imported by .shfxproj files.
   </Target>
 
   <!-- Optimizes shared framework output -->
-  <Target Name="OptimizeOutput" DependsOnTargets="$(OptimizeOutputDependsOn)">
+  <Target Name="CollectSharedFxOutput" DependsOnTargets="$(CollectOutputSharedFxDependsOn)">
     <Message Importance="High" Text="$(SharedFxName) (fx: $(SharedFxRid)) -> $(OutputPath)" />
   </Target>
 
   <!-- Prepare the project to run crossgen. -->
-  <Target Name="PrepareForCrossGen" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies">
+  <Target Name="CopySharedFxToOutput" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies">
+    <ItemGroup>
+      <NativeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'native' " />
+      <ResourceAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'resources'" />
+      <RuntimeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'runtime'" />
+      <OtherAssemblies Include="@(ResolvedAssembliesToPublish)" Exclude="@(NativeAssetsToPublish);@(ResourceAssetsToPublish);@(RuntimeAssetsToPublish)" />
+    </ItemGroup>
 
+    <Error Text="Unaccounted shared framework assemblies found: @(OtherAssemblies). These files have an unknown asset type." Condition="'@(OtherAssemblies)' != ''" />
+
+    <Copy Condition=" '$(CrossGenOutput)' != 'true' "
+          SourceFiles="@(RuntimeAssetsToPublish)" DestinationFiles="@(RuntimeAssetsToPublish->'$(RuntimeAssetsOutputPath)%(DestinationSubPath)')" />
+    <Copy SourceFiles="@(NativeAssetsToPublish)" DestinationFiles="@(NativeAssetsToPublish->'$(NativeAssetsOutputPath)%(DestinationSubPath)')" />
+    <Copy SourceFiles="@(ResourceAssetsToPublish)" DestinationFiles="@(ResourceAssetsToPublish->'$(RuntimeAssetsOutputPath)%(DestinationSubPath)')" />
+  </Target>
+
+  <Target Name="PrepareForCrossGen" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies">
     <MakeDir Directories="$(CrossGenToolDir)" />
+
     <PropertyGroup>
       <RuntimePackageName>Microsoft.NETCore.App</RuntimePackageName>
       <CrossGenTool>crossgen</CrossGenTool>
@@ -231,15 +247,6 @@ This targets file should only be imported by .shfxproj files.
     <Error Text="Could not find crossgen in %(RuntimePackage.ResolvedPath)" Condition="@(CrossGenToolFile->Count()) == 0" />
     <Error Text="Expected to resolve a single clr jit assembly but instead resolved @(ClrJitAssembly->Count()) with identities %(ClrJitAssembly.Identity)" Condition="'@(ClrJitAssembly->Count())' != 1" />
 
-    <ItemGroup>
-      <NativeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'native' " />
-      <ResourceAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'resources'" />
-      <RuntimeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'runtime'" />
-      <OtherAssemblies Include="@(ResolvedAssembliesToPublish)" Exclude="@(NativeAssetsToPublish);@(ResourceAssetsToPublish);@(RuntimeAssetsToPublish)" />
-    </ItemGroup>
-
-    <Error Text="Unaccounted shared framework assemblies found: @(OtherAssemblies). These files have an unknown asset type." Condition="'@(OtherAssemblies)' != ''" />
-
     <!-- Resolve list of assemblies to crossgen -->
     <ItemGroup>
       <AssembliesToCrossgen Include="@(RuntimeAssetsToPublish)">
@@ -251,9 +258,6 @@ This targets file should only be imported by .shfxproj files.
         <Symbols>$(SymbolsOutputPath)%(RecursiveDir)</Symbols>
       </AssembliesToCrossgen>
     </ItemGroup>
-
-    <Copy SourceFiles="@(NativeAssetsToPublish)" DestinationFiles="@(NativeAssetsToPublish->'$(NativeAssetsOutputPath)%(DestinationSubPath)')" />
-    <Copy SourceFiles="@(ResourceAssetsToPublish)" DestinationFiles="@(ResourceAssetsToPublish->'$(RuntimeAssetsOutputPath)%(DestinationSubPath)')" />
   </Target>
 
   <!--
@@ -261,7 +265,7 @@ This targets file should only be imported by .shfxproj files.
     This uses .rsp files to get around OS limitations in the maximum number of characters that can be passed in on command-line.
   -->
   <Target Name="CrossGenAssemblies"
-    DependsOnTargets="PrepareForCrossGen;ResolveReferences"
+    DependsOnTargets="CopySharedFxToOutput;ResolveReferences"
     Inputs="@(AssembliesToCrossgen)"
     Outputs="%(AssembliesToCrossgen.Destination)">
 
