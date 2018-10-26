@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 
 namespace Identity.DefaultUI.WebSite
 {
@@ -44,7 +45,14 @@ namespace Identity.DefaultUI.WebSite
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<TContext>();
 
-            services.AddMvc();
+            services.AddMvc()
+                .AddRazorOptions(ro =>
+                {
+                    // We do this to avoid file descriptor exhaustion in our functional tests
+                    // due to Razor Pages using a file watcher.
+                    ro.FileProviders.Clear();
+                    ro.FileProviders.Add(new CompositeFileProvider(new[] { new NullFileProvider() }));
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
