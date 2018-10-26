@@ -7,7 +7,8 @@
     <description>Templates for ASP.NET Core Blazor</description>
     <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
     <language>en-US</language>
-    <projectUrl>https://github.com/aspnet/blazor</projectUrl>
+    <projectUrl>https://asp.net/</projectUrl>
+    <repository type="git" url="https://github.com/aspnet/Blazor" />
     <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
