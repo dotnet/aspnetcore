@@ -6,6 +6,7 @@
     "packages": {
       "Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources": {},
       "RazorPageGenerator": {},
+      "Microsoft.CodeAnalysis.Razor.Workspaces": {},
       "Microsoft.CodeAnalysis.Remote.Razor": {},
       "Microsoft.VisualStudio.Editor.Razor": {},
       "Microsoft.VisualStudio.LanguageServices.Razor": {},
