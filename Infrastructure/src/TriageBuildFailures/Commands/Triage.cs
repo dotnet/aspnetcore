@@ -129,7 +129,10 @@ namespace TriageBuildFailures.Commands
 
         private static readonly IEnumerable<string> _watchedBranches = new List<string> {
             "master",
-            "release/"
+            "release/",
+            "2.2",
+            "2.1",
+            "2.0"
         };
 
         private bool IsWatchedBuild(ICIBuild build)
