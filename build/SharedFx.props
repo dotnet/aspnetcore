@@ -65,7 +65,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <WindowsSharedFxRIDs Include="win-x64;win-x86"/>
+    <WindowsSharedFxRIDs Include="win-x64;win-x86;win-arm"/>
     <NonWindowsSharedFxRIDs Include="osx-x64" CrossgenSymbols="false" />
     <NonWindowsSharedFxRIDs Include="linux-musl-x64" />
     <NonWindowsSharedFxRIDs Include="linux-x64" />

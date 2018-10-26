@@ -18,6 +18,7 @@
     <IntermediateInstaller Include="win-x86" FileExt=".wixlib" />
     <IntermediateInstaller Include="win-x64" FileExt=".zip" />
     <IntermediateInstaller Include="win-x64" FileExt=".wixlib" />
+    <IntermediateInstaller Include="win-arm" FileExt=".zip" />
     <IntermediateInstaller Include="osx-x64" FileExt=".tar.gz" />
     <IntermediateInstaller Include="linux-x64" FileExt=".tar.gz" />
     <IntermediateInstaller Include="linux-arm" FileExt=".tar.gz" />
@@ -27,6 +28,7 @@
     <NativeInstaller Include="win-x86" FileExt=".zip" />
     <NativeInstaller Include="win-x64" FileExt=".exe" />
     <NativeInstaller Include="win-x64" FileExt=".zip" />
+    <NativeInstaller Include="win-arm" FileExt=".zip" />
     <NativeInstaller Include="osx-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="linux-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="linux-arm" FileExt=".tar.gz" />

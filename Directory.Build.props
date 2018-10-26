@@ -52,6 +52,7 @@
     <SupportedRuntimeIdentifiers>
       win-x64;
       win-x86;
+      win-arm;
       osx-x64;
       linux-musl-x64;
       linux-x64;
