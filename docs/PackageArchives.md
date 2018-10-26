@@ -46,10 +46,6 @@ The result of this typically means including the transitive graph of the followi
   - Packages that Microsoft.NET.Sdk adds implicitly
     - Microsoft.NETCore.App
     - NETStandard.Library
-  - Packages that are a PackageReference/DotNetCliToolReference in basic ASP.NET Core templates. In addition to packages above, this typically includes:
-    - Microsoft.EntityFrameworkCore.Tools{.DotNet}
-    - Microsoft.VisualStudio.Web.CodeGeneration.Design
-    - Microsoft.VisualStudio.Web.BrowserLink
 
 ### Example
 

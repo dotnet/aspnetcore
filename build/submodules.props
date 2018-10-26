@@ -40,7 +40,6 @@
     <Repository Include="Antiforgery" />
     <Repository Include="AzureIntegration" />
     <Repository Include="BasicMiddleware" />
-    <Repository Include="BrowserLink" />
     <Repository Include="Caching" />
     <Repository Include="Configuration" />
     <Repository Include="CORS" />
@@ -70,7 +69,6 @@
     <Repository Include="Razor" />
     <Repository Include="ResponseCaching" />
     <Repository Include="Routing" />
-    <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="Security" />
     <Repository Include="Session" />
     <Repository Include="SignalR" />

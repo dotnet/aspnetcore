@@ -16,14 +16,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="$(MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="$(MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Version="$(MicrosoftVisualStudioWebCodeGenerationContractsPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Version="$(MicrosoftVisualStudioWebCodeGenerationCorePackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="$(MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Version="$(MicrosoftVisualStudioWebCodeGenerationEntityFrameworkCorePackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Version="$(MicrosoftVisualStudioWebCodeGenerationTemplatingPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Version="$(MicrosoftVisualStudioWebCodeGenerationUtilsPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration" Version="$(MicrosoftVisualStudioWebCodeGenerationPackageVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Version="$(MicrosoftVisualStudioWebCodeGeneratorsMvcPackageVersion)" />
   </ItemGroup>
 
 </Project>
