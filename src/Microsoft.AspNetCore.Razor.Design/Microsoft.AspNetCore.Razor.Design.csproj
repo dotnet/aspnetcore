@@ -33,7 +33,7 @@
     <SignedPackageFile Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/rzc.dll" Certificate="$(AssemblySigningCertName)" />
 
     <!-- Third-party assemblies -->
-    <SignedPackageFile Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/Newtonsoft.Json.dll" Certificate="3PartyDual" />
+    <SignedPackageFile Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
 
     <!-- Binaries that should be signed by corefx/roslyn -->
     <ExcludePackageFileFromSigning Include="$(MSBuildProjectDirectory)\$(OutputPath)\tools/Microsoft.CodeAnalysis.CSharp.dll" />
