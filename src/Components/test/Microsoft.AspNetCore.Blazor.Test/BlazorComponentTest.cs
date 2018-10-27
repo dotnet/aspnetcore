@@ -190,8 +190,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
             component.Counter = 1;
             var initTask = new TaskCompletionSource<bool>();
             var parametersSetTask = new TaskCompletionSource<bool>();
-            service.RunsBaseOnInitAsync = false;
-            service.RunsBaseOnParametersSetAsync = false;
+            service.RunsBaseOnInitAsync = true;
+            service.RunsBaseOnParametersSetAsync = true;
             service.OnInitAsync = c => initTask.Task;
             service.OnParametersSetAsync = c => parametersSetTask.Task;
 
