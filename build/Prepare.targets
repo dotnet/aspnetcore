@@ -71,7 +71,7 @@
   <Target Name="VerifyUnsignedPackages">
     <VerifyPackages
       ArtifactDirectory="$(UnsignedPackagesDir)"
-      RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Presign.json" />
+      RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json" />
   </Target>
 
 </Project>
