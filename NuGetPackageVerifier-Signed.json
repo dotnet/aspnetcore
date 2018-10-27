@@ -7,6 +7,18 @@
     //         "AspNetCoreRuntime.2.2.x64": {}
     //     }
     // },
+
+    // These packages contain dozens of binaries not produced by the ASP.NET Core team.
+    // The binaries which we do produce have been checked by other runs of NGPV earlier in the build.
+    "runtimePackages": {
+        "rules": { },
+        "packages": {
+            "runtime.win-x64.Microsoft.AspNetCore.App": { },
+            "runtime.win-x64.Microsoft.AspNetCore.All": { },
+            "runtime.win-x86.Microsoft.AspNetCore.App": { },
+            "runtime.win-x86.Microsoft.AspNetCore.All": { }
+        }
+    },
     "default": { // Rules to run for packages not listed in any other set.
         "rules": [
             "SigningVerificationCompositeRule"
@@ -16,120 +28,6 @@
                 "Exclusions": {
                     "ASSEMBLY_COMMIT_HASH": {
                         "tools/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our shared framework."
-                    }
-                }
-            },
-            "runtime.win-x64.Microsoft.AspNetCore.All.symbols": {
-                "Exclusions": {
-                    "ASSEMBLY_COMMIT_HASH": {
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.AI.DependencyCollector.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.ApplicationInsights.AspNetCore.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.ApplicationInsights.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.Azure.KeyVault.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.Azure.KeyVault.WebKey.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.Azure.Services.AppAuthentication.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.Data.Edm.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.Data.OData.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Clients.ActiveDirectory.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.Rest.ClientRuntime.Azure.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.Rest.ClientRuntime.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.WindowsAzure.Storage.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/SQLitePCLRaw.batteries_green.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/SQLitePCLRaw.batteries_v2.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/SQLitePCLRaw.core.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/SQLitePCLRaw.provider.e_sqlite3.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/StackExchange.Redis.StrongName.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Spatial.dll": "Assembly is built by another project but bundled in our shared framework."
-                    }
-                }
-            },
-            "runtime.win-x64.Microsoft.AspNetCore.App.symbols": {
-                "Exclusions": {
-                    "ASSEMBLY_COMMIT_HASH": {
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.CodeAnalysis.CSharp.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.CodeAnalysis.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.DotNet.PlatformAbstractions.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.Extensions.DependencyModel.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Logging.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Protocols.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Protocols.WsFederation.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Tokens.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Tokens.Saml.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Microsoft.IdentityModel.Xml.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Newtonsoft.Json.Bson.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/Remotion.Linq.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.IdentityModel.Tokens.Jwt.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Interactive.Async.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.IO.Pipelines.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Net.Http.Formatting.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Net.WebSockets.WebSocketProtocol.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Security.Cryptography.Xml.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Security.Permissions.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Text.Encodings.Web.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x64/lib/netcoreapp2.2/System.Threading.Channels.dll": "Assembly is built by another project but bundled in our shared framework."
-                    }
-                }
-            },
-            "runtime.win-x86.Microsoft.AspNetCore.All.symbols": {
-                "Exclusions": {
-                    "ASSEMBLY_COMMIT_HASH": {
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.AI.DependencyCollector.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.ApplicationInsights.AspNetCore.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.ApplicationInsights.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.Azure.KeyVault.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.Azure.KeyVault.WebKey.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.Azure.Services.AppAuthentication.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.Data.Edm.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.Data.OData.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Clients.ActiveDirectory.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.Rest.ClientRuntime.Azure.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.Rest.ClientRuntime.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.WindowsAzure.Storage.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/SQLitePCLRaw.batteries_green.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/SQLitePCLRaw.batteries_v2.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/SQLitePCLRaw.core.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/SQLitePCLRaw.provider.e_sqlite3.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/StackExchange.Redis.StrongName.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Spatial.dll": "Assembly is built by another project but bundled in our shared framework."
-                    }
-                }
-            },
-            "runtime.win-x86.Microsoft.AspNetCore.App.symbols": {
-                "Exclusions": {
-                    "ASSEMBLY_COMMIT_HASH": {
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.CodeAnalysis.CSharp.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.CodeAnalysis.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.DotNet.PlatformAbstractions.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.Extensions.DependencyModel.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Logging.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Protocols.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Protocols.WsFederation.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Tokens.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Tokens.Saml.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Microsoft.IdentityModel.Xml.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Newtonsoft.Json.Bson.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/Remotion.Linq.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.IdentityModel.Tokens.Jwt.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Interactive.Async.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.IO.Pipelines.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Net.Http.Formatting.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Net.WebSockets.WebSocketProtocol.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Security.Cryptography.Xml.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Security.Permissions.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Text.Encodings.Web.dll": "Assembly is built by another project but bundled in our shared framework.",
-                        "runtimes/win-x86/lib/netcoreapp2.2/System.Threading.Channels.dll": "Assembly is built by another project but bundled in our shared framework."
                     }
                 }
             },
