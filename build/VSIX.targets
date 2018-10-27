@@ -40,7 +40,7 @@
         <DebugType>full</DebugType>
       </ArtifactInfo>
 
-      <FilesToSign Include="$(VSIXOutputPath)" Certificate="Vsix" IsContainer="true" />
+      <FilesToSign Include="$(VSIXOutputPath)" Certificate="$(VsixSigningCertName)" IsContainer="true" />
       <FilesToSign Include="$(RepositoryRoot)tooling/Microsoft.VisualStudio.SecretManager/bin/$(Configuration)/Microsoft.VisualStudio.SecretManager.dll" Certificate="Microsoft400" />
       <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
       <FilesToExcludeFromSigning Include="$(VSIXSymbolsOutputPath)" />
