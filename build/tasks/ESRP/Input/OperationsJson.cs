@@ -184,7 +184,6 @@ namespace Microsoft.Build.OOB.ESRP
                 { "MicrosoftNuGet", _microsoftNuGet },
                 { "MicrosoftOpc2", _microsoftOpc2 },
                 { "Microsoft3rdPartyAppComponent", _microsoft3rdPartyAppComponent },
-                { "Microsoft3rdPartyAppComponentDual", _microsoft3rdPartyAppComponentDual },
                 { "MicrosoftJava", _microsoftJava },
             };
         }
