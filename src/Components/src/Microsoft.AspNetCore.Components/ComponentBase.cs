@@ -211,12 +211,7 @@ namespace Microsoft.AspNetCore.Components
             // at the end of every event callback.
             StateHasChanged();
 
-            if (task.Status == TaskStatus.RanToCompletion)
-            {
-                return;
-            }
-
-            task.ContinueWith(ContinueAfterLifecycleTask);
+            ContinueAfterLifecycleTask(task);
         }
 
         void IHandleAfterRender.OnAfterRender()
