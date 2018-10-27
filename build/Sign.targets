@@ -99,7 +99,7 @@
       <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(ThirdPartyBinaries)'!=''" >
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
-          Certificate=$(Microsoft3rdPartyAppComponentDual);
+          Certificate=$(Microsoft3rdPartyAppComponent);
           JobName=ThirdPartyBinaries;
           Files=@(ThirdPartyBinaries)
         </AdditionalProperties>

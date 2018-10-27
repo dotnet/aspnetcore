@@ -2,20 +2,12 @@
 
   <!-- See https://microsoft.sharepoint.com/teams/prss/esrp/info/ESRP%20Onboarding%20Wiki/Selecting%20CodeSign%20Certificates.aspx -->
   <PropertyGroup>
-    <!-- Legacy COPS: 135020001 -->
-    <Microsoft3rdPartyAppComponentDual>Microsoft3rdPartyAppComponentDual</Microsoft3rdPartyAppComponentDual>
     <!-- Legacy COPS: 135020002 -->
     <Microsoft3rdPartyAppComponent>Microsoft3rdPartyAppComponent</Microsoft3rdPartyAppComponent>
     <!-- Legacy COPS: 100040160 (VSIX SHA2) -->
     <MicrosoftOpc2>MicrosoftOpc2</MicrosoftOpc2>
-    <!-- Legacy COPS: 160 -->
-    <MicrosoftOpc>MicrosoftOpc</MicrosoftOpc>
     <!-- Legacy COPS: 400 -->
     <MicrosoftAuthentiCodeSha2>MicrosoftAuthentiCodeSha2</MicrosoftAuthentiCodeSha2>
-    <!-- Legacy COPS: 401 -->
-    <MicrosoftAuthentiCodeSha1Sha2>MicrosoftAuthentiCodeSha1Sha2</MicrosoftAuthentiCodeSha1Sha2>
-    <!-- Legacy COPS: 402 -->
-    <MicrosoftAuthentiCodeSha2HashSha1>MicrosoftAuthentiCodeSha2HashSha1</MicrosoftAuthentiCodeSha2HashSha1>
     <!-- Legacy COPS: 72 -->
     <MicrosoftSharedLibrariesSN>MicrosoftSharedLibrariesSN</MicrosoftSharedLibrariesSN>
     <!-- Legacy COPS: 25, 67 -->
