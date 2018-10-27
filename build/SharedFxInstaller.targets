@@ -13,11 +13,8 @@
       Text="Docker host must be using Linux containers."
       Condition="'$(DockerHostOS)' != 'linux'"/>
     <Error
-      Text="Expected archive missing at $(SharedFxIntermediateArchiveFilePrefix)-%(WindowsSharedFxRIDs.Identity).zip."
-      Condition="!Exists('$(SharedFxIntermediateArchiveFilePrefix)-%(WindowsSharedFxRIDs.Identity).zip')" />
-    <Error
-      Text="Expected archive missing at $(SharedFxIntermediateArchiveFilePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz."
-      Condition="!Exists('$(SharedFxIntermediateArchiveFilePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz')" />
+      Text="Expected archive missing at $(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz."
+      Condition="!Exists('$(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz')" />
   </Target>
 
   <Target Name="_BuildDockerImage">
