@@ -41,7 +41,7 @@
       </ArtifactInfo>
 
       <FilesToSign Include="$(VSIXOutputPath)" Certificate="$(VsixSigningCertName)" IsContainer="true" />
-      <FilesToSign Include="$(RepositoryRoot)tooling/Microsoft.VisualStudio.SecretManager/bin/$(Configuration)/Microsoft.VisualStudio.SecretManager.dll" Certificate="Microsoft400" />
+      <FilesToSign Include="$(RepositoryRoot)tooling/Microsoft.VisualStudio.SecretManager/bin/$(Configuration)/Microsoft.VisualStudio.SecretManager.dll" Certificate="$(AssemblySigningCertName)" />
       <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
       <FilesToExcludeFromSigning Include="$(VSIXSymbolsOutputPath)" />
     </ItemGroup>

@@ -11,7 +11,6 @@ RED="\033[0;31m"
 YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-[ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
 verbose=false
 update=false
 reinstall=false
@@ -188,6 +187,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ci|-[Cc][Ii])
             ci=true
+            if [[ -z "${DOTNET_HOME:-}" ]]; then
+                DOTNET_HOME="$DIR/.dotnet"
+            fi
             ;;
         --verbose|-Verbose)
             verbose=true
@@ -248,6 +250,7 @@ if [ -f "$config_file" ]; then
     [ ! -z "${config_tools_source:-}" ] && tools_source="$config_tools_source"
 fi
 
+[ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
 [ -z "$channel" ] && channel='master'
 [ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
 
