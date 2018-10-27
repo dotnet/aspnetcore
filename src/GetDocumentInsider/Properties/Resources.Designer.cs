@@ -220,6 +220,90 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         internal static string FormatMissingEntryPoint(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("MissingEntryPoint"), p0);
 
+        /// <summary>
+        /// Unable to find service type '{0}' in loaded assemblies.
+        /// </summary>
+        internal static string ServiceTypeNotFound
+        {
+            get => GetString("ServiceTypeNotFound");
+        }
+
+        /// <summary>
+        /// Unable to find service type '{0}' in loaded assemblies.
+        /// </summary>
+        internal static string FormatServiceTypeNotFound(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ServiceTypeNotFound"), p0);
+
+        /// <summary>
+        /// Unable to find method named '{0}' in '{1}' implementation.
+        /// </summary>
+        internal static string MethodNotFound
+        {
+            get => GetString("MethodNotFound");
+        }
+
+        /// <summary>
+        /// Unable to find method named '{0}' in '{1}' implementation.
+        /// </summary>
+        internal static string FormatMethodNotFound(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MethodNotFound"), p0, p1);
+
+        /// <summary>
+        /// Unable to find service of type '{0}' in dependency injection container.
+        /// </summary>
+        internal static string ServiceNotFound
+        {
+            get => GetString("ServiceNotFound");
+        }
+
+        /// <summary>
+        /// Unable to find service of type '{0}' in dependency injection container.
+        /// </summary>
+        internal static string FormatServiceNotFound(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ServiceNotFound"), p0);
+
+        /// <summary>
+        /// Method '{0}' of service '{1}' returned null. Must return a non-null '{2}'.
+        /// </summary>
+        internal static string MethodReturnedNull
+        {
+            get => GetString("MethodReturnedNull");
+        }
+
+        /// <summary>
+        /// Method '{0}' of service '{1}' returned null. Must return a non-null '{2}'.
+        /// </summary>
+        internal static string FormatMethodReturnedNull(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MethodReturnedNull"), p0, p1, p2);
+
+        /// <summary>
+        /// Method '{0}' of service '{1}' has unsupported return type '{2}'. Must return a '{3}'.
+        /// </summary>
+        internal static string MethodReturnTypeUnsupported
+        {
+            get => GetString("MethodReturnTypeUnsupported");
+        }
+
+        /// <summary>
+        /// Method '{0}' of service '{1}' has unsupported return type '{2}'. Must return a '{3}'.
+        /// </summary>
+        internal static string FormatMethodReturnTypeUnsupported(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MethodReturnTypeUnsupported"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// Method '{0}' of service '{1}' timed out. Must complete execution within {2} minute.
+        /// </summary>
+        internal static string MethodTimedOut
+        {
+            get => GetString("MethodTimedOut");
+        }
+
+        /// <summary>
+        /// Method '{0}' of service '{1}' timed out. Must complete execution within {2} minute.
+        /// </summary>
+        internal static string FormatMethodTimedOut(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MethodTimedOut"), p0, p1, p2);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
