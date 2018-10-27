@@ -11,12 +11,9 @@ namespace Microsoft.Build.OOB.ESRP
             { "MicrosoftSN", MicrosoftSN },
             { "MicrosoftSharedLibrariesSN", MicrosoftSharedLibrariesSN },
             { "MicrosoftAuthentiCodeSha2", MicrosoftAuthentiCodeSha2 },
-            { "MicrosoftAuthentiCodeSha2HashSha1", MicrosoftAuthentiCodeSha2HashSha1 },
             { "MicrosoftNuGet", MicrosoftNuGet },
-            { "MicrosoftOpc", MicrosoftOpc },
             { "MicrosoftOpc2", MicrosoftOpc2 },
             { "Microsoft3rdPartyAppComponent", Microsoft3rdPartyAppComponent },
-            { "Microsoft3rdPartyAppComponentDual", Microsoft3rdPartyAppComponentDual },
             { "MicrosoftJava", MicrosoftJava },
         };
 
@@ -97,28 +94,6 @@ namespace Microsoft.Build.OOB.ESRP
             }
         };
 
-        // Classic ID: 402
-        public static Operations[] MicrosoftAuthentiCodeSha2HashSha1 => new Operations[]
-        {
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_230012,
-                OperationCode = OperationCode.SigntoolSign,
-                Parameters = new JObject
-                {
-                    { "OpusName", DefaultOpusName },
-                    { "OpusInfo", DefaultOpusInfo },
-                    { "PageHash", "/NPH" },
-                    { "TimeStamp", @"/t ""http://ts4096.gtm.microsoft.com/TSS/AuthenticodeTS""" }
-                }
-            },
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_230012,
-                OperationCode = OperationCode.SigntoolVerify
-            }
-        };
-
         // Classic ID: N/A
         public static Operations[] MicrosoftNuGet => new Operations[]
         {
@@ -131,21 +106,6 @@ namespace Microsoft.Build.OOB.ESRP
             {
                 KeyCode = ESRP.KeyCode.CP_401405,
                 OperationCode = OperationCode.NuGetVerify
-            }
-        };
-
-        // Classic ID: 160
-        public static Operations[] MicrosoftOpc => new Operations[]
-        {
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_229834,
-                OperationCode = OperationCode.OpcSign
-            },
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_229834,
-                OperationCode = OperationCode.OpcVerify
             }
         };
 
@@ -189,47 +149,6 @@ namespace Microsoft.Build.OOB.ESRP
             {
                 KeyCode = ESRP.KeyCode.CP_231522,
                 OperationCode = OperationCode.SigntoolVerify,
-            }
-        };
-
-        // Classic ID: 135020001
-        public static Operations[] Microsoft3rdPartyAppComponentDual => new Operations[]
-        {
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_231522,
-                OperationCode = OperationCode.SigntoolSign,
-                Parameters = new JObject
-                {
-                    { "OpusName", DefaultOpusName },
-                    { "OpusInfo", DefaultOpusInfo },
-                    { "Append", "/as" },
-                    { "PageHash", "/NPH" },
-                    { "TimeStamp", @"/tr ""http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer""" }
-                }
-            },
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_231514,
-                OperationCode = OperationCode.SigntoolSign,
-                Parameters = new JObject
-                {
-                    { "OpusName", DefaultOpusName },
-                    { "OpusInfo", DefaultOpusInfo },
-                    { "Append", "/as" },
-                    { "FileDigest", @"/fd ""SHA256""" },
-                    { "PageHash", "/NPH" },
-                    { "TimeStamp", @"/tr ""http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer"" /td sha256" }
-                }
-            },
-            new Operations
-            {
-                KeyCode = ESRP.KeyCode.CP_231514,
-                OperationCode = OperationCode.SigntoolVerify,
-                Parameters = new JObject
-                {
-                    { "VerifyAll", "/all" }
-                }
             }
         };
 
