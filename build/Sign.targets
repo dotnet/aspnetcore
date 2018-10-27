@@ -60,6 +60,9 @@
         $(UnsignedSharedFxPath)**\system.*.dll;
         $(UnsignedSharedFxPath)**\libuv.dll;
         $(UnsignedSharedFxPath)**\aspnetcorev2_inprocess.dll;
+        $(UnsignedSharedFxPath)**\Microsoft.NETCore.App\*\*.dll;
+        $(UnsignedSharedFxPath)**\host\fxr\*\*.dll;
+        $(UnsignedSharedFxPath)**\dotnet.exe;
         $(UnsignedSharedFxPath)**\sni.dll"
         Exclude="@(ThirdPartyBinaries);@(SignExclusions)"/>
 
@@ -70,12 +73,12 @@
     </ItemGroup>
 
 
-    <Error Text="Additional binaries found in the aspnetcore shared framework which are not marked for signing: @(UnaccountedSharedFxBinaries)" Condition="'@(UnaccountedSharedFxBinaries)'!=''"/>
+    <Error Text="Additional binaries found in the aspnetcore shared framework which are not marked for signing:%0A -  @(UnaccountedSharedFxBinaries, '%0A - ')" Condition="'@(UnaccountedSharedFxBinaries)'!=''"/>
   </Target>
 
   <Target Name="SignFiles">
     <ItemGroup>
-      <AspNetCoreBinaries Include="
+      <MicrosoftBinaries Include="
         @(PackageBinaries);
         @(OobArchiveBinaries);
         @(MPackBinaries);
@@ -84,12 +87,12 @@
 
     <ItemGroup>
       <_SignProject Remove="@(_SignProject)" />
-      <_SignProject Include="$(MSBuildProjectFullPath)" Condition ="'@(AspNetCoreBinaries)' != ''">
+      <_SignProject Include="$(MSBuildProjectFullPath)" Condition ="'@(MicrosoftBinaries)' != ''">
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
           Certificate=$(MicrosoftAuthentiCodeSha2);
-          JobName=AspNetCoreBinaries;
-          Files=@(AspNetCoreBinaries)
+          JobName=MicrosoftBinaries;
+          Files=@(MicrosoftBinaries)
         </AdditionalProperties>
       </_SignProject>
 
