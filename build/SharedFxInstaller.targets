@@ -49,7 +49,7 @@
     <!-- Retry added due to fpm/docker race where .w/package_root directory cannot be resolved -->
     <Run
       FileName="docker"
-      Command="run --rm -v $(RepositoryRoot):$(_DockerRootDir) docker-image-$(Image) fpm --verbose -s dir -t rpm -n $(RpmName)-$(RpmIdVersion) -p $(_DockerRootDir)artifacts/installers/$(RpmName)-$(RpmFileVersion)-$(RpmFileSuffix) -v $(RpmPackageVersion) --iteration $(RpmRevision) -a amd64 $(RpmArguments) --rpm-changelog $(_DockerRootDir).w/templates/changelog --rpm-summary &quot;$(RpmMSummary)&quot; --description &quot;$(RpmDescription)&quot; --maintainer &quot;$(RpmMaintainerName) &lt;$(RpmMaintainerEmail)&gt;&quot; --vendor &quot;$(RpmVendor)&quot; --license &quot;$(RpmLicense)&quot; --url &quot;$(RpmHomepage)&quot; $(_DockerRootDir).w/package_root/=&quot;$(RpmInstallRoot)/&quot;"
+      Command="run --rm -v $(RepositoryRoot):$(_DockerRootDir) docker-image-$(Image) fpm --verbose -s dir -t rpm -n $(RpmName)-$(RpmIdVersion) -p $(_DockerRootDir)artifacts/installers/$(RpmName)-$(RpmFileVersion)-$(RpmFileSuffix) -v $(RpmPackageVersion) --iteration $(RpmRevision) -a amd64 $(RpmArguments) --rpm-changelog $(_DockerRootDir).w/$(SharedFxRid)/templates/changelog --rpm-summary &quot;$(RpmMSummary)&quot; --description &quot;$(RpmDescription)&quot; --maintainer &quot;$(RpmMaintainerName) &lt;$(RpmMaintainerEmail)&gt;&quot; --vendor &quot;$(RpmVendor)&quot; --license &quot;$(RpmLicense)&quot; --url &quot;$(RpmHomepage)&quot; $(_DockerRootDir).w/$(SharedFxRid)/package_root/=&quot;$(RpmInstallRoot)/&quot;"
       MaxRetries="5"/>
   </Target>
 
