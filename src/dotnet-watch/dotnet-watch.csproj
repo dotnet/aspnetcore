@@ -1,6 +1,4 @@
-﻿<Project>
-  <Sdk Name="Microsoft.NET.Sdk" />
-  <Sdk Name="Microsoft.DotNet.GlobalTools.Sdk" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -9,9 +7,8 @@
     <RootNamespace>Microsoft.DotNet.Watcher.Tools</RootNamespace>
     <PackageTags>dotnet;watch</PackageTags>
     <PackAsTool>true</PackAsTool>
-
     <!-- This is a requirement for Microsoft tool packages only. -->
-    <GenerateToolShims>true</GenerateToolShims>
+    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
