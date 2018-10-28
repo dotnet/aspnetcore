@@ -176,6 +176,10 @@ namespace Microsoft.CodeAnalysis.Razor
                     secondaryDocument, 
                     secondarySpan, 
                     cancellationToken);
+
+                // NOTE: The Classifier will only returns spans for things that it understands. That means
+                // that whitespace is not classified. The preview expects us to provide contiguous spans, 
+                // so we are going to have to fill in the gaps.
                 
                 // Now we have to translate back to the primary document's coordinates.
                 var offset = primarySpan.Start - secondarySpan.Start;
@@ -185,11 +189,29 @@ namespace Microsoft.CodeAnalysis.Razor
                     
                     var updated = new TextSpan(classifiedSecondarySpan.TextSpan.Start + offset, classifiedSecondarySpan.TextSpan.Length);
                     Debug.Assert(primarySpan.Contains(updated));
+
+                    // Make sure that we're not introducing a gap. Remember, we need to fill in the whitespace.
+                    if (remainingSpan.Start < updated.Start)
+                    {
+                        builder.Add(new ClassifiedSpan(
+                            ClassificationTypeNames.Text,
+                            new TextSpan(remainingSpan.Start, updated.Start - remainingSpan.Start)));
+                        remainingSpan = new TextSpan(updated.Start, remainingSpan.Length - (updated.Start - remainingSpan.Start));
+                    }
                     
                     builder.Add(new ClassifiedSpan(classifiedSecondarySpan.ClassificationType, updated));
+                    remainingSpan = new TextSpan(updated.End, remainingSpan.Length - (updated.End - remainingSpan.Start));
                 }
 
-                remainingSpan = new TextSpan(primarySpan.End, remainingSpan.Length - primarySpan.Length);
+                // Make sure that we're not introducing a gap. Remember, we need to fill in the whitespace.
+                if (remainingSpan.Start < primarySpan.End)
+                {
+                    builder.Add(new ClassifiedSpan(
+                        ClassificationTypeNames.Text,
+                        new TextSpan(remainingSpan.Start, primarySpan.End - remainingSpan.Start)));
+                    remainingSpan = new TextSpan(primarySpan.End, remainingSpan.Length - (primarySpan.End - remainingSpan.Start));
+                }
+
             }
 
             // Deal with residue

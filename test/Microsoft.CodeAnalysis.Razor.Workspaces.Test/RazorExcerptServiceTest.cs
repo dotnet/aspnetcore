@@ -70,10 +70,20 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.Equal(@"    var foo = ""Hello, World!"";", result.Value.Content.ToString(), ignoreLineEndingDifferences: true);
             Assert.Collection(
                 result.Value.ClassifiedSpans,
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal("    ", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
                 c => 
                 {
                     Assert.Equal(ClassificationTypeNames.Keyword, c.ClassificationType);
                     Assert.Equal("var", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
@@ -82,8 +92,18 @@ namespace Microsoft.CodeAnalysis.Razor
                 },
                 c =>
                 {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
                     Assert.Equal(ClassificationTypeNames.Operator, c.ClassificationType);
                     Assert.Equal("=", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
@@ -200,8 +220,18 @@ namespace Microsoft.CodeAnalysis.Razor
                 },
                 c =>
                 {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
                     Assert.Equal(ClassificationTypeNames.Operator, c.ClassificationType);
                     Assert.Equal("+", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
@@ -220,8 +250,18 @@ namespace Microsoft.CodeAnalysis.Razor
                 },
                 c =>
                 {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
                     Assert.Equal(ClassificationTypeNames.Operator, c.ClassificationType);
                     Assert.Equal("+", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
@@ -293,8 +333,18 @@ namespace Microsoft.CodeAnalysis.Razor
                 },
                 c =>
                 {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal("\r\n    ", result.Value.Content.GetSubText(c.TextSpan).ToString(), ignoreLineEndingDifferences: true);
+                },
+                c =>
+                {
                     Assert.Equal(ClassificationTypeNames.Keyword, c.ClassificationType);
                     Assert.Equal("var", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
@@ -303,8 +353,18 @@ namespace Microsoft.CodeAnalysis.Razor
                 },
                 c =>
                 {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
                     Assert.Equal(ClassificationTypeNames.Operator, c.ClassificationType);
                     Assert.Equal("=", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
@@ -315,6 +375,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     Assert.Equal(ClassificationTypeNames.Punctuation, c.ClassificationType);
                     Assert.Equal(";", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal("\r\n", result.Value.Content.GetSubText(c.TextSpan).ToString(), ignoreLineEndingDifferences: true);
                 },
                 c =>
                 {
@@ -366,8 +431,18 @@ namespace Microsoft.CodeAnalysis.Razor
                 },
                 c =>
                 {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
                     Assert.Equal(ClassificationTypeNames.Keyword, c.ClassificationType);
                     Assert.Equal("var", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
@@ -376,8 +451,18 @@ namespace Microsoft.CodeAnalysis.Razor
                 },
                 c =>
                 {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
                     Assert.Equal(ClassificationTypeNames.Operator, c.ClassificationType);
                     Assert.Equal("=", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
@@ -388,6 +473,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     Assert.Equal(ClassificationTypeNames.Punctuation, c.ClassificationType);
                     Assert.Equal(";", result.Value.Content.GetSubText(c.TextSpan).ToString());
+                },
+                c =>
+                {
+                    Assert.Equal(ClassificationTypeNames.Text, c.ClassificationType);
+                    Assert.Equal(" ", result.Value.Content.GetSubText(c.TextSpan).ToString());
                 },
                 c =>
                 {
