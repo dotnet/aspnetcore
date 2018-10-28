@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 {
                     app.UseHealthChecks("/health", new HealthCheckOptions()
                     {
-                        SuppressCacheHeaders = true,
+                        AllowCachingResponses = true,
                     });
                 })
                 .ConfigureServices(services =>
