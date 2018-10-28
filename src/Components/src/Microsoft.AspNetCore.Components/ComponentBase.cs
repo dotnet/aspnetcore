@@ -179,6 +179,9 @@ namespace Microsoft.AspNetCore.Components
                 try
                 {
                     await task;
+
+                    // When task has completed synchronously, no need to notify about state change.
+                    // Notification is done in caller method.
                     if (!hasCompletedSynchronously)
                     {
                         StateHasChanged();
