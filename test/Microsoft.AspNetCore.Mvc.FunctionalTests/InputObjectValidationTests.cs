@@ -172,8 +172,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task CheckIfExcludedField_IsNotValidatedForNonBodyBoundModels()
         {
             // Arrange
-            var kvps = new List<KeyValuePair<string, string>>();
-            kvps.Add(new KeyValuePair<string, string>("Alias", "xyz"));
+            var kvps = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("Alias", "xyz"),
+            };
             var content = new FormUrlEncodedContent(kvps);
 
             // Act
@@ -316,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 validationProblemDetails.Errors,
                 error =>
                 {
-                    Assert.Empty(error.Key);
+                    Assert.Equal("isbn", error.Key);
                     Assert.Equal(new[] { "Required property 'isbn' not found in JSON. Path '', line 1, position 44." }, error.Value);
                 });
         }
