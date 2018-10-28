@@ -21,8 +21,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         /// <remarks>
         /// <para>
-        /// This method will use <see cref="MapExtensions.Map(IApplicationBuilder, PathString, Action{IApplicationBuilder})"/> to
-        /// listen to health checks requests on the specified URL path.
+        /// If <paramref name="path"/> is set to <c>null</c> or the empty string then the health check middleware
+        /// will ignore the URL path and process all requests. If <paramref name="path"/> is set to a non-empty
+        /// value, the health check middleware will process requests with a URL that matches the provided value
+        /// of <paramref name="path"/> case-insensitively, allowing for an extra trailing slash ('/') character.
         /// </para>
         /// <para>
         /// The health check middleware will use default settings from <see cref="IOptions{HealthCheckOptions}"/>.
@@ -48,8 +50,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         /// <remarks>
         /// <para>
-        /// This method will use <see cref="MapExtensions.Map(IApplicationBuilder, PathString, Action{IApplicationBuilder})"/> to
-        /// listen to health checks requests on the specified URL path.
+        /// If <paramref name="path"/> is set to <c>null</c> or the empty string then the health check middleware
+        /// will ignore the URL path and process all requests. If <paramref name="path"/> is set to a non-empty
+        /// value, the health check middleware will process requests with a URL that matches the provided value
+        /// of <paramref name="path"/> case-insensitively, allowing for an extra trailing slash ('/') character.
         /// </para>
         /// </remarks>
         public static IApplicationBuilder UseHealthChecks(this IApplicationBuilder app, PathString path, HealthCheckOptions options)
@@ -77,8 +81,11 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         /// <remarks>
         /// <para>
-        /// This method will use <see cref="MapWhenExtensions.MapWhen(IApplicationBuilder, Func{HttpContext, bool}, Action{IApplicationBuilder})"/> to
-        /// listen to health checks requests on the specified URL path and port.
+        /// If <paramref name="path"/> is set to <c>null</c> or the empty string then the health check middleware
+        /// will ignore the URL path and process all requests on the specified port. If <paramref name="path"/> is
+        /// set to a non-empty value, the health check middleware will process requests with a URL that matches the 
+        /// provided value of <paramref name="path"/> case-insensitively, allowing for an extra trailing slash ('/') 
+        /// character.
         /// </para>
         /// <para>
         /// The health check middleware will use default settings from <see cref="IOptions{HealthCheckOptions}"/>.
@@ -104,8 +111,11 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         /// <remarks>
         /// <para>
-        /// This method will use <see cref="MapWhenExtensions.MapWhen(IApplicationBuilder, Func{HttpContext, bool}, Action{IApplicationBuilder})"/> to
-        /// listen to health checks requests on the specified URL path and port.
+        /// If <paramref name="path"/> is set to <c>null</c> or the empty string then the health check middleware
+        /// will ignore the URL path and process all requests on the specified port. If <paramref name="path"/> is
+        /// set to a non-empty value, the health check middleware will process requests with a URL that matches the 
+        /// provided value of <paramref name="path"/> case-insensitively, allowing for an extra trailing slash ('/') 
+        /// character.
         /// </para>
         /// <para>
         /// The health check middleware will use default settings from <see cref="IOptions{HealthCheckOptions}"/>.
@@ -142,8 +152,11 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         /// <remarks>
         /// <para>
-        /// This method will use <see cref="MapExtensions.Map(IApplicationBuilder, PathString, Action{IApplicationBuilder})"/> to
-        /// listen to health checks requests on the specified URL path.
+        /// If <paramref name="path"/> is set to <c>null</c> or the empty string then the health check middleware
+        /// will ignore the URL path and process all requests on the specified port. If <paramref name="path"/> is
+        /// set to a non-empty value, the health check middleware will process requests with a URL that matches the 
+        /// provided value of <paramref name="path"/> case-insensitively, allowing for an extra trailing slash ('/') 
+        /// character.
         /// </para>
         /// </remarks>
         public static IApplicationBuilder UseHealthChecks(this IApplicationBuilder app, PathString path, int port, HealthCheckOptions options)
@@ -172,8 +185,11 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
         /// <remarks>
         /// <para>
-        /// This method will use <see cref="MapExtensions.Map(IApplicationBuilder, PathString, Action{IApplicationBuilder})"/> to
-        /// listen to health checks requests on the specified URL path.
+        /// If <paramref name="path"/> is set to <c>null</c> or the empty string then the health check middleware
+        /// will ignore the URL path and process all requests on the specified port. If <paramref name="path"/> is
+        /// set to a non-empty value, the health check middleware will process requests with a URL that matches the 
+        /// provided value of <paramref name="path"/> case-insensitively, allowing for an extra trailing slash ('/') 
+        /// character.
         /// </para>
         /// </remarks>
         public static IApplicationBuilder UseHealthChecks(this IApplicationBuilder app, PathString path, string port, HealthCheckOptions options)
@@ -204,16 +220,35 @@ namespace Microsoft.AspNetCore.Builder
 
         private static void UseHealthChecksCore(IApplicationBuilder app, PathString path, int? port, object[] args)
         {
-            if (port == null)
+            // NOTE: we explicitly don't use Map here because it's really common for multiple health
+            // check middleware to overlap in paths. Ex: `/health`, `/health/detailed` - this is order
+            // sensititive with Map, and it's really surprising to people.
+            //
+            // See:
+            // https://github.com/aspnet/Diagnostics/issues/511
+            // https://github.com/aspnet/Diagnostics/issues/512
+            // https://github.com/aspnet/Diagnostics/issues/514
+
+            Func<HttpContext, bool> predicate = c =>
             {
-                app.Map(path, b => b.UseMiddleware<HealthCheckMiddleware>(args));
-            }
-            else
-            {
-                app.MapWhen(
-                    c => c.Connection.LocalPort == port,
-                    b0 => b0.Map(path, b1 => b1.UseMiddleware<HealthCheckMiddleware>(args)));
-            }
+                return
+
+                    // Process the port if we have one
+                    (port == null || c.Connection.LocalPort == port) &&
+
+                    // We allow you to listen on all URLs by providing the empty PathString.
+                    (!path.HasValue ||
+
+                        // If you do provide a PathString, want to handle all of the special cases that 
+                        // StartsWithSegments handles, but we also want it to have exact match semantics.
+                        //
+                        // Ex: /Foo/ == /Foo (true)
+                        // Ex: /Foo/Bar == /Foo (false)
+                        (c.Request.Path.StartsWithSegments(path, out var remaining) &&
+                        string.IsNullOrEmpty(remaining)));
+            };
+
+            app.MapWhen(predicate, b => b.UseMiddleware<HealthCheckMiddleware>(args));
         }
     }
 }
