@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -362,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            AssertCorsRejectionStatusCode(response);
         }
 
         [Theory]
@@ -514,7 +513,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
 
             // Assert
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            AssertCorsRejectionStatusCode(response);
         }
 
         // The url would be /Store/ListProducts with conventional routes
@@ -1295,7 +1294,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/", result.Link);
         }
 
-        
+
 
         [Fact]
         public virtual async Task AttributeRoutedAction_InArea_LinkToConventionalRoutedActionInArea()
@@ -1431,7 +1430,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            AssertCorsRejectionStatusCode(response);
         }
 
         [Theory]
@@ -1474,6 +1473,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         protected static LinkBuilder LinkFrom(string url)
         {
             return new LinkBuilder(url);
+        }
+
+        protected virtual void AssertCorsRejectionStatusCode(HttpResponseMessage response)
+        {
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }
 }
