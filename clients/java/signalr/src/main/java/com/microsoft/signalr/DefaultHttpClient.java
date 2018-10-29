@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -96,7 +97,10 @@ final class DefaultHttpClient extends HttpClient {
         }
 
         if (httpRequest.getHeaders() != null) {
-            httpRequest.getHeaders().forEach(requestBuilder::addHeader);
+            Collection<String> keys = httpRequest.getHeaders().keySet();
+            for (String key : keys) {
+                requestBuilder.addHeader(key, httpRequest.getHeaders().get(key));
+            }
         }
 
         Request request = requestBuilder.build();
