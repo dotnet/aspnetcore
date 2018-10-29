@@ -110,7 +110,11 @@ final class DefaultHttpClient extends HttpClient {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                responseSubject.onError(e.getCause());
+                Throwable cause = e.getCause();
+                if (cause == null) {
+                    cause = e;
+                }
+                responseSubject.onError(cause);
             }
 
             @Override
