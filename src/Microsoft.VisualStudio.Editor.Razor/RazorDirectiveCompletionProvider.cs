@@ -115,9 +115,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private Task AddCompletionItems(CompletionContext context)
         {
             if (!_textBufferProvider.TryGetFromDocument(context.Document, out var textBuffer) ||
-                !_dependencies.Value.AsyncCompletionBroker.IsCompletionSupported(textBuffer.ContentType))
+                _dependencies.Value.AsyncCompletionBroker.IsCompletionSupported(textBuffer.ContentType))
             {
-                // Completion is not supported.
+                // Async completion is supported that code path will handle completion.
                 return Task.CompletedTask;
             }
 
