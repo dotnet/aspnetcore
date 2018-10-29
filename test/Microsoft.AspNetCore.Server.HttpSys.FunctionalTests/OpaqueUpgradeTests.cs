@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? upgraded = null;
             string address;
-            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, async httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(15, await stream.ReadAsync(new byte[15], 0, 15));
                 upgraded = true;
                 waitHandle.Set();
-            }))
+            }, options => options.MaxRequestBodySize = 10))
             {
                 using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {

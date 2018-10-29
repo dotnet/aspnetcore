@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static int NextPort = BasePort;
         private static object PortLock = new object();
         internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+        internal static readonly int WriteRetryLimit = 1000;
 
         internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
         {
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options => { }, app);
         }
 
-        internal static IServer CreateHttpServer(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+        internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app, Action<HttpSysOptions> configureOptions)
         {
             string root;
             return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, configureOptions, app);
@@ -147,6 +149,39 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             server.Features.Get<IServerAddressesFeature>().Addresses.Add(UrlPrefix.Create(scheme, host, port, path).ToString());
             server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
             return server;
+        }
+
+        internal static Task WithTimeout(this Task task) => task.WithTimeout(DefaultTimeout);
+
+        internal static async Task WithTimeout(this Task task, TimeSpan timeout)
+        {
+            var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
+
+            if (completedTask == task)
+            {
+                await task;
+                return;
+            }
+            else
+            {
+                throw new TimeoutException("The task has timed out.");
+            }
+        }
+
+        internal static Task<T> WithTimeout<T>(this Task<T> task) => task.WithTimeout(DefaultTimeout);
+
+        internal static async Task<T> WithTimeout<T>(this Task<T> task, TimeSpan timeout)
+        {
+            var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
+
+            if (completedTask == task)
+            {
+                return await task;
+            }
+            else
+            {
+                throw new TimeoutException("The task has timed out.");
+            }
         }
     }
 }
