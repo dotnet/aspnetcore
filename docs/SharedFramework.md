@@ -1,12 +1,11 @@
 ASP.NET Core Shared Framework
 =============================
 
-Guidance on on developing the ASP.NET Core shared framework (`Microsoft.AspNetCore.App`).
+Guidance on developing the ASP.NET Core shared framework (`Microsoft.AspNetCore.App`).
 
-### What goes into the base framework?
+### What goes into the shared framework?
 
-The ASP.NET Core shared framework, Microsoft.AspNetCore.App, will contain assemblies that are fully developed, supported, and serviceable by Microsoft. You can think of this as constituting the ASP.NET Core *platform*. As such, all assemblies which are included in the shared framework are expected to meet specific requirements. Here are the principles we are using to guide our decisions about what is allowed in the 
-shared framework.
+The ASP.NET Core shared framework contains assemblies that are fully developed, supported, and serviceable by Microsoft. You can think of this as constituting the ASP.NET Core *platform*. As such, all assemblies which are included in the shared framework are expected to meet specific requirements. Here are the principles we are using to guide our decisions about what is allowed in the shared framework.
 
 * Breaking changes are highly discouraged. Therefore, 
   * If it's in, it must be broadly useful and expected to be supported for at least several years.
