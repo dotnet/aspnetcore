@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     cacheEntryOptions.ExpirationTokens.Add(item.ExpirationTokens[i]);
                 }
 
-                taskSource = new TaskCompletionSource<CompiledViewDescriptor>();
+                taskSource = new TaskCompletionSource<CompiledViewDescriptor>(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
                 if (item.SupportsCompilation)
                 {
                     // We'll compile in just a sec, be patient.

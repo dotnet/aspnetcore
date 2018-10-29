@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var options = GetMemoryCacheEntryOptions();
             options.AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
             options.SetSize(PlaceholderSize);
-            var tcs = new TaskCompletionSource<IHtmlContent>();
+            var tcs = new TaskCompletionSource<IHtmlContent>(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
 
             // The returned value is ignored, we only do this so that
             // the compiler doesn't complain about the returned task

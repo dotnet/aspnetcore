@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                     // There is a small race condition here between TryGetValue and TryAdd that might cause the
                     // content to be computed more than once. We don't care about this race as the probability of
                     // happening is very small and the impact is not critical.
-                    var tcs = new TaskCompletionSource<IHtmlContent>();
+                    var tcs = new TaskCompletionSource<IHtmlContent>(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
 
                     _workers.TryAdd(key, tcs.Task);
 
