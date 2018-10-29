@@ -180,7 +180,7 @@
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" Analyzer="true" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Cosmos" Category="noship"/>
+    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Cosmos" Category="ship"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Design" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.InMemory" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Proxies" Category="ship"/>
