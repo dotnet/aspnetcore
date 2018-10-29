@@ -5,6 +5,6 @@ Directive block - Gen<None> - 18 - (0:0,0)
         CSharpTokenType.Identifier;[addTagHelper];
     Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:None - (13:0,13) - Tokens:1
         CSharpTokenType.WhiteSpace;[ ];
-    Code span - Gen<AddTagHelper:{Foo";Foo";;} [RZ1000(17:0,17 [1] ), RZ1019(14:0,14 [4] ), RZ1020(14:0,14 [4] )]> - [Foo"] - SpanEditHandler;Accepts:AnyExceptNewline - (14:0,14) - Tokens:2
+    Code span - Gen<AddTagHelper:{Foo";Foo";;} [RZ1000(17:0,17 [1] ), RZ1019(14:0,14 [4] ), RZ1036(14:0,14 [4] )]> - [Foo"] - SpanEditHandler;Accepts:AnyExceptNewline - (14:0,14) - Tokens:2
         CSharpTokenType.Identifier;[Foo];
         CSharpTokenType.StringLiteral;["];RZ1000(17:0,17 [1] )

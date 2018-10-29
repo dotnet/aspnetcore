@@ -240,16 +240,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Parsing_InvalidTagHelperPrefixValue, location, directiveName, character, prefix);
         }
 
-        internal static readonly RazorDiagnosticDescriptor Parsing_InvalidTagHelperLookupText =
-            new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}1020",
-                () => Resources.InvalidTagHelperLookupText,
-                RazorDiagnosticSeverity.Error);
-        public static RazorDiagnostic CreateParsing_InvalidTagHelperLookupText(SourceSpan location, string lookupText)
-        {
-            return RazorDiagnostic.Create(Parsing_InvalidTagHelperLookupText, location, lookupText);
-        }
-
         internal static readonly RazorDiagnosticDescriptor Parsing_MarkupBlockMustStartWithTag =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}1021",
@@ -415,6 +405,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                 tagName);
 
             return diagnostic;
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_InvalidTagHelperLookupText =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1036",
+                () => Resources.InvalidTagHelperLookupText,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_InvalidTagHelperLookupText(SourceSpan location, string lookupText)
+        {
+            return RazorDiagnostic.Create(Parsing_InvalidTagHelperLookupText, location, lookupText);
         }
 
         #endregion
