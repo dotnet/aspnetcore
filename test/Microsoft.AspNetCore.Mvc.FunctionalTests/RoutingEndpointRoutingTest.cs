@@ -263,53 +263,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
         }
 
-        [Theory]
-        [MemberData(nameof(AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraintsData))]
-        public override async Task AttributeRoutedAction_MultipleRouteAttributes_WithMultipleHttpAttributes_RespectsConstraints(
-            string url,
-            string method)
-        {
-            // Arrange
-            var expectedUrl = new Uri(url).AbsolutePath;
-
-            // Act
-            var response = await Client.SendAsync(new HttpRequestMessage(new HttpMethod(method), url));
-
-            // Assert
-            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
-        }
-
-        // Endpoint routing exposes HTTP 405s for HTTP method mismatches
-        [Theory]
-        [MemberData(nameof(AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheActionData))]
-        public override async Task AttributeRoutedAction_RejectsRequestsWithWrongMethods_InRoutesWithoutExtraTemplateSegmentsOnTheAction(
-            string method,
-            string url)
-        {
-            // Arrange
-            var request = new HttpRequestMessage(new HttpMethod(method), $"http://localhost{url}");
-
-            // Assert
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
-        }
-
-        [Theory]
-        [MemberData(nameof(AttributeRouting_MixedAcceptVerbsAndRoute_UnreachableData))]
-        public override async Task AttributeRouting_MixedAcceptVerbsAndRoute_Unreachable(string path, string verb)
-        {
-            // Arrange
-            var request = new HttpRequestMessage(new HttpMethod(verb), "http://localhost" + path);
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
-        }
-
         [Fact]
         public async Task ConventionalRoutedAction_ParameterTransformer()
         {
@@ -422,6 +375,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("ConventionalTransformer", result.Controller);
             Assert.Equal("Index", result.Action);
             Assert.Equal("/ConventionalTransformerRoute/conventional-transformer", result.Link);
+        }
+
+        // Endpoint routing exposes HTTP 405s for HTTP method mismatches.
+        protected override void AssertCorsRejectionStatusCode(HttpResponseMessage response)
+        {
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
         }
     }
 }
