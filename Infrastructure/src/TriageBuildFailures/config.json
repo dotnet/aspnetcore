@@ -258,6 +258,7 @@
       "8", //BuildTools-ci-official
       // Projects
       "23", //Extensions-ci
+      "25", //Mvc-ci
       "26", //SignalR-ci
       "27", //IISIntegration-ci
       "36", //Templating-ci
