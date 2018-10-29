@@ -5,11 +5,15 @@
   <PropertyGroup Label="Package Versions">
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.2.0-preview2-20181004.6</InternalAspNetCoreSdkPackageVersion>
+    <IdentityServer4PackageVersion>2.3.0-preview1-update2</IdentityServer4PackageVersion>
+    <IdentityServer4AspNetIdentityPackageVersion>2.3.0-preview1-update2</IdentityServer4AspNetIdentityPackageVersion>
+    <IdentityServer4EntityFrameworkPackageVersion>2.3.0-preview1-update1</IdentityServer4EntityFrameworkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
     <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
     <MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreCookiePolicyPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreCookiePolicyPackageVersion>
     <MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>
