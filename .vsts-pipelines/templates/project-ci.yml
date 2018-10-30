@@ -1,7 +1,7 @@
 # See https://github.com/aspnet/BuildTools
 
 phases:
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+- template: .azure/templates/jobs/default-build.yml@buildtools
   parameters:
     agentOs: Windows
     beforeBuild:
@@ -10,7 +10,7 @@ phases:
       inputs:
         versionSpec: 8.x
 
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+- template: .azure/templates/jobs/default-build.yml@buildtools
   parameters:
     agentOs: macOS
     beforeBuild:
@@ -24,7 +24,7 @@ phases:
         DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
   
-- template: .vsts-pipelines/templates/phases/default-build.yml@buildtools
+- template: .azure/templates/jobs/default-build.yml@buildtools
   parameters:
     agentOs: Linux
     beforeBuild:
