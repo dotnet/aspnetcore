@@ -164,6 +164,7 @@
       "Coherence_UpdateUniverse",
       "Lite_Public_DnxTools",
       "CoherenceSigned",
+      "Coherence_Finale",
       "Coherence_CoherencePackageCacheLinux",
       "Coherence_CoherencePackageCacheOsx",
       "Coherence_CoherencePackageCacheWin86",
@@ -265,6 +266,7 @@
       "39", //Caching-ci
       "40", //Razor-ci
       "46", //Routing-ci
+      "49", //DotNetTools-ci
       "51", //EntityFrameworkCore-ci
       "61", //HttpSysServer-ci
       "135", //aspnet-Blazor-ci-official
