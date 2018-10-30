@@ -49,6 +49,7 @@ namespace Interop.FunctionalTests
             ShutdownLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.sd.json");
 
             ChromeArgs = $"--headless " +
+                $"--no-sandbox " +
                 $"--disable-gpu " +
                 $"--allow-insecure-localhost " +
                 $"--enable-logging " +
@@ -109,6 +110,9 @@ namespace Interop.FunctionalTests
 
             var headlessChromeProcess = Process.Start(chromeStartInfo);
             var chromeOutput = await headlessChromeProcess.StandardOutput.ReadToEndAsync();
+            var chromeError = await headlessChromeProcess.StandardError.ReadToEndAsync();
+            Logger.LogInformation($"Standard output: {chromeOutput}");
+            Logger.LogInformation($"Standard error: {chromeError}");
 
             headlessChromeProcess.WaitForExit();
 
