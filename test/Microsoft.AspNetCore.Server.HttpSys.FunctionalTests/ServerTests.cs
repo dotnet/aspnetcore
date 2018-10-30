@@ -300,22 +300,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task Server_SetHttp503VebosittHittingThrottle_Success()
+        public async Task Server_SetHttp503VebosityHittingThrottle_Success()
         {
-            // This is just to get a dynamic port
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
-
-            var server = Utilities.CreatePump();
-            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
-            Assert.Null(server.Listener.Options.MaxConnections);
-            server.Listener.Options.MaxConnections = 3;
-            server.Listener.Options.Http503Verbosity = Http503VerbosityLevel.Limited;
-
-            using (server)
+            using (Utilities.CreateDynamicHost(out var address, options =>
             {
-                await server.StartAsync(new DummyApplication(), CancellationToken.None);
-
+                Assert.Null(options.MaxConnections);
+                options.MaxConnections = 3;
+                options.Http503Verbosity = Http503VerbosityLevel.Limited;
+            }, httpContext => Task.FromResult(0)))
+            {
                 using (var client1 = await SendHungRequestAsync("GET", address))
                 using (var client2 = await SendHungRequestAsync("GET", address))
                 {
@@ -340,31 +333,25 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public void Server_SetConnectionLimitArgumentValidation_Success()
         {
-            var server = Utilities.CreatePump();
-
-            Assert.Null(server.Listener.Options.MaxConnections);
-            Assert.Throws<ArgumentOutOfRangeException>(() => server.Listener.Options.MaxConnections = -2);
-            Assert.Null(server.Listener.Options.MaxConnections);
-            server.Listener.Options.MaxConnections = null;
-            server.Listener.Options.MaxConnections = 3;
+            using (var server = Utilities.CreatePump())
+            {
+                Assert.Null(server.Listener.Options.MaxConnections);
+                Assert.Throws<ArgumentOutOfRangeException>(() => server.Listener.Options.MaxConnections = -2);
+                Assert.Null(server.Listener.Options.MaxConnections);
+                server.Listener.Options.MaxConnections = null;
+                server.Listener.Options.MaxConnections = 3;
+            }
         }
 
         [ConditionalFact]
         public async Task Server_SetConnectionLimit_Success()
         {
-            // This is just to get a dynamic port
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
-
-            var server = Utilities.CreatePump();
-            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
-            Assert.Null(server.Listener.Options.MaxConnections);
-            server.Listener.Options.MaxConnections = 3;
-
-            using (server)
+            using (Utilities.CreateDynamicHost(out var address, options =>
             {
-                await server.StartAsync(new DummyApplication(), CancellationToken.None);
-
+                Assert.Null(options.MaxConnections);
+                options.MaxConnections = 3;
+            }, httpContext => Task.FromResult(0)))
+            {
                 using (var client1 = await SendHungRequestAsync("GET", address))
                 using (var client2 = await SendHungRequestAsync("GET", address))
                 {
@@ -384,19 +371,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task Server_SetConnectionLimitChangeAfterStarted_Success()
         {
-            // This is just to get a dynamic port
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
-
-            var server = Utilities.CreatePump();
-            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
-            Assert.Null(server.Listener.Options.MaxConnections);
-            server.Listener.Options.MaxConnections = 3;
-
-            using (server)
+            HttpSysOptions options = null;
+            using (Utilities.CreateDynamicHost(out var address, opt =>
             {
-                await server.StartAsync(new DummyApplication(), CancellationToken.None);
-
+                options = opt;
+                Assert.Null(options.MaxConnections);
+                options.MaxConnections = 3;
+            }, httpContext => Task.FromResult(0)))
+            {
                 using (var client1 = await SendHungRequestAsync("GET", address))
                 using (var client2 = await SendHungRequestAsync("GET", address))
                 using (var client3 = await SendHungRequestAsync("GET", address))
@@ -404,12 +386,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Maxed out, refuses connection and throws
                     await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
 
-                    server.Listener.Options.MaxConnections = 4;
+                    options.MaxConnections = 4;
 
                     string responseText = await SendRequestAsync(address);
                     Assert.Equal(string.Empty, responseText);
 
-                    server.Listener.Options.MaxConnections = 2;
+                    options.MaxConnections = 2;
 
                     // Maxed out, refuses connection and throws
                     await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
@@ -420,18 +402,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task Server_SetConnectionLimitInfinite_Success()
         {
-            // This is just to get a dynamic port
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
-
-            var server = Utilities.CreatePump();
-            server.Listener.Options.UrlPrefixes.Add(UrlPrefix.Create(address));
-            server.Listener.Options.MaxConnections = -1; // infinite
-
-            using (server)
+            using (Utilities.CreateDynamicHost(out var address, options =>
             {
-                await server.StartAsync(new DummyApplication(), CancellationToken.None);
-
+                Assert.Null(options.MaxConnections);
+                options.MaxConnections = -1; // infinite
+            }, httpContext => Task.FromResult(0)))
+            {
                 using (var client1 = await SendHungRequestAsync("GET", address))
                 using (var client2 = await SendHungRequestAsync("GET", address))
                 using (var client3 = await SendHungRequestAsync("GET", address))
@@ -633,7 +609,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private async Task<string> SendRequestAsync(string uri)
         {
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout } )
             {
                 return await client.GetStringAsync(uri);
             }
@@ -641,7 +617,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private async Task<string> SendRequestAsync(string uri, string upload)
         {
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout })
             {
                 HttpResponseMessage response = await client.PostAsync(uri, new StringContent(upload));
                 response.EnsureSuccessStatusCode();

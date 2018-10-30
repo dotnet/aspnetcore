@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private const int MaxPort = 8000;
         private static int NextPort = BasePort;
         private static object PortLock = new object();
+        internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
         internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
         {
@@ -59,6 +60,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 options.Authentication.Schemes = authType;
                 options.Authentication.AllowAnonymous = allowAnonymous;
             }, app);
+        }
+
+        internal static IWebHost CreateDynamicHost(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+        {
+            return CreateDynamicHost(string.Empty, out var root, out baseAddress, configureOptions, app);
         }
 
         internal static IWebHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
