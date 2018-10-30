@@ -4,6 +4,7 @@
 package com.microsoft.signalr;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -762,13 +763,14 @@ public class HubConnection {
         public void cancelOutstandingInvocations(Exception ex) {
             lock.lock();
             try {
-                pendingInvocations.forEach((key, irq) -> {
+                Collection<String> keys = pendingInvocations.keySet();
+                for (String key : keys) {
                     if (ex == null) {
-                        irq.cancel();
+                        pendingInvocations.get(key).cancel();
                     } else {
-                        irq.fail(ex);
+                        pendingInvocations.get(key).fail(ex);
                     }
-                });
+                }
 
                 pendingInvocations.clear();
             } finally {
@@ -779,14 +781,11 @@ public class HubConnection {
         public void addInvocation(InvocationRequest irq) {
             lock.lock();
             try {
-                pendingInvocations.compute(irq.getInvocationId(), (key, value) -> {
-                    if (value != null) {
-                        // This should never happen
-                        throw new IllegalStateException("Invocation Id is already used");
-                    }
-
-                    return irq;
-                });
+                if (pendingInvocations.containsKey(irq.getInvocationId())) {
+                    throw new IllegalStateException("Invocation Id is already used");
+                } else {
+                    pendingInvocations.put(irq.getInvocationId(), irq);
+                }
             } finally {
                 lock.unlock();
             }
