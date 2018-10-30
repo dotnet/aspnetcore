@@ -253,33 +253,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            TestSink.MessageLogged += context => {
+                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
-                    if (eventId.Id == connectionPausedEventId)
-                    {
-                        readCallbackUnwired.TrySetResult(null);
-                    }
+                    return;
+                }
 
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                });
+                if (context.EventId.Id == connectionPausedEventId)
+                {
+                    readCallbackUnwired.TrySetResult(null);
+                }
+            };
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
+            var mockKestrelTrace = new Mock<IKestrelTrace>();
 
-            var testContext = new TestServiceContext(mockLoggerFactory.Object, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
                 ServerOptions =
                 {

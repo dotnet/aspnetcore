@@ -220,41 +220,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var connectionReset = new SemaphoreSlim(0);
             var loggedHigherThanDebug = false;
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            TestSink.MessageLogged += context => {
+                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                    if (eventId.Id == _connectionStartedEventId)
-                    {
-                        connectionStarted.Release();
-                    }
-                    else if (eventId.Id == _connectionResetEventId)
-                    {
-                        connectionReset.Release();
-                    }
+                    return;
+                }
 
-                    if (logLevel > LogLevel.Debug)
-                    {
-                        loggedHigherThanDebug = true;
-                    }
-                });
+                if (context.EventId.Id == _connectionStartedEventId)
+                {
+                    connectionStarted.Release();
+                }
+                else if (context.EventId.Id == _connectionResetEventId)
+                {
+                    connectionReset.Release();
+                }
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
+                if (context.LogLevel > LogLevel.Debug)
+                {
+                    loggedHigherThanDebug = true;
+                }
+            };
 
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -280,37 +269,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var connectionReset = new SemaphoreSlim(0);
             var loggedHigherThanDebug = false;
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            TestSink.MessageLogged += context => {
+                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                    if (eventId.Id == _connectionResetEventId)
-                    {
-                        connectionReset.Release();
-                    }
+                    return;
+                }
 
-                    if (logLevel > LogLevel.Debug)
-                    {
-                        loggedHigherThanDebug = true;
-                    }
-                });
+                if (context.LogLevel > LogLevel.Debug)
+                {
+                    loggedHigherThanDebug = true;
+                }
 
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
+                if (context.EventId.Id == _connectionResetEventId)
+                {
+                    connectionReset.Release();
+                }
+            };
 
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(mockLoggerFactory.Object)))
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -351,43 +329,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var connectionClosing = new SemaphoreSlim(0);
             var loggedHigherThanDebug = false;
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            TestSink.MessageLogged += context => {
+                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
+                    return;
+                }
 
-                    if (eventId.Id == _connectionResetEventId)
-                    {
-                        connectionReset.Release();
-                    }
+                if (context.LogLevel > LogLevel.Debug)
+                {
+                    loggedHigherThanDebug = true;
+                }
 
-                    if (logLevel > LogLevel.Debug)
-                    {
-                        loggedHigherThanDebug = true;
-                    }
-                });
-
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
+                if (context.EventId.Id == _connectionResetEventId)
+                {
+                    connectionReset.Release();
+                }
+            };
 
             using (var server = new TestServer(async context =>
                 {
                     requestStarted.Release();
                     await connectionClosing.WaitAsync();
                 },
-                new TestServiceContext(mockLoggerFactory.Object)))
+                new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -732,37 +698,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var serverClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
+            TestSink.MessageLogged += context => {
+                if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
+                    context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
-                    if (eventId.Id == connectionPausedEventId)
-                    {
-                        readCallbackUnwired.TrySetResult(null);
-                    }
-                    else if (eventId.Id == connectionFinSentEventId)
-                    {
-                        serverClosedConnection.SetResult(null);
-                    }
+                    return;
+                }
 
-                    Logger.Log(logLevel, eventId, state, exception, formatter);
-                });
-
-            var mockLoggerFactory = new Mock<ILoggerFactory>();
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
-                .Returns(Logger);
-            mockLoggerFactory
-                .Setup(factory => factory.CreateLogger(It.IsIn("Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv",
-                                                               "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")))
-                .Returns(mockLogger.Object);
+                if (context.EventId.Id == connectionPausedEventId)
+                {
+                    readCallbackUnwired.TrySetResult(null);
+                }
+                else if (context.EventId == connectionFinSentEventId)
+                {
+                    serverClosedConnection.SetResult(null);
+                }
+            };
 
             var mockKestrelTrace = new Mock<IKestrelTrace>();
-            var testContext = new TestServiceContext(mockLoggerFactory.Object, mockKestrelTrace.Object)
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
                 ServerOptions =
                 {
