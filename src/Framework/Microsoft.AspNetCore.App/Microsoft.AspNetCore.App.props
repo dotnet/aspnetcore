@@ -62,7 +62,6 @@
     <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Xml"                      Version="$(MicrosoftAspNetCoreMvcFormattersXmlPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Localization"                        Version="$(MicrosoftAspNetCoreMvcLocalizationPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"                    Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation"               Version="$(MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Razor"                               Version="$(MicrosoftAspNetCoreMvcRazorPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.RazorPages"                          Version="$(MicrosoftAspNetCoreMvcRazorPagesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.TagHelpers"                          Version="$(MicrosoftAspNetCoreMvcTagHelpersPackageVersion)" />

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application, and also includes API for third-party integrations with ASP.NET Core.
 
@@ -38,7 +38,6 @@ This package requires the ASP.NET Core runtime. This runtime is installed by the
     <Dependency Include="Microsoft.Extensions.Caching.Redis"                       Version="$(MicrosoftExtensionsCachingRedisPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Configuration.AzureKeyVault"         Version="$(MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Logging.AzureAppServices"            Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)" />
-    <Dependency Include="Microsoft.VisualStudio.Web.BrowserLink"                   Version="$(MicrosoftVisualStudioWebBrowserLinkPackageVersion)" />
   </ItemGroup>
 
 </Project>
