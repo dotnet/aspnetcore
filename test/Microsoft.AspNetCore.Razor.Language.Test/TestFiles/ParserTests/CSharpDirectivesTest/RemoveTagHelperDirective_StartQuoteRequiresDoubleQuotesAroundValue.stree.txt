@@ -8,7 +8,7 @@ Markup block - Gen<None> - 21 - (0:0,0)
             SyntaxKind.Identifier;[removeTagHelper];
         Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
             SyntaxKind.Whitespace;[ ];
-        Code span - Gen<RemoveTagHelper:{"Foo;"Foo;;} [RZ1000(17:0,17 [1] ), RZ1019(17:0,17 [4] ), RZ1020(17:0,17 [4] )]> - ["Foo] - SpanEditHandler;Accepts:AnyExceptNewline - (17:0,17) - Tokens:1
+        Code span - Gen<RemoveTagHelper:{"Foo;"Foo;;} [RZ1000(17:0,17 [1] ), RZ1019(17:0,17 [4] ), RZ1036(17:0,17 [4] )]> - ["Foo] - SpanEditHandler;Accepts:AnyExceptNewline - (17:0,17) - Tokens:1
             SyntaxKind.StringLiteral;["Foo];RZ1000(17:0,17 [1] )
     Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
         SyntaxKind.Unknown;[];
