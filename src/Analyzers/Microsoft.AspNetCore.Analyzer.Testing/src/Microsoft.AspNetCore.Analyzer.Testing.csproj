@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Helpers for writing tests for Roslyn analyzers.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageTags>$(PackageTags);testing</PackageTags>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*" Pack="true" PackagePath="build" />
+  </ItemGroup>
+
+</Project>

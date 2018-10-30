@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <TestGroupName>Analyzers</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Internal.AspNetCore.Analyzers.csproj" />
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+  </ItemGroup>
+
+</Project>
