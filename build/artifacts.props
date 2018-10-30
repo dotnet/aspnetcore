@@ -176,7 +176,7 @@
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Cosmos" Category="noship" />
+    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Cosmos" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Design" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.InMemory" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Proxies" Category="ship" />
