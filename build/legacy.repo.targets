@@ -2,7 +2,6 @@
   <Import Project="Prepare.targets" />
   <Import Project="Policheck.targets" />
   <Import Project="Sign.targets" />
-  <Import Project="Verify.targets" />
 
   <!-- packages required to implement the targets in this file-->
   <PropertyGroup>
