@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET461
+#if NET472
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 cts = new CancellationTokenSource();
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET461
+#if NET472
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 cts = new CancellationTokenSource();
