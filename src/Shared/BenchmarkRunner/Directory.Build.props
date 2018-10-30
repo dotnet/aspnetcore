@@ -1,0 +1,8 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <PackageId>Microsoft.Extensions.$(ProjectDirName).Sources</PackageId>
+  </PropertyGroup>
+</Project>
