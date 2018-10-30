@@ -94,6 +94,71 @@ Environment.NewLine + "int b";
         }
 
         [Fact]
+        public void InferParameterBindingSources_InfersSources()
+        {
+            // Arrange
+            var actionName = nameof(ParameterBindingController.ComplexTypeModelWithCancellationToken);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var convention = GetConvention(modelMetadataProvider);
+            var action = GetActionModel(typeof(ParameterBindingController), actionName, modelMetadataProvider);
+
+            // Act
+            convention.InferParameterBindingSources(action);
+
+            // Assert
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("model", parameter.Name);
+
+                    var bindingInfo = parameter.BindingInfo;
+                    Assert.NotNull(bindingInfo);
+                    Assert.Same(BindingSource.Body, bindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("cancellationToken", parameter.Name);
+
+                    var bindingInfo = parameter.BindingInfo;
+                    Assert.NotNull(bindingInfo);
+                    Assert.Equal(BindingSource.Special, bindingInfo.BindingSource);
+                });
+        }
+
+        [Fact]
+        public void InferParameterBindingSources_DoesNotInferSources_IfSuppressInferBindingSourcesForParametersIsSet()
+        {
+            // Arrange
+            var actionName = nameof(ParameterBindingController.ComplexTypeModelWithCancellationToken);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var convention = GetConvention(modelMetadataProvider);
+            var action = GetActionModel(typeof(ParameterBindingController), actionName, modelMetadataProvider);
+            
+            convention.SuppressInferBindingSourcesForParameters = true;
+
+            // Act
+            convention.InferParameterBindingSources(action);
+
+            // Assert
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("model", parameter.Name);
+                    Assert.Null(parameter.BindingInfo);
+                },
+                parameter =>
+                {
+                    Assert.Equal("cancellationToken", parameter.Name);
+
+                    var bindingInfo = parameter.BindingInfo;
+                    Assert.NotNull(bindingInfo);
+                    Assert.Equal(BindingSource.Special, bindingInfo.BindingSource);
+                });
+        }
+
+        [Fact]
         public void Apply_PreservesBindingInfo_WhenInferringFor_ParameterWithModelBinder_AndExplicitName()
         {
             // Arrange

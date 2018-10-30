@@ -59,7 +59,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         internal void InferParameterBindingSources(ActionModel action)
         {
-            var inferredBindingSources = new BindingSource[action.Parameters.Count];
+            if (SuppressInferBindingSourcesForParameters)
+            {
+                return;
+            }
 
             for (var i = 0; i < action.Parameters.Count; i++)
             {
