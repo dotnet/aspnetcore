@@ -15,8 +15,8 @@
     <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
-    <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;CheckExpectedPackagesExist</PackageDependsOn>
+    <CompileDependsOn>$(CompileDependsOn);BuildRepositories;BuildSharedFx</CompileDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CheckExpectedPackagesExist</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);_TestRepositories</TestDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
@@ -25,7 +25,7 @@
     <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
   </Target>
 
-  <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories;GetMetapackageArtifactInfo;GetLineupPackageInfo">
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories;GetLineupPackageInfo">
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
@@ -40,6 +40,14 @@
              Properties="$(DesignTimeBuildProps);RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
              ContinueOnError="WarnAndContinue"
              Condition="'%(Repository.Identity)' != ''">
+      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
+    </MSBuild>
+
+    <MSBuild Projects="@(ProjectToBuild)"
+             Targets="GetArtifactInfo"
+             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
+             SkipNonexistentTargets="true"
+             Condition="'@(ProjectToBuild)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
@@ -239,18 +247,6 @@
   <Target Name="VerifyPackageArtifactConfig">
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). PackageArtifact must have the 'Category' metadata."
            Condition="'%(PackageArtifact.Category)' == '' " />
-
-    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMA='true' must be Category='ship'."
-           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMA)' == 'true' " />
-
- 	  <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AppMetapackage='true' must be Category='ship'."
-           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.AppMetapackage)' == 'true' " />
-
-    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AllMetapackage='true' must be Category='ship'."
-           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.AllMetapackage)' == 'true' " />
-
-    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AppMetapackage='true' must also be marked as AllMetapackage='true'."
-           Condition="'%(PackageArtifact.AppMetapackage)' == 'true' AND '%(PackageArtifact.AllMetapackage)' != 'true' " />
   </Target>
 
   <Target Name="VerifyExternalDependencyConfig">

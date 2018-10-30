@@ -190,6 +190,7 @@ namespace Cli.FunctionalTests.Templates
                         "Microsoft.Extensions.Options.dll",
                         "Microsoft.Extensions.Primitives.dll",
                         "Microsoft.Extensions.WebEncoders.dll",
+                        "Microsoft.IdentityModel.JsonWebTokens.dll",
                         "Microsoft.IdentityModel.Logging.dll",
                         "Microsoft.IdentityModel.Protocols.dll",
                         "Microsoft.IdentityModel.Protocols.OpenIdConnect.dll",

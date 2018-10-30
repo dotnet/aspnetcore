@@ -1,5 +1,9 @@
 <Project>
   <PropertyGroup>
+    <SharedFxRid Condition=" '$(SharedFxRid)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win-x64</SharedFxRid>
+    <SharedFxRid Condition=" '$(SharedFxRid)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx-x64</SharedFxRid>
+    <SharedFxRid Condition=" '$(SharedFxRid)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux-x64</SharedFxRid>
+
     <!-- directories -->
     <_WorkRoot>$(RepositoryRoot).w\$(SharedFxRID)\</_WorkRoot>
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
@@ -13,17 +17,10 @@
     <_SymbolsSourceDir>$(RepositoryRoot).deps\symbols\</_SymbolsSourceDir>
     <_DockerRootDir>/opt/code/</_DockerRootDir>
     <_InstallersOutputDir>$(ArtifactsDir)installers\</_InstallersOutputDir>
-    <!-- 3B = semicolon in ASCII -->
-    <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
-    <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
+
     <ArchiveExtension>.tar.gz</ArchiveExtension>
     <ArchiveExtension Condition="$(SharedFxRID.StartsWith('win'))">.zip</ArchiveExtension>
 
-    <LibPrefix Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('OSX'))">lib</LibPrefix>
-    <LibExtension>.so</LibExtension>
-    <LibExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.dll</LibExtension>
-    <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
-    <ExeExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</ExeExtension>
     <SharedFrameworkTargetFramework>netcoreapp3.0</SharedFrameworkTargetFramework>
 
     <!-- installers -->
@@ -68,7 +65,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <WindowsSharedFxRIDs Include="win-x64;win-x86"/>
+    <WindowsSharedFxRIDs Include="win-x64;win-x86;win-arm"/>
     <NonWindowsSharedFxRIDs Include="osx-x64" CrossgenSymbols="false" />
     <NonWindowsSharedFxRIDs Include="linux-musl-x64" />
     <NonWindowsSharedFxRIDs Include="linux-x64" />

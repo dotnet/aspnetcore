@@ -24,7 +24,7 @@ namespace RepoTasks
             var versionOverrides = ProjectRootElement.Open(DotNetPackageVersionPropsPath);
             var dependencies = ProjectRootElement.Open(DependenciesFile);
             var pinnedVersions = dependencies.PropertyGroups
-                .Where(p => !string.Equals("Package Versions: Auto", p.Label))
+                .Where(p => string.Equals("Package Versions: Pinned", p.Label))
                 .SelectMany(p => p.Properties)
                 .ToDictionary(p => p.Name, p => p.Value, StringComparer.OrdinalIgnoreCase);
 

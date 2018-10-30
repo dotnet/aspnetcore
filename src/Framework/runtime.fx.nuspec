@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
+  <metadata minClientVersion="2.12">
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <projectUrl>$projectUrl$</projectUrl>
+    <iconUrl>$iconUrl$</iconUrl>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+    <tags>$tags$</tags>
+    <repository type="git" url="$repositoryUrl$" commit="$repositoryCommit$" />
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <serviceable>true</serviceable>
+  </metadata>
+  <files>
+    <file src="$symbolsAssets$" target="runtimes/$rid$/lib/$targetFramework$/" />
+    <file src="$runtimeAssets$" target="runtimes/$rid$/lib/$targetFramework$/" />
+    <file src="$nativeAssets$" target="runtimes/$rid$/native/" />
+    <!-- This is a dummy reference which prevents NuGet from adding any compilation references when this package is imported. -->
+    <file src="_._" target="ref/netstandard/" />
+  </files>
+</package>

@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="BuildInstallers" DependsOnTargets="GenerateCumulativeArchives;GenerateRpms;GenerateDebs" />
+  <Target Name="BuildInstallers" DependsOnTargets="GenerateRpms;GenerateDebs" />
 
   <Target Name="_EnsureInstallerPrerequisites">
     <MakeDir Directories="$(_InstallersOutputDir)" />
@@ -13,72 +13,8 @@
       Text="Docker host must be using Linux containers."
       Condition="'$(DockerHostOS)' != 'linux'"/>
     <Error
-      Text="Expected archive missing at $(SharedFxIntermediateArchiveFilePrefix)-%(WindowsSharedFxRIDs.Identity).zip."
-      Condition="!Exists('$(SharedFxIntermediateArchiveFilePrefix)-%(WindowsSharedFxRIDs.Identity).zip')" />
-    <Error
-      Text="Expected archive missing at $(SharedFxIntermediateArchiveFilePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz."
-      Condition="!Exists('$(SharedFxIntermediateArchiveFilePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz')" />
-  </Target>
-
-  <Target Name="_DownloadInstallers">
-    <!-- Download dotnet installers -->
-    <MakeDir Directories="$(_InstallerSourceDir)" />
-    <DownloadFile
-      SourceUrl="$(RuntimeArchiveLinkPrefix)-%(WindowsSharedFxRIDs.Identity).zip$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationFolder="$(_InstallerSourceDir)"
-      DestinationFileName="$(DotnetRuntimeFileNamePrefix)-%(WindowsSharedFxRIDs.Identity).zip"
-      Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(WindowsSharedFxRIDs.Identity).zip')" />
-    <DownloadFile
-      SourceUrl="$(RuntimeArchiveLinkPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationFolder="$(_InstallerSourceDir)"
-      DestinationFileName="$(DotnetRuntimeFileNamePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz"
-      Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz')" />
-  </Target>
-
-  <Target Name="_GenerateCumulativeArchive">
-    <PropertyGroup>
-      <ArchiveExtension>.tar.gz</ArchiveExtension>
-      <ArchiveExtension Condition="$(SharedFxPlatform.StartsWith('win'))">.zip</ArchiveExtension>
-    </PropertyGroup>
-
-    <!-- Clear working directory -->
-    <RemoveDir Directories="$(_WorkRoot)" />
-    <MakeDir Directories="$(_WorkRoot)" />
-
-    <!-- Create layout: Aspnet Runtime  -->
-    <Exec
-      Command="tar -xzf $(SharedFxIntermediateArchiveFilePrefix)-$(SharedFxPlatform)$(ArchiveExtension) -C $(_WorkRoot)"
-      Condition="'$(ArchiveExtension)' == '.tar.gz'"/>
-    <Exec
-      Command="tar -xzf $(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-$(SharedFxPlatform)$(ArchiveExtension) -C $(_WorkRoot)"
-      Condition="'$(ArchiveExtension)' == '.tar.gz'"/>
-    <UnzipArchive
-      File="$(SharedFxIntermediateArchiveFilePrefix)-$(SharedFxPlatform)$(ArchiveExtension)"
-      Destination="$(_WorkRoot)"
-      Condition="'$(ArchiveExtension)' == '.zip'" />
-    <UnzipArchive
-      File="$(_InstallerSourceDir)$(DotnetRuntimeFileNamePrefix)-$(SharedFxPlatform)$(ArchiveExtension)"
-      Destination="$(_WorkRoot)"
-      Condition="'$(ArchiveExtension)' == '.zip'" />
-
-    <ItemGroup>
-      <SharedFxArchiveFiles Include="$(_WorkRoot)**\*" />
-    </ItemGroup>
-
-    <!-- Create Aspnet Runtime archive -->
-    <Exec
-      Command="tar -czf $(_InstallersOutputDir)$(SharedFxInstallerName)-$(PackageVersion)-$(SharedFxPlatform)$(ArchiveExtension) -C $(_WorkRoot) ."
-      Condition="'$(ArchiveExtension)' == '.tar.gz'"/>
-    <ZipArchive
-      File="$(_InstallersOutputDir)$(SharedFxInstallerName)-$(PackageVersion)-$(SharedFxPlatform)$(ArchiveExtension)"
-      SourceFiles="@(SharedFxArchiveFiles)"
-      WorkingDirectory="$(_WorkRoot)"
-      Overwrite="true"
-      Condition="'$(ArchiveExtension)' == '.zip'"/>
-  </Target>
-
-  <Target Name="GenerateCumulativeArchives" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadInstallers">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateCumulativeArchive" Properties="SharedFxPlatform=%(AllSharedFxRIDs.Identity)" />
+      Text="Expected archive missing at $(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz."
+      Condition="!Exists('$(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz')" />
   </Target>
 
   <Target Name="_BuildDockerImage">
@@ -113,7 +49,7 @@
     <!-- Retry added due to fpm/docker race where .w/package_root directory cannot be resolved -->
     <Run
       FileName="docker"
-      Command="run --rm -v $(RepositoryRoot):$(_DockerRootDir) docker-image-$(Image) fpm --verbose -s dir -t rpm -n $(RpmName)-$(RpmIdVersion) -p $(_DockerRootDir)artifacts/installers/$(RpmName)-$(RpmFileVersion)-$(RpmFileSuffix) -v $(RpmPackageVersion) --iteration $(RpmRevision) -a amd64 $(RpmArguments) --rpm-changelog $(_DockerRootDir).w/templates/changelog --rpm-summary &quot;$(RpmMSummary)&quot; --description &quot;$(RpmDescription)&quot; --maintainer &quot;$(RpmMaintainerName) &lt;$(RpmMaintainerEmail)&gt;&quot; --vendor &quot;$(RpmVendor)&quot; --license &quot;$(RpmLicense)&quot; --url &quot;$(RpmHomepage)&quot; $(_DockerRootDir).w/package_root/=&quot;$(RpmInstallRoot)/&quot;"
+      Command="run --rm -v $(RepositoryRoot):$(_DockerRootDir) docker-image-$(Image) fpm --verbose -s dir -t rpm -n $(RpmName)-$(RpmIdVersion) -p $(_DockerRootDir)artifacts/installers/$(RpmName)-$(RpmFileVersion)-$(RpmFileSuffix) -v $(RpmPackageVersion) --iteration $(RpmRevision) -a amd64 $(RpmArguments) --rpm-changelog $(_DockerRootDir).w/$(SharedFxRid)/templates/changelog --rpm-summary &quot;$(RpmMSummary)&quot; --description &quot;$(RpmDescription)&quot; --maintainer &quot;$(RpmMaintainerName) &lt;$(RpmMaintainerEmail)&gt;&quot; --vendor &quot;$(RpmVendor)&quot; --license &quot;$(RpmLicense)&quot; --url &quot;$(RpmHomepage)&quot; $(_DockerRootDir).w/$(SharedFxRid)/package_root/=&quot;$(RpmInstallRoot)/&quot;"
       MaxRetries="5"/>
   </Target>
 

@@ -1,0 +1,18 @@
+<Project>
+  <!--
+    This property instructs the .NET Core SDK to treat this package as the shared framework platform.
+    This affects how the SDK will trim references and publish output, determines how the runtimeconfig
+    files are generated, and may affect how optimizations are preformed by other tools.
+
+    NB: this is _AspNetCore*All*SharedFxIsEnabled, not _AspNetCore*App*SharedFxIsEnabled
+  -->
+  <PropertyGroup Condition=" '$(_AspNetCoreAllSharedFxIsEnabled)' == 'true' ">
+    <MicrosoftNETPlatformLibrary>Microsoft.AspNetCore.All</MicrosoftNETPlatformLibrary>
+  </PropertyGroup>
+
+  <Target Name="EnsureTFMCompatibility" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+    <Error
+      Text="This version of Microsoft.AspNetCore.All is only compatible with the netcoreapp2.2 target framework. Please target netcoreapp2.2 or choose a version of Microsoft.AspNetCore.All compatible with $(TargetFramework)."
+      Condition="'$(TargetFramework)' != 'netcoreapp2.2'"/>
+  </Target>
+</Project>

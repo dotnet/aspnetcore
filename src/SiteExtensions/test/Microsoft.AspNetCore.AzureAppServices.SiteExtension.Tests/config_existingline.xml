@@ -1,0 +1,12 @@
+﻿<?xml version="1.0"?>
+<configuration>
+  <system.webServer>
+    <runtime>
+      <environmentVariables>
+        <add name="DOTNET_ADDITIONAL_DEPS" />
+        <add name="DOTNET_SHARED_STORE" />
+        <add name="ASPNETCORE_HOSTINGSTARTUPASSEMBLIES" />
+      </environmentVariables>
+    </runtime>
+  </system.webServer>
+</configuration>
