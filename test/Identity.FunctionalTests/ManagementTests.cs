@@ -43,7 +43,23 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
             // Act & Assert
-            await UserStories.EnableTwoFactorAuthentication(index);
+            Assert.NotNull(await UserStories.EnableTwoFactorAuthentication(index));
+        }
+
+        [Fact]
+        public async Task CannotEnableTwoFactorAuthenticationWithoutCookieConsent()
+        {
+            // Arrange
+            var client = ServerFactory
+                .CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+
+            // Act & Assert
+            Assert.Null(await UserStories.EnableTwoFactorAuthentication(index, consent: false));
         }
 
         [Fact]
@@ -241,6 +257,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
 
             // Use a new client to simulate a new browser session.
+            await UserStories.AcceptCookiePolicy(newClient);
             var index = await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
             await UserStories.ResetAuthenticator(index);
 

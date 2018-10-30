@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         internal DefaultUIContext WithPasswordLogin() =>
             new DefaultUIContext(this) { PasswordLoginEnabled = true };
 
+        internal DefaultUIContext WithCookieConsent() =>
+            new DefaultUIContext(this) { CookiePolicyAccepted = true };
+
         public string AuthenticatorKey
         {
             get => GetValue<string>(nameof(AuthenticatorKey));
@@ -83,6 +86,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         {
             get => GetValue<bool>(nameof(PasswordLoginEnabled));
             set => SetValue(nameof(PasswordLoginEnabled), value);
+        }
+
+        public bool CookiePolicyAccepted
+        {
+            get => GetValue<bool>(nameof(CookiePolicyAccepted));
+            set => SetValue(nameof(CookiePolicyAccepted), value);
         }
     }
 }
