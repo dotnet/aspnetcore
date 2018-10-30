@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,24 +14,29 @@ namespace CreateDefaultBuilderApp
     {
         static void Main(string[] args)
         {
-            string responseMessage = string.Empty;
+            string responseMessage = null;
 
             WebHost.CreateDefaultBuilder(new[] { "--cliKey", "cliValue" })
-                .ConfigureServices((context, services) =>
-                {
-                    responseMessage = GetResponseMessage(context, services);
-                })
-                .Configure(app =>
-                {
-                    app.Run(context =>
+                .ConfigureServices((context, services) => responseMessage = responseMessage ?? GetResponseMessage(context))
+                .ConfigureKestrel(options => options
+                    .Configure(options.ConfigurationLoader.Configuration)
+                    .Endpoint("HTTP", endpointOptions =>
                     {
-                        return context.Response.WriteAsync(responseMessage);
-                    });
-                })
+                        if (responseMessage == null
+                            && !string.Equals("KestrelEndPointSettingValue", endpointOptions.ConfigSection["KestrelEndPointSettingName"]))
+                        {
+                            responseMessage = "Default Kestrel configuration not read.";
+                        }
+                    }))
+                .Configure(app => app.Run(context =>
+                {
+                    var hostingEnvironment = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                    return context.Response.WriteAsync(responseMessage ?? hostingEnvironment.ApplicationName);
+                }))
                 .Build().Run();
         }
 
-        private static string GetResponseMessage(WebHostBuilderContext context, IServiceCollection services)
+        private static string GetResponseMessage(WebHostBuilderContext context)
         {
             // Verify ContentRootPath set
             var contentRoot = Environment.GetEnvironmentVariable("ASPNETCORE_CONTENTROOT");
@@ -71,7 +75,7 @@ namespace CreateDefaultBuilderApp
             // TODO: Verify AddDebug called
             // TODO: Verify UseIISIntegration called
 
-            return context.HostingEnvironment.ApplicationName;
+            return null;
         }
     }
 }
