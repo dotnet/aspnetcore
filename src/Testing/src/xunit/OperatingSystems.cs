@@ -1,11 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Certificates.Generation
+using System;
+
+namespace Microsoft.AspNetCore.Testing.xunit
 {
-    internal enum CertificatePurpose
+    [Flags]
+    public enum OperatingSystems
     {
-        All,
-        HTTPS
+        Linux = 1,
+        MacOSX = 2,
+        Windows = 4,
     }
 }

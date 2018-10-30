@@ -8,15 +8,13 @@ using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Toolchains.CsProj;
-using BenchmarkDotNet.Toolchains.DotNetCli;
 using BenchmarkDotNet.Validators;
 
 namespace BenchmarkDotNet.Attributes
 {
-    internal class DefaultCoreConfig : ManualConfig
+    internal class DefaultCoreProfileConfig : ManualConfig
     {
-        public DefaultCoreConfig()
+        public DefaultCoreProfileConfig()
         {
             Add(ConsoleLogger.Default);
             Add(MarkdownExporter.GitHub);
@@ -27,13 +25,7 @@ namespace BenchmarkDotNet.Attributes
 
             Add(JitOptimizationsValidator.FailOnError);
 
-            Add(Job.Core
-#if NETCOREAPP2_1
-                .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
-#else
-                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp2.2", null, ".NET Core 2.2")))
-#endif
-                .With(new GcMode { Server = true })
+            Add(Job.InProcess
                 .With(RunStrategy.Throughput));
         }
     }

@@ -14,44 +14,40 @@ namespace Microsoft.Extensions.Internal
         private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
 
-        public static void KillTree(this Process process)
-        {
-            process.KillTree(_defaultTimeout);
-        }
+        public static void KillTree(this Process process) => process.KillTree(_defaultTimeout);
 
         public static void KillTree(this Process process, TimeSpan timeout)
         {
-            string stdout;
+            var pid = process.Id;
             if (_isWindows)
             {
                 RunProcessAndWaitForExit(
                     "taskkill",
-                    $"/T /F /PID {process.Id}",
+                    $"/T /F /PID {pid}",
                     timeout,
-                    out stdout);
+                    out var _);
             }
             else
             {
                 var children = new HashSet<int>();
-                GetAllChildIdsUnix(process.Id, children, timeout);
+                GetAllChildIdsUnix(pid, children, timeout);
                 foreach (var childId in children)
                 {
                     KillProcessUnix(childId, timeout);
                 }
-                KillProcessUnix(process.Id, timeout);
+                KillProcessUnix(pid, timeout);
             }
         }
 
         private static void GetAllChildIdsUnix(int parentId, ISet<int> children, TimeSpan timeout)
         {
-            string stdout;
-            var exitCode = RunProcessAndWaitForExit(
+            RunProcessAndWaitForExit(
                 "pgrep",
                 $"-P {parentId}",
                 timeout,
-                out stdout);
+                out var stdout);
 
-            if (exitCode == 0 && !string.IsNullOrEmpty(stdout))
+            if (!string.IsNullOrEmpty(stdout))
             {
                 using (var reader = new StringReader(stdout))
                 {
@@ -63,8 +59,7 @@ namespace Microsoft.Extensions.Internal
                             return;
                         }
 
-                        int id;
-                        if (int.TryParse(text, out id))
+                        if (int.TryParse(text, out var id))
                         {
                             children.Add(id);
                             // Recursively get the children
@@ -77,22 +72,22 @@ namespace Microsoft.Extensions.Internal
 
         private static void KillProcessUnix(int processId, TimeSpan timeout)
         {
-            string stdout;
             RunProcessAndWaitForExit(
                 "kill",
                 $"-TERM {processId}",
                 timeout,
-                out stdout);
+                out var stdout);
         }
 
-        private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
+        private static void RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
         {
             var startInfo = new ProcessStartInfo
             {
                 FileName = fileName,
                 Arguments = arguments,
                 RedirectStandardOutput = true,
-                UseShellExecute = false
+                RedirectStandardError = true,
+                UseShellExecute = false,
             };
 
             var process = Process.Start(startInfo);
@@ -106,8 +101,6 @@ namespace Microsoft.Extensions.Internal
             {
                 process.Kill();
             }
-
-            return process.ExitCode;
         }
     }
 }

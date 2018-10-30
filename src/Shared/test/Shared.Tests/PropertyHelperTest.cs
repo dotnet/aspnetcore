@@ -153,6 +153,22 @@ namespace Microsoft.Extensions.Internal
             Assert.Equal("Prop5", helper.Name);
         }
 
+#if NETSTANDARD || NETCOREAPP
+        [Fact]
+        public void PropertyHelper_RefStructProperties()
+        {
+            // Arrange
+            var obj = new RefStructProperties();
+
+            // Act + Assert
+            var helper = Assert.Single(PropertyHelper.GetProperties(obj.GetType().GetTypeInfo()));
+            Assert.Equal("Prop5", helper.Name);
+        }
+#elif NET46 || NET461
+#else
+#error Unknown TFM - update the set of TFMs where we test for ref structs
+#endif
+
         [Fact]
         public void PropertyHelper_DoesNotFindSetOnlyProperties()
         {
@@ -718,6 +734,22 @@ namespace Microsoft.Extensions.Internal
             public int Prop5 { get; set; }
         }
 
+#if NETSTANDARD || NETCOREAPP
+        private class RefStructProperties
+        {
+            public Span<bool> Span => throw new NotImplementedException();
+            public MyRefStruct UserDefined => throw new NotImplementedException();
+
+            public int Prop5 { get; set; }
+        }
+
+        private readonly ref struct MyRefStruct
+        {
+        }
+#elif NET46 || NET461
+#else
+#error Unknown TFM - update the set of TFMs where we test for ref structs
+#endif
         private struct MyProperties
         {
             public int IntProp { get; set; }
