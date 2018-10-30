@@ -1,1 +1,0 @@
-dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.Identity.Service
