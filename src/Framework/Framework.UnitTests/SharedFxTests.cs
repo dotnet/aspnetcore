@@ -9,30 +9,29 @@ namespace Microsoft.AspNetCore
 {
     public class SharedFxTests
     {
-        [Theory]
-        [MemberData(nameof(GetSharedFxConfig))]
-        public void ItContainsValidRuntimeConfigFile(SharedFxConfig config)
+        [Fact]
+        public void ItContainsValidRuntimeConfigFile()
         {
-            var runtimeConfigFilePath = Path.Combine(config.MetadataOutput, config.Name + ".runtimeconfig.json");
+            var runtimeConfigFilePath = Path.Combine(GetMetadataOutput(), "Microsoft.AspNetCore.App.runtimeconfig.json");
 
             AssertEx.FileExists(runtimeConfigFilePath);
-            AssertEx.FileDoesNotExists(Path.Combine(config.MetadataOutput, config.Name + ".runtimeconfig.dev.json"));
+            AssertEx.FileDoesNotExists(Path.Combine(GetMetadataOutput(), "Microsoft.AspNetCore.App.runtimeconfig.dev.json"));
 
             var runtimeConfig = JObject.Parse(File.ReadAllText(runtimeConfigFilePath));
 
-            Assert.Equal(config.BaseSharedFxName, (string)runtimeConfig["runtimeOptions"]["framework"]["name"]);
-            Assert.Equal("netcoreapp" + config.Version.Substring(0, 3), (string)runtimeConfig["runtimeOptions"]["tfm"]);
+            Assert.Equal("Microsoft.NETCore.App", (string)runtimeConfig["runtimeOptions"]["framework"]["name"]);
+            Assert.Equal("netcoreapp" + TestData.GetPackageVersion().Substring(0, 3), (string)runtimeConfig["runtimeOptions"]["tfm"]);
 
-            Assert.Equal(config.BaseSharedFxVersion, (string)runtimeConfig["runtimeOptions"]["framework"]["version"]);
+            Assert.Equal(TestData.GetMicrosoftNETCoreAppPackageVersion(), (string)runtimeConfig["runtimeOptions"]["framework"]["version"]);
         }
 
-        [Theory]
-        [MemberData(nameof(GetSharedFxConfig))]
-        public void ItContainsValidDepsJson(SharedFxConfig config)
+        [Fact]
+        public void ItContainsValidDepsJson()
         {
-            var depsFilePath = Path.Combine(config.MetadataOutput, config.Name + ".deps.json");
+            var depsFilePath = Path.Combine(GetMetadataOutput(), "Microsoft.AspNetCore.App.deps.json");
+            var rid = TestData.GetSharedFxRuntimeIdentifier();
 
-            var target = $".NETCoreApp,Version=v{config.Version.Substring(0, 3)}/{config.RuntimeIdentifier}";
+            var target = $".NETCoreApp,Version=v{TestData.GetPackageVersion().Substring(0, 3)}/{rid}";
 
             AssertEx.FileExists(depsFilePath);
 
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore
             Assert.NotNull(depsFile["targets"][target]);
             Assert.NotNull(depsFile["compilationOptions"]);
             Assert.Empty(depsFile["compilationOptions"]);
-            Assert.NotEmpty(depsFile["runtimes"][config.RuntimeIdentifier]);
+            Assert.NotEmpty(depsFile["runtimes"][rid]);
             Assert.All(depsFile["libraries"], item =>
             {
                 var prop = Assert.IsType<JProperty>(item);
@@ -52,50 +51,17 @@ namespace Microsoft.AspNetCore
             });
         }
 
-        [Theory]
-        [MemberData(nameof(GetSharedFxConfig))]
-        public void ItContainsVersionFile(SharedFxConfig config)
+        [Fact]
+        public void ItContainsVersionFile()
         {
-            var versionFile = Path.Combine(config.MetadataOutput, ".version");
+            var versionFile = Path.Combine(GetMetadataOutput(), ".version");
             AssertEx.FileExists(versionFile);
             var lines = File.ReadAllLines(versionFile);
             Assert.Equal(2, lines.Length);
             Assert.Equal(TestData.GetRepositoryCommit(), lines[0]);
-            Assert.Equal(config.Version, lines[1]);
+            Assert.Equal(TestData.GetPackageVersion(), lines[1]);
         }
 
-        public static TheoryData<SharedFxConfig> GetSharedFxConfig()
-            => new TheoryData<SharedFxConfig>
-            {
-                new SharedFxConfig
-                {
-                    Name = "Microsoft.AspNetCore.All",
-                    Version = TestData.GetPackageVersion(),
-                    // Intentionally assert aspnetcore frameworks align versions with each other and netcore
-                    BaseSharedFxVersion = TestData.GetPackageVersion(),
-                    BaseSharedFxName = "Microsoft.AspNetCore.App",
-                    RuntimeIdentifier = TestData.GetSharedFxRuntimeIdentifier(),
-                    MetadataOutput = TestData.GetTestDataValue("SharedFxMetadataOutput:Microsoft.AspNetCore.All")
-                },
-                new SharedFxConfig
-                {
-                    Name = "Microsoft.AspNetCore.App",
-                    Version = TestData.GetPackageVersion(),
-                    BaseSharedFxName = "Microsoft.NETCore.App",
-                    BaseSharedFxVersion = TestData.GetMicrosoftNETCoreAppPackageVersion(),
-                    RuntimeIdentifier = TestData.GetSharedFxRuntimeIdentifier(),
-                    MetadataOutput = TestData.GetTestDataValue("SharedFxMetadataOutput:Microsoft.AspNetCore.App")
-                },
-            };
-
-        public class SharedFxConfig
-        {
-            public string Name { get; set; }
-            public string Version { get; set; }
-            public string BaseSharedFxName { get; set; }
-            public string BaseSharedFxVersion { get; set; }
-            public string RuntimeIdentifier { get; set; }
-            public string MetadataOutput { get; set; }
-        }
+        private string GetMetadataOutput() => TestData.GetTestDataValue("SharedFxMetadataOutput:Microsoft.AspNetCore.App");
     }
 }
