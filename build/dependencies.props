@@ -33,7 +33,6 @@
     <MicrosoftAspNetCoreTestHostPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
-    <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0-preview3-35425</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.2.0-preview3-35425</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
     <MicrosoftEntityFrameworkCoreSqlitePackageVersion>2.2.0-preview3-35425</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
@@ -57,8 +56,6 @@
     <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
     <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
-    <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
-    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview3-27001-02</MicrosoftNETCoreApp22PackageVersion>
