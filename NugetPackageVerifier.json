@@ -1,0 +1,23 @@
+{
+    // These packages contain dozens of binaries not produced by the ASP.NET Core team.
+    // The binaries which we do produce have been checked by other runs of NGPV earlier in the build.
+    "runtimePackages": {
+        "rules": [
+            "PackageOwnershipRule"
+        ],
+        "packages": {
+            "runtime.win-x64.Microsoft.AspNetCore.App": {},
+            "runtime.win-x64.Microsoft.AspNetCore.All": {},
+            "runtime.win-x86.Microsoft.AspNetCore.App": {},
+            "runtime.win-x86.Microsoft.AspNetCore.All": {},
+            "AspNetCoreRuntime.2.2.x86": {},
+            "AspNetCoreRuntime.2.2.x64": {}
+        }
+    },
+    "default": { // Rules to run for packages not listed in any other set.
+        "rules": [
+            "AssemblyIsBuiltInReleaseConfigurationRule",
+            "PackageOwnershipRule"
+        ]
+    }
+}

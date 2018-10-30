@@ -1,7 +1,0 @@
-{
-    "default": {
-        "rules": [
-            "SignRequestListsAllSignableFiles"
-        ]
-    }
-}
