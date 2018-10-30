@@ -55,17 +55,19 @@ namespace Microsoft.AspNetCore.Http.Extensions
             Assert.Equal("http://my.xn--host-cpd:80/un%3Fescaped/base/un%3Fescaped?name=val%23ue", request.GetEncodedUrl());
         }
 
-        [Fact]
-        public void GetDisplayUrlFromRequest()
+        [Theory]
+        [InlineData("/un?escaped/base")]
+        [InlineData(null)]
+        public void GetDisplayUrlFromRequest(string pathBase)
         {
             var request = new DefaultHttpContext().Request;
             request.Scheme = "http";
             request.Host = new HostString("my.HoΨst:80");
-            request.PathBase = new PathString("/un?escaped/base");
+            request.PathBase = new PathString(pathBase);
             request.Path = new PathString("/un?escaped");
             request.QueryString = new QueryString("?name=val%23ue");
 
-            Assert.Equal("http://my.hoψst:80/un?escaped/base/un?escaped?name=val%23ue", request.GetDisplayUrl());
+            Assert.Equal("http://my.hoψst:80" + pathBase + "/un?escaped?name=val%23ue", request.GetDisplayUrl());
         }
 
         [Theory]
