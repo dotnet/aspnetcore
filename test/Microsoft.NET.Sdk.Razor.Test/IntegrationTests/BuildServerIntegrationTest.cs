@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Tools;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.CodeAnalysis;
 using Moq;
@@ -141,28 +142,62 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // it reaches server creation part.
         }
 
-        // Skipping on linux/mac because of https://github.com/aspnet/Razor/issues/2507.
+        // Skipping on MacOS because of https://github.com/dotnet/corefx/issues/33141.
+        // Skipping on Linux because of https://github.com/aspnet/Razor/issues/2525.
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
         public async Task ManualServerShutdown_NoPipeName_ShutsDownServer()
         {
-            var toolAssembly = typeof(Application).Assembly.Location;
-            var result = await DotnetMSBuild(
-                "Build",
-                $"/p:_RazorForceBuildServer=true /p:_RazorToolAssembly={toolAssembly}",
-                suppressBuildServer: true); // We don't want to specify a pipe name
+            // We are trying to test whether the correct pipe name is generated (from the location of rzc tool)
+            // when we don't explicitly specify a pipe name.
 
-            Assert.BuildPassed(result);
+            // Publish rzc tool to a temporary path. This is the location based on which the pipe name is generated.
+            var solutionRoot = TestPathUtilities.GetSolutionRootDirectory("Razor");
+            var toolAssemblyDirectory = Path.Combine(solutionRoot, "src", "Microsoft.AspNetCore.Razor.Tools");
+            var toolAssemblyPath = Path.Combine(toolAssemblyDirectory, "Microsoft.AspNetCore.Razor.Tools.csproj");
+            var projectDirectory = new TestProjectDirectory(solutionRoot, toolAssemblyDirectory, toolAssemblyPath);
+            var publishDir = Path.Combine(Path.GetTempPath(), "Razor", Path.GetRandomFileName(), "RzcPublish");
+            var publishResult = await MSBuildProcessManager.RunProcessAsync(projectDirectory, $"/t:Publish /p:PublishDir=\"{publishDir}\"");
 
-            // Shutdown the server
-            var output = new StringWriter();
-            var error = new StringWriter();
-            var application = new Application(CancellationToken.None, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>(), output, error);
-            var exitCode = application.Execute("shutdown", "-w");
+            try
+            {
+                // Make sure publish succeeded.
+                Assert.BuildPassed(publishResult);
 
-            Assert.Equal(0, exitCode);
-            Assert.Contains("shut down completed", output.ToString());
+                // Run the build using the published tool
+                var toolAssembly = Path.Combine(publishDir, "rzc.dll");
+                var result = await DotnetMSBuild(
+                    "Build",
+                    $"/p:_RazorForceBuildServer=true /p:_RazorToolAssembly={toolAssembly}",
+                    suppressBuildServer: true); // We don't want to specify a pipe name
+
+                Assert.BuildPassed(result);
+
+                // Manually shutdown the server
+                var processStartInfo = new ProcessStartInfo()
+                {
+                    WorkingDirectory = publishDir,
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    FileName = "dotnet",
+                    Arguments = $"{toolAssembly} shutdown -w"
+                };
+
+                var logFilePath = Path.Combine(publishDir, "out.log");
+                processStartInfo.Environment.Add("RAZORBUILDSERVER_LOG", logFilePath);
+                var shutdownResult = await MSBuildProcessManager.RunProcessCoreAsync(processStartInfo);
+
+                Assert.Equal(0, shutdownResult.ExitCode);
+                var output = await File.ReadAllTextAsync(logFilePath);
+                Assert.Contains("shut down completed", output);
+            }
+            finally
+            {
+                // Finally delete the temporary publish directory
+                ProjectDirectory.CleanupDirectory(publishDir);
+            }
         }
 
         [Fact]
@@ -191,6 +226,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 // Shutdown the server
                 fixture.Dispose();
+            }
+        }
+
+        private class TestProjectDirectory : ProjectDirectory
+        {
+            public TestProjectDirectory(string solutionPath, string directoryPath, string projectFilePath)
+                : base(solutionPath, directoryPath, projectFilePath)
+            {
             }
         }
     }

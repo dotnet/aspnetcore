@@ -11,14 +11,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal static class MSBuildProcessManager
     {
-        public static Task<MSBuildResult> RunProcessAsync(
+        public static async Task<MSBuildResult> RunProcessAsync(
             ProjectDirectory project,
             string arguments,
             TimeSpan? timeout = null,
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
-            timeout = timeout ?? TimeSpan.FromSeconds(120);
-
             var processStartInfo = new ProcessStartInfo()
             {
                 WorkingDirectory = project.DirectoryPath,
@@ -44,6 +42,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 processStartInfo.Arguments = $"msbuild {arguments}";
             }
 
+            var processResult = await RunProcessCoreAsync(processStartInfo, timeout);
+
+            return new MSBuildResult(project, processResult.FileName, processResult.Arguments, processResult.ExitCode, processResult.Output);
+        }
+
+        internal static Task<ProcessResult> RunProcessCoreAsync(
+            ProcessStartInfo processStartInfo,
+            TimeSpan? timeout = null)
+        {
+            timeout = timeout ?? TimeSpan.FromSeconds(120);
+
             var process = new Process()
             {
                 StartInfo = processStartInfo,
@@ -57,10 +66,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             process.OutputDataReceived += Process_OutputDataReceived;
 
             process.Start();
-            process.BeginErrorReadLine();
             process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
-            var timeoutTask = Task.Delay(timeout.Value).ContinueWith<MSBuildResult>((t) =>
+            var timeoutTask = Task.Delay(timeout.Value).ContinueWith<ProcessResult>((t) =>
             {
                 // Don't timeout during debug sessions
                 while (Debugger.IsAttached)
@@ -98,11 +107,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     outputString = output.ToString();
                 }
 
-                var result = new MSBuildResult(project, process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputString);
+                var result = new ProcessResult(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, outputString);
                 return result;
             });
 
-            return Task.WhenAny<MSBuildResult>(waitTask, timeoutTask).Unwrap();
+            return Task.WhenAny<ProcessResult>(waitTask, timeoutTask).Unwrap();
 
             void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
             {
@@ -119,6 +128,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     output.AppendLine(e.Data);
                 }
             }
+        }
+
+        internal class ProcessResult
+        {
+            public ProcessResult(string fileName, string arguments, int exitCode, string output)
+            {
+                FileName = fileName;
+                Arguments = arguments;
+                ExitCode = exitCode;
+                Output = output;
+            }
+
+            public string Arguments { get; }
+
+            public string FileName { get; }
+
+            public int ExitCode { get; }
+
+            public string Output { get; }
         }
     }
 }
