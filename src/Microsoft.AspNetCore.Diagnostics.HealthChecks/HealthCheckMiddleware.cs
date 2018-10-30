@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             httpContext.Response.StatusCode = statusCode;
 
-            if (!_healthCheckOptions.SuppressCacheHeaders)
+            if (!_healthCheckOptions.AllowCachingResponses)
             {
                 // Similar to: https://github.com/aspnet/Security/blob/7b6c9cf0eeb149f2142dedd55a17430e7831ea99/src/Microsoft.AspNetCore.Authentication.Cookies/CookieAuthenticationHandler.cs#L377-L379
                 var headers = httpContext.Response.Headers;
