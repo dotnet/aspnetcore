@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;net461</TargetFrameworks>
     <UserSecretsId>aspnet-StaticFilesAuth-AFE2BD9D-1575-4C3E-BE32-3F15C5BC9947</UserSecretsId>
   </PropertyGroup>
 
