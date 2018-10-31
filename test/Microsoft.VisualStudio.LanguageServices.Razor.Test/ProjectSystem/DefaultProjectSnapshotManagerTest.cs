@@ -17,6 +17,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public DefaultProjectSnapshotManagerTest()
         {
+            // Force VB and C# to Load
+            GC.KeepAlive(typeof(Microsoft.CodeAnalysis.CSharp.SyntaxFactory));
+            GC.KeepAlive(typeof(Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory));
+
             TagHelperResolver = new TestTagHelperResolver();
 
             Documents = new HostDocument[]
