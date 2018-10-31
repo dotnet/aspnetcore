@@ -34,7 +34,7 @@
     </MSBuild>
 
     <ItemGroup>
-      <!-- If repos were not build, only use this info to collect the mapping of FileName -> Certificate. Otherwise, include .nupkg and .zips in signing. -->
+      <!-- If repos were not built, only use this info to collect the mapping of FileName -> Certificate. Otherwise, include .nupkg and .zips in signing. -->
       <_FilesToSign Include="@(_RepoFileSignInfo)" Condition="'%(_RepoFileSignInfo.IsFileToSign)' == 'true' AND ('$(_ReposWereBuilt)' == 'true' OR '%(_RepoFileSignInfo.Container)' != '' ) " />
       <FilesToSign Include="@(_FilesToSign)" />
 

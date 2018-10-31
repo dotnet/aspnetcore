@@ -14,6 +14,11 @@
     <FilesToSign Include="StackExchange.Redis.StrongName.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
     <FilesToSign Include="System.Interactive.Async.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
 
+    <!-- These files came from the aspnet/Extensions build and should already be signed. -->
+    <FilesToExcludeFromSigning Include="Microsoft.Extensions.DiagnosticAdapter.dll" />
+    <FilesToExcludeFromSigning Include="Microsoft.Extensions.ObjectPool.dll" />
+    <FilesToExcludeFromSigning Include="Microsoft.Extensions.Primitives.dll" />
+
     <!-- These files should already be signed already by a different leg of the build. They have to be listed again here because we recreate a redistributable which binaries built in other repos. -->
     <FilesToExcludeFromSigning Include="libuv.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.AI.DependencyCollector.dll" />
@@ -26,8 +31,6 @@
     <FilesToExcludeFromSigning Include="Microsoft.Data.Edm.resources.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.Data.OData.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.Data.OData.resources.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Extensions.DiagnosticAdapter.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Extensions.ObjectPool.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Clients.ActiveDirectory.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.JsonWebTokens.dll" />
@@ -271,4 +274,5 @@
     <FilesToExcludeFromSigning Include="ucrtbase.dll" />
     <FilesToExcludeFromSigning Include="WindowsBase.dll" />
   </ItemGroup>
+
 </Project>
