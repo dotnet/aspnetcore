@@ -93,15 +93,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var http2Limits = httpLimits.Http2;
 
             _context = context;
-            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.ConnectionContext, this, _outputFlowControl, context.TimeoutControl, context.ConnectionId, context.ServiceContext.Log);
+
+            _frameWriter = new Http2FrameWriter(
+                context.Transport.Output,
+                context.ConnectionContext,
+                this,
+                _outputFlowControl,
+                context.TimeoutControl,
+                httpLimits.MinResponseDataRate,
+                context.ConnectionId,
+                context.ServiceContext.Log);
+
+            _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
+
+            var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
+            _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
+
             _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
             _serverSettings.MaxFrameSize = (uint)http2Limits.MaxFrameSize;
             _serverSettings.HeaderTableSize = (uint)http2Limits.HeaderTableSize;
-            _hpackDecoder = new HPackDecoder(http2Limits.HeaderTableSize, http2Limits.MaxRequestHeaderFieldSize);
             _serverSettings.MaxHeaderListSize = (uint)httpLimits.MaxRequestHeadersTotalSize;
             _serverSettings.InitialWindowSize = (uint)http2Limits.InitialStreamWindowSize;
-            var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
-            _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
         }
 
         public string ConnectionId => _context.ConnectionId;

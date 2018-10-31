@@ -284,7 +284,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Tick(systemClock.UtcNow);
 
             // Should complete within 4 seconds, but the timeout is adjusted by adding Heartbeat.Interval
-            _timeoutControl.StartTimingWrite(minRate, 400);
+            _timeoutControl.BytesWrittenToBuffer(minRate, 400);
+            _timeoutControl.StartTimingWrite();
 
             // Tick just past 4s plus Heartbeat.Interval
             systemClock.UtcNow += TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1);
@@ -304,7 +305,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Tick(startTime);
 
             // Should complete within 1 second, but the timeout is adjusted by adding Heartbeat.Interval
-            _timeoutControl.StartTimingWrite(minRate, 100);
+            _timeoutControl.BytesWrittenToBuffer(minRate, 100);
+            _timeoutControl.StartTimingWrite();
 
             // Tick just past 1s plus Heartbeat.Interval
             systemClock.UtcNow += TimeSpan.FromSeconds(1) + Heartbeat.Interval + TimeSpan.FromTicks(1);
@@ -331,10 +333,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Tick(systemClock.UtcNow);
 
             // Should complete within 5 seconds, but the timeout is adjusted by adding Heartbeat.Interval
-            _timeoutControl.StartTimingWrite(minRate, 500);
+            _timeoutControl.BytesWrittenToBuffer(minRate, 500);
+            _timeoutControl.StartTimingWrite();
 
             // Start a concurrent write after 3 seconds, which should complete within 3 seconds (adjusted by Heartbeat.Interval)
-            _timeoutControl.StartTimingWrite(minRate, 300);
+            _timeoutControl.BytesWrittenToBuffer(minRate, 300);
+            _timeoutControl.StartTimingWrite();
 
             // Tick just past 5s plus Heartbeat.Interval, when the first write should have completed
             systemClock.UtcNow += TimeSpan.FromSeconds(5) + Heartbeat.Interval + TimeSpan.FromTicks(1);
@@ -368,12 +372,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // 5 consecutive 100 byte writes.
             for (var i = 0; i < numWrites - 1; i++)
             {
-                _timeoutControl.StartTimingWrite(minRate, writeSize);
-                _timeoutControl.StopTimingWrite();
+                _timeoutControl.BytesWrittenToBuffer(minRate, writeSize);
             }
 
             // Stall the last write.
-            _timeoutControl.StartTimingWrite(minRate, writeSize);
+            _timeoutControl.BytesWrittenToBuffer(minRate, writeSize);
+            _timeoutControl.StartTimingWrite();
 
             // Move the clock forward Heartbeat.Interval + MinDataRate.GracePeriod + 4 seconds.
             // The grace period should only be added for the first write. The subsequent 4 100 byte writes should add 1 second each to the timeout given the 100 byte/s min rate.

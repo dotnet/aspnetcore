@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private int _concurrentAwaitingReads;
 
         private readonly object _writeTimingLock = new object();
-        private int _cuncurrentAwaitingWrites;
+        private int _concurrentAwaitingWrites;
         private long _writeTimingTimeoutTimestamp;
 
         public TimeoutControl(ITimeoutHandler timeoutHandler)
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             lock (_writeTimingLock)
             {
-                if (_cuncurrentAwaitingWrites > 0 && timestamp > _writeTimingTimeoutTimestamp && !Debugger.IsAttached)
+                if (_concurrentAwaitingWrites > 0 && timestamp > _writeTimingTimeoutTimestamp && !Debugger.IsAttached)
                 {
                     _timeoutHandler.OnTimeout(TimeoutReason.WriteDataRate);
                 }
@@ -230,13 +230,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public void StartTimingWrite(MinDataRate minRate, long size)
+        public void StartTimingWrite()
+        {
+            lock (_writeTimingLock)
+            {
+                _concurrentAwaitingWrites++;
+            }
+        }
+
+        public void StopTimingWrite()
+        {
+            lock (_writeTimingLock)
+            {
+                _concurrentAwaitingWrites--;
+            }
+        }
+
+        public void BytesWrittenToBuffer(MinDataRate minRate, long count)
         {
             lock (_writeTimingLock)
             {
                 // Add Heartbeat.Interval since this can be called right before the next heartbeat.
                 var currentTimeUpperBound = Interlocked.Read(ref _lastTimestamp) + Heartbeat.Interval.Ticks;
-                var ticksToCompleteWriteAtMinRate = TimeSpan.FromSeconds(size / minRate.BytesPerSecond).Ticks;
+                var ticksToCompleteWriteAtMinRate = TimeSpan.FromSeconds(count / minRate.BytesPerSecond).Ticks;
 
                 // If ticksToCompleteWriteAtMinRate is less than the configured grace period,
                 // allow that write to take up to the grace period to complete. Only add the grace period
@@ -255,15 +271,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 var accumulatedWriteTimeoutTimestamp = _writeTimingTimeoutTimestamp + ticksToCompleteWriteAtMinRate;
 
                 _writeTimingTimeoutTimestamp = Math.Max(singleWriteTimeoutTimestamp, accumulatedWriteTimeoutTimestamp);
-                _cuncurrentAwaitingWrites++;
-            }
-        }
-
-        public void StopTimingWrite()
-        {
-            lock (_writeTimingLock)
-            {
-                _cuncurrentAwaitingWrites--;
             }
         }
 

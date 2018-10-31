@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -18,16 +19,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     {
         private readonly PipeWriter _writer;
         private readonly ITimeoutControl _timeoutControl;
-        private readonly object _flushLock = new object();
+        private readonly IKestrelTrace _log;
 
+        private readonly object _flushLock = new object();
         private Task _lastFlushTask = Task.CompletedTask;
 
         public TimingPipeFlusher(
             PipeWriter writer,
-            ITimeoutControl timeoutControl)
+            ITimeoutControl timeoutControl,
+            IKestrelTrace log)
         {
             _writer = writer;
             _timeoutControl = timeoutControl;
+            _log = log;
         }
 
         public Task FlushAsync()
@@ -48,6 +52,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public Task FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             var flushValueTask = _writer.FlushAsync(cancellationToken);
+
+            if (minRate != null)
+            {
+                _timeoutControl.BytesWrittenToBuffer(minRate, count);
+            }
 
             if (flushValueTask.IsCompletedSuccessfully)
             {
@@ -74,20 +83,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             if (minRate != null)
             {
-                _timeoutControl.StartTimingWrite(minRate, count);
+                _timeoutControl.StartTimingWrite();
             }
 
             try
             {
                 await _lastFlushTask;
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException ex) when (outputAborter != null)
             {
                 outputAborter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionOrStreamAbortedByCancellationToken, ex));
             }
-            catch
+            catch (Exception ex)
             {
                 // A canceled token is the only reason flush should ever throw.
+                _log.LogError(0, ex, $"Unexpected exception in {nameof(TimingPipeFlusher)}.{nameof(TimeFlushAsync)}.");
             }
 
             if (minRate != null)
