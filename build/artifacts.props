@@ -142,7 +142,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="ship" />
@@ -185,7 +184,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Memory" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Caching.Redis" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.SqlServer" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Configuration.Abstractions" Category="ship" />
