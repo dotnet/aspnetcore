@@ -349,8 +349,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets a value indicating whether <see cref="ModelType"/> is a complex type.
         /// </summary>
         /// <remarks>
-        /// A complex type is defined as a <see cref="Type"/> which has a
-        /// <see cref="TypeConverter"/> that can convert from <see cref="string"/>.
+        /// A complex type is defined as a <see cref="Type"/> without a <see cref="TypeConverter"/> that can convert
+        /// from <see cref="string"/>. Most POCO and <see cref="IEnumerable"/> types are therefore complex. Most, if
+        /// not all, BCL value types are simple types.
         /// </remarks>
         public bool IsComplexType { get; private set; }
 

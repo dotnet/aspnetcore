@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
@@ -13,13 +11,18 @@ using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
-    /// A <see cref="IControllerModelConvention"/> that
-    /// <list type="bullet">
-    /// <item>infers binding sources for parameters</item>
-    /// <item><see cref="BindingInfo.BinderModelName"/> for bound properties and parameters.</item>
-    /// </list>
+    /// An <see cref="IActionModelConvention"/> that infers <see cref="BindingInfo.BindingSource"/> for parameters.
     /// </summary>
-    public class InferParameterBindingInfoConvention : IControllerModelConvention
+    /// <remarks>
+    /// The goal of this covention is to make intuitive and easy to document <see cref="BindingSource"/> inferences. The rules are:
+    /// <list type="number">
+    /// <item>A previously specified <see cref="BindingInfo.BindingSource" /> is never overwritten.</item>
+    /// <item>A complex type parameter (<see cref="ModelMetadata.IsComplexType"/>) is assigned <see cref="BindingSource.Body"/>.</item>
+    /// <item>Parameter with a name that appears as a route value in ANY route template is assigned <see cref="BindingSource.Path"/>.</item>
+    /// <item>All other parameters are <see cref="BindingSource.Query"/>.</item>
+    /// </list>
+    /// </remarks>
+    public class InferParameterBindingInfoConvention : IActionModelConvention
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
 
@@ -29,41 +32,27 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             _modelMetadataProvider = modelMetadataProvider ?? throw new ArgumentNullException(nameof(modelMetadataProvider));
         }
 
-        /// <summary>
-        /// Gets or sets a value that determines if model binding sources are inferred for action parameters on controllers is suppressed.
-        /// </summary>
-        public bool SuppressInferBindingSourcesForParameters { get; set; }
+        internal bool AllowInferringBindingSourceForCollectionTypesAsFromQuery { get; set; }
 
-        protected virtual bool ShouldApply(ControllerModel controller) => true;
+        protected virtual bool ShouldApply(ActionModel action) => true;
 
-        public void Apply(ControllerModel controller)
+        public void Apply(ActionModel action)
         {
-            if (controller == null)
+            if (action == null)
             {
-                throw new ArgumentNullException(nameof(controller));
+                throw new ArgumentNullException(nameof(action));
             }
 
-            if (!ShouldApply(controller))
+            if (!ShouldApply(action))
             {
                 return;
             }
 
-            InferBoundPropertyModelPrefixes(controller);
-
-            foreach (var action in controller.Actions)
-            {
-                InferParameterBindingSources(action);
-                InferParameterModelPrefixes(action);
-            }
+            InferParameterBindingSources(action);
         }
 
         internal void InferParameterBindingSources(ActionModel action)
         {
-            if (SuppressInferBindingSourcesForParameters)
-            {
-                return;
-            }
-
             for (var i = 0; i < action.Parameters.Count; i++)
             {
                 var parameter = action.Parameters[i];
@@ -95,56 +84,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         // Internal for unit testing.
         internal BindingSource InferBindingSourceForParameter(ParameterModel parameter)
         {
+            if (IsComplexTypeParameter(parameter))
+            {
+                return BindingSource.Body;
+            }
+
             if (ParameterExistsInAnyRoute(parameter.Action, parameter.ParameterName))
             {
                 return BindingSource.Path;
             }
 
-            var bindingSource = IsComplexTypeParameter(parameter) ?
-                BindingSource.Body :
-                BindingSource.Query;
-
-            return bindingSource;
-        }
-
-        // For any complex types that are bound from value providers, set the prefix
-        // to the empty prefix by default. This makes binding much more predictable
-        // and describable via ApiExplorer
-        internal void InferBoundPropertyModelPrefixes(ControllerModel controllerModel)
-        {
-            foreach (var property in controllerModel.ControllerProperties)
-            {
-                if (property.BindingInfo != null &&
-                    property.BindingInfo.BinderModelName == null &&
-                    property.BindingInfo.BindingSource != null &&
-                    !property.BindingInfo.BindingSource.IsGreedy &&
-                    !IsFormFile(property.ParameterType))
-                {
-                    var metadata = _modelMetadataProvider.GetMetadataForProperty(
-                        controllerModel.ControllerType,
-                        property.PropertyInfo.Name);
-                    if (metadata.IsComplexType && !metadata.IsCollectionType)
-                    {
-                        property.BindingInfo.BinderModelName = string.Empty;
-                    }
-                }
-            }
-        }
-
-        internal void InferParameterModelPrefixes(ActionModel action)
-        {
-            foreach (var parameter in action.Parameters)
-            {
-                var bindingInfo = parameter.BindingInfo;
-                if (bindingInfo?.BindingSource != null &&
-                    bindingInfo.BinderModelName == null &&
-                    !bindingInfo.BindingSource.IsGreedy &&
-                    !IsFormFile(parameter.ParameterType) &&
-                    IsComplexTypeParameter(parameter))
-                {
-                    parameter.BindingInfo.BinderModelName = string.Empty;
-                }
-            }
+            return BindingSource.Query;
         }
 
         private bool ParameterExistsInAnyRoute(ActionModel action, string parameterName)
@@ -171,13 +121,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // No need for information from attributes on the parameter. Just use its type.
             var metadata = _modelMetadataProvider
                 .GetMetadataForType(parameter.ParameterInfo.ParameterType);
-            return metadata.IsComplexType && !metadata.IsCollectionType;
-        }
 
-        private static bool IsFormFile(Type parameterType)
-        {
-            return typeof(IFormFile).IsAssignableFrom(parameterType) ||
-                typeof(IEnumerable<IFormFile>).IsAssignableFrom(parameterType);
+            if (AllowInferringBindingSourceForCollectionTypesAsFromQuery && metadata.IsCollectionType)
+            {
+                return false;
+            }
+
+            return metadata.IsComplexType;
         }
     }
 }

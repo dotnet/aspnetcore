@@ -48,14 +48,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var defaultErrorTypeAttribute = new ProducesErrorResponseTypeAttribute(defaultErrorType);
             ActionModelConventions.Add(new ApiConventionApplicationModelConvention(defaultErrorTypeAttribute));
 
-            var inferParameterBindingInfoConvention = new InferParameterBindingInfoConvention(modelMetadataProvider)
+            if (!options.SuppressInferBindingSourcesForParameters)
             {
-                SuppressInferBindingSourcesForParameters = options.SuppressInferBindingSourcesForParameters
-            };
-            ControllerModelConventions = new List<IControllerModelConvention>
-            {
-                inferParameterBindingInfoConvention,
-            };
+                var convention = new InferParameterBindingInfoConvention(modelMetadataProvider)
+                {
+                    AllowInferringBindingSourceForCollectionTypesAsFromQuery = options.AllowInferringBindingSourceForCollectionTypesAsFromQuery,
+                };
+
+                ActionModelConventions.Add(convention);
+            }
         }
 
         /// <remarks>
@@ -65,8 +66,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public int Order => -1000 + 100;
 
         public List<IActionModelConvention> ActionModelConventions { get; }
-
-        public List<IControllerModelConvention> ControllerModelConventions { get; }
 
         public void OnProvidersExecuted(ApplicationModelProviderContext context)
         {
@@ -90,11 +89,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     {
                         convention.Apply(action);
                     }
-                }
-
-                foreach (var convention in ControllerModelConventions)
-                {
-                    convention.Apply(controller);
                 }
             }
         }

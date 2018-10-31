@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     dictionary[nameof(ApiBehaviorOptions.SuppressMapClientErrors)] = true;
                     dictionary[nameof(ApiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses)] = true;
+                    dictionary[nameof(ApiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery)] = true;
                 }
 
                 return dictionary;

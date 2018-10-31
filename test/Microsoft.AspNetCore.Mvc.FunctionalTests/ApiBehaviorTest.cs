@@ -227,9 +227,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             var result = await response.Content.ReadAsAsync<Contact>();
-            Assert.Equal(0, result.ContactId);
-            Assert.Null(result.Name);
-            Assert.Null(result.Email);
+            Assert.Equal(id, result.ContactId);
+            Assert.Equal(name, result.Name);
+            Assert.Equal(email, result.Email);
         }
 
         [Fact]

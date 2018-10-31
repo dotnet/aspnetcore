@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.False(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
+            Assert.True(apiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery);
         }
 
         [Fact]
@@ -95,6 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.False(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
+            Assert.True(apiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery);
         }
 
         [Fact]
@@ -133,6 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.True(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
+            Assert.False(apiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery);
         }
 
         [Fact]
@@ -171,6 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.True(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
+            Assert.False(apiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery);
         }
 
         // This just does the minimum needed to be able to resolve these options.
