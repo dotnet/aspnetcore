@@ -34,6 +34,7 @@
       Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration)" />
 
     <PropertyGroup>
+      <_ReposWereBuilt>true</_ReposWereBuilt>
       <_NoBuildRepos>true</_NoBuildRepos>
     </PropertyGroup>
   </Target>
@@ -79,7 +80,8 @@
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:SignType=$(SignType)</RepositoryBuildArguments>
+      <!-- Unset 'SignType' because we collect all outputs from repo builds and sign them at the end. -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:SignType=</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>

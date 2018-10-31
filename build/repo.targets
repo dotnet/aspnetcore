@@ -4,6 +4,7 @@
   <Import Project="AzureIntegration.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="SharedFxInstaller.targets" />
+  <Import Project="CodeSign.targets" />
   <Import Project="Publish.targets" />
   <Import Project="buildorder.props" />
 
@@ -16,7 +17,7 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories;BuildSharedFx</CompileDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CheckExpectedPackagesExist</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CheckExpectedPackagesExist;CodeSign</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);_TestRepositories</TestDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
@@ -35,11 +36,17 @@
       <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp20PackageVersion=$(MicrosoftNETCoreApp20PackageVersion);</DesignTimeBuildProps>
     </PropertyGroup>
 
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
+    <ItemGroup>
+      <_RepositoryProject Include="$(MSBuildProjectFullPath)" Condition="'%(Repository.Identity)' != ''">
+        <AdditionalProperties>RepositoryRoot=%(Repository.RootPath)</AdditionalProperties>
+        <Build>%(Repository.Build)</Build>
+      </_RepositoryProject>
+    </ItemGroup>
+
+    <MSBuild Projects="@(_RepositoryProject)"
              Targets="GetArtifactInfo"
-             Properties="$(DesignTimeBuildProps);RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
-             ContinueOnError="WarnAndContinue"
-             Condition="'%(Repository.Identity)' != ''">
+             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true;"
+             BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
@@ -47,17 +54,18 @@
              Targets="GetArtifactInfo"
              Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
              SkipNonexistentTargets="true"
-             Condition="'@(ProjectToBuild)' != ''">
+             BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
+    <MSBuild Projects="@(_RepositoryProject)"
              Targets="ResolveSolutions"
-             Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue"
-             Condition="'%(Repository.Identity)' != ''">
-      <Output TaskParameter="TargetOutputs" ItemName="Solution" Condition="'%(Repository.Build)' == 'true'" />
-      <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" Condition="'%(Repository.Build)' != 'true'" />
+             BuildInParallel="true"
+             Condition="@(_RepositoryProject->Count()) != 0">
+      <Output TaskParameter="TargetOutputs" ItemName="Solution" Condition="'%(_RepositoryProject.Build)' == 'true'" />
+      <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" Condition="'%(_RepositoryProject.Build)' != 'true'" />
     </MSBuild>
 
     <!--
