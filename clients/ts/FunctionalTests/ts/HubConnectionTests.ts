@@ -8,6 +8,7 @@ import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, H
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_URL } from "./Common";
+import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
 
 const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
@@ -562,6 +563,26 @@ describe("hubConnection", () => {
                     });
                 });
             }
+
+            it("preserves cookies between requests", async (done) => {
+                const hubConnection = getConnectionBuilder(transportType).build();
+                await hubConnection.start();
+                const cookieValue = await hubConnection.invoke<string>("GetCookie", "testCookie");
+                const cookieValue2 = await hubConnection.invoke<string>("GetCookie", "testCookie2");
+                expect(cookieValue).toEqual("testValue");
+                expect(cookieValue2).toEqual("testValue2");
+                await hubConnection.stop();
+                done();
+            });
+
+            it("expired cookies are not preserved", async (done) => {
+                const hubConnection = getConnectionBuilder(transportType).build();
+                await hubConnection.start();
+                const cookieValue = await hubConnection.invoke<string>("GetCookie", "expiredCookie");
+                expect(cookieValue).toBeNull();
+                await hubConnection.stop();
+                done();
+            });
         });
     });
 

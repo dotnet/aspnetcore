@@ -103,6 +103,17 @@ namespace FunctionalTests
                 routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
             });
 
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.Value.Contains("/negotiate"))
+                {
+                    context.Response.Cookies.Append("testCookie", "testValue");
+                    context.Response.Cookies.Append("testCookie2", "testValue2");
+                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
+                }
+                await next.Invoke();
+            });
+
             app.UseSignalR(routes =>
             {
                 routes.MapHub<TestHub>("/testhub");

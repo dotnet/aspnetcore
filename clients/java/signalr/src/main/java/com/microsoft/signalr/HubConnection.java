@@ -167,6 +167,10 @@ public class HubConnection {
             for (HubMessage message : messages) {
                 logger.debug("Received message of type {}.", message.getMessageType());
                 switch (message.getMessageType()) {
+                    case INVOCATION_BINDING_FAILURE:
+                        InvocationBindingFailureMessage msg = (InvocationBindingFailureMessage)message;
+                        logger.error("Failed to bind arguments received in invocation '{}' of '{}'.", msg.getInvocationId(), msg.getTarget(), msg.getException());
+                        break;
                     case INVOCATION:
                         InvocationMessage invocationMessage = (InvocationMessage) message;
                         List<InvocationHandler> handlers = this.handlers.get(invocationMessage.getTarget());

@@ -56,7 +56,14 @@ export class ServerSentEventsTransport implements ITransport {
                 return;
             }
 
-            const eventSource = new this.eventSourceConstructor(url, { withCredentials: true });
+            let eventSource: EventSource;
+            if (typeof window !== "undefined") {
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: true });
+            } else {
+                // Non-browser passes cookies via the dictionary
+                const cookies = this.httpClient.getCookieString(url);
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: true, headers: { Cookie: cookies } } as EventSourceInit);
+            }
 
             try {
                 eventSource.onmessage = (e: MessageEvent) => {

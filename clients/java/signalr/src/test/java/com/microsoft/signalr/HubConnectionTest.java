@@ -904,7 +904,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void errorWhenReceivingInvokeWithIncorrectArgumentLength()  {
+    public void doesNotErrorWhenReceivingInvokeWithIncorrectArgumentLength()  {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
         hubConnection.on("Send", (s) -> {
@@ -913,8 +913,8 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> mockTransport.receiveMessage("{\"type\":1,\"target\":\"Send\",\"arguments\":[]}" + RECORD_SEPARATOR));
-        assertEquals("Invocation provides 0 argument(s) but target expects 1.", exception.getMessage());
+        mockTransport.receiveMessage("{\"type\":1,\"target\":\"Send\",\"arguments\":[]}" + RECORD_SEPARATOR);
+        hubConnection.stop();
     }
 
     @Test

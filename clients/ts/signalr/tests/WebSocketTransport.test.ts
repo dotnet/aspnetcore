@@ -6,6 +6,7 @@ import { TransferFormat } from "../src/ITransport";
 import { WebSocketTransport } from "../src/WebSocketTransport";
 import { VerifyLogger } from "./Common";
 import { TestMessageEvent } from "./TestEventSource";
+import { TestHttpClient } from "./TestHttpClient";
 import { TestCloseEvent, TestErrorEvent, TestEvent, TestWebSocket } from "./TestWebSocket";
 import { registerUnhandledRejectionHandler } from "./Utils";
 
@@ -22,7 +23,7 @@ describe("WebSocketTransport", () => {
 
     it("connect waits for WebSocket to be connected", async () => {
         await VerifyLogger.run(async (logger) => {
-            const webSocket = new WebSocketTransport(undefined, logger, true, TestWebSocket);
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket);
 
             let connectComplete: boolean = false;
             const connectPromise = (async () => {
@@ -44,7 +45,7 @@ describe("WebSocketTransport", () => {
     it("connect fails if there is error during connect", async () => {
         await VerifyLogger.run(async (logger) => {
             (global as any).ErrorEvent = TestErrorEvent;
-            const webSocket = new WebSocketTransport(undefined, logger, true, TestWebSocket);
+            const webSocket = new WebSocketTransport(new TestHttpClient(), undefined, logger, true, TestWebSocket);
 
             let connectComplete: boolean = false;
             const connectPromise = (async () => {
@@ -204,7 +205,7 @@ describe("WebSocketTransport", () => {
 });
 
 async function createAndStartWebSocket(logger: ILogger, url?: string, accessTokenFactory?: (() => string | Promise<string>), format?: TransferFormat): Promise<WebSocketTransport> {
-    const webSocket = new WebSocketTransport(accessTokenFactory, logger, true, TestWebSocket);
+    const webSocket = new WebSocketTransport(new TestHttpClient(), accessTokenFactory, logger, true, TestWebSocket);
 
     const connectPromise = webSocket.connect(url || "http://example.com", format || TransferFormat.Text);
 

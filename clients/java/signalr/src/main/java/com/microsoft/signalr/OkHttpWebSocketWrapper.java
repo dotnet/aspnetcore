@@ -81,12 +81,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onMessage(WebSocket webSocket, String message) {
-            try {
-                onReceive.invoke(message);
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            onReceive.invoke(message);
         }
 
         @Override

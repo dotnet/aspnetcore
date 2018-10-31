@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { ECHOENDPOINT_URL } from "./Common";
+import "./LogBannerReporter";
 
 // On slower CI machines, these tests sometimes take longer than 5s
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;

@@ -52,6 +52,7 @@ class JsonHubProtocol implements HubProtocol {
                 ArrayList<Object> arguments = null;
                 JsonArray argumentsToken = null;
                 Object result = null;
+                Exception argumentBindingException = null;
                 JsonElement resultToken = null;
                 JsonReader reader = new JsonReader(new StringReader(str));
                 reader.beginObject();
@@ -83,8 +84,26 @@ class JsonHubProtocol implements HubProtocol {
                             break;
                         case "arguments":
                             if (target != null) {
-                                List<Class<?>> types = binder.getParameterTypes(target);
-                                arguments = bindArguments(reader, types);
+                                boolean startedArray = false;
+                                try {
+                                    List<Class<?>> types = binder.getParameterTypes(target);
+                                    startedArray = true;
+                                    arguments = bindArguments(reader, types);
+                                } catch (Exception ex) {
+                                    argumentBindingException = ex;
+
+                                    // Could be at any point in argument array JSON when an error is thrown
+                                    // Read until the end of the argument JSON array
+                                    if (!startedArray) {
+                                        reader.beginArray();
+                                    }
+                                    while (reader.hasNext()) {
+                                        reader.skipValue();
+                                    }
+                                    if (reader.peek() == JsonToken.END_ARRAY) {
+                                        reader.endArray();
+                                    }
+                                }
                             } else {
                                 argumentsToken = (JsonArray)jsonParser.parse(reader);
                             }
@@ -104,13 +123,21 @@ class JsonHubProtocol implements HubProtocol {
                 switch (messageType) {
                     case INVOCATION:
                         if (argumentsToken != null) {
-                            List<Class<?>> types = binder.getParameterTypes(target);
-                            arguments = bindArguments(argumentsToken, types);
+                            try {
+                                List<Class<?>> types = binder.getParameterTypes(target);
+                                arguments = bindArguments(argumentsToken, types);
+                            } catch (Exception ex) {
+                                argumentBindingException = ex;
+                            }
                         }
-                        if (arguments == null) {
-                            hubMessages.add(new InvocationMessage(invocationId, target, new Object[0]));
+                        if (argumentBindingException != null) {
+                            hubMessages.add(new InvocationBindingFailureMessage(invocationId, target, argumentBindingException));
                         } else {
-                            hubMessages.add(new InvocationMessage(invocationId, target, arguments.toArray()));
+                            if (arguments == null) {
+                                hubMessages.add(new InvocationMessage(invocationId, target, new Object[0]));
+                            } else {
+                                hubMessages.add(new InvocationMessage(invocationId, target, arguments.toArray()));
+                            }
                         }
                         break;
                     case COMPLETION:
@@ -183,7 +210,11 @@ class JsonHubProtocol implements HubProtocol {
             throw new RuntimeException(String.format("Invocation provides %d argument(s) but target expects %d.", argCount, paramCount));
         }
 
+        // Do this at the very end, because if we throw for any reason above, we catch at the call site
+        // And manually consume the rest of the array, if we called endArray before throwing the RuntimeException
+        // Then we can't correctly consume the rest of the json object
         reader.endArray();
+
         return arguments;
     }
 }
