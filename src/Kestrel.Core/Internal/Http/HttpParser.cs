@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -190,22 +189,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var bufferEnd = buffer.End;
 
-            var reader = new BufferReader(buffer);
-            var start = default(BufferReader);
+            var reader = new BufferReader<byte>(buffer);
+            var start = default(BufferReader<byte>);
             var done = false;
 
             try
             {
                 while (!reader.End)
                 {
-                    var span = reader.CurrentSegment;
-                    var remaining = span.Length - reader.CurrentSegmentIndex;
+                    var span = reader.CurrentSpan;
+                    var remaining = span.Length - reader.CurrentSpanIndex;
 
                     while (remaining > 0)
                     {
-                        var index = reader.CurrentSegmentIndex;
-                        int ch1;
-                        int ch2;
+                        var index = reader.CurrentSpanIndex;
+                        byte ch1;
+                        byte ch2;
+                        bool readSecond = false;
                         var readAhead = false;
 
                         // Fast path, we're still looking at the same span
@@ -213,6 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             ch1 = span[index];
                             ch2 = span[index + 1];
+                            readSecond = true;
                         }
                         else
                         {
@@ -221,8 +222,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             start = reader;
 
                             // Possibly split across spans
-                            ch1 = reader.Read();
-                            ch2 = reader.Read();
+                            reader.TryRead(out ch1);
+                            readSecond = reader.TryRead(out ch2);
 
                             readAhead = true;
                         }
@@ -230,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         if (ch1 == ByteCR)
                         {
                             // Check for final CRLF.
-                            if (ch2 == -1)
+                            if (!readSecond)
                             {
                                 // Reset the reader so we don't consume anything
                                 reader = start;
@@ -258,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         if (readAhead)
                         {
                             reader = start;
-                            index = reader.CurrentSegmentIndex;
+                            index = reader.CurrentSpanIndex;
                         }
 
                         var endIndex = span.Slice(index, remaining).IndexOf(ByteLF);
@@ -307,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             finally
             {
                 consumed = reader.Position;
-                consumedBytes = reader.ConsumedBytes;
+                consumedBytes = checked((int)reader.Consumed);
 
                 if (done)
                 {
