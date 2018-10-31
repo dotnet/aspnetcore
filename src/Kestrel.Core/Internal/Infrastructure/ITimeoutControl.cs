@@ -20,7 +20,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void StopTimingRead();
         void BytesRead(long count);
 
-        void StartTimingWrite(MinDataRate minRate, long size);
+        void StartTimingWrite();
         void StopTimingWrite();
+        void BytesWrittenToBuffer(MinDataRate minRate, long count);
     }
 }

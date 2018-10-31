@@ -23,22 +23,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
         private static readonly byte[] _continueBytes = new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
-        private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
-        private byte[] _headerEncodingBuffer;
-        private Http2Frame _outgoingFrame;
         private readonly object _writeLock = new object();
+        private readonly Http2Frame _outgoingFrame;
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
         private readonly PipeWriter _outputWriter;
-        private bool _aborted;
         private readonly ConnectionContext _connectionContext;
         private readonly Http2Connection _http2Connection;
         private readonly OutputFlowControl _connectionOutputFlowControl;
         private readonly string _connectionId;
         private readonly IKestrelTrace _log;
         private readonly ITimeoutControl _timeoutControl;
+        private readonly MinDataRate _minResponseDataRate;
         private readonly TimingPipeFlusher _flusher;
 
+        private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
+        private byte[] _headerEncodingBuffer;
+        private long _unflushedBytes;
+
         private bool _completed;
+        private bool _aborted;
 
         public Http2FrameWriter(
             PipeWriter outputPipeWriter,
@@ -46,6 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Http2Connection http2Connection,
             OutputFlowControl connectionOutputFlowControl,
             ITimeoutControl timeoutControl,
+            MinDataRate minResponseDataRate,
             string connectionId,
             IKestrelTrace log)
         {
@@ -56,7 +60,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _connectionId = connectionId;
             _log = log;
             _timeoutControl = timeoutControl;
-            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl);
+            _minResponseDataRate = minResponseDataRate;
+            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, log);
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
         }
@@ -112,8 +117,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     return Task.CompletedTask;
                 }
+                
+                var bytesWritten = _unflushedBytes;
+                _unflushedBytes = 0;
 
-                return _flusher.FlushAsync(outputAborter, cancellationToken);
+                return _flusher.FlushAsync(_minResponseDataRate, bytesWritten, outputAborter, cancellationToken);
             }
         }
 
@@ -130,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _outgoingFrame.PayloadLength = _continueBytes.Length;
                 WriteHeaderUnsynchronized();
                 _outputWriter.Write(_continueBytes);
-                return _flusher.FlushAsync();
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -195,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _http2Connection.Abort(new ConnectionAbortedException(hex.Message, hex));
                 }
 
-                return _flusher.FlushAsync();
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -228,7 +236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, MinDataRate minRate, ReadOnlySequence<byte> data, bool endStream)
+        public Task WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, bool endStream)
         {
             // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
             var dataLength = data.Length;
@@ -244,12 +252,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
                 if (dataLength != 0 && dataLength > flowControl.Available)
                 {
-                    return WriteDataAsyncAwaited(streamId, minRate, flowControl, data, dataLength, endStream);
+                    return WriteDataAsync(streamId, flowControl, data, dataLength, endStream);
                 }
 
                 // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
                 flowControl.Advance((int)dataLength);
-                return WriteDataUnsynchronizedAsync(streamId, minRate, data, dataLength, endStream);
+                WriteDataUnsynchronized(streamId, data, dataLength, endStream);
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -262,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             |                           Padding (*)                       ...
             +---------------------------------------------------------------+
         */
-        private Task WriteDataUnsynchronizedAsync(int streamId, MinDataRate minRate, ReadOnlySequence<byte> data, long dataLength, bool endStream)
+        private void WriteDataUnsynchronized(int streamId, ReadOnlySequence<byte> data, long dataLength, bool endStream)
         {
             // Note padding is not implemented
             _outgoingFrame.PrepareData(streamId);
@@ -301,17 +310,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             // Plus padding
-
-            return _flusher.FlushAsync(minRate, dataLength);
         }
 
-        private async Task WriteDataAsyncAwaited(int streamId, MinDataRate minRate, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream)
+        private async Task WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream)
         {
             while (dataLength > 0)
             {
                 OutputFlowControlAwaitable availabilityAwaitable;
                 var writeTask = Task.CompletedTask;
-                int actual;
 
                 lock (_writeLock)
                 {
@@ -320,24 +326,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         break;
                     }
 
-                    actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityAwaitable);
+                    var actual = flowControl.AdvanceUpToAndWait(dataLength, out availabilityAwaitable);
 
                     if (actual > 0)
                     {
-                        // Don't pass minRate through to the inner WriteData calls.
-                        // We measure this ourselves below so we account for flow control in addition to socket backpressure.
                         if (actual < dataLength)
                         {
-                            writeTask = WriteDataUnsynchronizedAsync(streamId, null, data.Slice(0, actual), actual, endStream: false);
+                            WriteDataUnsynchronized(streamId, data.Slice(0, actual), actual, endStream: false);
                             data = data.Slice(actual);
                             dataLength -= actual;
                         }
                         else
                         {
-                            writeTask = WriteDataUnsynchronizedAsync(streamId, null, data, actual, endStream);
+                            WriteDataUnsynchronized(streamId, data, actual, endStream);
                             dataLength = 0;
                         }
+
+                        // Don't call TimeFlushUnsynchronizedAsync() since we time this write while also accounting for
+                        // flow control induced backpressure below.
+                        writeTask = _flusher.FlushAsync();
                     }
+
+                    if (_minResponseDataRate != null)
+                    {
+                        _timeoutControl.BytesWrittenToBuffer(_minResponseDataRate, _unflushedBytes);
+                    }
+
+                    _unflushedBytes = 0;
                 }
 
                 // Avoid timing writes that are already complete. This is likely to happen during the last iteration.
@@ -346,9 +361,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     continue;
                 }
 
-                if (minRate != null)
+                if (_minResponseDataRate != null)
                 {
-                    _timeoutControl.StartTimingWrite(minRate, actual);
+                    _timeoutControl.StartTimingWrite();
                 }
 
                 // This awaitable releases continuations in FIFO order when the window updates.
@@ -360,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 await writeTask;
 
-                if (minRate != null)
+                if (_minResponseDataRate != null)
                 {
                     _timeoutControl.StopTimingWrite();
                 }
@@ -389,7 +404,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 var buffer = _outputWriter.GetSpan(4);
                 Bitshifter.WriteUInt31BigEndian(buffer, (uint)sizeIncrement);
                 _outputWriter.Advance(4);
-                return _flusher.FlushAsync();
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -413,7 +428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)errorCode);
                 _outputWriter.Advance(4);
 
-                return _flusher.FlushAsync();
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -443,7 +458,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 WriteSettings(settings, buffer);
                 _outputWriter.Advance(settingsSize);
 
-                return _flusher.FlushAsync();
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -469,7 +484,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _outgoingFrame.PrepareSettings(Http2SettingsFrameFlags.ACK);
                 WriteHeaderUnsynchronized();
-                return _flusher.FlushAsync();
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -497,7 +512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _outputWriter.Write(segment.Span);
                 }
 
-                return _flusher.FlushAsync();
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -523,7 +538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)errorCode);
                 _outputWriter.Advance(8);
 
-                return _flusher.FlushAsync();
+                return TimeFlushUnsynchronizedAsync();
             }
         }
 
@@ -531,6 +546,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             _log.Http2FrameSending(_connectionId, _outgoingFrame);
             WriteHeader(_outgoingFrame, _outputWriter);
+
+            // We assume the payload will be written prior to the next flush.
+            _unflushedBytes += Http2FrameReader.HeaderLength + _outgoingFrame.PayloadLength;
         }
 
         /* https://tools.ietf.org/html/rfc7540#section-4.1
@@ -558,6 +576,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Bitshifter.WriteUInt31BigEndian(buffer, (uint)frame.StreamId);
 
             output.Advance(Http2FrameReader.HeaderLength);
+        }
+
+        private Task TimeFlushUnsynchronizedAsync()
+        {
+            var bytesWritten = _unflushedBytes;
+            _unflushedBytes = 0;
+
+            return _flusher.FlushAsync(_minResponseDataRate, bytesWritten);
         }
 
         public bool TryUpdateConnectionWindow(int bytes)

@@ -97,6 +97,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
+            // Disable response rate, so we can finish the send loop without timing out the response.
+            testContext.ServerOptions.Limits.MinResponseDataRate = null;
+
             using (var server = CreateServer(testContext))
             using (var connection = server.CreateConnection())
             {

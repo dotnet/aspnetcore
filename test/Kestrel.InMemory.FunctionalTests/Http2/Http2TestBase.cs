@@ -147,6 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal DuplexPipe.DuplexPipePair _pair;
         protected Http2Connection _connection;
         protected Task _connectionTask;
+        protected long _bytesReceived;
 
         public Http2TestBase()
         {
@@ -1069,6 +1070,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
                 finally
                 {
+                    _bytesReceived += buffer.Slice(buffer.Start, consumed).Length;
                     _pair.Application.Input.AdvanceTo(consumed, examined);
                 }
             }
@@ -1228,14 +1230,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
 
-            public virtual void StartTimingWrite(MinDataRate minRate, long size)
+            public virtual void StartTimingWrite()
             {
-                _realTimeoutControl.StartTimingWrite(minRate, size);
+                _realTimeoutControl.StartTimingWrite();
             }
 
             public virtual void StopTimingWrite()
             {
                 _realTimeoutControl.StopTimingWrite();
+            }
+
+            public virtual void BytesWrittenToBuffer(MinDataRate minRate, long size)
+            {
+                _realTimeoutControl.BytesWrittenToBuffer(minRate, size);
             }
         }
     }
