@@ -141,4 +141,14 @@ export abstract class HttpClient {
      * @returns {Promise<HttpResponse>} A Promise that resolves with an HttpResponse describing the response, or rejects with an Error indicating a failure.
      */
     public abstract send(request: HttpRequest): Promise<HttpResponse>;
+
+    /** Gets all cookies that apply to the specified URL.
+     *
+     * @param url The URL that the cookies are valid for.
+     * @returns {string} A string containing all the key-value cookie pairs for the specified URL.
+     */
+    // @ts-ignore
+    public getCookieString(url: string): string {
+        return "";
+    }
 }

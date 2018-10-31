@@ -1,4 +1,4 @@
-import { ChildProcess, execSync, spawn } from "child_process";
+import { ChildProcess, exec, spawn } from "child_process";
 import { EOL } from "os";
 import { Readable } from "stream";
 
@@ -163,26 +163,23 @@ function runJest(url: string) {
     const configPath = path.resolve(__dirname, "..", "func.jest.config.js");
 
     console.log("Starting Node tests using Jest.");
-    try {
-        execSync(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: url }, timeout: 200000 });
-        return 0;
-    } catch (error) {
-        console.log(error.message);
-        console.log(error.stderr);
-        console.log(error.stdout);
-        return error.status || 1;
-    }
+    return new Promise<number>((resolve, reject) => {
+        const logStream = fs.createWriteStream(path.resolve(__dirname, "..", "..", "..", "..", "artifacts", "logs", "node.functionaltests.log"));
+        const p = exec(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: url }, timeout: 200000, maxBuffer: 10 * 1024 * 1024 },
+            (error: any, stdout, stderr) => {
+                if (error) {
+                    console.log(error.message);
+                    return resolve(error.code);
+                }
+                return resolve(0);
+            });
+        p.stdout.pipe(logStream);
+        p.stderr.pipe(logStream);
+    });
 }
 
 (async () => {
     try {
-        // Check if we got any browsers
-        if (config.browsers.length === 0) {
-            console.log("Unable to locate any suitable browsers. Skipping browser functional tests.");
-            process.exit(0);
-            return; // For good measure
-        }
-
         const serverPath = path.resolve(__dirname, "..", "bin", configuration, "netcoreapp2.2", "FunctionalTests.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
@@ -243,14 +240,22 @@ function runJest(url: string) {
         // Pass server URL to tests
         conf.client.args = ["--server", url];
 
-        const results = await runKarma(conf);
+        const jestExit = await runJest(url);
 
-        const jestExit = runJest(url);
+        // Check if we got any browsers
+        let karmaExit;
+        if (config.browsers.length === 0) {
+            console.log("Unable to locate any suitable browsers. Skipping browser functional tests.");
+        } else {
+            karmaExit = (await runKarma(conf)).exitCode;
+        }
 
-        console.log(`karma exit code: ${results.exitCode}`);
+        if (karmaExit) {
+            console.log(`karma exit code: ${karmaExit}`);
+        }
         console.log(`jest exit code: ${jestExit}`);
 
-        process.exit(results.exitCode !== 0 ? results.exitCode : jestExit);
+        process.exit(jestExit !== 0 ? jestExit : karmaExit);
     } catch (e) {
         console.error(e);
         process.exit(1);

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { WebSocketConstructor } from "./Polyfills";
@@ -12,17 +13,19 @@ export class WebSocketTransport implements ITransport {
     private readonly accessTokenFactory: (() => string | Promise<string>) | undefined;
     private readonly logMessageContent: boolean;
     private readonly webSocketConstructor: WebSocketConstructor;
+    private readonly httpClient: HttpClient;
     private webSocket?: WebSocket;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
 
-    constructor(accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
+    constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
                 logMessageContent: boolean, webSocketConstructor: WebSocketConstructor) {
         this.logger = logger;
         this.accessTokenFactory = accessTokenFactory;
         this.logMessageContent = logMessageContent;
         this.webSocketConstructor = webSocketConstructor;
+        this.httpClient = httpClient;
 
         this.onreceive = null;
         this.onclose = null;
@@ -44,7 +47,23 @@ export class WebSocketTransport implements ITransport {
 
         return new Promise<void>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
-            const webSocket = new this.webSocketConstructor(url);
+            let webSocket: WebSocket | undefined;
+            const cookies = this.httpClient.getCookieString(url);
+
+            if (typeof window === "undefined" && cookies) {
+                // Only pass cookies when in non-browser environments
+                webSocket = new this.webSocketConstructor(url, undefined, {
+                    headers: {
+                        Cookie: `${cookies}`,
+                    },
+                });
+            }
+
+            if (!webSocket) {
+                // Chrome is not happy with passing 'undefined' as protocol
+                webSocket = new this.webSocketConstructor(url);
+            }
+
             if (transferFormat === TransferFormat.Binary) {
                 webSocket.binaryType = "arraybuffer";
             }

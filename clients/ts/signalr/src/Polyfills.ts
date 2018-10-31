@@ -8,7 +8,7 @@ export interface EventSourceConstructor {
 }
 
 export interface WebSocketConstructor {
-    new(url: string, protocols?: string | string[]): WebSocket;
+    new(url: string, protocols?: string | string[], options?: any): WebSocket;
     readonly CLOSED: number;
     readonly CLOSING: number;
     readonly CONNECTING: number;

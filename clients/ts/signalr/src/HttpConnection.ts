@@ -299,7 +299,7 @@ export class HttpConnection implements IConnection {
                 if (!this.options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket);
+                return new WebSocketTransport(this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket);
             case HttpTransportType.ServerSentEvents:
                 if (!this.options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");

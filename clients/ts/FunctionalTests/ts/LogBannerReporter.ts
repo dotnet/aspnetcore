@@ -16,4 +16,9 @@ export class LogBannerReporter implements jasmine.CustomReporter {
     }
 }
 
-jasmine.getEnv().addReporter(new LogBannerReporter());
+if (typeof window !== "undefined" && (window as any).customReporterRegistered !== true) {
+    (window as any).customReporterRegistered = true;
+    jasmine.getEnv().addReporter(new LogBannerReporter());
+} else if (typeof window === "undefined") {
+    jasmine.getEnv().addReporter(new LogBannerReporter());
+}

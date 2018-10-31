@@ -8,7 +8,6 @@ module.exports = baseConfig(__dirname, "signalr", {
     externals: [
         "websocket",
         "eventsource",
-        "http",
-        "url",
+        "request"
     ]
 });
