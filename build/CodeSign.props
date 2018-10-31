@@ -71,6 +71,7 @@
     <FilesToExcludeFromSigning Include="api-ms-win-core-sysinfo-l1-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-core-timezone-l1-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-core-util-l1-1-0.dll" />
+    <FilesToExcludeFromSigning Include="api-ms-win-core-xstate-l2-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-crt-conio-l1-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-crt-convert-l1-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-crt-environment-l1-1-0.dll" />
@@ -96,6 +97,7 @@
     <FilesToExcludeFromSigning Include="hostpolicy.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.CSharp.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.DiaSymReader.Native.amd64.dll" />
+    <FilesToExcludeFromSigning Include="Microsoft.DiaSymReader.Native.x86.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.DotNet.PlatformAbstractions.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.Extensions.DependencyModel.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.Extensions.PlatformAbstractions.dll" />
@@ -103,6 +105,7 @@
     <FilesToExcludeFromSigning Include="Microsoft.Win32.Primitives.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.Win32.Registry.dll" />
     <FilesToExcludeFromSigning Include="mscordaccore_amd64_amd64_4.6.27023.02.dll" />
+    <FilesToExcludeFromSigning Include="mscordaccore_x86_x86_4.6.27023.02.dll" />
     <FilesToExcludeFromSigning Include="mscordaccore.dll" />
     <FilesToExcludeFromSigning Include="mscordbi.dll" />
     <FilesToExcludeFromSigning Include="mscorlib.dll" />
@@ -110,6 +113,7 @@
     <FilesToExcludeFromSigning Include="mscorrc.dll" />
     <FilesToExcludeFromSigning Include="netstandard.dll" />
     <FilesToExcludeFromSigning Include="sos_amd64_amd64_4.6.27023.02.dll" />
+    <FilesToExcludeFromSigning Include="sos_x86_x86_4.6.27023.02.dll" />
     <FilesToExcludeFromSigning Include="sos.dll" />
     <FilesToExcludeFromSigning Include="SOS.NETCore.dll" />
     <FilesToExcludeFromSigning Include="System.AppContext.dll" />
