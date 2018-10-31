@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Newtonsoft.Json.Serialization;
 
@@ -52,6 +51,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             for (var i = 0; i < _path.Segments.Count - 1; i++)
             {
                 if (!adapter.TryTraverse(target, _path.Segments[i], _contractResolver, out var next, out errorMessage))
+                {
+                    adapter = null;
+                    return false;
+                }
+                
+                // If we hit a null on an interior segment then we need to stop traversing.
+                if (next == null)
                 {
                     adapter = null;
                     return false;
