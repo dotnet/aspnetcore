@@ -50,10 +50,6 @@
 	path = modules/EntityFrameworkCore
 	url = https://github.com/aspnet/EntityFrameworkCore.git
 	branch = release/2.2
-[submodule "modules/EventNotification"]
-	path = modules/EventNotification
-	url = https://github.com/aspnet/EventNotification.git
-	branch = release/2.2
 [submodule "modules/FileSystem"]
 	path = modules/FileSystem
 	url = https://github.com/aspnet/FileSystem.git

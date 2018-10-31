@@ -208,7 +208,6 @@
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.DiagnosticAdapter" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship"  />

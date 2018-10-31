@@ -19,6 +19,7 @@
     <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="$(MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.NonCapturingTimer.Sources" Version="$(MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Version="$(MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion)" />
