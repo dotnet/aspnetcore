@@ -171,7 +171,7 @@
     <ExternalDependency Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawBundleGreenPackageVersion)" />
     <ExternalDependency Include="SQLitePCLRaw.bundle_sqlcipher" Version="$(SQLitePCLRawBundleSqlcipherPackageVersion)" />
     <ExternalDependency Include="SQLitePCLRaw.core" Version="$(SQLitePCLRawCorePackageVersion)" />
-    <ExternalDependency Include="StackExchange.Redis.StrongName" Version="$(StackExchangeRedisStrongNamePackageVersion)" />
+    <ExternalDependency Include="StackExchange.Redis" Version="$(StackExchangeRedisPackageVersion)" />
     <ExternalDependency Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
     <ExternalDependency Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
     <ExternalDependency Include="System.Buffers" Version="$(SystemBuffersPackageVersion)" />

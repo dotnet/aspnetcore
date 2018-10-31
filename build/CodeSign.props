@@ -11,7 +11,6 @@
     <FilesToSign Include="SQLitePCLRaw.batteries_v2.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
     <FilesToSign Include="SQLitePCLRaw.core.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
     <FilesToSign Include="SQLitePCLRaw.provider.e_sqlite3.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="StackExchange.Redis.StrongName.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
     <FilesToSign Include="System.Interactive.Async.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
 
     <!-- These files came from the aspnet/Extensions build and should already be signed. -->
