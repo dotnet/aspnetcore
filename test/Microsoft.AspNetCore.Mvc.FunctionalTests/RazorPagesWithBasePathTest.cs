@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -420,14 +419,16 @@ Hello from /Pages/Shared/";
             var token = AntiforgeryTestHelper.RetrieveAntiforgeryToken(await getPage.Content.ReadAsStringAsync(), "");
             var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getPage);
 
-            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel");
-            message.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel")
             {
-                ["__RequestVerificationToken"] = token,
-                ["ConfirmPassword"] = "",
-                ["Password"] = "",
-                ["Email"] = ""
-            });
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["__RequestVerificationToken"] = token,
+                    ["ConfirmPassword"] = "",
+                    ["Password"] = "",
+                    ["Email"] = ""
+                })
+            };
             message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
 
             // Act
@@ -443,18 +444,20 @@ Hello from /Pages/Shared/";
         public async Task PageConventions_CustomizedModelCanWorkWithModelState()
         {
             // Arrange
-            var getPage = await Client.GetAsync("/CustomModelTypeModel");
+            var getPage = await Client.GetAsync("/CustomModelTypeModel?Attempts=0");
             var token = AntiforgeryTestHelper.RetrieveAntiforgeryToken(await getPage.Content.ReadAsStringAsync(), "");
             var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getPage);
 
-            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel");
-            message.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel?Attempts=3")
             {
-                ["__RequestVerificationToken"] = token,
-                ["Email"] = "javi@example.com",
-                ["Password"] = "Password.12$",
-                ["ConfirmPassword"] = "Password.12$",
-            });
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["__RequestVerificationToken"] = token,
+                    ["Email"] = "javi@example.com",
+                    ["Password"] = "Password.12$",
+                    ["ConfirmPassword"] = "Password.12$",
+                })
+            };
             message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
 
             // Act
@@ -463,6 +466,37 @@ Hello from /Pages/Shared/";
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Equal("/", response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task PageConventions_CustomizedModelCanWorkWithModelState_EnforcesBindRequired()
+        {
+            // Arrange
+            var getPage = await Client.GetAsync("/CustomModelTypeModel?Attempts=0");
+            var token = AntiforgeryTestHelper.RetrieveAntiforgeryToken(await getPage.Content.ReadAsStringAsync(), "");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getPage);
+
+            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["__RequestVerificationToken"] = token,
+                    ["Email"] = "javi@example.com",
+                    ["Password"] = "Password.12$",
+                    ["ConfirmPassword"] = "Password.12$",
+                })
+            };
+            message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
+
+            // Act
+            var response = await Client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Contains(
+                "A value for the &#x27;Attempts&#x27; parameter or property was not provided.",
+                responseText);
         }
 
         [Fact]
@@ -642,10 +676,12 @@ Hello from /Pages/Shared/";
 
             var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(response);
 
-            var content = new MultipartFormDataContent();
-            content.Add(new StringContent("property1-value"), property1);
-            content.Add(new StringContent("test-value1"), file1, "test1.txt");
-            content.Add(new StringContent("test-value2"), file3, "test2.txt");
+            var content = new MultipartFormDataContent
+            {
+                { new StringContent("property1-value"), property1 },
+                { new StringContent("test-value1"), file1, "test1.txt" },
+                { new StringContent("test-value2"), file3, "test2.txt" }
+            };
 
             var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
