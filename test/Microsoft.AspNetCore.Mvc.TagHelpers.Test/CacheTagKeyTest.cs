@@ -305,6 +305,31 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void GenerateKey_UsesVaryByRoute_UsesInvariantCulture()
+        {
+            // Arrange
+            var tagHelperContext = GetTagHelperContext();
+            var cacheTagHelper = new CacheTagHelper(
+                new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
+            {
+                ViewContext = GetViewContext(),
+                VaryByRoute = "Category",
+            };
+            cacheTagHelper.ViewContext.RouteData.Values["id"] = 4;
+            cacheTagHelper.ViewContext.RouteData.Values["category"] =
+                new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7));
+            var expected = "CacheTagHelper||testid||VaryByRoute(Category||10/31/2018 07:37:38 -07:00)";
+
+            // Act
+            var cacheTagKey = new CacheTagKey(cacheTagHelper, tagHelperContext);
+            var key = cacheTagKey.GenerateKey();
+
+            // Assert
+            Assert.Equal(expected, key);
+        }
+
+        [Fact]
         public void GenerateKey_UsesVaryByUser_WhenUserIsNotAuthenticated()
         {
             // Arrange

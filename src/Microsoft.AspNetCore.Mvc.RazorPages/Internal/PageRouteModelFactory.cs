@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             if (!AttributeRouteModel.IsOverridePattern(routeTemplate) &&
                 string.Equals(IndexFileName, fileName, StringComparison.OrdinalIgnoreCase))
             {
-                // For pages without an override route, and ending in /Index.cshtml, we want to allow 
+                // For pages without an override route, and ending in /Index.cshtml, we want to allow
                 // incoming routing, but force outgoing routes to match to the path sans /Index.
                 selectorModel.AttributeRouteModel.SuppressLinkGeneration = true;
 

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -28,13 +30,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Theory]
-        [InlineData("json", FormatSource.RouteData, "application/json")]
-        [InlineData("json", FormatSource.QueryData, "application/json")]
-        [InlineData("json", FormatSource.RouteAndQueryData, "application/json")]
-        public void FormatFilter_ContextContainsFormat_DefaultFormat(
-            string format,
-            FormatSource place,
-            string contentType)
+        [InlineData("json", FormatSource.RouteData)]
+        [InlineData("json", FormatSource.QueryData)]
+        [InlineData("json", FormatSource.RouteAndQueryData)]
+        public void FormatFilter_ContextContainsFormat_DefaultFormat(string format, FormatSource place)
         {
             // Arrange
             var mediaType = new StringSegment("application/json");
@@ -295,6 +294,25 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var mockObjects = new MockObjects(input, place);
             var context = mockObjects.CreateResultExecutingContext();
+            var filterAttribute = new FormatFilterAttribute();
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
+
+            // Act
+            var format = filter.GetFormat(context);
+
+            // Assert
+            Assert.Equal(expected, filter.GetFormat(context));
+        }
+
+        [Fact]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void FormatFilter_GetFormat_UsesInvariantCulture()
+        {
+            // Arrange
+            var mockObjects = new MockObjects();
+            var context = mockObjects.CreateResultExecutingContext();
+            context.RouteData.Values["format"] = new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7));
+            var expected = "10/31/2018 07:37:38 -07:00";
             var filterAttribute = new FormatFilterAttribute();
             var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 

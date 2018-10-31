@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
@@ -163,8 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Perf: In most of the common cases, GenerateUrl is called with a null protocol, host and fragment.
             // In such cases, we might not need to build any URL as the url generated is mostly same as the virtual path available in pathData.
             // For such common cases, this FastGenerateUrl method saves a string allocation per GenerateUrl call.
-            string url;
-            if (TryFastGenerateUrl(protocol, host, virtualPath, fragment, out url))
+            if (TryFastGenerateUrl(protocol, host, virtualPath, fragment, out var url))
             {
                 return url;
             }
@@ -227,8 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Perf: In most of the common cases, GenerateUrl is called with a null protocol, host and fragment.
             // In such cases, we might not need to build any URL as the url generated is mostly same as the virtual path available in pathData.
             // For such common cases, this FastGenerateUrl method saves a string allocation per GenerateUrl call.
-            string url;
-            if (TryFastGenerateUrl(protocol, host, path, fragment: null, out url))
+            if (TryFastGenerateUrl(protocol, host, path, fragment: null, out var url))
             {
                 return url;
             }
@@ -351,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
                 else if (ambientValues != null)
                 {
-                    currentPagePath = ambientValues["page"]?.ToString();
+                    currentPagePath = Convert.ToString(ambientValues["page"], CultureInfo.InvariantCulture);
                 }
                 else
                 {

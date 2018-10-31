@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -245,6 +246,55 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
                 {
                     Assert.Equal("page", value.Key);
                     Assert.Equal("ambient-page", value.Value);
+                });
+        }
+
+        [Fact]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void Page_UsesAmbientRouteValueAndInvariantCulture_WhenPageIsNotNull()
+        {
+            // Arrange
+            UrlRouteContext actual = null;
+            var routeData = new RouteData
+            {
+                Values =
+                {
+                    { "page", new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)) },
+                }
+            };
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = new ActionDescriptor
+                {
+                    RouteValues = new Dictionary<string, string>
+                    {
+                        { "page", "10/31/2018 07:37:38 -07:00" },
+                    },
+                },
+                RouteData = routeData,
+            };
+
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext context) => actual = context);
+
+            // Act
+            urlHelper.Object.Page("New Page", new { id = 13 });
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Null(actual.RouteName);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values),
+                value =>
+                {
+                    Assert.Equal("id", value.Key);
+                    Assert.Equal(13, value.Value);
+                },
+                value =>
+                {
+                    Assert.Equal("page", value.Key);
+                    Assert.Equal("10/31/New Page", value.Value);
                 });
         }
 

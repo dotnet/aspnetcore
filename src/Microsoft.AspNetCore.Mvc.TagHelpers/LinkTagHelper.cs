@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
@@ -441,7 +442,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
             else if (stringValue == null)
             {
-                stringValue = attributeValue.ToString();
+                stringValue = Convert.ToString(attributeValue, CultureInfo.InvariantCulture);
             }
 
             var hasRelStylesheet = string.Equals("stylesheet", stringValue, StringComparison.Ordinal);

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -228,6 +229,35 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // Act
             var match = constraint.Match(httpContext: null, route: null, keyName, values, direction);
+
+            // Assert
+            Assert.True(match);
+        }
+
+        [Theory]
+        [InlineData(RouteDirection.IncomingRequest)]
+        [InlineData(RouteDirection.UrlGeneration)]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void ServiceInjected_RouteKey_Exists_UsesInvariantCulture(RouteDirection direction)
+        {
+            // Arrange
+            var actionDescriptor = CreateActionDescriptor("testArea", "testController", "testAction");
+            actionDescriptor.RouteValues.Add("randomKey", "10/31/2018 07:37:38 -07:00");
+
+            var provider = CreateActionDescriptorCollectionProvider(actionDescriptor);
+
+            var constraint = new KnownRouteValueConstraint(provider);
+
+            var values = new RouteValueDictionary()
+            {
+                { "area", "testArea" },
+                { "controller", "testController" },
+                { "action", "testAction" },
+                { "randomKey", new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)) },
+            };
+
+            // Act
+            var match = constraint.Match(httpContext: null, route: null, "randomKey", values, direction);
 
             // Assert
             Assert.True(match);

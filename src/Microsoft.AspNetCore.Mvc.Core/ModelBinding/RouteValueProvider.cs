@@ -88,10 +88,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            object value;
-            if (_values.TryGetValue(key, out value))
+            if (_values.TryGetValue(key, out var value))
             {
-                var stringValue = value as string ?? value?.ToString() ?? string.Empty;
+                var stringValue = value as string ?? Convert.ToString(value, Culture) ?? string.Empty;
                 return new ValueProviderResult(stringValue, Culture);
             }
             else

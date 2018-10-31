@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -161,8 +163,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             helper.FallbackTestValue = "hidden";
             helper.Href = "test.css";
 
-            var expectedAttributes = new TagHelperAttributeList(output.Attributes);
-            expectedAttributes.Add(new TagHelperAttribute("href", "test.css"));
+            var expectedAttributes = new TagHelperAttributeList(output.Attributes)
+            {
+                new TagHelperAttribute("href", "test.css")
+            };
 
             // Act
             helper.Process(context, output);
@@ -606,6 +610,47 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void RendersLinkTagsForGlobbedHrefResults_UsesInvariantCulture()
+        {
+            // Arrange
+            var expectedContent = "<link rel=\"stylesheet\" href=\"HtmlEncode[[/css/site.css]]\" />" +
+                "<link rel=\"stylesheet\" href=\"HtmlEncode[[/base.css]]\" />";
+            var context = MakeTagHelperContext(
+                attributes: new TagHelperAttributeList
+                {
+                    { "rel", new ConvertToStyleSheet() },
+                    { "href", "/css/site.css" },
+                    { "asp-href-include", "**/*.css" },
+                });
+            var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
+            {
+                { "rel", new HtmlString("stylesheet") },
+            });
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+                new TestFileProvider(),
+                Mock.Of<IMemoryCache>(),
+                PathString.Empty);
+            globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/*.css", null))
+                .Returns(new[] { "/base.css" });
+
+            var helper = GetHelper();
+
+            helper.GlobbingUrlBuilder = globbingUrlBuilder.Object;
+            helper.Href = "/css/site.css";
+            helper.HrefInclude = "**/*.css";
+
+            // Act
+            helper.Process(context, output);
+
+            // Assert
+            Assert.Equal("link", output.TagName);
+            Assert.Equal("/css/site.css", output.Attributes["href"].Value);
+            var content = HtmlContentUtilities.HtmlContentToString(output, new HtmlTestEncoder());
+            Assert.Equal(expectedContent, content);
+        }
+
+        [Fact]
         public void RendersLinkTagsForGlobbedHrefResults_EncodesAsExpected()
         {
             // Arrange
@@ -990,6 +1035,100 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 .Returns(urlHelper.Object);
 
             return urlHelperFactory.Object;
+        }
+
+        private class ConvertToStyleSheet : IConvertible
+        {
+            public TypeCode GetTypeCode()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool ToBoolean(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public byte ToByte(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public char ToChar(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public DateTime ToDateTime(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public decimal ToDecimal(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public double ToDouble(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public short ToInt16(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public int ToInt32(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public long ToInt64(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public sbyte ToSByte(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public float ToSingle(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public string ToString(IFormatProvider provider)
+            {
+                Assert.Equal(CultureInfo.InvariantCulture, provider);
+                return "stylesheet";
+            }
+
+            public object ToType(Type conversionType, IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ushort ToUInt16(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public uint ToUInt32(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public ulong ToUInt64(IFormatProvider provider)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override string ToString()
+            {
+                return "something else";
+            }
         }
     }
 }
