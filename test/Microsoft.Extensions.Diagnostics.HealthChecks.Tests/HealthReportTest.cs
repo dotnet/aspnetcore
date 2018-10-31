@@ -13,7 +13,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         [InlineData(HealthStatus.Healthy)]
         [InlineData(HealthStatus.Degraded)]
         [InlineData(HealthStatus.Unhealthy)]
-        [InlineData(HealthStatus.Failed)]
         public void Status_MatchesWorstStatusInResults(HealthStatus status)
         {
             var result = new HealthReport(new Dictionary<string, HealthReportEntry>()

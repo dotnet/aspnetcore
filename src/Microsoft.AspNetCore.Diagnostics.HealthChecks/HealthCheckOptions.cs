@@ -33,9 +33,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             { HealthStatus.Healthy, StatusCodes.Status200OK },
             { HealthStatus.Degraded, StatusCodes.Status200OK },
             { HealthStatus.Unhealthy, StatusCodes.Status503ServiceUnavailable },
-
-            // This means that a health check failed, so 500 is appropriate. This is an error.
-            { HealthStatus.Failed, StatusCodes.Status500InternalServerError },
         };
 
         /// <summary>
