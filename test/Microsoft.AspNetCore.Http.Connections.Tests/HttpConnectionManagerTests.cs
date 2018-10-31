@@ -7,27 +7,37 @@ using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
-    public class HttpConnectionManagerTests
+    public class HttpConnectionManagerTests : VerifiableLoggedTest
     {
+        public HttpConnectionManagerTests(ITestOutputHelper output)
+            : base(output)
+        {
+        }
+
         [Fact]
         public void NewConnectionsHaveConnectionId()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection();
 
-            Assert.NotNull(connection.ConnectionId);
-            Assert.Equal(HttpConnectionStatus.Inactive, connection.Status);
-            Assert.Null(connection.ApplicationTask);
-            Assert.Null(connection.TransportTask);
-            Assert.Null(connection.Cancellation);
-            Assert.NotEqual(default, connection.LastSeenUtc);
-            Assert.NotNull(connection.Transport);
-            Assert.NotNull(connection.Application);
+                Assert.NotNull(connection.ConnectionId);
+                Assert.Equal(HttpConnectionStatus.Inactive, connection.Status);
+                Assert.Null(connection.ApplicationTask);
+                Assert.Null(connection.TransportTask);
+                Assert.Null(connection.Cancellation);
+                Assert.NotEqual(default, connection.LastSeenUtc);
+                Assert.NotNull(connection.Transport);
+                Assert.NotNull(connection.Application);
+            }
         }
 
         [Theory]
@@ -42,305 +52,341 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(ConnectionStates.CloseGracefully | ConnectionStates.ApplicationFaulted | ConnectionStates.TransportNotFaulted)]
         public async Task DisposingConnectionsClosesBothSidesOfThePipe(ConnectionStates states)
         {
-            var closeGracefully = (states & ConnectionStates.CloseGracefully) != 0;
-            var applicationFaulted = (states & ConnectionStates.ApplicationFaulted) != 0;
-            var transportFaulted = (states & ConnectionStates.TransportFaulted) != 0;
-
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
-
-            if (applicationFaulted)
+            using (StartVerifiableLog(out var loggerFactory))
             {
-                // If the application is faulted then we want to make sure the transport task only completes after
-                // the application completes
-                connection.ApplicationTask = Task.FromException(new Exception("Application failed"));
-                connection.TransportTask = Task.Run(async () =>
-                {
-                    // Wait for the application to end
-                    var result = await connection.Application.Input.ReadAsync();
-                    connection.Application.Input.AdvanceTo(result.Buffer.End);
+                var closeGracefully = (states & ConnectionStates.CloseGracefully) != 0;
+                var applicationFaulted = (states & ConnectionStates.ApplicationFaulted) != 0;
+                var transportFaulted = (states & ConnectionStates.TransportFaulted) != 0;
 
-                    if (transportFaulted)
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection();
+
+                if (applicationFaulted)
+                {
+                    // If the application is faulted then we want to make sure the transport task only completes after
+                    // the application completes
+                    connection.ApplicationTask = Task.FromException(new Exception("Application failed"));
+                    connection.TransportTask = Task.Run(async () =>
                     {
-                        throw new Exception("Transport failed");
-                    }
-                });
+                        // Wait for the application to end
+                        var result = await connection.Application.Input.ReadAsync();
+                        connection.Application.Input.AdvanceTo(result.Buffer.End);
 
-            }
-            else if (transportFaulted)
-            {
-                // If the transport is faulted then we want to make sure the transport task only completes after
-                // the application completes
-                connection.TransportTask = Task.FromException(new Exception("Application failed"));
-                connection.ApplicationTask = Task.Run(async () =>
+                        if (transportFaulted)
+                        {
+                            throw new Exception("Transport failed");
+                        }
+                    });
+
+                }
+                else if (transportFaulted)
                 {
-                    // Wait for the application to end
-                    var result = await connection.Transport.Input.ReadAsync();
-                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
-                });
-            }
-            else
-            {
-                connection.ApplicationTask = Task.CompletedTask;
-                connection.TransportTask = Task.CompletedTask;
-            }
+                    // If the transport is faulted then we want to make sure the transport task only completes after
+                    // the application completes
+                    connection.TransportTask = Task.FromException(new Exception("Application failed"));
+                    connection.ApplicationTask = Task.Run(async () =>
+                    {
+                        // Wait for the application to end
+                        var result = await connection.Transport.Input.ReadAsync();
+                        connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                    });
+                }
+                else
+                {
+                    connection.ApplicationTask = Task.CompletedTask;
+                    connection.TransportTask = Task.CompletedTask;
+                }
 
-            var applicationInputTcs = new TaskCompletionSource<object>();
-            var applicationOutputTcs = new TaskCompletionSource<object>();
-            var transportInputTcs = new TaskCompletionSource<object>();
-            var transportOutputTcs = new TaskCompletionSource<object>();
+                var applicationInputTcs = new TaskCompletionSource<object>();
+                var applicationOutputTcs = new TaskCompletionSource<object>();
+                var transportInputTcs = new TaskCompletionSource<object>();
+                var transportOutputTcs = new TaskCompletionSource<object>();
 
-            connection.Transport.Input.OnWriterCompleted((_, __) => transportInputTcs.TrySetResult(null), null);
-            connection.Transport.Output.OnReaderCompleted((_, __) => transportOutputTcs.TrySetResult(null), null);
-            connection.Application.Input.OnWriterCompleted((_, __) => applicationInputTcs.TrySetResult(null), null);
-            connection.Application.Output.OnReaderCompleted((_, __) => applicationOutputTcs.TrySetResult(null), null);
+                connection.Transport.Input.OnWriterCompleted((_, __) => transportInputTcs.TrySetResult(null), null);
+                connection.Transport.Output.OnReaderCompleted((_, __) => transportOutputTcs.TrySetResult(null), null);
+                connection.Application.Input.OnWriterCompleted((_, __) => applicationInputTcs.TrySetResult(null), null);
+                connection.Application.Output.OnReaderCompleted((_, __) => applicationOutputTcs.TrySetResult(null), null);
 
-            try
-            {
-                await connection.DisposeAsync(closeGracefully).OrTimeout();
+                try
+                {
+                    await connection.DisposeAsync(closeGracefully).OrTimeout();
+                }
+                catch (Exception ex) when (!(ex is TimeoutException))
+                {
+                    // Ignore the exception that bubbles out of the failing task
+                }
+
+                await Task.WhenAll(applicationInputTcs.Task, applicationOutputTcs.Task, transportInputTcs.Task, transportOutputTcs.Task).OrTimeout();
             }
-            catch (Exception ex) when (!(ex is TimeoutException))
-            {
-                // Ignore the exception that bubbles out of the failing task
-            }
-
-            await Task.WhenAll(applicationInputTcs.Task, applicationOutputTcs.Task, transportInputTcs.Task, transportOutputTcs.Task).OrTimeout();
         }
 
         [Fact]
         public void NewConnectionsCanBeRetrieved()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection();
 
-            Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(connection.ConnectionId);
 
-            Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
-            Assert.Same(newConnection, connection);
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+                Assert.Same(newConnection, connection);
+            }
         }
 
         [Fact]
         public void AddNewConnection()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
-            var transport = connection.Transport;
+                var transport = connection.Transport;
 
-            Assert.NotNull(connection.ConnectionId);
-            Assert.NotNull(transport);
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(transport);
 
-            Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
-            Assert.Same(newConnection, connection);
-            Assert.Same(transport, newConnection.Transport);
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+                Assert.Same(newConnection, connection);
+                Assert.Same(transport, newConnection.Transport);
+            }
         }
 
         [Fact]
         public void RemoveConnection()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
-            var transport = connection.Transport;
+                var transport = connection.Transport;
 
-            Assert.NotNull(connection.ConnectionId);
-            Assert.NotNull(transport);
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(transport);
 
-            Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
-            Assert.Same(newConnection, connection);
-            Assert.Same(transport, newConnection.Transport);
+                Assert.True(connectionManager.TryGetConnection(connection.ConnectionId, out var newConnection));
+                Assert.Same(newConnection, connection);
+                Assert.Same(transport, newConnection.Transport);
 
-            connectionManager.RemoveConnection(connection.ConnectionId);
-            Assert.False(connectionManager.TryGetConnection(connection.ConnectionId, out newConnection));
+                connectionManager.RemoveConnection(connection.ConnectionId);
+                Assert.False(connectionManager.TryGetConnection(connection.ConnectionId, out newConnection));
+            }
         }
 
         [Fact]
         public async Task CloseConnectionsEndsAllPendingConnections()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-
-            connection.ApplicationTask = Task.Run(async () =>
+            using (StartVerifiableLog(out var loggerFactory))
             {
-                var result = await connection.Transport.Input.ReadAsync();
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
-                try
+                connection.ApplicationTask = Task.Run(async () =>
                 {
-                    Assert.True(result.IsCompleted);
+                    var result = await connection.Transport.Input.ReadAsync();
 
-                    // We should be able to write
-                    await connection.Transport.Output.WriteAsync(new byte[] { 1 });
-                }
-                finally
-                {
-                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
-                }
-            });
+                    try
+                    {
+                        Assert.True(result.IsCompleted);
 
-            connection.TransportTask = Task.Run(async () =>
-            {
-                var result = await connection.Application.Input.ReadAsync();
-                Assert.Equal(new byte[] { 1 }, result.Buffer.ToArray());
-                connection.Application.Input.AdvanceTo(result.Buffer.End);
+                        // We should be able to write
+                        await connection.Transport.Output.WriteAsync(new byte[] { 1 });
+                    }
+                    finally
+                    {
+                        connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                    }
+                });
 
-                result = await connection.Application.Input.ReadAsync();
-                try
+                connection.TransportTask = Task.Run(async () =>
                 {
-                    Assert.True(result.IsCompleted);
-                }
-                finally
-                {
+                    var result = await connection.Application.Input.ReadAsync();
+                    Assert.Equal(new byte[] { 1 }, result.Buffer.ToArray());
                     connection.Application.Input.AdvanceTo(result.Buffer.End);
-                }
-            });
 
-            connectionManager.CloseConnections();
+                    result = await connection.Application.Input.ReadAsync();
+                    try
+                    {
+                        Assert.True(result.IsCompleted);
+                    }
+                    finally
+                    {
+                        connection.Application.Input.AdvanceTo(result.Buffer.End);
+                    }
+                });
 
-            await connection.DisposeAsync();
+                connectionManager.CloseConnections();
+
+                await connection.DisposeAsync();
+            }
         }
 
         [Fact]
         public async Task DisposingConnectionMultipleTimesWaitsOnConnectionClose()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            connection.ApplicationTask = tcs.Task;
-            connection.TransportTask = tcs.Task;
+                connection.ApplicationTask = tcs.Task;
+                connection.TransportTask = tcs.Task;
 
-            var firstTask = connection.DisposeAsync();
-            var secondTask = connection.DisposeAsync();
-            Assert.False(firstTask.IsCompleted);
-            Assert.False(secondTask.IsCompleted);
+                var firstTask = connection.DisposeAsync();
+                var secondTask = connection.DisposeAsync();
+                Assert.False(firstTask.IsCompleted);
+                Assert.False(secondTask.IsCompleted);
 
-            tcs.TrySetResult(null);
+                tcs.TrySetResult(null);
 
-            await Task.WhenAll(firstTask, secondTask).OrTimeout();
+                await Task.WhenAll(firstTask, secondTask).OrTimeout();
+            }
         }
 
         [Fact]
         public async Task DisposingConnectionMultipleGetsExceptionFromTransportOrApp()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            connection.ApplicationTask = tcs.Task;
-            connection.TransportTask = tcs.Task;
+                connection.ApplicationTask = tcs.Task;
+                connection.TransportTask = tcs.Task;
 
-            var firstTask = connection.DisposeAsync();
-            var secondTask = connection.DisposeAsync();
-            Assert.False(firstTask.IsCompleted);
-            Assert.False(secondTask.IsCompleted);
+                var firstTask = connection.DisposeAsync();
+                var secondTask = connection.DisposeAsync();
+                Assert.False(firstTask.IsCompleted);
+                Assert.False(secondTask.IsCompleted);
 
-            tcs.TrySetException(new InvalidOperationException("Error"));
+                tcs.TrySetException(new InvalidOperationException("Error"));
 
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await firstTask.OrTimeout());
-            Assert.Equal("Error", exception.Message);
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await firstTask.OrTimeout());
+                Assert.Equal("Error", exception.Message);
 
-            exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await secondTask.OrTimeout());
-            Assert.Equal("Error", exception.Message);
+                exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await secondTask.OrTimeout());
+                Assert.Equal("Error", exception.Message);
+            }
         }
 
         [Fact]
         public async Task DisposingConnectionMultipleGetsCancellation()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            connection.ApplicationTask = tcs.Task;
-            connection.TransportTask = tcs.Task;
+                connection.ApplicationTask = tcs.Task;
+                connection.TransportTask = tcs.Task;
 
-            var firstTask = connection.DisposeAsync();
-            var secondTask = connection.DisposeAsync();
-            Assert.False(firstTask.IsCompleted);
-            Assert.False(secondTask.IsCompleted);
+                var firstTask = connection.DisposeAsync();
+                var secondTask = connection.DisposeAsync();
+                Assert.False(firstTask.IsCompleted);
+                Assert.False(secondTask.IsCompleted);
 
-            tcs.TrySetCanceled();
+                tcs.TrySetCanceled();
 
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await firstTask.OrTimeout());
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await secondTask.OrTimeout());
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await firstTask.OrTimeout());
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await secondTask.OrTimeout());
+            }
         }
 
         [Fact]
         public async Task DisposeInactiveConnection()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
-            Assert.NotNull(connection.ConnectionId);
-            Assert.NotNull(connection.Transport);
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(connection.Transport);
 
-            await connection.DisposeAsync();
-            Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
+                await connection.DisposeAsync();
+                Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
+            }
         }
 
         [Fact]
         public async Task DisposeInactiveConnectionWithNoPipes()
         {
-            var connectionManager = CreateConnectionManager();
-            var connection = connectionManager.CreateConnection();
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connection = connectionManager.CreateConnection();
 
-            Assert.NotNull(connection.ConnectionId);
-            Assert.NotNull(connection.Transport);
-            Assert.NotNull(connection.Application);
+                Assert.NotNull(connection.ConnectionId);
+                Assert.NotNull(connection.Transport);
+                Assert.NotNull(connection.Application);
 
-            await connection.DisposeAsync();
-            Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
+                await connection.DisposeAsync();
+                Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
+            }
         }
 
         [Fact]
         public async Task ApplicationLifetimeIsHookedUp()
         {
-            var appLifetime = new TestApplicationLifetime();
-            var connectionManager = CreateConnectionManager(appLifetime);
-            var tcs = new TaskCompletionSource<object>();
-
-            appLifetime.Start();
-
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-
-            connection.Application.Output.OnReaderCompleted((error, state) =>
+            using (StartVerifiableLog(out var loggerFactory))
             {
-                tcs.TrySetResult(null);
-            },
-            null);
+                var appLifetime = new TestApplicationLifetime();
+                var connectionManager = CreateConnectionManager(loggerFactory, appLifetime);
+                var tcs = new TaskCompletionSource<object>();
 
-            appLifetime.StopApplication();
+                appLifetime.Start();
 
-            // Connection should be disposed so this should complete immediately
-            await tcs.Task.OrTimeout();
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+
+                connection.Application.Output.OnReaderCompleted((error, state) =>
+                {
+                    tcs.TrySetResult(null);
+                },
+                null);
+
+                appLifetime.StopApplication();
+
+                // Connection should be disposed so this should complete immediately
+                await tcs.Task.OrTimeout();
+            }
         }
 
         [Fact]
         public async Task ApplicationLifetimeCanStartBeforeHttpConnectionManagerInitialized()
         {
-            var appLifetime = new TestApplicationLifetime();
-            appLifetime.Start();
-
-            var connectionManager = CreateConnectionManager(appLifetime);
-            var tcs = new TaskCompletionSource<object>();
-
-            var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-
-            connection.Application.Output.OnReaderCompleted((error, state) =>
+            using (StartVerifiableLog(out var loggerFactory))
             {
-                tcs.TrySetResult(null);
-            },
-            null);
+                var appLifetime = new TestApplicationLifetime();
+                appLifetime.Start();
 
-            appLifetime.StopApplication();
+                var connectionManager = CreateConnectionManager(loggerFactory, appLifetime);
+                var tcs = new TaskCompletionSource<object>();
 
-            // Connection should be disposed so this should complete immediately
-            await tcs.Task.OrTimeout();
+                var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
+
+                connection.Application.Output.OnReaderCompleted((error, state) =>
+                {
+                    tcs.TrySetResult(null);
+                },
+                null);
+
+                appLifetime.StopApplication();
+
+                // Connection should be disposed so this should complete immediately
+                await tcs.Task.OrTimeout();
+            }
         }
 
-        private static HttpConnectionManager CreateConnectionManager(IApplicationLifetime lifetime = null)
+        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime lifetime = null)
         {
             lifetime = lifetime ?? new EmptyApplicationLifetime();
-            return new HttpConnectionManager(new LoggerFactory(), lifetime);
+            return new HttpConnectionManager(loggerFactory, lifetime);
         }
 
         [Flags]

@@ -9,92 +9,111 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
-    public class LongPollingTests
+    public class LongPollingTests : VerifiableLoggedTest
     {
+        public LongPollingTests(ITestOutputHelper output)
+            : base(output)
+        {
+        }
+
         [Fact]
         public async Task Set204StatusCodeWhenChannelComplete()
         {
-            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-            var context = new DefaultHttpContext();
+                var context = new DefaultHttpContext();
 
-            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory: new LoggerFactory());
+                var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory);
 
-            connection.Transport.Output.Complete();
+                connection.Transport.Output.Complete();
 
-            await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
+                await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
 
-            Assert.Equal(204, context.Response.StatusCode);
+                Assert.Equal(204, context.Response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task Set200StatusCodeWhenTimeoutTokenFires()
         {
-            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-            var context = new DefaultHttpContext();
-
-            var timeoutToken = new CancellationToken(true);
-            var poll = new LongPollingTransport(timeoutToken, connection.Application.Input, loggerFactory: new LoggerFactory());
-
-            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutToken, context.RequestAborted))
+            using (StartVerifiableLog(out var loggerFactory))
             {
-                await poll.ProcessRequestAsync(context, cts.Token).OrTimeout();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var context = new DefaultHttpContext();
 
-                Assert.Equal(0, context.Response.ContentLength);
-                Assert.Equal(200, context.Response.StatusCode);
+                var timeoutToken = new CancellationToken(true);
+                var poll = new LongPollingTransport(timeoutToken, connection.Application.Input, loggerFactory);
+
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutToken, context.RequestAborted))
+                {
+                    await poll.ProcessRequestAsync(context, cts.Token).OrTimeout();
+
+                    Assert.Equal(0, context.Response.ContentLength);
+                    Assert.Equal(200, context.Response.StatusCode);
+                }
             }
         }
 
         [Fact]
         public async Task FrameSentAsSingleResponse()
         {
-            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-            var context = new DefaultHttpContext();
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var context = new DefaultHttpContext();
 
-            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory: new LoggerFactory());
-            var ms = new MemoryStream();
-            context.Response.Body = ms;
+                var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory);
+                var ms = new MemoryStream();
+                context.Response.Body = ms;
 
-            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
-            connection.Transport.Output.Complete();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
+                connection.Transport.Output.Complete();
 
-            await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
+                await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
 
-            Assert.Equal(200, context.Response.StatusCode);
-            Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
+                Assert.Equal(200, context.Response.StatusCode);
+                Assert.Equal("Hello World", Encoding.UTF8.GetString(ms.ToArray()));
+            }
         }
 
         [Fact]
         public async Task MultipleFramesSentAsSingleResponse()
         {
-            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
-            var context = new DefaultHttpContext();
+            using (StartVerifiableLog(out var loggerFactory))
+            {
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
+                var context = new DefaultHttpContext();
 
-            var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory: new LoggerFactory());
-            var ms = new MemoryStream();
-            context.Response.Body = ms;
+                var poll = new LongPollingTransport(CancellationToken.None, connection.Application.Input, loggerFactory);
+                var ms = new MemoryStream();
+                context.Response.Body = ms;
 
-            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
-            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes(" "));
-            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("World"));
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes(" "));
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("World"));
 
-            connection.Transport.Output.Complete();
+                connection.Transport.Output.Complete();
 
-            await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
+                await poll.ProcessRequestAsync(context, context.RequestAborted).OrTimeout();
 
-            Assert.Equal(200, context.Response.StatusCode);
+                Assert.Equal(200, context.Response.StatusCode);
 
-            var payload = ms.ToArray();
-            Assert.Equal("Hello World", Encoding.UTF8.GetString(payload));
+                var payload = ms.ToArray();
+                Assert.Equal("Hello World", Encoding.UTF8.GetString(payload));
+            }
         }
 
         [Fact]

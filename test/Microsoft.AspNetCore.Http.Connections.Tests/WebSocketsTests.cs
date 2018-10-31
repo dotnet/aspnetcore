@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application, loggerFactory.CreateLogger("HttpConnectionContext1"));
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
-                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null, loggerFactory.CreateLogger("HttpConnectionContext2"));
                     var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
@@ -86,11 +86,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application, loggerFactory.CreateLogger("HttpConnectionContext1"));
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
-                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null, loggerFactory.CreateLogger("HttpConnectionContext2"));
                     connectionContext.ActiveFormat = transferFormat;
                     var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             using (StartVerifiableLog(out var loggerFactory, LogLevel.Debug))
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
-                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application);
+                var connection = new HttpConnectionContext("foo", pair.Transport, pair.Application, loggerFactory.CreateLogger("HttpConnectionContext1"));
 
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         }
                     }
 
-                    var connectionContext = new HttpConnectionContext(string.Empty, null, null);
+                    var connectionContext = new HttpConnectionContext(string.Empty, null, null, loggerFactory.CreateLogger("HttpConnectionContext2"));
                     var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
