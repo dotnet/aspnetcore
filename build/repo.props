@@ -19,8 +19,7 @@
     <SignedOobArchivePath>$(SignedOutputPath)OobArchives\</SignedOobArchivePath>
 
     <!-- Working directories -->
-    <PoliCheckPath Condition="'$(AspNetCoreSourceRoot)' != '' ">$([MSBuild]::NormalizeDirectory('$(AspNetCoreSourceRoot)'))</PoliCheckPath>
-    <PoliCheckPath Condition="'$(PoliCheckPath)' == '' ">$(IntermediateDir)policheck\</PoliCheckPath>
+    <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
     <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
     <UnsignedPackagesWithSignedBinariesPath>$(IntermediateDir)UnsignedPackagesWithSignedBinaries\</UnsignedPackagesWithSignedBinariesPath>
     <UnsignedSharedFxPath>$(IntermediateDir)SharedFx\</UnsignedSharedFxPath>

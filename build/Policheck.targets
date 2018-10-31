@@ -14,6 +14,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PolicheckFiles Include="$(PoliCheckPath)**\*" />
+      <!-- incremental builds fail due to max path checks. https://github.com/Microsoft/msbuild/issues/53 -->
+      <PolicheckFiles Remove="%(PolicheckFiles.FullPath)" Condition="!Exists(%(PolicheckFiles.FullPath))" />
+
       <!-- List is sorted OrdinalIgnoreCase. Path must be the relative path (non-wildcard) of the file inside the symbols nupkg -->
 
       <SrcExclusions Include="wwwroot\lib\bootstrap\dist\js\bootstrap.bundle.js">
@@ -71,7 +75,9 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_CorePolicheck">
+  <Target Name="_CorePolicheck"
+          Inputs="@(PolicheckFiles)"
+          Outputs="$(_PoliCheckOutputFile)">
 
     <PropertyGroup>
       <_PoliCheckDirectory>$(MSBuildProgramFiles32)\Microsoft\Policheck\</_PoliCheckDirectory>
