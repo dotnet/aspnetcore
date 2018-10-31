@@ -294,13 +294,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         /// <summary>
-        /// Checks 9 bytes from <paramref name="span"/>  correspond to a known HTTP version.
+        /// Checks 8 bytes from <paramref name="span"/>  correspond to a known HTTP version.
         /// </summary>
         /// <remarks>
         /// A "known HTTP version" Is is either HTTP/1.0 or HTTP/1.1.
         /// Since those fit in 8 bytes, they can be optimally looked up by reading those bytes as a long. Once
         /// in that format, it can be checked against the known versions.
-        /// The Known versions will be checked with the required '\r'.
         /// To optimize performance the HTTP/1.1 will be checked first.
         /// </remarks>
         /// <returns><c>true</c> if the input matches a known string, <c>false</c> otherwise.</returns>
@@ -309,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             knownVersion = HttpVersion.Unknown;
 
-            if (span.Length >= sizeof(ulong) + 1 && span[sizeof(ulong)] == (byte)'\r')
+            if (span.Length == sizeof(ulong))
             {
                 ulong version = Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(span));
 

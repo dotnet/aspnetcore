@@ -180,6 +180,68 @@ namespace System.Buffers
         }
 
         /// <summary>
+        /// Move the reader back the specified number of positions.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Rewind(long count)
+        {
+            if (count < 0)
+            {
+                ThrowArgumentOutOfRangeException(ExceptionArgument.count);
+            }
+
+            Consumed -= count;
+
+            if (CurrentSpanIndex >= count)
+            {
+                CurrentSpanIndex -= (int)count;
+                _moreData = true;
+            }
+            else
+            {
+                // Current segment doesn't have enough space, scan backward through segments
+                RetreatToPreviousSpan(Consumed);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void RetreatToPreviousSpan(long consumed)
+        {
+            ResetReader();
+            Advance(consumed);
+        }
+
+        private void ResetReader()
+        {
+            CurrentSpanIndex = 0;
+            Consumed = 0;
+            _currentPosition = Sequence.Start;
+            _nextPosition = _currentPosition;
+
+            if (Sequence.TryGet(ref _nextPosition, out ReadOnlyMemory<T> memory, advance: true))
+            {
+                _moreData = true;
+
+                if (memory.Length == 0)
+                {
+                    CurrentSpan = default;
+                    // No space in the first span, move to one with space
+                    GetNextSpan();
+                }
+                else
+                {
+                    CurrentSpan = memory.Span;
+                }
+            }
+            else
+            {
+                // No space in any spans and at end of sequence
+                _moreData = false;
+                CurrentSpan = default;
+            }
+        }
+
+        /// <summary>
         /// Get the next segment with available space, if any.
         /// </summary>
         private void GetNextSpan()
@@ -259,6 +321,174 @@ namespace System.Buffers
                 Consumed -= count;
                 ThrowArgumentOutOfRangeException(ExceptionArgument.count);
             }
+        }
+
+        /// <summary>
+        /// Try to read everything up to the given <paramref name="delimiters"/>.
+        /// </summary>
+        /// <param name="span">The read data, if any.</param>
+        /// <param name="delimiters">The delimiters to look for.</param>
+        /// <param name="advancePastDelimiter">True to move past the first found instance of any of the given <paramref name="delimiters"/>.</param>
+        /// <returns>True if any of the the <paramref name="delimiters"/> were found.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryReadToAny(out ReadOnlySpan<T> span, ReadOnlySpan<T> delimiters, bool advancePastDelimiter = true)
+        {
+            ReadOnlySpan<T> remaining = UnreadSpan;
+            int index = delimiters.Length == 2
+                ? remaining.IndexOfAny(delimiters[0], delimiters[1])
+                : remaining.IndexOfAny(delimiters);
+
+            if (index != -1)
+            {
+                span = remaining.Slice(0, index);
+                Advance(index + (advancePastDelimiter ? 1 : 0));
+                return true;
+            }
+
+            return TryReadToAnySlow(out span, delimiters, advancePastDelimiter);
+        }
+
+        private bool TryReadToAnySlow(out ReadOnlySpan<T> span, ReadOnlySpan<T> delimiters, bool advancePastDelimiter)
+        {
+            if (!TryReadToAnyInternal(out ReadOnlySequence<T> sequence, delimiters, advancePastDelimiter, CurrentSpan.Length - CurrentSpanIndex))
+            {
+                span = default;
+                return false;
+            }
+
+            span = sequence.IsSingleSegment ? sequence.First.Span : sequence.ToArray();
+            return true;
+        }
+
+        private bool TryReadToAnyInternal(out ReadOnlySequence<T> sequence, ReadOnlySpan<T> delimiters, bool advancePastDelimiter, int skip = 0)
+        {
+            BufferReader<T> copy = this;
+            if (skip > 0)
+                Advance(skip);
+            ReadOnlySpan<T> remaining = CurrentSpanIndex == 0 ? CurrentSpan : UnreadSpan;
+
+            while (!End)
+            {
+                int index = delimiters.Length == 2
+                    ? remaining.IndexOfAny(delimiters[0], delimiters[1])
+                    : remaining.IndexOfAny(delimiters);
+
+                if (index != -1)
+                {
+                    // Found one of the delimiters. Move to it, slice, then move past it.
+                    if (index > 0)
+                    {
+                        Advance(index);
+                    }
+
+                    sequence = Sequence.Slice(copy.Position, Position);
+                    if (advancePastDelimiter)
+                    {
+                        Advance(1);
+                    }
+                    return true;
+                }
+
+                Advance(remaining.Length);
+                remaining = CurrentSpan;
+            }
+
+            // Didn't find anything, reset our original state.
+            this = copy;
+            sequence = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Check to see if the given <paramref name="next"/> value is next.
+        /// </summary>
+        /// <param name="advancePast">Move past the <paramref name="next"/> value if found.</param>
+        /// <param name="next">The value to look for.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNext(T next, bool advancePast = false)
+        {
+            if (End)
+                return false;
+
+            ReadOnlySpan<T> unread = UnreadSpan;
+            if (unread[0].Equals(next))
+            {
+                if (advancePast)
+                {
+                    Advance(1);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Check to see if the given <paramref name="next"/> values are next.
+        /// </summary>
+        /// <param name="advancePast">Move past the <paramref name="next"/> values if found.</param>
+        /// <param name="next">The values to look for.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNext(ReadOnlySpan<T> next, bool advancePast = false)
+        {
+            ReadOnlySpan<T> unread = UnreadSpan;
+            if (unread.StartsWith(next))
+            {
+                if (advancePast)
+                {
+                    Advance(next.Length);
+                }
+                return true;
+            }
+
+            // Only check the slow path if there wasn't enough to satisfy next
+            return unread.Length < next.Length && IsNextSlow(next, advancePast);
+        }
+
+        private unsafe bool IsNextSlow(ReadOnlySpan<T> next, bool advancePast)
+        {
+            ReadOnlySpan<T> currentSpan = UnreadSpan;
+
+            // We should only come in here if we need more data than we have in our current span
+            Debug.Assert(currentSpan.Length < next.Length);
+
+            int length = next.Length;
+            SequencePosition nextPosition = _nextPosition;
+
+            while (next.StartsWith(currentSpan))
+            {
+                if (next.Length == currentSpan.Length)
+                {
+                    // Fully matched
+                    if (advancePast)
+                    {
+                        Advance(length);
+                    }
+                    return true;
+                }
+
+                // Need to check the next segment
+                while (true)
+                {
+                    if (!Sequence.TryGet(ref nextPosition, out ReadOnlyMemory<T> nextSegment, advance: true))
+                    {
+                        // Nothing left
+                        return false;
+                    }
+
+                    if (nextSegment.Length > 0)
+                    {
+                        next = next.Slice(currentSpan.Length);
+                        currentSpan = nextSegment.Span;
+                        if (currentSpan.Length > next.Length)
+                        {
+                            currentSpan = currentSpan.Slice(0, next.Length);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -31,154 +32,127 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteQuestionMark = (byte)'?';
         private const byte BytePercentage = (byte)'%';
 
-        public unsafe bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private static ReadOnlySpan<byte> Eol => new byte[] { ByteCR, ByteLF };
+
+        public bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
+            var reader = new BufferReader<byte>(buffer);
+            bool success = ParseRequestLine(handler, ref reader);
+            consumed = reader.Position;
+            if (success) examined = reader.Position;
+            return success;
+        }
 
-            // Prepare the first span
-            var span = buffer.First.Span;
-            var lineIndex = span.IndexOf(ByteLF);
-            if (lineIndex >= 0)
+        public bool ParseRequestLine(TRequestHandler handler, ref BufferReader<byte> reader)
+        {
+            // Look for CR/LF
+            long startPosition = reader.Consumed;
+
+            if (!reader.TryReadToAny(out ReadOnlySpan<byte> requestLine, Eol, advancePastDelimiter: false))
             {
-                consumed = buffer.GetPosition(lineIndex + 1, consumed);
-                span = span.Slice(0, lineIndex + 1);
-            }
-            else if (buffer.IsSingleSegment)
-            {
-                // No request line end
-                return false;
-            }
-            else if (TryGetNewLine(buffer, out var found))
-            {
-                span = buffer.Slice(consumed, found).ToSpan();
-                consumed = found;
-            }
-            else
-            {
-                // No request line end
+                // Couldn't find a delimiter
                 return false;
             }
 
-            // Parse the span
-            ParseRequestLine(handler, span);
+            if (!reader.IsNext(Eol, advancePast: true))
+            {
+                if (reader.TryRead(out byte value) && value == ByteCR && !reader.TryRead(out value))
+                {
+                    reader.Rewind(reader.Consumed - startPosition);
 
-            examined = consumed;
+                    // Incomplete if ends in CR
+                    return false;
+                }
+
+                // Not CR/LF
+                RejectRequestLine(requestLine);
+            }
+
+            ParseRequestLine(handler, requestLine);
             return true;
         }
 
-        private void ParseRequestLine(TRequestHandler handler, ReadOnlySpan<byte> span)
+        private unsafe static string GETMESTRING(ReadOnlySpan<byte> span)
         {
-            // Get Method and set the offset
+            fixed (byte* b = span)
+            {
+                return Encoding.UTF8.GetString(b, span.Length);
+            }
+        }
+
+        private void ParseRequestLine(TRequestHandler handler, in ReadOnlySpan<byte> data)
+        {
+            // TODO:
+            // We can simplify GetKnownMethod if we take into account that the
+            // absolute smallest request line is something like "Z * HTTP/1.1"
+            // See https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.2
+
             ReadOnlySpan<byte> customMethod = default;
-            if (!HttpUtilities.GetKnownMethod(span, out HttpMethod method, out var offset))
+
+            // Get Method and set the offset
+            if (!HttpUtilities.GetKnownMethod(data, out HttpMethod method, out int offset))
             {
-                customMethod = GetUnknownMethod(span, out offset);
+                customMethod = GetUnknownMethod(data, out offset);
             }
 
-            // Skip space
-            offset++;
+            // Skip the space after the method
+            ReadOnlySpan<byte> target = data.Slice(++offset);
 
-            byte ch = 0;
-            // Target = Path and Query
-            var pathEncoded = false;
-            var pathStart = -1;
-            for (; offset < span.Length; offset++)
+            bool pathEncoded = false;
+            int pathEnd = target.IndexOfAny(ByteSpace, ByteQuestionMark);
+            if (pathEnd < 1 || pathEnd > target.Length - 1)
             {
-                ch = span[offset];
-                if (ch == ByteSpace)
-                {
-                    if (pathStart == -1)
-                    {
-                        // Empty path is illegal
-                        RejectRequestLine(span);
-                    }
-
-                    break;
-                }
-                else if (ch == ByteQuestionMark)
-                {
-                    if (pathStart == -1)
-                    {
-                        // Empty path is illegal
-                        RejectRequestLine(span);
-                    }
-
-                    break;
-                }
-                else if (ch == BytePercentage)
-                {
-                    if (pathStart == -1)
-                    {
-                        // Path starting with % is illegal
-                        RejectRequestLine(span);
-                    }
-
-                    pathEncoded = true;
-                }
-                else if (pathStart == -1)
-                {
-                    pathStart = offset;
-                }
+                // Cant start or end with space/? or eat the entire target
+                RejectRequestLine(data);
             }
 
-            if (pathStart == -1)
+            ReadOnlySpan<byte> path = target.Slice(0, pathEnd);
+
+            int escapeIndex = path.IndexOf(BytePercentage);
+            if (escapeIndex == 0)
             {
-                // Start of path not found
-                RejectRequestLine(span);
+                // Can't start with %
+                RejectRequestLine(data);
+            }
+            else if (escapeIndex > 0)
+            {
+                pathEncoded = true;
             }
 
-            var pathBuffer = span.Slice(pathStart, offset - pathStart);
-
-            // Query string
-            var queryStart = offset;
-            if (ch == ByteQuestionMark)
+            ReadOnlySpan<byte> query = default;
+            if (target[pathEnd] == ByteQuestionMark)
             {
-                // We have a query string
-                for (; offset < span.Length; offset++)
+                // Query string
+                query = target.Slice(path.Length);
+                int spaceIndex = query.IndexOf(ByteSpace);
+                if (spaceIndex < 1)
                 {
-                    ch = span[offset];
-                    if (ch == ByteSpace)
-                    {
-                        break;
-                    }
+                    // End of query string not found
+                    RejectRequestLine(data);
                 }
+                query = query.Slice(0, spaceIndex);
             }
 
-            // End of query string not found
-            if (offset == span.Length)
-            {
-                RejectRequestLine(span);
-            }
-
-            var targetBuffer = span.Slice(pathStart, offset - pathStart);
-            var query = span.Slice(queryStart, offset - queryStart);
-
-            // Consume space
-            offset++;
+            target = target.Slice(0, path.Length + query.Length);
 
             // Version
-            if (!HttpUtilities.GetKnownVersion(span.Slice(offset), out HttpVersion httpVersion))
+
+            // Skip space
+            ReadOnlySpan<byte> version = data.Slice(offset + target.Length + 1);
+
+            if (!HttpUtilities.GetKnownVersion(version, out HttpVersion httpVersion))
             {
-                if (span[offset] == ByteCR || span[span.Length - 2] != ByteCR)
+                if (version.Length == 0)
                 {
-                    // If missing delimiter or CR before LF, reject and log entire line
-                    RejectRequestLine(span);
+                    RejectRequestLine(data);
                 }
-                else
-                {
-                    // else inform HTTP version is unsupported.
-                    RejectUnknownVersion(span.Slice(offset, span.Length - offset - 2));
-                }
+
+                RejectUnknownVersion(version);
             }
 
-            // After version's 8 bytes and CR, expect LF
-            if (span[offset + 8 + 1] != ByteLF)
-            {
-                RejectRequestLine(span);
-            }
-
-            handler.OnStartLine(method, httpVersion, targetBuffer.UnsafeAsSpan(), pathBuffer.UnsafeAsSpan(), query.UnsafeAsSpan(), customMethod.UnsafeAsSpan(), pathEncoded);
+            handler.OnStartLine(method, httpVersion, target.UnsafeAsSpan(), path.UnsafeAsSpan(), query.UnsafeAsSpan(), customMethod.UnsafeAsSpan(), pathEncoded);
         }
 
         public bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes)

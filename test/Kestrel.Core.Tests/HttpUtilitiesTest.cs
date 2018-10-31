@@ -51,11 +51,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData("HTTP/1.0\r", true, HttpUtilities.Http10Version, HttpVersion.Http10)]
-        [InlineData("HTTP/1.1\r", true, HttpUtilities.Http11Version, HttpVersion.Http11)]
-        [InlineData("HTTP/3.0\r", false, null, HttpVersion.Unknown)]
-        [InlineData("http/1.0\r", false, null, HttpVersion.Unknown)]
-        [InlineData("http/1.1\r", false, null, HttpVersion.Unknown)]
+        [InlineData("HTTP/1.0", true, HttpUtilities.Http10Version, HttpVersion.Http10)]
+        [InlineData("HTTP/1.1", true, HttpUtilities.Http11Version, HttpVersion.Http11)]
+        [InlineData("HTTP/3.0", false, null, HttpVersion.Unknown)]
+        [InlineData("http/1.0", false, null, HttpVersion.Unknown)]
+        [InlineData("http/1.1", false, null, HttpVersion.Unknown)]
         [InlineData("short ", false, null, HttpVersion.Unknown)]
         public void GetsKnownVersion(string input, bool expectedResult, string expectedKnownString, HttpVersion version)
         {
@@ -77,8 +77,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData("HTTP/1.0\r", "HTTP/1.0")]
-        [InlineData("HTTP/1.1\r", "HTTP/1.1")]
+        [InlineData("HTTP/1.0", "HTTP/1.0")]
+        [InlineData("HTTP/1.1", "HTTP/1.1")]
         public void KnownVersionsAreInterned(string input, string expected)
         {
             TestKnownStringsInterning(input, expected, span =>

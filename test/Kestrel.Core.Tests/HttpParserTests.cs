@@ -91,6 +91,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
+            var index = requestLine.IndexOfAny(new char[] { '\r', '\n' });
+            if (index != -1)
+            {
+                requestLine = requestLine.Substring(0, index);
+            }
+
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
         }
@@ -113,7 +119,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
 
-            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(method.EscapeNonPrintable() + @" / HTTP/1.1\x0D\x0A"), exception.Message);
+            var index = requestLine.IndexOfAny(new char[] { '\r', '\n' });
+            if (index != -1)
+            {
+                requestLine = requestLine.Substring(0, index);
+            }
+
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
             Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
         }
 

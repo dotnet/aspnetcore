@@ -484,6 +484,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
+            var index = requestLine.IndexOfAny(new char[] { '\r', '\n' });
+            if (index != -1)
+            {
+                requestLine = requestLine.Substring(0, index);
+            }
+
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()), exception.Message);
         }
 
