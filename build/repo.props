@@ -39,7 +39,6 @@
     <NativeInstaller Include="x64" FileExt=".rpm" />
     <NativeInstaller Include="rh.rhel.7-x64" FileExt=".rpm" />
 
-    <SharedFrameworkName Include="Microsoft.AspNetCore.All" />
     <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 

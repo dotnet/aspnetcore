@@ -26,7 +26,7 @@
     <!-- installers -->
     <SharedFxInstallerName>aspnetcore-runtime</SharedFxInstallerName>
     <!--
-      This is named aspnetcore-runtime-internal because it only includes Microsoft.AspNetCore.All and is an intermediate file passed off to signing, installer generation, etc.
+      This is named aspnetcore-runtime-internal because it only includes Microsoft.AspNetCore.App and is an intermediate file passed off to signing, installer generation, etc.
       Subsequent build steps will combine this with Microsoft.NETCore.App and produce final tarballs/zips.
     -->
     <SharedFxIntermediateArchiveBaseName>$(SharedFxInstallerName)-internal</SharedFxIntermediateArchiveBaseName>
