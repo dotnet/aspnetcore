@@ -29,7 +29,7 @@ namespace SignalRSamples
                 options.KeepAliveInterval = TimeSpan.FromSeconds(5);
             })
             .AddMessagePackProtocol();
-            //.AddRedis();
+            //.AddStackExchangeRedis();
 
             services.AddCors(o =>
             {
