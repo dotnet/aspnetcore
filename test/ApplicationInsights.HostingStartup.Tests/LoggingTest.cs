@@ -111,7 +111,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = PreservePublishedApplicationForDebugging,
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = targetFramework,
                     Configuration = GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     EnvironmentName = environment,
