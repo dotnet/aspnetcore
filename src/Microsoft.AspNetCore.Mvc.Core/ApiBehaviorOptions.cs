@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private readonly CompatibilitySwitch<bool> _suppressMapClientErrors;
         private readonly CompatibilitySwitch<bool> _suppressUseValidationProblemDetailsForInvalidModelStateResponses;
+        private readonly CompatibilitySwitch<bool> _allowInferringBindingSourceForCollectionTypesAsFromQuery;
         private readonly ICompatibilitySwitch[] _switches;
 
         private Func<ActionContext, IActionResult> _invalidModelStateResponseFactory;
@@ -28,10 +29,12 @@ namespace Microsoft.AspNetCore.Mvc
         {
             _suppressMapClientErrors = new CompatibilitySwitch<bool>(nameof(SuppressMapClientErrors));
             _suppressUseValidationProblemDetailsForInvalidModelStateResponses = new CompatibilitySwitch<bool>(nameof(SuppressUseValidationProblemDetailsForInvalidModelStateResponses));
+            _allowInferringBindingSourceForCollectionTypesAsFromQuery = new CompatibilitySwitch<bool>(nameof(AllowInferringBindingSourceForCollectionTypesAsFromQuery));
             _switches = new[]
             {
                 _suppressMapClientErrors,
                 _suppressUseValidationProblemDetailsForInvalidModelStateResponses,
+                _allowInferringBindingSourceForCollectionTypesAsFromQuery
             };
         }
 
@@ -149,6 +152,43 @@ namespace Microsoft.AspNetCore.Mvc
         {
             get => _suppressUseValidationProblemDetailsForInvalidModelStateResponses.Value;
             set => _suppressUseValidationProblemDetailsForInvalidModelStateResponses.Value = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines if <see cref="BindingInfo.BindingSource"/> for collection types
+        /// (<see cref="ModelMetadata.IsCollectionType"/>).
+        /// <para>
+        /// When <see langword="true" />, the binding source for collection types is inferred as <see cref="BindingSource.Query"/>.
+        /// Otherwise <see cref="BindingSource.Body"/> is inferred.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="false"/> if the version is
+        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="true"/> otherwise.
+        /// </value>
+        /// <remarks>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter takes
+        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// lower then this setting will have the value <see langword="true"/> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> or
+        /// higher then this setting will have the value <see langword="false"/> unless explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool AllowInferringBindingSourceForCollectionTypesAsFromQuery
+        {
+            get => _allowInferringBindingSourceForCollectionTypesAsFromQuery.Value;
+            set => _allowInferringBindingSourceForCollectionTypesAsFromQuery.Value = value;
         }
 
         /// <summary>

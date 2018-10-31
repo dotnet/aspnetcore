@@ -98,15 +98,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 {
                     var convention = Assert.IsType<ApiConventionApplicationModelConvention>(c);
                     Assert.Equal(typeof(ProblemDetails), convention.DefaultErrorResponseType.Type);
-                });
-
-            Assert.Collection(
-                provider.ControllerModelConventions,
-                c =>
-                {
-                    var convention = Assert.IsType<InferParameterBindingInfoConvention>(c);
-                    Assert.False(convention.SuppressInferBindingSourcesForParameters);
-                });
+                },
+                c => Assert.IsType<InferParameterBindingInfoConvention>(c));
         }
 
         [Fact]
@@ -140,14 +133,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void Constructor_SetsSuppressInferBindingSourcesForParametersIsSet()
+        public void Constructor_DoesNotAddInferParameterBindingInfoConvention_IfSuppressInferBindingSourcesForParametersIsSet()
         {
             // Arrange
             var provider = GetProvider(new ApiBehaviorOptions { SuppressInferBindingSourcesForParameters = true });
 
             // Act & Assert
-            var convention = Assert.Single(provider.ControllerModelConventions.OfType<InferParameterBindingInfoConvention>());
-            Assert.True(convention.SuppressInferBindingSourcesForParameters);
+            Assert.Empty(provider.ActionModelConventions.OfType<InferParameterBindingInfoConvention>());
         }
 
         [Fact]
