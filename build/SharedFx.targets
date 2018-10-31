@@ -21,7 +21,7 @@
     <PropertyGroup>
       <_RestoreGraphProjectInput>@(ProjectToBuild)</_RestoreGraphProjectInput>
       <SharedFxBuildProperties>
-        $(SolutionProperties);
+        $(BuildProperties);
         SharedFxRid=$(SharedFxRid);
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)
@@ -53,7 +53,7 @@
       <UnitTestFxTrxPhysicalFilePath Condition="'$(HostMachineRepositoryRoot)' != ''">$(HostMachineRepositoryRoot)/artifacts/logs/SharedFx-UnitTests.trx</UnitTestFxTrxPhysicalFilePath>
     </PropertyGroup>
 
-    <MSBuild Projects="$(UnitTestFxProject)" Targets="GetTargetPath" Properties="$(SolutionProperties)">
+    <MSBuild Projects="$(UnitTestFxProject)" Targets="GetTargetPath" Properties="$(BuildProperties)">
       <Output TaskParameter="TargetOutputs" ItemName="SharedFxTestAssembly" />
     </MSBuild>
 
