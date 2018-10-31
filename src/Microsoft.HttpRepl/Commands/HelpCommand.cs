@@ -218,7 +218,7 @@ namespace Microsoft.HttpRepl.Commands
             shellState.ConsoleManager.WriteLine($"{"HEAD",navCommandColumn}{"Issues a HEAD request."}");
             shellState.ConsoleManager.WriteLine($"{"OPTIONS",navCommandColumn}{"Issues an OPTIONS request."}");
             shellState.ConsoleManager.WriteLine();
-            shellState.ConsoleManager.WriteLine($"{"set header",navCommandColumn}{"Sets or clears a header for all requests. e.g. `set header content-type:application/json`"}");
+            shellState.ConsoleManager.WriteLine($"{"set header",navCommandColumn}{"Sets or clears a header for all requests. e.g. `set header content-type application/json`"}");
             shellState.ConsoleManager.WriteLine();
 
             shellState.ConsoleManager.WriteLine();

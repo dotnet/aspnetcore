@@ -47,7 +47,7 @@ namespace Microsoft.HttpRepl.Commands
                 {
                     if (string.IsNullOrEmpty(parameterSetsByContentType.Key))
                     {
-                        dirRequestInfo.SetFallbackRequestBody(method, GetBodyString(null, parameterSetsByContentType.Value));
+                        dirRequestInfo.SetFallbackRequestBody(method, parameterSetsByContentType.Key, GetBodyString(null, parameterSetsByContentType.Value));
                     }
 
                     dirRequestInfo.SetRequestBody(method, parameterSetsByContentType.Key, GetBodyString(parameterSetsByContentType.Key, parameterSetsByContentType.Value));

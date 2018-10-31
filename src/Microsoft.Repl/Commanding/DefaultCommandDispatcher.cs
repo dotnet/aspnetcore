@@ -79,7 +79,7 @@ namespace Microsoft.Repl.Commanding
 
         public IParser Parser => _parser;
 
-        public IReadOnlyList<string> CollectSuggesetions(IShellState shellState)
+        public IReadOnlyList<string> CollectSuggestions(IShellState shellState)
         {
             string line = shellState.InputManager.GetCurrentBuffer();
             TParseResult parseResult = _parser.Parse(line, shellState.ConsoleManager.CaretPosition);

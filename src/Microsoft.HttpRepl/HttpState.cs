@@ -148,12 +148,12 @@ namespace Microsoft.HttpRepl
             }
         }
 
-        public string GetExampleBody(string path, string contentType, string method)
+        public string GetExampleBody(string path, ref string contentType, string method)
         {
             Uri effectivePath = GetEffectivePath(path);
             string rootRelativePath = effectivePath.LocalPath.Substring(BaseAddress.LocalPath.Length).TrimStart('/');
             IDirectoryStructure structure = SwaggerStructure?.TraverseTo(rootRelativePath);
-            return structure?.RequestInfo?.GetRequestBodyForContentType(contentType, method);
+            return structure?.RequestInfo?.GetRequestBodyForContentType(ref contentType, method);
         }
 
         public IEnumerable<string> GetApplicableContentTypes(string method, string path)
