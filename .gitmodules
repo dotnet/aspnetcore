@@ -114,10 +114,6 @@
 	path = modules/MetaPackages
 	url = https://github.com/aspnet/MetaPackages.git
 	branch = release/2.1
-[submodule "modules/Microsoft.Data.Sqlite"]
-	path = modules/Microsoft.Data.Sqlite
-	url = https://github.com/aspnet/Microsoft.Data.Sqlite.git
-	branch = release/2.1
 [submodule "modules/MusicStore"]
 	path = modules/MusicStore
 	url = https://github.com/aspnet/MusicStore.git

@@ -75,7 +75,6 @@
     <ShippedRepository Include="KestrelHttpServer" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="Logging" />
-    <ShippedRepository Include="Microsoft.Data.Sqlite" />
     <ShippedRepository Include="Mvc" />
     <ShippedRepository Include="MvcPrecompilation" />
     <ShippedRepository Include="Options" />
