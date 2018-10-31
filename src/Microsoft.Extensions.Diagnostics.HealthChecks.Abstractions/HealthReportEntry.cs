@@ -52,8 +52,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public Exception Exception { get; }
 
         /// <summary>
-        /// Gets the health status of the component that was checked. The <see cref="Status"/> is based on the pass/fail value of
-        /// <see cref="HealthCheckResult.Passed"/> and the configured value of <see cref="HealthCheckRegistration.FailureStatus"/>.
+        /// Gets the health status of the component that was checked.
         /// </summary>
         public HealthStatus Status { get; }
     }

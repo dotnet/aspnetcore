@@ -448,8 +448,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             serviceCollection.AddOptions();
             serviceCollection.AddLogging();
             serviceCollection.AddHealthChecks()
-                .AddCheck("one", () => { return HealthCheckResult.Passed(); })
-                .AddCheck("two", () => { return HealthCheckResult.Passed(); });
+                .AddCheck("one", () => { return HealthCheckResult.Healthy(); })
+                .AddCheck("two", () => { return HealthCheckResult.Healthy(); });
 
             // Choosing big values for tests to make sure that we're not dependent on the defaults.
             // All of the tests that rely on the timer will set their own values for speed.

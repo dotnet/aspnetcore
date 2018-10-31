@@ -47,10 +47,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             if (await testQuery(_dbContext, cancellationToken))
             {
-                return HealthCheckResult.Passed();
+                return HealthCheckResult.Healthy();
             }
 
-            return HealthCheckResult.Failed();
+            return HealthCheckResult.Unhealthy();
         }
     }
 }

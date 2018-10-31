@@ -51,11 +51,11 @@ namespace HealthChecksSample
                 }
                 catch (DbException ex)
                 {
-                    return HealthCheckResult.Failed(exception: ex);
+                    return new HealthCheckResult(status: context.Registration.FailureStatus, exception: ex);
                 }
             }
 
-            return HealthCheckResult.Passed();
+            return HealthCheckResult.Healthy();
         }
     }
 }

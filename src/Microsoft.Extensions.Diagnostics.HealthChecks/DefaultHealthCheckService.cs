@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                             var duration = stopwatch.GetElapsedTime();
 
                             entry = new HealthReportEntry(
-                                status: result.Result ? HealthStatus.Healthy : registration.FailureStatus,
+                                status: result.Status,
                                 description: result.Description,
                                 duration: duration,
                                 exception: result.Exception,
@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         {
                             var duration = stopwatch.GetElapsedTime();
                             entry = new HealthReportEntry(
-                                status: HealthStatus.Failed,
+                                status: HealthStatus.Unhealthy,
                                 description: ex.Message,
                                 duration: duration,
                                 exception: ex,
@@ -211,10 +211,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
                     case HealthStatus.Unhealthy:
                         _healthCheckEndUnhealthy(logger, registration.Name, duration.TotalMilliseconds, entry.Status, entry.Description, null);
-                        break;
-
-                    case HealthStatus.Failed:
-                        _healthCheckEndFailed(logger, registration.Name, duration.TotalMilliseconds, entry.Status, entry.Description, null);
                         break;
                 }
             }

@@ -65,13 +65,15 @@ namespace HealthChecksSample
                 { "Gen2Collections", GC.CollectionCount(2) },
             };
 
-            // Report failure if the allocated memory is >= the threshold. Negated because true == success
-            var result = !(allocated >= options.Threshold);
+            // Report failure if the allocated memory is >= the threshold.
+            //
+            // Using context.Registration.FailureStatus means that the application developer can configure
+            // how they want failures to appear.
+            var result = allocated >= options.Threshold ? context.Registration.FailureStatus : HealthStatus.Healthy;
 
             return Task.FromResult(new HealthCheckResult(
                 result,
                 description: "reports degraded status if allocated bytes >= 1gb",
-                exception: null,
                 data: data));
         }
     }

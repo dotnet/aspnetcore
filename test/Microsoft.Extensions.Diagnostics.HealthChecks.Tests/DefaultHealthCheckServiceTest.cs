@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,11 +27,11 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             serviceCollection.AddLogging();
             serviceCollection.AddOptions();
             serviceCollection.AddHealthChecks()
-                .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Passed())))
-                .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Passed())))
-                .AddCheck("Bar", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Passed())))
-                .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Passed())))
-                .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Passed())));
+                .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+                .AddCheck("Foo", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+                .AddCheck("Bar", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+                .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())))
+                .AddCheck("Baz", new DelegateHealthCheck(_ => Task.FromResult(HealthCheckResult.Healthy())));
 
             var services = serviceCollection.BuildServiceProvider();
 
@@ -63,16 +64,25 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             var service = CreateHealthChecksService(b =>
             {
-                b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Passed(HealthyMessage, data)));
-                b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Failed(DegradedMessage)), failureStatus: HealthStatus.Degraded);
-                b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Failed(UnhealthyMessage, exception)));
+                b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
+                b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
+                b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
             });
 
             // Act
             var results = await service.CheckHealthAsync();
 
             // Assert
-            Assert.Collection(results.Entries,
+            Assert.Collection(
+                results.Entries.OrderBy(kvp => kvp.Key),
+                actual =>
+                {
+                    Assert.Equal("DegradedCheck", actual.Key);
+                    Assert.Equal(DegradedMessage, actual.Value.Description);
+                    Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
+                    Assert.Null(actual.Value.Exception);
+                    Assert.Empty(actual.Value.Data);
+                },
                 actual =>
                 {
                     Assert.Equal("HealthyCheck", actual.Key);
@@ -84,14 +94,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         Assert.Equal(DataKey, item.Key);
                         Assert.Equal(DataValue, item.Value);
                     });
-                },
-                actual =>
-                {
-                    Assert.Equal("DegradedCheck", actual.Key);
-                    Assert.Equal(DegradedMessage, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
-                    Assert.Null(actual.Value.Exception);
-                    Assert.Empty(actual.Value.Data);
                 },
                 actual =>
                 {
@@ -121,9 +123,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             var service = CreateHealthChecksService(b =>
             {
-                b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Passed(HealthyMessage, data)));
-                b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Failed(DegradedMessage)), failureStatus: HealthStatus.Degraded);
-                b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Failed(UnhealthyMessage, exception)));
+                b.AddAsyncCheck("HealthyCheck", _ => Task.FromResult(HealthCheckResult.Healthy(HealthyMessage, data)));
+                b.AddAsyncCheck("DegradedCheck", _ => Task.FromResult(HealthCheckResult.Degraded(DegradedMessage)));
+                b.AddAsyncCheck("UnhealthyCheck", _ => Task.FromResult(HealthCheckResult.Unhealthy(UnhealthyMessage, exception)));
             });
 
             // Act
@@ -201,7 +203,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     insideCheck.SetResult(null);
 
                     await Task.Delay(10000, ct);
-                    return HealthCheckResult.Failed();
+                    return HealthCheckResult.Unhealthy();
                 });
             });
 
@@ -218,7 +220,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
-        public async Task CheckHealthAsync_ConvertsExceptionInHealthCheckToFailedResultAsync()
+        public async Task CheckHealthAsync_ConvertsExceptionInHealthCheckToUnhealthyResultAsync()
         {
             // Arrange
             var thrownException = new InvalidOperationException("Whoops!");
@@ -228,7 +230,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             {
                 b.AddAsyncCheck("Throws", ct => throw thrownException);
                 b.AddAsyncCheck("Faults", ct => Task.FromException<HealthCheckResult>(faultedException));
-                b.AddAsyncCheck("Succeeds", ct => Task.FromResult(HealthCheckResult.Passed()));
+                b.AddAsyncCheck("Succeeds", ct => Task.FromResult(HealthCheckResult.Healthy()));
             });
 
             // Act
@@ -241,14 +243,14 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 {
                     Assert.Equal("Throws", actual.Key);
                     Assert.Equal(thrownException.Message, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Failed, actual.Value.Status);
+                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
                     Assert.Same(thrownException, actual.Value.Exception);
                 },
                 actual =>
                 {
                     Assert.Equal("Faults", actual.Key);
                     Assert.Equal(faultedException.Message, actual.Value.Description);
-                    Assert.Equal(HealthStatus.Failed, actual.Value.Status);
+                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
                     Assert.Same(faultedException, actual.Value.Exception);
                 },
                 actual =>
@@ -278,7 +280,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                                 Assert.Equal("TestScope", item.Value);
                             });
                     });
-                return Task.FromResult(HealthCheckResult.Passed());
+                return Task.FromResult(HealthCheckResult.Healthy());
             });
 
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
@@ -398,7 +400,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
             public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
             {
-                return Task.FromResult(HealthCheckResult.Passed());
+                return Task.FromResult(HealthCheckResult.Healthy());
             }
         }
 
@@ -410,7 +412,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 {
                     { "name", context.Registration.Name },
                 };
-                return Task.FromResult(HealthCheckResult.Passed(data: data));
+                return Task.FromResult(HealthCheckResult.Healthy(data: data));
             }
         }
     }
