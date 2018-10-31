@@ -25,6 +25,9 @@ import io.reactivex.Single;
 import io.reactivex.subjects.CompletableSubject;
 import io.reactivex.subjects.SingleSubject;
 
+/**
+ * A connection used to invoke hub methods on a SignalR Server.
+ */
 public class HubConnection {
     private static final String RECORD_SEPARATOR = "\u001e";
     private static final List<Class<?>> emptyArray = new ArrayList<>();
