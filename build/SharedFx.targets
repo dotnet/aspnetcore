@@ -4,6 +4,9 @@
   <PropertyGroup>
     <UnitTestFxProject>$(RepositoryRoot)src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
     <UnitTestFxProject>$([MSBuild]::NormalizePath($(UnitTestFxProject)))</UnitTestFxProject>
+    <CodeSignDependsOn>$(CodeSignDependsOn);GetSharedFxFilesToSign</CodeSignDependsOn>
+    <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
+    <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +17,19 @@
     <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" />
   </ItemGroup>
 
-  <Target Name="BuildSharedFx" DependsOnTargets="_BuildSharedFxProjects;TestSharedFx"/>
+  <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
+
+  <Target Name="GetSharedFxFilesToSign">
+    <ItemGroup>
+      <FilesToSign Include="$(ArtifactsDir)$(Configuration)\installers\*.zip" Certificate="None" />
+      <FilesToSign Include="$(BuildDir)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(BuildDir)Microsoft.AspNetCore.All.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.All.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.All.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_BuildSharedFxProjects" DependsOnTargets="GeneratePropsFiles;ResolveCommitHash">
 

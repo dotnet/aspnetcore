@@ -1,0 +1,53 @@
+<Project>
+
+  <PropertyGroup>
+    <CodeSignDependsOn>$(CodeSignDependsOn);CollectFileSignInfo</CodeSignDependsOn>
+  </PropertyGroup>
+
+  <Target Name="CollectFileSignInfo" DependsOnTargets="_PrepareRepositories">
+    <ItemGroup>
+      <_RepositoryProject Remove="@(_RepositoryProject)" />
+      <_RepositoryProject Include="$(MSBuildProjectFullPath)" Condition="'%(Repository.Identity)' != ''">
+        <AdditionalProperties>RepositoryRoot=%(Repository.RootPath)</AdditionalProperties>
+        <Build>%(Repository.Build)</Build>
+      </_RepositoryProject>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <GetFileSignInfoProps>
+        AssemblySigningCertName=$(AssemblySigningCertName);
+        AssemblySigning3rdPartyCertName=$(AssemblySigning3rdPartyCertName);
+        PowerShellSigningCertName=$(PowerShellSigningCertName);
+        PackageSigningCertName=$(PackageSigningCertName);
+        VsixSigningCertName=$(VsixSigningCertName);
+        JarSigningCertName=$(JarSigningCertName);
+        ArtifactsDir=$(ArtifactsDir);
+        BuildDir=$(BuildDir)
+      </GetFileSignInfoProps>
+    </PropertyGroup>
+
+    <MSBuild Projects="@(_RepositoryProject)"
+             Targets="_GetFileSignInfo"
+             Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);DesignTimeBuild=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_RepoFileSignInfo" />
+    </MSBuild>
+
+    <ItemGroup>
+      <!-- If repos were not built, only use this info to collect the mapping of FileName -> Certificate. Otherwise, include .nupkg and .zips in signing. -->
+      <_FilesToSign Include="@(_RepoFileSignInfo)" Condition="'%(_RepoFileSignInfo.IsFileToSign)' == 'true' AND ('$(_ReposWereBuilt)' == 'true' OR '%(_RepoFileSignInfo.Container)' != '' ) " />
+      <FilesToSign Include="@(_FilesToSign)" />
+
+      <FilesToExcludeFromSigning Include="@(_RepoFileSignInfo->'%(FileName)%(Extension)')" Condition="'%(_RepoFileSignInfo.IsFileToExcludeFromSign)' == 'true'" />
+      <!-- Workaround for the way we have both repo and Universe builds. This prevents duplicate configuration between 'exclude' and 'sign' options. -->
+      <FilesToExcludeFromSigning Remove="@(_FilesToSign->'%(FileName)%(Extension)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GetFileSignInfo" DependsOnTargets="GetArtifactInfo" Returns="@(_FileSignInfo)">
+    <ItemGroup>
+      <_FileSignInfo Include="@(FilesToSign)" IsFileToSign="true" />
+      <_FileSignInfo Include="@(FilesToExcludeFromSigning)" IsFileToExcludeFromSign="true" />
+    </ItemGroup>
+  </Target>
+</Project>
