@@ -57,4 +57,5 @@
   <Import Project="external-dependencies.props" />
   <Import Project="artifacts.props" />
   <Import Project="submodules.props" />
+  <Import Project="CodeSign.props" />
 </Project>
