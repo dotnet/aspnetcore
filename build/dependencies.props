@@ -32,15 +32,16 @@
     <SystemValueTuplePackageVersion>4.6.0-preview1-26829-04</SystemValueTuplePackageVersion>
     <!-- Packages from aspnet/Extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-alpha1-10657</InternalAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.0.0-alpha1-10657</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-alpha1-10657</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
+    <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.0.0-alpha1-10657<MicrosoftExtensionsDiagnosticAdapterPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.0.0-alpha1-10657</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>3.0.0-alpha1-10657</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>3.0.0-alpha1-10657</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>3.0.0-alpha1-10657</MicrosoftExtensionsPrimitivesPackageVersion>
