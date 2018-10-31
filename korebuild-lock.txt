@@ -1,2 +1,2 @@
-version:2.2.0-preview2-20181003.2
-commithash:41935e62d7853060283c801f49992e2c73a95927
+version:3.0.0-alpha1-20181011.11
+commithash:f57aa8ddda0abdd74ada55853587bedb4f364065

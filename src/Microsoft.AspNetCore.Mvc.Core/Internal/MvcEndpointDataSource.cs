@@ -10,6 +10,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _parameterPolicyFactory = parameterPolicyFactory;
 
             ConventionalEndpointInfos = new List<MvcEndpointInfo>();
+            AttributeRoutingConventionResolvers = new List<Func<ActionDescriptor, DefaultEndpointConventionBuilder>>();
 
             // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
             //
@@ -71,6 +73,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         public List<MvcEndpointInfo> ConventionalEndpointInfos { get; }
+
+        public List<Func<ActionDescriptor, DefaultEndpointConventionBuilder>> AttributeRoutingConventionResolvers { get; }
 
         public override IReadOnlyList<Endpoint> Endpoints
         {
@@ -134,6 +138,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         // - Home/Login
                         foreach (var endpointInfo in ConventionalEndpointInfos)
                         {
+                            if (endpointInfo.ControllerType != null &&
+                                endpointInfo.ControllerType != typeof(ControllerBase))
+                            {
+                                if (!ValidateControllerConstraint(action, endpointInfo))
+                                {
+                                    // Action descriptor does not belong to a controller of the specified type
+                                    continue;
+                                }
+                            }
+
                             // An 'endpointInfo' is applicable if:
                             // 1. it has a parameter (or default value) for 'required' non-null route value
                             // 2. it does not have a parameter (or default value) for 'required' null route value
@@ -164,11 +178,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                                 endpointInfo.DataTokens,
                                 endpointInfo.ParameterPolicies,
                                 suppressLinkGeneration: false,
-                                suppressPathMatching: false);
+                                suppressPathMatching: false,
+                                endpointInfo.Conventions);
                         }
                     }
                     else
                     {
+                        var conventionBuilder = ResolveActionConventionBuilder(action);
+                        if (conventionBuilder == null)
+                        {
+                            // No convention builder for this action
+                            // Do not create an endpoint for it
+                            continue;
+                        }
+
                         var attributeRoutePattern = RoutePatternFactory.Parse(action.AttributeRouteInfo.Template);
 
                         CreateEndpoints(
@@ -183,7 +206,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             dataTokens: null,
                             allParameterPolicies: null,
                             action.AttributeRouteInfo.SuppressLinkGeneration,
-                            action.AttributeRouteInfo.SuppressPathMatching);
+                            action.AttributeRouteInfo.SuppressPathMatching,
+                            conventionBuilder.Conventions);
                     }
                 }
 
@@ -205,6 +229,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
+        private DefaultEndpointConventionBuilder ResolveActionConventionBuilder(ActionDescriptor action)
+        {
+            foreach (var filter in AttributeRoutingConventionResolvers)
+            {
+                var conventionBuilder = filter(action);
+                if (conventionBuilder != null)
+                {
+                    return conventionBuilder;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool ValidateControllerConstraint(ActionDescriptor action, MvcEndpointInfo endpointInfo)
+        {
+            if (action is ControllerActionDescriptor controllerActionDescriptor)
+            {
+                return endpointInfo.ControllerType.IsAssignableFrom(controllerActionDescriptor.ControllerTypeInfo);
+            }
+
+            return false;
+        }
+
         // CreateEndpoints processes the route pattern, replacing area/controller/action parameters with endpoint values
         // Because of default values it is possible for a route pattern to resolve to multiple endpoints
         private int CreateEndpoints(
@@ -219,7 +267,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             RouteValueDictionary dataTokens,
             IDictionary<string, IList<IParameterPolicy>> allParameterPolicies,
             bool suppressLinkGeneration,
-            bool suppressPathMatching)
+            bool suppressPathMatching,
+            List<Action<EndpointModel>> conventions)
         {
             var newPathSegments = routePattern.PathSegments.ToList();
             var hasLinkGenerationEndpoint = false;
@@ -264,7 +313,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             routeOrder++,
                             dataTokens,
                             suppressLinkGeneration,
-                            true);
+                            true,
+                            conventions);
                         endpoints.Add(ep);
 
                         hasLinkGenerationEndpoint = true;
@@ -282,7 +332,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         routeOrder++,
                         dataTokens,
                         suppressLinkGeneration,
-                        suppressPathMatching);
+                        suppressPathMatching,
+                        conventions);
                     endpoints.Add(subEndpoint);
                 }
 
@@ -299,7 +350,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 routeOrder++,
                 dataTokens,
                 suppressLinkGeneration,
-                suppressPathMatching);
+                suppressPathMatching,
+                conventions);
             endpoints.Add(finalEndpoint);
 
             return routeOrder;
@@ -406,6 +458,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 newPathSegments[i] = RoutePatternFactory.Segment(segmentParts);
             }
+
         }
 
         private bool UseDefaultValuePlusRemainingSegmentsOptional(
@@ -536,7 +589,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             int order,
             RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
-            bool suppressPathMatching)
+            bool suppressPathMatching,
+            List<Action<EndpointModel>> conventions)
         {
             RequestDelegate requestDelegate = (context) =>
             {
@@ -551,7 +605,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var defaults = new RouteValueDictionary(nonInlineDefaults);
             EnsureRequiredValuesInDefaults(actionRouteValues, defaults, segments);
 
-            var metadataCollection = BuildEndpointMetadata(
+            var model = new RouteEndpointModel(requestDelegate, RoutePatternFactory.Pattern(patternRawText, defaults, parameterPolicies: null, segments), order);
+
+            AddEndpointMetadata(
+                model.Metadata,
                 action,
                 routeName,
                 new RouteValueDictionary(actionRouteValues),
@@ -559,17 +616,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 suppressLinkGeneration,
                 suppressPathMatching);
 
-            var endpoint = new RouteEndpoint(
-                requestDelegate,
-                RoutePatternFactory.Pattern(patternRawText, defaults, parameterPolicies: null, segments),
-                order,
-                metadataCollection,
-                action.DisplayName);
+            model.DisplayName = action.DisplayName;
 
-            return endpoint;
+            // REVIEW: When should conventions be run
+            // Metadata should have lower precedence that data source metadata
+            if (conventions != null)
+            {
+                foreach (var convention in conventions)
+                {
+                    convention(model);
+                }
+            }
+
+            return (RouteEndpoint)model.Build();
         }
 
-        private static EndpointMetadataCollection BuildEndpointMetadata(
+        private static void AddEndpointMetadata(
+            IList<object> metadata,
             ActionDescriptor action,
             string routeName,
             RouteValueDictionary requiredValues,
@@ -577,14 +640,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             bool suppressLinkGeneration,
             bool suppressPathMatching)
         {
-            var metadata = new List<object>();
-
             // Add action metadata first so it has a low precedence
             if (action.EndpointMetadata != null)
             {
-                metadata.AddRange(action.EndpointMetadata);
+                foreach (var d in action.EndpointMetadata)
+                {
+                    metadata.Add(d);
+                }
             }
-
+			
             metadata.Add(action);
 
             if (dataTokens != null)
@@ -597,8 +661,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Add filter descriptors to endpoint metadata
             if (action.FilterDescriptors != null && action.FilterDescriptors.Count > 0)
             {
-                metadata.AddRange(action.FilterDescriptors.OrderBy(f => f, FilterDescriptorOrderComparer.Comparer)
-                    .Select(f => f.Filter));
+                foreach (var filter in action.FilterDescriptors.OrderBy(f => f, FilterDescriptorOrderComparer.Comparer).Select(f => f.Filter))
+                {
+                    metadata.Add(filter);
+                }
             }
 
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
@@ -637,9 +703,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 metadata.Add(new SuppressMatchingMetadata());
             }
-
-            var metadataCollection = new EndpointMetadataCollection(metadata);
-            return metadataCollection;
         }
 
         // Ensure route values are a subset of defaults

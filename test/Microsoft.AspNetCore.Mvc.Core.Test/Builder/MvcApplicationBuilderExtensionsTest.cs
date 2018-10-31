@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -56,12 +57,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            var mvcEndpointDataSource = appBuilder.ApplicationServices
-                .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                .OfType<MvcEndpointDataSource>()
-                .First();
+            var routeOptions = appBuilder.ApplicationServices
+                .GetRequiredService<IOptions<RouteOptions>>();
 
-            Assert.Empty(mvcEndpointDataSource.ConventionalEndpointInfos);
+            Assert.Empty(routeOptions.Value.EndpointDataSources);
         }
 
         [Fact]
@@ -83,10 +82,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            var mvcEndpointDataSource = appBuilder.ApplicationServices
-                .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                .OfType<MvcEndpointDataSource>()
-                .First();
+            var routeOptions = appBuilder.ApplicationServices
+                .GetRequiredService<IOptions<RouteOptions>>();
+
+            var mvcEndpointDataSource = (MvcEndpointDataSource)Assert.Single(routeOptions.Value.EndpointDataSources, ds => ds is MvcEndpointDataSource);
 
             var endpointInfo = Assert.Single(mvcEndpointDataSource.ConventionalEndpointInfos);
             Assert.Equal("default", endpointInfo.Name);
