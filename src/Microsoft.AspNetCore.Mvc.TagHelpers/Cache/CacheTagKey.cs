@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Internal;
@@ -25,7 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         private static readonly Func<IRequestCookieCollection, string, string> CookieAccessor = (c, key) => c[key];
         private static readonly Func<IHeaderDictionary, string, string> HeaderAccessor = (c, key) => c[key];
         private static readonly Func<IQueryCollection, string, string> QueryAccessor = (c, key) => c[key];
-        private static readonly Func<RouteValueDictionary, string, string> RouteValueAccessor = (c, key) => c[key]?.ToString();
+        private static readonly Func<RouteValueDictionary, string, string> RouteValueAccessor = (c, key) =>
+            Convert.ToString(c[key], CultureInfo.InvariantCulture);
 
         private const string CacheKeyTokenSeparator = "||";
         private const string VaryByName = "VaryBy";
@@ -91,7 +91,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             _cookies = ExtractCollection(tagHelper.VaryByCookie, request.Cookies, CookieAccessor);
             _headers = ExtractCollection(tagHelper.VaryByHeader, request.Headers, HeaderAccessor);
             _queries = ExtractCollection(tagHelper.VaryByQuery, request.Query, QueryAccessor);
-            _routeValues = ExtractCollection(tagHelper.VaryByRoute, tagHelper.ViewContext.RouteData.Values, RouteValueAccessor);
+            _routeValues = ExtractCollection(
+                tagHelper.VaryByRoute,
+                tagHelper.ViewContext.RouteData.Values,
+                RouteValueAccessor);
             _varyByUser = tagHelper.VaryByUser;
             _varyByCulture = tagHelper.VaryByCulture;
 

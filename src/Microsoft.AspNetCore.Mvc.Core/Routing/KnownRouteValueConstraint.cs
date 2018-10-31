@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
@@ -51,10 +52,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object obj;
-            if (values.TryGetValue(routeKey, out obj))
+            if (values.TryGetValue(routeKey, out var obj))
             {
-                var value = obj as string;
+                var value = Convert.ToString(obj, CultureInfo.InvariantCulture);
                 if (value != null)
                 {
                     var actionDescriptors = GetAndValidateActionDescriptors(httpContext);

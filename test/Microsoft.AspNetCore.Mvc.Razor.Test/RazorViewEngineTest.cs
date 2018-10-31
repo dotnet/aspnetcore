@@ -1615,6 +1615,30 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void GetNormalizedRouteValue_UsesInvariantCulture()
+        {
+            // Arrange
+            var key = "some-key";
+            var actionDescriptor = new ActionDescriptor();
+            actionDescriptor.RouteValues.Add(key, "Route-Value");
+
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = actionDescriptor,
+                RouteData = new RouteData()
+            };
+
+            actionContext.RouteData.Values[key] = new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7));
+
+            // Act
+            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
+
+            // Assert
+            Assert.Equal("10/31/2018 07:37:38 -07:00", result);
+        }
+
+        [Fact]
         public void GetNormalizedRouteValue_ReturnsRouteValue_IfValueDoesNotMatch()
         {
             // Arrange

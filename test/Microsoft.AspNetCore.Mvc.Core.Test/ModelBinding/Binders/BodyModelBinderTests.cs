@@ -829,7 +829,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class TestableXmlSerializerInputFormatter : XmlSerializerInputFormatter
         {
-            private bool _throwNonInputFormatterException;
+            private readonly bool _throwNonInputFormatterException;
 
             public TestableXmlSerializerInputFormatter(bool throwNonInputFormatterException)
                 : base(new MvcOptions())
@@ -851,7 +851,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class TestableXmlDataContractSerializerInputFormatter : XmlDataContractSerializerInputFormatter
         {
-            private bool _throwNonInputFormatterException;
+            private readonly bool _throwNonInputFormatterException;
 
             public TestableXmlDataContractSerializerInputFormatter(bool throwNonInputFormatterException)
                 : base(new MvcOptions())
@@ -899,7 +899,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class DerivedXmlSerializerInputFormatter : XmlSerializerInputFormatter
         {
-            private bool _throwNonInputFormatterException;
+            private readonly bool _throwNonInputFormatterException;
 
             public DerivedXmlSerializerInputFormatter(bool throwNonInputFormatterException)
                 : base(new MvcOptions())
@@ -921,7 +921,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class DerivedXmlDataContractSerializerInputFormatter : XmlDataContractSerializerInputFormatter
         {
-            private bool _throwNonInputFormatterException;
+            private readonly bool _throwNonInputFormatterException;
 
             public DerivedXmlDataContractSerializerInputFormatter(bool throwNonInputFormatterException)
                 : base(new MvcOptions())

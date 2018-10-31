@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -123,8 +124,8 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                 var isMatch = true;
                 foreach (var kvp in action.RouteValues)
                 {
-                    var routeValue = Convert.ToString(routeValues[kvp.Key]) ?? string.Empty;
-
+                    var routeValue = Convert.ToString(routeValues[kvp.Key], CultureInfo.InvariantCulture) ??
+                        string.Empty;
                     if (string.IsNullOrEmpty(kvp.Value) && string.IsNullOrEmpty(routeValue))
                     {
                         // Match
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             var routeValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in new RouteValueDictionary(obj))
             {
-                routeValues.Add(kvp.Key, Convert.ToString(kvp.Value) ?? string.Empty);
+                routeValues.Add(kvp.Key, Convert.ToString(kvp.Value, CultureInfo.InvariantCulture) ?? string.Empty);
             }
 
             return new ActionDescriptor()
