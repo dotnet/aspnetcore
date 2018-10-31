@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Testing
             Assert.True(true);
         }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
         [MemberData(nameof(GetInts))]
