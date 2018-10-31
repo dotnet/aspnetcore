@@ -71,7 +71,7 @@
     <FilesToExcludeFromSigning Include="api-ms-win-core-sysinfo-l1-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-core-timezone-l1-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-core-util-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-xstate-l2-1-0.dll" />
+    <FilesToExcludeFromSigning Include="API-MS-Win-core-xstate-l2-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-crt-conio-l1-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-crt-convert-l1-1-0.dll" />
     <FilesToExcludeFromSigning Include="api-ms-win-crt-environment-l1-1-0.dll" />
