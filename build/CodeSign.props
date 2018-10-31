@@ -97,6 +97,7 @@
     <FilesToExcludeFromSigning Include="hostpolicy.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.CSharp.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.DiaSymReader.Native.amd64.dll" />
+    <FilesToExcludeFromSigning Include="Microsoft.DiaSymReader.Native.arm.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.DiaSymReader.Native.x86.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.DotNet.PlatformAbstractions.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.Extensions.DependencyModel.dll" />
@@ -105,6 +106,7 @@
     <FilesToExcludeFromSigning Include="Microsoft.Win32.Primitives.dll" />
     <FilesToExcludeFromSigning Include="Microsoft.Win32.Registry.dll" />
     <FilesToExcludeFromSigning Include="mscordaccore_amd64_amd64_4.6.27023.02.dll" />
+    <FilesToExcludeFromSigning Include="mscordaccore_arm_arm_4.6.27023.02.dll" />
     <FilesToExcludeFromSigning Include="mscordaccore_x86_x86_4.6.27023.02.dll" />
     <FilesToExcludeFromSigning Include="mscordaccore.dll" />
     <FilesToExcludeFromSigning Include="mscordbi.dll" />
@@ -113,6 +115,7 @@
     <FilesToExcludeFromSigning Include="mscorrc.dll" />
     <FilesToExcludeFromSigning Include="netstandard.dll" />
     <FilesToExcludeFromSigning Include="sos_amd64_amd64_4.6.27023.02.dll" />
+    <FilesToExcludeFromSigning Include="sos_arm_arm_4.6.27023.02.dll" />
     <FilesToExcludeFromSigning Include="sos_x86_x86_4.6.27023.02.dll" />
     <FilesToExcludeFromSigning Include="sos.dll" />
     <FilesToExcludeFromSigning Include="SOS.NETCore.dll" />
