@@ -2,80 +2,78 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
-#define ASPNETCORE_DEBUG_FLAG_INFO          0x00000001
-#define ASPNETCORE_DEBUG_FLAG_WARNING       0x00000002
-#define ASPNETCORE_DEBUG_FLAG_ERROR         0x00000004
 
-extern DWORD g_dwAspNetCoreDebugFlags;
+#include "stdafx.h"
+#include "stringu.h"
+#include <Windows.h>
+#include "dbgutil.h"
 
-static
+#define ASPNETCORE_DEBUG_FLAG_TRACE         DEBUG_FLAG_TRACE
+#define ASPNETCORE_DEBUG_FLAG_INFO          DEBUG_FLAG_INFO
+#define ASPNETCORE_DEBUG_FLAG_WARNING       DEBUG_FLAG_WARN
+#define ASPNETCORE_DEBUG_FLAG_ERROR         DEBUG_FLAG_ERROR
+#define ASPNETCORE_DEBUG_FLAG_CONSOLE       0x00000010
+#define ASPNETCORE_DEBUG_FLAG_FILE          0x00000020
+#define ASPNETCORE_DEBUG_FLAG_EVENTLOG      0x00000040
+
+#define LOG_TRACE(...) DebugPrintW(ASPNETCORE_DEBUG_FLAG_TRACE, __VA_ARGS__)
+#define LOG_TRACEF(...) DebugPrintfW(ASPNETCORE_DEBUG_FLAG_TRACE, __VA_ARGS__)
+
+#define LOG_INFO(...) DebugPrintW(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
+#define LOG_INFOF(...) DebugPrintfW(ASPNETCORE_DEBUG_FLAG_INFO, __VA_ARGS__)
+
+#define LOG_WARN(...) DebugPrintW(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
+#define LOG_WARNF(...) DebugPrintfW(ASPNETCORE_DEBUG_FLAG_WARNING, __VA_ARGS__)
+
+#define LOG_ERROR(...) DebugPrintW(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
+#define LOG_ERRORF(...) DebugPrintfW(ASPNETCORE_DEBUG_FLAG_ERROR, __VA_ARGS__)
+
+VOID
+DebugInitialize(HMODULE hModule);
+
+HRESULT
+DebugInitializeFromConfig(IHttpServer& pHttpServer, IHttpApplication& pHttpApplication);
+
+VOID
+DebugStop();
+
 BOOL
-IfDebug(
+IsEnabled(
     DWORD   dwFlag
-    )
-{
-    return ( dwFlag & g_dwAspNetCoreDebugFlags );
-}
+    );
 
-static
+VOID
+DebugPrintW(
+    DWORD   dwFlag,
+    LPCWSTR  szString
+    );
+
+VOID
+DebugPrintfW(
+    DWORD   dwFlag,
+    LPCWSTR  szFormat,
+    ...
+    );
+
+
 VOID
 DebugPrint(
     DWORD   dwFlag,
     LPCSTR  szString
-    )
-{
-    STACK_STRA (strOutput, 256);
-    HRESULT  hr = S_OK;
+    );
 
-    if ( IfDebug( dwFlag ) )
-    {
-        hr = strOutput.SafeSnprintf( 
-            "[aspnetcore.dll] %s\r\n",
-            szString );
-
-        if (FAILED (hr))
-        {
-            goto Finished;
-        }
-
-        OutputDebugStringA( strOutput.QueryStr() );
-    }
-
-Finished:
-
-    return;
-}
-
-static
 VOID
 DebugPrintf(
-DWORD   dwFlag,
-LPCSTR  szFormat,
-...
-)
-{
-    STACK_STRA (strCooked,256);
+    DWORD   dwFlag,
+    LPCSTR  szFormat,
+    ...
+    );
 
-    va_list  args;
-    HRESULT hr = S_OK;
+std::wstring
+GetProcessIdString();
 
-    if ( IfDebug( dwFlag ) )
-    {
-        va_start( args, szFormat );
+std::wstring
+GetVersionInfoString();
 
-        hr = strCooked.SafeVsnprintf(szFormat, args );
-
-        va_end( args );
-
-        if (FAILED (hr))
-        {
-            goto Finished;
-        }
-
-        DebugPrint( dwFlag, strCooked.QueryStr() );
-    }
-
-Finished:
-    return;
-}
-
+std::wstring
+GetModuleName();

@@ -7,6 +7,7 @@ _ReSharper.*/
 packages/
 artifacts/
 PublishProfiles/
+BenchmarkDotNet.Artifacts/
 *.user
 *.suo
 *.cache
@@ -36,6 +37,7 @@ project.lock.json
 *.tlog
 *.CppClean.log
 *msbuild.log
+gtest.log
 
 src/*/*/Debug/
 src/*/*/x64/Debug/
@@ -48,18 +50,18 @@ x64/
 *.pdb
 *.lib
 *.idb
+*.TMP
 
 src/*/AspNetCore/aspnetcoremodule.h
 src/*/AspNetCore/aspnetcore_msg.h
 src/*/AspNetCore/aspnetcore_msg.rc
 src/*/*/version.h
-src/*/RequestHandler/version.h
+src/*/InProcessRequestHandler/version.h
+src/*/OutOfProcessRequestHandler/version.h
 src/*/CommonLib/aspnetcore_msg.h
 src/*/CommonLib/aspnetcore_msg.rc
 test/*/Debug
 test/*/Release
-test/gtest-1.8.0/msvc/Debug
-test/gtest-1.8.0/msvc/Release
 .build
 
 *.VC.*db

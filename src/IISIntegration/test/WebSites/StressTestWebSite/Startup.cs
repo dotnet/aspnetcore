@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Text;
 using System.Net.WebSockets;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

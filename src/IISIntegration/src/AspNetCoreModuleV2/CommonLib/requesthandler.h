@@ -3,57 +3,77 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "application.h"
+#include "irequesthandler.h"
+#include "ntassert.h"
+#include "exceptions.h"
 
 //
-// Abstract class
+// Pure abstract class
 //
-class REQUEST_HANDLER
+class REQUEST_HANDLER: public virtual IREQUEST_HANDLER
 {
 public:
-    REQUEST_HANDLER(
-        _In_ IHttpContext *pW3Context,
-        _In_ HTTP_MODULE_ID  *pModuleId,
-        _In_ APPLICATION  *pApplication
-    );
+    REQUEST_HANDLER(IHttpContext& pHttpContext) noexcept : m_pHttpContext(pHttpContext)
+    {
+    }
 
     virtual
     REQUEST_NOTIFICATION_STATUS
-    OnExecuteRequestHandler() = 0;
+    ExecuteRequestHandler() = 0;
 
-    virtual
+    VOID
+    ReferenceRequestHandler() noexcept override
+    {
+        InterlockedIncrement(&m_cRefs);
+    }
+
+    VOID
+    DereferenceRequestHandler() noexcept override
+    {
+        DBG_ASSERT(m_cRefs != 0);
+
+        if (InterlockedDecrement(&m_cRefs) == 0)
+        {
+            delete this;
+        }
+    }
+
+
+    REQUEST_NOTIFICATION_STATUS
+    OnExecuteRequestHandler() final
+    {
+        TraceContextScope traceScope(m_pHttpContext.GetTraceContext());
+        return ExecuteRequestHandler();
+    }
+
     REQUEST_NOTIFICATION_STATUS
     OnAsyncCompletion(
         DWORD      cbCompletion,
         HRESULT    hrCompletionStatus
-    ) = 0;
+    ) final
+    {
+        TraceContextScope traceScope(m_pHttpContext.GetTraceContext());
+        return AsyncCompletion(cbCompletion, hrCompletionStatus);
+    };
 
     virtual
-    VOID
-    TerminateRequest(
-        bool    fClientInitiated
-    ) = 0;
+    REQUEST_NOTIFICATION_STATUS AsyncCompletion(DWORD cbCompletion, HRESULT hrCompletionStatus)
+    {
+        UNREFERENCED_PARAMETER(cbCompletion);
+        UNREFERENCED_PARAMETER(hrCompletionStatus);
+        // We shouldn't get here in default implementation
+        DBG_ASSERT(FALSE);
+        return RQ_NOTIFICATION_FINISH_REQUEST;
+    }
 
-    virtual
-    ~REQUEST_HANDLER(
-        VOID
-    );
+    #pragma warning( push )
+    #pragma warning ( disable : 26440 ) // Disable "Can be marked with noexcept"
+    VOID NotifyDisconnect() override
+    #pragma warning( pop )
+    {
+    }
 
-    VOID
-    ReferenceRequestHandler(
-        VOID
-    ) const;
-
-    virtual
-    VOID
-    DereferenceRequestHandler(
-        VOID
-    ) const;
-
-protected:
-    mutable LONG    m_cRefs;
-    IHttpContext*   m_pW3Context;
-    APPLICATION*    m_pApplication;
-    HTTP_MODULE_ID   m_pModuleId;
+private:
+    IHttpContext& m_pHttpContext;
+    mutable LONG  m_cRefs = 1;
 };

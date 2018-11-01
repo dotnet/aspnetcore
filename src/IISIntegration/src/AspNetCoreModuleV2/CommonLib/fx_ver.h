@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <string>
+
 // Note: This is not SemVer (esp., in comparing pre-release part, fx_ver_t does not
 // compare multiple dot separated identifiers individually.) ex: 1.0.0-beta.2 vs. 1.0.0-beta.11
 struct fx_ver_t
@@ -11,19 +13,17 @@ struct fx_ver_t
     fx_ver_t(int major, int minor, int patch, const std::wstring& pre);
     fx_ver_t(int major, int minor, int patch, const std::wstring& pre, const std::wstring& build);
 
-    int get_major() const { return m_major; }
-    int get_minor() const { return m_minor; }
-    int get_patch() const { return m_patch; }
+    int get_major() const noexcept { return m_major; }
+    int get_minor() const noexcept { return m_minor; }
+    int get_patch() const noexcept { return m_patch; }
 
-    void set_major(int m) { m_major = m; }
-    void set_minor(int m) { m_minor = m; }
-    void set_patch(int p) { m_patch = p; }
+    void set_major(int m) noexcept { m_major = m; }
+    void set_minor(int m) noexcept { m_minor = m; }
+    void set_patch(int p) noexcept { m_patch = p; }
 
-    bool is_prerelease() const { return !m_pre.empty(); }
+    bool is_prerelease() const noexcept { return !m_pre.empty(); }
 
     std::wstring as_str() const;
-    std::wstring prerelease_glob() const;
-    std::wstring patch_glob() const;
 
     bool operator ==(const fx_ver_t& b) const;
     bool operator !=(const fx_ver_t& b) const;
@@ -43,4 +43,3 @@ private:
 
     static int compare(const fx_ver_t&a, const fx_ver_t& b);
 };
-

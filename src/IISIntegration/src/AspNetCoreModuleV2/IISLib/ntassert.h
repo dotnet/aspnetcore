@@ -11,6 +11,10 @@
     #undef ASSERT
 #endif
 
+#ifdef DEBUG
+    #define DBG 1
+#endif
+
 #if defined( DBG ) && DBG
     #define SX_ASSERT( _x )         ( (VOID)( ( ( _x ) ) ? TRUE : ( __annotation( L"Debug", L"AssertFail", L#_x  ), DbgRaiseAssertionFailure(), FALSE ) ) )
     #define SX_ASSERTMSG( _m, _x )  ( (VOID)( ( ( _x ) ) ? TRUE : ( __annotation( L"Debug", L"AssertFail", L##_m ), DbgRaiseAssertionFailure(), FALSE ) ) )

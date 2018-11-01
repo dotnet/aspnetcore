@@ -12,13 +12,15 @@
       "commandName": "Executable",
       "executablePath": "$(IISExpressPath)",
       "commandLineArgs": "$(IISExpressArguments)",
-      "nativeDebugging": true,
       "environmentVariables": {
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
-        "ANCM_PATH": "$(TargetDir)$(AncmPath)",
+        "ANCM_PATH": "$(AspNetCoreModuleV1ShimDll)",
+        "ANCMV2_PATH": "$(AspNetCoreModuleV2ShimDll)",
+        "ANCM_OUTOFPROCESS_HANDLER": "$(AspNetCoreModuleV2OutOfProcessHandlerDll)",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "LAUNCHER_PATH": "$(DotNetPath)"
+        "LAUNCHER_PATH": "$(DotNetPath)",
+        "ASPNETCORE_MODULE_DEBUG": "console"
       }
     },
     "ANCM IIS": {
@@ -27,10 +29,13 @@
       "commandLineArgs": "$(IISArguments)",
       "environmentVariables": {
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
-        "ANCM_PATH": "$(TargetDir)$(AncmPath)",
+        "ANCM_PATH": "$(AspNetCoreModuleV1ShimDll)",
+        "ANCMV2_PATH": "$(AspNetCoreModuleV2ShimDll)",
+        "ASPNETCORE_MODULE_OUTOFPROCESS_HANDLER": "$(AspNetCoreModuleV2OutOfProcessHandlerDll)",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "LAUNCHER_PATH": "$(DotNetPath)"
+        "LAUNCHER_PATH": "$(DotNetPath)",
+        "ASPNETCORE_MODULE_DEBUG": "console"
       }
     }
   }
