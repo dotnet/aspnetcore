@@ -154,3 +154,6 @@
 	path = modules/Templating
 	url = https://github.com/aspnet/Templating.git
 	branch = master
+[submodule "src/IISIntegration/test/gtest/googletest"]
+	path = src/IISIntegration/test/gtest/googletest
+	url = https://github.com/google/googletest
