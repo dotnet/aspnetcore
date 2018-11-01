@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
+    <!--   Don't build the VSIX by default in this branch anymore. You can still build the fix by adding /p:BuildVSIX=true.   -->
+    <BuildVSIX Condition="'$(BuildVSIX)' ==''">false</BuildVSIX>
     <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
     <GetArtifactInfoDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(GetArtifactInfoDependsOn);GetVSIXArtifactInfo</GetArtifactInfoDependsOn>
