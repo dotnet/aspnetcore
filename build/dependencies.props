@@ -5,9 +5,13 @@
   <PropertyGroup Label="Package Versions">
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181031.3</InternalAspNetCoreSdkPackageVersion>
+    <IdentityServer4PackageVersion>2.3.0-preview1-update2</IdentityServer4PackageVersion>
+    <IdentityServer4AspNetIdentityPackageVersion>2.3.0-preview1-update2</IdentityServer4AspNetIdentityPackageVersion>
+    <IdentityServer4EntityFrameworkPackageVersion>2.3.0-preview1-update1</IdentityServer4EntityFrameworkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>3.0.0-alpha1-10670</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>3.0.0-alpha1-10670</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>3.0.0-alpha1-10670</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>3.0.0-alpha1-10670</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
     <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>3.0.0-alpha1-10670</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
     <MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>3.0.0-alpha1-10670</MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>3.0.0-alpha1-10670</MicrosoftAspNetCoreAuthorizationPackageVersion>

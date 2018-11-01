@@ -47,12 +47,19 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
             }
         }
 
-        public async Task<TwoFactorAuthentication> ClickTwoFactorLinkAsync()
+        public async Task<TwoFactorAuthentication> ClickTwoFactorLinkAsync(bool consent = true)
         {
+            // Accept cookie consent if requested
+            if (consent)
+            {
+                await UserStories.AcceptCookiePolicy(Client);
+            }
+
             var goToTwoFactor = await Client.GetAsync(_twoFactorLink.Href);
             var twoFactor = await ResponseAssert.IsHtmlDocumentAsync(goToTwoFactor);
 
-            return new TwoFactorAuthentication(Client, twoFactor, Context);
+            var context = consent ? Context.WithCookieConsent() : Context;
+            return new TwoFactorAuthentication(Client, twoFactor, context);
         }
 
         public async Task<TwoFactorAuthentication> ClickTwoFactorEnabledLinkAsync()
@@ -60,6 +67,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
             var goToTwoFactor = await Client.GetAsync(_twoFactorLink.Href);
             var twoFactor = await ResponseAssert.IsHtmlDocumentAsync(goToTwoFactor);
             Context.TwoFactorEnabled = true;
+            Context.CookiePolicyAccepted = true;
             return new TwoFactorAuthentication(Client, twoFactor, Context);
         }
 
