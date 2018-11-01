@@ -7,6 +7,7 @@
     <CodeSignDependsOn>$(CodeSignDependsOn);GetSharedFxFilesToSign</CodeSignDependsOn>
     <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
+    <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +22,8 @@
 
   <Target Name="GetSharedFxFilesToSign">
     <ItemGroup>
-      <FilesToSign Include="$(ArtifactsDir)$(Configuration)\installers\*.zip" Certificate="None" />
+      <FilesToSign Include="$(ArtifactsDir)$(Configuration)\installers\aspnetcore-runtime-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
+      <FilesToSign Include="$(ArtifactsDir)$(Configuration)\installers\aspnetcore-runtime-internal-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
       <FilesToSign Include="$(BuildDir)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)Microsoft.AspNetCore.All.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
@@ -29,6 +31,14 @@
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.All.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
     </ItemGroup>
+
+    <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
+    <ItemGroup>
+      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)shared\Microsoft.NETCore.App\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)host\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)dotnet.exe" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="_BuildSharedFxProjects" DependsOnTargets="GeneratePropsFiles;ResolveCommitHash">
