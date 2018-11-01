@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<Project ToolsVersion="12.0" DefaultTargets="Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003"> 
+   <Import Project="$(MSBuildThisFileDirectory)\Build.Settings" /> 
+   <ItemGroup> 
+     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\src\AspNetCoreModuleV2\RequestHandler\RequestHandler.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\test\CommonLibTests\CommonLibTests.vcxproj">
+   </ItemGroup> 
+ 
+   <Target Name="Build"> 
+     <MSBuild Targets="$(BuildTargets)" 
+       Projects="@(Projects)" 
+       Properties="Configuration=$(Configuration);Platform=$(Platform);PlatformToolset=$(PlatformToolset)" /> 
+   </Target> 
+
+   <Target Name="Clean"> 
+     <MSBuild Targets="Clean" 
+       Projects="@(Projects)" /> 
+   </Target> 
+ 
+   <Target Name="Rebuild"> 
+     <MSBuild Targets="Clean;Build" 
+       Projects="$(MSBuildProjectFile)" 
+       Properties="BuildTargets=Rebuild;Configuration=$(Configuration);Platform=$(Platform);PlatformToolset=$(PlatformToolset)"/> 
+   </Target> 
+
+   <Target Name="Test" DependsOnTargets="Build"> 
+     <!-- once we have test project ready, we should add executions to run the test post build-->
+   </Target> 
+   <Import Project="Config.Definitions.Props" /> 
+ </Project> 

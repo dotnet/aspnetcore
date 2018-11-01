@@ -1,0 +1,31 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNetCore.AspNetCoreModule</id> <!--TODO make this package version V2 when possible -->
+    <title>Microsoft ASP.NET Core Module</title>
+    <version>$VERSION$</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm</licenseUrl>
+    <copyright>© .NET Foundation. All rights reserved.</copyright>
+    <projectUrl>https://www.asp.net/</projectUrl>
+    <iconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>ASP.NET Core Module</description>
+    <language>en-US</language>
+    <tags>Microsoft.AspNetCore.AspNetCoreModule</tags>
+    <contentFiles>
+      <files include="any/any/*/*.dll" buildAction="None" copyToOutput="true" flatten="false" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\Win32\aspnetcore.dll" target="contentFiles\any\any\x86\aspnetcore.dll" />
+    <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\x64\aspnetcore.dll" target="contentFiles\any\any\x64\aspnetcore.dll" />
+    <file src="src\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\Win32\aspnetcorerh.dll" target="contentFiles\any\any\x86\aspnetcorerh.dll" />
+    <file src="src\AspNetCoreModuleV2\RequestHandler\bin\$Configuration$\x64\aspnetcorerh.dll" target="contentFiles\any\any\x64\aspnetcorerh.dll" />
+    <file src="src\AspNetCoreModuleV2\AspNetCore\bin\$Configuration$\x64\*.xml"/>
+    <file src="tools\installancm.ps1"/>
+    <file src="LICENSE.txt"/>
+    <file src="nuget\Microsoft.AspNetCore.AspNetCoreModule.props" target="build\" />
+  </files>
+</package>

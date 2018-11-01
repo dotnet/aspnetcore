@@ -1,0 +1,113 @@
+<Project>
+
+  <PropertyGroup>
+    <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
+    <TestDependsOn>RunNativeTest;$(TestDependsOn)</TestDependsOn>
+    <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
+  </PropertyGroup>
+
+  <Target Name="BuildNativeAssets" DependsOnTargets="Prepare;GetToolsets" >
+    <PropertyGroup>
+      <BuildArgs>-p:Configuration=$(Configuration) -v:m -nologo -clp:NoSummary -p:CommitHash=$(CommitHash)</BuildArgs>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Platforms Include="Win32;x64" />
+    </ItemGroup>
+
+    <Error
+      Text="Could not find an installation of Visual Studio with the C++ development tools."
+      Condition="'$(VisualStudioMSBuildx86Path)' == ''" />
+
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\RequestHandler.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+    <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg">
+      <ArtifactType>NuGetPackage</ArtifactType>
+      <PackageId>Microsoft.AspNetCore.AspNetCoreModule</PackageId>
+      <Version>$(PackageVersion)</Version>
+      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+    </ArtifactInfo>
+    <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg" />
+
+    <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV1.$(PackageVersion).nupkg">
+      <ArtifactType>NuGetPackage</ArtifactType>
+      <PackageId>Microsoft.AspNetCore.AspNetCoreModuleV1</PackageId>
+      <Version>$(PackageVersion)</Version>
+      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+    </ArtifactInfo>
+    <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV1.$(PackageVersion).nupkg" />
+
+    <ArtifactInfo Include="$(AncmZipOutputPath)">
+      <ArtifactType>ZipArchive</ArtifactType>
+      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+      <Category>shipoob</Category>
+    </ArtifactInfo>
+
+    <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
+    <FilesToSign Include="AspNetCoreModuleV1/x64/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    <FilesToSign Include="AspNetCoreModuleV1/x86/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    <FilesToSign Include="AspNetCoreModuleV2/x64/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    <FilesToSign Include="AspNetCoreModuleV2/x86/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    <FilesToSign Include="AspNetCoreModuleV2/x64/aspnetcorerh.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    <FilesToSign Include="AspNetCoreModuleV2/x86/aspnetcorerh.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
+  <Target Name="PackageNativeProjects">
+    <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCoreV1.nuspec"
+      DestinationFolder="$(BuildDir)"
+      Properties="version=$(PackageVersion);Configuration=$(Configuration)"
+      Overwrite="true"
+      BasePath="$(RepositoryRoot)" />
+
+    <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCoreV2.nuspec"
+      DestinationFolder="$(BuildDir)"
+      Properties="version=$(PackageVersion);Configuration=$(Configuration)"
+      Overwrite="true"
+      BasePath="$(RepositoryRoot)" />
+
+    <ItemGroup>
+      <!-- x64 -->
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" Link="AspNetCoreModuleV1\x64\aspnetcore.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb" Link="AspNetCoreModuleV1\x64\aspnetcore.pdb" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" Link="AspNetCoreModuleV2\x64\aspnetcore.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb" Link="AspNetCoreModuleV2\x64\aspnetcore.pdb" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.dll" Link="AspNetCoreModuleV2\x64\aspnetcorerh.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.pdb" Link="AspNetCoreModuleV2\x64\aspnetcorerh.pdb" />
+      <!-- x86 -->
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" Link="AspNetCoreModuleV1\x86\aspnetcore.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" Link="AspNetCoreModuleV1\x86\aspnetcore.pdb" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" Link="AspNetCoreModuleV2\x86\aspnetcore.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" Link="AspNetCoreModuleV2\x86\aspnetcore.pdb" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" Link="AspNetCoreModuleV2\x86\aspnetcorerh.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.pdb" Link="AspNetCoreModuleV2\x86\aspnetcorerh.pdb" />
+      <!-- Schema-->
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore_schema.xml" Link="AspNetCoreModuleV1\aspnetcore_schema.xml" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcore_schema.xml" Link="AspNetCoreModuleV2\aspnetcore_schema.xml" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\ancm.mof" Link="AspNetCoreModuleV2\ancm.mof" />
+    </ItemGroup>
+
+    <ZipArchive File="$(AncmZipOutputPath)"
+      Overwrite="true"
+      SourceFiles="@(AncmFiles)"
+      WorkingDirectory="$(RepositoryRoot)" />
+  </Target>
+
+  <Target Name="RunNativeTest" DependsOnTargets="GetToolsets">
+    <ItemGroup>
+      <Platforms Include="Win32;x64" />
+    </ItemGroup>
+
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.Identity)"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+</Project>
