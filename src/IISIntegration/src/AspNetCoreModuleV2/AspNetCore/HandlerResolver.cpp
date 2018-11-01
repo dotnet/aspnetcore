@@ -314,10 +314,6 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
 
     if (!fFound)
     {
-        EventLog::Error(
-            ASPNETCORE_EVENT_GENERAL_ERROR,
-            ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG,
-            handlerDllPath.empty() ? s_pwzAspnetcoreInProcessRequestHandlerName : handlerDllPath.c_str());
         return HRESULT_FROM_WIN32(ERROR_DLL_NOT_FOUND);
     }
 

@@ -39,7 +39,7 @@ public:
 
 private:
     HRESULT
-    StartMonitoringAppOflineImpl();
+    StartMonitoringAppOfflineImpl();
 
     std::wstring                                 m_applicationPath;
     std::unique_ptr<FILE_WATCHER>                m_fileWatcher;

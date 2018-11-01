@@ -9,7 +9,7 @@
 HRESULT AppOfflineTrackingApplication::StartMonitoringAppOffline()
 {
     LOG_INFOF(L"Starting app_offline monitoring in application '%ls'", m_applicationPath.c_str());
-    HRESULT hr = StartMonitoringAppOflineImpl();
+    HRESULT hr = StartMonitoringAppOfflineImpl();
 
     if (FAILED_LOG(hr))
     {
@@ -34,7 +34,7 @@ void AppOfflineTrackingApplication::StopInternal(bool fServerInitiated)
     }
 }
 
-HRESULT AppOfflineTrackingApplication::StartMonitoringAppOflineImpl()
+HRESULT AppOfflineTrackingApplication::StartMonitoringAppOfflineImpl()
 {
     if (m_fileWatcher)
     {

@@ -282,8 +282,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
     catch (InvalidOperationException& ex)
     {
         EventLog::Error(
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE_MSG,
             QueryApplicationId().c_str(),
             QueryApplicationPhysicalPath().c_str(),
             ex.as_wstring().c_str());
@@ -293,8 +293,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
     catch (std::runtime_error& ex)
     {
         EventLog::Error(
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE_MSG,
             QueryApplicationId().c_str(),
             QueryApplicationPhysicalPath().c_str(),
             GetUnexpectedExceptionMessage(ex).c_str());
@@ -341,8 +341,8 @@ HRESULT IN_PROCESS_APPLICATION::Start(
     catch (InvalidOperationException& ex)
     {
         EventLog::Error(
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE_MSG,
             pHttpApplication.GetApplicationId(),
             pHttpApplication.GetApplicationPhysicalPath(),
             ex.as_wstring().c_str());
@@ -352,8 +352,8 @@ HRESULT IN_PROCESS_APPLICATION::Start(
     catch (std::runtime_error& ex)
     {
         EventLog::Error(
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE,
+            ASPNETCORE_EVENT_LOAD_CLR_FAILURE_MSG,
             pHttpApplication.GetApplicationId(),
             pHttpApplication.GetApplicationPhysicalPath(),
             GetUnexpectedExceptionMessage(ex).c_str());
