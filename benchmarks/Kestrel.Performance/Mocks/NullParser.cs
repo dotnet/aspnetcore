@@ -50,6 +50,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return true;
         }
 
+        public bool ParseRequestLine(TRequestHandler handler, ref BufferReader<byte> reader)
+        {
+            return ParseRequestLine(handler, reader.Sequence, out _, out _);
+        }
+
+        public bool ParseHeaders(TRequestHandler handler, ref BufferReader<byte> reader)
+        {
+            return ParseHeaders(handler, reader.Sequence, out _, out _, out _);
+        }
+
         public void Reset()
         {
         }

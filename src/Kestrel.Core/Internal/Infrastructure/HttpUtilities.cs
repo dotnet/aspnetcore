@@ -184,6 +184,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetKnownMethod(this ReadOnlySpan<byte> span, out HttpMethod method, out int length)
         {
+            // We can potentially simplify GetKnownMethod if we take into account that the
+            // absolute smallest request line is something like "Z * HTTP/1.1"
+            // See https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.2
+
             length = 0;
             method = HttpMethod.Custom;
 

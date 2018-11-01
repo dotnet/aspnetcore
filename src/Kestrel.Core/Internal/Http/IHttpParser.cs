@@ -11,5 +11,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined);
 
         bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes);
+
+        bool ParseRequestLine(TRequestHandler handler, ref BufferReader<byte> reader);
+
+        bool ParseHeaders(TRequestHandler handler, ref BufferReader<byte> reader);
     }
 }

@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -76,11 +75,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void ParseRequestLine(TRequestHandler handler, in ReadOnlySpan<byte> data)
         {
-            // TODO:
-            // We can simplify GetKnownMethod if we take into account that the
-            // absolute smallest request line is something like "Z * HTTP/1.1"
-            // See https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.2
-
             ReadOnlySpan<byte> customMethod = default;
 
             // Get Method and set the offset
@@ -90,7 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // Skip the space after the method
-            ReadOnlySpan<byte> target = data.Slice(++offset);
+            offset++;
+            ReadOnlySpan<byte> target = data.Slice(offset);
 
             bool pathEncoded = false;
             int pathEnd = target.IndexOfAny(ByteSpace, ByteQuestionMark);

@@ -53,7 +53,7 @@ namespace PlatformBenchmarks
                 var buffer = result.Buffer;
                 while (true)
                 {
-                    if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var examined))
+                    if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var consumed, out var examined))
                     {
                         return;
                     }
@@ -72,39 +72,39 @@ namespace PlatformBenchmarks
                     }
 
                     // No more input or incomplete data, Advance the Reader
-                    Reader.AdvanceTo(buffer.Start, examined);
+                    Reader.AdvanceTo(consumed, examined);
                     break;
                 }
             }
         }
 
-        private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted, out SequencePosition examined)
+        private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted, out SequencePosition consumed, out SequencePosition examined)
         {
             examined = buffer.End;
-
-            var consumed = buffer.Start;
+            consumed = buffer.Start;
             var state = _state;
+            var reader = new BufferReader<byte>(buffer);
 
-            if (!buffer.IsEmpty)
+            if (!reader.End)
             {
                 if (state == State.StartLine)
                 {
-                    if (Parser.ParseRequestLine(new ParsingAdapter(this), buffer, out consumed, out examined))
+                    if (Parser.ParseRequestLine(new ParsingAdapter(this), ref reader))
                     {
                         state = State.Headers;
+                        consumed = reader.Position;
+                        examined = consumed;
                     }
-
-                    buffer = buffer.Slice(consumed);
                 }
 
                 if (state == State.Headers)
                 {
-                    if (Parser.ParseHeaders(new ParsingAdapter(this), buffer, out consumed, out examined, out int consumedBytes))
+                    if (Parser.ParseHeaders(new ParsingAdapter(this), ref reader))
                     {
                         state = State.Body;
+                        consumed = reader.Position;
+                        examined = consumed;
                     }
-
-                    buffer = buffer.Slice(consumed);
                 }
 
                 if (state != State.Body && isCompleted)
