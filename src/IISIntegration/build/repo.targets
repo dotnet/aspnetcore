@@ -3,7 +3,6 @@
   <PropertyGroup>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
-    <TestDependsOn>RunNativeTest;$(TestDependsOn)</TestDependsOn>
     <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
   </PropertyGroup>
 
@@ -25,8 +24,6 @@
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCoreModuleV2\RequestHandler\RequestHandler.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
-      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
@@ -102,12 +99,4 @@
       WorkingDirectory="$(RepositoryRoot)" />
   </Target>
 
-  <Target Name="RunNativeTest" DependsOnTargets="GetToolsets">
-    <ItemGroup>
-      <Platforms Include="Win32;x64" />
-    </ItemGroup>
-
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.Identity)"
-      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
-  </Target>
 </Project>
