@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <Target Name="CollectFileSignInfo" DependsOnTargets="_PrepareRepositories">
+
     <ItemGroup>
       <_RepositoryProject Remove="@(_RepositoryProject)" />
       <_RepositoryProject Include="$(MSBuildProjectFullPath)" Condition="'%(Repository.Identity)' != ''">
@@ -39,7 +40,8 @@
       <FilesToSign Include="@(_FilesToSign)" />
 
       <FilesToExcludeFromSigning Include="@(_RepoFileSignInfo->'%(FileName)%(Extension)')" Condition="'%(_RepoFileSignInfo.IsFileToExcludeFromSign)' == 'true'" />
-      <!-- Workaround for the way we have both repo and Universe builds. This prevents duplicate configuration between 'exclude' and 'sign' options. -->
+      <!-- Workaround for the way we have both repo and Universe builds, crossgen AND uncrossgened outputs. This prevents duplicate configuration between 'exclude' and 'sign' options. -->
+      <FilesToExcludeFromSigning Remove="@(FilesToSign->'%(FileName)%(Extension)')" />
       <FilesToExcludeFromSigning Remove="@(_FilesToSign->'%(FileName)%(Extension)')" />
     </ItemGroup>
   </Target>
