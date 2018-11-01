@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="SharedFx.props" />
-
   <PropertyGroup>
     <UnitTestFxProject>$(RepositoryRoot)src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
     <UnitTestFxProject>$([MSBuild]::NormalizePath($(UnitTestFxProject)))</UnitTestFxProject>
@@ -14,8 +12,9 @@
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.pkgproj" />
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
     <ProjectToBuild Include="$(UnitTestFxProject)" />
-    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Internal\*.*proj" />
-    <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Archive.Redist\*.*proj" />
+    <ProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
+    <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
+    <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
   </ItemGroup>
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
@@ -69,8 +68,8 @@
   </Target>
 
   <Target Name="TestSharedFx" DependsOnTargets="GeneratePropsFiles;InstallDotNet">
-    <PropertyGroup>
 
+    <PropertyGroup>
       <!-- The file path to the log file, from within the container -->
       <UnitTestFxTrxLogFile>$(LogOutputDir)SharedFx-UnitTests-$(Version).trx</UnitTestFxTrxLogFile>
       <!-- The trx file path from the perspective of the TeamCity agent -->
