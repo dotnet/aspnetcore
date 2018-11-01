@@ -30,7 +30,7 @@
     <RepositoryBuildOrder Include="BrowserLink" Order="8" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="9" />
-    <RepositoryBuildOrder Include="IISIntegration" Order="10" />
+    <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <RepositoryBuildOrder Include="CORS" Order="11" />
     <RepositoryBuildOrder Include="StaticFiles" Order="11" />
     <RepositoryBuildOrder Include="Routing" Order="11" />
