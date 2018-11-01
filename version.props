@@ -24,6 +24,8 @@
     <PackageVersion>$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
 
+    <SharedFxVersion>$(PackageVersion)</SharedFxVersion>
+
     <!-- Experimental packages which are not truly supported yet. -->
     <ExperimentalPackageVersion>$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
     <ExperimentalPackageVersion  Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(ExperimentalVersionPrefix)-$(VersionSuffix)</ExperimentalPackageVersion>

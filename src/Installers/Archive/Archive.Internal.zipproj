@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Framework\*\src\*.shfxproj">
+    <ProjectReference Include="..\..\Framework\**\*.shfxproj">
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <OutputItemType>_ResolvedFxProjects</OutputItemType>
     </ProjectReference>
