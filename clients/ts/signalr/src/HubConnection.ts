@@ -373,7 +373,7 @@ export class HubConnection {
 
                         break;
                     default:
-                        this.logger.log(LogLevel.Warning, "Invalid message type: " + message.type);
+                        this.logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
                         break;
                 }
             }

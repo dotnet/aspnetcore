@@ -72,7 +72,7 @@ export class XhrHttpClient extends HttpClient {
             };
 
             xhr.onerror = () => {
-                this.logger.log(LogLevel.Warning, `Error from HTTP request. ${xhr.status}: ${xhr.statusText}`);
+                this.logger.log(LogLevel.Warning, `Error from HTTP request. ${xhr.status}: ${xhr.statusText}.`);
                 reject(new HttpError(xhr.statusText, xhr.status));
             };
 

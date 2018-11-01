@@ -50,7 +50,7 @@ export class LongPollingTransport implements ITransport {
 
         this.url = url;
 
-        this.logger.log(LogLevel.Trace, "(LongPolling transport) Connecting");
+        this.logger.log(LogLevel.Trace, "(LongPolling transport) Connecting.");
 
         // Allow binary format on Node and Browsers that support binary content (indicated by the presence of responseType property)
         if (transferFormat === TransferFormat.Binary &&
@@ -74,10 +74,10 @@ export class LongPollingTransport implements ITransport {
         // Make initial long polling request
         // Server uses first long polling request to finish initializing connection and it returns without data
         const pollUrl = `${url}&_=${Date.now()}`;
-        this.logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}`);
+        this.logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}.`);
         const response = await this.httpClient.get(pollUrl, pollOptions);
         if (response.statusCode !== 200) {
-            this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
+            this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}.`);
 
             // Mark running as false so that the poll immediately ends and runs the close logic
             this.closeError = new HttpError(response.statusText || "", response.statusCode);
@@ -122,15 +122,15 @@ export class LongPollingTransport implements ITransport {
 
                 try {
                     const pollUrl = `${url}&_=${Date.now()}`;
-                    this.logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}`);
+                    this.logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}.`);
                     const response = await this.httpClient.get(pollUrl, pollOptions);
 
                     if (response.statusCode === 204) {
-                        this.logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server");
+                        this.logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server.");
 
                         this.running = false;
                     } else if (response.statusCode !== 200) {
-                        this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
+                        this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}.`);
 
                         // Unexpected status code
                         this.closeError = new HttpError(response.statusText || "", response.statusCode);
@@ -138,7 +138,7 @@ export class LongPollingTransport implements ITransport {
                     } else {
                         // Process the response
                         if (response.content) {
-                            this.logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content, this.logMessageContent)}`);
+                            this.logger.log(LogLevel.Trace, `(LongPolling transport) data received. ${getDataDetail(response.content, this.logMessageContent)}.`);
                             if (this.onreceive) {
                                 this.onreceive(response.content);
                             }

@@ -36,7 +36,7 @@ export class WebSocketTransport implements ITransport {
         Arg.isRequired(transferFormat, "transferFormat");
         Arg.isIn(transferFormat, TransferFormat, "transferFormat");
 
-        this.logger.log(LogLevel.Trace, "(WebSockets transport) Connecting");
+        this.logger.log(LogLevel.Trace, "(WebSockets transport) Connecting.");
 
         if (this.accessTokenFactory) {
             const token = await this.accessTokenFactory();
@@ -70,7 +70,7 @@ export class WebSocketTransport implements ITransport {
 
             // tslint:disable-next-line:variable-name
             webSocket.onopen = (_event: Event) => {
-                this.logger.log(LogLevel.Information, `WebSocket connected to ${url}`);
+                this.logger.log(LogLevel.Information, `WebSocket connected to ${url}.`);
                 this.webSocket = webSocket;
                 resolve();
             };
@@ -127,7 +127,7 @@ export class WebSocketTransport implements ITransport {
         this.logger.log(LogLevel.Trace, "(WebSockets transport) socket closed.");
         if (this.onclose) {
             if (event && (event.wasClean === false || event.code !== 1000)) {
-                this.onclose(new Error(`Websocket closed with status code: ${event.code} (${event.reason})`));
+                this.onclose(new Error(`WebSocket closed with status code: ${event.code} (${event.reason}).`));
             } else {
                 this.onclose();
             }

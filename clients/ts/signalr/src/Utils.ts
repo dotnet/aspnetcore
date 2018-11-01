@@ -33,7 +33,7 @@ export function getDataDetail(data: any, includeContent: boolean): string {
     } else if (typeof data === "string") {
         detail = `String data of length ${data.length}`;
         if (includeContent) {
-            detail += `. Content: '${data}'.`;
+            detail += `. Content: '${data}'`;
         }
     }
     return detail;
