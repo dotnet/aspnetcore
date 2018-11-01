@@ -214,14 +214,6 @@
     <None Include="Source.def" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="aspnetcore_schema.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="aspnetcore_schema.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="src\application.cxx" />
     <ClCompile Include="src\applicationmanager.cxx" />
     <ClCompile Include="src\aspnetcoreconfig.cxx" />

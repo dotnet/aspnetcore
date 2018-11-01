@@ -3,6 +3,12 @@
 
 #pragma once
 
+#include <Windows.h>
+#include <vector>
+#include <filesystem>
+#include <optional>
+#include <string>
+
 typedef INT(*hostfxr_get_native_search_directories_fn) (CONST INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
 typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]);
 
@@ -11,68 +17,75 @@ typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]);
 class HOSTFXR_UTILITY
 {
 public:
-    HOSTFXR_UTILITY();
-    ~HOSTFXR_UTILITY();
-
-	static
-	HRESULT
-	GetHostFxrParameters(
-        HANDLE              hEventLog,
-        PCWSTR				pcwzProcessPath,
-        PCWSTR              pcwzApplicationPhysicalPath,
-        PCWSTR              pcwzArguments,
-        _Inout_ STRU*       pStruHostFxrDllLocation,
-        _Out_ DWORD*        pdwArgCount,
-        _Out_ BSTR**       ppwzArgv
-	);
 
     static
-    HRESULT
-    GetStandaloneHostfxrParameters(
-        PCWSTR              pwzExeAbsolutePath, // includes .exe file extension.
-        PCWSTR				pcwzApplicationPhysicalPath,
-        PCWSTR              pcwzArguments,
-        HANDLE              hEventLog,
-        _Inout_ STRU*		pStruHostFxrDllLocation,
-        _Out_ DWORD*		pdwArgCount,
-        _Out_ BSTR**		ppwzArgv
+    void
+    GetHostFxrParameters(
+        const std::filesystem::path     &processPath,
+        const std::filesystem::path     &applicationPhysicalPath,
+        const std::wstring              &applicationArguments,
+        std::filesystem::path           &hostFxrDllPath,
+        std::filesystem::path           &dotnetExePath,
+        std::vector<std::wstring>       &arguments
     );
 
     static
-    HRESULT
-    ParseHostfxrArguments(
-        PCWSTR              pwzArgumentsFromConfig,
-        PCWSTR              pwzExePath, 
-        PCWSTR				pcwzApplicationPhysicalPath,
-        HANDLE              hEventLog,
-        _Out_ DWORD*        pdwArgCount,
-        _Out_ BSTR**        ppwzArgv
+    void
+    AppendArguments(
+        const std::wstring          &arugments,
+        const std::filesystem::path &applicationPhysicalPath,
+        std::vector<std::wstring>   &arguments,
+        bool                        expandDllPaths = false
     );
 
     static
-    HRESULT
-    GetAbsolutePathToDotnet(
-        STRU*   pStruAbsolutePathToDotnet
-    );
-
-    static
-    HRESULT
-    GetAbsolutePathToHostFxr(
-        _In_ STRU* pStruAbsolutePathToDotnet,
-        _In_ HANDLE hEventLog,
-        _Out_ STRU* pStruAbsolutePathToHostfxr
-    );
+    std::optional<std::filesystem::path>
+    GetAbsolutePathToDotnetFromProgramFiles();
+private:
 
     static
     BOOL
-    InvokeWhereToFindDotnet(
-        _Inout_ STRU* pStruAbsolutePathToDotnet
+    IsDotnetExecutable(
+        const std::filesystem::path & dotnetPath
     );
 
     static
-    HRESULT
-    GetAbsolutePathToDotnetFromProgramFiles(
-        _Inout_ STRU* pStruAbsolutePathToDotnet
+    VOID
+    FindDotNetFolders(
+        const std::filesystem::path& path,
+        std::vector<std::wstring> & pvFolders
     );
+
+    static
+    std::wstring
+    FindHighestDotNetVersion(
+        std::vector<std::wstring> & vFolders
+    );
+
+    static
+    std::filesystem::path
+    GetAbsolutePathToHostFxr(
+        const std::filesystem::path & dotnetPath
+    );
+
+
+    static
+    std::optional<std::filesystem::path>
+    InvokeWhereToFindDotnet();
+
+    static
+    std::filesystem::path
+    GetAbsolutePathToDotnet(
+        const std::filesystem::path & applicationPath,
+        const std::filesystem::path & requestedPath
+    );
+
+    struct LocalFreeDeleter
+    {
+         void operator ()(_In_ LPWSTR* ptr) const
+         {
+             LocalFree(ptr);
+         }
+    };
 };
 

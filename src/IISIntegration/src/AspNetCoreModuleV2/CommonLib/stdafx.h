@@ -9,26 +9,9 @@
 
 #include <Windows.h>
 #include <httpserv.h>
-#include <wchar.h>
+#include <cwchar>
 #include <vector>
 #include <shellapi.h>
 #include <sstream>
-#include "Shlwapi.h"
-#include "..\IISLib\hashtable.h"
-#include "..\IISLib\stringu.h"
-#include "..\IISLib\stringa.h"
-#include "..\IISLib\multisz.h"
-#include "..\IISLib\dbgutil.h"
-#include "..\IISLib\ahutil.h"
-#include "..\IISLib\hashfn.h"
-#include "SRWLockWrapper.h"
-#include "environmentvariablehash.h"
-#include "utility.h"
-#include "aspnetcoreconfig.h"
-#include "application.h"
-#include "requesthandler.h"
-#include "fx_ver.h"
-#include "hostfxr_utility.h"
-#include "resources.h"
-#include "aspnetcore_msg.h"
-
+#include <memory>
+#include <filesystem>

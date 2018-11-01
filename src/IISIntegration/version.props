@@ -1,18 +1,20 @@
 ﻿<Project>
   <PropertyGroup>
-    <DotNetMajorVersion>2</DotNetMajorVersion>
-    <DotNetMinorVersion>1</DotNetMinorVersion>
-    <DotNetPatchVersion>2</DotNetPatchVersion>
+    <DotNetMajorVersion>3</DotNetMajorVersion>
+    <DotNetMinorVersion>0</DotNetMinorVersion>
+    <DotNetPatchVersion>0</DotNetPatchVersion>
     <VersionPrefix>$(DotNetMajorVersion).$(DotNetMinorVersion).$(DotNetPatchVersion)</VersionPrefix>
-    <AspNetCoreModuleVersionMajor>12</AspNetCoreModuleVersionMajor>
+    <AspNetCoreModuleVersionMajor>13</AspNetCoreModuleVersionMajor>
     <AspNetCoreModuleVersionMinor>$(DotNetMinorVersion)</AspNetCoreModuleVersionMinor>
     <AspNetCoreModuleVersionRevision>$(DotNetPatchVersion)</AspNetCoreModuleVersionRevision>
-    <VersionSuffix>rtm</VersionSuffix>
+    <VersionSuffix>alpha1</VersionSuffix>
+    <VersionSuffix Condition="'$(BuildServerIIS21)' == 'true'">ancm-oob</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
     <FeatureBranchVersionPrefix Condition="'$(FeatureBranchVersionPrefix)' == ''">a-</FeatureBranchVersionPrefix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
   </PropertyGroup>
 </Project>

@@ -1,237 +1,129 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "stdafx.h"
+#include "hostfxr_utility.h"
 
-HOSTFXR_UTILITY::HOSTFXR_UTILITY()
-{
-}
+#include <atlcomcli.h>
+#include "fx_ver.h"
+#include "debugutil.h"
+#include "exceptions.h"
+#include "HandleWrapper.h"
+#include "Environment.h"
+#include "StringHelpers.h"
 
-HOSTFXR_UTILITY::~HOSTFXR_UTILITY()
-{
-}
+namespace fs = std::filesystem;
 
-//
-// Runs a standalone appliction.
-// The folder structure looks like this:
-// Application/
-//   hostfxr.dll
-//   Application.exe
-//   Application.dll
-//   etc.
-// We get the full path to hostfxr.dll and Application.dll and run hostfxr_main,
-// passing in Application.dll.
-// Assuming we don't need Application.exe as the dll is the actual application.
-//
-HRESULT
-HOSTFXR_UTILITY::GetStandaloneHostfxrParameters(
-    PCWSTR              pwzExeAbsolutePath, // includes .exe file extension.
-    PCWSTR              pcwzApplicationPhysicalPath,
-    PCWSTR              pcwzArguments,
-    HANDLE              hEventLog,
-    _Inout_ STRU*       struHostFxrDllLocation,
-    _Out_ DWORD*        pdwArgCount,
-    _Out_ PWSTR**       ppwzArgv
-)
-{
-    HRESULT             hr = S_OK;
-    STRU                struDllPath;
-    STRU                struArguments;
-    STRU                struHostFxrPath;
-    STRU                struRuntimeConfigLocation;
-    DWORD               dwPosition;
-
-    // Obtain the app name from the processPath section.
-    if ( FAILED( hr = struDllPath.Copy( pwzExeAbsolutePath ) ) )
-    {
-        goto Finished;
-    }
-
-    dwPosition = struDllPath.LastIndexOf( L'.', 0 );
-    if ( dwPosition == -1 )
-    {
-        hr = E_FAIL;
-        goto Finished;
-    }
-
-    hr = UTILITY::ConvertPathToFullPath( L".\\hostfxr.dll", pcwzApplicationPhysicalPath, &struHostFxrPath );
-    if ( FAILED( hr ) )
-    {
-        goto Finished;
-    }
-
-	struDllPath.QueryStr()[dwPosition] = L'\0';
-	if (FAILED(hr = struDllPath.SyncWithBuffer()))
-	{
-		goto Finished;
-	}
-
-    if ( !UTILITY::CheckIfFileExists( struHostFxrPath.QueryStr() ) )
-    {
-        // Most likely a full framework app.
-        // Check that the runtime config file doesn't exist in the folder as another heuristic.
-        if (FAILED(hr = struRuntimeConfigLocation.Copy(struDllPath)) ||
-              FAILED(hr = struRuntimeConfigLocation.Append( L".runtimeconfig.json" )))
-        {
-            goto Finished;
-        }
-        if (!UTILITY::CheckIfFileExists(struRuntimeConfigLocation.QueryStr()))
-        {
-
-            hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
-            UTILITY::LogEventF(hEventLog,
-                                EVENTLOG_ERROR_TYPE,
-                                ASPNETCORE_EVENT_INPROCESS_FULL_FRAMEWORK_APP,
-                                ASPNETCORE_EVENT_INPROCESS_FULL_FRAMEWORK_APP_MSG,
-                                pcwzApplicationPhysicalPath,
-                                hr);
-        }
-        else
-        {
-            // If a runtime config file does exist, report a file not found on the app.exe
-            hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-	        UTILITY::LogEventF(hEventLog,
-		        EVENTLOG_ERROR_TYPE,
-		        ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND,
-		        ASPNETCORE_EVENT_APPLICATION_EXE_NOT_FOUND_MSG,
-	            pcwzApplicationPhysicalPath,
-	            hr);
-        }
-
-        goto Finished;
-    }
-
-    if (FAILED(hr = struHostFxrDllLocation->Copy(struHostFxrPath)))
-    {
-        goto Finished;
-    }
-
-
-    if (FAILED(hr = struDllPath.Append(L".dll")))
-    {
-        goto Finished;
-    }
-
-    if (!UTILITY::CheckIfFileExists(struDllPath.QueryStr()))
-    {
-        // Treat access issue as File not found
-        hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-        goto Finished;
-    }
-
-    if (FAILED(hr = struArguments.Copy(struDllPath)) ||
-        FAILED(hr = struArguments.Append(L" ")) ||
-        FAILED(hr = struArguments.Append(pcwzArguments)))
-    {
-        goto Finished;
-    }
-
-    if (FAILED(hr = ParseHostfxrArguments(
-        struArguments.QueryStr(),
-        pwzExeAbsolutePath,
-        pcwzApplicationPhysicalPath,
-        hEventLog,
-        pdwArgCount,
-        ppwzArgv)))
-    {
-        goto Finished;
-    }
-
-Finished:
-
-    return hr;
-}
-
-HRESULT
+void
 HOSTFXR_UTILITY::GetHostFxrParameters(
-    HANDLE              hEventLog,
-    PCWSTR              pcwzProcessPath,
-    PCWSTR              pcwzApplicationPhysicalPath,
-    PCWSTR              pcwzArguments,
-    _Inout_ STRU*		struHostFxrDllLocation,
-    _Out_ DWORD*		pdwArgCount,
-    _Out_ BSTR**		pbstrArgv
+    const fs::path     &processPath,
+    const fs::path     &applicationPhysicalPath,
+    const std::wstring &applicationArguments,
+    fs::path           &hostFxrDllPath,
+    fs::path           &dotnetExePath,
+    std::vector<std::wstring> &arguments
 )
 {
-    HRESULT                     hr = S_OK;
-    STRU                        struSystemPathVariable;
-    STRU                        struAbsolutePathToHostFxr;
-    STRU                        struAbsolutePathToDotnet;
-    STRU                        struEventMsg;
-    STACK_STRU(struExpandedProcessPath, MAX_PATH);
-    STACK_STRU(struExpandedArguments, MAX_PATH);
+    LOG_INFOF(L"Resolving hostfxr parameters for application: '%ls' arguments: '%ls' path: '%ls'",
+        processPath.c_str(),
+        applicationArguments.c_str(),
+        applicationPhysicalPath.c_str());
+    arguments = std::vector<std::wstring>();
 
-    // Copy and Expand the processPath and Arguments.
-    if (FAILED(hr = struExpandedProcessPath.CopyAndExpandEnvironmentStrings(pcwzProcessPath))
-        || FAILED(hr = struExpandedArguments.CopyAndExpandEnvironmentStrings(pcwzArguments)))
+    fs::path expandedProcessPath = Environment::ExpandEnvironmentVariables(processPath);
+    const auto expandedApplicationArguments = Environment::ExpandEnvironmentVariables(applicationArguments);
+
+    LOG_INFOF(L"Known dotnet.exe location: '%ls'", dotnetExePath.c_str());
+
+    if (!expandedProcessPath.has_extension())
     {
-        goto Finished;
+        // The only executable extension inprocess supports
+        expandedProcessPath.replace_extension(".exe");
     }
-
-    // Convert the process path an absolute path to our current application directory.
-    // If the path is already an absolute path, it will be unchanged.
-    hr = UTILITY::ConvertPathToFullPath(
-        struExpandedProcessPath.QueryStr(),
-        pcwzApplicationPhysicalPath,
-        &struAbsolutePathToDotnet
-    );
-
-    if (FAILED(hr))
+    else if (!ends_with(expandedProcessPath, L".exe", true))
     {
-        goto Finished;
+        throw InvalidOperationException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
     }
 
     // Check if the absolute path is to dotnet or not.
-    if (struAbsolutePathToDotnet.EndsWith(L"dotnet.exe") || struAbsolutePathToDotnet.EndsWith(L"dotnet"))
+    if (IsDotnetExecutable(expandedProcessPath))
     {
-        //
-        // The processPath ends with dotnet.exe or dotnet
-        // like: C:\Program Files\dotnet\dotnet.exe, C:\Program Files\dotnet\dotnet, dotnet.exe, or dotnet.
-        // Get the absolute path to dotnet. If the path is already an absolute path, it will return that path
-        //
-        if (FAILED(hr = HOSTFXR_UTILITY::GetAbsolutePathToDotnet(&struAbsolutePathToDotnet))) // Make sure to append the dotnet.exe path correctly here (pass in regular path)?
+        LOG_INFOF(L"Process path '%ls' is dotnet, treating application as portable", expandedProcessPath.c_str());
+
+        if (applicationArguments.empty())
         {
-            goto Finished;
+            throw InvalidOperationException(L"Application arguments are empty.");
         }
 
-        if (FAILED(hr = GetAbsolutePathToHostFxr(&struAbsolutePathToDotnet, hEventLog, &struAbsolutePathToHostFxr)))
+        if (dotnetExePath.empty())
         {
-            goto Finished;
+            dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
         }
 
-        if (FAILED(hr = ParseHostfxrArguments(
-            struExpandedArguments.QueryStr(),
-            struAbsolutePathToDotnet.QueryStr(),
-            pcwzApplicationPhysicalPath,
-            hEventLog,
-            pdwArgCount,
-            pbstrArgv)))
-        {
-            goto Finished;
-        }
+        hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
 
-        if (FAILED(hr = struHostFxrDllLocation->Copy(struAbsolutePathToHostFxr)))
-        {
-            goto Finished;
-        }
+        arguments.push_back(dotnetExePath);
+        AppendArguments(
+            expandedApplicationArguments,
+            applicationPhysicalPath,
+            arguments,
+            true);
     }
     else
     {
+        LOG_INFOF(L"Process path '%ls' is not dotnet, treating application as standalone or portable with bootstrapper", expandedProcessPath.c_str());
+
+        auto executablePath = expandedProcessPath;
+
+        if (executablePath.is_relative())
+        {
+            executablePath = applicationPhysicalPath / expandedProcessPath;
+        }
+
         //
         // The processPath is a path to the application executable
         // like: C:\test\MyApp.Exe or MyApp.Exe
         // Check if the file exists, and if it does, get the parameters for a standalone application
         //
-        if (UTILITY::CheckIfFileExists(struAbsolutePathToDotnet.QueryStr()))
+        if (is_regular_file(executablePath))
         {
-            hr = GetStandaloneHostfxrParameters(
-                struAbsolutePathToDotnet.QueryStr(),
-                pcwzApplicationPhysicalPath,
-                struExpandedArguments.QueryStr(),
-                hEventLog,
-                struHostFxrDllLocation,
-                pdwArgCount,
-                pbstrArgv);
+            auto applicationDllPath = executablePath;
+            applicationDllPath.replace_extension(".dll");
+
+            LOG_INFOF(L"Checking application.dll at '%ls'", applicationDllPath.c_str());
+            if (!is_regular_file(applicationDllPath))
+            {
+                throw InvalidOperationException(format(L"Application .dll was not found at %s", applicationDllPath.c_str()));
+            }
+
+            hostFxrDllPath = executablePath.parent_path() / "hostfxr.dll";
+            LOG_INFOF(L"Checking hostfxr.dll at '%ls'", hostFxrDllPath.c_str());
+            if (is_regular_file(hostFxrDllPath))
+            {
+                LOG_INFOF(L"hostfxr.dll found app local at '%ls', treating application as standalone", hostFxrDllPath.c_str());
+                // For standalone apps we need .exe to be argv[0], dll would be discovered next to it
+                arguments.push_back(executablePath);
+            }
+            else
+            {
+                LOG_INFOF(L"hostfxr.dll found app local at '%ls', treating application as portable with launcher", hostFxrDllPath.c_str());
+
+                // passing "dotnet" here because we don't know where dotnet.exe should come from
+                // so trying all fallbacks is appropriate
+                if (dotnetExePath.empty())
+                {
+                    dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, L"dotnet");
+                }
+                hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
+
+                // For portable with launcher apps we need dotnet.exe to be argv[0] and .dll be argv[1]
+                arguments.push_back(dotnetExePath);
+                arguments.push_back(applicationDllPath);
+            }
+
+            AppendArguments(
+                expandedApplicationArguments,
+                applicationPhysicalPath,
+                arguments);
         }
         else
         {
@@ -239,310 +131,189 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
             // If the processPath file does not exist and it doesn't include dotnet.exe or dotnet
             // then it is an invalid argument.
             //
-            hr = HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);;
-            UTILITY::LogEventF(hEventLog,
-                EVENTLOG_ERROR_TYPE,
-                ASPNETCORE_EVENT_GENERAL_ERROR_MSG,
-                ASPNETCORE_EVENT_INVALID_PROCESS_PATH_MSG,
-                struExpandedProcessPath.QueryStr(),
-                hr);
+            throw InvalidOperationException(format(L"Executable was not found at '%s'", executablePath.c_str()));
         }
     }
-
-Finished:
-
-    return hr;
 }
 
-//
-// Forms the argument list in HOSTFXR_PARAMETERS.
-// Sets the ArgCount and Arguments.
-// Arg structure:
-// argv[0] = Path to exe activating hostfxr.
-// argv[1] = L"exec"
-// argv[2] = absolute path to dll.
-//
-HRESULT
-HOSTFXR_UTILITY::ParseHostfxrArguments(
-    PCWSTR              pwzArgumentsFromConfig,
-    PCWSTR              pwzExePath,
-    PCWSTR              pcwzApplicationPhysicalPath,
-    HANDLE              hEventLog,
-    _Out_ DWORD*        pdwArgCount,
-    _Out_ BSTR**        pbstrArgv
+BOOL
+HOSTFXR_UTILITY::IsDotnetExecutable(const std::filesystem::path & dotnetPath)
+{
+    return ends_with(dotnetPath, L"dotnet.exe", true);
+}
+
+void
+HOSTFXR_UTILITY::AppendArguments(
+    const std::wstring &applicationArguments,
+    const fs::path     &applicationPhysicalPath,
+    std::vector<std::wstring> &arguments,
+    bool expandDllPaths
 )
 {
-    UNREFERENCED_PARAMETER( hEventLog ); // TODO use event log to set errors.
-
-	DBG_ASSERT(dwArgCount != NULL);
-	DBG_ASSERT(pwzArgv != NULL);
-
-    HRESULT     hr = S_OK;
-    INT         argc = 0;
-    BSTR*       argv = NULL;
-    LPWSTR*     pwzArgs = NULL;
-    STRU        struTempPath;
-    INT         intArgsProcessed = 0;
-
-    // If we call CommandLineToArgvW with an empty string, argc is 5 for some interesting reason.
-    // Protectively guard against this by check if the string is null or empty.
-    if (pwzArgumentsFromConfig == NULL || wcscmp(pwzArgumentsFromConfig, L"") == 0)
+    if (applicationArguments.empty())
     {
-        hr = E_INVALIDARG;
-        goto Finished;
+        return;
     }
 
-    pwzArgs = CommandLineToArgvW(pwzArgumentsFromConfig, &argc);
+    // don't throw while trying to expand arguments
+    std::error_code ec;
 
-    if (pwzArgs == NULL)
+    // Try to treat entire arguments section as a single path
+    if (expandDllPaths)
     {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Failure;
-    }
-
-    argv = new BSTR[argc + 1];
-    if (argv == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Failure;
-    }
-
-    argv[0] = SysAllocString(pwzExePath);
-
-    if (argv[0] == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Failure;
-    }
-
-    // Try to convert the application dll from a relative to an absolute path
-    // Don't record this failure as pwzArgs[0] may already be an absolute path to the dll.
-    for (intArgsProcessed = 0; intArgsProcessed < argc; intArgsProcessed++)
-    {
-        struTempPath.Copy(pwzArgs[intArgsProcessed]);
-        if (struTempPath.EndsWith(L".dll"))
+        fs::path argumentAsPath = applicationArguments;
+        if (is_regular_file(argumentAsPath, ec))
         {
-            if (SUCCEEDED(UTILITY::ConvertPathToFullPath(pwzArgs[intArgsProcessed], pcwzApplicationPhysicalPath, &struTempPath)))
-            {
-                argv[intArgsProcessed + 1] = SysAllocString(struTempPath.QueryStr());
-            }
-            else
-            {
-                argv[intArgsProcessed + 1] = SysAllocString(pwzArgs[intArgsProcessed]);
-            }
-            if (argv[intArgsProcessed + 1] == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Failure;
-            }
+            LOG_INFOF(L"Treating '%ls' as a single path argument", applicationArguments.c_str());
+            arguments.push_back(argumentAsPath);
+            return;
         }
-        else
+
+        if (argumentAsPath.is_relative())
         {
-            argv[intArgsProcessed + 1] = SysAllocString(pwzArgs[intArgsProcessed]);
-            if (argv[intArgsProcessed + 1] == NULL)
+            argumentAsPath = applicationPhysicalPath / argumentAsPath;
+            if (is_regular_file(argumentAsPath, ec))
             {
-                hr = E_OUTOFMEMORY;
-                goto Failure;
+                LOG_INFOF(L"Converted argument '%ls' to '%ls'", applicationArguments.c_str(), argumentAsPath.c_str());
+                arguments.push_back(argumentAsPath);
+                return;
             }
         }
     }
 
-    *pbstrArgv = argv;
-    *pdwArgCount = argc + 1;
-
-    goto Finished;
-
-Failure:
-    if (argv != NULL)
+    int argc = 0;
+    auto pwzArgs = std::unique_ptr<LPWSTR[], LocalFreeDeleter>(CommandLineToArgvW(applicationArguments.c_str(), &argc));
+    if (!pwzArgs)
     {
-        // intArgsProcess - 1 here as if we fail to allocated the ith string
-        // we don't want to free it.
-        for (INT i = 0; i < intArgsProcessed - 1; i++)
+        throw InvalidOperationException(format(L"Unable parse command line arguments '%s'", applicationArguments.c_str()));
+    }
+
+    for (int intArgsProcessed = 0; intArgsProcessed < argc; intArgsProcessed++)
+    {
+        std::wstring argument = pwzArgs[intArgsProcessed];
+
+        // Try expanding arguments ending in .dll to a full paths
+        if (expandDllPaths && ends_with(argument, L".dll", true))
         {
-            SysFreeString(argv[i]);
+            fs::path argumentAsPath = argument;
+            if (argumentAsPath.is_relative())
+            {
+                argumentAsPath = applicationPhysicalPath / argumentAsPath;
+                if (is_regular_file(argumentAsPath, ec))
+                {
+                    LOG_INFOF(L"Converted argument '%ls' to '%ls'", argument.c_str(), argumentAsPath.c_str());
+                    argument = argumentAsPath;
+                }
+            }
         }
-    }
 
-    delete[] argv;
-
-Finished:
-    if (pwzArgs != NULL)
-    {
-        LocalFree(pwzArgs);
-        DBG_ASSERT(pwzArgs == NULL);
+        arguments.push_back(argument);
     }
-    return hr;
 }
 
-HRESULT
+// The processPath ends with dotnet.exe or dotnet
+// like: C:\Program Files\dotnet\dotnet.exe, C:\Program Files\dotnet\dotnet, dotnet.exe, or dotnet.
+// Get the absolute path to dotnet. If the path is already an absolute path, it will return that path
+fs::path
 HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
-    _Inout_ STRU* pStruAbsolutePathToDotnet
+     const fs::path & applicationPath,
+     const fs::path & requestedPath
 )
 {
-    HRESULT             hr = S_OK;
+    LOG_INFOF(L"Resolving absolute path to dotnet.exe from '%ls'", requestedPath.c_str());
+
+    auto processPath = requestedPath;
+    if (processPath.is_relative())
+    {
+        processPath = applicationPath / processPath;
+    }
 
     //
     // If we are given an absolute path to dotnet.exe, we are done
     //
-    if (UTILITY::CheckIfFileExists(pStruAbsolutePathToDotnet->QueryStr()))
+    if (is_regular_file(processPath))
     {
-        goto Finished;
-    }
+        LOG_INFOF(L"Found dotnet.exe at '%ls'", processPath.c_str());
 
-    //
-    // If the path was C:\Program Files\dotnet\dotnet
-    // We need to try appending .exe and check if the file exists too.
-    //
-    if (FAILED(hr = pStruAbsolutePathToDotnet->Append(L".exe")))
-    {
-        goto Finished;
-    }
-
-    if (UTILITY::CheckIfFileExists(pStruAbsolutePathToDotnet->QueryStr()))
-    {
-        goto Finished;
+        return processPath;
     }
 
     // At this point, we are calling where.exe to find dotnet.
     // If we encounter any failures, try getting dotnet.exe from the
     // backup location.
-    if (!InvokeWhereToFindDotnet(pStruAbsolutePathToDotnet))
+    // Only do it if no path is specified
+    if (requestedPath.has_parent_path())
     {
-        hr = GetAbsolutePathToDotnetFromProgramFiles(pStruAbsolutePathToDotnet);
+        LOG_INFOF(L"Absolute path to dotnet.exe was not found at '%ls'", requestedPath.c_str());
+
+        throw InvalidOperationException(format(L"Could not find dotnet.exe at '%s'", processPath.c_str()));
     }
 
-Finished:
+    const auto dotnetViaWhere = InvokeWhereToFindDotnet();
+    if (dotnetViaWhere.has_value())
+    {
+        LOG_INFOF(L"Found dotnet.exe via where.exe invocation at '%ls'", dotnetViaWhere.value().c_str());
 
-    return hr;
+        return dotnetViaWhere.value();
+    }
+
+    const auto programFilesLocation = GetAbsolutePathToDotnetFromProgramFiles();
+    if (programFilesLocation.has_value())
+    {
+        LOG_INFOF(L"Found dotnet.exe in Program Files at '%ls'", programFilesLocation.value().c_str());
+
+        return programFilesLocation.value();
+    }
+
+    LOG_INFOF(L"dotnet.exe not found");
+    throw InvalidOperationException(format(
+        L"Could not find dotnet.exe at '%s' or using the system PATH environment variable."
+        " Check that a valid path to dotnet is on the PATH and the bitness of dotnet matches the bitness of the IIS worker process.",
+        processPath.c_str()));
 }
 
-HRESULT
+fs::path
 HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
-    STRU* pStruAbsolutePathToDotnet,
-    HANDLE hEventLog,
-    STRU* pStruAbsolutePathToHostfxr
+    const fs::path & dotnetPath
 )
 {
-    HRESULT                     hr = S_OK;
-    STRU                        struHostFxrPath;
-    STRU                        struHostFxrSearchExpression;
-    STRU                        struHighestDotnetVersion;
-    STRU                        struEventMsg;
-    std::vector<std::wstring>   vVersionFolders;
-    DWORD                       dwPosition = 0;
+    std::vector<std::wstring> versionFolders;
+    const auto hostFxrBase = dotnetPath.parent_path() / "host" / "fxr";
 
-    if (FAILED(hr = struHostFxrPath.Copy(pStruAbsolutePathToDotnet)))
+    LOG_INFOF(L"Resolving absolute path to hostfxr.dll from '%ls'", dotnetPath.c_str());
+
+    if (!is_directory(hostFxrBase))
     {
-        goto Finished;
+        throw InvalidOperationException(format(L"Unable to find hostfxr directory at %s", hostFxrBase.c_str()));
     }
 
-    dwPosition = struHostFxrPath.LastIndexOf(L'\\', 0);
-    if (dwPosition == -1)
+    FindDotNetFolders(hostFxrBase, versionFolders);
+
+    if (versionFolders.empty())
     {
-        hr = E_FAIL;
-        goto Finished;
+        throw InvalidOperationException(format(L"Hostfxr directory '%s' doesn't contain any version subdirectories", hostFxrBase.c_str()));
     }
 
-    struHostFxrPath.QueryStr()[dwPosition] = L'\0';
+    const auto highestVersion = FindHighestDotNetVersion(versionFolders);
+    const auto hostFxrPath = hostFxrBase  / highestVersion / "hostfxr.dll";
 
-    if (FAILED(hr = struHostFxrPath.SyncWithBuffer()) ||
-        FAILED(hr = struHostFxrPath.Append(L"\\")))
+    if (!is_regular_file(hostFxrPath))
     {
-        goto Finished;
+        throw InvalidOperationException(format(L"hostfxr.dll not found at '%s'", hostFxrPath.c_str()));
     }
 
-    hr = struHostFxrPath.Append(L"host\\fxr");
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    if (!UTILITY::DirectoryExists(&struHostFxrPath))
-    {
-        hr = ERROR_BAD_ENVIRONMENT;
-        UTILITY::LogEventF(hEventLog,
-            EVENTLOG_ERROR_TYPE,
-            ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND,
-            struEventMsg.QueryStr(),
-            ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND_MSG,
-            struHostFxrPath.QueryStr(),
-            hr);
-        goto Finished;
-    }
-
-    // Find all folders under host\\fxr\\ for version numbers.
-    hr = struHostFxrSearchExpression.Copy(struHostFxrPath);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    hr = struHostFxrSearchExpression.Append(L"\\*");
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    // As we use the logic from core-setup, we are opting to use std here.
-    UTILITY::FindDotNetFolders(struHostFxrSearchExpression.QueryStr(), &vVersionFolders);
-
-    if (vVersionFolders.size() == 0)
-    {
-        hr = HRESULT_FROM_WIN32(ERROR_BAD_ENVIRONMENT);
-        UTILITY::LogEventF(hEventLog,
-            EVENTLOG_ERROR_TYPE,
-            ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND,
-            ASPNETCORE_EVENT_HOSTFXR_DIRECTORY_NOT_FOUND_MSG,
-            struHostFxrPath.QueryStr(),
-            hr);
-        goto Finished;
-    }
-
-    hr = UTILITY::FindHighestDotNetVersion(vVersionFolders, &struHighestDotnetVersion);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    if (FAILED(hr = struHostFxrPath.Append(L"\\"))
-        || FAILED(hr = struHostFxrPath.Append(struHighestDotnetVersion.QueryStr()))
-        || FAILED(hr = struHostFxrPath.Append(L"\\hostfxr.dll")))
-    {
-        goto Finished;
-    }
-
-    if (!UTILITY::CheckIfFileExists(struHostFxrPath.QueryStr()))
-    {
-        // ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND_MSG
-        hr = HRESULT_FROM_WIN32(ERROR_FILE_INVALID);
-        UTILITY::LogEventF(hEventLog,
-            EVENTLOG_ERROR_TYPE,
-            ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND,
-            ASPNETCORE_EVENT_HOSTFXR_DLL_NOT_FOUND_MSG,
-            struHostFxrPath.QueryStr(),
-            hr);
-        goto Finished;
-    }
-
-    if (FAILED(hr = pStruAbsolutePathToHostfxr->Copy(struHostFxrPath)))
-    {
-        goto Finished;
-    }
-
-Finished:
-    return hr;
+    LOG_INFOF(L"hostfxr.dll located at '%ls'", hostFxrPath.c_str());
+    return hostFxrPath;
 }
 
 //
 // Tries to call where.exe to find the location of dotnet.exe.
 // Will check that the bitness of dotnet matches the current
 // worker process bitness.
-// Returns true if a valid dotnet was found, else false.
+// Returns true if a valid dotnet was found, else false.R
 //
-BOOL
-HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
-    _Inout_ STRU* pStruAbsolutePathToDotnet
-)
+std::optional<fs::path>
+HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
 {
     HRESULT             hr = S_OK;
     // Arguments to call where.exe
@@ -551,9 +322,11 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
     SECURITY_ATTRIBUTES securityAttributes;
 
     CHAR                pzFileContents[READ_BUFFER_SIZE];
-    HANDLE              hStdOutReadPipe = INVALID_HANDLE_VALUE;
-    HANDLE              hStdOutWritePipe = INVALID_HANDLE_VALUE;
-    LPWSTR              pwzDotnetName = NULL;
+    HandleWrapper<InvalidHandleTraits>     hStdOutReadPipe;
+    HandleWrapper<InvalidHandleTraits>     hStdOutWritePipe;
+    HandleWrapper<InvalidHandleTraits>     hProcess;
+    HandleWrapper<InvalidHandleTraits>     hThread;
+    CComBSTR            pwzDotnetName = NULL;
     DWORD               dwFilePointer;
     BOOL                fIsWow64Process;
     BOOL                fIsCurrentProcess64Bit;
@@ -564,29 +337,18 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
     DWORD               dwBinaryType;
     INT                 index = 0;
     INT                 prevIndex = 0;
-    BOOL                fProcessCreationResult = FALSE;
-    BOOL                fResult = FALSE;
+    std::optional<fs::path> result;
 
     // Set the security attributes for the read/write pipe
     securityAttributes.nLength = sizeof(securityAttributes);
     securityAttributes.lpSecurityDescriptor = NULL;
     securityAttributes.bInheritHandle = TRUE;
 
-    // Reset the path to dotnet as we will be using whether the string is
-    // empty or not as state
-    pStruAbsolutePathToDotnet->Reset();
+    LOG_INFO(L"Invoking where.exe to find dotnet.exe");
 
     // Create a read/write pipe that will be used for reading the result of where.exe
-    if (!CreatePipe(&hStdOutReadPipe, &hStdOutWritePipe, &securityAttributes, 0))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
-    if (!SetHandleInformation(hStdOutReadPipe, HANDLE_FLAG_INHERIT, 0))
-    {
-        hr = ERROR_FILE_INVALID;
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF(!CreatePipe(&hStdOutReadPipe, &hStdOutWritePipe, &securityAttributes, 0));
+    FINISHED_LAST_ERROR_IF(!SetHandleInformation(hStdOutReadPipe, HANDLE_FLAG_INHERIT, 0));
 
     // Set the stdout and err pipe to the write pipes.
     startupInfo.cb = sizeof(startupInfo);
@@ -596,14 +358,10 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
 
     // CreateProcess requires a mutable string to be passed to commandline
     // See https://blogs.msdn.microsoft.com/oldnewthing/20090601-00/?p=18083/
-    pwzDotnetName = SysAllocString(L"\"where.exe\" dotnet.exe");
-    if (pwzDotnetName == NULL)
-    {
-        goto Finished;
-    }
+    pwzDotnetName = L"\"where.exe\" dotnet.exe";
 
     // Create a process to invoke where.exe
-    fProcessCreationResult = CreateProcessW(NULL,
+    FINISHED_LAST_ERROR_IF(!CreateProcessW(NULL,
         pwzDotnetName,
         NULL,
         NULL,
@@ -613,31 +371,21 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
         NULL,
         &startupInfo,
         &processInformation
-    );
+    ));
 
-    if (!fProcessCreationResult)
-    {
-        goto Finished;
-    }
+    // Store handles into wrapper so they get closed automatically
+    hProcess = processInformation.hProcess;
+    hThread = processInformation.hThread;
 
-    // Wait for where.exe to return, waiting 2 seconds.
-    if (WaitForSingleObject(processInformation.hProcess, 2000) != WAIT_OBJECT_0)
-    {
-        // Timeout occured, terminate the where.exe process and return.
-        TerminateProcess(processInformation.hProcess, 2);
-        hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
-        goto Finished;
-    }
+    // Wait for where.exe to return
+    WaitForSingleObject(processInformation.hProcess, INFINITE);
 
     //
     // where.exe will return 0 on success, 1 if the file is not found
     // and 2 if there was an error. Check if the exit code is 1 and set
     // a new hr result saying it couldn't find dotnet.exe
     //
-    if (!GetExitCodeProcess(processInformation.hProcess, &dwExitCode))
-    {
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF (!GetExitCodeProcess(processInformation.hProcess, &dwExitCode));
 
     //
     // In this block, if anything fails, we will goto our fallback of
@@ -645,7 +393,7 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
     //
     if (dwExitCode != 0)
     {
-        goto Finished;
+        FINISHED_IF_FAILED(E_FAIL);
     }
 
     // Where succeeded.
@@ -653,38 +401,30 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
     dwFilePointer = SetFilePointer(hStdOutReadPipe, 0, NULL, FILE_BEGIN);
     if (dwFilePointer == INVALID_SET_FILE_POINTER)
     {
-        goto Finished;
+        FINISHED_IF_FAILED(E_FAIL);
     }
 
     //
     // As the call to where.exe succeeded (dotnet.exe was found), ReadFile should not hang.
     // TODO consider putting ReadFile in a separate thread with a timeout to guarantee it doesn't block.
     //
-    if (!ReadFile(hStdOutReadPipe, pzFileContents, READ_BUFFER_SIZE, &dwNumBytesRead, NULL))
-    {
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF (!ReadFile(hStdOutReadPipe, pzFileContents, READ_BUFFER_SIZE, &dwNumBytesRead, NULL));
 
     if (dwNumBytesRead >= READ_BUFFER_SIZE)
     {
         // This shouldn't ever be this large. We could continue to call ReadFile in a loop,
         // however if someone had this many dotnet.exes on their machine.
-        goto Finished;
+        FINISHED_IF_FAILED(E_FAIL);
     }
 
-    hr = HRESULT_FROM_WIN32(GetLastError());
-    if (FAILED(hr = struDotnetLocationsString.CopyA(pzFileContents, dwNumBytesRead)))
-    {
-        goto Finished;
-    }
+    FINISHED_IF_FAILED(struDotnetLocationsString.CopyA(pzFileContents, dwNumBytesRead));
+
+    LOG_INFOF(L"where.exe invocation returned: '%ls'", struDotnetLocationsString.QueryStr());
 
     // Check the bitness of the currently running process
     // matches the dotnet.exe found.
-    if (!IsWow64Process(GetCurrentProcess(), &fIsWow64Process))
-    {
-        // Calling IsWow64Process failed
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF (!IsWow64Process(GetCurrentProcess(), &fIsWow64Process));
+
     if (fIsWow64Process)
     {
         // 32 bit mode
@@ -698,6 +438,8 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
         fIsCurrentProcess64Bit = systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
     }
 
+    LOG_INFOF(L"Current process bitness type detected as isX64=%d", fIsCurrentProcess64Bit);
+
     while (TRUE)
     {
         index = struDotnetLocationsString.IndexOf(L"\r\n", prevIndex);
@@ -705,103 +447,73 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet(
         {
             break;
         }
-        if (FAILED(hr = struDotnetSubstring.Copy(&struDotnetLocationsString.QueryStr()[prevIndex], index - prevIndex)))
-        {
-            goto Finished;
-        }
+
+        FINISHED_IF_FAILED(struDotnetSubstring.Copy(&struDotnetLocationsString.QueryStr()[prevIndex], index - prevIndex));
         // \r\n is two wchars, so add 2 here.
         prevIndex = index + 2;
 
-        if (GetBinaryTypeW(struDotnetSubstring.QueryStr(), &dwBinaryType) &&
-            fIsCurrentProcess64Bit == (dwBinaryType == SCS_64BIT_BINARY))
+        LOG_INFOF(L"Processing entry '%ls'", struDotnetSubstring.QueryStr());
+
+        if (LOG_LAST_ERROR_IF(!GetBinaryTypeW(struDotnetSubstring.QueryStr(), &dwBinaryType)))
+        {
+            continue;
+        }
+
+        LOG_INFOF(L"Binary type %d", dwBinaryType);
+
+        if (fIsCurrentProcess64Bit == (dwBinaryType == SCS_64BIT_BINARY))
         {
             // The bitness of dotnet matched with the current worker process bitness.
-            if (FAILED(hr = pStruAbsolutePathToDotnet->Copy(struDotnetSubstring)))
-            {
-                goto Finished;
-            }
-            fResult = TRUE;
-            break;
+            return std::make_optional(struDotnetSubstring.QueryStr());
         }
     }
 
-Finished:
-
-    if (hStdOutReadPipe != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(hStdOutReadPipe);
-    }
-    if (hStdOutWritePipe != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(hStdOutWritePipe);
-    }
-    if (processInformation.hProcess != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(processInformation.hProcess);
-    }
-    if (processInformation.hThread != INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(processInformation.hThread);
-    }
-    if (pwzDotnetName != NULL)
-    {
-        SysFreeString(pwzDotnetName);
-    }
-
-    return fResult;
+    Finished:
+    return result;
 }
 
+std::optional<fs::path>
+HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles()
+{
+    const auto programFilesDotnet = fs::path(Environment::ExpandEnvironmentVariables(L"%ProgramFiles%")) / "dotnet" / "dotnet.exe";
+    return is_regular_file(programFilesDotnet) ? std::make_optional(programFilesDotnet) : std::nullopt;
+}
 
-HRESULT
-HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles(
-    _Inout_ STRU* pStruAbsolutePathToDotnet
+std::wstring
+HOSTFXR_UTILITY::FindHighestDotNetVersion(
+    _In_ std::vector<std::wstring> & vFolders
 )
 {
-    HRESULT hr = S_OK;
-    BOOL fFound = FALSE;
-    DWORD dwNumBytesRead = 0;
-    DWORD dwPathSize = MAX_PATH;
-    STRU struDotnetSubstring;
-
-    while (!fFound)
+    fx_ver_t max_ver(-1, -1, -1);
+    for (const auto& dir : vFolders)
     {
-        if (FAILED(hr = struDotnetSubstring.Resize(dwPathSize)))
+        fx_ver_t fx_ver(-1, -1, -1);
+        if (fx_ver_t::parse(dir, &fx_ver, false))
         {
-            goto Finished;
-        }
-
-        dwNumBytesRead = GetEnvironmentVariable(L"ProgramFiles", struDotnetSubstring.QueryStr(), dwPathSize);
-        if (dwNumBytesRead == 0)
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
-        else if (dwNumBytesRead >= dwPathSize)
-        {
-            //
-            // The path to ProgramFiles should never be this long, but resize and try again.
-            dwPathSize *= 2 + 30; // for dotnet substring
-        }
-        else
-        {
-            if (FAILED(hr = struDotnetSubstring.SyncWithBuffer()) ||
-                FAILED(hr = struDotnetSubstring.Append(L"\\dotnet\\dotnet.exe")))
-            {
-                goto Finished;
-            }
-            if (!UTILITY::CheckIfFileExists(struDotnetSubstring.QueryStr()))
-            {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-                goto Finished;
-            }
-            if (FAILED(hr = pStruAbsolutePathToDotnet->Copy(struDotnetSubstring)))
-            {
-                goto Finished;
-            }
-            fFound = TRUE;
+            max_ver = max(max_ver, fx_ver);
         }
     }
 
-Finished:
-    return hr;
+    return max_ver.as_str();
+}
+
+VOID
+HOSTFXR_UTILITY::FindDotNetFolders(
+    const std::filesystem::path &path,
+    _Out_ std::vector<std::wstring> &pvFolders
+)
+{
+    WIN32_FIND_DATAW data = {};
+    const auto searchPattern = std::wstring(path) + L"\\*";
+    HandleWrapper<FindFileHandleTraits> handle = FindFirstFileExW(searchPattern.c_str(), FindExInfoStandard, &data, FindExSearchNameMatch, nullptr, 0);
+    if (handle == INVALID_HANDLE_VALUE)
+    {
+        LOG_LAST_ERROR();
+        return;
+    }
+
+    do
+    {
+        pvFolders.emplace_back(data.cFileName);
+    } while (FindNextFileW(handle, &data));
 }

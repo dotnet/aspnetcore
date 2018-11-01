@@ -7,6 +7,10 @@
 #include "macros.h"
 #include <strsafe.h>
 
+
+#pragma warning( push )
+#pragma warning ( disable : ALL_CODE_ANALYSIS_WARNINGS )
+
 class STRA
 {
 
@@ -513,3 +517,5 @@ CHAR* InitHelper(__out CHAR (&psz)[size])
                                 STRA  name;
 
 #define INLINE_STRA_INIT(name) name(InitHelper(__ach##name), sizeof(__ach##name))
+
+#pragma warning( pop )

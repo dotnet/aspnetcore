@@ -1,6 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\Build\Build.Settings" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -24,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AspNetCoreModule</RootNamespace>
     <ProjectName>AspNetCore</ProjectName>
-    <TargetName>aspnetcore</TargetName>
+    <TargetName>aspnetcorev2</TargetName>
     <LinkIncremental>false</LinkIncremental>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -56,6 +55,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\..\..\Build\Build.Settings" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -76,13 +76,12 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>..\IISLib;.\Inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\IISLib;.\Inc;..\CommonLib</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -96,12 +95,16 @@
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <CompileAs>CompileAsCpp</CompileAs>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ahadmin.lib;rpcrt4.lib;winhttp.lib;pdh.lib;ws2_32.lib;wbemuuid.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
@@ -109,13 +112,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>..\IISLib;.\Inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\IISLib;.\Inc;..\CommonLib</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -128,13 +130,17 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <CompileAs>CompileAsCpp</CompileAs>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ahadmin.lib;rpcrt4.lib;winhttp.lib;pdh.lib;ws2_32.lib;wbemuuid.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib</AdditionalDependencies>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
@@ -148,8 +154,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\IISLib;inc</AdditionalIncludeDirectories>
-      <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\IISLib;.\Inc;..\CommonLib</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
@@ -162,14 +168,19 @@
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <CompileAs>CompileAsCpp</CompileAs>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib %(AdditionalOptions)</AdditionalOptions>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;winhttp.lib;odbc32.lib;ws2_32.lib;odbccp32.lib;wbemuuid.lib;iphlpapi.lib;pdh.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
@@ -183,8 +194,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderFile>precomp.hxx</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\IISLib;inc</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>..\IISLib;.\Inc;..\CommonLib</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
@@ -197,35 +208,58 @@
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <CompileAs>CompileAsCpp</CompileAs>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib %(AdditionalOptions)</AdditionalOptions>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;rpcrt4.lib;winhttp.lib;pdh.lib;ws2_32.lib;wbemuuid.lib;iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>..\Commonlib</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Inc\applicationinfo.h" />
-    <ClInclude Include="Inc\appoffline.h" />
-    <ClInclude Include="inc\globalmodule.h" />
-    <ClInclude Include="Inc\applicationmanager.h" />
-    <ClInclude Include="Inc\filewatcher.h" />
-    <ClInclude Include="Inc\proxymodule.h" />
-    <ClInclude Include="Src\precomp.hxx" />
+    <ClInclude Include="ApplicationFactory.h" />
+    <ClInclude Include="applicationinfo.h" />
+    <ClInclude Include="AppOfflineApplication.h" />
+    <ClInclude Include="AppOfflineHandler.h" />
+    <ClInclude Include="DisconnectHandler.h" />
+    <ClInclude Include="PollingAppOfflineApplication.h" />
+    <ClInclude Include="ServerErrorApplication.h" />
+    <ClInclude Include="ShimOptions.h" />
+    <ClInclude Include="globalmodule.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="applicationmanager.h" />
+    <ClInclude Include="HandlerResolver.h" />
+    <ClInclude Include="proxymodule.h" />
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\applicationinfo.cpp" />
-    <ClCompile Include="Src\applicationmanager.cxx" />
-    <ClCompile Include="Src\dllmain.cpp" />
-    <ClCompile Include="Src\filewatcher.cxx" />
-    <ClCompile Include="src\globalmodule.cpp" />
-    <ClCompile Include="Src\proxymodule.cxx" />
+    <ClCompile Include="applicationinfo.cpp" />
+    <ClCompile Include="applicationmanager.cpp" />
+    <ClCompile Include="AppOfflineApplication.cpp" />
+    <ClCompile Include="AppOfflineHandler.cpp" />
+    <ClCompile Include="DisconnectHandler.cpp" />
+    <ClCompile Include="PollingAppOfflineApplication.cpp" />
+    <ClCompile Include="ShimOptions.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="globalmodule.cpp" />
+    <ClCompile Include="HandlerResolver.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="proxymodule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
@@ -243,7 +277,7 @@
     <ResourceCompile Include="aspnetcoremodule.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="aspnetcore_schema.xml">
+    <Content Include="aspnetcore_schema_v2.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="ancm.mof">
@@ -251,7 +285,18 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="aspnetcore_schema.xml" />
+    <ResourceCompile Include="HtmlResponses.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="InProcessShimStaticHtml.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="OutOfProcessShimStaticHtml.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="aspnetcore_schema_v2.xml" />
   </ItemGroup>
   <Import Project="..\..\..\build\native.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

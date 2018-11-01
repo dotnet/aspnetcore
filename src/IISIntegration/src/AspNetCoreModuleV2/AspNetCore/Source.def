@@ -1,4 +1,4 @@
-LIBRARY aspnetcore
+LIBRARY aspnetcorev2
 
 EXPORTS
     RegisterModule
