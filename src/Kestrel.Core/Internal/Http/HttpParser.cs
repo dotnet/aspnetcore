@@ -40,7 +40,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var reader = new BufferReader<byte>(buffer);
             bool success = ParseRequestLine(handler, ref reader);
             consumed = reader.Position;
-            if (success) examined = reader.Position;
+            if (success)
+            {
+                examined = reader.Position;
+            }
             return success;
         }
 
@@ -159,7 +162,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             consumed = reader.Position;
             consumedBytes = (int)reader.Consumed;
             if (success)
+            {
                 examined = consumed;
+            }
             return success;
         }
 

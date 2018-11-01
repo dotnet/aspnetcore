@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void ParseData()
         {
-            BufferReader<byte> reader = new BufferReader<byte>(_buffer);
+            var reader = new BufferReader<byte>(_buffer);
 
             if (!_parser.ParseRequestLine(new Adapter(this), ref reader))
             {
