@@ -1,49 +1,80 @@
 <Project>
 
+  <PropertyGroup>
+    <!-- TODO - this affects the filename of coreclr components which we want to exclude from signing, such as sos_amd64_amd64_$(CoreClrVersion).dll. Let's figure out a way to identify these exclusions independently from the coreclr version. -->
+    <CoreClrVersion>4.6.27023.02</CoreClrVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Third-party components in Microsoft.AspNetCore.All/App which should be signed.  -->
-    <FilesToSign Include="e_sqlite3.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="MessagePack.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="Newtonsoft.Json.Bson.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
-    <FilesToSign Include="Remotion.Linq.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
-    <FilesToSign Include="SQLitePCLRaw.batteries_green.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="SQLitePCLRaw.batteries_v2.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="SQLitePCLRaw.core.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="SQLitePCLRaw.provider.e_sqlite3.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="StackExchange.Redis.StrongName.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
-    <FilesToSign Include="System.Interactive.Async.dll" Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
+      <!-- Microsoft.AspNetCore.All -->
+      <FilesToSign Include="e_sqlite3.dll"                                                  Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="MessagePack.dll"                                                Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Newtonsoft.Json.Bson.dll"                                       Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="SQLitePCLRaw.batteries_green.dll"                               Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="SQLitePCLRaw.batteries_v2.dll"                                  Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="SQLitePCLRaw.core.dll"                                          Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="SQLitePCLRaw.provider.e_sqlite3.dll"                            Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="StackExchange.Redis.StrongName.dll"                             Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.All" />
 
-    <!-- These files came from the aspnet/Extensions build and should already be signed. -->
-    <FilesToExcludeFromSigning Include="Microsoft.Extensions.DiagnosticAdapter.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Extensions.ObjectPool.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Extensions.Primitives.dll" />
+      <!-- Microsoft.AspNetCore.App -->
+      <FilesToSign Include="Newtonsoft.Json.dll"                                           Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Remotion.Linq.dll"                                             Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Interactive.Async.dll"                                  Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
+
+    <!-- These files came from the aspnet/Extensions build, but have to be re-signed because we crossgen them. -->
+      <FilesToSign Include="Microsoft.Extensions.DiagnosticAdapter.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.ObjectPool.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Primitives.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App"  />
+
+    <!-- These files came from partner teams. They have to be re-signed because we crossgen them and redistributable them in our installers. -->
+
+      <!-- Microsoft.AspNetCore.All -->
+      <FilesToSign Include="Microsoft.AI.DependencyCollector.dll"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.ApplicationInsights.AspNetCore.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.ApplicationInsights.dll"                              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Azure.KeyVault.dll"                                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Azure.KeyVault.WebKey.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Azure.Services.AppAuthentication.dll"                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Data.Edm.dll"                                         Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Data.Edm.resources.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Data.OData.dll"                                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Data.OData.resources.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Extensions.PlatformAbstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.IdentityModel.Clients.ActiveDirectory.dll"            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll"   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Rest.ClientRuntime.Azure.dll"                         Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Rest.ClientRuntime.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.WindowsAzure.Storage.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="System.Spatial.dll"                                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+
+      <!-- Microsoft.AspNetCore.App -->
+      <FilesToSign Include="Microsoft.CodeAnalysis.CSharp.dll"                              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.CodeAnalysis.dll"                                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.DotNet.PlatformAbstractions.dll"                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.DependencyModel.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.IdentityModel.JsonWebTokens.dll"                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.IdentityModel.Logging.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.IdentityModel.Protocols.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.IdentityModel.Protocols.OpenIdConnect.dll"            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.IdentityModel.Protocols.WsFederation.dll"             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.IdentityModel.Tokens.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.IdentityModel.Tokens.Saml.dll"                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.IdentityModel.Xml.dll"                                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Data.SqlClient.dll"                                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.IdentityModel.Tokens.Jwt.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.IO.Pipelines.dll"                                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Net.Http.Formatting.dll"                                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Net.WebSockets.WebSocketProtocol.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Runtime.CompilerServices.Unsafe.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Security.Cryptography.Pkcs.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Security.Cryptography.Xml.dll"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Security.Permissions.dll"                                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Text.Encoding.CodePages.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Text.Encodings.Web.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
 
     <!-- These files should already be signed already by a different leg of the build. They have to be listed again here because we recreate a redistributable which binaries built in other repos. -->
     <FilesToExcludeFromSigning Include="libuv.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.AI.DependencyCollector.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.ApplicationInsights.AspNetCore.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.ApplicationInsights.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Azure.KeyVault.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Azure.KeyVault.WebKey.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Azure.Services.AppAuthentication.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Data.Edm.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Data.Edm.resources.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Data.OData.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Data.OData.resources.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Clients.ActiveDirectory.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.JsonWebTokens.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Logging.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Protocols.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Protocols.OpenIdConnect.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Protocols.WsFederation.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Tokens.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Tokens.Saml.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.IdentityModel.Xml.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Rest.ClientRuntime.Azure.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Rest.ClientRuntime.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.WindowsAzure.Storage.dll" />
 
     <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
     <FilesToExcludeFromSigning Include="api-ms-win-core-console-l1-1-0.dll" />
@@ -95,28 +126,18 @@
     <FilesToExcludeFromSigning Include="dotnet.exe" />
     <FilesToExcludeFromSigning Include="hostfxr.dll" />
     <FilesToExcludeFromSigning Include="hostpolicy.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.CSharp.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.DiaSymReader.Native.amd64.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.DiaSymReader.Native.arm.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.DiaSymReader.Native.x86.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.DotNet.PlatformAbstractions.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Extensions.DependencyModel.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Extensions.PlatformAbstractions.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.VisualBasic.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Win32.Primitives.dll" />
-    <FilesToExcludeFromSigning Include="Microsoft.Win32.Registry.dll" />
-    <FilesToExcludeFromSigning Include="mscordaccore_amd64_amd64_4.6.27023.02.dll" />
-    <FilesToExcludeFromSigning Include="mscordaccore_arm_arm_4.6.27023.02.dll" />
-    <FilesToExcludeFromSigning Include="mscordaccore_x86_x86_4.6.27023.02.dll" />
+    <FilesToExcludeFromSigning Include="mscordaccore_amd64_amd64_$(CoreClrVersion).dll" />
+    <FilesToExcludeFromSigning Include="mscordaccore_arm_arm_$(CoreClrVersion).dll" />
+    <FilesToExcludeFromSigning Include="mscordaccore_x86_x86_$(CoreClrVersion).dll" />
     <FilesToExcludeFromSigning Include="mscordaccore.dll" />
     <FilesToExcludeFromSigning Include="mscordbi.dll" />
     <FilesToExcludeFromSigning Include="mscorlib.dll" />
     <FilesToExcludeFromSigning Include="mscorrc.debug.dll" />
     <FilesToExcludeFromSigning Include="mscorrc.dll" />
     <FilesToExcludeFromSigning Include="netstandard.dll" />
-    <FilesToExcludeFromSigning Include="sos_amd64_amd64_4.6.27023.02.dll" />
-    <FilesToExcludeFromSigning Include="sos_arm_arm_4.6.27023.02.dll" />
-    <FilesToExcludeFromSigning Include="sos_x86_x86_4.6.27023.02.dll" />
+    <FilesToExcludeFromSigning Include="sos_amd64_amd64_$(CoreClrVersion).dll" />
+    <FilesToExcludeFromSigning Include="sos_arm_arm_$(CoreClrVersion).dll" />
+    <FilesToExcludeFromSigning Include="sos_x86_x86_$(CoreClrVersion).dll" />
     <FilesToExcludeFromSigning Include="sos.dll" />
     <FilesToExcludeFromSigning Include="SOS.NETCore.dll" />
     <FilesToExcludeFromSigning Include="System.AppContext.dll" />
@@ -154,7 +175,6 @@
     <FilesToExcludeFromSigning Include="System.Globalization.Calendars.dll" />
     <FilesToExcludeFromSigning Include="System.Globalization.dll" />
     <FilesToExcludeFromSigning Include="System.Globalization.Extensions.dll" />
-    <FilesToExcludeFromSigning Include="System.IdentityModel.Tokens.Jwt.dll" />
     <FilesToExcludeFromSigning Include="System.IO.Compression.Brotli.dll" />
     <FilesToExcludeFromSigning Include="System.IO.Compression.dll" />
     <FilesToExcludeFromSigning Include="System.IO.Compression.FileSystem.dll" />
@@ -167,7 +187,6 @@
     <FilesToExcludeFromSigning Include="System.IO.FileSystem.Watcher.dll" />
     <FilesToExcludeFromSigning Include="System.IO.IsolatedStorage.dll" />
     <FilesToExcludeFromSigning Include="System.IO.MemoryMappedFiles.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.Pipelines.dll" />
     <FilesToExcludeFromSigning Include="System.IO.Pipes.AccessControl.dll" />
     <FilesToExcludeFromSigning Include="System.IO.Pipes.dll" />
     <FilesToExcludeFromSigning Include="System.IO.UnmanagedMemoryStream.dll" />
@@ -178,7 +197,6 @@
     <FilesToExcludeFromSigning Include="System.Memory.dll" />
     <FilesToExcludeFromSigning Include="System.Net.dll" />
     <FilesToExcludeFromSigning Include="System.Net.Http.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.Http.Formatting.dll" />
     <FilesToExcludeFromSigning Include="System.Net.HttpListener.dll" />
     <FilesToExcludeFromSigning Include="System.Net.Mail.dll" />
     <FilesToExcludeFromSigning Include="System.Net.NameResolution.dll" />
@@ -194,7 +212,6 @@
     <FilesToExcludeFromSigning Include="System.Net.WebProxy.dll" />
     <FilesToExcludeFromSigning Include="System.Net.WebSockets.Client.dll" />
     <FilesToExcludeFromSigning Include="System.Net.WebSockets.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.WebSockets.WebSocketProtocol.dll" />
     <FilesToExcludeFromSigning Include="System.Numerics.dll" />
     <FilesToExcludeFromSigning Include="System.Numerics.Vectors.dll" />
     <FilesToExcludeFromSigning Include="System.ObjectModel.dll" />
@@ -236,10 +253,8 @@
     <FilesToExcludeFromSigning Include="System.Security.Cryptography.Csp.dll" />
     <FilesToExcludeFromSigning Include="System.Security.Cryptography.Encoding.dll" />
     <FilesToExcludeFromSigning Include="System.Security.Cryptography.OpenSsl.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.Pkcs.dll" />
     <FilesToExcludeFromSigning Include="System.Security.Cryptography.Primitives.dll" />
     <FilesToExcludeFromSigning Include="System.Security.Cryptography.X509Certificates.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.Xml.dll" />
     <FilesToExcludeFromSigning Include="System.Security.dll" />
     <FilesToExcludeFromSigning Include="System.Security.Permissions.dll" />
     <FilesToExcludeFromSigning Include="System.Security.Principal.dll" />
@@ -247,13 +262,9 @@
     <FilesToExcludeFromSigning Include="System.Security.SecureString.dll" />
     <FilesToExcludeFromSigning Include="System.ServiceModel.Web.dll" />
     <FilesToExcludeFromSigning Include="System.ServiceProcess.dll" />
-    <FilesToExcludeFromSigning Include="System.Spatial.dll" />
-    <FilesToExcludeFromSigning Include="System.Spatial.resources.dll" />
     <FilesToExcludeFromSigning Include="System.Text.Encoding.dll" />
     <FilesToExcludeFromSigning Include="System.Text.Encoding.Extensions.dll" />
-    <FilesToExcludeFromSigning Include="System.Text.Encodings.Web.dll" />
     <FilesToExcludeFromSigning Include="System.Text.RegularExpressions.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.Channels.dll" />
     <FilesToExcludeFromSigning Include="System.Threading.dll" />
     <FilesToExcludeFromSigning Include="System.Threading.Overlapped.dll" />
     <FilesToExcludeFromSigning Include="System.Threading.Tasks.Dataflow.dll" />
