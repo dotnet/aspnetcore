@@ -1,0 +1,10 @@
+<Project>
+
+  <PropertyGroup>
+    <AspNetCoreModuleX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcore.dll</AspNetCoreModuleX64Location>
+    <AspNetCoreModuleX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcore.dll</AspNetCoreModuleX86Location>
+    <RequestHandlerX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcorerh.dll</RequestHandlerX64Location>
+    <RequestHandlerX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcorerh.dll</RequestHandlerX86Location>
+  </PropertyGroup>
+
+</Project>
