@@ -21,6 +21,7 @@
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" />
     <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="runtime.$(SharedFxRid).Microsoft.AspNetCore.App" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" />
