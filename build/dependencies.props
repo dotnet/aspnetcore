@@ -107,9 +107,9 @@
     <MicrosoftBuildRuntimePackageVersion>15.8.166</MicrosoftBuildRuntimePackageVersion>
     <MicrosoftBuildTasksCorePackageVersion>15.8.166</MicrosoftBuildTasksCorePackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftCodeAnalysisCommonPackageVersion>2.11.0-beta1-63430-03</MicrosoftCodeAnalysisCommonPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>2.11.0-beta1-63430-03</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.11.0-beta1-63430-03</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftDiaSymReaderNativePackageVersion>1.7.0</MicrosoftDiaSymReaderNativePackageVersion>
     <MicrosoftDotNetArchivePackageVersion>0.2.0-beta-63019-01</MicrosoftDotNetArchivePackageVersion>
     <MicrosoftDotNetProjectModelPackageVersion>1.0.0-rc3-003121</MicrosoftDotNetProjectModelPackageVersion>
