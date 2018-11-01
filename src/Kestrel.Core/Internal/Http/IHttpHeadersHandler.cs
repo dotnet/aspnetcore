@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public interface IHttpHeadersHandler
     {
-        void OnHeader(Span<byte> name, Span<byte> value);
+        void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value);
     }
 }

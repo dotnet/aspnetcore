@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <param name="knownScheme">A reference to the known scheme, if the input matches any</param>
         /// <returns>True when memory starts with known http or https schema</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
+        public static unsafe bool GetKnownHttpScheme(this ReadOnlySpan<byte> span, out HttpScheme knownScheme)
         {
             fixed (byte* data = span)
             {
@@ -514,15 +514,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             public UTF8EncodingSealed() : base(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true) { }
 
             public override byte[] GetPreamble() => Array.Empty<byte>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal unsafe static Span<byte> UnsafeAsSpan(this ref ReadOnlySpan<byte> span)
-        {
-            fixed (byte* b = span)
-            {
-                return new Span<byte>(b, span.Length);
-            }
         }
     }
 }

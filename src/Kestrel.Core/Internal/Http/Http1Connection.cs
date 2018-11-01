@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
 
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
         {
             Debug.Assert(target.Length != 0, "Request target must be non-zero length");
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         // Compare with Http2Stream.TryValidatePseudoHeaders
-        private void OnOriginFormTarget(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        private void OnOriginFormTarget(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
 
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
+        private void OnAuthorityFormTarget(HttpMethod method, ReadOnlySpan<byte> target)
         {
             _requestTargetForm = HttpRequestTarget.AuthorityForm;
 
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             QueryString = string.Empty;
         }
 
-        private void OnAbsoluteFormTarget(Span<byte> target, Span<byte> query)
+        private void OnAbsoluteFormTarget(ReadOnlySpan<byte> target, ReadOnlySpan<byte> query)
         {
             _requestTargetForm = HttpRequestTarget.AbsoluteForm;
 

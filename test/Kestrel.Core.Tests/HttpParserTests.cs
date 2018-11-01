@@ -490,12 +490,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
-            public void OnHeader(Span<byte> name, Span<byte> value)
+            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
             {
                 Headers[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
             }
 
-            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+            public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
             {
                 Method = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();
                 Version = HttpUtilities.VersionToString(version);

@@ -1098,7 +1098,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
         // For now these either need to be connection errors or BadRequests. If we want to downgrade any of them to stream errors later then we need to
         // rework the flow so that the remaining headers are drained and the decompression state is maintained.
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             // https://tools.ietf.org/html/rfc7540#section-6.5.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
@@ -1130,7 +1130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private void ValidateHeader(Span<byte> name, Span<byte> value)
+        private void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.1
             /*
@@ -1220,7 +1220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private bool IsPseudoHeaderField(Span<byte> name, out PseudoHeaderFields headerField)
+        private bool IsPseudoHeaderField(ReadOnlySpan<byte> name, out PseudoHeaderFields headerField)
         {
             headerField = PseudoHeaderFields.None;
 
@@ -1257,7 +1257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return true;
         }
 
-        private static bool IsConnectionSpecificHeaderField(Span<byte> name, Span<byte> value)
+        private static bool IsConnectionSpecificHeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             return name.SequenceEqual(_connectionBytes) || (name.SequenceEqual(_teBytes) && !value.SequenceEqual(_trailersBytes));
         }

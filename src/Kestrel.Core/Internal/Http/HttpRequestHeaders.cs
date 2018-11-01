@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Unknown[key] = value;
         }
 
-        public unsafe void Append(Span<byte> name, string value)
+        public unsafe void Append(ReadOnlySpan<byte> name, string value)
         {
             fixed (byte* namePtr = name)
             {

@@ -121,7 +121,7 @@ namespace PlatformBenchmarks
             return true;
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
         }
 
@@ -170,10 +170,10 @@ namespace PlatformBenchmarks
             public ParsingAdapter(BenchmarkApplication requestHandler)
                 => RequestHandler = requestHandler;
 
-            public void OnHeader(Span<byte> name, Span<byte> value)
+            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
                 => RequestHandler.OnHeader(name, value);
 
-            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+            public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
         }
     }

@@ -14,32 +14,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteSlash = (byte)'/';
         private const byte ByteDot = (byte)'.';
 
-        public static string DecodePath(Span<byte> path, bool pathEncoded, string rawTarget, int queryLength)
+        public unsafe static string DecodePath(ReadOnlySpan<byte> path, bool pathEncoded, string rawTarget, int queryLength)
         {
             int pathLength;
             if (pathEncoded)
             {
                 // URI was encoded, unescape and then parse as UTF-8
                 // Disabling warning temporary
-                pathLength = UrlDecoder.DecodeInPlace(path);
+                fixed (byte* p = path)
+                {
+                    Span<byte> writablePath = new Span<byte>(p, path.Length);
+                    pathLength = UrlDecoder.DecodeInPlace(writablePath);
 
-                // Removing dot segments must be done after unescaping. From RFC 3986:
-                //
-                // URI producing applications should percent-encode data octets that
-                // correspond to characters in the reserved set unless these characters
-                // are specifically allowed by the URI scheme to represent data in that
-                // component.  If a reserved character is found in a URI component and
-                // no delimiting role is known for that character, then it must be
-                // interpreted as representing the data octet corresponding to that
-                // character's encoding in US-ASCII.
-                //
-                // https://tools.ietf.org/html/rfc3986#section-2.2
-                pathLength = RemoveDotSegments(path.Slice(0, pathLength));
+                    // Removing dot segments must be done after unescaping. From RFC 3986:
+                    //
+                    // URI producing applications should percent-encode data octets that
+                    // correspond to characters in the reserved set unless these characters
+                    // are specifically allowed by the URI scheme to represent data in that
+                    // component.  If a reserved character is found in a URI component and
+                    // no delimiting role is known for that character, then it must be
+                    // interpreted as representing the data octet corresponding to that
+                    // character's encoding in US-ASCII.
+                    //
+                    // https://tools.ietf.org/html/rfc3986#section-2.2
+                    pathLength = RemoveDotSegments(writablePath.Slice(0, pathLength));
 
-                return GetUtf8String(path.Slice(0, pathLength));
+                    return GetUtf8String(writablePath.Slice(0, pathLength));
+                }
             }
 
-            pathLength = RemoveDotSegments(path);
+            fixed (byte* p = path)
+            {
+                Span<byte> writablePath = new Span<byte>(p, path.Length);
+                pathLength = RemoveDotSegments(writablePath);
+            }
 
             if (path.Length == pathLength && queryLength == 0)
             {

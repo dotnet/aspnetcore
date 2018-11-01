@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
@@ -1282,11 +1282,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [StackTraceHidden]
-        public void ThrowRequestTargetRejected(Span<byte> target)
+        public void ThrowRequestTargetRejected(ReadOnlySpan<byte> target)
             => throw GetInvalidRequestTargetException(target);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
+        private BadHttpRequestException GetInvalidRequestTargetException(ReadOnlySpan<byte> target)
             => BadHttpRequestException.GetException(
                 RequestRejectionReason.InvalidRequestTarget,
                 Log.IsEnabled(LogLevel.Information)
