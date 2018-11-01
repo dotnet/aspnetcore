@@ -42,21 +42,7 @@
       <Version>$(PackageVersion)</Version>
       <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
     </ArtifactInfo>
-    <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV1.$(PackageVersion).nupkg" />
 
-    <ArtifactInfo Include="$(AncmZipOutputPath)">
-      <ArtifactType>ZipArchive</ArtifactType>
-      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
-      <Category>shipoob</Category>
-    </ArtifactInfo>
-
-    <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
-    <FilesToSign Include="AspNetCoreModuleV1/x64/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV1/x86/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV2/x64/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV2/x86/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV2/x64/aspnetcorerh.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
-    <FilesToSign Include="AspNetCoreModuleV2/x86/aspnetcorerh.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <Target Name="PackageNativeProjects">
@@ -93,10 +79,6 @@
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\ancm.mof" Link="AspNetCoreModuleV2\ancm.mof" />
     </ItemGroup>
 
-    <ZipArchive File="$(AncmZipOutputPath)"
-      Overwrite="true"
-      SourceFiles="@(AncmFiles)"
-      WorkingDirectory="$(RepositoryRoot)" />
   </Target>
 
 </Project>
