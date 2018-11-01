@@ -1,0 +1,43 @@
+<Project>
+  <Import Project="dependencies.props" />
+
+  <PropertyGroup>
+    <AncmZipOutputPath>$(BuildDir)AspNetCoreModule.zip</AncmZipOutputPath>
+    <StressTestWebSiteZipOutputPath>$(BuildDir)StressTestWebSite.zip</StressTestWebSiteZipOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\TestSites\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\IISTestSite\*.csproj" />
+    <ExcludeSolutions Include="$(RepositoryRoot)IISIntegration.NoV1.sln" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipIISTests)' == 'true'" >
+      <ExcludeFromTest Include="$(RepositoryRoot)test\IIS.FunctionalTests\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipIISExpressTests)' == 'true'" >
+      <ExcludeFromTest Include="$(RepositoryRoot)test\IISExpress.FunctionalTests\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipIISBackwardsCompatibilityTests)' == 'true'" >
+      <ExcludeFromTest Include="$(RepositoryRoot)test\IIS.BackwardsCompatibility.FunctionalTests\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipIISForwardsCompatibilityTests)' == 'true'" >
+      <ExcludeFromTest Include="$(RepositoryRoot)test\IIS.ForwardsCompatibility.FunctionalTests\*.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- These properties are use by the automation that updates dependencies.props -->
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+    <!-- These are for functional test projects that are only runable on windows -->
+    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'" Include="$(MicrosoftNETCoreApp21PackageVersion)" Arch="x86" />
+  </ItemGroup>
+</Project>
