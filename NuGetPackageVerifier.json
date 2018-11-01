@@ -50,7 +50,13 @@
             "tools/netcoreapp2.0/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll": "This assembly is not owned by us and does not follow our conventions.",
             "tools/netcoreapp2.0/zh-Hant/Microsoft.CodeAnalysis.resources.dll": "This assembly is not owned by us and does not follow our conventions."
           },
+          "ASSEMBLY_PRODUCT": {
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
           "NEUTRAL_RESOURCES_LANGUAGE": {
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/netcoreapp2.0/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
             "tools/netcoreapp2.0/cs/Microsoft.CodeAnalysis.CSharp.resources.dll": "This assembly is not owned by us and does not follow our conventions.",
             "tools/netcoreapp2.0/cs/Microsoft.CodeAnalysis.resources.dll": "This assembly is not owned by us and does not follow our conventions.",
             "tools/netcoreapp2.0/de/Microsoft.CodeAnalysis.CSharp.resources.dll": "This assembly is not owned by us and does not follow our conventions.",
