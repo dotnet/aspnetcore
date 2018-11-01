@@ -63,7 +63,6 @@
     <Repository Include="Localization" />
     <Repository Include="Logging" />
     <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
-    <Repository Include="Microsoft.Data.Sqlite" />
     <Repository Include="Mvc" />
     <Repository Include="MvcPrecompilation" />
     <Repository Include="Options" />
