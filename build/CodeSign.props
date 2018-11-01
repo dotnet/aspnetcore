@@ -1,10 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <!-- TODO - this affects the filename of coreclr components which we want to exclude from signing, such as sos_amd64_amd64_$(CoreClrVersion).dll. Let's figure out a way to identify these exclusions independently from the coreclr version. -->
-    <CoreClrVersion>4.6.27023.02</CoreClrVersion>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- Third-party components in Microsoft.AspNetCore.All/App which should be signed.  -->
       <!-- Microsoft.AspNetCore.All -->
@@ -47,6 +42,7 @@
       <FilesToSign Include="Microsoft.Rest.ClientRuntime.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="Microsoft.WindowsAzure.Storage.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="System.Spatial.dll"                                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="System.Spatial.resources.dll"                                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
 
       <!-- Microsoft.AspNetCore.App -->
       <FilesToSign Include="Microsoft.CodeAnalysis.CSharp.dll"                              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
@@ -72,225 +68,10 @@
       <FilesToSign Include="System.Security.Permissions.dll"                                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Text.Encoding.CodePages.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Text.Encodings.Web.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="System.Threading.Channels.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
 
-    <!-- These files should already be signed already by a different leg of the build. They have to be listed again here because we recreate a redistributable which binaries built in other repos. -->
+    <!-- This files should already be signed already by a different leg of the build. They have to be listed again here because we recreate a redistributable which binaries built in other repos. -->
     <FilesToExcludeFromSigning Include="libuv.dll" />
-
-    <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
-    <FilesToExcludeFromSigning Include="api-ms-win-core-console-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-datetime-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-debug-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-errorhandling-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-file-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-file-l1-2-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-file-l2-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-handle-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-heap-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-interlocked-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-libraryloader-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-localization-l1-2-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-memory-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-namedpipe-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-processenvironment-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-processthreads-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-processthreads-l1-1-1.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-profile-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-rtlsupport-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-string-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-synch-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-synch-l1-2-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-sysinfo-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-timezone-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-core-util-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="API-MS-Win-core-xstate-l2-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-conio-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-convert-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-environment-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-filesystem-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-heap-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-locale-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-math-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-multibyte-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-private-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-process-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-runtime-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-stdio-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-string-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-time-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="api-ms-win-crt-utility-l1-1-0.dll" />
-    <FilesToExcludeFromSigning Include="clrcompression.dll" />
-    <FilesToExcludeFromSigning Include="clretwrc.dll" />
-    <FilesToExcludeFromSigning Include="clrjit.dll" />
-    <FilesToExcludeFromSigning Include="coreclr.dll" />
-    <FilesToExcludeFromSigning Include="dbgshim.dll" />
-    <FilesToExcludeFromSigning Include="dotnet.exe" />
-    <FilesToExcludeFromSigning Include="hostfxr.dll" />
-    <FilesToExcludeFromSigning Include="hostpolicy.dll" />
-    <FilesToExcludeFromSigning Include="mscordaccore_amd64_amd64_$(CoreClrVersion).dll" />
-    <FilesToExcludeFromSigning Include="mscordaccore_arm_arm_$(CoreClrVersion).dll" />
-    <FilesToExcludeFromSigning Include="mscordaccore_x86_x86_$(CoreClrVersion).dll" />
-    <FilesToExcludeFromSigning Include="mscordaccore.dll" />
-    <FilesToExcludeFromSigning Include="mscordbi.dll" />
-    <FilesToExcludeFromSigning Include="mscorlib.dll" />
-    <FilesToExcludeFromSigning Include="mscorrc.debug.dll" />
-    <FilesToExcludeFromSigning Include="mscorrc.dll" />
-    <FilesToExcludeFromSigning Include="netstandard.dll" />
-    <FilesToExcludeFromSigning Include="sos_amd64_amd64_$(CoreClrVersion).dll" />
-    <FilesToExcludeFromSigning Include="sos_arm_arm_$(CoreClrVersion).dll" />
-    <FilesToExcludeFromSigning Include="sos_x86_x86_$(CoreClrVersion).dll" />
-    <FilesToExcludeFromSigning Include="sos.dll" />
-    <FilesToExcludeFromSigning Include="SOS.NETCore.dll" />
-    <FilesToExcludeFromSigning Include="System.AppContext.dll" />
-    <FilesToExcludeFromSigning Include="System.Buffers.dll" />
-    <FilesToExcludeFromSigning Include="System.Collections.Concurrent.dll" />
-    <FilesToExcludeFromSigning Include="System.Collections.dll" />
-    <FilesToExcludeFromSigning Include="System.Collections.Immutable.dll" />
-    <FilesToExcludeFromSigning Include="System.Collections.NonGeneric.dll" />
-    <FilesToExcludeFromSigning Include="System.Collections.Specialized.dll" />
-    <FilesToExcludeFromSigning Include="System.ComponentModel.Annotations.dll" />
-    <FilesToExcludeFromSigning Include="System.ComponentModel.DataAnnotations.dll" />
-    <FilesToExcludeFromSigning Include="System.ComponentModel.dll" />
-    <FilesToExcludeFromSigning Include="System.ComponentModel.EventBasedAsync.dll" />
-    <FilesToExcludeFromSigning Include="System.ComponentModel.Primitives.dll" />
-    <FilesToExcludeFromSigning Include="System.ComponentModel.TypeConverter.dll" />
-    <FilesToExcludeFromSigning Include="System.Configuration.dll" />
-    <FilesToExcludeFromSigning Include="System.Console.dll" />
-    <FilesToExcludeFromSigning Include="System.Core.dll" />
-    <FilesToExcludeFromSigning Include="System.Data.Common.dll" />
-    <FilesToExcludeFromSigning Include="System.Data.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.Contracts.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.Debug.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.DiagnosticSource.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.FileVersionInfo.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.Process.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.StackTrace.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.TextWriterTraceListener.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.Tools.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.TraceSource.dll" />
-    <FilesToExcludeFromSigning Include="System.Diagnostics.Tracing.dll" />
-    <FilesToExcludeFromSigning Include="System.dll" />
-    <FilesToExcludeFromSigning Include="System.Drawing.dll" />
-    <FilesToExcludeFromSigning Include="System.Drawing.Primitives.dll" />
-    <FilesToExcludeFromSigning Include="System.Dynamic.Runtime.dll" />
-    <FilesToExcludeFromSigning Include="System.Globalization.Calendars.dll" />
-    <FilesToExcludeFromSigning Include="System.Globalization.dll" />
-    <FilesToExcludeFromSigning Include="System.Globalization.Extensions.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.Compression.Brotli.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.Compression.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.Compression.FileSystem.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.Compression.ZipFile.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.FileSystem.AccessControl.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.FileSystem.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.FileSystem.DriveInfo.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.FileSystem.Primitives.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.FileSystem.Watcher.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.IsolatedStorage.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.MemoryMappedFiles.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.Pipes.AccessControl.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.Pipes.dll" />
-    <FilesToExcludeFromSigning Include="System.IO.UnmanagedMemoryStream.dll" />
-    <FilesToExcludeFromSigning Include="System.Linq.dll" />
-    <FilesToExcludeFromSigning Include="System.Linq.Expressions.dll" />
-    <FilesToExcludeFromSigning Include="System.Linq.Parallel.dll" />
-    <FilesToExcludeFromSigning Include="System.Linq.Queryable.dll" />
-    <FilesToExcludeFromSigning Include="System.Memory.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.Http.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.HttpListener.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.Mail.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.NameResolution.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.NetworkInformation.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.Ping.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.Primitives.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.Requests.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.Security.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.ServicePoint.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.Sockets.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.WebClient.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.WebHeaderCollection.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.WebProxy.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.WebSockets.Client.dll" />
-    <FilesToExcludeFromSigning Include="System.Net.WebSockets.dll" />
-    <FilesToExcludeFromSigning Include="System.Numerics.dll" />
-    <FilesToExcludeFromSigning Include="System.Numerics.Vectors.dll" />
-    <FilesToExcludeFromSigning Include="System.ObjectModel.dll" />
-    <FilesToExcludeFromSigning Include="System.Private.CoreLib.dll" />
-    <FilesToExcludeFromSigning Include="System.Private.DataContractSerialization.dll" />
-    <FilesToExcludeFromSigning Include="System.Private.Uri.dll" />
-    <FilesToExcludeFromSigning Include="System.Private.Xml.dll" />
-    <FilesToExcludeFromSigning Include="System.Private.Xml.Linq.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.DispatchProxy.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.Emit.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.Emit.ILGeneration.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.Emit.Lightweight.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.Extensions.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.Metadata.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.Primitives.dll" />
-    <FilesToExcludeFromSigning Include="System.Reflection.TypeExtensions.dll" />
-    <FilesToExcludeFromSigning Include="System.Resources.Reader.dll" />
-    <FilesToExcludeFromSigning Include="System.Resources.ResourceManager.dll" />
-    <FilesToExcludeFromSigning Include="System.Resources.Writer.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.CompilerServices.VisualC.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Extensions.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Handles.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.InteropServices.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.InteropServices.RuntimeInformation.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.InteropServices.WindowsRuntime.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Loader.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Numerics.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Serialization.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Serialization.Formatters.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Serialization.Json.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Serialization.Primitives.dll" />
-    <FilesToExcludeFromSigning Include="System.Runtime.Serialization.Xml.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.AccessControl.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Claims.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.Algorithms.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.Cng.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.Csp.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.Encoding.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.OpenSsl.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.Primitives.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Cryptography.X509Certificates.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Permissions.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Principal.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.Principal.Windows.dll" />
-    <FilesToExcludeFromSigning Include="System.Security.SecureString.dll" />
-    <FilesToExcludeFromSigning Include="System.ServiceModel.Web.dll" />
-    <FilesToExcludeFromSigning Include="System.ServiceProcess.dll" />
-    <FilesToExcludeFromSigning Include="System.Text.Encoding.dll" />
-    <FilesToExcludeFromSigning Include="System.Text.Encoding.Extensions.dll" />
-    <FilesToExcludeFromSigning Include="System.Text.RegularExpressions.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.Overlapped.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.Tasks.Dataflow.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.Tasks.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.Tasks.Extensions.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.Tasks.Parallel.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.Thread.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.ThreadPool.dll" />
-    <FilesToExcludeFromSigning Include="System.Threading.Timer.dll" />
-    <FilesToExcludeFromSigning Include="System.Transactions.dll" />
-    <FilesToExcludeFromSigning Include="System.Transactions.Local.dll" />
-    <FilesToExcludeFromSigning Include="System.ValueTuple.dll" />
-    <FilesToExcludeFromSigning Include="System.Web.dll" />
-    <FilesToExcludeFromSigning Include="System.Web.HttpUtility.dll" />
-    <FilesToExcludeFromSigning Include="System.Windows.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.Linq.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.ReaderWriter.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.Serialization.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.XDocument.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.XmlDocument.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.XmlSerializer.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.XPath.dll" />
-    <FilesToExcludeFromSigning Include="System.Xml.XPath.XDocument.dll" />
-    <FilesToExcludeFromSigning Include="ucrtbase.dll" />
-    <FilesToExcludeFromSigning Include="WindowsBase.dll" />
   </ItemGroup>
 
 </Project>
