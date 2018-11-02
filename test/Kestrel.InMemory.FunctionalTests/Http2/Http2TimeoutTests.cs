@@ -30,13 +30,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(_noopApplication));
 
-            mockSystemClock.UtcNow += limits.KeepAliveTimeout + Heartbeat.Interval;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(limits.KeepAliveTimeout + Heartbeat.Interval);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromTicks(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -55,13 +53,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await InitializeConnectionAsync(_noopApplication);
 
-            mockSystemClock.UtcNow += limits.KeepAliveTimeout + Heartbeat.Interval;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(limits.KeepAliveTimeout + Heartbeat.Interval);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromTicks(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -80,8 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await InitializeConnectionAsync(_noopApplication);
 
-            mockSystemClock.UtcNow += limits.KeepAliveTimeout + Heartbeat.Interval;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(limits.KeepAliveTimeout + Heartbeat.Interval);
 
             // keep-alive timeout set but not fired.
             _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
@@ -113,13 +108,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await setTimeoutTcs.Task.DefaultTimeout();
 
-            mockSystemClock.UtcNow += limits.KeepAliveTimeout + Heartbeat.Interval;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(limits.KeepAliveTimeout + Heartbeat.Interval);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromTicks(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.KeepAlive), Times.Once);
 
@@ -142,15 +135,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
 
-            mockSystemClock.UtcNow += limits.RequestHeadersTimeout + Heartbeat.Interval;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(limits.RequestHeadersTimeout + Heartbeat.Interval);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
             await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
 
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromTicks(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
 
@@ -181,17 +172,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
 
-            mockSystemClock.UtcNow +=
-                TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) + 
-                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
-
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) + 
+                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
             _mockConnectionContext.Verify(c => c.Abort(It.IsAny<ConnectionAbortedException>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
 
@@ -285,16 +272,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Tick(mockSystemClock.UtcNow);
 
             // Don't read data frame to induce "socket" backpressure.
-            mockSystemClock.UtcNow +=
-                TimeSpan.FromSeconds((_bytesReceived + _helloWorldBytes.Length) / limits.MinResponseDataRate.BytesPerSecond) +
-                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
-
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds((_bytesReceived + _helloWorldBytes.Length) / limits.MinResponseDataRate.BytesPerSecond) +
+                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
 
@@ -348,13 +331,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
 
             // Don't read data frame to induce "socket" backpressure.
-            mockSystemClock.UtcNow += timeToWriteMaxData;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(timeToWriteMaxData);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
 
@@ -409,16 +390,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Tick(mockSystemClock.UtcNow);
 
             // Don't send WINDOW_UPDATE to induce flow-control backpressure
-            mockSystemClock.UtcNow +=
-                TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
-                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
-
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
+                limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
 
@@ -470,13 +447,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
 
             // Don't send WINDOW_UPDATE to induce flow-control backpressure
-            mockSystemClock.UtcNow += timeToWriteMaxData;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(timeToWriteMaxData);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
 
@@ -540,14 +515,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5);
 
             // Don't send WINDOW_UPDATE to induce flow-control backpressure
-            mockSystemClock.UtcNow += timeToWriteMaxData;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(timeToWriteMaxData);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            //mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
 
@@ -592,13 +564,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             // Don't send any more data and advance just to and then past the grace period.
-            mockSystemClock.UtcNow += limits.MinRequestBodyDataRate.GracePeriod;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromTicks(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 
@@ -647,13 +617,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var timeToReadMaxData = TimeSpan.FromSeconds(_maxData.Length / limits.MinRequestBodyDataRate.BytesPerSecond) - TimeSpan.FromSeconds(.5);
 
             // Don't send any more data and advance just to and then past the rate timeout.
-            mockSystemClock.UtcNow += timeToReadMaxData;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(timeToReadMaxData);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 
@@ -718,13 +686,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             timeToReadMaxData -= TimeSpan.FromSeconds(.5);
 
             // Don't send any more data and advance just to and then past the rate timeout.
-            mockSystemClock.UtcNow += timeToReadMaxData;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(timeToReadMaxData);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 
@@ -790,13 +756,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var timeToReadMaxData = TimeSpan.FromSeconds(_maxData.Length / limits.MinRequestBodyDataRate.BytesPerSecond) - TimeSpan.FromSeconds(.5);
 
             // Don't send any more data and advance just to and then past the rate timeout.
-            mockSystemClock.UtcNow += timeToReadMaxData;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(timeToReadMaxData);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromSeconds(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 
@@ -863,8 +827,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 3);
 
             // No matter how much time elapses there is no read timeout because the connection window is too small.
-            mockSystemClock.UtcNow += TimeSpan.FromDays(365);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromDays(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
@@ -885,13 +848,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 0);
 
-            mockSystemClock.UtcNow += limits.MinRequestBodyDataRate.GracePeriod;
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod);
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
 
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            _timeoutControl.Tick(mockSystemClock.UtcNow);
+            AdvanceClock(TimeSpan.FromTicks(1));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.ReadDataRate), Times.Once);
 

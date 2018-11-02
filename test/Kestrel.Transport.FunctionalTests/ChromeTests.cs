@@ -52,6 +52,7 @@ namespace Interop.FunctionalTests
                 $"--no-sandbox " +
                 $"--disable-gpu " +
                 $"--allow-insecure-localhost " +
+                $"--ignore-certificate-errors --enable-features=NetworkService " +
                 $"--enable-logging " +
                 $"--dump-dom " +
                 $"--virtual-time-budget=10000 " +

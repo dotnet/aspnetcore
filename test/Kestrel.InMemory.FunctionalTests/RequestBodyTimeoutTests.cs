@@ -71,8 +71,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await appRunningEvent.Task.DefaultTimeout();
 
-                    serviceContext.MockSystemClock.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
-                    heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                    // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
+                    for (var i = 0; i < 6; i++)
+                    {
+                        serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
+                        heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                    }
 
                     await connection.Receive(
                         "HTTP/1.1 408 Request Timeout",
@@ -184,8 +188,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await appRunningTcs.Task.DefaultTimeout();
 
-                    serviceContext.MockSystemClock.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
-                    heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                    // Advance the clock gracePeriod + TimeSpan.FromSeconds(1)
+                    for (var i = 0; i < 6; i++)
+                    {
+                        serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(1);
+                        heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
+                    }
 
                     await exceptionSwallowedTcs.Task.DefaultTimeout();
 

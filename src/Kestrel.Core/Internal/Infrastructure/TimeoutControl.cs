@@ -96,7 +96,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     return;
                 }
 
-                _readTimingElapsedTicks += timestamp - _lastTimestamp;
+                // Assume overly long tick intervals are the result of server resource starvation.
+                // Don't count extra time between ticks against the rate limit.
+                _readTimingElapsedTicks += Math.Min(timestamp - _lastTimestamp, Heartbeat.Interval.Ticks);
 
                 if (_minReadRate.BytesPerSecond > 0 && _readTimingElapsedTicks > _minReadRate.GracePeriod.Ticks)
                 {
@@ -124,6 +126,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             lock (_writeTimingLock)
             {
+                // Assume overly long tick intervals are the result of server resource starvation.
+                // Don't count extra time between ticks against the rate limit.
+                var extraTimeForTick = timestamp - _lastTimestamp - Heartbeat.Interval.Ticks;
+
+                if (extraTimeForTick > 0)
+                {
+                    _writeTimingTimeoutTimestamp += extraTimeForTick;
+                }
+
                 if (_concurrentAwaitingWrites > 0 && timestamp > _writeTimingTimeoutTimestamp && !Debugger.IsAttached)
                 {
                     _timeoutHandler.OnTimeout(TimeoutReason.WriteDataRate);
