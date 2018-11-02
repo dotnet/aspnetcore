@@ -55,7 +55,7 @@
     <Repository Include="HttpClientFactory" />
     <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
-    <Repository Include="IISIntegration" />
+    <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <Repository Include="JavaScriptServices" />
     <Repository Include="JsonPatch" />
     <Repository Include="KestrelHttpServer" />

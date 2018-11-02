@@ -74,10 +74,6 @@
 	path = modules/Identity
 	url = https://github.com/aspnet/Identity.git
 	branch = release/2.2
-[submodule "modules/IISIntegration"]
-	path = modules/IISIntegration
-	url = https://github.com/aspnet/IISIntegration.git
-	branch = release/2.2
 [submodule "modules/JavaScriptServices"]
 	path = modules/JavaScriptServices
 	url = https://github.com/aspnet/JavaScriptServices.git
