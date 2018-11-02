@@ -13,7 +13,7 @@
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(SharedFxRid)\</IntermediateOutputPath>
     <!-- Must be named "package_root/". This is expected by the build.sh script in this project. -->
     <IntermediatePackageRoot>$(IntermediateOutputPath)package_root\</IntermediatePackageRoot>
-    <OutputFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-$(SharedFxRid).deb</OutputFileName>
+    <OutputFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.deb</OutputFileName>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
     <TargetPath>$(InstallersOutputPath)$(OutputFileName)</TargetPath>
   </PropertyGroup>
