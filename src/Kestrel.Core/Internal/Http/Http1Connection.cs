@@ -139,6 +139,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             consumed = buffer.Start;
             examined = buffer.End;
 
+            var reader = new BufferReader<byte>(buffer);
+
             switch (_requestProcessingStatus)
             {
                 case RequestProcessingStatus.RequestPending:
@@ -152,59 +154,84 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                     goto case RequestProcessingStatus.ParsingRequestLine;
                 case RequestProcessingStatus.ParsingRequestLine:
-                    if (TakeStartLine(buffer, out consumed, out examined))
+                    if (TakeStartLine(ref reader))
                     {
-                        buffer = buffer.Slice(consumed, buffer.End);
-
                         _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
                         goto case RequestProcessingStatus.ParsingHeaders;
                     }
                     else
                     {
+                        consumed = reader.Position;
                         break;
                     }
                 case RequestProcessingStatus.ParsingHeaders:
-                    if (TakeMessageHeaders(buffer, out consumed, out examined))
+                    if (TakeMessageHeaders(ref reader))
                     {
                         _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                        examined = reader.Position;
+                        consumed = examined;
                     }
+                    else
+                    {
+                        consumed = reader.Position;
+                    }
+
                     break;
             }
         }
 
-        public bool TakeStartLine(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeStartLine(ref BufferReader<byte> reader)
         {
             var overLength = false;
-            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
+            var sequence = reader.Sequence;
+            if (sequence.Length >= ServerOptions.Limits.MaxRequestLineSize)
             {
-                buffer = buffer.Slice(buffer.Start, ServerOptions.Limits.MaxRequestLineSize);
+                // More data in the reader than we want to allow, cap it
+                reader = new BufferReader<byte>(sequence.Slice(sequence.Start, ServerOptions.Limits.MaxRequestLineSize));
                 overLength = true;
             }
 
-            var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
-            if (!result && overLength)
+            var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), ref reader);
+
+            if (overLength)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
+                if (result)
+                {
+                    // Need to reset the reader to the right end point
+                    var consumed = reader.Consumed;
+                    reader = new BufferReader<byte>(sequence);
+                    reader.Advance(consumed);
+                }
+                else
+                {
+                    BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
+                }
             }
 
             return result;
         }
 
-        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeMessageHeaders(ref BufferReader<byte> reader)
         {
             // Make sure the buffer is limited
-            bool overLength = false;
-            if (buffer.Length >= _remainingRequestHeadersBytesAllowed)
+            var overLength = false;
+            var sequence = reader.Sequence;
+            var consumed = reader.Consumed;
+            var remaining = sequence.Length - consumed;
+
+            if (remaining >= _remainingRequestHeadersBytesAllowed)
             {
-                buffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
+                // More data in the reader than we want to allow, cap it
+                reader = new BufferReader<byte>(sequence.Slice(reader.Position, _remainingRequestHeadersBytesAllowed));
+                consumed = 0;
 
                 // If we sliced it means the current buffer bigger than what we're
                 // allowed to look at
                 overLength = true;
             }
 
-            var result = _parser.ParseHeaders(new Http1ParsingHandler(this), buffer, out consumed, out examined, out var consumedBytes);
-            _remainingRequestHeadersBytesAllowed -= consumedBytes;
+            var result = _parser.ParseHeaders(new Http1ParsingHandler(this), ref reader);
+            _remainingRequestHeadersBytesAllowed -= (int)(reader.Consumed - consumed);
 
             if (!result && overLength)
             {

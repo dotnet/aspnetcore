@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             consumed = buffer.Start;
             examined = buffer.End;
             var reader = new BufferReader<byte>(buffer);
-            bool success = ParseRequestLine(handler, ref reader);
+            var success = ParseRequestLine(handler, ref reader);
             consumed = reader.Position;
             if (success)
             {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool ParseRequestLine(TRequestHandler handler, ref BufferReader<byte> reader)
         {
             // Look for CR/LF
-            long startPosition = reader.Consumed;
+            var startPosition = reader.Consumed;
 
             if (!reader.TryReadToAny(out ReadOnlySpan<byte> requestLine, Eol, advancePastDelimiter: false))
             {
@@ -88,19 +88,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // Skip the space after the method
             offset++;
-            ReadOnlySpan<byte> target = data.Slice(offset);
+            var target = data.Slice(offset);
 
-            bool pathEncoded = false;
-            int pathEnd = target.IndexOfAny(ByteSpace, ByteQuestionMark);
+            var pathEncoded = false;
+            var pathEnd = target.IndexOfAny(ByteSpace, ByteQuestionMark);
             if (pathEnd < 1 || pathEnd > target.Length - 1)
             {
                 // Cant start or end with space/? or eat the entire target
                 RejectRequestLine(data);
             }
 
-            ReadOnlySpan<byte> path = target.Slice(0, pathEnd);
+            var path = target.Slice(0, pathEnd);
 
-            int escapeIndex = path.IndexOf(BytePercentage);
+            var escapeIndex = path.IndexOf(BytePercentage);
             if (escapeIndex == 0)
             {
                 // Can't start with %
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // Query string
                 query = target.Slice(path.Length);
-                int spaceIndex = query.IndexOf(ByteSpace);
+                var spaceIndex = query.IndexOf(ByteSpace);
                 if (spaceIndex < 1)
                 {
                     // End of query string not found
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Version
 
             // Skip space
-            ReadOnlySpan<byte> version = data.Slice(offset + target.Length + 1);
+            var version = data.Slice(offset + target.Length + 1);
 
             if (!HttpUtilities.GetKnownVersion(version, out HttpVersion httpVersion))
             {
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             examined = reader.Sequence.End;
             consumedBytes = 0;
 
-            bool success = ParseHeaders(handler, ref reader);
+            var success = ParseHeaders(handler, ref reader);
             consumed = reader.Position;
             consumedBytes = (int)reader.Consumed;
             if (success)
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             while (!reader.End)
             {
-                long consumed = reader.Consumed;
+                var consumed = reader.Consumed;
 
                 if (!reader.TryReadToAny(out ReadOnlySpan<byte> headerLine, Eol, advancePastDelimiter: false))
                 {
@@ -231,10 +231,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Debug.Assert(headerLine.IndexOf(ByteCR) == -1);
 
             // Find the end of the name (name:value)
-            int nameEnd = 0;
+            var nameEnd = 0;
             for (; nameEnd < headerLine.Length; nameEnd++)
             {
-                byte ch = headerLine[nameEnd];
+                var ch = headerLine[nameEnd];
                 if (ch == ByteColon)
                 {
                     break;
@@ -252,19 +252,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // Move past the colon
-            int valueStart = nameEnd + 1;
+            var valueStart = nameEnd + 1;
 
             // Trim any whitespace from the start and end of the value
             for (; valueStart < headerLine.Length; valueStart++)
             {
-                byte ch = headerLine[valueStart];
+                var ch = headerLine[valueStart];
                 if (ch != ByteSpace && ch != ByteTab)
                 {
                     break;
                 }
             }
 
-            int valueEnd = headerLine.Length - 1;
+            var valueEnd = headerLine.Length - 1;
             for (; valueEnd > valueStart; valueEnd--)
             {
                 byte ch = headerLine[valueEnd];

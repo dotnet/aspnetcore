@@ -93,10 +93,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.UTF8.GetBytes("\r\n\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined);
+            TakeMessageHeaders(_http1Connection, readableBuffer, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(headerValue, _http1Connection.RequestHeaders[headerName]);
+        }
+
+        private static bool TakeMessageHeaders(
+            Http1Connection connection,
+            ReadOnlySequence<byte> sequence,
+            out SequencePosition consumed,
+            out SequencePosition examined)
+        {
+            var reader = new BufferReader<byte>(sequence);
+            if (connection.TakeMessageHeaders(ref reader))
+            {
+                examined = reader.Position;
+                consumed = reader.Position;
+                return true;
+            }
+            else
+            {
+                examined = sequence.End;
+                consumed = reader.Position;
+                return false;
+            }
+        }
+
+        private static bool TakeStartLine(
+            Http1Connection connection,
+            ReadOnlySequence<byte> sequence,
+            out SequencePosition consumed,
+            out SequencePosition examined)
+        {
+            var reader = new BufferReader<byte>(sequence);
+            if (connection.TakeStartLine(ref reader))
+            {
+                examined = reader.Position;
+                consumed = reader.Position;
+                return true;
+            }
+            else
+            {
+                examined = sequence.End;
+                consumed = reader.Position;
+                return false;
+            }
         }
 
         [Fact]
@@ -112,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes("\r\n\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<InvalidOperationException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.Throws<InvalidOperationException>(() => TakeMessageHeaders(_http1Connection, readableBuffer, out _consumed, out _examined));
         }
 
         [Fact]
@@ -125,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.Throws<BadHttpRequestException>(() => TakeMessageHeaders(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, exception.Message);
@@ -141,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLines}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.Throws<BadHttpRequestException>(() => TakeMessageHeaders(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_TooManyHeaders, exception.Message);
@@ -246,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine1}\r\n"));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var takeMessageHeaders = _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined);
+            var takeMessageHeaders = TakeMessageHeaders(_http1Connection, readableBuffer, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(takeMessageHeaders);
@@ -258,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine2}\r\n"));
             readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            takeMessageHeaders = _http1Connection.TakeMessageHeaders(readableBuffer, out _consumed, out _examined);
+            takeMessageHeaders = TakeMessageHeaders(_http1Connection, readableBuffer, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(takeMessageHeaders);
@@ -383,7 +425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(requestLineBytes);
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var returnValue = _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            var returnValue = TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(returnValue);
@@ -406,7 +448,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(requestLineBytes);
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-            var returnValue = _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined);
+            var returnValue = TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined);
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(returnValue);
@@ -436,7 +478,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _application.Output.WriteAsync(requestLineBytes);
 
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
-            var exception = Assert.Throws<BadHttpRequestException>(() => _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+            var exception = Assert.Throws<BadHttpRequestException>(() => TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.BadRequest_RequestLineTooLong, exception.Message);
@@ -451,7 +493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target), exception.Message);
@@ -465,7 +507,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
@@ -481,7 +523,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail($"{method} / HTTP/1.1".EscapeNonPrintable()), exception.Message);
@@ -497,7 +539,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
@@ -513,7 +555,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
@@ -527,7 +569,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
-                _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined));
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.Equal(405, exception.StatusCode);
@@ -742,7 +784,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
                 var exception = Assert.Throws<BadHttpRequestException>(() =>
-                    _http1Connection.TakeStartLine(readableBuffer, out _consumed, out _examined));
+                    TakeStartLine(_http1Connection, readableBuffer, out _consumed, out _examined));
                 _transport.Input.AdvanceTo(_consumed, _examined);
 
                 Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(string.Empty), exception.Message);
