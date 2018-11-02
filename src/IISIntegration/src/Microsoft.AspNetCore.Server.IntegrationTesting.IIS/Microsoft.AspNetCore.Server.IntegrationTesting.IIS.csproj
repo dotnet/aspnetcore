@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IntegrationTesting.IIS</PackageId>
+    <!-- Always include a pre-release label since this is an internal-only package. -->
+    <Version>$(VersionPrefix)-$(VersionSuffix)</Version>
+    <PackageVersion>$(Version)</PackageVersion>
     <Description>Provides support for integration testing using IIS based servers.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -43,5 +46,5 @@
 
     </ItemGroup>
   </Target>
-  
+
 </Project>
