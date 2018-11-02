@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.FileProviders</RootNamespace>
+    <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <ProjectReference Include="..\..\Manifest.MSBuildTask\src\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;DebugSymbolsProjectOutputGroup;">
+
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        description=$(Description);
+        tags=$(PackageTags.Replace(';', ' '));
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        copyright=$(Copyright);
+        targetframework=$(TargetFramework);
+        AssemblyName=$(AssemblyName);
+
+        OutputBinary=@(BuiltProjectOutputGroupOutput);
+        OutputSymbol=@(DebugSymbolsProjectOutputGroupOutput);
+        OutputDocumentation=@(DocumentationProjectOutputGroupOutput);
+
+        <!-- Include the assembly and symbols from the tasks project -->
+        TaskAssemblyNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.dll;
+        TaskSymbolNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.pdb;
+        TaskAssemblyNet461=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.dll;
+        TaskSymbolNet461=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.pdb;
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+</Project>

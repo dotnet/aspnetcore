@@ -1,0 +1,17 @@
+<Project TreatAsLocalProperty="_FileProviderTaskFolder;_FileProviderTaskAssembly">
+  <PropertyGroup>
+    <GenerateEmbeddedFilesManifest Condition="'$(GenerateEmbeddedFilesManifest)' == ''">false</GenerateEmbeddedFilesManifest>
+    <EmbeddedFilesManifestFileName Condition="'$(EmbeddedFilesManifestFileName)' == ''">Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_FileProviderTaskFolder Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard1.5</_FileProviderTaskFolder>
+    <_FileProviderTaskFolder Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_FileProviderTaskFolder>
+    <_FileProviderTaskAssembly>$(MSBuildThisFileDirectory)..\..\tasks\$(_FileProviderTaskFolder)\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask
+    AssemblyFile="$(_FileProviderTaskAssembly)"
+    TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
+
+</Project>
