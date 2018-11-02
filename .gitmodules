@@ -34,10 +34,6 @@
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git
 	branch = release/2.2
-[submodule "modules/DependencyInjection"]
-	path = modules/DependencyInjection
-	url = https://github.com/aspnet/DependencyInjection.git
-	branch = release/2.2
 [submodule "modules/Diagnostics"]
 	path = modules/Diagnostics
 	url = https://github.com/aspnet/Diagnostics.git

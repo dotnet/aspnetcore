@@ -15,6 +15,7 @@
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' AND '$(DisableMyGetRestoreSources)' != 'true' ">
       $(RestoreSources);
       https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-master/api/v3/index.json;
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
