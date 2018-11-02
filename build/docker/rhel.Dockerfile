@@ -8,7 +8,7 @@ ARG GROUP_ID
 
 WORKDIR /code/build
 
-RUN useradd -m ${USER} --uid ${USER_ID} -g root -G ${GROUP_ID}
+RUN useradd -m ${USER} --uid ${USER_ID} -g root
 RUN echo '${USER} ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # With the User Change, we need to change permssions on these directories
@@ -17,7 +17,7 @@ RUN chmod -R a+rwx /home
 RUN chown root:root /usr/bin/sudo && chmod 4755 /usr/bin/sudo
 
 # Set user to the one we just created
-USER $USER_ID:$GROUP_ID
+USER $USER_ID
 
 # Skip package initilization
 ENV DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
