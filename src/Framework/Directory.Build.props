@@ -18,8 +18,7 @@
     <OutputPath>$(ArtifactsConfigurationDir)$(SharedFxRid)\$(MSBuildProjectName)\</OutputPath>
     <BaseIntermediateOutputPath>$(RepositoryRoot)obj\fx\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
 
-    <CrossgenOutput Condition="'$(SharedFxRid)' == 'linux-arm'">false</CrossgenOutput>
-    <CrossgenSymbolsOutput Condition=" '$(CrossgenOutput)' == 'false' OR '$(SharedFxRid)' == 'osx-x64'">false</CrossgenSymbolsOutput>
+    <CrossgenSymbolsOutput Condition=" '$(CrossgenOutput)' == 'false' OR '$(SharedFxRid)' == 'osx-x64' OR '$(SharedFxRid)' == 'linux-arm'">false</CrossgenSymbolsOutput>
 
     <IncludeSymbols>true</IncludeSymbols>
     <NuspecFile>$(MSBuildThisFileDirectory)runtime.fx.nuspec</NuspecFile>
