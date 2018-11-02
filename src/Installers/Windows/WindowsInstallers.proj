@@ -8,12 +8,8 @@
     <!-- Build the ANCM msis -->
     <InstallerProject Include="AspNetCoreModule-Setup/ANCMIISExpressV1/AncmIISExpressV1.wixproj" AdditionalProperties="Platform=x64" />
     <InstallerProject Include="AspNetCoreModule-Setup/ANCMIISExpressV1/AncmIISExpressV1.wixproj" AdditionalProperties="Platform=x86" />
-    <InstallerProject Include="AspNetCoreModule-Setup/ANCMIISExpressV2/AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
-    <InstallerProject Include="AspNetCoreModule-Setup/ANCMIISExpressV2/AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
     <InstallerProject Include="AspNetCoreModule-Setup/ANCMV1/ANCMV1.wixproj" AdditionalProperties="Platform=x64" />
     <InstallerProject Include="AspNetCoreModule-Setup/ANCMV1/ANCMV1.wixproj" AdditionalProperties="Platform=x86" />
-    <InstallerProject Include="AspNetCoreModule-Setup/ANCMV2/ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
-    <InstallerProject Include="AspNetCoreModule-Setup/ANCMV2/ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
 
     <!-- Build the SharedFramework bundles-->
     <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
