@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             out SequencePosition examined)
         {
             var reader = new BufferReader<byte>(sequence);
-            if (connection.TakeMessageHeaders(ref reader))
+            if (connection.TakeMessageHeaders(ref reader, sequence.Length))
             {
                 examined = reader.Position;
                 consumed = reader.Position;
@@ -127,7 +127,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             out SequencePosition examined)
         {
             var reader = new BufferReader<byte>(sequence);
-            if (connection.TakeStartLine(ref reader))
+            var length = sequence.Length;
+
+            if (connection.TakeStartLine(ref reader, length))
             {
                 examined = reader.Position;
                 consumed = reader.Position;

@@ -149,17 +149,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             var readableBuffer = awaitable.GetAwaiter().GetResult().Buffer;
             var reader = new BufferReader<byte>(readableBuffer);
+            var length = readableBuffer.Length;
 
             do
             {
                 Http1Connection.Reset();
 
-                if (!Http1Connection.TakeStartLine(ref reader))
+                if (!Http1Connection.TakeStartLine(ref reader, length))
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
 
-                if (!Http1Connection.TakeMessageHeaders(ref reader))
+                if (!Http1Connection.TakeMessageHeaders(ref reader, length))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
@@ -182,11 +183,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 var result = awaitable.GetAwaiter().GetResult();
                 var readableBuffer = result.Buffer;
+                var length = readableBuffer.Length;
                 var reader = new BufferReader<byte>(readableBuffer);
 
                 Http1Connection.Reset();
 
-                if (!Http1Connection.TakeStartLine(ref reader))
+                if (!Http1Connection.TakeStartLine(ref reader, length))
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
@@ -196,7 +198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 readableBuffer = result.Buffer;
                 reader = new BufferReader<byte>(readableBuffer);
 
-                if (!Http1Connection.TakeMessageHeaders(ref reader))
+                if (!Http1Connection.TakeMessageHeaders(ref reader, length))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }

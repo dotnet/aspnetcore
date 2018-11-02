@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_mode == Mode.TrailerHeaders)
                 {
                     BufferReader<byte> reader = new BufferReader<byte>(readableBuffer);
-                    if (_context.TakeMessageHeaders(ref reader))
+                    if (_context.TakeMessageHeaders(ref reader, readableBuffer.Length))
                     {
                         _mode = Mode.Complete;
                         consumed = reader.Position;

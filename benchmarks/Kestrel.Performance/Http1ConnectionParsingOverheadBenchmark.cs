@@ -78,13 +78,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _http1Connection.Reset();
             var reader = new BufferReader<byte>(_buffer);
+            var length = _buffer.Length;
 
-            if (!_http1Connection.TakeStartLine(ref reader))
+            if (!_http1Connection.TakeStartLine(ref reader, length))
             {
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
 
-            if (!_http1Connection.TakeMessageHeaders(ref reader))
+            if (!_http1Connection.TakeMessageHeaders(ref reader, length))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
@@ -94,8 +95,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _http1Connection.Reset();
             var reader = new BufferReader<byte>(_buffer);
+            var length = _buffer.Length;
 
-            if (!_http1Connection.TakeStartLine(ref reader))
+            if (!_http1Connection.TakeStartLine(ref reader, length))
             {
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
@@ -105,8 +107,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _http1Connection.Reset();
             var reader = new BufferReader<byte>(_buffer);
+            var length = _buffer.Length;
 
-            if (!_http1Connection.TakeMessageHeaders(ref reader))
+            if (!_http1Connection.TakeMessageHeaders(ref reader, length))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
