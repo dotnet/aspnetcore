@@ -70,10 +70,6 @@
 	path = modules/Identity
 	url = https://github.com/aspnet/Identity.git
 	branch = master
-[submodule "modules/IISIntegration"]
-	path = modules/IISIntegration
-	url = https://github.com/aspnet/IISIntegration.git
-	branch = master
 [submodule "modules/JavaScriptServices"]
 	path = modules/JavaScriptServices
 	url = https://github.com/aspnet/JavaScriptServices.git

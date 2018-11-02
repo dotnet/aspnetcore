@@ -8,6 +8,8 @@
       <FilesToSign Include="System.Interactive.Async.dll"                                  Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
 
     <!-- These files came from the aspnet/Extensions build, but have to be re-signed because we crossgen them. -->
+      <FilesToSign Include="Microsoft.Extensions.DependencyInjection.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.DependencyInjection.Abstractions.dll"      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.DiagnosticAdapter.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.ObjectPool.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Primitives.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App"  />

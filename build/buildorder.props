@@ -25,7 +25,7 @@
     <RepositoryBuildOrder Include="DataProtection" Order="9" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="10" />
-    <RepositoryBuildOrder Include="IISIntegration" Order="10" />
+    <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <RepositoryBuildOrder Include="StaticFiles" Order="11" />
     <RepositoryBuildOrder Include="ResponseCaching" Order="11" />
     <RepositoryBuildOrder Include="Session" Order="11" />
