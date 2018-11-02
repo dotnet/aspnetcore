@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public IdentityUIScriptsTest(ITestOutputHelper output)
         {
             _output = output;
-            _httpClient = new HttpClient();
+            _httpClient = new HttpClient(new RetryHandler(new HttpClientHandler() { }));
         }
 
         public static IEnumerable<object[]> ScriptWithIntegrityData
@@ -40,15 +41,18 @@ namespace Microsoft.AspNetCore.Identity.Test
         [MemberData(nameof(ScriptWithIntegrityData))]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
-            string expectedIntegrity;
+            var sha256Integrity = await GetShaIntegrity(scriptTag, SHA256.Create(), "sha256");
+            Assert.Equal(scriptTag.Integrity, sha256Integrity);
+        }
+
+        private async Task<string> GetShaIntegrity(ScriptTag scriptTag, HashAlgorithm algorithm, string prefix)
+        {
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
             using (var alg = SHA256.Create())
             {
                 var hash = alg.ComputeHash(respStream);
-                expectedIntegrity = "sha256-" + Convert.ToBase64String(hash);
+                return $"{prefix}-" + Convert.ToBase64String(hash);
             }
-
-            Assert.Equal(expectedIntegrity, scriptTag.Integrity);
         }
 
         public static IEnumerable<object[]> ScriptWithFallbackSrcData
@@ -66,7 +70,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var slnDir = GetSolutionDir();
-            var wwwrootDir = Path.Combine(slnDir, "src", "UI", "wwwroot", "V4");
+            var wwwrootDir = Path.Combine(slnDir, "src", "UI", "wwwroot", scriptTag.Version);
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
@@ -77,6 +81,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         public struct ScriptTag
         {
+            public string Version;
             public string Src;
             public string Integrity;
             public string FallbackSrc;
@@ -91,8 +96,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         private static List<ScriptTag> GetScriptTags()
         {
             var slnDir = GetSolutionDir();
-            var uiDir = Path.Combine(slnDir, "src", "UI", "Areas", "Identity", "Pages", "V4");
-            var cshtmlFiles = Directory.GetFiles(uiDir, "*.cshtml", SearchOption.AllDirectories);
+            var uiDirV3 = Path.Combine(slnDir, "src", "UI", "Areas", "Identity", "Pages", "V3");
+            var uiDirV4 = Path.Combine(slnDir, "src", "UI", "Areas", "Identity", "Pages", "V4");
+            var cshtmlFiles = GetRazorFiles(uiDirV3).Concat(GetRazorFiles(uiDirV4));
 
             var scriptTags = new List<ScriptTag>();
             foreach (var cshtmlFile in cshtmlFiles)
@@ -104,6 +110,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEmpty(scriptTags);
 
             return scriptTags;
+
+            IEnumerable<string> GetRazorFiles(string dir) => Directory.GetFiles(dir, "*.cshtml", SearchOption.AllDirectories);
         }
 
         private static List<ScriptTag> GetScriptTags(string cshtmlFile)
@@ -123,6 +131,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
                 scriptTags.Add(new ScriptTag
                 {
+                    Version = cshtmlFile.Contains("V3") ? "V3" : "V4",
                     Src = scriptElement.Source,
                     Integrity = scriptElement.Integrity,
                     FallbackSrc = fallbackSrcAttribute?.Value,
@@ -154,6 +163,26 @@ namespace Microsoft.AspNetCore.Identity.Test
         public void Dispose()
         {
             _httpClient.Dispose();
+        }
+
+        class RetryHandler : DelegatingHandler
+        {
+            public RetryHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                HttpResponseMessage result = null;
+                for (var i = 0; i < 10; i++)
+                {
+                    result = await base.SendAsync(request, cancellationToken);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        return result;
+                    }
+                    await Task.Delay(1000);
+                }
+                return result;
+            }
         }
     }
 }
