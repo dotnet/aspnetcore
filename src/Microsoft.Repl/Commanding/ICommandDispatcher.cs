@@ -12,7 +12,7 @@ namespace Microsoft.Repl.Commanding
     {
         IParser Parser { get; }
 
-        IReadOnlyList<string> CollectSuggesetions(IShellState shellState);
+        IReadOnlyList<string> CollectSuggestions(IShellState shellState);
 
         void OnReady(IShellState shellState);
 

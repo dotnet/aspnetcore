@@ -112,14 +112,22 @@ namespace Microsoft.Repl.Input
 
         private void StashEchoState()
         {
-            _ttyState = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX)
-                            ? GetTtyState()
-                            : null;
-
-            if (!string.IsNullOrEmpty(_ttyState))
+            string sttyFlags = null;
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
             {
-                //"gfmt1:cflag=4300:iflag=6b02:lflag=200005c7:oflag=3:discard=f:dsusp=19:eof=4:eol=ff:eol2=ff:erase=7f:intr=3:kill=15:lnext=16:min=1:quit=1c:reprint=12:start=11:status=14:stop=13:susp=1a:time=0:werase=17:ispeed=38400:ospeed=38400\n"
-                ProcessStartInfo psi = new ProcessStartInfo("stty", "gfmt1:erase=08:werase=08 -echo");
+                _ttyState = GetTtyState();
+                sttyFlags = "gfmt1:erase=08:werase=08 -echo";
+            }
+            //If it's any of the ubuntu variants on 18.x, stty tweaks are required
+            else if (System.Runtime.InteropServices.RuntimeInformation.OSDescription.IndexOf("buntu", StringComparison.OrdinalIgnoreCase) > -1)
+            {
+                _ttyState = GetTtyState();
+                sttyFlags = "erase 0x08 werase 0x08 -echo";
+            }
+
+            if (!string.IsNullOrEmpty(sttyFlags))
+            {
+                ProcessStartInfo psi = new ProcessStartInfo("stty", sttyFlags);
                 Process p = Process.Start(psi);
                 p?.WaitForExit();
             }
@@ -133,7 +141,7 @@ namespace Microsoft.Repl.Input
             };
             Process p = Process.Start(psi);
             p?.WaitForExit();
-            string result = p?.StandardOutput.ReadToEnd();
+            string result = p?.StandardOutput.ReadToEnd().Trim();
             return result;
         }
 
@@ -331,7 +339,7 @@ namespace Microsoft.Repl.Input
         }
 
         private void FlushInput(IShellState state, ref List<ConsoleKeyInfo> presses)
-        {            
+        {
             string str = new string(presses.Select(x => x.KeyChar).ToArray());
 
             if (state.ConsoleManager.CaretPosition == _inputBuffer.Count)

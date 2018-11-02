@@ -52,7 +52,7 @@ namespace Microsoft.HttpRepl
             shell.ShellState.ConsoleManager.AddBreakHandler(() => source.Cancel());
             if (args.Length > 0)
             {
-                if (string.Equals(args[0], "--help", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(args[0], "--help", StringComparison.OrdinalIgnoreCase) || string.Equals(args[0], "-h", StringComparison.OrdinalIgnoreCase))
                 {
                     shell.ShellState.ConsoleManager.WriteLine("Usage: dotnet httprepl [<BASE_ADDRESS>] [options]");
                     shell.ShellState.ConsoleManager.WriteLine();

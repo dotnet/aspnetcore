@@ -36,7 +36,7 @@ namespace Microsoft.Repl.Suggestions
             else
             {
                 _currentSuggestion = 0;
-                _suggestions = shellState.CommandDispatcher.CollectSuggesetions(shellState);
+                _suggestions = shellState.CommandDispatcher.CollectSuggestions(shellState);
 
                 if (_suggestions == null || _suggestions.Count == 0)
                 {
@@ -76,7 +76,7 @@ namespace Microsoft.Repl.Suggestions
             }
             else
             {
-                _suggestions = shellState.CommandDispatcher.CollectSuggesetions(shellState);
+                _suggestions = shellState.CommandDispatcher.CollectSuggestions(shellState);
                 _currentSuggestion = _suggestions.Count - 1;
 
                 if (_suggestions == null || _suggestions.Count == 0)

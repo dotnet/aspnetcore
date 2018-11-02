@@ -50,37 +50,41 @@ namespace Microsoft.Repl.ConsoleHandling
                     return;
                 }
 
+                int bufferWidth = Console.BufferWidth;
+                int cursorTop = Console.CursorTop;
+                int cursorLeft = Console.CursorLeft;
+
                 while (positions < 0 && CaretPosition > 0)
                 {
-                    if (-positions > Console.BufferWidth)
+                    if (-positions > bufferWidth)
                     {
-                        if (Console.CursorTop == 0)
+                        if (cursorTop == 0)
                         {
-                            Console.CursorLeft = 0;
+                            cursorLeft = 0;
                             positions = 0;
                         }
                         else
                         {
-                            positions += Console.BufferWidth;
-                            --Console.CursorTop;
+                            positions += bufferWidth;
+                            --cursorTop;
                         }
                     }
                     else
                     {
-                        int remaining = Console.CursorLeft + positions;
+                        int remaining = cursorLeft + positions;
 
                         if (remaining >= 0)
                         {
-                            Console.CursorLeft = remaining;
+                            cursorLeft = remaining;
                         }
-                        else if (Console.CursorTop == 0)
+                        else if (cursorTop == 0)
                         {
-                            Console.CursorLeft = 0;
+                            cursorLeft = 0;
                         }
                         else
                         {
-                            --Console.CursorTop;
-                            Console.CursorLeft = Console.BufferWidth + remaining;
+                            --cursorTop;
+                            cursorLeft = bufferWidth + remaining;
                         }
 
                         positions = 0;
@@ -89,27 +93,29 @@ namespace Microsoft.Repl.ConsoleHandling
 
                 while (positions > 0)
                 {
-                    if (positions > Console.BufferWidth)
+                    if (positions > bufferWidth)
                     {
-                        positions -= Console.BufferWidth;
-                        ++Console.CursorTop;
+                        positions -= bufferWidth;
+                        ++cursorTop;
                     }
                     else
                     {
-                        int spaceLeftOnLine = Console.BufferWidth - Console.CursorLeft - 1;
+                        int spaceLeftOnLine = bufferWidth - cursorLeft - 1;
                         if (positions > spaceLeftOnLine)
                         {
-                            ++Console.CursorTop;
-                            Console.CursorLeft = positions - spaceLeftOnLine - 1;
+                            ++cursorTop;
+                            cursorLeft = positions - spaceLeftOnLine - 1;
                         }
                         else
                         {
-                            Console.CursorLeft += positions;
+                            cursorLeft += positions;
                         }
 
                         positions = 0;
                     }
                 }
+
+                Console.SetCursorPosition(cursorLeft, cursorTop);
             }
         }
 

@@ -55,13 +55,14 @@ namespace Microsoft.HttpRepl
         private readonly HashSet<string> _methods = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Dictionary<string, string>> _requestBodiesByMethodByContentType = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _fallbackBodyStringsByMethod = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _fallbackContentTypeStringsByMethod = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, IReadOnlyList<string>> _contentTypesByMethod = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
 
         public IReadOnlyList<string> Methods => _methods.ToList();
 
         public IReadOnlyDictionary<string, IReadOnlyList<string>> ContentTypesByMethod => _contentTypesByMethod;
 
-        public string GetRequestBodyForContentType(string contentType, string method)
+        public string GetRequestBodyForContentType(ref string contentType, string method)
         {
             if (_requestBodiesByMethodByContentType.TryGetValue(method, out Dictionary<string, string> bodiesByContentType)
                 && bodiesByContentType.TryGetValue(contentType, out string body))
@@ -71,6 +72,11 @@ namespace Microsoft.HttpRepl
 
             if (_fallbackBodyStringsByMethod.TryGetValue(method, out body))
             {
+                if (_fallbackContentTypeStringsByMethod.TryGetValue(method, out string newContentType))
+                {
+                    contentType = newContentType;
+                }
+
                 return body;
             }
 
@@ -100,9 +106,10 @@ namespace Microsoft.HttpRepl
             _methods.Add(method);
         }
 
-        public void SetFallbackRequestBody(string method, string fallbackBodyString)
+        public void SetFallbackRequestBody(string method, string contentType, string fallbackBodyString)
         {
             _fallbackBodyStringsByMethod[method] = fallbackBodyString;
+            _fallbackContentTypeStringsByMethod[method] = contentType;
         }
     }
 }

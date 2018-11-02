@@ -11,6 +11,6 @@ namespace Microsoft.HttpRepl
 
         IReadOnlyList<string> Methods { get; }
 
-        string GetRequestBodyForContentType(string contentType, string method);
+        string GetRequestBodyForContentType(ref string contentType, string method);
     }
 }

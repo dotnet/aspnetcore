@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -116,8 +117,18 @@ namespace Microsoft.HttpRepl.Commands
                 bool deleteFile = false;
                 noBody = commandInput.Options[NoBodyOption].Count > 0;
 
+                if (!thisRequestHeaders.TryGetValue("content-type", out string contentType) && programState.Headers.TryGetValue("content-type", out IEnumerable<string> contentTypes))
+                {
+                    contentType = contentTypes.FirstOrDefault();
+                }
+
                 if (!noBody)
                 {
+                    if (string.IsNullOrEmpty(contentType))
+                    {
+                        contentType = "application/json";
+                    }
+
                     if (commandInput.Options[BodyFileOption].Count > 0)
                     {
                         filePath = commandInput.Options[BodyFileOption][0].Text;
@@ -144,18 +155,7 @@ namespace Microsoft.HttpRepl.Commands
                         deleteFile = true;
                         filePath = Path.GetTempFileName();
 
-                        if (!thisRequestHeaders.TryGetValue("content-type", out string contentType) && programState.Headers.TryGetValue("content-type", out IEnumerable<string> contentTypes))
-                        {
-                            contentType = contentTypes.FirstOrDefault();
-                        }
-
-                        if (contentType == null)
-                        {
-                            contentType = "application/json";
-                        }
-
-                        string exampleBody = programState.GetExampleBody(commandInput.Arguments.Count > 0 ? commandInput.Arguments[0].Text : string.Empty, contentType, Verb);
-                        request.Headers.TryAddWithoutValidation("Content-Type", contentType);
+                        string exampleBody = programState.GetExampleBody(commandInput.Arguments.Count > 0 ? commandInput.Arguments[0].Text : string.Empty, ref contentType, Verb);
 
                         if (!string.IsNullOrEmpty(exampleBody))
                         {
@@ -179,6 +179,11 @@ namespace Microsoft.HttpRepl.Commands
                     }
                 }
 
+                if (string.IsNullOrEmpty(contentType))
+                {
+                    contentType = "application/json";
+                }
+
                 byte[] data = noBody 
                     ? new byte[0] 
                     : string.IsNullOrEmpty(bodyContent) 
@@ -186,6 +191,7 @@ namespace Microsoft.HttpRepl.Commands
                         : Encoding.UTF8.GetBytes(bodyContent);
 
                 HttpContent content = new ByteArrayContent(data);
+                content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
                 request.Content = content;
 
                 if (deleteFile)
