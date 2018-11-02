@@ -109,10 +109,6 @@
       <AncmFiles Include="$(SourceBase)AspNetCoreModuleV2\AspNetCore\ancm.mof" Link="AspNetCoreModuleV2\ancm.mof" />
     </ItemGroup>
 
-    <ZipArchive File="$(AncmZipOutputPath)"
-      Overwrite="true"
-      SourceFiles="@(AncmFiles)"
-      WorkingDirectory="$(RepositoryRoot)" />
   </Target>
 
   <Target Name="RunNativeTest" DependsOnTargets="GetToolsets">
