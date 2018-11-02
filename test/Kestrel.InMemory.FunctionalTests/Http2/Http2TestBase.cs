@@ -1160,6 +1160,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
+        protected void AdvanceClock(TimeSpan timeSpan)
+        {
+            var clock = _serviceContext.MockSystemClock;
+            var endTime = clock.UtcNow + timeSpan;
+
+            while (clock.UtcNow + Heartbeat.Interval < endTime)
+            {
+                clock.UtcNow += Heartbeat.Interval;
+                _timeoutControl.Tick(clock.UtcNow);
+            }
+
+            clock.UtcNow = endTime;
+            _timeoutControl.Tick(clock.UtcNow);
+        }
+
         public class Http2FrameWithPayload : Http2Frame
         {
             public Http2FrameWithPayload() : base()
