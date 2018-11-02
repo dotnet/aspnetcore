@@ -108,7 +108,7 @@ describe("HttpConnection", () => {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", () => {
-                        return Promise.reject("reached negotiate");
+                        return Promise.reject("reached negotiate.");
                     })
                     .on("GET", () => ""),
                 logger,
@@ -118,14 +118,14 @@ describe("HttpConnection", () => {
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toBe("reached negotiate");
+                .toBe("reached negotiate.");
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toBe("reached negotiate");
+                .toBe("reached negotiate.");
         },
-        "Failed to complete negotiation with the server: reached negotiate",
-        "Failed to start the connection: reached negotiate");
+        "Failed to complete negotiation with the server: reached negotiate.",
+        "Failed to start the connection: reached negotiate.");
     });
 
     it("can stop a starting connection", async () => {

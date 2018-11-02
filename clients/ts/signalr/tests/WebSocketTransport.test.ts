@@ -129,7 +129,7 @@ describe("WebSocketTransport", () => {
             TestWebSocket.webSocket.onclose(message);
 
             expect(closeCalled).toBe(true);
-            expect(error!).toEqual(new Error("Websocket closed with status code: 1 (just cause)"));
+            expect(error!).toEqual(new Error("WebSocket closed with status code: 1 (just cause)."));
 
             await expect(webSocket.send(""))
                 .rejects

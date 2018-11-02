@@ -230,7 +230,7 @@ export class HttpConnection implements IConnection {
         }
 
         const negotiateUrl = this.resolveNegotiateUrl(url);
-        this.logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}`);
+        this.logger.log(LogLevel.Debug, `Sending negotiation request: ${negotiateUrl}.`);
         try {
             const response = await this.httpClient.post(negotiateUrl, {
                 content: "",
@@ -324,7 +324,7 @@ export class HttpConnection implements IConnection {
                         (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
                         this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
                     } else {
-                        this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'`);
+                        this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         return transport;
                     }
                 } else {

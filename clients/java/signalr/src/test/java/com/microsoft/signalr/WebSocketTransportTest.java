@@ -17,10 +17,10 @@ import io.reactivex.Single;
 
 class WebSocketTransportTest {
     @Test
-    public void WebsocketThrowsIfItCantConnect() {
+    public void WebSocketThrowsIfItCantConnect() {
         Transport transport = new WebSocketTransport(new HashMap<>(), new DefaultHttpClient());
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> transport.start("http://www.example.com").blockingAwait(1, TimeUnit.SECONDS));
-        assertEquals("There was an error starting the Websockets transport.", exception.getMessage());
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> transport.start("http://url.fake.example").blockingAwait(1, TimeUnit.SECONDS));
+        assertEquals("There was an error starting the WebSocket transport.", exception.getMessage());
     }
 
     @Test
