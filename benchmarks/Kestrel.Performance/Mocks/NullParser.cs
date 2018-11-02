@@ -21,20 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public static readonly NullParser<Http1ParsingHandler> Instance = new NullParser<Http1ParsingHandler>();
 
-        public bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes)
-        {
-            handler.OnHeader(new Span<byte>(_hostHeaderName), new Span<byte>(_hostHeaderValue));
-            handler.OnHeader(new Span<byte>(_acceptHeaderName), new Span<byte>(_acceptHeaderValue));
-            handler.OnHeader(new Span<byte>(_connectionHeaderName), new Span<byte>(_connectionHeaderValue));
-
-            consumedBytes = 0;
-            consumed = buffer.Start;
-            examined = buffer.End;
-
-            return true;
-        }
-
-        public bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool ParseRequestLine(TRequestHandler handler, ref BufferReader<byte> reader)
         {
             handler.OnStartLine(HttpMethod.Get,
                 HttpVersion.Http11,
@@ -44,20 +31,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 Span<byte>.Empty,
                 false);
 
-            consumed = buffer.Start;
-            examined = buffer.End;
-
             return true;
-        }
-
-        public bool ParseRequestLine(TRequestHandler handler, ref BufferReader<byte> reader)
-        {
-            return ParseRequestLine(handler, reader.Sequence, out _, out _);
         }
 
         public bool ParseHeaders(TRequestHandler handler, ref BufferReader<byte> reader)
         {
-            return ParseHeaders(handler, reader.Sequence, out _, out _, out _);
+            handler.OnHeader(new Span<byte>(_hostHeaderName), new Span<byte>(_hostHeaderValue));
+            handler.OnHeader(new Span<byte>(_acceptHeaderName), new Span<byte>(_acceptHeaderValue));
+            handler.OnHeader(new Span<byte>(_connectionHeaderName), new Span<byte>(_connectionHeaderValue));
+
+            return true;
         }
 
         public void Reset()

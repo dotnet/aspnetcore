@@ -33,20 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private static ReadOnlySpan<byte> Eol => new byte[] { ByteCR, ByteLF };
 
-        public bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
-        {
-            consumed = buffer.Start;
-            examined = buffer.End;
-            var reader = new BufferReader<byte>(buffer);
-            var success = ParseRequestLine(handler, ref reader);
-            consumed = reader.Position;
-            if (success)
-            {
-                examined = reader.Position;
-            }
-            return success;
-        }
-
         public bool ParseRequestLine(TRequestHandler handler, ref BufferReader<byte> reader)
         {
             // Look for CR/LF
@@ -143,29 +129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             handler.OnStartLine(method, httpVersion, target, path, query, customMethod, pathEncoded);
-        }
-
-        public bool ParseHeaders(
-            TRequestHandler handler,
-            in ReadOnlySequence<byte> buffer,
-            out SequencePosition consumed,
-            out SequencePosition examined,
-            out int consumedBytes)
-        {
-            var reader = new BufferReader<byte>(buffer);
-
-            consumed = reader.Sequence.Start;
-            examined = reader.Sequence.End;
-            consumedBytes = 0;
-
-            var success = ParseHeaders(handler, ref reader);
-            consumed = reader.Position;
-            consumedBytes = (int)reader.Consumed;
-            if (success)
-            {
-                examined = consumed;
-            }
-            return success;
         }
 
         public bool ParseHeaders(
