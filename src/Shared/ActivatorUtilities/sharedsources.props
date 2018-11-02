@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\ParameterDefaultValue\ParameterDefaultValue.cs">
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\</PackagePath>
+    </Compile>
+  </ItemGroup>
+</Project>
