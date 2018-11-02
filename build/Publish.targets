@@ -48,7 +48,8 @@
       Overwrite="true" />
 
     <ItemGroup>
-      <SharedFxVersionBadge Include="$(IntermediateDir)$(SharedFxInstallerName)-%(AllSharedFxRIDs.Identity)-version-badge.svg" />
+      <_AllSharedFxRIDs Include="$(SupportedRuntimeIdentifiers)" />
+      <SharedFxVersionBadge Include="$(IntermediateDir)aspnetcore-runtime-%(AllSharedFxRIDs.Identity)-version-badge.svg" />
     </ItemGroup>
 
     <GenerateSvgBadge

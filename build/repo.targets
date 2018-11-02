@@ -3,12 +3,14 @@
   <Import Project="PackageArchive.targets" />
   <Import Project="AzureIntegration.targets" />
   <Import Project="SharedFx.targets" />
-  <Import Project="SharedFxInstaller.targets" />
   <Import Project="CodeSign.targets" />
   <Import Project="Publish.targets" />
   <Import Project="buildorder.props" />
 
   <PropertyGroup>
+    <!-- Some projects need access to tasks bundled in KoreBuild. -->
+    <BuildProperties>$(BuildProperties);BuildToolsTaskAssembly=$(_BuildToolsAssembly)</BuildProperties>
+
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.g.props</GeneratedPackageVersionPropsPath>
     <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcesPropsPath>
     <GeneratedBrandingPropsPath>$(IntermediateDir)branding.g.props</GeneratedBrandingPropsPath>
@@ -29,7 +31,7 @@
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories;GetLineupPackageInfo">
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
-      <DesignTimeBuildProps>MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
+      <DesignTimeBuildProps>$(BuildProperties);MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
       <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp30PackageVersion=$(MicrosoftNETCoreApp30PackageVersion);</DesignTimeBuildProps>
       <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp22PackageVersion=$(MicrosoftNETCoreApp22PackageVersion);</DesignTimeBuildProps>
       <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp21PackageVersion=$(MicrosoftNETCoreApp21PackageVersion);</DesignTimeBuildProps>

@@ -6,14 +6,20 @@
 
     <Authors>Microsoft</Authors>
     <Company>Microsoft Corporation.</Company>
+    <RpmPackageVendor>.NET Foundation</RpmPackageVendor>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
+    <!-- The SPDX name for the source license. See https://spdx.org/licenses/. -->
+    <PackageLicenseType>Apache-2.0</PackageLicenseType>
     <!--
       Suppress a warning about upcoming deprecation of PackageLicenseUrl. When embedding licenses are supported,
       replace PackageLicenseUrl with PackageLicenseExpression.
     -->
     <NoWarn>$(NoWarn);NU5125</NoWarn>
+
+    <!-- Contact email address for NuGet packages and Linux installers. -->
+    <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
 
     <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
     <PackageProjectUrl>https://asp.net</PackageProjectUrl>
@@ -24,6 +30,12 @@
     <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
 
+    <SharedFxProductName>$(Product) $(PackageVersion) Shared Framework</SharedFxProductName>
+    <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub ($(RepositoryUrl)). We happily accept issues and PRs.</SharedFxDescription>
+  </PropertyGroup>
+
+  <!-- Compilation options -->
+  <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -40,6 +52,7 @@
   <Import Project="build\external-dependencies.props" />
   <Import Project="build\sources.props" />
 
+  <!-- Folder layout -->
   <PropertyGroup>
     <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepositoryRoot)artifacts\</ArtifactsDir>
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
@@ -48,25 +61,9 @@
     <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
     <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
     <PackageOutputPath>$(ArtifactsDir)build\</PackageOutputPath>
-
-    <!-- Defines the default RID of the platform currently running the build. -->
-    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win-x64</HostRid>
-    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx-x64</HostRid>
-    <HostRid Condition=" '$(HostRid)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux-x64</HostRid>
-
-    <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework. -->
-    <SupportedRuntimeIdentifiers>
-      win-x64;
-      win-x86;
-      win-arm;
-      osx-x64;
-      linux-musl-x64;
-      linux-x64;
-      linux-arm;
-      linux-arm64
-    </SupportedRuntimeIdentifiers>
   </PropertyGroup>
 
+  <Import Project="eng\targets\RuntimeIdentifiers.props" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\SharedFx.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.shfxproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
