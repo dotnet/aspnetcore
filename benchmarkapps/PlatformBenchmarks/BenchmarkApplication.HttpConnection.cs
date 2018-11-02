@@ -95,6 +95,8 @@ namespace PlatformBenchmarks
                         consumed = reader.Position;
                         examined = consumed;
                     }
+
+                    buffer = buffer.Slice(consumed);
                 }
 
                 if (state == State.Headers)
@@ -105,6 +107,8 @@ namespace PlatformBenchmarks
                         consumed = reader.Position;
                         examined = consumed;
                     }
+
+                    buffer = buffer.Slice(consumed);
                 }
 
                 if (state != State.Body && isCompleted)
