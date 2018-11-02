@@ -28,6 +28,8 @@
   <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
 
   <Target Name="ResolveDependenciesToPackageReferences" BeforeTargets="CollectPackageReferences">
+    <Error Text="Missing version information for dependencies:%0A - @(Dependency, '%0A - ')" Condition=" '%(Dependency.Version)' == '' " />
+
     <RepoTasks.ResolveVersionRange
       Items="@(Dependency)"
       Version="%(Version)"

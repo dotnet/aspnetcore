@@ -69,7 +69,6 @@
     <Dependency Include="Microsoft.AspNetCore.Mvc"                                     Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.NodeServices"                            Version="$(MicrosoftAspNetCoreNodeServicesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Owin"                                    Version="$(MicrosoftAspNetCoreOwinPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Razor.Design"                            Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Razor.Language"                          Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Razor.Runtime"                           Version="$(MicrosoftAspNetCoreRazorRuntimePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Razor"                                   Version="$(MicrosoftAspNetCoreRazorPackageVersion)" />
