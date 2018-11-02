@@ -69,7 +69,7 @@
     <ShippedRepository Include="HttpAbstractions" />
     <ShippedRepository Include="HttpClientFactory" />
     <ShippedRepository Include="HttpSysServer" />
-    <ShippedRepository Include="IISIntegration" />
+    <ShippedRepository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <ShippedRepository Include="JavaScriptServices" />
     <ShippedRepository Include="JsonPatch" />
     <ShippedRepository Include="KestrelHttpServer" />
