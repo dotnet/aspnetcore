@@ -2,6 +2,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <PackageId>Microsoft.AspNetCore.Certificates.Generation.Sources</PackageId>
+    <IsProductComponent>true</IsProductComponent>
   </PropertyGroup>
 </Project>
