@@ -19,6 +19,11 @@
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersCompositePackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsFileProvidersCompositePackageVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>

@@ -14,7 +14,7 @@
     <ExternalDependency Include="Microsoft.AspNetCore.Analyzer.Testing" Version="$(MicrosoftAspNetCoreAnalyzerTestingPackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Version="$(MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)"  />
+    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
@@ -24,6 +24,11 @@
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="$(MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileSystemGlobbing"  Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.NonCapturingTimer.Sources" Version="$(MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Version="$(MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion)" />
