@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>MSBuild task to generate a manifest that can be used by Microsoft.Extensions.FileProviders.Embedded to preserve
+    metadata of the files embedded in the assembly at compilation time.</Description>
+    <TargetFrameworks>netstandard1.5;net461</TargetFrameworks>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <EnableApiCheck>false</EnableApiCheck>
+    <IsPackable>false</IsPackable>
+    <IsImplementationProject>false</IsImplementationProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build" PrivateAssets="All" />
+    <Reference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.5'">
+    <Reference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <Reference Include="Microsoft.Build.Utilities.v4.0" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
