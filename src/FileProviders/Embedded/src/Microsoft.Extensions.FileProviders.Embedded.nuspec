@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <projectUrl>$projectUrl$</projectUrl>
+    <iconUrl>$iconUrl$</iconUrl>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+    <tags>$tags$</tags>
+    <repository type="git" url="$repositoryUrl$" commit="$repositoryCommit$" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$version$" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+
+  <files>
+    <file src="$OutputBinary$" target="lib\$targetframework$\" />
+    <file src="$OutputSymbol$" target="lib\$targetframework$\" />
+    <file src="$OutputDocumentation$" target="lib\$targetframework$\" />
+    <file src="build\**\*" target="build\" />
+    <file src="buildMultiTargeting\**\*" target="buildMultiTargeting\" />
+    <file src="$TaskAssemblyNetStandard$" target="tasks\netstandard1.5\$AssemblyName$.Manifest.Task.dll" />
+    <file src="$TaskSymbolNetStandard$" target="tasks\netstandard1.5\$AssemblyName$.Manifest.Task.pdb" />
+    <file src="$TaskAssemblyNet461$" target="tasks\net461\$AssemblyName$.Manifest.Task.dll" />
+    <file src="$TaskSymbolNet461$" target="tasks\net461\$AssemblyName$.Manifest.Task.pdb" />
+  </files>
+</package>
