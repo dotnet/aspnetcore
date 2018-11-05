@@ -25,8 +25,8 @@
     <file src="$OutputDocumentation$" target="lib\$targetframework$\" />
     <file src="build\**\*" target="build\" />
     <file src="buildMultiTargeting\**\*" target="buildMultiTargeting\" />
-    <file src="$TaskAssemblyNetStandard$" target="tasks\netstandard1.5\$AssemblyName$.Manifest.Task.dll" />
-    <file src="$TaskSymbolNetStandard$" target="tasks\netstandard1.5\$AssemblyName$.Manifest.Task.pdb" />
+    <file src="$TaskAssemblyNetStandard$" target="tasks\netstandard2.0\$AssemblyName$.Manifest.Task.dll" />
+    <file src="$TaskSymbolNetStandard$" target="tasks\netstandard2.0\$AssemblyName$.Manifest.Task.pdb" />
     <file src="$TaskAssemblyNet461$" target="tasks\net461\$AssemblyName$.Manifest.Task.dll" />
     <file src="$TaskSymbolNet461$" target="tasks\net461\$AssemblyName$.Manifest.Task.pdb" />
   </files>
