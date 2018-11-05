@@ -12,6 +12,12 @@
     <ProjectReference Include="..\..\Manifest.MSBuildTask\src\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/$(TargetFramework)/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(MSBuildThisFileDirectory)..\FS.Embedded.Manifest.Task\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.dll" PackagePath="tasks/netstandard1.5/Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(MSBuildThisFileDirectory)..\FS.Embedded.Manifest.Task\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.dll" PackagePath="tasks/net461/Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;DebugSymbolsProjectOutputGroup;">
 
     <PropertyGroup>
