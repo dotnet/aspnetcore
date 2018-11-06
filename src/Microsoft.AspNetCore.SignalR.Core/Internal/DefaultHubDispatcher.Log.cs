@@ -102,8 +102,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             public static void SendingResult(ILogger logger, string invocationId, ObjectMethodExecutor objectMethodExecutor)
             {
-                var resultType = objectMethodExecutor.AsyncResultType == null ? objectMethodExecutor.MethodReturnType : objectMethodExecutor.AsyncResultType;
-                _sendingResult(logger, invocationId, resultType.FullName, null);
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    var resultType = objectMethodExecutor.AsyncResultType == null ? objectMethodExecutor.MethodReturnType : objectMethodExecutor.AsyncResultType;
+                    _sendingResult(logger, invocationId, resultType.FullName, null);
+                }
             }
 
             public static void FailedInvokingHubMethod(ILogger logger, string hubMethod, Exception exception)
