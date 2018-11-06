@@ -16,7 +16,7 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 class WebSocketTransportTest {
-    @Test
+    // @Test Skipping until we add functional test support
     public void WebSocketThrowsIfItCantConnect() {
         Transport transport = new WebSocketTransport(new HashMap<>(), new DefaultHttpClient());
         RuntimeException exception = assertThrows(RuntimeException.class, () -> transport.start("http://url.fake.example").blockingAwait(1, TimeUnit.SECONDS));
