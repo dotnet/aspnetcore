@@ -26,10 +26,6 @@
 	path = modules/Caching
 	url = https://github.com/aspnet/Caching.git
 	branch = release/2.2
-[submodule "modules/Configuration"]
-	path = modules/Configuration
-	url = https://github.com/aspnet/Configuration.git
-	branch = release/2.2
 [submodule "modules/CORS"]
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git
