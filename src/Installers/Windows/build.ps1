@@ -13,6 +13,7 @@ param(
     [Alias("x64")]
     [string]$Runtime64Zip,
     [string]$BuildNumber = 't000',
+    [switch]$IsFinalBuild,
     [string]$SignType = '',
     [string]$PackageVersionPropsUrl = $null,
     [string]$AccessTokenSuffix = $null,
@@ -89,6 +90,7 @@ try {
             "-p:Configuration=$Configuration" `
             "-p:BuildNumber=$BuildNumber" `
             "-p:SignType=$SignType" `
+            "-p:IsFinalBuild=$IsFinalBuild" `
             "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `
             @msbuildArgs
     }
