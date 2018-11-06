@@ -22,7 +22,7 @@ namespace FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact(Skip = "Unblocking the build - https://github.com/aspnet/MvcPrecompilation/issues/224")]
+        [Fact]
         public async Task Precompilation_WorksForSimpleApps()
         {
             using (StartLog(out var loggerFactory))
