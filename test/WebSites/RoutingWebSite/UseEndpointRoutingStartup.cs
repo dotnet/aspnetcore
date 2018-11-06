@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
@@ -34,11 +35,11 @@ namespace RoutingWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseEndpointRouting(builder =>
+            app.UseEndpointRouting(routes =>
             {
-                builder.MapHello("/helloworld", "World");
+                routes.MapHello("/helloworld", "World");
 
-                builder.MapGet(
+                routes.MapGet(
                     "/",
                     (httpContext) =>
                     {
@@ -56,7 +57,7 @@ namespace RoutingWebSite
                         response.ContentType = "text/plain";
                         return response.WriteAsync(sb.ToString());
                     });
-                builder.MapGet(
+                routes.MapGet(
                     "/plaintext",
                     (httpContext) =>
                     {
@@ -67,7 +68,7 @@ namespace RoutingWebSite
                         response.ContentLength = payloadLength;
                         return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
                     });
-                builder.MapGet(
+                routes.MapGet(
                     "/withconstraints/{id:endsWith(_001)}",
                     (httpContext) =>
                     {
@@ -76,7 +77,7 @@ namespace RoutingWebSite
                         response.ContentType = "text/plain";
                         return response.WriteAsync("WithConstraints");
                     });
-                builder.MapGet(
+                routes.MapGet(
                     "/withoptionalconstraints/{id:endsWith(_001)?}",
                     (httpContext) =>
                     {
@@ -85,7 +86,7 @@ namespace RoutingWebSite
                         response.ContentType = "text/plain";
                         return response.WriteAsync("withoptionalconstraints");
                     });
-                builder.MapGet(
+                routes.MapGet(
                     "/WithSingleAsteriskCatchAll/{*path}",
                     (httpContext) =>
                     {
@@ -98,7 +99,7 @@ namespace RoutingWebSite
                             "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
                     },
                     new RouteValuesAddressMetadata(routeName: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
-                builder.MapGet(
+                routes.MapGet(
                     "/WithDoubleAsteriskCatchAll/{**path}",
                     (httpContext) =>
                     {
@@ -113,9 +114,22 @@ namespace RoutingWebSite
                     new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
             });
 
+            app.Map("/Branch1", branch => SetupBranch(branch, "Branch1"));
+            app.Map("/Branch2", branch => SetupBranch(branch, "Branch2"));
+
             app.UseStaticFiles();
 
             // Imagine some more stuff here...
+
+            app.UseEndpoint();
+        }
+
+        private void SetupBranch(IApplicationBuilder app, string name)
+        {
+            app.UseEndpointRouting(routes =>
+            {
+                routes.MapGet("api/get/{id}", (context) => context.Response.WriteAsync($"{name} - API Get {context.GetRouteData().Values["id"]}"));
+            });
 
             app.UseEndpoint();
         }

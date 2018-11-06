@@ -24,6 +24,22 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             _client.BaseAddress = new Uri("http://localhost");
         }
 
+        [Theory]
+        [InlineData("Branch1")]
+        [InlineData("Branch2")]
+        public async Task Routing_CanRouteRequest_ToBranchRouter(string branch)
+        {
+            // Arrange
+            var message = new HttpRequestMessage(HttpMethod.Get, $"{branch}/api/get/5");
+
+            // Act
+            var response = await _client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal($"{branch} - API Get 5", await response.Content.ReadAsStringAsync());
+        }
+
         [Fact]
         public async Task MatchesRootPath_AndReturnsPlaintext()
         {
