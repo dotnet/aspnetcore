@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <RepositoryBuildOrder Include="JsonPatch" Order="2" />
-    <RepositoryBuildOrder Include="Options" Order="4" />
     <RepositoryBuildOrder Include="DotNetTools" Order="4" />
     <RepositoryBuildOrder Include="Caching" Order="5" />
     <RepositoryBuildOrder Include="HtmlAbstractions" Order="5" />

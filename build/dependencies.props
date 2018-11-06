@@ -65,6 +65,9 @@
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>3.0.0-preview-181106-04</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>3.0.0-preview-181106-04</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>3.0.0-preview-181106-04</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>3.0.0-alpha1-10706</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>3.0.0-alpha1-10706</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>3.0.0-alpha1-10706</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>3.0.0-preview-181106-04</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>3.0.0-preview-181106-04</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsProcessSourcesPackageVersion>3.0.0-preview-181106-04</MicrosoftExtensionsProcessSourcesPackageVersion>

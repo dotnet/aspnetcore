@@ -60,7 +60,6 @@
     <Repository Include="Logging" />
     <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <Repository Include="Mvc" />
-    <Repository Include="Options" />
     <Repository Include="Razor" />
     <Repository Include="ResponseCaching" />
     <Repository Include="Routing" />
