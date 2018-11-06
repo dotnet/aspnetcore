@@ -81,6 +81,13 @@ namespace Microsoft.AspNetCore.Builder.Internal
         {
             RequestDelegate app = context =>
             {
+                // Implicitly execute matched endpoint at the end of the pipeline instead of returning 404
+                var endpointRequestDelegate = context.GetEndpoint()?.RequestDelegate;
+                if (endpointRequestDelegate != null)
+                {
+                    return endpointRequestDelegate(context);
+                }
+
                 context.Response.StatusCode = 404;
                 return Task.CompletedTask;
             };
