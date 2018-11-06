@@ -10,6 +10,7 @@
     <ExcludeFromTest Include="$(RepositoryRoot)test\TestSites\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\IISTestSite\*.csproj" />
     <ExcludeSolutions Include="$(RepositoryRoot)IISIntegration.NoV1.sln" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\**\*.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SkipIISTests)' == 'true'" >
