@@ -80,7 +80,8 @@
       },
       {
         "Name": "IISIntegration",
-        "Manager": "muratg"
+        "Manager": "muratg",
+        "IssuesOnHomeRepo": true
       },
       {
         "Name": "MusicStore",
