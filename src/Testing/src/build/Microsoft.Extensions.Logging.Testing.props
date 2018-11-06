@@ -1,0 +1,8 @@
+﻿<Project>
+  <ItemGroup>
+    <AssemblyAttribute Include="Xunit.TestFramework">
+      <_Parameter1>Microsoft.Extensions.Logging.Testing.LoggedTestFramework</_Parameter1>
+      <_Parameter2>Microsoft.Extensions.Logging.Testing</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>
