@@ -4,6 +4,7 @@
     <!-- Third-party components in Microsoft.AspNetCore.App which should be signed.  -->
       <!-- Microsoft.AspNetCore.App -->
       <FilesToSign Include="Newtonsoft.Json.dll"                                           Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Newtonsoft.Json.Bson.dll"                                      Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Remotion.Linq.dll"                                             Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Interactive.Async.dll"                                  Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
 
