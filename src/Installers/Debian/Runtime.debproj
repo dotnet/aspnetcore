@@ -30,11 +30,11 @@
 
     <!-- PackageVersion does not match the ASP.NET Core runtime verison. -->
     <PackageVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</PackageVersion>
-    <!-- Deb installers are versioned as M.N.P~Build following the core-setup convention -->
-    <PackageVersion Condition="'$(IncludePreReleaseLabelInPackageVersion)' == 'true'">$(PackageVersion)~$(BuildNumber)</PackageVersion>
+    <!-- Deb installers are versioned as M.N.P~PreReleaseLabel-Build following the core-setup convention -->
+    <PackageVersion Condition="'$(IncludePreReleaseLabelInPackageVersion)' == 'true'">$(PackageVersion)~$(PreReleaseLabel)-$(BuildNumber)</PackageVersion>
     <PackageRevision>1</PackageRevision>
 
-    <!-- Needed some creativity to convert the PackageVersion M.N.P-Build to the installer version M.N.P~Build, The conditional handles stabilized builds -->
+    <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseLabel-Build to the installer version M.N.P~PreReleaseLabel-Build, The conditional handles stabilized builds -->
     <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppPackageVersion)</DotnetRuntimeDependencyVersion>
     <DotnetRuntimeDependencyVersion Condition="$(DotnetRuntimeDependencyVersion.Contains('-'))">$(DotnetRuntimeDependencyVersion.Substring(0, $(DotnetRuntimeDependencyVersion.IndexOf('-'))))~$(DotnetRuntimeDependencyVersion.Substring($([MSBuild]::Add($(DotnetRuntimeDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
   </PropertyGroup>
