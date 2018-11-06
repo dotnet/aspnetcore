@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
     public class RedisServerFixture<TStartup> : IDisposable
         where TStartup : class
     {
-        public ServerFixture<TStartup> FirstServer { get; private set; }
-        public ServerFixture<TStartup> SecondServer { get; private set; }
+        public InProcessTestServer<TStartup> FirstServer { get; private set; }
+        public InProcessTestServer<TStartup> SecondServer { get; private set; }
 
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             SecondServer = StartServer();
         }
 
-        private ServerFixture<TStartup> StartServer()
+        private InProcessTestServer<TStartup> StartServer()
         {
             try
             {
-                return new ServerFixture<TStartup>(_loggerFactory);
+                return new InProcessTestServer<TStartup>(_loggerFactory);
             }
             catch (Exception ex)
             {

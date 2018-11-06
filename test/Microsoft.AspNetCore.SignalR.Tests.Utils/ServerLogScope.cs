@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class ServerLogScope : IDisposable
     {
-        private readonly ServerFixture _serverFixture;
+        private readonly InProcessTestServer _serverFixture;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IDisposable _wrappedDisposable;
         private readonly ConcurrentDictionary<string, ILogger> _serverLoggers;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly object _lock;
         private bool _disposed;
 
-        public ServerLogScope(ServerFixture serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
+        public ServerLogScope(InProcessTestServer serverFixture, ILoggerFactory loggerFactory, IDisposable wrappedDisposable)
         {
             _loggerFactory = loggerFactory;
             _serverFixture = serverFixture;

@@ -5,20 +5,17 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public abstract class ServerFixture : IDisposable
+    public abstract class InProcessTestServer : IDisposable
     {
         internal abstract event Action<LogRecord> ServerLogged;
 
@@ -29,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public abstract void Dispose();
     }
 
-    public class ServerFixture<TStartup> : ServerFixture
+    public class InProcessTestServer<TStartup> : InProcessTestServer
         where TStartup : class
     {
         private readonly ILoggerFactory _loggerFactory;
@@ -51,19 +48,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public override string Url => _url;
 
-        public ServerFixture() : this(loggerFactory: null)
+        public InProcessTestServer() : this(loggerFactory: null)
         {
         }
 
-        public ServerFixture(ILoggerFactory loggerFactory)
+        public InProcessTestServer(ILoggerFactory loggerFactory)
         {
             _logSinkProvider = new LogSinkProvider();
 
             if (loggerFactory == null)
             {
                 var testLog = AssemblyTestLog.ForAssembly(typeof(TStartup).Assembly);
-                _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}",
-                    out _loggerFactory, nameof(ServerFixture));
+                _logToken = testLog.StartTestLog(null, $"{nameof(InProcessTestServer<TStartup>)}_{typeof(TStartup).Name}",
+                    out _loggerFactory, nameof(InProcessTestServer));
             }
             else
             {
@@ -72,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             _loggerFactory = new WrappingLoggerFactory(_loggerFactory);
             _loggerFactory.AddProvider(_logSinkProvider);
-            _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
+            _logger = _loggerFactory.CreateLogger<InProcessTestServer<TStartup>>();
 
             StartServer();
         }
