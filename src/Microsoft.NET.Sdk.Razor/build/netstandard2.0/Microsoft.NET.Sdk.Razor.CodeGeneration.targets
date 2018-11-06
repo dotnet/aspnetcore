@@ -39,7 +39,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorGenerateInputsHash></_RazorGenerateInputsHash>
     <_RazorGenerateInputsHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorCoreGenerate.cache</_RazorGenerateInputsHashFile>
 
-    <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(RazorSdkDirectoryRoot)tools\netcoreapp2.0\rzc.dll</_RazorToolAssembly>
+    <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(RazorSdkDirectoryRoot)tools\netcoreapp3.0\rzc.dll</_RazorToolAssembly>
   </PropertyGroup>
 
   <!--

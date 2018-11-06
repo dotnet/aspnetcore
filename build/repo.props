@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
   </ItemGroup>
 </Project>

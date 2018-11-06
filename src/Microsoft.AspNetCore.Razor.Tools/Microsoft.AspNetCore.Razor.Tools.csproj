@@ -3,13 +3,16 @@
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This assembly contains infrastructure supporting Razor MSBuild integration.</Description>
 
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <AssemblyName>rzc</AssemblyName>
 
     <!-- This is not a package, it is part of Razor SDK. -->
     <IsPackable>false</IsPackable>
     <EnableApiCheck>false</EnableApiCheck>
+
+    <!-- Don't produce rzc.exe -->
+    <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 
   <ItemGroup>

@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         // Used by the test framework to set the 'base' name for test files.
         public static string FileName
         {
-#if NET46
+#if NETFRAMEWORK
             get
             {
                 var handle = (ObjectHandle)CallContext.LogicalGetData("IntegrationTestBase_FileName");
@@ -123,9 +123,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 CallContext.LogicalSetData("IntegrationTestBase_FileName", new ObjectHandle(value));
             }
-#elif NETCOREAPP2_2
+#elif NETCOREAPP
             get { return _fileName.Value; }
             set { _fileName.Value = value; }
+#else
+#error Target frameworks need to be updated            
 #endif
         }
 

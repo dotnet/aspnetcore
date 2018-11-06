@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
-    <TargetFrameworks>netcoreapp2.2;netstandard2.0;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;netstandard2.0;net46</TargetFrameworks>
 
     <TargetName>Microsoft.NET.Sdk.Razor.Tasks</TargetName>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <Serviceable>true</Serviceable>
     <SdkOutputPath>bin\$(Configuration)\sdk-output\</SdkOutputPath>
-
     <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks sicne they need to be backwards compatible. -->
   </PropertyGroup>
 
@@ -17,7 +16,7 @@
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
 
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netstandard2.0'" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp2.2'" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp3.0'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,7 +38,7 @@
     <!-- Layout tasks, compiler, and extensions in the sdk-output folder. The entire folder structure gets packaged as-is into the SDK -->
     <MSBuild
       Projects="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj"
-      Properties="PublishDir=$(MSBuildProjectDirectory)\$(SdkOutputPath)tools\netcoreapp2.0;TargetFramework=netcoreapp2.0"
+      Properties="PublishDir=$(MSBuildProjectDirectory)\$(SdkOutputPath)tools\netcoreapp3.0;TargetFramework=netcoreapp3.0"
       Targets="Publish" />
 
     <ItemGroup>
@@ -61,42 +60,42 @@
     <SignedPackageFile Include="$(SdkOutputPath)tasks\netstandard2.0\$(TargetName).dll" Certificate="$(AssemblySigningCertName)"  />
     <SignedPackageFile Include="$(SdkOutputPath)extensions\**\*.dll" Certificate="$(AssemblySigningCertName)"  />
 
-    <SignedPackageFile Include="$(SdkOutputPath)tools\netcoreapp2.0\rzc.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="$(SdkOutputPath)tools\netcoreapp2.0\Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="$(SdkOutputPath)tools\netcoreapp3.0\rzc.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(SdkOutputPath)tools\netcoreapp3.0\Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
 
     <!-- Binaries that should be signed by corefx/roslyn -->
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\Microsoft.CodeAnalysis.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\cs\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\de\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\es\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\fr\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\it\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\ja\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\ko\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\pl\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\pt-BR\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\ru\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\tr\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\Microsoft.CodeAnalysis.CSharp.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\System.Collections.Immutable.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\System.Reflection.Metadata.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\runtimes\unix\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp2.0\runtimes\win\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\Microsoft.CodeAnalysis.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\cs\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\de\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\es\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\fr\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\it\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\ja\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\ko\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\pl\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\pt-BR\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\ru\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\tr\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\Microsoft.CodeAnalysis.CSharp.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\System.Collections.Immutable.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\System.Reflection.Metadata.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\runtimes\unix\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\runtimes\win\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="LayoutDependencies">

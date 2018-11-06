@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         // Used by the test framework to set the 'base' name for test files.
         public static string FileName
         {
-#if NET46
+#if NETFRAMEWORK
             get
             {
                 var handle = (ObjectHandle)CallContext.LogicalGetData("ParserTestBase_FileName");
@@ -67,15 +67,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 CallContext.LogicalSetData("ParserTestBase_FileName", new ObjectHandle(value));
             }
-#elif NETCOREAPP2_2
+#elif NETCOREAPP
             get { return _fileName.Value; }
             set { _fileName.Value = value; }
+#else
+#error Target frameworks need to be updated.
 #endif
         }
 
         public static bool IsTheory
         {
-#if NET46
+#if NETFRAMEWORK
             get
             {
                 var handle = (ObjectHandle)CallContext.LogicalGetData("ParserTestBase_IsTheory");
@@ -85,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 CallContext.LogicalSetData("ParserTestBase_IsTheory", new ObjectHandle(value));
             }
-#elif NETCOREAPP2_2
+#elif NETCOREAPP
             get { return _isTheory.Value; }
             set { _isTheory.Value = value; }
 #endif
