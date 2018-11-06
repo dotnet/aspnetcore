@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
@@ -15,7 +14,9 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 {
     public class AssemblyTestLogTests : LoggedTest
     {
-        private static readonly Assembly ThisAssembly = typeof(AssemblyTestLog).GetTypeInfo().Assembly;
+        private static readonly Assembly ThisAssembly = typeof(AssemblyTestLogTests).GetTypeInfo().Assembly;
+        private static readonly string ThisAssemblyName = ThisAssembly.GetName().Name;
+        private static readonly string TFM = new DirectoryInfo(AppContext.BaseDirectory).Name;
 
         [Fact]
         public void FullClassNameUsedWhenShortClassNameAttributeNotSpecified()
@@ -35,7 +36,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void TestLogWritesToITestOutputHelper()
         {
             var output = new TestTestOutputHelper();
-            var assemblyLog = AssemblyTestLog.Create("NonExistant.Test.Assembly", baseDirectory: null);
+            var assemblyLog = AssemblyTestLog.Create(ThisAssemblyName, baseDirectory: null);
 
             using (assemblyLog.StartTestLog(output, "NonExistant.Test.Class", out var loggerFactory))
             {
@@ -46,20 +47,23 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 logger.LogTrace("Trace!");
             }
 
-            Assert.Equal(@"[TIMESTAMP] TestLifetime Information: Starting test TestLogWritesToITestOutputHelper
-[TIMESTAMP] TestLogger Information: Information!
-[TIMESTAMP] TestLifetime Information: Finished test TestLogWritesToITestOutputHelper in DURATION
-", MakeConsistent(output.Output), ignoreLineEndingDifferences: true);
+            var testLogContent = MakeConsistent(output.Output);
+
+            Assert.Equal(
+@"[OFFSET] TestLifetime Information: Starting test TestLogWritesToITestOutputHelper at TIMESTAMP
+[OFFSET] TestLogger Information: Information!
+[OFFSET] TestLifetime Information: Finished test TestLogWritesToITestOutputHelper in DURATION
+", testLogContent, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
         private Task TestLogEscapesIllegalFileNames() =>
             RunTestLogFunctionalTest((tempDir) =>
             {
-                var illegalTestName = "Testing-https://localhost:5000";
-                var escapedTestName = "Testing-https_localhost_5000";
-                using (var testAssemblyLog = AssemblyTestLog.Create("FakeTestAssembly", baseDirectory: tempDir))
-                using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, resolvedTestName: out var resolvedTestname, testName: illegalTestName))
+                var illegalTestName = "T:e/s//t";
+                var escapedTestName = "T_e_s_t";
+                using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssemblyName, baseDirectory: tempDir))
+                using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, resolvedTestName: out var resolvedTestname, out var _, testName: illegalTestName))
                 {
                     Assert.Equal(escapedTestName, resolvedTestname);
                 }
@@ -73,11 +77,11 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 // but it's also testing the test logging facility. So this is pretty meta ;)
                 var logger = LoggerFactory.CreateLogger("Test");
 
-                using (var testAssemblyLog = AssemblyTestLog.Create("FakeTestAssembly", tempDir))
+                using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssemblyName, tempDir))
                 {
                     logger.LogInformation("Created test log in {baseDirectory}", tempDir);
 
-                    using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, testName: "FakeTestName"))
+                    using (testAssemblyLog.StartTestLog(output: null, className: $"{ThisAssemblyName}.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, testName: "FakeTestName"))
                     {
                         var testLogger = testLoggerFactory.CreateLogger("TestLogger");
                         testLogger.LogInformation("Information!");
@@ -87,8 +91,8 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 
                 logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
 
-                var globalLogPath = Path.Combine(tempDir, "FakeTestAssembly", RuntimeInformation.FrameworkDescription.TrimStart('.'), "global.log");
-                var testLog = Path.Combine(tempDir, "FakeTestAssembly", RuntimeInformation.FrameworkDescription.TrimStart('.'), "FakeTestClass", $"FakeTestName.log");
+                var globalLogPath = Path.Combine(tempDir, ThisAssemblyName, TFM, "global.log");
+                var testLog = Path.Combine(tempDir, ThisAssemblyName, TFM, "FakeTestClass", "FakeTestName.log");
 
                 Assert.True(File.Exists(globalLogPath), $"Expected global log file {globalLogPath} to exist");
                 Assert.True(File.Exists(testLog), $"Expected test log file {testLog} to exist");
@@ -96,14 +100,16 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 var globalLogContent = MakeConsistent(File.ReadAllText(globalLogPath));
                 var testLogContent = MakeConsistent(File.ReadAllText(testLog));
 
-                Assert.Equal(@"[GlobalTestLog] [Information] Global Test Logging initialized. Set the 'ASPNETCORE_TEST_LOG_DIR' Environment Variable in order to create log files on disk.
-[GlobalTestLog] [Information] Starting test ""FakeTestName""
-[GlobalTestLog] [Information] Finished test ""FakeTestName"" in DURATION
+                Assert.Equal(
+@"[OFFSET] [GlobalTestLog] [Information] Global Test Logging initialized at TIMESTAMP. Configure the output directory via 'LoggingTestingFileLoggingDirectory' MSBuild property or set 'LoggingTestingDisableFileLogging' to 'true' to disable file logging.
+[OFFSET] [GlobalTestLog] [Information] Starting test FakeTestName
+[OFFSET] [GlobalTestLog] [Information] Finished test FakeTestName in DURATION
 ", globalLogContent, ignoreLineEndingDifferences: true);
-            Assert.Equal(@"[TestLifetime] [Information] Starting test ""FakeTestName""
-[TestLogger] [Information] Information!
-[TestLogger] [Verbose] Trace!
-[TestLifetime] [Information] Finished test ""FakeTestName"" in DURATION
+                Assert.Equal(
+@"[OFFSET] [TestLifetime] [Information] Starting test FakeTestName at TIMESTAMP
+[OFFSET] [TestLogger] [Information] Information!
+[OFFSET] [TestLogger] [Verbose] Trace!
+[OFFSET] [TestLifetime] [Information] Finished test FakeTestName in DURATION
 ", testLogContent, ignoreLineEndingDifferences: true);
             });
 
@@ -113,18 +119,18 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             {
                 var longTestName = new string('0', 50) + new string('1', 50) + new string('2', 50) + new string('3', 50) + new string('4', 50);
                 var logger = LoggerFactory.CreateLogger("Test");
-                using (var testAssemblyLog = AssemblyTestLog.Create("FakeTestAssembly", tempDir))
+                using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssemblyName, tempDir))
                 {
                     logger.LogInformation("Created test log in {baseDirectory}", tempDir);
 
-                    using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, testName: longTestName))
+                    using (testAssemblyLog.StartTestLog(output: null, className: $"{ThisAssemblyName}.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, testName: longTestName))
                     {
                         testLoggerFactory.CreateLogger("TestLogger").LogInformation("Information!");
                     }
                 }
                 logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
 
-                var testLogFiles = new DirectoryInfo(Path.Combine(tempDir, "FakeTestAssembly", RuntimeInformation.FrameworkDescription.TrimStart('.'), "FakeTestClass")).EnumerateFiles();
+                var testLogFiles = new DirectoryInfo(Path.Combine(tempDir, ThisAssemblyName, TFM, "FakeTestClass")).EnumerateFiles();
                 var testLog = Assert.Single(testLogFiles);
                 var testFileName = Path.GetFileNameWithoutExtension(testLog.Name);
 
@@ -139,13 +145,13 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             RunTestLogFunctionalTest((tempDir) =>
             {
                 var logger = LoggerFactory.CreateLogger("Test");
-                using (var testAssemblyLog = AssemblyTestLog.Create("FakeTestAssembly", tempDir))
+                using (var testAssemblyLog = AssemblyTestLog.Create(ThisAssemblyName, tempDir))
                 {
                     logger.LogInformation("Created test log in {baseDirectory}", tempDir);
 
                     for (var i = 0; i < 10; i++)
                     {
-                        using (testAssemblyLog.StartTestLog(output: null, className: "FakeTestAssembly.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, testName: "FakeTestName"))
+                        using (testAssemblyLog.StartTestLog(output: null, className: $"{ThisAssemblyName}.FakeTestClass", loggerFactory: out var testLoggerFactory, minLogLevel: LogLevel.Trace, testName: "FakeTestName"))
                         {
                             testLoggerFactory.CreateLogger("TestLogger").LogInformation("Information!");
                         }
@@ -154,16 +160,17 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 logger.LogInformation("Finished test log in {baseDirectory}", tempDir);
 
                 // The first log file exists
-                Assert.True(File.Exists(Path.Combine(tempDir, "FakeTestAssembly", RuntimeInformation.FrameworkDescription.TrimStart('.'), "FakeTestClass", $"FakeTestName.log")));
+                Assert.True(File.Exists(Path.Combine(tempDir, ThisAssemblyName, TFM, "FakeTestClass", "FakeTestName.log")));
 
                 // Subsequent files exist
                 for (var i = 0; i < 9; i++)
                 {
-                    Assert.True(File.Exists(Path.Combine(tempDir, "FakeTestAssembly", RuntimeInformation.FrameworkDescription.TrimStart('.'), "FakeTestClass", $"FakeTestName.{i}.log")));
+                    Assert.True(File.Exists(Path.Combine(tempDir, ThisAssemblyName, TFM, "FakeTestClass", $"FakeTestName.{i}.log")));
                 }
             });
 
         private static readonly Regex TimestampRegex = new Regex(@"\d+-\d+-\d+T\d+:\d+:\d+");
+        private static readonly Regex TimestampOffsetRegex = new Regex(@"\d+\.\d+s");
         private static readonly Regex DurationRegex = new Regex(@"[^ ]+s$");
 
         private async Task RunTestLogFunctionalTest(Action<string> action, [CallerMemberName] string testName = null)
@@ -197,10 +204,10 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
                 {
                     var strippedPrefix = line.IndexOf("[") >= 0 ? line.Substring(line.IndexOf("[")) : line;
 
-                    var strippedDuration =
-                        DurationRegex.Replace(strippedPrefix, "DURATION");
+                    var strippedDuration = DurationRegex.Replace(strippedPrefix, "DURATION");
                     var strippedTimestamp = TimestampRegex.Replace(strippedDuration, "TIMESTAMP");
-                    return strippedTimestamp;
+                    var strippedTimestampOffset = TimestampOffsetRegex.Replace(strippedTimestamp, "OFFSET");
+                    return strippedTimestampOffset;
                 }));
         }
     }
