@@ -8,6 +8,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     /// <summary>
     /// Settings for Azure diagnostics logging.
     /// </summary>
+    [Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is AzureBlobLoggerOptions.")]
     public class AzureAppServicesDiagnosticsSettings
     {
         private TimeSpan _blobCommitPeriod = TimeSpan.FromSeconds(5);

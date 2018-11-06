@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -94,6 +95,7 @@ namespace Microsoft.Extensions.Logging
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
         /// <param name="factory">The extension method argument</param>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is AddAzureWebAppDiagnostics(this ILoggingBuilder builder).")]
         public static ILoggerFactory AddAzureWebAppDiagnostics(this ILoggerFactory factory)
         {
             return AddAzureWebAppDiagnostics(factory, new AzureAppServicesDiagnosticsSettings());
@@ -104,6 +106,7 @@ namespace Microsoft.Extensions.Logging
         /// </summary>
         /// <param name="factory">The extension method argument</param>
         /// <param name="settings">The setting object to configure loggers.</param>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is AddAzureWebAppDiagnostics(this ILoggingBuilder builder).")]
         public static ILoggerFactory AddAzureWebAppDiagnostics(this ILoggerFactory factory, AzureAppServicesDiagnosticsSettings settings)
         {
             var context = WebAppContext.Default;

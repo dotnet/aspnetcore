@@ -1,8 +1,23 @@
 ﻿<Project>
-  <ItemGroup>
-    <AssemblyAttribute Include="Xunit.TestFramework">
-      <_Parameter1>Microsoft.Extensions.Logging.Testing.LoggedTestFramework</_Parameter1>
-      <_Parameter2>Microsoft.Extensions.Logging.Testing</_Parameter2>
-    </AssemblyAttribute>
-  </ItemGroup>
+  <PropertyGroup>
+    <!-- Priority: LoggingTestingDisableFileLogging > LoggingTestingFileLoggingDirectory > ASPNETCORE_TEST_LOG_DIR > Default location -->
+    <LoggingTestingFileLoggingDirectory Condition="'$(LoggingTestingFileLoggingDirectory)' == ''">$(ASPNETCORE_TEST_LOG_DIR)</LoggingTestingFileLoggingDirectory>
+    <LoggingTestingFileLoggingDirectory Condition="'$(LoggingTestingFileLoggingDirectory)' == '' AND '$(RepositoryRoot)' != ''">$(RepositoryRoot)artifacts\logs\</LoggingTestingFileLoggingDirectory>
+  </PropertyGroup>
+
+  <Target Name="SetLoggingTestingAssemblyAttributes"
+    BeforeTargets="GetAssemblyAttributes"
+    Condition="'$(GenerateLoggingTestingAssemblyAttributes)' != 'false'">
+    <ItemGroup>
+      <AssemblyAttribute Include="Xunit.TestFramework">
+        <_Parameter1>Microsoft.Extensions.Logging.Testing.LoggedTestFramework</_Parameter1>
+        <_Parameter2>Microsoft.Extensions.Logging.Testing</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="Microsoft.Extensions.Logging.Testing.TestFrameworkFileLoggerAttribute">
+        <_Parameter1>$(TargetFramework)</_Parameter1>
+        <_Parameter2 Condition="'$(LoggingTestingDisableFileLogging)' != 'true'">$(LoggingTestingFileLoggingDirectory)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
 </Project>

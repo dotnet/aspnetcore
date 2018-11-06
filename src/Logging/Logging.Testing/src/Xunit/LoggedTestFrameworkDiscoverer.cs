@@ -37,7 +37,7 @@ namespace Microsoft.Extensions.Logging.Testing
             IMessageBus messageBus,
             ITestFrameworkDiscoveryOptions discoveryOptions)
         {
-            if (typeof(LoggedTest).IsAssignableFrom(testMethod.TestClass.Class.ToRuntimeType()))
+            if (typeof(ILoggedTest).IsAssignableFrom(testMethod.TestClass.Class.ToRuntimeType()))
             {
                 var factAttributes = testMethod.Method.GetCustomAttributes(typeof(FactAttribute));
                 if (factAttributes.Count() > 1)

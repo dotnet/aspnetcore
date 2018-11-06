@@ -11,11 +11,6 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     /// </summary>
     public class AzureBlobLoggerOptions: BatchingLoggerOptions
     {
-        public AzureBlobLoggerOptions()
-        {
-            BatchSize = 32;
-        }
-
         private string _blobName = "applicationLog.txt";
 
         /// <summary>

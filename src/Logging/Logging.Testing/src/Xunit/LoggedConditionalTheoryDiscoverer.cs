@@ -32,6 +32,20 @@ namespace Microsoft.Extensions.Logging.Testing
             object[] dataRow)
         {
             var skipReason = testMethod.EvaluateSkipConditions();
+            if (skipReason == null && dataRow?.Length > 0)
+            {
+                var obj = dataRow[0];
+                if (obj != null)
+                {
+                    var type = obj.GetType();
+                    var property = type.GetProperty("Skip");
+                    if (property != null && property.PropertyType.Equals(typeof(string)))
+                    {
+                        skipReason = property.GetValue(obj) as string;
+                    }
+                }
+            }
+
             return skipReason != null
                 ? base.CreateTestCasesForSkippedDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow, skipReason)
                 : base.CreateTestCasesForDataRow(discoveryOptions, testMethod, theoryAttribute, dataRow);
