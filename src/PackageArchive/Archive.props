@@ -7,7 +7,5 @@
   <PropertyGroup>
     <!-- Required to make /t:Restore happy, but not really used for anything else. -->
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 </Project>

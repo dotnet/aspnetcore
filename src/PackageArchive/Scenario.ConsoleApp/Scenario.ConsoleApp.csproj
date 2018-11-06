@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <MaxImplicitVersion>3.0.0</MaxImplicitVersion>
     <!-- Use pre-release versions up until 3.0.0, then don't lift higher than "3.0.0" -->
