@@ -47,7 +47,6 @@
     <Repository Include="Diagnostics" />
     <Repository Include="DotNetTools" />
     <Repository Include="EntityFrameworkCore" />
-    <Repository Include="FileSystem" />
     <Repository Include="Hosting" />
     <Repository Include="HtmlAbstractions" />
     <Repository Include="HttpAbstractions" />

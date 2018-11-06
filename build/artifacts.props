@@ -201,11 +201,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship"  />
-    <PackageArtifact Include="Microsoft.Extensions.FileProviders.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.FileProviders.Composite" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.FileProviders.Embedded" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.FileProviders.Physical" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.FileSystemGlobbing" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Hosting.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Hosting" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Http.Polly" Category="ship" />
