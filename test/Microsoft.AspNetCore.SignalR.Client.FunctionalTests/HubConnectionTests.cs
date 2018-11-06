@@ -637,7 +637,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var hubProtocol = HubProtocols[hubProtocolName];
             using (StartServer<Startup>(out var loggerFactory, out var fixture, $"{nameof(ServerThrowsHubExceptionOnStreamingHubMethodArgumentCountMismatch)}_{hubProtocol.Name}_{transportType}_{hubPath.TrimStart('/')}", expectedErrorsFilter: ExpectedErrors))
             {
-                loggerFactory.AddConsole(LogLevel.Trace);
                 var connection = CreateHubConnection(fixture.Url, hubPath, transportType, hubProtocol, loggerFactory);
                 try
                 {
