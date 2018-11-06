@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public async Task RestartProcessOnFileChange()
         {
             await _app.StartWatcherAsync(new[] { "--no-exit" });
-            var pid = await _app.GetProcessId();
+            var processIdentifier = await _app.GetProcessIdentifier();
 
             // Then wait for it to restart when we change a file
             var fileToChange = Path.Combine(_app.SourceDirectory, "Program.cs");
@@ -37,15 +37,15 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.HasRestarted();
             Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code"));
 
-            var pid2 = await _app.GetProcessId();
-            Assert.NotEqual(pid, pid2);
+            var processIdentifier2 = await _app.GetProcessIdentifier();
+            Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
         [Fact]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             await _app.StartWatcherAsync();
-            var pid = await _app.GetProcessId();
+            var processIdentifier = await _app.GetProcessIdentifier();
             await _app.HasExited(); // process should exit after run
             await _app.IsWaitingForFileChange();
 
@@ -63,8 +63,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 await _app.HasRestarted();
             }
 
-            var pid2 = await _app.GetProcessId();
-            Assert.NotEqual(pid, pid2);
+            var processIdentifier2 = await _app.GetProcessIdentifier();
+            Assert.NotEqual(processIdentifier, processIdentifier2);
             await _app.HasExited(); // process should exit after run
         }
 

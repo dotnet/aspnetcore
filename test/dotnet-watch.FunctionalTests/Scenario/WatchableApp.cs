@@ -57,11 +57,12 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public bool UsePollingWatcher { get; set; }
 
-        public async Task<int> GetProcessId()
+        public async Task<string> GetProcessIdentifier()
         {
-            var line = await Process.GetOutputLineStartsWithAsync("PID =", DefaultMessageTimeOut);
-            var pid = line.Split('=').Last();
-            return int.Parse(pid);
+            // Process ID is insufficient because PID's may be reused. Process identifier also includes other info to distinguish
+            // between different process instances.
+            var line = await Process.GetOutputLineStartsWithAsync("Process identifier =", DefaultMessageTimeOut);
+            return line.Split('=').Last();
         }
 
         public async Task PrepareAsync()
