@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Helpers for writing tests that use Microsoft.Extensions.Logging. Contains null implementations of the abstractions that do nothing, as well as test implementations that are observable.</Description>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackageTags>$(PackageTags);testing</PackageTags>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Serilog.Extensions.Logging" />
+    <Reference Include="Serilog.Sinks.File" />
+    <Reference Include="xunit.abstractions" />
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.extensibility.execution" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*.props" PackagePath="%(Identity)" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,368 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.Logging.AzureAppServices, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddAzureWebAppDiagnostics",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.Logging.ILoggingBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILoggingBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureWebAppDiagnostics",
+          "Parameters": [
+            {
+              "Name": "factory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILoggerFactory",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAzureWebAppDiagnostics",
+          "Parameters": [
+            {
+              "Name": "factory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "settings",
+              "Type": "Microsoft.Extensions.Logging.AzureAppServices.AzureAppServicesDiagnosticsSettings"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Logging.ILoggerFactory",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.AzureAppServicesDiagnosticsSettings",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FileSizeLimit",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FileSizeLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RetainedFileCountLimit",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RetainedFileCountLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OutputTemplate",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OutputTemplate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BlobBatchSize",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BlobBatchSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BlobCommitPeriod",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BlobCommitPeriod",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BlobName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BlobName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BackgroundQueueSize",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BackgroundQueueSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FileFlushPeriod",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FileFlushPeriod",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BlobName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BlobName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FileSizeLimit",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int32>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FileSizeLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RetainedFileCountLimit",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int32>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RetainedFileCountLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FileName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FileName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
