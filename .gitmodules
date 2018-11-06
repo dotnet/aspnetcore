@@ -102,10 +102,6 @@
 	path = modules/MvcPrecompilation
 	url = https://github.com/aspnet/MvcPrecompilation.git
 	branch = release/2.2
-[submodule "modules/Options"]
-	path = modules/Options
-	url = https://github.com/aspnet/Options.git
-	branch = release/2.2
 [submodule "modules/Razor"]
 	path = modules/Razor
 	url = https://github.com/aspnet/Razor.git

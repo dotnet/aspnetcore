@@ -40,6 +40,9 @@
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsPrimitivesPackageVersion>
     <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsProcessSourcesPackageVersion>
