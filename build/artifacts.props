@@ -193,18 +193,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Caching.Redis" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.SqlServer" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.AzureKeyVault" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.Binder" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.CommandLine" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.FileExtensions" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.Ini" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.Json" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.KeyPerFile" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.UserSecrets" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration.Xml" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Configuration" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship"  />
