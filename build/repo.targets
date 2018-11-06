@@ -143,6 +143,7 @@
         <Category>noship</Category>
         <IsLineup>true</IsLineup>
       </ArtifactInfo>
+      <FilesToSign Include="$(BuildDir)Internal.AspNetCore.Universe.Lineup.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
     </ItemGroup>
   </Target>
 
