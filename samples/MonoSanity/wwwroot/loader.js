@@ -10,31 +10,31 @@
   };
 
   window.initMono = function initMono(loadAssemblyUrls, onReadyCallback) {
-    window.Browser = {
-      init: function () { },
-      asyncLoad: asyncLoad
-    };
-
     window.Module = {
-      print: function (line) { console.log(line); },
-      printEr: function (line) { console.error(line); },
       locateFile: function (fileName) {
-        switch (fileName) {
-          case 'mono.wasm': return '/_framework/wasm/mono.wasm';
-          case 'mono.asm.js': return '/_framework/asmjs/mono.asm.js';
-          default: return fileName;
-        }
+        return fileName === 'mono.wasm' ? '/_framework/wasm/mono.wasm' : fileName;
       },
-      preloadPlugins: [],
-      preRun: [function () {
-        preloadAssemblies(loadAssemblyUrls);
-      }],
-      postRun: [function () {
-        var load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
-        load_runtime('appBinDir', 1);
-        MONO.mono_wasm_runtime_is_ready = true;
-        onReadyCallback();
-      }]
+      onRuntimeInitialized: function () {
+        var allAssemblyUrls = loadAssemblyUrls.concat([
+          'netstandard.dll',
+          'mscorlib.dll',
+          'System.dll',
+          'System.Core.dll',
+          'System.Net.Http.dll'
+        ]);
+
+        // For these tests we're using Mono's built-in mono_load_runtime_and_bcl util.
+        // In real apps we don't use this because we want to have more fine-grained
+        // control over how the requests are issued, what gets logged, etc., so for
+        // real apps Blazor's Boot.WebAssembly.ts implements its own equivalent.
+        MONO.mono_load_runtime_and_bcl(
+          /* vfx_prefix */ 'myapp', // Virtual filesystem root - arbitrary value
+          /* deploy_prefix */ '_framework/_bin',
+          /* enable_debugging */ 1,
+          allAssemblyUrls,
+          onReadyCallback
+        );
+      }
     };
 
     addScriptTagsToDocument();
@@ -74,51 +74,6 @@
     return mono_string(javaScriptString);
   };
 
-  function preloadAssemblies(loadAssemblyUrls) {
-    var loadBclAssemblies = [
-      'netstandard',
-      'mscorlib',
-      'System',
-      'System.Core',
-      'System.Net.Http',
-    ];
-
-    var allAssemblyUrls = loadAssemblyUrls
-      .concat(loadBclAssemblies.map(function (name) { return '_framework/_bin/' + name + '.dll'; }));
-
-    Module.FS_createPath('/', 'appBinDir', true, true);
-
-    MONO.loaded_files = []; // Used by debugger
-    allAssemblyUrls.forEach(function (url) {
-      FS.createPreloadedFile('appBinDir', getFileNameFromUrl(url), url, true, false,
-        /* success */ function() { MONO.loaded_files.push(toAbsoluteUrl(url)); },
-        /* failure */ function onError(err) { throw err; }
-      );
-    });
-  }
-
-  var anchorTagForAbsoluteUrlConversions = document.createElement('a');
-  function toAbsoluteUrl(possiblyRelativeUrl) {
-    anchorTagForAbsoluteUrlConversions.href = possiblyRelativeUrl;
-    return anchorTagForAbsoluteUrlConversions.href;
-  }
-
-  function asyncLoad(url, onload, onerror) {
-    var xhr = new XMLHttpRequest;
-    xhr.open('GET', url, /* async: */ true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = function xhr_onload() {
-      if (xhr.status === 200 || xhr.status === 0 && xhr.response) {
-        var asm = new Uint8Array(xhr.response);
-        onload(asm);
-      } else {
-        onerror(xhr);
-      }
-    };
-    xhr.onerror = onerror;
-    xhr.send(null);
-  }
-
   function callMethod(method, target, args) {
     var stack = Module.stackSave();
     var invoke_method = Module.cwrap('mono_wasm_invoke_method', 'number', ['number', 'number', 'number']);
@@ -154,29 +109,14 @@
   }
 
   function addScriptTagsToDocument() {
-    // Load either the wasm or asm.js version of the Mono runtime
     var browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
-    var monoRuntimeUrlBase = '/_framework/' + (browserSupportsNativeWebAssembly ? 'wasm' : 'asmjs');
-    var monoRuntimeScriptUrl = monoRuntimeUrlBase + '/mono.js';
-
     if (!browserSupportsNativeWebAssembly) {
-      // In the asmjs case, the initial memory structure is in a separate file we need to download
-      var meminitXHR = Module['memoryInitializerRequest'] = new XMLHttpRequest();
-      meminitXHR.open('GET', monoRuntimeUrlBase + '/mono.js.mem');
-      meminitXHR.responseType = 'arraybuffer';
-      meminitXHR.send(null);
+      throw new Error('This browser does not support WebAssembly.');
     }
 
     var scriptElem = document.createElement('script');
-    scriptElem.src = monoRuntimeScriptUrl;
+    scriptElem.src = '/_framework/wasm/mono.js';
     document.body.appendChild(scriptElem);
-  }
-
-  function getFileNameFromUrl(url) {
-    var lastSegment = url.substring(url.lastIndexOf('/') + 1);
-    var queryStringStartPos = lastSegment.indexOf('?');
-    var filename = queryStringStartPos < 0 ? lastSegment : lastSegment.substring(0, queryStringStartPos);
-    return filename;
   }
 
 })();
