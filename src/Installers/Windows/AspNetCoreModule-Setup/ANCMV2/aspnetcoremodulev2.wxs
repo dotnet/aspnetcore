@@ -60,8 +60,6 @@
         <!-- make patching UI go from welcome to ready to repair -->
         <?include  ..\IIS-Setup\iisca\wix3\FixPatchingBehavior.wxi ?>
 
-        <Property Id="IISCHECKSERVICESRUNNING" Admin="no">1</Property>
-
         <Property Id="ARPCONTACT">Microsoft Corporation</Property>
         <Property Id="ARPPRODUCTICON" Value="AspNetCoreModule.ico" />
         <Icon Id="AspNetCoreModule.ico" SourceFile="..\Bitmaps\AspNetCoreModule.ico" />
