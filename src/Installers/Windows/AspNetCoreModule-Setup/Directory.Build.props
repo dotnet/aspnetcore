@@ -1,6 +1,6 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
-  <Import Project="$(RepositoryRoot)\.deps\dependencies.g.props" />
+  <Import Project="$(RepositoryRoot)\.deps\dependencies.g.props" Condition="Exists('$(RepositoryRoot)\.deps\dependencies.g.props')" />
 
   <PropertyGroup>
     <!-- Build number used by ANCM msis -->
