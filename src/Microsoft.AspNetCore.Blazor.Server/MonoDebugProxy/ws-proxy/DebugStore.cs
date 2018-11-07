@@ -14,6 +14,10 @@ namespace WsProxy {
 		public int Line { get; private set; }
 		public int Column { get; private set; }
 
+		public override string ToString () {
+			return $"BreakPointRequest Assembly: {Assembly} File: {File} Line: {Line} Column: {Column}";
+		}
+
 		public static BreakPointRequest Parse (JObject args)
 		{
 			if (args == null)
@@ -457,13 +461,18 @@ namespace WsProxy {
 			var doc = GetFileById (src_id);
 
 			var res = new List<SourceLocation> ();
+			if (doc == null) {
+				//FIXME we need to write up logging here
+				Console.WriteLine ($"Could not find document {src_id}");
+				return res;
+			}
+
 			foreach (var m in doc.Methods) {
 				foreach (var sp in m.methodDef.DebugInformation.SequencePoints) {
 					if (Match (sp, start, end))
 						res.Add (new SourceLocation (m, sp));
 				}
 			}
-
 			return res;
 		}
 

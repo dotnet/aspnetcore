@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 
 using System.Net.WebSockets;
@@ -115,11 +114,6 @@ namespace WsProxy {
 			return Task.FromResult (false);
 		}
 
-		Uri GetBrowserUri (string path)
-		{
-			return new Uri ("ws://localhost:9222" + path);
-		}
-
 		async Task<string> ReadOne (WebSocket socket, CancellationToken token)
 		{
 			byte [] buff = new byte [4000];
@@ -138,8 +132,6 @@ namespace WsProxy {
 				}
 			}
 		}
-
-
 
 		WsQueue GetQueueForSocket (WebSocket ws)
 		{
@@ -212,8 +204,8 @@ namespace WsProxy {
 			pending_ops.Add (OnCommand (res ["id"].Value<int> (), res ["method"].Value<string> (), res ["params"] as JObject, token));
 		}
 
-		public async Task<Result> SendCommand (string method, JObject args, CancellationToken token) {
-			Debug ($"sending command {method}: {args}");
+		internal async Task<Result> SendCommand (string method, JObject args, CancellationToken token) {
+			// Debug ($"sending command {method}: {args}");
 			return await SendCommandInternal (method, args, token);
 		}
 
@@ -250,7 +242,7 @@ namespace WsProxy {
 			Send (this.ide, o, token);
 		}
 
-		public void SendResponse (int id, Result result, CancellationToken token)
+		internal void SendResponse (int id, Result result, CancellationToken token)
 		{
 			//Debug ($"sending response: {id}: {result.ToJObject (id)}");
 			SendResponseInternal (id, result, token);
@@ -263,11 +255,11 @@ namespace WsProxy {
 			Send (this.ide, o, token);
 		}
 
-		public async Task Run (HttpContext context, Uri browserUri)
+		 // , HttpContext context)
+		public async Task Run (Uri browserUri, WebSocket ideSocket) 
 		{
-			//var browserUri = GetBrowserUri (context.Request.Path.ToString ());
 			Debug ("wsproxy start");
-			using (this.ide = await context.WebSockets.AcceptWebSocketAsync ()) {
+			using (this.ide = ideSocket) {
 				Debug ("ide connected");
 				queues.Add (new WsQueue (this.ide));
 				using (this.browser = new ClientWebSocket ()) {

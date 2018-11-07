@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 
 using System.Net.WebSockets;
@@ -18,9 +17,15 @@ namespace WsProxy {
 		public const string START_SINGLE_STEPPING = "MONO.mono_wasm_start_single_stepping({0})";
 		public const string GET_SCOPE_VARIABLES = "MONO.mono_wasm_get_variables({0}, [ {1} ])";
 		public const string SET_BREAK_POINT = "MONO.mono_wasm_set_breakpoint(\"{0}\", {1}, {2})";
+		public const string REMOVE_BREAK_POINT = "MONO.mono_wasm_remove_breakpoint({0})";
 		public const string GET_LOADED_FILES = "MONO.mono_wasm_get_loaded_files()";
 		public const string CLEAR_ALL_BREAKPOINTS = "MONO.mono_wasm_clear_all_breakpoints()";
 	}
+
+	internal enum MonoErrorCodes {
+		BpNotFound = 100000,
+	}
+
 
 	internal class MonoConstants {
 		public const string RUNTIME_IS_READY = "mono_wasm_runtime_ready";
@@ -156,6 +161,9 @@ namespace WsProxy {
 					}
 					break;
 				}
+			case "Debugger.removeBreakpoint": {
+				return await RemoveBreakpoint (id, args, token);
+			}
 
 			case "Debugger.resume": {
 					await OnResume (token);
@@ -265,14 +273,14 @@ namespace WsProxy {
 						var method = asm.GetMethodByToken (method_token);
 						var location = method.GetLocationByIl (il_pos);
 
-                        // When hitting a breakpoint on the "IncrementCount" method in the standard
-                        // Blazor project template, one of the stack frames is inside mscorlib.dll
-                        // and we get location==null for it. It will trigger a NullReferenceException
-                        // if we don't skip over that stack frame.
-                        if (location == null)
-                        {
-                            continue;
-                        }
+						// When hitting a breakpoint on the "IncrementCount" method in the standard
+						// Blazor project template, one of the stack frames is inside mscorlib.dll
+						// and we get location==null for it. It will trigger a NullReferenceException
+						// if we don't skip over that stack frame.
+						if (location == null)
+						{
+							continue;
+						}
 
 						Info ($"frame il offset: {il_pos} method token: {method_token} assembly name: {assembly_name}");
 						Info ($"\tmethod {method.Name} location: {location}");
@@ -413,9 +421,9 @@ namespace WsProxy {
 
 			var var_list = new List<JObject> ();
 
-            // Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
-            // results in a "Memory access out of bounds", causing 'values' to be null,
-            // so skip returning variable values in that case.
+			// Trying to inspect the stack frame for DotNetDispatcher::InvokeSynchronously
+			// results in a "Memory access out of bounds", causing 'values' to be null,
+			// so skip returning variable values in that case.
 			for (int i = 0; values != null && i < vars.Length; ++i) {
 				var_list.Add (JObject.FromObject (new {
 					name = vars [i].Name,
@@ -432,7 +440,7 @@ namespace WsProxy {
 
 		async Task<Result> EnableBreakPoint (Breakpoint bp, CancellationToken token)
 		{
-			var asm_name = bp.Location.CliLocation.Method.Assembly.Name.ToLower ();
+			var asm_name = bp.Location.CliLocation.Method.Assembly.Name;
 			var method_token = bp.Location.CliLocation.Method.Token;
 			var il_offset = bp.Location.CliLocation.Offset;
 
@@ -514,10 +522,61 @@ namespace WsProxy {
 			}
 		}
 
+		async Task<bool> RemoveBreakpoint(int msg_id, JObject args, CancellationToken token) {
+			var bpid = args? ["breakpointId"]?.Value<string> ();
+			if (bpid?.StartsWith ("dotnet:") != true)
+				return false;
+
+			var the_id = int.Parse (bpid.Substring ("dotnet:".Length));
+
+			var bp = breakpoints.FirstOrDefault (b => b.LocalId == the_id);
+			if (bp == null) {
+				Info ($"Could not find dotnet bp with id {the_id}");
+				return false;
+			}
+
+			breakpoints.Remove (bp);
+			//FIXME verify result (and log?)
+			var res = await RemoveBreakPoint (bp, token);
+
+			return true;
+		}
+
+
+		async Task<Result> RemoveBreakPoint (Breakpoint bp, CancellationToken token)
+		{
+			var o = JObject.FromObject (new {
+				expression = string.Format (MonoCommands.REMOVE_BREAK_POINT, bp.RemoteId),
+				objectGroup = "mono_debugger",
+				includeCommandLineAPI = false,
+				silent = false,
+				returnByValue = true,
+			});
+
+			var res = await SendCommand ("Runtime.evaluate", o, token);
+			var ret_code = res.Value? ["result"]? ["value"]?.Value<int> ();
+
+			if (ret_code.HasValue) {
+				bp.RemoteId = -1;
+				bp.State = BreakPointState.Disabled;
+			}
+
+			return res;
+		}
+
 		async Task SetBreakPoint (int msg_id, BreakPointRequest req, CancellationToken token)
 		{
 			var bp_loc = store.FindBestBreakpoint (req);
-			Info ($"BP request for '{req}' runtime ready {runtime_ready}");
+			Info ($"BP request for '{req}' runtime ready {runtime_ready} location '{bp_loc}'");
+			if (bp_loc == null) {
+
+				Info ($"Could not resolve breakpoint request: {req}");
+				SendResponse (msg_id, Result.Err(JObject.FromObject (new {
+					code = (int)MonoErrorCodes.BpNotFound,
+					message = $"C# Breakpoint at {req} not found."
+				})), token);
+				return;
+			}
 
 			Breakpoint bp = null;
 			if (!runtime_ready) {
@@ -589,17 +648,8 @@ namespace WsProxy {
 			var res = new StringWriter ();
 			res.WriteLine ($"//dotnet:{id}");
 
-			try
-			{
-				using (var f = new StreamReader(File.Open(src_file.LocalPath, FileMode.Open)))
-				{
-					res.Write(f.ReadToEnd());
-				}
-			}
-			catch (Exception ex)
-			{
-				res.WriteLine($"Unable to open file {src_file.LocalPath}");
-				res.WriteLine($"\nException:\n{ex}");
+			using (var f = new StreamReader (File.Open (src_file.LocalPath, FileMode.Open))) {
+				res.Write (f.ReadToEnd ());
 			}
 
 			var o = JObject.FromObject (new {

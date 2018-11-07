@@ -52,7 +52,8 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             var browserUri = new Uri(context.Request.Query["browser"]);
-            await new MonoProxy().Run(context, browserUri);
+            var ideSocket = await context.WebSockets.AcceptWebSocketAsync();
+            await new MonoProxy().Run(browserUri, ideSocket);
         }
 
         private static async Task DebugHome(HttpContext context)
