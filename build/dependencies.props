@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -20,7 +20,6 @@
     <MicrosoftAspNetCoreIdentityUIPackageVersion>3.0.0-alpha1-10620</MicrosoftAspNetCoreIdentityUIPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>3.0.0-alpha1-10620</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCorePackageVersion>3.0.0-alpha1-10620</MicrosoftAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreRazorDesignPackageVersion>3.0.0-alpha1-10620</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>3.0.0-alpha1-10620</MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion>
     <MicrosoftAspNetCoreSpaServicesPackageVersion>3.0.0-alpha1-10620</MicrosoftAspNetCoreSpaServicesPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>3.0.0-alpha1-10620</MicrosoftAspNetCoreStaticFilesPackageVersion>

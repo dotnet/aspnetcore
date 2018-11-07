@@ -25,7 +25,6 @@
       MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
       MicrosoftAspNetCoreHttpsPolicyPackageVersion=$(MicrosoftAspNetCoreHttpsPolicyPackageVersion);
       MicrosoftAspNetCoreMvcPackageVersion=$(MicrosoftAspNetCoreMvcPackageVersion);
-      MicrosoftAspNetCoreRazorDesignPackageVersion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
       MicrosoftAspNetCoreSpaServicesPackageVersion=$(MicrosoftAspNetCoreSpaServicesPackageVersion);
       MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion=$(MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion);
       MicrosoftAspNetCoreStaticFilesPackageVersion=$(MicrosoftAspNetCoreStaticFilesPackageVersion);
