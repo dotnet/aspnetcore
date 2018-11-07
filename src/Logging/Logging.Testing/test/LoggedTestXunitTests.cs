@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Logging.Testing.Tests
 {
+    [LogLevel(LogLevel.Debug)]
     [ShortClassName]
     public class LoggedTestXunitTests : TestLoggedTest
     {
@@ -75,7 +77,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
 
         [Fact]
         [LogLevel(LogLevel.Information)]
-        public void LoggedFactFilteredByLogLevel()
+        public void LoggedFactFilteredByMethodLogLevel()
         {
             Logger.LogInformation("Information");
             Logger.LogDebug("Debug");
@@ -83,6 +85,17 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             var message = Assert.Single(TestSink.Writes);
             Assert.Equal(LogLevel.Information, message.LogLevel);
             Assert.Equal("Information", message.Formatter(message.State, null));
+        }
+
+        [Fact]
+        public void LoggedFactFilteredByClassLogLevel()
+        {
+            Logger.LogDebug("Debug");
+            Logger.LogTrace("Trace");
+
+            var message = Assert.Single(TestSink.Writes);
+            Assert.Equal(LogLevel.Debug, message.LogLevel);
+            Assert.Equal("Debug", message.Formatter(message.State, null));
         }
 
         [Theory]
@@ -128,6 +141,37 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
         public void AdditionalSetupInvoked()
         {
             Assert.True(SetupInvoked);
+        }
+
+        [Fact]
+        public void MessageWrittenEventInvoked()
+        {
+            WriteContext context = null;
+            TestSink.MessageLogged += ctx => context = ctx;
+            Logger.LogInformation("Information");
+            Assert.Equal(TestSink.Writes.Single(), context);
+        }
+
+        [Fact]
+        public void ScopeStartedEventInvoked()
+        {
+            BeginScopeContext context = null;
+            TestSink.ScopeStarted += ctx => context = ctx;
+            using (Logger.BeginScope("Scope")) {}
+            Assert.Equal(TestSink.Scopes.Single(), context);
+        }
+    }
+
+    public class LoggedTestXunitLogLevelTests : LoggedTest
+    {
+        [Fact]
+        public void LoggedFactFilteredByAssemblyLogLevel()
+        {
+            Logger.LogTrace("Trace");
+
+            var message = Assert.Single(TestSink.Writes);
+            Assert.Equal(LogLevel.Trace, message.LogLevel);
+            Assert.Equal("Trace", message.Formatter(message.State, null));
         }
     }
 

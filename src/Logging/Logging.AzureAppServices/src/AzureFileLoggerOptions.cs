@@ -51,8 +51,9 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         }
 
         /// <summary>
-        /// Gets or sets a strictly positive value representing the maximum retained file count or null for no limit.
-        /// Defaults to <c>2</c>.
+        /// Gets or sets a string representing the prefix of the file name used to store the logging information.
+        /// The current date, in the format YYYYMMDD will be added after the given value.
+        /// Defaults to <c>diagnostics-</c>.
         /// </summary>
         public string FileName
         {

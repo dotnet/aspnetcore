@@ -40,7 +40,22 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             builder.Append(logLevel.ToString());
             builder.Append("] ");
             builder.Append(_category);
-            builder.Append(": ");
+
+            var scopeProvider = _provider.ScopeProvider;
+            if (scopeProvider != null)
+            {
+                scopeProvider.ForEachScope((scope, stringBuilder) =>
+                {
+                    stringBuilder.Append(" => ").Append(scope);
+                }, builder);
+
+                builder.AppendLine(":");
+            }
+            else
+            {
+                builder.Append(": ");
+            }
+
             builder.AppendLine(formatter(state, exception));
 
             if (exception != null)

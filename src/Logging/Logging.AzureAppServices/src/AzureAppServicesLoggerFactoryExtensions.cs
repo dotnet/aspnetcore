@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.AzureAppServices;
 using Microsoft.Extensions.Logging.AzureAppServices.Internal;
+using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Options;
 using static Microsoft.Extensions.DependencyInjection.ServiceDescriptor;
 
@@ -55,6 +56,7 @@ namespace Microsoft.Extensions.Logging
                 services.AddSingleton<IConfigureOptions<AzureFileLoggerOptions>>(new FileLoggerConfigureOptions(config, context));
                 services.AddSingleton<IOptionsChangeTokenSource<AzureFileLoggerOptions>>(
                     new ConfigurationChangeTokenSource<AzureFileLoggerOptions>(config));
+                LoggerProviderOptions.RegisterProviderOptions<AzureFileLoggerOptions, FileLoggerProvider>(builder.Services);
             }
 
             if (addedBlobLogger)
@@ -63,6 +65,7 @@ namespace Microsoft.Extensions.Logging
                 services.AddSingleton<IConfigureOptions<AzureBlobLoggerOptions>>(new BlobLoggerConfigureOptions(config, context));
                 services.AddSingleton<IOptionsChangeTokenSource<AzureBlobLoggerOptions>>(
                     new ConfigurationChangeTokenSource<AzureBlobLoggerOptions>(config));
+                LoggerProviderOptions.RegisterProviderOptions<AzureBlobLoggerOptions, BlobLoggerProvider>(builder.Services);
             }
 
             return builder;

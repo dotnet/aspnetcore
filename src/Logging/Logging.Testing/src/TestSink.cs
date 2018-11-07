@@ -30,12 +30,17 @@ namespace Microsoft.Extensions.Logging.Testing
 
         public IProducerConsumerCollection<WriteContext> Writes { get => _writes; set => _writes = new ConcurrentQueue<WriteContext>(value); }
 
+        public event Action<WriteContext> MessageLogged;
+
+        public event Action<BeginScopeContext> ScopeStarted;
+
         public void Write(WriteContext context)
         {
             if (WriteEnabled == null || WriteEnabled(context))
             {
                 _writes.Enqueue(context);
             }
+            MessageLogged?.Invoke(context);
         }
 
         public void Begin(BeginScopeContext context)
@@ -44,6 +49,7 @@ namespace Microsoft.Extensions.Logging.Testing
             {
                 _scopes.Enqueue(context);
             }
+            ScopeStarted?.Invoke(context);
         }
 
         public static bool EnableWithTypeName<T>(WriteContext context)

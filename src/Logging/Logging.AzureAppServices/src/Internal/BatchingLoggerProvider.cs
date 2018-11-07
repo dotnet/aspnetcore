@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 {
-    public abstract class BatchingLoggerProvider: ILoggerProvider
+    public abstract class BatchingLoggerProvider: ILoggerProvider, ISupportExternalScope
     {
         private readonly List<LogMessage> _currentBatch = new List<LogMessage>();
         private readonly TimeSpan _interval;
@@ -21,6 +21,11 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         private BlockingCollection<LogMessage> _messageQueue;
         private Task _outputTask;
         private CancellationTokenSource _cancellationTokenSource;
+
+        private bool _includeScopes;
+        private IExternalScopeProvider _scopeProvider;
+
+        internal IExternalScopeProvider ScopeProvider => _includeScopes ? _scopeProvider : null;
 
         protected BatchingLoggerProvider(IOptionsMonitor<BatchingLoggerOptions> options)
         {
@@ -50,6 +55,8 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         {
             var oldIsEnabled = IsEnabled;
             IsEnabled = options.IsEnabled;
+            _includeScopes = options.IncludeScopes;
+
             if (oldIsEnabled != IsEnabled)
             {
                 if (IsEnabled)
@@ -158,6 +165,11 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         public ILogger CreateLogger(string categoryName)
         {
             return new BatchingLogger(this, categoryName);
+        }
+
+        void ISupportExternalScope.SetScopeProvider(IExternalScopeProvider scopeProvider)
+        {
+            _scopeProvider = scopeProvider;
         }
     }
 }
