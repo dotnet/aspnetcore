@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
-namespace Microsoft.Extensions.Caching.Redis
+namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
     /// <summary>
     /// Configuration options for <see cref="RedisCache"/>.

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
-namespace Microsoft.Extensions.Caching.Redis
+namespace Microsoft.Extensions.Caching.StackExchangeRedis
 {
     public class RedisCache : IDistributedCache, IDisposable
     {

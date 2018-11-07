@@ -7,6 +7,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
+    /// <summary>
+    /// Represents the cache options applied to an entry of the <see cref="IMemoryCache"/> instance.
+    /// </summary>
     public class MemoryCacheEntryOptions
     {
         private DateTimeOffset? _absoluteExpiration;

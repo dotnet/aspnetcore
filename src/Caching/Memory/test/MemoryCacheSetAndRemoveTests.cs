@@ -202,6 +202,18 @@ namespace Microsoft.Extensions.Caching.Memory
         }
 
         [Fact]
+        public void TryGetValue_WillCreateDefaultValue_WhenGenericTypeIsIncompatible()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            int value = 42;
+
+            cache.Set(key, value);
+
+            Assert.False(cache.TryGetValue(key, out string obj));
+        }
+
+        [Fact]
         public void SetOverwritesAndInvokesCallbacks()
         {
             var cache = CreateCache();
