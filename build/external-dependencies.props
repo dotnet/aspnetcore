@@ -18,8 +18,8 @@
     <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Version="$(MicrosoftExtensionsCachingRedisPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="$(MicrosoftExtensionsCachingSqlServerPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="$(MicrosoftExtensionsCachingStackExchangeRedisPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
@@ -71,22 +71,28 @@
     <ExternalDependency Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.WebEncoders.Sources" Version="$(MicrosoftExtensionsWebEncodersSourcesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Abstractions" Version="$(MicrosoftEntityFrameworkCoreAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Analyzers" Version="$(MicrosoftEntityFrameworkCoreAnalyzersPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Design" Version="$(MicrosoftEntityFrameworkCoreDesignPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Tools" Version="$(MicrosoftEntityFrameworkCoreToolsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCorePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <ExternalDependency Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <ExternalDependency Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
-    <ExternalDependency Include="Castle.Core" Version="$(CastleCorePackageVersion)" />
     <ExternalDependency Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
     <ExternalDependency Include="Google.Protobuf" Version="$(GoogleProtobufPackageVersion)" />
     <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion)" />
     <ExternalDependency Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" />
     <ExternalDependency Include="Libuv" Version="$(LibuvPackageVersion)" />
     <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(MicrosoftApplicationInsightsAspNetCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNet.Identity.EntityFramework" Version="$(MicrosoftAspNetIdentityEntityFrameworkPackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" />
-    <ExternalDependency Include="Microsoft.Azure.DocumentDB.Core" Version="$(MicrosoftAzureDocumentDBCorePackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.Management.Fluent" Version="$(MicrosoftAzureManagementFluentPackageVersion)" />
     <ExternalDependency Include="Microsoft.Azure.Services.AppAuthentication" Version="$(MicrosoftAzureServicesAppAuthenticationPackageVersion)" />
@@ -174,7 +180,6 @@
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <ExternalDependency Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
-    <ExternalDependency Include="mod_spatialite" Version="$(mod_spatialitePackageVersion)" />
     <ExternalDependency Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" />
     <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" />
     <ExternalDependency Include="Moq" Version="$(MoqPackageVersion)" />
@@ -185,30 +190,20 @@
     <!-- netstandard2.0 -->
     <ExternalDependency Include="NETStandard.Library" Version="$(NETStandardLibrary20PackageVersion)" VariableName="NETStandardLibrary20PackageVersion" />
 
-    <ExternalDependency Include="NetTopologySuite.Core" Version="$(NetTopologySuiteCorePackageVersion)" />
-    <ExternalDependency Include="NetTopologySuite.IO.SpatiaLite" Version="$(NetTopologySuiteIOSpatiaLitePackageVersion)" />
-    <ExternalDependency Include="NetTopologySuite.IO.SqlServerBytes" Version="$(NetTopologySuiteIOSqlServerBytesPackageVersion)" />
-
     <!-- This version should be used by runtime packages -->
     <ExternalDependency Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
     <ExternalDependency Include="Newtonsoft.Json" Version="$(VisualStudio_NewtonsoftJsonPackageVersion)" VariableName="VisualStudio_NewtonsoftJsonPackageVersion" />
 
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
-    <ExternalDependency Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" />
-    <ExternalDependency Include="Oracle.ManagedDataAccess" Version="$(OracleManagedDataAccessPackageVersion)" />
     <ExternalDependency Include="Polly.Extensions.Http" Version="$(PollyExtensionsHttpPackageVersion)" />
     <ExternalDependency Include="Polly" Version="$(PollyPackageVersion)" />
-    <ExternalDependency Include="Remotion.Linq" Version="$(RemotionLinqPackageVersion)" />
     <ExternalDependency Include="Selenium.Firefox.WebDriver" Version="$(SeleniumFirefoxWebDriverPackageVersion)" />
     <ExternalDependency Include="Selenium.Support" Version="$(SeleniumSupportPackageVersion)" />
     <ExternalDependency Include="Selenium.WebDriver.MicrosoftDriver" Version="$(SeleniumWebDriverMicrosoftDriverPackageVersion)" />
     <ExternalDependency Include="Selenium.WebDriver" Version="$(SeleniumWebDriverPackageVersion)" />
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" />
     <ExternalDependency Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />
-    <ExternalDependency Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawBundleGreenPackageVersion)" />
-    <ExternalDependency Include="SQLitePCLRaw.bundle_sqlcipher" Version="$(SQLitePCLRawBundleSqlcipherPackageVersion)" />
-    <ExternalDependency Include="SQLitePCLRaw.core" Version="$(SQLitePCLRawCorePackageVersion)" />
     <ExternalDependency Include="StackExchange.Redis" Version="$(StackExchangeRedisPackageVersion)" />
     <ExternalDependency Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
     <ExternalDependency Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
@@ -219,7 +214,6 @@
     <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <ExternalDependency Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <ExternalDependency Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtPackageVersion)" />
-    <ExternalDependency Include="System.Interactive.Async" Version="$(SystemInteractiveAsyncPackageVersion)" />
     <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalDependency Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />

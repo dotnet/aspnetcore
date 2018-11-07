@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageArtifact Include="dotnet-dev-certs" Category="ship" />
-    <PackageArtifact Include="dotnet-ef" Category="ship" />
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
     <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
     <PackageArtifact Include="dotnet-watch" Category="ship" />
@@ -156,28 +155,10 @@
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor" Category="ship" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.Data.Sqlite.Core" Category="ship" />
-    <PackageArtifact Include="Microsoft.Data.Sqlite" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Analyzers" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Cosmos" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Design" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.InMemory" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Proxies" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Relational" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Specification.Tests" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" Category="ship" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Category="noship" />
