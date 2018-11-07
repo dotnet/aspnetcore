@@ -51,7 +51,9 @@ namespace Microsoft.Extensions.Logging.Testing
             TestOutputHelper = testOutputHelper;
 
             var classType = GetType();
-            var logLevelAttribute = methodInfo.GetCustomAttribute<LogLevelAttribute>();
+            var logLevelAttribute = methodInfo.GetCustomAttribute<LogLevelAttribute>()
+                ?? methodInfo.DeclaringType.GetCustomAttribute<LogLevelAttribute>()
+                ?? methodInfo.DeclaringType.Assembly.GetCustomAttribute<LogLevelAttribute>();
             var testName = testMethodArguments.Aggregate(methodInfo.Name, (a, b) => $"{a}-{(b ?? "null")}");
 
             var useShortClassName = methodInfo.DeclaringType.GetCustomAttribute<ShortClassNameAttribute>()
