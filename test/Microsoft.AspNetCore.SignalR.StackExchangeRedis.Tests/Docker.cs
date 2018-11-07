@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -70,6 +71,29 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             return null;
         }
 
+        private void StartRedis(ILogger logger)
+        {
+            try
+            {
+                Run();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error starting redis docker container, retrying.");
+                Thread.Sleep(1000);
+                Run();
+            }
+
+            void Run()
+            {
+                // create and run docker container, remove automatically when stopped, map 6379 from the container to 6379 localhost
+                // use static name 'redisTestContainer' so if the container doesn't get removed we don't keep adding more
+                // use redis base docker image
+                // 30 second timeout to allow redis image to be downloaded, should be a rare occurrence, only happening when a new version is released
+                RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", "redis", logger, TimeSpan.FromSeconds(30));
+            }
+        }
+
         public void Start(ILogger logger)
         {
             logger.LogInformation("Starting docker container");
@@ -78,11 +102,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             RunProcessAndWait(_path, $"stop {_dockerMonitorContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var _);
             RunProcessAndWait(_path, $"stop {_dockerContainerName}", "docker stop", logger, TimeSpan.FromSeconds(15), out var output);
 
-            // create and run docker container, remove automatically when stopped, map 6379 from the container to 6379 localhost
-            // use static name 'redisTestContainer' so if the container doesn't get removed we don't keep adding more
-            // use redis base docker image
-            // 20 second timeout to allow redis image to be downloaded, should be a rare occurrence, only happening when a new version is released
-            RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", "redis", logger, TimeSpan.FromSeconds(20));
+            StartRedis(logger);
 
             // inspect the redis docker image and extract the IPAddress. Necessary when running tests from inside a docker container, spinning up a new docker container for redis
             // outside the current container requires linking the networks (difficult to automate) or using the IP:Port combo
