@@ -19,7 +19,7 @@
 
     <!-- These files came from the aspnet/Extensions build, but have to be re-signed because we crossgen them. -->
       <FilesToSign Include="Microsoft.Extensions.Configuration.AzureKeyVault.dll"           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.AzureAppServices"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.Extensions.Logging.AzureAppServices.dll"              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
 
       <FilesToSign Include="Microsoft.Extensions.Configuration.Abstractions.dll"            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Configuration.Binder.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
@@ -40,13 +40,13 @@
       <FilesToSign Include="Microsoft.Extensions.FileProviders.Embedded.dll"                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileProviders.Physical.dll"                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileSystemGlobbing.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.Abstractions"                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.Configuration"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.Console"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.Debug"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.EventSource"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.TraceSource"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging"                                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Logging.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Logging.Configuration.dll"                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Logging.Console.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Logging.Debug.dll"                         Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Logging.EventSource.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Logging.TraceSource.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Logging.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.ObjectPool.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Options.ConfigurationExtensions.dll"       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Options.DataAnnotations.dll"               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
