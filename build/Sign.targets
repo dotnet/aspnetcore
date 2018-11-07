@@ -142,9 +142,9 @@
 
     <Exec
       Command="$(ESRPClientToolPath) sign -c $(ESRPClientConfigFile) -a $(AuthJson_Nupkg) -p $(PolicyJson_Nupkg) -i $(InputJson_Nupkg) -o $(OutputJson_Nupkg) -l progress -f $(LogOutputDir)sign-nupkg.log"
-      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true'" />
+      Condition="'$(SignType)'=='real' AND '$(LocalBuild)'!='true' AND '@(_UnsignedNupkgs)'!=''" />
 
-    <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'"
+    <StupidCopy Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true' AND '@(_UnsignedNupkgs)'!=''"
       SourceFiles="@(_UnsignedNupkgs)"
       DestinationFolder="$(PackagesOutputPath)" />
   </Target>
