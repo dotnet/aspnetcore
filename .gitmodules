@@ -30,10 +30,6 @@
 	path = modules/DotNetTools
 	url = https://github.com/aspnet/DotNetTools.git
 	branch = master
-[submodule "modules/EntityFrameworkCore"]
-	path = modules/EntityFrameworkCore
-	url = https://github.com/aspnet/EntityFrameworkCore.git
-	branch = master
 [submodule "modules/Hosting"]
 	path = modules/Hosting
 	url = https://github.com/aspnet/Hosting.git
