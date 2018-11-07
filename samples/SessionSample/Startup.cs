@@ -33,7 +33,7 @@ namespace SessionSample
         {
             // Uncomment the following line to use the in-memory implementation of IDistributedCache
             services.AddDistributedMemoryCache();
-            
+
             // Uncomment the following line to use the Microsoft SQL Server implementation of IDistributedCache.
             // Note that this would require setting up the session state database.
             //services.AddDistributedSqlServerCache(o =>
@@ -45,7 +45,7 @@ namespace SessionSample
 
             // Uncomment the following line to use the Redis implementation of IDistributedCache.
             // This will override any previously registered IDistributedCache service.
-            //services.AddDistributedRedisCache(o =>
+            //services.AddStackExchangeRedisCache(o =>
             //{
             //    o.Configuration = "localhost";
             //    o.InstanceName = "SampleInstance";
