@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new UnclassifiedCodeSpanConstructor(
                 self.Span(
                     SpanKindInternal.Code,
-                    new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown)));
+                    new CSharpToken(string.Empty, CSharpTokenType.Unknown)));
         }
 
         public static SpanConstructor EmptyHtml(this SpanFactory self)
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return self
                 .Span(
                     SpanKindInternal.Markup,
-                    new HtmlSymbol(string.Empty, HtmlSymbolType.Unknown))
+                    new HtmlToken(string.Empty, HtmlTokenType.Unknown))
                 .With(new MarkupChunkGenerator());
         }
 
@@ -44,14 +44,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return self.Span(SpanKindInternal.Transition, content, markup: false).Accepts(AcceptedCharactersInternal.None);
         }
 
-        public static SpanConstructor CodeTransition(this SpanFactory self, CSharpSymbolType type)
+        public static SpanConstructor CodeTransition(this SpanFactory self, CSharpTokenType type)
         {
             return self
                 .Span(SpanKindInternal.Transition, SyntaxConstants.TransitionString, type)
                 .Accepts(AcceptedCharactersInternal.None);
         }
 
-        public static SpanConstructor CodeTransition(this SpanFactory self, string content, CSharpSymbolType type)
+        public static SpanConstructor CodeTransition(this SpanFactory self, string content, CSharpTokenType type)
         {
             return self.Span(SpanKindInternal.Transition, content, type).Accepts(AcceptedCharactersInternal.None);
         }
@@ -68,14 +68,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return self.Span(SpanKindInternal.Transition, content, markup: true).Accepts(AcceptedCharactersInternal.None);
         }
 
-        public static SpanConstructor MarkupTransition(this SpanFactory self, HtmlSymbolType type)
+        public static SpanConstructor MarkupTransition(this SpanFactory self, HtmlTokenType type)
         {
             return self
                 .Span(SpanKindInternal.Transition, SyntaxConstants.TransitionString, type)
                 .Accepts(AcceptedCharactersInternal.None);
         }
 
-        public static SpanConstructor MarkupTransition(this SpanFactory self, string content, HtmlSymbolType type)
+        public static SpanConstructor MarkupTransition(this SpanFactory self, string content, HtmlTokenType type)
         {
             return self.Span(SpanKindInternal.Transition, content, type).Accepts(AcceptedCharactersInternal.None);
         }
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return self.Span(SpanKindInternal.MetaCode, content, markup: false);
         }
 
-        public static SpanConstructor MetaCode(this SpanFactory self, string content, CSharpSymbolType type)
+        public static SpanConstructor MetaCode(this SpanFactory self, string content, CSharpTokenType type)
         {
             return self.Span(SpanKindInternal.MetaCode, content, type);
         }
@@ -95,17 +95,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return self.Span(SpanKindInternal.MetaCode, content, markup: true);
         }
 
-        public static SpanConstructor MetaMarkup(this SpanFactory self, string content, HtmlSymbolType type)
+        public static SpanConstructor MetaMarkup(this SpanFactory self, string content, HtmlTokenType type)
         {
             return self.Span(SpanKindInternal.MetaCode, content, type);
         }
 
-        public static SpanConstructor Comment(this SpanFactory self, string content, CSharpSymbolType type)
+        public static SpanConstructor Comment(this SpanFactory self, string content, CSharpTokenType type)
         {
             return self.Span(SpanKindInternal.Comment, content, type);
         }
 
-        public static SpanConstructor Comment(this SpanFactory self, string content, HtmlSymbolType type)
+        public static SpanConstructor Comment(this SpanFactory self, string content, HtmlTokenType type)
         {
             return self.Span(SpanKindInternal.Comment, content, type);
         }
@@ -184,14 +184,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public SourceLocationTracker LocationTracker { get; }
 
 
-        public SpanConstructor Span(SpanKindInternal kind, string content, CSharpSymbolType type)
+        public SpanConstructor Span(SpanKindInternal kind, string content, CSharpTokenType type)
         {
-            return CreateSymbolSpan(kind, content, () => new CSharpSymbol(content, type));
+            return CreateTokenSpan(kind, content, () => new CSharpToken(content, type));
         }
 
-        public SpanConstructor Span(SpanKindInternal kind, string content, HtmlSymbolType type)
+        public SpanConstructor Span(SpanKindInternal kind, string content, HtmlTokenType type)
         {
-            return CreateSymbolSpan(kind, content, () => new HtmlSymbol(content, type));
+            return CreateTokenSpan(kind, content, () => new HtmlToken(content, type));
         }
 
         public SpanConstructor Span(SpanKindInternal kind, string content, bool markup)
@@ -204,18 +204,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new SpanConstructor(kind, LocationTracker.CurrentLocation, Tokenize(content, markup));
         }
 
-        public SpanConstructor Span(SpanKindInternal kind, params ISymbol[] symbols)
+        public SpanConstructor Span(SpanKindInternal kind, params IToken[] tokens)
         {
             var start = LocationTracker.CurrentLocation;
-            foreach (var symbol in symbols)
+            foreach (var token in tokens)
             {
-                LocationTracker.UpdateLocation(symbol.Content);
+                LocationTracker.UpdateLocation(token.Content);
             }
 
-            return new SpanConstructor(kind, start, symbols);
+            return new SpanConstructor(kind, start, tokens);
         }
 
-        private SpanConstructor CreateSymbolSpan(SpanKindInternal kind, string content, Func<ISymbol> ctor)
+        private SpanConstructor CreateTokenSpan(SpanKindInternal kind, string content, Func<IToken> ctor)
         {
             var start = LocationTracker.CurrentLocation;
             LocationTracker.UpdateLocation(content);
@@ -228,21 +228,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             LocationTracker.CurrentLocation = SourceLocation.Zero;
         }
 
-        private IEnumerable<ISymbol> Tokenize(IEnumerable<string> contentFragments, bool markup)
+        private IEnumerable<IToken> Tokenize(IEnumerable<string> contentFragments, bool markup)
         {
             return contentFragments.SelectMany(fragment => Tokenize(fragment, markup));
         }
 
-        private IEnumerable<ISymbol> Tokenize(string content, bool markup)
+        private IEnumerable<IToken> Tokenize(string content, bool markup)
         {
             var tokenizer = MakeTokenizer(markup, new SeekableTextReader(content, filePath: null));
-            ISymbol symbol;
-            ISymbol last = null;
+            IToken token;
+            IToken last = null;
 
-            while ((symbol = tokenizer.NextSymbol()) != null)
+            while ((token = tokenizer.NextToken()) != null)
             {
-                last = symbol;
-                yield return symbol;
+                last = token;
+                yield return token;
             }
 
             LocationTracker.UpdateLocation(content);
@@ -305,6 +305,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public SpanConstructor AsStatement()
         {
             return _self.With(new StatementChunkGenerator());
+        }
+
+        public SpanConstructor AsCodeBlock()
+        {
+            return AsStatement().With(new CodeBlockEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString));
         }
 
         public SpanConstructor AsExpression()
@@ -378,17 +383,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         public SpanBuilder Builder { get; private set; }
 
-        internal static IEnumerable<ISymbol> TestTokenizer(string str)
+        internal static IEnumerable<IToken> TestTokenizer(string str)
         {
-            yield return new RawTextSymbol(SourceLocation.Zero, str);
+            yield return new RawTextToken(SourceLocation.Zero, str);
         }
 
-        public SpanConstructor(SpanKindInternal kind, SourceLocation location, IEnumerable<ISymbol> symbols)
+        public SpanConstructor(SpanKindInternal kind, SourceLocation location, IEnumerable<IToken> tokens)
         {
             Builder = new SpanBuilder(location);
             Builder.Kind = kind;
             Builder.EditHandler = SpanEditHandler.CreateDefault((content) => SpanConstructor.TestTokenizer(content));
-            foreach (ISymbol sym in symbols)
+            foreach (IToken sym in tokens)
             {
                 Builder.Accept(sym);
             }

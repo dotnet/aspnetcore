@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -554,6 +553,31 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("AppWithP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibraryMvc21" })]
+        public async Task Build_WithP2P_Referencing21Project_Works()
+        {
+            // Verifies building with different versions of Razor.Tasks works. Loosely modeled after the repro
+            // scenario listed in https://github.com/Microsoft/msbuild/issues/3572
+            var additionalProjectContent = @"
+<ItemGroup>
+  <ProjectReference Include=""..\ClassLibraryMvc21\ClassLibraryMvc21.csproj"" />
+</ItemGroup>
+";
+            AddProjectFileContent(additionalProjectContent);
+
+            var result = await DotnetMSBuild(target: default);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibraryMvc21.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibraryMvc21.Views.dll");
+        }
+
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithStartupObjectSpecified_Works()
         {
@@ -566,6 +590,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithDeterministicFlagSet_OutputsDeterministicViewsAssembly()
+        {
+            // Build 1
+            var result = await DotnetMSBuild("Build", $"/p:Deterministic=true");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            var filePath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            var firstAssemblyBytes = File.ReadAllBytes(filePath);
+
+            // Build 2
+            result = await DotnetMSBuild("Rebuild", $"/p:Deterministic=true");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            var secondAssemblyBytes = File.ReadAllBytes(filePath);
+
+            Assert.Equal(firstAssemblyBytes, secondAssemblyBytes);
         }
 
         private static DependencyContext ReadDependencyContext(string depsFilePath)

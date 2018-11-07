@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Linq;
 using Xunit;
 
@@ -26,7 +25,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var factory = new SpanFactory();
             var parser = new RazorParser();
 
-            // Act/Assert
+            // Act
+            var syntaxTree = parser.Parse(TestRazorSourceDocument.Create("foo @bar baz"));
+
+            // Assert
             ParserTestBase.EvaluateResults(parser.Parse(TestRazorSourceDocument.Create("foo @bar baz")),
                 new MarkupBlock(
                     factory.Markup("foo "),

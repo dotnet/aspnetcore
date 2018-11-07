@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             builder.Kind = SpanKindInternal.Markup;
             builder.ChunkGenerator = new MarkupChunkGenerator();
 
-            foreach (ISymbol sym in HtmlLanguageCharacteristics.Instance.TokenizeString(start, content))
+            foreach (IToken sym in HtmlLanguageCharacteristics.Instance.TokenizeString(start, content))
             {
                 builder.Accept(sym);
             }

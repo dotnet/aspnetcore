@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,7 +11,9 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
+using Microsoft.Extensions.Internal;
 using Microsoft.VisualStudio.Text;
+using static Microsoft.VisualStudio.Editor.Razor.BackgroundParser;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
 using Timer = System.Threading.Timer;
 
@@ -31,7 +34,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly ForegroundDispatcher _dispatcher;
-        private readonly RazorProjectEngineFactoryService _projectEngineFactory;
+        private readonly ProjectSnapshotProjectEngineFactory _projectEngineFactory;
         private readonly ErrorReporter _errorReporter;
         private RazorProjectEngine _projectEngine;
         private RazorCodeDocument _codeDocument;
@@ -47,7 +50,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public DefaultVisualStudioRazorParser(
             ForegroundDispatcher dispatcher,
             VisualStudioDocumentTracker documentTracker,
-            RazorProjectEngineFactoryService projectEngineFactory,
+            ProjectSnapshotProjectEngineFactory projectEngineFactory,
             ErrorReporter errorReporter,
             VisualStudioCompletionBroker completionBroker)
         {
@@ -167,8 +170,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _dispatcher.AssertForegroundThread();
 
+            // Make sure any tests use the real thing or a good mock. These tests can cause failures
+            // that are hard to understand when this throws.
+            Debug.Assert(_documentTracker.IsSupportedProject);
+            Debug.Assert(_documentTracker.ProjectSnapshot != null);
+
+            _projectEngine = _projectEngineFactory.Create(_documentTracker.ProjectSnapshot, ConfigureProjectEngine);
+
+            Debug.Assert(_projectEngine != null); 
+            Debug.Assert(_projectEngine.Engine != null);
+            Debug.Assert(_projectEngine.FileSystem != null);
+
             var projectDirectory = Path.GetDirectoryName(_documentTracker.ProjectPath);
-            _projectEngine = _projectEngineFactory.Create(projectDirectory, ConfigureProjectEngine);
             _parser = new BackgroundParser(_projectEngine, FilePath, projectDirectory);
             _parser.ResultsReady += OnResultsReady;
             _parser.Start();
@@ -202,7 +215,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 if (_idleTimer == null)
                 {
                     // Timer will fire after a fixed delay, but only once.
-                    _idleTimer = new Timer(Timer_Tick, null, IdleDelay, Timeout.InfiniteTimeSpan);
+                    _idleTimer = NonCapturingTimer.Create(state => ((DefaultVisualStudioRazorParser)state).Timer_Tick(), this, IdleDelay, Timeout.InfiniteTimeSpan);
                 }
             }
         }
@@ -306,8 +319,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _dispatcher.AssertForegroundThread();
 
-            _latestChangeReference = new ChangeReference(change, snapshot);
-            _parser.QueueChange(change, snapshot);
+            _latestChangeReference = _parser.QueueChange(change, snapshot);
         }
 
         private void OnNotifyForegroundIdle()
@@ -326,7 +338,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private void Timer_Tick(object state)
+        private void Timer_Tick()
         {
             try
             {
@@ -346,7 +358,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private void OnResultsReady(object sender, DocumentStructureChangedEventArgs args)
+        private void OnResultsReady(object sender, BackgroundParserResultsReadyEventArgs args)
         {
             _dispatcher.AssertBackgroundThread();
 
@@ -364,21 +376,34 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return;
             }
 
-            var args = (DocumentStructureChangedEventArgs)state;
+            var backgroundParserArgs = (BackgroundParserResultsReadyEventArgs)state;
             if (_latestChangeReference == null || // extra hardening
-                !_latestChangeReference.IsAssociatedWith(args) ||
-                args.Snapshot != TextBuffer.CurrentSnapshot)
+                _latestChangeReference != backgroundParserArgs.ChangeReference)
             {
                 // In the middle of parsing a newer change or about to parse a newer change.
                 return;
             }
 
+            if (backgroundParserArgs.ChangeReference.Snapshot != TextBuffer.CurrentSnapshot)
+            {
+                // Changes have impacted the snapshot after our we recorded our last change reference.
+                // This can happen for a multitude of reasons, usually because of a user auto-completing
+                // C# statements (causes multiple edits in quick succession). This ensures that our latest
+                // parse corresponds to the current snapshot.
+                QueueReparse();
+                return;
+            }
+
             _latestChangeReference = null;
-            _codeDocument = args.CodeDocument;
-            _snapshot = args.Snapshot;
+            _codeDocument = backgroundParserArgs.CodeDocument;
+            _snapshot = backgroundParserArgs.ChangeReference.Snapshot;
             _partialParser = new RazorSyntaxTreePartialParser(CodeDocument.GetSyntaxTree());
 
-            DocumentStructureChanged?.Invoke(this, args);
+            var documentStructureChangedArgs = new DocumentStructureChangedEventArgs(
+                backgroundParserArgs.ChangeReference.Change, 
+                backgroundParserArgs.ChangeReference.Snapshot, 
+                backgroundParserArgs.CodeDocument);
+            DocumentStructureChanged?.Invoke(this, documentStructureChangedArgs);
         }
 
         private void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
@@ -419,26 +444,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
             {
                 return _tagHelpers;
-            }
-        }
-
-        // Internal for testing
-        internal class ChangeReference
-        {
-            public ChangeReference(SourceChange change, ITextSnapshot snapshot)
-            {
-                Change = change;
-                Snapshot = snapshot;
-            }
-
-            public SourceChange Change { get; }
-
-            public ITextSnapshot Snapshot { get; }
-
-            public bool IsAssociatedWith(DocumentStructureChangedEventArgs other)
-            {
-                return Change == other.SourceChange &&
-                    Snapshot == other.Snapshot;
             }
         }
     }

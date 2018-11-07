@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
                 b.AddTargetExtension(new TemplateTargetExtension());
             });
 
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var document = engine.Process(projectItem);

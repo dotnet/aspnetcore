@@ -13,460 +13,182 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static readonly TestFile Nested1000 = TestFile.Create("TestFiles/nested-1000.html", typeof(HtmlDocumentTest));
 
         [Fact]
-        public void ParseDocument_NestedCodeBlockWithMarkupSetsDotAsMarkup()
+        public void NestedCodeBlockWithMarkupSetsDotAsMarkup()
         {
-            ParseDocumentTest("@if (true) { @if(false) { <div>@something.</div> } }",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("if (true) { ").AsStatement(),
-                        new StatementBlock(
-                            Factory.CodeTransition(),
-                            Factory.Code("if(false) {").AsStatement(),
-                            new MarkupBlock(
-                                Factory.Markup(" "),
-                                BlockFactory.MarkupTagBlock("<div>", AcceptedCharactersInternal.None),
-                                Factory.EmptyHtml(),
-                                new ExpressionBlock(
-                                    Factory.CodeTransition(),
-                                    Factory.Code("something")
-                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
-                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                                Factory.Markup("."),
-                                BlockFactory.MarkupTagBlock("</div>", AcceptedCharactersInternal.None),
-                                Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                            Factory.Code("}").AsStatement()),
-                        Factory.Code(" }").AsStatement())));
+            ParseDocumentTest("@if (true) { @if(false) { <div>@something.</div> } }");
         }
 
         [Fact]
-        public void ParseDocumentOutputsEmptyBlockWithEmptyMarkupSpanIfContentIsEmptyString()
+        public void OutputsEmptyBlockWithEmptyMarkupSpanIfContentIsEmptyString()
         {
-            ParseDocumentTest(string.Empty, new MarkupBlock(Factory.EmptyHtml()));
+            ParseDocumentTest(string.Empty);
         }
 
         [Fact]
-        public void ParseDocumentOutputsWhitespaceOnlyContentAsSingleWhitespaceMarkupSpan()
+        public void OutputsWhitespaceOnlyContentAsSingleWhitespaceMarkupSpan()
         {
-            SingleSpanDocumentTest("          ", BlockKindInternal.Markup, SpanKindInternal.Markup);
+            ParseDocumentTest("          ");
         }
 
         [Fact]
-        public void ParseDocumentAcceptsSwapTokenAtEndOfFileAndOutputsZeroLengthCodeSpan()
+        public void AcceptsSwapTokenAtEndOfFileAndOutputsZeroLengthCodeSpan()
         {
-            ParseDocumentTest("@",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new ExpressionBlock(
-                        Factory.CodeTransition(),
-                        Factory.EmptyCSharp()
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                    Factory.EmptyHtml()),
-                RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1)));
+            ParseDocumentTest("@");
         }
 
         [Fact]
-        public void ParseDocumentCorrectlyHandlesOddlySpacedHTMLElements()
+        public void CorrectlyHandlesOddlySpacedHTMLElements()
         {
-            ParseDocumentTest("<div ><p class = 'bar'> Foo </p></div >",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<div >"),
-                    new MarkupTagBlock(
-                        Factory.Markup("<p"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator(name: "class", prefix: new LocationTagged<string>(" class = '", 8, 0, 8), suffix: new LocationTagged<string>("'", 21, 0, 21)),
-                            Factory.Markup(" class = '").With(SpanChunkGenerator.Null),
-                            Factory.Markup("bar").With(new LiteralAttributeChunkGenerator(prefix: new LocationTagged<string>(string.Empty, 18, 0, 18), value: new LocationTagged<string>("bar", 18, 0, 18))),
-                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
-                        Factory.Markup(">")),
-                    Factory.Markup(" Foo "),
-                    BlockFactory.MarkupTagBlock("</p>"),
-                    BlockFactory.MarkupTagBlock("</div >")));
+            ParseDocumentTest("<div ><p class = 'bar'> Foo </p></div >");
         }
 
         [Fact]
-        public void ParseDocumentCorrectlyHandlesSingleLineOfMarkupWithEmbeddedStatement()
+        public void CorrectlyHandlesSingleLineOfMarkupWithEmbeddedStatement()
         {
-            ParseDocumentTest("<div>Foo @if(true) {} Bar</div>",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<div>"),
-                    Factory.Markup("Foo "),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("if(true) {}").AsStatement()),
-                    Factory.Markup(" Bar"),
-                    BlockFactory.MarkupTagBlock("</div>")));
+            ParseDocumentTest("<div>Foo @if(true) {} Bar</div>");
         }
 
         [Fact]
-        public void ParseDocumentWithinSectionDoesNotCreateDocumentLevelSpan()
+        public void WithinSectionDoesNotCreateDocumentLevelSpan()
         {
             ParseDocumentTest("@section Foo {" + Environment.NewLine
                             + "    <html></html>" + Environment.NewLine
                             + "}",
-                new[] { SectionDirective.Directive, },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(SectionDirective.Directive),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "Foo", CSharpSymbolType.Identifier).AsDirectiveToken(SectionDirective.Directive.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                        new MarkupBlock(
-                            Factory.Markup(Environment.NewLine + "    "),
-                            BlockFactory.MarkupTagBlock("<html>"),
-                            BlockFactory.MarkupTagBlock("</html>"),
-                            Factory.Markup(Environment.NewLine)),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.EmptyHtml()));
+                new[] { SectionDirective.Directive, });
         }
 
         [Fact]
-        public void ParseDocumentParsesWholeContentAsOneSpanIfNoSwapCharacterEncountered()
+        public void ParsesWholeContentAsOneSpanIfNoSwapCharacterEncountered()
         {
-            SingleSpanDocumentTest("foo baz", BlockKindInternal.Markup, SpanKindInternal.Markup);
+            ParseDocumentTest("foo baz");
         }
 
         [Fact]
-        public void ParseDocumentHandsParsingOverToCodeParserWhenAtSignEncounteredAndEmitsOutput()
+        public void HandsParsingOverToCodeParserWhenAtSignEncounteredAndEmitsOutput()
         {
-            ParseDocumentTest("foo @bar baz",
-                new MarkupBlock(
-                    Factory.Markup("foo "),
-                    new ExpressionBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("bar")
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                    Factory.Markup(" baz")));
+            ParseDocumentTest("foo @bar baz");
         }
 
         [Fact]
-        public void ParseDocumentEmitsAtSignAsMarkupIfAtEndOfFile()
+        public void EmitsAtSignAsMarkupIfAtEndOfFile()
         {
-            ParseDocumentTest("foo @",
-                new MarkupBlock(
-                    Factory.Markup("foo "),
-                    new ExpressionBlock(
-                        Factory.CodeTransition(),
-                        Factory.EmptyCSharp()
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                    Factory.EmptyHtml()),
-                RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
-                    new SourceSpan(new SourceLocation(5, 0, 5), contentLength: 1)));
+            ParseDocumentTest("foo @");
         }
 
         [Fact]
-        public void ParseDocumentEmitsCodeBlockIfFirstCharacterIsSwapCharacter()
+        public void EmitsCodeBlockIfFirstCharacterIsSwapCharacter()
         {
-            ParseDocumentTest("@bar",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new ExpressionBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("bar")
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                    Factory.EmptyHtml()));
+            ParseDocumentTest("@bar");
         }
 
         [Fact]
         public void ParseDocumentDoesNotSwitchToCodeOnEmailAddressInText()
         {
-            SingleSpanDocumentTest("anurse@microsoft.com", BlockKindInternal.Markup, SpanKindInternal.Markup);
+            ParseDocumentTest("example@microsoft.com");
         }
 
         [Fact]
-        public void ParseDocumentDoesNotSwitchToCodeOnEmailAddressInAttribute()
+        public void DoesNotSwitchToCodeOnEmailAddressInAttribute()
         {
-            ParseDocumentTest("<a href=\"mailto:anurse@microsoft.com\">Email me</a>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<a"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator("href", new LocationTagged<string>(" href=\"", 2, 0, 2), new LocationTagged<string>("\"", 36, 0, 36)),
-                            Factory.Markup(" href=\"").With(SpanChunkGenerator.Null),
-                            Factory.Markup("mailto:anurse@microsoft.com")
-                                   .With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("mailto:anurse@microsoft.com", 9, 0, 9))),
-                            Factory.Markup("\"").With(SpanChunkGenerator.Null)),
-                        Factory.Markup(">")),
-                    Factory.Markup("Email me"),
-                    BlockFactory.MarkupTagBlock("</a>")));
+            ParseDocumentTest("<a href=\"mailto:example@microsoft.com\">Email me</a>");
         }
 
         [Fact]
-        public void ParseDocumentDoesNotReturnErrorOnMismatchedTags()
+        public void DoesNotReturnErrorOnMismatchedTags()
         {
-            ParseDocumentTest("Foo <div><p></p></p> Baz",
-                new MarkupBlock(
-                    Factory.Markup("Foo "),
-                    BlockFactory.MarkupTagBlock("<div>"),
-                    BlockFactory.MarkupTagBlock("<p>"),
-                    BlockFactory.MarkupTagBlock("</p>"),
-                    BlockFactory.MarkupTagBlock("</p>"),
-                    Factory.Markup(" Baz")));
+            ParseDocumentTest("Foo <div><p></p></p> Baz");
         }
 
         [Fact]
-        public void ParseDocumentReturnsOneMarkupSegmentIfNoCodeBlocksEncountered()
+        public void ReturnsOneMarkupSegmentIfNoCodeBlocksEncountered()
         {
-            ParseDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux",
-                new MarkupBlock(
-                    Factory.Markup("Foo Baz"),
-                    BlockFactory.HtmlCommentBlock("Foo"),
-                    Factory.Markup("Bar"),
-                    Factory.Markup("<!--F> Qux")));
+            ParseDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux");
         }
 
         [Fact]
-        public void ParseDocumentRendersTextPseudoTagAsMarkup()
+        public void RendersTextPseudoTagAsMarkup()
         {
-            ParseDocumentTest("Foo <text>Foo</text>",
-                new MarkupBlock(
-                    Factory.Markup("Foo "),
-                    BlockFactory.MarkupTagBlock("<text>"),
-                    Factory.Markup("Foo"),
-                    BlockFactory.MarkupTagBlock("</text>")));
+            ParseDocumentTest("Foo <text>Foo</text>");
         }
 
         [Fact]
-        public void ParseDocumentAcceptsEndTagWithNoMatchingStartTag()
+        public void AcceptsEndTagWithNoMatchingStartTag()
         {
-            ParseDocumentTest("Foo </div> Bar",
-                new MarkupBlock(
-                    Factory.Markup("Foo "),
-                    BlockFactory.MarkupTagBlock("</div>"),
-                    Factory.Markup(" Bar")));
+            ParseDocumentTest("Foo </div> Bar");
         }
 
         [Fact]
-        public void ParseDocumentNoLongerSupportsDollarOpenBraceCombination()
+        public void NoLongerSupportsDollarOpenBraceCombination()
         {
-            ParseDocumentTest("<foo>${bar}</foo>",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<foo>"),
-                    Factory.Markup("${bar}"),
-                    BlockFactory.MarkupTagBlock("</foo>")));
+            ParseDocumentTest("<foo>${bar}</foo>");
         }
 
         [Fact]
-        public void ParseDocumentIgnoresTagsInContentsOfScriptTag()
+        public void IgnoresTagsInContentsOfScriptTag()
         {
-            ParseDocumentTest(@"<script>foo<bar baz='@boz'></script>",
-                new MarkupBlock(
-                    BlockFactory.MarkupTagBlock("<script>"),
-                    Factory.Markup("foo<bar baz='"),
-                    new ExpressionBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("boz")
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                    Factory.Markup("'>"),
-                    BlockFactory.MarkupTagBlock("</script>")));
+            ParseDocumentTest(@"<script>foo<bar baz='@boz'></script>");
         }
 
         [Fact]
-        public void ParseDocumentDoesNotRenderExtraNewLineAtTheEndOfVerbatimBlock()
+        public void DoesNotRenderExtraNewLineAtTheEndOfVerbatimBlock()
         {
-            ParseDocumentTest("@{\r\n}\r\n<html>",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
-                    BlockFactory.MarkupTagBlock("<html>")));
+            ParseDocumentTest("@{\r\n}\r\n<html>");
         }
 
         [Fact]
-        public void ParseDocumentDoesNotRenderExtraWhitespaceAndNewLineAtTheEndOfVerbatimBlock()
+        public void DoesNotRenderExtraWhitespaceAndNewLineAtTheEndOfVerbatimBlock()
         {
-            ParseDocumentTest("@{\r\n} \t\r\n<html>",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup(" \t\r\n").With(SpanChunkGenerator.Null),
-                    BlockFactory.MarkupTagBlock("<html>")));
+            ParseDocumentTest("@{\r\n} \t\r\n<html>");
         }
 
         [Fact]
-        public void ParseDocumentDoesNotRenderExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByCSharp()
+        public void DoesNotRenderNewlineAfterTextTagInVerbatimBlockIfFollowedByCSharp()
         {
-            ParseDocumentTest("@{<text>Blah</text>\r\n\r\n}<html>",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                Factory.MarkupTransition("<text>")),
-                            Factory.Markup("Blah").Accepts(AcceptedCharactersInternal.None),
-                            new MarkupTagBlock(
-                                Factory.MarkupTransition("</text>"))),
-                        Factory.Code("\r\n\r\n").AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    BlockFactory.MarkupTagBlock("<html>")));
+            // ParseDocumentDoesNotRenderExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByCSharp
+            ParseDocumentTest("@{<text>Blah</text>\r\n\r\n}<html>");
         }
 
         [Fact]
-        public void ParseDocumentRendersExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByHtml()
+        public void RendersExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByHtml()
         {
-            ParseDocumentTest("@{<text>Blah</text>\r\n<input/>\r\n}<html>",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                Factory.MarkupTransition("<text>")),
-                            Factory.Markup("Blah").Accepts(AcceptedCharactersInternal.None),
-                            new MarkupTagBlock(
-                                Factory.MarkupTransition("</text>")),
-                            Factory.Markup("\r\n").Accepts(AcceptedCharactersInternal.None)),
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                Factory.Markup("<input/>").Accepts(AcceptedCharactersInternal.None)),
-                            Factory.Markup("\r\n").Accepts(AcceptedCharactersInternal.None)),
-                        Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    BlockFactory.MarkupTagBlock("<html>")));
+            ParseDocumentTest("@{<text>Blah</text>\r\n<input/>\r\n}<html>");
         }
 
         [Fact]
-        public void ParseDocumentRendersExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByMarkupTransition()
+        public void RendersNewlineAfterTextTagInVerbatimBlockIfFollowedByMarkupTransition()
         {
-            ParseDocumentTest("@{<text>Blah</text>\r\n@: Bleh\r\n}<html>",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                Factory.MarkupTransition("<text>")),
-                            Factory.Markup("Blah").Accepts(AcceptedCharactersInternal.None),
-                            new MarkupTagBlock(
-                                Factory.MarkupTransition("</text>")),
-                            Factory.Markup("\r\n").Accepts(AcceptedCharactersInternal.None)),
-                        new MarkupBlock(
-                            Factory.MarkupTransition(),
-                            Factory.MetaMarkup(":", HtmlSymbolType.Colon),
-                            Factory.Markup(" Bleh\r\n")
-                                .With(new SpanEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString))
-                                .Accepts(AcceptedCharactersInternal.None)),
-                        Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    BlockFactory.MarkupTagBlock("<html>")));
+            // ParseDocumentRendersExtraNewlineAtTheEndTextTagInVerbatimBlockIfFollowedByMarkupTransition
+            ParseDocumentTest("@{<text>Blah</text>\r\n@: Bleh\r\n}<html>");
         }
 
         [Fact]
-        public void ParseDocumentDoesNotIgnoreNewLineAtTheEndOfMarkupBlock()
+        public void DoesNotIgnoreNewLineAtTheEndOfMarkupBlock()
         {
-            ParseDocumentTest("@{\r\n}\r\n<html>\r\n",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
-                    BlockFactory.MarkupTagBlock("<html>"),
-                    Factory.Markup("\r\n")));
+            ParseDocumentTest("@{\r\n}\r\n<html>\r\n");
         }
 
         [Fact]
-        public void ParseDocumentDoesNotIgnoreWhitespaceAtTheEndOfVerbatimBlockIfNoNewlinePresent()
+        public void DoesNotIgnoreWhitespaceAtTheEndOfVerbatimBlockIfNoNewlinePresent()
         {
-            ParseDocumentTest("@{\r\n}   \t<html>\r\n",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("   \t"),
-                    BlockFactory.MarkupTagBlock("<html>"),
-                    Factory.Markup("\r\n")));
+            ParseDocumentTest("@{\r\n}   \t<html>\r\n");
         }
 
         [Fact]
-        public void ParseDocumentHandlesNewLineInNestedBlock()
+        public void HandlesNewLineInNestedBlock()
         {
-            ParseDocumentTest("@{\r\n@if(true){\r\n} \r\n}\r\n<html>",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        new StatementBlock(
-                            Factory.CodeTransition(),
-                            Factory.Code("if(true){\r\n}").AsStatement()),
-                        Factory.Code(" \r\n").AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("\r\n").With(SpanChunkGenerator.Null),
-                    BlockFactory.MarkupTagBlock("<html>")));
+            ParseDocumentTest("@{\r\n@if(true){\r\n} \r\n}\r\n<html>");
         }
 
         [Fact]
-        public void ParseDocumentHandlesNewLineAndMarkupInNestedBlock()
+        public void HandlesNewLineAndMarkupInNestedBlock()
         {
-            ParseDocumentTest("@{\r\n@if(true){\r\n} <input> }",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        new StatementBlock(
-                            Factory.CodeTransition(),
-                            Factory.Code("if(true){\r\n}").AsStatement()),
-                        new MarkupBlock(
-                            Factory.Markup(" "),
-                            new MarkupTagBlock(
-                                Factory.Markup("<input>").Accepts(AcceptedCharactersInternal.None)),
-                            Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                        Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.EmptyHtml()));
+            ParseDocumentTest("@{\r\n@if(true){\r\n} <input> }");
         }
 
         [Fact]
-        public void ParseDocumentHandlesExtraNewLineBeforeMarkupInNestedBlock()
+        public void HandlesExtraNewLineBeforeMarkupInNestedBlock()
         {
-            ParseDocumentTest("@{\r\n@if(true){\r\n} \r\n<input> \r\n}<html>",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code("\r\n").AsStatement().AutoCompleteWith(null, false),
-                        new StatementBlock(
-                            Factory.CodeTransition(),
-                            Factory.Code("if(true){\r\n}").AsStatement()),
-                        Factory.Code(" \r\n").AsStatement(),
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                Factory.Markup("<input>").Accepts(AcceptedCharactersInternal.None)),
-                            Factory.Markup(" \r\n").Accepts(AcceptedCharactersInternal.None)),
-                        Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<html>"))));
+            ParseDocumentTest("@{\r\n@if(true){\r\n} \r\n<input> \r\n}<html>");
         }
 
         [Fact]
@@ -474,330 +196,71 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseDocumentTest(
                 @"@section Foo { <script>foo<bar baz='@boz'></script> }",
-                new[] { SectionDirective.Directive, },
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(SectionDirective.Directive),
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "Foo", CSharpSymbolType.Identifier).AsDirectiveToken(SectionDirective.Directive.Tokens[0]),
-                        Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
-                        Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
-                        new MarkupBlock(
-                            Factory.Markup(" "),
-                            BlockFactory.MarkupTagBlock("<script>"),
-                            Factory.Markup("foo<bar baz='"),
-                            new ExpressionBlock(
-                                Factory.CodeTransition(),
-                                Factory.Code("boz")
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                            Factory.Markup("'>"),
-                            BlockFactory.MarkupTagBlock("</script>"),
-                            Factory.Markup(" ")),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.EmptyHtml()));
+                new[] { SectionDirective.Directive, });
         }
 
         [Fact]
         public void ParseBlockCanParse1000NestedElements()
         {
             var content = Nested1000.ReadAllText();
+
+            // Assert - does not throw
             ParseDocument(content);
         }
 
-        public static TheoryData BlockWithEscapedTransitionData
+        [Fact]
+        public void WithDoubleTransitionInAttributeValue_DoesNotThrow()
         {
-            get
-            {
-                var factory = new SpanFactory();
-                var datetimeBlock = new ExpressionBlock(
-                    factory.CodeTransition(),
-                    factory.Code("DateTime.Now")
-                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace));
-
-                return new TheoryData<string, Block>
-                {
-                    {
-                        // Double transition in attribute value
-                        "<span foo='@@' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 13, 0, 13)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        // Double transition at the end of attribute value
-                        "<span foo='abc@@' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 16, 0, 16)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        // Double transition at the beginning of attribute value
-                        "<span foo='@@def' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 16, 0, 16)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup("def").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), new LocationTagged<string>("def", 13, 0, 13))),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        // Double transition in between attribute value
-                        "<span foo='abc @@ def' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 21, 0, 21)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
-                                    new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 14, 0, 14), new LocationTagged<string>("@", 15, 0, 15))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup(" def").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 17, 0, 17), new LocationTagged<string>("def", 18, 0, 18))),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        // Double transition with expression block
-                        "<span foo='@@@DateTime.Now' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    new MarkupBlock(
-                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
-                                        factory.EmptyHtml().With(SpanChunkGenerator.Null),
-                                        datetimeBlock),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        "<span foo='@DateTime.Now @@' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 27, 0, 27)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    new MarkupBlock(
-                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
-                                        datetimeBlock),
-                                    new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 24, 0, 24), new LocationTagged<string>("@", 25, 0, 25))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        "<span foo='@(2+3)@@@DateTime.Now' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 32, 0, 32)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    new MarkupBlock(
-                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
-                                        new ExpressionBlock(
-                                            factory.CodeTransition(),
-                                            factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Code("2+3").AsExpression(),
-                                            factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None))),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 17, 0, 17), new LocationTagged<string>("@", 17, 0, 17))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    new MarkupBlock(
-                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 19, 0, 19), 19, 0, 19),
-                                        factory.EmptyHtml().With(SpanChunkGenerator.Null),
-                                        datetimeBlock),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                            factory.Markup(" />")))
-                    },
-                    {
-                        "<span foo='@@@(2+3)' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 19, 0, 19)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    new MarkupBlock(
-                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 13, 0, 13), 13, 0, 13),
-                                        factory.EmptyHtml().With(SpanChunkGenerator.Null),
-                                        new ExpressionBlock(
-                                            factory.CodeTransition(),
-                                            factory.MetaCode("(").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None),
-                                            factory.Code("2+3").AsExpression(),
-                                            factory.MetaCode(")").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None))),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                            factory.Markup(" />")))
-                    },
-                    {
-                        "<span foo='@DateTime.Now@@' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    new MarkupBlock(
-                                        new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
-                                        datetimeBlock),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 24, 0, 24), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        // Double transition with email in attribute value
-                        "<span foo='abc@def.com @@' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 25, 0, 25)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    factory.Markup("abc@def.com").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc@def.com", 11, 0, 11))),
-                                    new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 22, 0, 22), new LocationTagged<string>("@", 23, 0, 23))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        "<span foo='abc@@def.com @@' />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 26, 0, 26)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    factory.Markup("abc").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("abc", 11, 0, 11))),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 14, 0, 14), new LocationTagged<string>("@", 14, 0, 14))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup("def.com").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 16, 0, 16), new LocationTagged<string>("def.com", 16, 0, 16))),
-                                    new MarkupBlock(
-                                        factory.Markup(" @").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(" ", 23, 0, 23), new LocationTagged<string>("@", 24, 0, 24))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup("'").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                    {
-                        // Double transition before end of file
-                        "<span foo='@@",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>(string.Empty, 13, 0, 13)),
-                                    factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>("@", 11, 0, 11))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)))),
-                            factory.EmptyHtml())
-                    },
-                    {
-                        // Double transition in complex regex in attribute value
-                        @"<span foo=""/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i"" />",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<span"),
-                                new MarkupBlock(
-                                    new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo=\"", 5, 0, 5), new LocationTagged<string>("\"", 111, 0, 111)),
-                                    factory.Markup(" foo=\"").With(SpanChunkGenerator.Null),
-                                    factory.Markup(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), new LocationTagged<string>(@"/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+", 11, 0, 11))),
-                                    new MarkupBlock(
-                                        factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 43, 0, 43), new LocationTagged<string>("@", 43, 0, 43))).Accepts(AcceptedCharactersInternal.None),
-                                        factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
-                                    factory.Markup(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 45, 0, 45), new LocationTagged<string>(@"[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i", 45, 0, 45))),
-                                    factory.Markup("\"").With(SpanChunkGenerator.Null)),
-                                factory.Markup(" />")))
-                    },
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(BlockWithEscapedTransitionData))]
-        public void ParseBlock_WithDoubleTransition_DoesNotThrow(string input, object expected)
-        {
-            FixupSpans = true;
-
-            // Act & Assert
-            ParseDocumentTest(input, (Block)expected);
+            var input = "{<span foo='@@' />}";
+            ParseDocumentTest(input);
         }
 
         [Fact]
-        public void ParseDocument_WithUnexpectedTransitionsInAttributeValue_Throws()
+        public void WithDoubleTransitionAtEndOfAttributeValue_DoesNotThrow()
         {
-            // Arrange
-            var expected = new MarkupBlock(
-                new MarkupTagBlock(
-                    Factory.Markup("<span"),
-                    new MarkupBlock(
-                        new AttributeBlockChunkGenerator("foo", new LocationTagged<string>(" foo='", 5, 0, 5), new LocationTagged<string>("'", 14, 0, 14)),
-                        Factory.Markup(" foo='").With(SpanChunkGenerator.Null),
-                        new MarkupBlock(
-                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(string.Empty, 11, 0, 11), 11, 0, 11),
-                            new ExpressionBlock(
-                                Factory.CodeTransition(),
-                                Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
-                        new MarkupBlock(
-                            new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>(" ", 12, 0, 12), 12, 0, 12),
-                            Factory.Markup(" ").With(SpanChunkGenerator.Null),
-                            new ExpressionBlock(
-                                Factory.CodeTransition().Accepts(AcceptedCharactersInternal.None).With(SpanChunkGenerator.Null),
-                                Factory.EmptyCSharp().AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
-                        Factory.Markup("'").With(SpanChunkGenerator.Null)),
-                    Factory.Markup(" />")));
-            var expectedErrors = new RazorDiagnostic[]
-            {
-                RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
-                    new SourceSpan(new SourceLocation(12, 0, 12), contentLength: 1)),
-                RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
-                    new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 4),
-                    "' />"),
-            };
+            var input = "{<span foo='abc@@' />}";
+            ParseDocumentTest(input);
+        }
 
-            // Act & Assert
-            ParseDocumentTest("<span foo='@ @' />", expected, expectedErrors);
+        [Fact]
+        public void WithDoubleTransitionAtBeginningOfAttributeValue_DoesNotThrow()
+        {
+            var input = "{<span foo='@@def' />}";
+            ParseDocumentTest(input);
+        }
+
+        [Fact]
+        public void WithDoubleTransitionBetweenAttributeValue_DoesNotThrow()
+        {
+            var input = "{<span foo='abc @@ def' />}";
+            ParseDocumentTest(input);
+        }
+
+        [Fact]
+        public void WithDoubleTransitionWithExpressionBlock_DoesNotThrow()
+        {
+            var input = "{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.Now' baz='@DateTime.Now@@' bat='@DateTime.Now @@' zoo='@@@DateTime.Now' />}";
+            ParseDocumentTest(input);
+        }
+
+        [Fact]
+        public void WithDoubleTransitionInEmail_DoesNotThrow()
+        {
+            var input = "{<span foo='abc@def.com abc@@def.com @@' />}";
+            ParseDocumentTest(input);
+        }
+
+        [Fact]
+        public void WithDoubleTransitionInRegex_DoesNotThrow()
+        {
+            var input = @"{<span foo=""/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[a-z0-9]([a-z0-9-]*[a-z0-9])?\.([a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i"" />}";
+            ParseDocumentTest(input);
+        }
+
+        [Fact]
+        public void WithUnexpectedTransitionsInAttributeValue_Throws()
+        {
+            ParseDocumentTest("<span foo='@ @' />");
         }
     }
 }

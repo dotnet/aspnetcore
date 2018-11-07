@@ -13,8 +13,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class DefaultVisualStudioDocumentTrackerFactory : VisualStudioDocumentTrackerFactory
     {
-        private readonly TextBufferProjectService _projectService;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
+        private readonly ProjectPathProvider _projectPathProvider;
         private readonly Workspace _workspace;
         private readonly ImportDocumentManager _importDocumentManager;
         private readonly ForegroundDispatcher _foregroundDispatcher;
@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ForegroundDispatcher foregroundDispatcher,
             ProjectSnapshotManager projectManager,
             WorkspaceEditorSettings workspaceEditorSettings,
-            TextBufferProjectService projectService,
+            ProjectPathProvider projectPathProvider,
             ITextDocumentFactoryService textDocumentFactory,
             ImportDocumentManager importDocumentManager,
             Workspace workspace)
@@ -45,9 +45,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(workspaceEditorSettings));
             }
 
-            if (projectService == null)
+            if (projectPathProvider == null)
             {
-                throw new ArgumentNullException(nameof(projectService));
+                throw new ArgumentNullException(nameof(projectPathProvider));
             }
 
             if (textDocumentFactory == null)
@@ -68,7 +68,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _foregroundDispatcher = foregroundDispatcher;
             _projectManager = projectManager;
             _workspaceEditorSettings = workspaceEditorSettings;
-            _projectService = projectService;
+            _projectPathProvider = projectPathProvider;
             _textDocumentFactory = textDocumentFactory;
             _importDocumentManager = importDocumentManager;
             _workspace = workspace;
@@ -87,16 +87,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return null;
             }
 
-            var filePath = textDocument.FilePath;
-            var project = _projectService.GetHostProject(textBuffer);
-            if (project == null)
+            if (!_projectPathProvider.TryGetProjectPath(textBuffer, out var projectPath))
             {
-                Debug.Fail("Text buffer should belong to a project.");
                 return null;
             }
 
-            var projectPath = _projectService.GetProjectPath(project);
-
+            var filePath = textDocument.FilePath;
             var tracker = new DefaultVisualStudioDocumentTracker(_foregroundDispatcher, filePath, projectPath, _projectManager, _workspaceEditorSettings, _workspace, textBuffer, _importDocumentManager);
 
             return tracker;

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Options;
+using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Moq;
@@ -289,7 +290,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             Assert.Equal("_RazorDirective_", item.SortText);
             Assert.False(item.Rules.FormatOnCommit);
             var tag = Assert.Single(item.Tags);
-            Assert.Equal(CompletionTags.Intrinsic, tag);
+            Assert.Equal(WellKnownTags.Intrinsic, tag);
         }
 
         private static Lazy<RazorCodeDocumentProvider> CreateCodeDocumentProvider(string text, IEnumerable<DirectiveDescriptor> directives)

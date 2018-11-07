@@ -82,7 +82,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             return new ProjectVersionedValue<IProjectSubscriptionUpdate>(
                 value: new ProjectSubscriptionUpdate(
-                    projectChanges: descriptions.ToImmutableDictionary(d => d.RuleName, d => (IProjectChangeDescription)d),
+                    projectChanges: descriptions.ToImmutableDictionary(d => d.After.RuleName, d => (IProjectChangeDescription)d),
                     projectConfiguration: ActiveConfiguredProject.ProjectConfiguration),
                 dataSourceVersions: ImmutableDictionary<NamedIdentity, IComparable>.Empty);
         }

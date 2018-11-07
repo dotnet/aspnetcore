@@ -20,5 +20,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             visitor.VisitDirective(this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(DirectiveName);
+
+            formatter.WriteProperty(nameof(Directive), Directive?.DisplayName);
+            formatter.WriteProperty(nameof(DirectiveName), DirectiveName);
+        }
     }
 }

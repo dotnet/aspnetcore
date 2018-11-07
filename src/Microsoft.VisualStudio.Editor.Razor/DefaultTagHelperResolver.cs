@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
@@ -12,18 +11,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class DefaultTagHelperResolver : TagHelperResolver
     {
-        private readonly RazorProjectEngineFactoryService _engineFactory;
-
-        public DefaultTagHelperResolver(RazorProjectEngineFactoryService engineFactory)
-        {
-            if (engineFactory == null)
-            {
-                throw new ArgumentNullException(nameof(engineFactory));
-            }
-
-            _engineFactory = engineFactory;
-        }
-
         public override Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshot project, CancellationToken cancellationToken = default)
         {
             if (project == null)
@@ -35,9 +22,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 return Task.FromResult(TagHelperResolutionResult.Empty);
             }
-
-            var engine = _engineFactory.Create(project, RazorProjectFileSystem.Empty, b => { });
-            return GetTagHelpersAsync(project, engine);
+            
+            return GetTagHelpersAsync(project, project.GetProjectEngine());
         }
     }
 }

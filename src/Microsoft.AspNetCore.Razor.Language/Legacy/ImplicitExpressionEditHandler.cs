@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private readonly ISet<string> _keywords;
         private readonly IReadOnlyCollection<string> _readOnlyKeywords;
 
-        public ImplicitExpressionEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, ISet<string> keywords, bool acceptTrailingDot)
+        public ImplicitExpressionEditHandler(Func<string, IEnumerable<IToken>> tokenizer, ISet<string> keywords, bool acceptTrailingDot)
             : base(tokenizer)
         {
             _keywords = keywords ?? new HashSet<string>();
@@ -109,9 +109,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return HandleInsertion(target, lastChar.Value, change);
             }
 
+            if (IsAcceptableInsertionInBalancedParenthesis(target, change))
+            {
+                return PartialParseResultInternal.Accepted;
+            }
+
             if (IsAcceptableDeletion(target, change))
             {
                 return HandleDeletion(target, lastChar.Value, change);
+            }
+
+            if (IsAcceptableDeletionInBalancedParenthesis(target, change))
+            {
+                return PartialParseResultInternal.Accepted;
             }
 
             return PartialParseResultInternal.Rejected;
@@ -160,44 +170,44 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return false;
             }
 
-            for (var i = 0; i < target.Symbols.Count; i++)
+            for (var i = 0; i < target.Tokens.Count; i++)
             {
-                var symbol = target.Symbols[i] as CSharpSymbol;
+                var token = target.Tokens[i] as CSharpToken;
 
-                if (symbol == null)
+                if (token == null)
                 {
                     break;
                 }
 
-                var symbolStartIndex = symbol.Start.AbsoluteIndex;
-                var symbolEndIndex = symbolStartIndex + symbol.Content.Length;
+                var tokenStartIndex = token.Start.AbsoluteIndex;
+                var tokenEndIndex = tokenStartIndex + token.Content.Length;
 
-                // We're looking for the first symbol that contains the SourceChange.
-                if (symbolEndIndex > change.Span.AbsoluteIndex)
+                // We're looking for the first token that contains the SourceChange.
+                if (tokenEndIndex > change.Span.AbsoluteIndex)
                 {
-                    if (symbolEndIndex >= change.Span.AbsoluteIndex + change.Span.Length && symbol.Type == CSharpSymbolType.Identifier)
+                    if (tokenEndIndex >= change.Span.AbsoluteIndex + change.Span.Length && token.Type == CSharpTokenType.Identifier)
                     {
-                        // The symbol we're changing happens to be an identifier. Need to check if its transformed state is also one.
+                        // The token we're changing happens to be an identifier. Need to check if its transformed state is also one.
                         // We do this transformation logic to capture the case that the new text change happens to not be an identifier;
                         // i.e. "5". Alone, it's numeric, within an identifier it's classified as identifier.
-                        var transformedContent = change.GetEditedContent(symbol.Content, change.Span.AbsoluteIndex - symbolStartIndex);
-                        var newSymbols = Tokenizer(transformedContent);
+                        var transformedContent = change.GetEditedContent(token.Content, change.Span.AbsoluteIndex - tokenStartIndex);
+                        var newTokens = Tokenizer(transformedContent);
 
-                        if (newSymbols.Count() != 1)
+                        if (newTokens.Count() != 1)
                         {
-                            // The transformed content resulted in more than one symbol; we can only replace a single identifier with
+                            // The transformed content resulted in more than one token; we can only replace a single identifier with
                             // another single identifier.
                             break;
                         }
 
-                        var newSymbol = (CSharpSymbol)newSymbols.First();
-                        if (newSymbol.Type == CSharpSymbolType.Identifier)
+                        var newToken = (CSharpToken)newTokens.First();
+                        if (newToken.Type == CSharpTokenType.Identifier)
                         {
                             return true;
                         }
                     }
 
-                    // Change is touching a non-identifier symbol or spans multiple symbols.
+                    // Change is touching a non-identifier token or spans multiple tokens.
 
                     break;
                 }
@@ -216,8 +226,196 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static bool IsAcceptableInsertion(Span target, SourceChange change)
         {
             return change.IsInsert &&
-                   (IsAcceptableEndInsertion(target, change) ||
-                   IsAcceptableInnerInsertion(target, change));
+                (IsAcceptableEndInsertion(target, change) ||
+                IsAcceptableInnerInsertion(target, change));
+        }
+
+        // Internal for testing
+        internal static bool IsAcceptableDeletionInBalancedParenthesis(Span target, SourceChange change)
+        {
+            if (!change.IsDelete)
+            {
+                return false;
+            }
+
+            var changeStart = change.Span.AbsoluteIndex;
+            var changeLength = change.Span.Length;
+            var changeEnd = changeStart + changeLength;
+            var tokens = target.Tokens.Cast<CSharpToken>().ToArray();
+            if (!IsInsideParenthesis(changeStart, tokens) || !IsInsideParenthesis(changeEnd, tokens))
+            {
+                // Either the start or end of the delete does not fall inside of parenthesis, unacceptable inner deletion.
+                return false;
+            }
+
+            var relativePosition = changeStart - target.Start.AbsoluteIndex;
+            var deletionContent = target.Content.Substring(relativePosition, changeLength);
+
+            if (deletionContent.IndexOfAny(new[] { '(', ')' }) >= 0)
+            {
+                // Change deleted some parenthesis
+                return false;
+            }
+
+            return true;
+        }
+
+        // Internal for testing
+        internal static bool IsAcceptableInsertionInBalancedParenthesis(Span target, SourceChange change)
+        {
+            if (!change.IsInsert)
+            {
+                return false;
+            }
+
+            if (change.NewText.IndexOfAny(new[] { '(', ')' }) >= 0)
+            {
+                // Insertions of parenthesis aren't handled by us. If someone else wants to accept it, they can.
+                return false;
+            }
+
+            var tokens = target.Tokens.Cast<CSharpToken>().ToArray();
+            if (IsInsideParenthesis(change.Span.AbsoluteIndex, tokens))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // Internal for testing
+        internal static bool IsInsideParenthesis(int position, IReadOnlyList<CSharpToken> tokens)
+        {
+            var balanceCount = 0;
+            var foundInsertionPoint = false;
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                var currentToken = tokens[i];
+                if (ContainsPosition(position, currentToken))
+                {
+                    if (balanceCount == 0)
+                    {
+                        // Insertion point is outside of parenthesis, i.e. inserting at the pipe: @Foo|Baz()
+                        return false;
+                    }
+
+                    foundInsertionPoint = true;
+                }
+
+                if (!TryUpdateBalanceCount(currentToken, ref balanceCount))
+                {
+                    // Couldn't update the count. This usually occurrs when we run into a ')' outside of any parenthesis.
+                    return false;
+                }
+
+                if (foundInsertionPoint && balanceCount == 0)
+                {
+                    // Once parenthesis become balanced after the insertion point we return true, no need to go further.
+                    // If they get unbalanced down the line the expression was already unbalanced to begin with and this
+                    // change happens prior to any ambiguity.
+                    return true;
+                }
+            }
+
+            // Unbalanced parenthesis
+            return false;
+        }
+
+        // Internal for testing
+        internal static bool ContainsPosition(int position, CSharpToken currentToken)
+        {
+            var tokenStart = currentToken.Start.AbsoluteIndex;
+            if (tokenStart == position)
+            {
+                // Token is exactly at the insertion point.
+                return true;
+            }
+
+            var tokenEnd = tokenStart + currentToken.Content.Length;
+            if (tokenStart < position && tokenEnd > position)
+            {
+                // Insertion point falls in the middle of the current token.
+                return true;
+            }
+
+            return false;
+        }
+
+        // Internal for testing
+        internal static bool TryUpdateBalanceCount(CSharpToken token, ref int count)
+        {
+            var updatedCount = count;
+            if (token.Type == CSharpTokenType.LeftParenthesis)
+            {
+                updatedCount++;
+            }
+            else if (token.Type == CSharpTokenType.RightParenthesis)
+            {
+                if (updatedCount == 0)
+                {
+                    return false;
+                }
+
+                updatedCount--;
+            }
+            else if (token.Type == CSharpTokenType.StringLiteral)
+            {
+                var content = token.Content;
+                if (content.Length > 0 && content[content.Length - 1] != '"')
+                {
+                    // Incomplete string literal may have consumed some of our parenthesis and usually occurr during auto-completion of '"' => '""'.
+                    if (!TryUpdateCountFromContent(content, ref updatedCount))
+                    {
+                        return false;
+                    }
+                }
+            }
+            else if (token.Type == CSharpTokenType.CharacterLiteral)
+            {
+                var content = token.Content;
+                if (content.Length > 0 && content[content.Length - 1] != '\'')
+                {
+                    // Incomplete character literal may have consumed some of our parenthesis and usually occurr during auto-completion of "'" => "''".
+                    if (!TryUpdateCountFromContent(content, ref updatedCount))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if (updatedCount < 0)
+            {
+                return false;
+            }
+
+            count = updatedCount;
+            return true;
+        }
+
+        // Internal for testing
+        internal static bool TryUpdateCountFromContent(string content, ref int count)
+        {
+            var updatedCount = count;
+            for (var i = 0; i < content.Length; i++)
+            {
+                if (content[i] == '(')
+                {
+                    updatedCount++;
+                }
+                else if (content[i] == ')')
+                {
+                    if (updatedCount == 0)
+                    {
+                        // Unbalanced parenthesis, i.e. @Foo)
+                        return false;
+                    }
+
+                    updatedCount--;
+                }
+            }
+
+            count = updatedCount;
+            return true;
         }
 
         // Accepts character insertions at the end of spans.  AKA: '@foo' -> '@fooo' or '@foo' -> '@foo   ' etc.
@@ -291,10 +489,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 return TryAcceptChange(target, change);
             }
-            else
+            else if (previousChar == '(')
             {
-                return PartialParseResultInternal.Rejected;
+                var changeRelativePosition = change.Span.AbsoluteIndex - target.Start.AbsoluteIndex;
+                if (target.Content[changeRelativePosition] == ')')
+                {
+                    return PartialParseResultInternal.Accepted | PartialParseResultInternal.Provisional;
+                }
             }
+
+            return PartialParseResultInternal.Rejected;
         }
 
         private PartialParseResultInternal HandleInsertion(Span target, char previousChar, SourceChange change)
@@ -308,6 +512,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 return HandleInsertionAfterIdPart(target, change);
             }
+            else if (previousChar == '(')
+            {
+                return HandleInsertionAfterOpenParenthesis(target, change);
+            }
             else
             {
                 return PartialParseResultInternal.Rejected;
@@ -319,6 +527,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // If the insertion is a full identifier part, accept it
             if (ParserHelpers.IsIdentifier(change.NewText, requireIdentifierStart: false))
             {
+                return TryAcceptChange(target, change);
+            }
+            else if (IsDoubleParenthesisInsertion(change) || IsOpenParenthesisInsertion(change))
+            {
+                // Allow inserting parens after an identifier - this is needed to support signature
+                // help intellisense in VS.
                 return TryAcceptChange(target, change);
             }
             else if (EndsWithDot(change.NewText))
@@ -335,6 +549,40 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 return PartialParseResultInternal.Rejected;
             }
+        }
+
+        private PartialParseResultInternal HandleInsertionAfterOpenParenthesis(Span target, SourceChange change)
+        {
+            if (IsCloseParenthesisInsertion(change))
+            {
+                return TryAcceptChange(target, change);
+            }
+
+            return PartialParseResultInternal.Rejected;
+        }
+
+        private static bool IsDoubleParenthesisInsertion(SourceChange change)
+        {
+            return
+                change.IsInsert &&
+                change.NewText.Length == 2 &&
+                change.NewText == "()";
+        }
+
+        private static bool IsOpenParenthesisInsertion(SourceChange change)
+        {
+            return
+                change.IsInsert &&
+                change.NewText.Length == 1 &&
+                change.NewText == "(";
+        }
+
+        private static bool IsCloseParenthesisInsertion(SourceChange change)
+        {
+            return
+                change.IsInsert &&
+                change.NewText.Length == 1 &&
+                change.NewText == ")";
         }
 
         private static bool EndsWithDot(string content)

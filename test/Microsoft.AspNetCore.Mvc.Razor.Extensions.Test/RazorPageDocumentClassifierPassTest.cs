@@ -212,6 +212,31 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("Test", visitor.Class.ClassName);
         }
 
+        [Fact]
+        public void RazorPageDocumentClassifierPass_NullFilePath_SetsClass()
+        {
+            // Arrange
+            var properties = new RazorSourceDocumentProperties(filePath: null, relativePath: null);
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", properties));
+
+            var engine = CreateEngine();
+            var irDocument = CreateIRDocument(engine, codeDocument);
+            var pass = new RazorPageDocumentClassifierPass
+            {
+                Engine = engine
+            };
+
+            // Act
+            pass.Execute(codeDocument, irDocument);
+            var visitor = new Visitor();
+            visitor.Visit(irDocument);
+
+            // Assert
+            Assert.Equal("global::Microsoft.AspNetCore.Mvc.RazorPages.Page", visitor.Class.BaseType);
+            Assert.Equal(new[] { "public" }, visitor.Class.Modifiers);
+            Assert.Equal("AspNetCore_74fbaab062bb228ed1ab09c5ff8d6ed2417320e2", visitor.Class.ClassName);
+        }
+
         [Theory]
         [InlineData("/Views/Home/Index.cshtml", "_Views_Home_Index")]
         [InlineData("/Areas/MyArea/Views/Home/About.cshtml", "_Areas_MyArea_Views_Home_About")]

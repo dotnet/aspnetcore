@@ -2,322 +2,208 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if RAZOR_EXTENSION_DEVELOPER_MODE
+
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows.Input;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.VisualStudio.LanguageServices;
-using Microsoft.VisualStudio.LanguageServices.Razor;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.TextManager.Interop;
-using System.IO;
-using Microsoft.CodeAnalysis.Razor;
-using System.Threading;
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
     internal class RazorInfoViewModel : NotifyPropertyChanged
     {
-        private readonly IRazorEngineDirectiveResolver _directiveResolver;
-        private readonly IRazorEngineDocumentGenerator _documentGenerator;
-        private readonly TagHelperResolver _tagHelperResolver;
-        private readonly IServiceProvider _services;
         private readonly Workspace _workspace;
         private readonly ProjectSnapshotManager _projectManager;
         private readonly Action<Exception> _errorHandler;
+        
+        private ProjectViewModel _selectedProject;
+        private ProjectPropertyCollectionViewModel _projectProperties;
+        private DirectiveCollectionViewModel _directives;
+        private DocumentCollectionViewModel _documents;
+        private TagHelperCollectionViewModel _tagHelpers;
+        private ICommand _updateCommand;
 
-        private DocumentViewModel _currentDocument;
-        private DocumentInfoViewModel _currentDocumentInfo;
-        private ProjectViewModel _currentProject;
-        private ProjectInfoViewModel _currentProjectInfo;
-        private ICommand _generateCommand;
-        private bool _isLoading;
-        private ICommand _loadCommand;
-
-        public RazorInfoViewModel(
-            IServiceProvider services,
-            Workspace workspace,
-            ProjectSnapshotManager projectManager,
-            IRazorEngineDirectiveResolver directiveResolver,
-            TagHelperResolver tagHelperResolver,
-            IRazorEngineDocumentGenerator documentGenerator,
-            Action<Exception> errorHandler)
+        public RazorInfoViewModel(Workspace workspace, ProjectSnapshotManager projectManager, Action<Exception> errorHandler)
         {
-            _services = services;
             _workspace = workspace;
             _projectManager = projectManager;
-            _directiveResolver = directiveResolver;
-            _tagHelperResolver = tagHelperResolver;
-            _documentGenerator = documentGenerator;
             _errorHandler = errorHandler;
-
-            GenerateCommand = new RelayCommand<object>(ExecuteGenerate, CanExecuteGenerate);
-            LoadCommand = new RelayCommand<object>(ExecuteLoad, CanExecuteLoad);
-        }
-
-        public DocumentViewModel CurrentDocument
-        {
-            get { return _currentDocument; }
-            set
-            {
-                _currentDocument = value;
-                OnPropertyChanged();
-
-                CurrentDocumentInfo = null; // Clear cached value
-            }
-        }
-
-        public DocumentInfoViewModel CurrentDocumentInfo
-        {
-            get { return _currentDocumentInfo; }
-            set
-            {
-                _currentDocumentInfo = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public ProjectViewModel CurrentProject
-        {
-            get { return _currentProject; }
-            set
-            {
-                _currentProject = value;
-                OnPropertyChanged();
-
-                CurrentProjectInfo = null; // Clear cached value
-            }
-        }
-        
-        public ProjectInfoViewModel CurrentProjectInfo
-        {
-            get { return _currentProjectInfo; }
-            set
-            {
-                _currentProjectInfo = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public ICommand GenerateCommand
-        {
-            get { return _generateCommand; }
-            set
-            {
-                _generateCommand = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsLoading
-        {
-            get { return _isLoading; }
-            set
-            {
-                _isLoading = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(IsSelectionEnabled));
-            }
-        }
-
-        public bool IsSelectionEnabled => !IsLoading;
-
-        public ICommand LoadCommand
-        {
-            get { return _loadCommand; }
-            set
-            {
-                _loadCommand = value;
-                OnPropertyChanged();
-            }
+            
+            UpdateCommand = new RelayCommand<object>(ExecuteUpdate, CanExecuteUpdate);
         }
 
         public ObservableCollection<ProjectViewModel> Projects { get; } = new ObservableCollection<ProjectViewModel>();
 
-        private bool CanExecuteLoad(object state)
+        public ProjectViewModel SelectedProject
         {
-            return !IsLoading && CurrentProject?.Snapshot?.Project?.WorkspaceProject != null;
-        }
-
-        private void ExecuteLoad(object state)
-        {
-            LoadProjectInfoAsync(CurrentProject);
-        }
-
-        private bool CanExecuteGenerate(object state)
-        {
-            return !IsLoading && CurrentDocument != null && CurrentProject?.Snapshot?.Project?.WorkspaceProject != null;
-        }
-
-        private void ExecuteGenerate(object state)
-        {
-            GenerateDocumentAsync(CurrentDocument);
-        }
-
-        private async void LoadProjectInfoAsync(ProjectViewModel projectViewModel)
-        {
-            try
+            get { return _selectedProject; }
+            set
             {
-                CurrentProjectInfo = null;
-                IsLoading = true;
+                _selectedProject = value;
 
-                var solution = _workspace.CurrentSolution;
-                var project = solution.GetProject(projectViewModel.Snapshot.Project.WorkspaceProject.Id);
-
-                var documents = GetCshtmlDocuments(project);
-
-                var directives = await _directiveResolver.GetRazorEngineDirectivesAsync(_workspace, project);
-                var assemblyFilters = project.MetadataReferences
-                    .Select(reference => reference.Display)
-                    .Select(filter => Path.GetFileNameWithoutExtension(filter));
-                var projectFilters = project.AllProjectReferences.Select(filter => solution.GetProject(filter.ProjectId).AssemblyName);
-
-                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(projectViewModel.Snapshot.Project);
-
-                var files = GetCshtmlDocuments(project);
-
-                CurrentProjectInfo = new ProjectInfoViewModel()
-                {
-                    Directives = new ObservableCollection<DirectiveViewModel>(directives.Select(d => new DirectiveViewModel(d))),
-                    Documents = new ObservableCollection<DocumentViewModel>(documents.Select(d => new DocumentViewModel(d))),
-                    TagHelpers = new ObservableCollection<TagHelperViewModel>(resolutionResult.Descriptors.Select(t => new TagHelperViewModel(t))),
-                };
+                OnPropertyChanged();
+                OnSelectedProjectChanged();
             }
-            catch (Exception ex)
+        }
+
+        public ProjectPropertyCollectionViewModel ProjectProperties
+        {
+            get { return _projectProperties; }
+            set
             {
-                _errorHandler.Invoke(ex);
+                _projectProperties = value;
+                OnPropertyChanged();
             }
-
-            IsLoading = false;
         }
 
-        private async void GenerateDocumentAsync(DocumentViewModel documentViewModel)
+        public DirectiveCollectionViewModel Directives
         {
-            try
+            get { return _directives; }
+            set
             {
-                CurrentDocumentInfo = null;
-                IsLoading = true;
-
-                string text = null;
-
-                var rdt = new RunningDocumentTable(_services);
-                var document = rdt.FindDocument(documentViewModel.FilePath);
-                if (document != null)
-                {
-                    text = GetTextFromRDT(document);
-                }
-
-                if (text == null)
-                {
-                    var invisibleEditorMangager = (IVsInvisibleEditorManager)_services.GetService(typeof(SVsInvisibleEditorManager));
-
-                    IVsInvisibleEditor editor;
-                    int hr = invisibleEditorMangager.RegisterInvisibleEditor(
-                        documentViewModel.FilePath,
-                        null,
-                        0,
-                        null,
-                        out editor);
-                    Marshal.ThrowExceptionForHR(hr);
-
-                    text = GetTextFromInvisibleEditor(editor);
-                }
-
-                if (text != null)
-                {
-                    var project = _workspace.CurrentSolution.GetProject(CurrentProject.Snapshot.Project.WorkspaceProject.Id);
-                    var generated = await _documentGenerator.GenerateDocumentAsync(_workspace, project, documentViewModel.FilePath, text);
-
-                    CurrentDocumentInfo = new DocumentInfoViewModel(generated);
-                }
+                _directives = value;
+                OnPropertyChanged();
             }
-            catch (Exception ex)
+        }
+
+        public DocumentCollectionViewModel Documents
+        {
+            get { return _documents; }
+            set
             {
-                Console.WriteLine(ex);
+                _documents = value;
+                OnPropertyChanged();
             }
-
-            IsLoading = false;
         }
 
-        private string GetTextFromInvisibleEditor(IVsInvisibleEditor editor)
+        public TagHelperCollectionViewModel TagHelpers
         {
-            int hr = editor.GetDocData(0, typeof(IVsFullTextScanner).GUID, out IntPtr ptr);
-            Marshal.ThrowExceptionForHR(hr);
-
-            var fullText = (IVsFullTextScanner)Marshal.GetObjectForIUnknown(ptr);
-            Marshal.Release(ptr);
-
-            Marshal.ThrowExceptionForHR(fullText.OpenFullTextScan());
-            Marshal.ThrowExceptionForHR(fullText.FullTextRead(out string text, out int length));
-            Marshal.ThrowExceptionForHR(fullText.CloseFullTextScan());
-            return text;
-        }
-
-        private string GetTextFromRDT(object document)
-        {
-            var fullText = document as IVsFullTextScanner;
-            Debug.Assert(fullText != null);
-
-            Marshal.ThrowExceptionForHR(fullText.OpenFullTextScan());
-            Marshal.ThrowExceptionForHR(fullText.FullTextRead(out string text, out int length));
-            Marshal.ThrowExceptionForHR(fullText.CloseFullTextScan());
-
-            return text;
-        }
-
-        private List<string> GetCshtmlDocuments(Project project)
-        {
-            var workspace = _workspace as VisualStudioWorkspace;
-            var hierarchy = workspace.GetHierarchy(project.Id);
-            
-            var items = new List<string>();
-            Traverse(items, hierarchy, (uint)VSConstants.VSITEMID.Root);
-            return items;
-        }
-
-        private void Traverse(List<string> items, IVsHierarchy node, uint itemId)
-        {
-            int hr;
-            object obj;
-
-            hr = node.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_Name, out obj);
-            if (hr == VSConstants.S_OK && obj != null)
+            get { return _tagHelpers; }
+            set
             {
-                var name = (string)obj;
-                if (name.EndsWith(".cshtml"))
-                {
-                    hr = node.GetCanonicalName(itemId, out name);
-                    if (hr == VSConstants.S_OK)
+                _tagHelpers = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ICommand UpdateCommand
+        {
+            get { return _updateCommand; }
+            set
+            {
+                _updateCommand = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public void OnChange(ProjectChangeEventArgs e)
+        {
+            switch (e.Kind)
+            {
+                case ProjectChangeKind.ProjectAdded:
                     {
-                        items.Add(name);
+                        var added = new ProjectViewModel(e.ProjectFilePath);
+                        Projects.Add(added);
+
+                        if (Projects.Count == 1)
+                        {
+                            SelectedProject = added;
+                        }
+
+                        break;
                     }
-                }
+
+                case ProjectChangeKind.ProjectRemoved:
+                    {
+                        ProjectViewModel removed = null;
+                        for (var i = Projects.Count - 1; i >= 0; i--)
+                        {
+                            var project = Projects[i];
+                            if (project.FilePath == e.ProjectFilePath)
+                            {
+                                removed = project;
+                                Projects.RemoveAt(i);
+                                break;
+                            }
+                        }
+
+                        if (SelectedProject == removed)
+                        {
+                            SelectedProject = null;
+                        }
+
+                        break;
+                    }
+
+                case ProjectChangeKind.ProjectChanged:
+                    {
+                        if (SelectedProject != null && SelectedProject.FilePath == e.ProjectFilePath)
+                        {
+                            OnSelectedProjectChanged();
+                        }
+
+                        break;
+                    }
+
+                case ProjectChangeKind.DocumentAdded:
+                case ProjectChangeKind.DocumentRemoved:
+                case ProjectChangeKind.DocumentChanged:
+                    {
+                        if (SelectedProject != null && SelectedProject.FilePath == e.ProjectFilePath)
+                        {
+                            Documents?.OnChange(e);
+                        }
+
+                        break;
+                    }
+            }
+        }
+
+        private void OnSelectedProjectChanged()
+        {
+            if (SelectedProject == null)
+            {
+                ProjectProperties = null;
+                Directives = null;
+                Documents = null;
+                TagHelpers = null;
+
+                return;
             }
 
-            hr = node.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_FirstChild, out obj);
-            if (hr != VSConstants.S_OK || obj == null || (int)obj == unchecked((int)VSConstants.VSITEMID.Nil))
+            var project = _projectManager.GetLoadedProject(_selectedProject.FilePath);
+            ProjectProperties = new ProjectPropertyCollectionViewModel(project);
+            Directives = new DirectiveCollectionViewModel(project);
+            Documents = new DocumentCollectionViewModel(_projectManager, project, _errorHandler);
+            TagHelpers = new TagHelperCollectionViewModel(project, _errorHandler);
+        }
+
+        private bool CanExecuteUpdate(object state)
+        {
+            return SelectedProject != null;
+        }
+
+        private void ExecuteUpdate(object state)
+        {
+            var projectFilePath = SelectedProject?.FilePath;
+            if (projectFilePath == null)
             {
                 return;
             }
 
-            itemId = (uint)((int)obj);
-            Traverse(items, node, itemId);
-
-            hr = node.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_NextSibling, out obj);
-            while (hr == VSConstants.S_OK && obj != null && (int)obj != unchecked((int)VSConstants.VSITEMID.Nil))
+            var project = _projectManager.GetLoadedProject(projectFilePath);
+            if (project != null && project.WorkspaceProject != null)
             {
-                itemId = (uint)((int)obj);
-                Traverse(items, node, itemId);
-
-                hr = node.GetProperty(itemId, (int)__VSHPROPID.VSHPROPID_NextSibling, out obj);
+                var solution = _workspace.CurrentSolution;
+                var workspaceProject = solution.GetProject(project.WorkspaceProject.Id);
+                if (workspaceProject != null)
+                {
+                    ((ProjectSnapshotManagerBase)_projectManager).WorkspaceProjectChanged(workspaceProject);
+                }
             }
         }
     }
 }
+
 #endif

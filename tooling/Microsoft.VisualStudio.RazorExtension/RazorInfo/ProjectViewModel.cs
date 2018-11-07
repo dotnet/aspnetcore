@@ -8,8 +8,6 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
     public class ProjectViewModel : NotifyPropertyChanged
     {
-        private ProjectSnapshotViewModel _snapshot;
-
         internal ProjectViewModel(string filePath)
         {
             FilePath = filePath;
@@ -18,19 +16,6 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         public string FilePath { get; }
 
         public string Name => Path.GetFileNameWithoutExtension(FilePath);
-
-        public bool HasSnapshot => Snapshot != null;
-
-        public ProjectSnapshotViewModel Snapshot
-        {
-            get => _snapshot;
-            set
-            {
-                _snapshot = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasSnapshot));
-            }
-        }
     }
 }
 #endif

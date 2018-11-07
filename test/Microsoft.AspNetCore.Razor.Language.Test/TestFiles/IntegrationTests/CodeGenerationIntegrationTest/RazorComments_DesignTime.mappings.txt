@@ -1,14 +1,14 @@
 Source Location: (81:3,2 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 |
     |
-Generated Location: (650:17,14 [6] )
+Generated Location: (727:18,2 [6] )
 |
     |
 
 Source Location: (122:4,39 [22] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 |
     Exception foo = |
-Generated Location: (786:20,39 [22] )
+Generated Location: (894:24,39 [22] )
 |
     Exception foo = |
 
@@ -18,7 +18,7 @@ Source Location: (173:5,49 [58] TestFiles/IntegrationTests/CodeGenerationIntegra
         throw foo;
     }
 |
-Generated Location: (979:26,49 [58] )
+Generated Location: (1087:30,49 [58] )
 | null;
     if(foo != null) {
         throw foo;
@@ -27,21 +27,21 @@ Generated Location: (979:26,49 [58] )
 
 Source Location: (238:11,2 [24] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 | var bar = "@* bar *@"; |
-Generated Location: (1160:34,2 [24] )
+Generated Location: (1268:38,2 [24] )
 | var bar = "@* bar *@"; |
 
 Source Location: (310:12,45 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 |bar|
-Generated Location: (1352:39,45 [3] )
+Generated Location: (1460:43,45 [3] )
 |bar|
 
 Source Location: (323:14,2 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 |a|
-Generated Location: (1485:44,6 [1] )
+Generated Location: (1593:48,6 [1] )
 |a|
 
 Source Location: (328:14,7 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorComments.cshtml)
 |b|
-Generated Location: (1486:44,7 [1] )
+Generated Location: (1594:48,7 [1] )
 |b|
 

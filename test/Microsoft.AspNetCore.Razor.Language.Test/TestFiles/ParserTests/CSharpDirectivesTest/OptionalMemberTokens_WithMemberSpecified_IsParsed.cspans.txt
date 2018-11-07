@@ -1,0 +1,4 @@
+Transition span at (0:0,0 [1] ) (Accepts:None) - Parent: Directive block at (0:0,0 [27] )
+MetaCode span at (1:0,1 [13] ) (Accepts:None) - Parent: Directive block at (0:0,0 [27] )
+Code span at (14:0,14 [1] ) (Accepts:WhiteSpace) - Parent: Directive block at (0:0,0 [27] )
+Code span at (15:0,15 [12] ) (Accepts:NonWhiteSpace) - Parent: Directive block at (0:0,0 [27] )

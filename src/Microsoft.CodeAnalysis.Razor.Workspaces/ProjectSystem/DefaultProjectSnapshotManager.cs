@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -31,15 +33,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private readonly ErrorReporter _errorReporter;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectSnapshotChangeTrigger[] _triggers;
-        private readonly ProjectSnapshotWorkerQueue _workerQueue;
-        private readonly ProjectSnapshotWorker _worker;
 
-        private readonly Dictionary<string, DefaultProjectSnapshot> _projects;
+        // Each entry holds a ProjectState and an optional ProjectSnapshot. ProjectSnapshots are
+        // created lazily.
+        private readonly Dictionary<string, Entry> _projects;
+        private readonly HashSet<string> _openDocuments;
 
         public DefaultProjectSnapshotManager(
             ForegroundDispatcher foregroundDispatcher,
             ErrorReporter errorReporter,
-            ProjectSnapshotWorker worker,
             IEnumerable<ProjectSnapshotChangeTrigger> triggers,
             Workspace workspace)
         {
@@ -51,11 +53,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             if (errorReporter == null)
             {
                 throw new ArgumentNullException(nameof(errorReporter));
-            }
-
-            if (worker == null)
-            {
-                throw new ArgumentNullException(nameof(worker));
             }
 
             if (triggers == null)
@@ -70,13 +67,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             _foregroundDispatcher = foregroundDispatcher;
             _errorReporter = errorReporter;
-            _worker = worker;
             _triggers = triggers.ToArray();
             Workspace = workspace;
 
-            _projects = new Dictionary<string, DefaultProjectSnapshot>(FilePathComparer.Instance);
-
-            _workerQueue = new ProjectSnapshotWorkerQueue(_foregroundDispatcher, this, worker);
+            _projects = new Dictionary<string, Entry>(FilePathComparer.Instance);
+            _openDocuments = new HashSet<string>(FilePathComparer.Instance);
 
             for (var i = 0; i < _triggers.Length; i++)
             {
@@ -89,43 +84,305 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             get
             {
                 _foregroundDispatcher.AssertForegroundThread();
-                return _projects.Values.ToArray();
+
+
+                var i = 0;
+                var projects = new ProjectSnapshot[_projects.Count];
+                foreach (var entry in _projects)
+                {
+                    if (entry.Value.Snapshot == null)
+                    {
+                        entry.Value.Snapshot = new DefaultProjectSnapshot(entry.Value.State);
+                    }
+
+                    projects[i++] = entry.Value.Snapshot;
+                }
+
+                return projects;
             }
         }
 
         public override Workspace Workspace { get; }
 
-        public override void ProjectUpdated(ProjectSnapshotUpdateContext update)
+        public override ProjectSnapshot GetLoadedProject(string filePath)
         {
-            if (update == null)
+            if (filePath == null)
             {
-                throw new ArgumentNullException(nameof(update));
+                throw new ArgumentNullException(nameof(filePath));
             }
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            if (_projects.TryGetValue(update.WorkspaceProject.FilePath, out var original))
+            if (_projects.TryGetValue(filePath, out var entry))
             {
-                if (!original.IsInitialized)
+                if (entry.Snapshot == null)
                 {
-                    // If the project has been uninitialized, just ignore the update. 
-                    return;
+                    entry.Snapshot = new DefaultProjectSnapshot(entry.State);
                 }
 
-                // This is an update to the project's computed values, so everything should be overwritten
-                var snapshot = original.WithComputedUpdate(update);
-                _projects[update.WorkspaceProject.FilePath] = snapshot;
+                return entry.Snapshot;
+            }
 
-                if (snapshot.IsDirty)
+            return null;
+        }
+
+        public override ProjectSnapshot GetOrCreateProject(string filePath)
+        {
+            if (filePath == null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+
+            return GetLoadedProject(filePath) ?? new EphemeralProjectSnapshot(Workspace.Services, filePath);
+        }
+
+        public override bool IsDocumentOpen(string documentFilePath)
+        {
+            if (documentFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(documentFilePath));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+
+            return _openDocuments.Contains(documentFilePath);
+        }
+
+        public override void DocumentAdded(HostProject hostProject, HostDocument document, TextLoader textLoader)
+        {
+            if (hostProject == null)
+            {
+                throw new ArgumentNullException(nameof(hostProject));
+            }
+
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+
+            if (_projects.TryGetValue(hostProject.FilePath, out var entry))
+            {
+                var loader = textLoader == null ? DocumentState.EmptyLoader : (Func<Task<TextAndVersion>>)(() =>
                 {
-                    // It's possible that the snapshot can still be dirty if we got a project update while computing state in
-                    // the background. We need to trigger the background work to asynchronously compute the effect of the updates.
-                    NotifyBackgroundWorker(snapshot.CreateUpdateContext());
+                    return textLoader.LoadTextAndVersionAsync(Workspace, null, CancellationToken.None);
+                });
+                var state = entry.State.WithAddedHostDocument(document, loader);
+
+                // Document updates can no-op.
+                if (!object.ReferenceEquals(state, entry.State))
+                {
+                    _projects[hostProject.FilePath] = new Entry(state);
+                    NotifyListeners(new ProjectChangeEventArgs(hostProject.FilePath, document.FilePath, ProjectChangeKind.DocumentAdded));
                 }
-                
-                if (!object.Equals(snapshot.ComputedVersion, original.ComputedVersion))
+            }
+        }
+
+        public override void DocumentRemoved(HostProject hostProject, HostDocument document)
+        {
+            if (hostProject == null)
+            {
+                throw new ArgumentNullException(nameof(hostProject));
+            }
+
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+            if (_projects.TryGetValue(hostProject.FilePath, out var entry))
+            {
+                var state = entry.State.WithRemovedHostDocument(document);
+
+                // Document updates can no-op.
+                if (!object.ReferenceEquals(state, entry.State))
                 {
-                    NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.TagHelpersChanged));
+                    _projects[hostProject.FilePath] = new Entry(state);
+                    NotifyListeners(new ProjectChangeEventArgs(hostProject.FilePath, document.FilePath, ProjectChangeKind.DocumentRemoved));
+                }
+            }
+        }
+
+        public override void DocumentOpened(string projectFilePath, string documentFilePath, SourceText sourceText)
+        {
+            if (projectFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(projectFilePath));
+            }
+
+            if (documentFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(documentFilePath));
+            }
+
+            if (sourceText == null)
+            {
+                throw new ArgumentNullException(nameof(sourceText));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+            if (_projects.TryGetValue(projectFilePath, out var entry) &&
+                entry.State.Documents.TryGetValue(documentFilePath, out var older))
+            {
+                ProjectState state;
+                SourceText olderText;
+                VersionStamp olderVersion;
+
+                var currentText = sourceText;
+                if (older.TryGetText(out olderText) && 
+                    older.TryGetTextVersion(out olderVersion))
+                {
+                    var version = currentText.ContentEquals(olderText) ? olderVersion : olderVersion.GetNewerVersion();
+                    state = entry.State.WithChangedHostDocument(older.HostDocument, currentText, version);
+                }
+                else
+                {
+                    state = entry.State.WithChangedHostDocument(older.HostDocument, async () =>
+                    {
+                        olderText = await older.GetTextAsync().ConfigureAwait(false);
+                        olderVersion = await older.GetTextVersionAsync().ConfigureAwait(false);
+
+                        var version = currentText.ContentEquals(olderText) ? olderVersion : olderVersion.GetNewerVersion();
+                        return TextAndVersion.Create(currentText, version, documentFilePath);
+                    });
+                }
+
+                _openDocuments.Add(documentFilePath);
+
+                // Document updates can no-op.
+                if (!object.ReferenceEquals(state, entry.State))
+                {
+                    _projects[projectFilePath] = new Entry(state);
+                    NotifyListeners(new ProjectChangeEventArgs(projectFilePath, documentFilePath, ProjectChangeKind.DocumentChanged));
+                }
+            }
+        }
+
+        public override void DocumentClosed(string projectFilePath, string documentFilePath, TextLoader textLoader)
+        {
+            if (projectFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(projectFilePath));
+            }
+
+            if (documentFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(documentFilePath));
+            }
+
+            if (textLoader == null)
+            {
+                throw new ArgumentNullException(nameof(textLoader));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+            if (_projects.TryGetValue(projectFilePath, out var entry) &&
+                entry.State.Documents.TryGetValue(documentFilePath, out var older))
+            {
+                var state = entry.State.WithChangedHostDocument(older.HostDocument, async () =>
+                {
+                    return await textLoader.LoadTextAndVersionAsync(Workspace, default, default);
+                });
+
+                _openDocuments.Remove(documentFilePath);
+
+                // Document updates can no-op.
+                if (!object.ReferenceEquals(state, entry.State))
+                {
+                    _projects[projectFilePath] = new Entry(state);
+                    NotifyListeners(new ProjectChangeEventArgs(projectFilePath, documentFilePath, ProjectChangeKind.DocumentChanged));
+                }
+            }
+        }
+
+        public override void DocumentChanged(string projectFilePath, string documentFilePath, SourceText sourceText)
+        {
+            if (projectFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(projectFilePath));
+            }
+
+            if (documentFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(documentFilePath));
+            }
+
+            if (sourceText == null)
+            {
+                throw new ArgumentNullException(nameof(sourceText));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+            if (_projects.TryGetValue(projectFilePath, out var entry) &&
+                entry.State.Documents.TryGetValue(documentFilePath, out var older))
+            {
+                ProjectState state;
+                SourceText olderText;
+                VersionStamp olderVersion;
+
+                var currentText = sourceText;
+                if (older.TryGetText(out olderText) &&
+                    older.TryGetTextVersion(out olderVersion))
+                {
+                    var version = currentText.ContentEquals(olderText) ? olderVersion : olderVersion.GetNewerVersion();
+                    state = entry.State.WithChangedHostDocument(older.HostDocument, currentText, version);
+                }
+                else
+                {
+                    state = entry.State.WithChangedHostDocument(older.HostDocument, async () =>
+                    {
+                        olderText = await older.GetTextAsync().ConfigureAwait(false);
+                        olderVersion = await older.GetTextVersionAsync().ConfigureAwait(false);
+
+                        var version = currentText.ContentEquals(olderText) ? olderVersion : olderVersion.GetNewerVersion();
+                        return TextAndVersion.Create(currentText, version, documentFilePath);
+                    });
+                }
+
+                // Document updates can no-op.
+                if (!object.ReferenceEquals(state, entry.State))
+                {
+                    _projects[projectFilePath] = new Entry(state);
+                    NotifyListeners(new ProjectChangeEventArgs(projectFilePath, documentFilePath, ProjectChangeKind.DocumentChanged));
+                }
+            }
+        }
+
+        public override void DocumentChanged(string projectFilePath, string documentFilePath, TextLoader textLoader)
+        {
+            if (projectFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(projectFilePath));
+            }
+
+            if (documentFilePath == null)
+            {
+                throw new ArgumentNullException(nameof(documentFilePath));
+            }
+
+            if (textLoader == null)
+            {
+                throw new ArgumentNullException(nameof(textLoader));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+            if (_projects.TryGetValue(projectFilePath, out var entry) &&
+                entry.State.Documents.TryGetValue(documentFilePath, out var older))
+            {
+                var state = entry.State.WithChangedHostDocument(older.HostDocument, async () =>
+                {
+                    return await textLoader.LoadTextAndVersionAsync(Workspace, default, default);
+                });
+
+                // Document updates can no-op.
+                if (!object.ReferenceEquals(state, entry.State))
+                {
+                    _projects[projectFilePath] = new Entry(state);
+                    NotifyListeners(new ProjectChangeEventArgs(projectFilePath, documentFilePath, ProjectChangeKind.DocumentChanged));
                 }
             }
         }
@@ -149,17 +406,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // So if possible find a WorkspaceProject.
             var workspaceProject = GetWorkspaceProject(hostProject.FilePath);
 
-            var snapshot = new DefaultProjectSnapshot(hostProject, workspaceProject);
-            _projects[hostProject.FilePath] = snapshot;
-
-            if (snapshot.IsInitialized && snapshot.IsDirty)
-            {
-                // Start computing background state if the project is fully initialized.
-                NotifyBackgroundWorker(snapshot.CreateUpdateContext());
-            }
+            var state = ProjectState.Create(Workspace.Services, hostProject, workspaceProject);
+            _projects[hostProject.FilePath] = new Entry(state);
 
             // We need to notify listeners about every project add.
-            NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.Added));
+            NotifyListeners(new ProjectChangeEventArgs(hostProject.FilePath, ProjectChangeKind.ProjectAdded));
         }
 
         public override void HostProjectChanged(HostProject hostProject)
@@ -171,22 +422,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            if (_projects.TryGetValue(hostProject.FilePath, out var original))
+            if (_projects.TryGetValue(hostProject.FilePath, out var entry))
             {
-                // Doing an update to the project should keep computed values, but mark the project as dirty if the
-                // underlying project is newer.
-                var snapshot = original.WithHostProject(hostProject);
-                _projects[hostProject.FilePath] = snapshot;
+                var state = entry.State.WithHostProject(hostProject);
 
-                if (snapshot.IsInitialized && snapshot.IsDirty)
+                // HostProject updates can no-op.
+                if (!object.ReferenceEquals(state, entry.State))
                 {
-                    // Start computing background state if the project is fully initialized.
-                    NotifyBackgroundWorker(snapshot.CreateUpdateContext());
-                }
+                    _projects[hostProject.FilePath] = new Entry(state);
 
-                // Notify listeners right away because if the HostProject changes then it's likely that the Razor
-                // configuration changed.
-                NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.Changed));
+                    NotifyListeners(new ProjectChangeEventArgs(hostProject.FilePath, ProjectChangeKind.ProjectChanged));
+                }
             }
         }
 
@@ -204,37 +450,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 _projects.Remove(hostProject.FilePath);
 
                 // We need to notify listeners about every project removal.
-                NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.Removed));
-            }
-        }
-
-        public override void HostProjectBuildComplete(HostProject hostProject)
-        {
-            if (hostProject == null)
-            {
-                throw new ArgumentNullException(nameof(hostProject));
-            }
-
-            _foregroundDispatcher.AssertForegroundThread();
-
-            if (_projects.TryGetValue(hostProject.FilePath, out var original))
-            {
-                var workspaceProject = GetWorkspaceProject(hostProject.FilePath);
-                if (workspaceProject == null)
-                {
-                    // Host project was built prior to a workspace project being associated. We have nothing to do without
-                    // a workspace project so we short circuit.
-                    return;
-                }
-
-                // Doing an update to the project should keep computed values, but mark the project as dirty if the
-                // underlying project is newer.
-                var snapshot = original.WithWorkspaceProject(workspaceProject);
-
-                _projects[hostProject.FilePath] = snapshot;
-
-                // Notify the background worker so it can trigger tag helper discovery.
-                NotifyBackgroundWorker(snapshot.CreateUpdateContext());
+                NotifyListeners(new ProjectChangeEventArgs(hostProject.FilePath, ProjectChangeKind.ProjectRemoved));
             }
         }
 
@@ -254,25 +470,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // The WorkspaceProject initialization never triggers a "Project Add" from out point of view, we
             // only care if the new WorkspaceProject matches an existing HostProject.
-            if (_projects.TryGetValue(workspaceProject.FilePath, out var original))
+            if (_projects.TryGetValue(workspaceProject.FilePath, out var entry))
             {
                 // If this is a multi-targeting project then we are only interested in a single workspace project. If we already
                 // found one in the past just ignore this one.
-                if (original.WorkspaceProject == null)
+                if (entry.State.WorkspaceProject == null)
                 {
-                    var snapshot = original.WithWorkspaceProject(workspaceProject);
-                    _projects[workspaceProject.FilePath] = snapshot;
+                    var state = entry.State.WithWorkspaceProject(workspaceProject);
+                    _projects[workspaceProject.FilePath] = new Entry(state);
 
-                    if (snapshot.IsInitialized && snapshot.IsDirty)
-                    {
-                        // We don't need to notify listeners yet because we don't have any **new** computed state. 
-                        //
-                        // However we do need to trigger the background work to asynchronously compute the effect of the updates.
-                        NotifyBackgroundWorker(snapshot.CreateUpdateContext());
-                    }
-
-                    // Notify listeners right away since WorkspaceProject was just added, the project is now initialized.
-                    NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.Changed));
+                    NotifyListeners(new ProjectChangeEventArgs(workspaceProject.FilePath, ProjectChangeKind.ProjectChanged));
                 }
             }
         }
@@ -293,25 +500,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // We also need to check the projectId here. If this is a multi-targeting project then we are only interested
             // in a single workspace project. Just use the one that showed up first.
-            if (_projects.TryGetValue(workspaceProject.FilePath, out var original) &&
-                (original.WorkspaceProject == null ||
-                original.WorkspaceProject.Id == workspaceProject.Id))
+            if (_projects.TryGetValue(workspaceProject.FilePath, out var entry) &&
+                (entry.State.WorkspaceProject == null || entry.State.WorkspaceProject.Id == workspaceProject.Id) &&
+                (entry.State.WorkspaceProject == null || entry.State.WorkspaceProject.Version.GetNewerVersion(workspaceProject.Version) == workspaceProject.Version))
             {
-                // Doing an update to the project should keep computed values, but mark the project as dirty if the
-                // underlying project is newer.
-                var snapshot = original.WithWorkspaceProject(workspaceProject);
-                _projects[workspaceProject.FilePath] = snapshot;
-
-                if (snapshot.IsInitialized && snapshot.IsDirty)
+                var state = entry.State.WithWorkspaceProject(workspaceProject);
+                
+                // WorkspaceProject updates can no-op. This can be the case if a build is triggered, but we've
+                // already seen the update.
+                if (!object.ReferenceEquals(state, entry.State))
                 {
-                    // We don't need to notify listeners yet because we don't have any **new** computed state. However we do 
-                    // need to trigger the background work to asynchronously compute the effect of the updates.
-                    NotifyBackgroundWorker(snapshot.CreateUpdateContext());
-                }
+                    _projects[workspaceProject.FilePath] = new Entry(state);
 
-                if (snapshot.HaveTagHelpersChanged(original))
-                {
-                    NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.TagHelpersChanged));
+                    NotifyListeners(new ProjectChangeEventArgs(workspaceProject.FilePath, ProjectChangeKind.ProjectChanged));
                 }
             }
         }
@@ -330,16 +531,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 return;
             }
 
-            if (_projects.TryGetValue(workspaceProject.FilePath, out var original))
+            if (_projects.TryGetValue(workspaceProject.FilePath, out var entry))
             {
                 // We also need to check the projectId here. If this is a multi-targeting project then we are only interested
                 // in a single workspace project. Make sure the WorkspaceProject we're using is the one that's being removed.
-                if (original.WorkspaceProject?.Id != workspaceProject.Id)
+                if (entry.State.WorkspaceProject?.Id != workspaceProject.Id)
                 {
                     return;
                 }
 
-                DefaultProjectSnapshot snapshot;
+                ProjectState state;
 
                 // So if the WorkspaceProject got removed, we should double check to make sure that there aren't others
                 // hanging around. This could happen if a project is multi-targeting and one of the TFMs is removed.
@@ -347,30 +548,19 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 if (otherWorkspaceProject != null && otherWorkspaceProject.Id != workspaceProject.Id)
                 {
                     // OK there's another WorkspaceProject, use that.
-                    //
-                    // Doing an update to the project should keep computed values, but mark the project as dirty if the
-                    // underlying project is newer.
-                    snapshot = original.WithWorkspaceProject(otherWorkspaceProject);
-                    _projects[workspaceProject.FilePath] = snapshot;
+                    state = entry.State.WithWorkspaceProject(otherWorkspaceProject);
+                    _projects[otherWorkspaceProject.FilePath] = new Entry(state);
 
-                    if (snapshot.IsInitialized && snapshot.IsDirty)
-                    {
-                        // We don't need to notify listeners yet because we don't have any **new** computed state. However we do 
-                        // need to trigger the background work to asynchronously compute the effect of the updates.
-                        NotifyBackgroundWorker(snapshot.CreateUpdateContext());
-                    }
-
-                    // Notify listeners of a change because it's a different WorkspaceProject.
-                    NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.Changed));
-
-                    return;
+                    NotifyListeners(new ProjectChangeEventArgs(otherWorkspaceProject.FilePath, ProjectChangeKind.ProjectChanged));
                 }
+                else
+                {
+                    state = entry.State.WithWorkspaceProject(null);
+                    _projects[workspaceProject.FilePath] = new Entry(state);
 
-                snapshot = original.RemoveWorkspaceProject();
-                _projects[workspaceProject.FilePath] = snapshot;
-
-                // Notify listeners of a change because we've removed computed state.
-                NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.Changed));
+                    // Notify listeners of a change because we've removed computed state.
+                    NotifyListeners(new ProjectChangeEventArgs(workspaceProject.FilePath, ProjectChangeKind.ProjectChanged));
+                }
             }
         }
 
@@ -401,8 +591,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(exception));
             }
 
-            var project = hostProject?.FilePath == null ? null : this.GetProjectWithFilePath(hostProject.FilePath);
-            _errorReporter.ReportError(exception, project);
+            var snapshot = hostProject?.FilePath == null ? null : GetLoadedProject(hostProject.FilePath);
+            _errorReporter.ReportError(exception, snapshot);
         }
 
         public override void ReportError(Exception exception, Project workspaceProject)
@@ -411,7 +601,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 throw new ArgumentNullException(nameof(exception));
             }
-
+            
             _errorReporter.ReportError(exception, workspaceProject);
         }
 
@@ -441,14 +631,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         // virtual so it can be overridden in tests
-        protected virtual void NotifyBackgroundWorker(ProjectSnapshotUpdateContext context)
-        {
-            _foregroundDispatcher.AssertForegroundThread();
-
-            _workerQueue.Enqueue(context);
-        }
-
-        // virtual so it can be overridden in tests
         protected virtual void NotifyListeners(ProjectChangeEventArgs e)
         {
             _foregroundDispatcher.AssertForegroundThread();
@@ -457,6 +639,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             if (handler != null)
             {
                 handler(this, e);
+            }
+        }
+
+        private class Entry
+        {
+            public ProjectSnapshot Snapshot;
+            public readonly ProjectState State;
+
+            public Entry(ProjectState state)
+            {
+                State = state;
             }
         }
     }

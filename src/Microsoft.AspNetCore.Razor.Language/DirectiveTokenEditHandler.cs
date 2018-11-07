@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DirectiveTokenEditHandler : SpanEditHandler
     {
-        public DirectiveTokenEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer) : base(tokenizer)
+        public DirectiveTokenEditHandler(Func<string, IEnumerable<IToken>> tokenizer) : base(tokenizer)
         {
         }
 

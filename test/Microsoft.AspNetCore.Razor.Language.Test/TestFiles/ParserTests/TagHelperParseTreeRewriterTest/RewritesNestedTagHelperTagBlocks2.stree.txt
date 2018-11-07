@@ -1,0 +1,10 @@
+Markup block - Gen<None> - 30 - (0:0,0)
+    Tag block - Gen<TagHelper> - 30 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p> ... </p>
+        Markup span - Gen<Markup> - [Hello World ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:4
+            HtmlTokenType.Text;[Hello];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[World];
+            HtmlTokenType.WhiteSpace;[ ];
+        Tag block - Gen<TagHelper> - 11 - (15:0,15) - div - divtaghelper
+            StartTagAndEndTag - <div> ... </div>
