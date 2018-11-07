@@ -1,0 +1,13 @@
+﻿<Project>
+
+  <PropertyGroup>
+    <!-- Temporary until we can replace PackageRef with ProjectRef -->
+    <SubFolderRepoBuild>true</SubFolderRepoBuild>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <Import Project="version.props" />
+  <Import Project="dependencies.props" />
+
+</Project>

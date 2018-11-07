@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Fallback when not building from command line. -->
+    <InternalAspNetCoreSdkPackageVersion Condition="'$(InternalAspNetCoreSdkPackageVersion)' == ''">2.2.0-preview2-20181004.6</InternalAspNetCoreSdkPackageVersion>
+  </PropertyGroup>
+</Project>
