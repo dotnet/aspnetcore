@@ -122,7 +122,6 @@
 
     The final folder is something like bin/<<Configuration>>/<<TargetFramework>>/dist
     /_framework/_bin <- This will contain either the BCL + app assemblies or the result of linking the app.
-    /_framework/asmjs <- This will contain the asmjs runtime copied from the nuget package.
     /_framework/wasm <- This will contain the wsm runtime copied from the nuget package.
     /_framework/blazor.js <- This is the blazor.js file copied from the nuget package.
     /_framework/blazor.boot.json <- This is the boot json file
@@ -157,14 +156,8 @@
     </PropertyGroup>
 
     <ItemGroup Label="Static content to copy to the output folder">
-      <MonoAsmjsFile Include="$(MonoAsmjsRuntimePath)**/*.*" />
       <MonoWasmFile Include="$(MonoWasmRuntimePath)**/*.*" />
       <BlazorJsFile Include="$(BlazorJsPath)" />
-      <BlazorItemOutput Include="@(MonoAsmjsFile)">
-        <TargetOutputPath>$(TargetDir)$(BaseBlazorRuntimeAsmjsOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-        <Type>AsmJs</Type>
-        <IsStatic>true</IsStatic>
-      </BlazorItemOutput>
       <BlazorItemOutput Include="@(MonoWasmFile)">
         <TargetOutputPath>$(TargetDir)$(BaseBlazorRuntimeWasmOutputPath)%(FileName)%(Extension)</TargetOutputPath>
         <Type>WebAssembly</Type>

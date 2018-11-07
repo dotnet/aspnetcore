@@ -175,21 +175,13 @@ function findMethod(assemblyName: string, namespace: string, className: string, 
 }
 
 function addScriptTagsToDocument() {
-  // Load either the wasm or asm.js version of the Mono runtime
   const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
-  const monoRuntimeUrlBase = '_framework/' + (browserSupportsNativeWebAssembly ? 'wasm' : 'asmjs');
-  const monoRuntimeScriptUrl = `${monoRuntimeUrlBase}/mono.js`;
-
   if (!browserSupportsNativeWebAssembly) {
-    // In the asmjs case, the initial memory structure is in a separate file we need to download
-    const meminitXHR = Module['memoryInitializerRequest'] = new XMLHttpRequest();
-    meminitXHR.open('GET', `${monoRuntimeUrlBase}/mono.js.mem`);
-    meminitXHR.responseType = 'arraybuffer';
-    meminitXHR.send(undefined);
+    throw new Error('This browser does not support WebAssembly.');
   }
 
   const scriptElem = document.createElement('script');
-  scriptElem.src = monoRuntimeScriptUrl;
+  scriptElem.src = '_framework/wasm/mono.js';
   scriptElem.defer = true;
   document.body.appendChild(scriptElem);
 }
@@ -197,7 +189,6 @@ function addScriptTagsToDocument() {
 function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () => void, onError: (reason?: any) => void) {
   const module = {} as typeof Module;
   const wasmBinaryFile = '_framework/wasm/mono.wasm';
-  const asmjsCodeFile = '_framework/asmjs/mono.asm.js';
   const suppressMessages = ['DEBUGGING ENABLED'];
 
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(`WASM: ${line}`));
@@ -209,7 +200,6 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
   module.locateFile = fileName => {
     switch (fileName) {
       case 'mono.wasm': return wasmBinaryFile;
-      case 'mono.asm.js': return asmjsCodeFile;
       default: return fileName;
     }
   };

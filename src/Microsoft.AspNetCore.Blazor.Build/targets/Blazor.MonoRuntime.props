@@ -4,7 +4,6 @@
     <MonoLinkerPath>$(BlazorMonoRuntimeBasePath)tools/illink/illink.dll</MonoLinkerPath>
     <MonoBaseClassLibraryPath>$(BlazorMonoRuntimeBasePath)tools/mono/bcl/</MonoBaseClassLibraryPath>
     <MonoBaseClassLibraryFacadesPath>$(BlazorMonoRuntimeBasePath)tools/mono/bcl/Facades/</MonoBaseClassLibraryFacadesPath>
-    <MonoAsmjsRuntimePath>$(BlazorMonoRuntimeBasePath)tools/mono/asmjs/</MonoAsmjsRuntimePath>
     <MonoWasmRuntimePath>$(BlazorMonoRuntimeBasePath)tools/mono/wasm/</MonoWasmRuntimePath>
     <BlazorJsPath>$(BlazorMonoRuntimeBasePath)tools/blazor/blazor.*.js</BlazorJsPath>
   </PropertyGroup>
@@ -16,7 +15,6 @@
     <BaseBlazorPackageContentOutputPath>$(BaseBlazorDistPath)_content/</BaseBlazorPackageContentOutputPath>
     <BaseBlazorRuntimeOutputPath>$(BaseBlazorDistPath)_framework/</BaseBlazorRuntimeOutputPath>
     <BaseBlazorRuntimeBinOutputPath>$(BaseBlazorRuntimeOutputPath)_bin/</BaseBlazorRuntimeBinOutputPath>
-    <BaseBlazorRuntimeAsmjsOutputPath>$(BaseBlazorRuntimeOutputPath)asmjs/</BaseBlazorRuntimeAsmjsOutputPath>
     <BaseBlazorRuntimeWasmOutputPath>$(BaseBlazorRuntimeOutputPath)wasm/</BaseBlazorRuntimeWasmOutputPath>
     <BaseBlazorJsOutputPath>$(BaseBlazorRuntimeOutputPath)</BaseBlazorJsOutputPath>
     <BaseBlazorIntermediateOutputPath>blazor/</BaseBlazorIntermediateOutputPath>
