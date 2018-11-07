@@ -197,17 +197,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.Analyzers" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.AzureAppServices" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.Configuration" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.Console" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.Debug" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.EventLog" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.EventSource" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.Testing" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.TraceSource" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.WebEncoders" Category="ship" />
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="ship" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />

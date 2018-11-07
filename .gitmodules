@@ -78,17 +78,9 @@
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git
 	branch = master
-[submodule "modules/Logging"]
-	path = modules/Logging
-	url = https://github.com/aspnet/Logging.git
-	branch = master
 [submodule "modules/MetaPackages"]
 	path = modules/MetaPackages
 	url = https://github.com/aspnet/MetaPackages.git
-	branch = master
-[submodule "modules/Microsoft.Data.Sqlite"]
-	path = modules/Microsoft.Data.Sqlite
-	url = https://github.com/aspnet/Microsoft.Data.Sqlite.git
 	branch = master
 [submodule "modules/MusicStore"]
 	path = modules/MusicStore

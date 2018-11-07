@@ -57,7 +57,6 @@
     <Repository Include="JsonPatch" />
     <Repository Include="KestrelHttpServer" />
     <Repository Include="Localization" />
-    <Repository Include="Logging" />
     <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <Repository Include="Mvc" />
     <Repository Include="Razor" />
