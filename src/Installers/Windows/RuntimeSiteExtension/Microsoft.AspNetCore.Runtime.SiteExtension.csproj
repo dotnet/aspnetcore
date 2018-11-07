@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(RepositoryRoot)\.deps\dependencies.g.props" />
+  <Import Project="..\..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageType>AzureSiteExtension</PackageType>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSource>false</IncludeSource>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <!--
+        NuGet skips files ending .nuget producing warning at the same time
+        there is no way to disable default excludes from MsBuild (see:https://github.com/NuGet/Home/issues/6450)
+        and we don't care about item templates on Antares
+     -->
+    <NoWarn>$(NoWarn);NU5119</NoWarn>
+
+    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
+    <Title>ASP.NET Core $(TrimmedVersion) ($(Platform)) Runtime </Title>
+    <Description>This site extension installs Microsoft.AspNetCore.All, Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
+    <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
+    <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(Platform)</PackageId>
+
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(SignType)' != '' ">
+    <SignOutput>True</SignOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="applicationHost.xdt" />
+    <Content Include="scmApplicationHost.xdt" />
+    <Content Include="install.cmd" />
+    <Content Include="$(OutputPath)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+
+    <Content Include="$(SharedFrameworkHarvestRootPath)\$(Platform)\**\*.*" Condition="$(SharedFrameworkHarvestRootPath) != ''" PackagePath="content\%(RecursiveDir)%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Platform)' == 'x86'">
+    <Content Include="$(AspNetCoreModuleX86Location)" PackagePath="content\ancm" />
+    <Content Include="$(OutOfProcessRequestHandlerX86Location)" PackagePath="content\ancm\$(AspNetCoreModuleOutOfProcessVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Platform)' == 'x64'">
+    <Content Include="$(AspNetCoreModuleX64Location)" PackagePath="content\ancm" />
+    <Content Include="$(OutOfProcessRequestHandlerX64Location)" PackagePath="content\ancm\$(AspNetCoreModuleOutOfProcessVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\SiteExtensions\src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)" />
+  </ItemGroup>
+
+</Project>
+

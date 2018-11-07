@@ -1,9 +1,13 @@
 <Project>
 
+  <ItemDefinitionGroup>
+    <ItemGroupDefinition>
+      <BuildTargets>Build</BuildTargets>
+    </ItemGroupDefinition>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
     <!-- Build the ANCM custom action -->
-    <InstallerProject Include="AspNetCoreModule-Setup/CustomAction/aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
-    <InstallerProject Include="AspNetCoreModule-Setup/CustomAction/aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x86" />
 
     <!-- Build the ANCM msis -->
     <InstallerProject Include="AspNetCoreModule-Setup/ANCMIISExpressV1/AncmIISExpressV1.wixproj" AdditionalProperties="Platform=x64" />
@@ -19,11 +23,13 @@
     <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
     <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
 
-    <InstallerProject Include="*/*.wixproj" Exclude="@(InstallerProject);ancm/**/*" />
+    <!-- Build the Runtime site extension -->
+    <InstallerProject Include="RuntimeSiteExtension/Microsoft.AspNetCore.Runtime.SiteExtension.csproj" AdditionalProperties="Platform=x64" BuildTargets="Pack" />
+    <InstallerProject Include="RuntimeSiteExtension/Microsoft.AspNetCore.Runtime.SiteExtension.csproj" AdditionalProperties="Platform=x86" BuildTargets="Pack" />
   </ItemGroup>
 
   <Target Name="Build">
-    <MSBuild Projects="@(InstallerProject)" Targets="Build" />
+    <MSBuild Projects="%(InstallerProject.Identity)" Targets="%(BuildTargets)" Properties="%(AdditionalProperties)" />
   </Target>
 
   <Target Name="Clean">
