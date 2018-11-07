@@ -16,6 +16,10 @@ You can watch an introductory presentation here - [ASP.NET Core SignalR: Build 2
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
 
+## Documentation
+
+Documentation for ASP.NET Core SignalR can be found in the [Real-time Apps](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-2.1) section of the ASP.NET Core Documentation site.
+
 ## TypeScript Version
 
 If you are encountering TypeScript definition issues with SignalR, please ensure you are using the latest version of TypeScript to compile your application. If the issue occurs in the latest TypeScript, please let us know.
