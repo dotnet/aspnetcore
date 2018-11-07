@@ -37,6 +37,7 @@
 
   <ItemGroup>
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
+    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
@@ -74,7 +75,6 @@
     <ShippedRepository Include="KestrelHttpServer" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="Logging" />
-    <ShippedRepository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="Mvc" />
     <ShippedRepository Include="MvcPrecompilation" />
     <ShippedRepository Include="Options" />
