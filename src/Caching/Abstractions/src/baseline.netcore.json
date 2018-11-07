@@ -1,0 +1,1776 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.Caching.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SetAbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            },
+            {
+              "Name": "relative",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            },
+            {
+              "Name": "absolute",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetSlidingExpiration",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            },
+            {
+              "Name": "offset",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AbsoluteExpiration",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AbsoluteExpirationRelativeToNow",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AbsoluteExpirationRelativeToNow",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SlidingExpiration",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SlidingExpiration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Distributed.DistributedCacheExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Set",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Byte[]"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAsync",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetString",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetString",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetStringAsync",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetStringAsync",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetString",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetStringAsync",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.String>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Distributed.IDistributedCache",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Get",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetAsync",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Byte[]>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Set",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAsync",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Byte[]"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Distributed.DistributedCacheEntryOptions"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Refresh",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RefreshAsync",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveAsync",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.CacheEntryExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SetPriority",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "priority",
+              "Type": "Microsoft.Extensions.Caching.Memory.CacheItemPriority"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddExpirationToken",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "expirationToken",
+              "Type": "Microsoft.Extensions.Primitives.IChangeToken"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "relative",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "absolute",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetSlidingExpiration",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "offset",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RegisterPostEvictionCallback",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "callback",
+              "Type": "Microsoft.Extensions.Caching.Memory.PostEvictionDelegate"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RegisterPostEvictionCallback",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "callback",
+              "Type": "Microsoft.Extensions.Caching.Memory.PostEvictionDelegate"
+            },
+            {
+              "Name": "state",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetValue",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetSize",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "size",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetOptions",
+          "Parameters": [
+            {
+              "Name": "entry",
+              "Type": "Microsoft.Extensions.Caching.Memory.ICacheEntry"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.CacheItemPriority",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Low",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Normal",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "High",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NeverRemove",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.EvictionReason",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Removed",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Replaced",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Expired",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "TokenExpired",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Capacity",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "5"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Key",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Value",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AbsoluteExpiration",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AbsoluteExpirationRelativeToNow",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AbsoluteExpirationRelativeToNow",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SlidingExpiration",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SlidingExpiration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExpirationTokens",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PostEvictionCallbacks",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.Caching.Memory.PostEvictionCallbackRegistration>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Priority",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.CacheItemPriority",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Priority",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Caching.Memory.CacheItemPriority"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Size",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Size",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.IMemoryCache",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "TryGetValue",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateEntry",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.ICacheEntry",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SetPriority",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "priority",
+              "Type": "Microsoft.Extensions.Caching.Memory.CacheItemPriority"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetSize",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "size",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddExpirationToken",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "expirationToken",
+              "Type": "Microsoft.Extensions.Primitives.IChangeToken"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "relative",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "absolute",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetSlidingExpiration",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "offset",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RegisterPostEvictionCallback",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "callback",
+              "Type": "Microsoft.Extensions.Caching.Memory.PostEvictionDelegate"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RegisterPostEvictionCallback",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            },
+            {
+              "Name": "callback",
+              "Type": "Microsoft.Extensions.Caching.Memory.PostEvictionDelegate"
+            },
+            {
+              "Name": "state",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AbsoluteExpiration",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AbsoluteExpiration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AbsoluteExpirationRelativeToNow",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AbsoluteExpirationRelativeToNow",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SlidingExpiration",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SlidingExpiration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ExpirationTokens",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PostEvictionCallbacks",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Extensions.Caching.Memory.PostEvictionCallbackRegistration>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Priority",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.CacheItemPriority",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Priority",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Caching.Memory.CacheItemPriority"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Size",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Size",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.CacheExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Get",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Get<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryGetValue<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "T0",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Set<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Set<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "absoluteExpiration",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Set<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "absoluteExpirationRelativeToNow",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Set<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "expirationToken",
+              "Type": "Microsoft.Extensions.Primitives.IChangeToken"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Set<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Caching.Memory.MemoryCacheEntryOptions"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetOrCreate<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "factory",
+              "Type": "System.Func<Microsoft.Extensions.Caching.Memory.ICacheEntry, T0>"
+            }
+          ],
+          "ReturnType": "T0",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetOrCreateAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+            },
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "factory",
+              "Type": "System.Func<Microsoft.Extensions.Caching.Memory.ICacheEntry, System.Threading.Tasks.Task<T0>>"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TItem",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.PostEvictionCallbackRegistration",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_EvictionCallback",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.PostEvictionDelegate",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EvictionCallback",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Caching.Memory.PostEvictionDelegate"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_State",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_State",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Caching.Memory.PostEvictionDelegate",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.MulticastDelegate",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "reason",
+              "Type": "Microsoft.Extensions.Caching.Memory.EvictionReason"
+            },
+            {
+              "Name": "state",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BeginInvoke",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "reason",
+              "Type": "Microsoft.Extensions.Caching.Memory.EvictionReason"
+            },
+            {
+              "Name": "state",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "callback",
+              "Type": "System.AsyncCallback"
+            },
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.IAsyncResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EndInvoke",
+          "Parameters": [
+            {
+              "Name": "result",
+              "Type": "System.IAsyncResult"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "method",
+              "Type": "System.IntPtr"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
