@@ -37,6 +37,15 @@
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
+    <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingConfigurationPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsLoggingEventSourcePackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsLoggingTraceSourcePackageVersion>2.2.0-rtm-35636</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>2.2.0-rtm-181105-01</MicrosoftExtensionsObjectPoolPackageVersion>

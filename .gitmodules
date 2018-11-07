@@ -82,10 +82,6 @@
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git
 	branch = release/2.2
-[submodule "modules/Logging"]
-	path = modules/Logging
-	url = https://github.com/aspnet/Logging.git
-	branch = release/2.2
 [submodule "modules/MetaPackages"]
 	path = modules/MetaPackages
 	url = https://github.com/aspnet/MetaPackages.git
