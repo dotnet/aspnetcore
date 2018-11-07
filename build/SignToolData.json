@@ -74,6 +74,7 @@
     "mscorlib.dll",
     "netstandard.dll",
     "System.AppContext.dll",
+    "System.Buffers.dll",
     "System.CodeDom.dll",
     "System.Collections.Concurrent.dll",
     "System.Collections.dll",
