@@ -15,7 +15,7 @@
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
     <ProjectToBuild Include="$(UnitTestFxProject)" />
     <ProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
-    <ProjectToBuild Condition=" '$(BuildSiteExtension)' != 'false' " Include="$(RepositoryRoot)src\Installers\RuntimeSiteExtension\*.csproj" />
+    <ProjectToBuild Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Include="$(RepositoryRoot)src\Installers\RuntimeSiteExtension\*.csproj" />
     <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
     <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
   </ItemGroup>
@@ -48,7 +48,8 @@
         $(BuildProperties);
         SharedFxRid=$(SharedFxRid);
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
-        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)
+        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
+        PackageVersion=$(PackageVersion)
       </SharedFxBuildProperties>
     </PropertyGroup>
 

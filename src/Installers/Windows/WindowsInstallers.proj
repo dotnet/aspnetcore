@@ -25,10 +25,6 @@
     <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
     <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
 
-    <!-- Build the Runtime site extension -->
-    <InstallerProject Include="RuntimeSiteExtension/Microsoft.AspNetCore.Runtime.SiteExtension.csproj" AdditionalProperties="Platform=x64" BuildTargets="Pack" />
-    <InstallerProject Include="RuntimeSiteExtension/Microsoft.AspNetCore.Runtime.SiteExtension.csproj" AdditionalProperties="Platform=x86" BuildTargets="Pack" />
-
     <InstallerProject Include="*/*.wixproj" Exclude="@(InstallerProject);ancm/**/*" />
   </ItemGroup>
 
