@@ -2,7 +2,7 @@
   <PropertyGroup>
     <DotNetMajorVersion>2</DotNetMajorVersion>
     <DotNetMinorVersion>1</DotNetMinorVersion>
-    <DotNetPatchVersion>2</DotNetPatchVersion>
+    <DotNetPatchVersion>7</DotNetPatchVersion>
     <VersionPrefix>$(DotNetMajorVersion).$(DotNetMinorVersion).$(DotNetPatchVersion)</VersionPrefix>
     <AspNetCoreModuleVersionMajor>12</AspNetCoreModuleVersionMajor>
     <AspNetCoreModuleVersionMinor>$(DotNetMinorVersion)</AspNetCoreModuleVersionMinor>

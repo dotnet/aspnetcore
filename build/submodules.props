@@ -36,9 +36,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="Common" />
-    <Repository Include="Identity" />
-    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
@@ -55,6 +53,7 @@
     <ShippedRepository Include="BasicMiddleware" />
     <ShippedRepository Include="BrowserLink" />
     <ShippedRepository Include="Caching" />
+    <ShippedRepository Include="Common" />
     <ShippedRepository Include="Configuration" />
     <ShippedRepository Include="CORS" />
     <ShippedRepository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
@@ -69,12 +68,13 @@
     <ShippedRepository Include="HttpAbstractions" />
     <ShippedRepository Include="HttpClientFactory" />
     <ShippedRepository Include="HttpSysServer" />
-    <ShippedRepository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
+    <ShippedRepository Include="Identity" />
     <ShippedRepository Include="JavaScriptServices" />
     <ShippedRepository Include="JsonPatch" />
     <ShippedRepository Include="KestrelHttpServer" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="Logging" />
+    <ShippedRepository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="Mvc" />
     <ShippedRepository Include="MvcPrecompilation" />
     <ShippedRepository Include="Options" />
