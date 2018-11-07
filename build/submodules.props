@@ -41,7 +41,6 @@
     <Repository Include="AzureIntegration" />
     <Repository Include="BasicMiddleware" />
     <Repository Include="BrowserLink" />
-    <Repository Include="Caching" />
     <Repository Include="CORS" />
     <Repository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <Repository Include="Diagnostics" />

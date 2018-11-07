@@ -22,10 +22,6 @@
 	path = modules/BrowserLink
 	url = https://github.com/aspnet/BrowserLink.git
 	branch = release/2.2
-[submodule "modules/Caching"]
-	path = modules/Caching
-	url = https://github.com/aspnet/Caching.git
-	branch = release/2.2
 [submodule "modules/CORS"]
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git
