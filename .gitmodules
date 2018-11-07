@@ -18,10 +18,6 @@
 	path = modules/BasicMiddleware
 	url = https://github.com/aspnet/BasicMiddleware.git
 	branch = master
-[submodule "modules/Caching"]
-	path = modules/Caching
-	url = https://github.com/aspnet/Caching.git
-	branch = master
 [submodule "modules/CORS"]
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git

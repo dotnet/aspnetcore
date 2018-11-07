@@ -182,10 +182,6 @@
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Caching.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Caching.Memory" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Caching.StackExchangeRedis" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Caching.SqlServer" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship"  />
