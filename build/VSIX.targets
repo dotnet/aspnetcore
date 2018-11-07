@@ -23,7 +23,7 @@
     <ItemGroup>
       <MSBuildArguments Remove="@(MSBuildArguments)" />
       <MSBuildArguments Include="
-        $(VSIXProject);
+        &quot;$(VSIXProject);&quot;
         /t:Restore;
         /v:m;
         /p:Configuration=$(Configuration);
