@@ -21,7 +21,7 @@
 
     <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
     <Title>ASP.NET Core $(TrimmedVersion) ($(Platform)) Runtime </Title>
-    <Description>This site extension installs Microsoft.AspNetCore.All, Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
+    <Description>This site extension installs Microsoft.AspNetCore.App and Microsoft.NetCore.App shared frameworks.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
     <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(Platform)</PackageId>
 
