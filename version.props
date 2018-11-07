@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <VersionPrefix>2.1.6</VersionPrefix>
+    <VersionPrefix>2.1.7</VersionPrefix>
     <VersionSuffix>servicing</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND ('$(VersionSuffix)' == 'servicing' OR '$(VersionSuffix)' == 'rtm') ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'servicing' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
