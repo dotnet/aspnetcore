@@ -5,6 +5,9 @@ using System;
 
 namespace Microsoft.Extensions.Caching.Distributed
 {
+    /// <summary>
+    /// Provides the cache options for an entry in <see cref="IDistributedCache"/>.
+    /// </summary>
     public class DistributedCacheEntryOptions
     {
         private DateTimeOffset? _absoluteExpiration;
