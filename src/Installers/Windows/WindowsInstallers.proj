@@ -1,9 +1,9 @@
 <Project>
 
   <ItemDefinitionGroup>
-    <ItemGroupDefinition>
+    <InstallerProject>
       <BuildTargets>Build</BuildTargets>
-    </ItemGroupDefinition>
+    </InstallerProject>
   </ItemDefinitionGroup>
 
   <ItemGroup>
@@ -28,6 +28,7 @@
     <!-- Build the Runtime site extension -->
     <InstallerProject Include="RuntimeSiteExtension/Microsoft.AspNetCore.Runtime.SiteExtension.csproj" AdditionalProperties="Platform=x64" BuildTargets="Pack" />
     <InstallerProject Include="RuntimeSiteExtension/Microsoft.AspNetCore.Runtime.SiteExtension.csproj" AdditionalProperties="Platform=x86" BuildTargets="Pack" />
+
     <InstallerProject Include="*/*.wixproj" Exclude="@(InstallerProject);ancm/**/*" />
   </ItemGroup>
 
