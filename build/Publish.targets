@@ -64,6 +64,7 @@
       <NpmBlobBasePath>aspnetcore/npm/</NpmBlobBasePath>
       <JarBlobBasePath>aspnetcore/jar/</JarBlobBasePath>
       <AliasBlobBasePath>aspnetcore/Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
+      <SiteExtensionArchiveFileName>runtime-site-extension-internal-$(PackageVersion).zip</SiteExtensionArchiveFileName>
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
       <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
@@ -94,6 +95,11 @@
       </FilesToPublish>
 
       <!-- Intermediate files passed on to the dotnet-CLI. -->
+      <FilesToPublish Include="$(DependencyAssetsDir)$(SiteExtensionArchiveFileName)" Condition="@(Repository->AnyHaveMetadataValue('Identity', 'AzureIntegration'))">
+        <RelativeBlobPath>$(BlobBasePath)$(SiteExtensionArchiveFileName)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
+      </FilesToPublish>
+
       <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-$(PackageVersion).lzma" >
         <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-$(PackageVersion).lzma</RelativeBlobPath>
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>

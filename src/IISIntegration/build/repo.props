@@ -1,6 +1,10 @@
 <Project>
   <Import Project="dependencies.props" />
 
+  <PropertyGroup>
+    <StressTestWebSiteZipOutputPath>$(TestAssetsOutputPath)IIS.StressTestWebSite.zip</StressTestWebSiteZipOutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\TestSites\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\IISTestSite\*.csproj" />

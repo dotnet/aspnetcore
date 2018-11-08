@@ -4,7 +4,7 @@
     <PrepareDependsOn>$(PrepareDependsOn)</PrepareDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNativeArtifactsInfo</GetArtifactInfoDependsOn>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
-    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects;PackageStressTestApp</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);RunNativeTest</TestDependsOn>
     <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
     <SourceBase>$(RepositoryRoot)src\</SourceBase>
@@ -58,6 +58,13 @@
       </ArtifactInfo>
       <FilesToSign Include="$(AncmV2PackageOutputPath)" Certificate="$(PackageSigningCertName)" />
 
+      <ArtifactInfo Include="$(StressTestWebSiteZipOutputPath)">
+        <ArtifactType>ZipArchive</ArtifactType>
+        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+        <Category>noship</Category>
+      </ArtifactInfo>
+
+      <FilesToExcludeFromSigning Include="$(StressTestWebSiteZipOutputPath)" />
       <FilesToExcludeFromSigning Include="AspNetCore\ancm.mof" Container="$(AncmV2PackageOutputPath)" />
     </ItemGroup>
   </Target>
@@ -103,5 +110,27 @@
     </PropertyGroup>
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)test\CommonLibTests\CommonLibTests.vcxproj&quot; /t:Test $(BuildArgs) -p:Platform=%(Platforms.VCPlatform)"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+
+  <Target Name="PackageStressTestApp">
+    <PropertyGroup>
+      <StressAppBasePath>$(MSBuildThisFileDirectory)..\test\WebSites\StressTestWebSite\</StressAppBasePath>
+      <StressAppPublishPath>$(StressAppBasePath)bin\published\</StressAppPublishPath>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(StressAppPublishPath)" />
+    <MSBuild
+      Projects="$(StressAppBasePath)\StressTestWebSite.csproj"
+      Targets="Publish"
+      Properties="TargetFramework=netcoreapp2.2;Configuration=$(Configuration);RuntimeIdentifier=win7-%(Platforms.Identity);PublishDir=$(StressAppPublishPath)\%(Identity);BuildProjectReferences=false" />
+
+    <ItemGroup>
+      <StressAppFiles Include="$(StressAppPublishPath)\**\*" />
+    </ItemGroup>
+
+    <ZipArchive File="$(StressTestWebSiteZipOutputPath)"
+      Overwrite="true"
+      SourceFiles="@(StressAppFiles)"
+      WorkingDirectory="$(StressAppPublishPath)" />
   </Target>
 </Project>
