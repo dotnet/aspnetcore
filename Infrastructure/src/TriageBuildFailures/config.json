@@ -269,6 +269,7 @@
       "46", //Routing-ci
       "49", //DotNetTools-ci
       "51", //EntityFrameworkCore-ci
+      "58", //Session-ci
       "61", //HttpSysServer-ci
       "135", //aspnet-Blazor-ci-official
       "66", //KestrelHttpServer-ci
