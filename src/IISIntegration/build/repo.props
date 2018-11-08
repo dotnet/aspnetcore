@@ -1,11 +1,6 @@
 <Project>
   <Import Project="dependencies.props" />
 
-  <PropertyGroup>
-    <AncmZipOutputPath>$(BuildDir)AspNetCoreModule.zip</AncmZipOutputPath>
-    <StressTestWebSiteZipOutputPath>$(BuildDir)StressTestWebSite.zip</StressTestWebSiteZipOutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\TestSites\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\IISTestSite\*.csproj" />
