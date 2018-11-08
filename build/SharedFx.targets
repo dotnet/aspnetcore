@@ -6,6 +6,7 @@
     <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
     <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
+    <BuildRuntimeSiteExtension Condition="'$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86'">true</BuildRuntimeSiteExtension>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +14,7 @@
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
     <ProjectToBuild Include="$(UnitTestFxProject)" />
     <ProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
+    <ProjectToBuild Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Include="$(RepositoryRoot)src\Installers\RuntimeSiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
     <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
     <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
   </ItemGroup>
@@ -26,6 +28,7 @@
       <FilesToSign Include="$(BuildDir)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(BuildDir)AspNetCoreRuntime.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Certificate="$(PackageSigningCertName)" />
     </ItemGroup>
 
     <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
@@ -44,8 +47,10 @@
       <SharedFxBuildProperties>
         $(BuildProperties);
         SharedFxRid=$(SharedFxRid);
+        SharedFxArchitecture=$(SharedFxArchitecture);
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
-        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)
+        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
+        PackageVersion=$(PackageVersion)
       </SharedFxBuildProperties>
     </PropertyGroup>
 
