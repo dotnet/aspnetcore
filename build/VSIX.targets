@@ -43,7 +43,7 @@
       </ArtifactInfo>
 
       <FilesToSign Include="$(VSIXOutputPath)" Certificate="$(VsixSigningCertName)" />
-      <FilesToSign Include="$(RepositoryRoot)tooling/Microsoft.VisualStudio.RazorExtension/bin/$(Configuration)/Microsoft.VisualStudio.RazorExtension.dll" Certificate="$(AssemblySigningCertName)" />
+      <FilesToSign Include="Microsoft.VisualStudio.RazorExtension.dll" Certificate="$(AssemblySigningCertName)" Container="$(VSIXOutputPath)" />
       <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
       <FilesToExcludeFromSigning Include="$(VSIXSymbolsOutputPath)" />
 
