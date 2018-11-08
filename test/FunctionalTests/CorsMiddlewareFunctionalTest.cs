@@ -50,7 +50,7 @@ namespace FunctionalTests
                 }
 
                 // Act
-                var result = await ProcessManager.RunProcessAsync(processStartInfo);
+                var result = await ProcessManager.RunProcessAsync(processStartInfo, loggerFactory.CreateLogger("ProcessManager"));
 
                 // Assert
                 Assert.Success(result);
