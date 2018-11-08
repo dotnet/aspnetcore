@@ -140,6 +140,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 };
                 return Task.FromResult(new AuthorizationPolicy(requirements, new string[] { }));
             }
+
+            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+            {
+                return Task.FromResult<AuthorizationPolicy>(null);
+            }
         }
 
         public class AuthorizeController

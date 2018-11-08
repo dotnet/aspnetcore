@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MvcSandbox.AuthorizationMiddleware;
 
 namespace MvcSandbox
 {
@@ -46,8 +45,6 @@ namespace MvcSandbox
 
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
-
-            app.UseAuthorization();
 
             app.UseEndpoint();
         }
