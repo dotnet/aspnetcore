@@ -20,6 +20,16 @@
 
   </PropertyGroup>
 
+  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
+    <ItemGroup>
+      <ArtifactInfo Include="$(TargetPath)">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
 
   <Target Name="CopyFilesToOutputDirectory" />

@@ -6,7 +6,6 @@
     <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
     <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
-    <SharedFxArchitecture>$(SharedFxRid.Substring($(SharedFxRid.LastIndexOf('x'))))</SharedFxArchitecture>
     <BuildRuntimeSiteExtension Condition="'$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86'">true</BuildRuntimeSiteExtension>
   </PropertyGroup>
 
@@ -29,6 +28,7 @@
       <FilesToSign Include="$(BuildDir)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(BuildDir)AspNetCoreRuntime.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Certificate="$(PackageSigningCertName)" />
     </ItemGroup>
 
     <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
