@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -32,9 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public DefaultViewComponentInvoker(
             IViewComponentFactory viewComponentFactory,
-#pragma warning disable PUB0001 // Pubternal type in public API
             ViewComponentInvokerCache viewComponentInvokerCache,
-#pragma warning restore PUB0001
             DiagnosticSource diagnosticSource,
             ILogger logger)
         {
@@ -179,20 +176,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new InvalidOperationException(Resources.ViewComponent_MustReturnValue);
             }
 
-            var componentResult = value as IViewComponentResult;
-            if (componentResult != null)
+            if (value is IViewComponentResult componentResult)
             {
                 return componentResult;
             }
 
-            var stringResult = value as string;
-            if (stringResult != null)
+            if (value is string stringResult)
             {
                 return new ContentViewComponentResult(stringResult);
             }
 
-            var htmlContent = value as IHtmlContent;
-            if (htmlContent != null)
+            if (value is IHtmlContent htmlContent)
             {
                 return new HtmlContentViewComponentResult(htmlContent);
             }

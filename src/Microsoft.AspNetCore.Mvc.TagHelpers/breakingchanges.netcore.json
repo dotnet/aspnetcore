@@ -1,0 +1,7 @@
+﻿[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.TagHelpers.PartialTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.IViewBufferScope viewBufferScope)",
+    "Kind": "Removal"
+  }
+]

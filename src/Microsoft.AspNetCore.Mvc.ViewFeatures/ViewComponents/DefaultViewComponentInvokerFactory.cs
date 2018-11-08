@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -17,9 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
         public DefaultViewComponentInvokerFactory(
             IViewComponentFactory viewComponentFactory,
-#pragma warning disable PUB0001 // Pubternal type in public API
             ViewComponentInvokerCache viewComponentInvokerCache,
-#pragma warning restore PUB0001
             DiagnosticSource diagnosticSource,
             ILoggerFactory loggerFactory)
         {

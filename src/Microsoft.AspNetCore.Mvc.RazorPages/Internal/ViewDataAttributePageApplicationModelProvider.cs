@@ -3,8 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {

@@ -5,7 +5,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
 {
     public class TestViewBufferScope : IViewBufferScope
     {
