@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.Redis\Microsoft.AspNetCore.DataProtection.Redis.csproj" />
+    <ProjectReference Include="..\..\Redis\src\Microsoft.AspNetCore.DataProtection.Redis.csproj" />
   </ItemGroup>
 
   <ItemGroup>
