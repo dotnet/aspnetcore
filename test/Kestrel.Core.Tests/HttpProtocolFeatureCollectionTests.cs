@@ -19,22 +19,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class HttpProtocolFeatureCollectionTests
     {
         private readonly TestHttp1Connection _http1Connection;
-        private readonly HttpConnectionContext _http1ConnectionContext;
+        private readonly HttpConnectionContext _httpConnectionContext;
         private readonly IFeatureCollection _collection;
+        private readonly IFeatureCollection _http2Collection;
 
         public HttpProtocolFeatureCollectionTests()
         {
-            _http1ConnectionContext = new HttpConnectionContext
+            var context = new Http2StreamContext
             {
                 ServiceContext = new TestServiceContext(),
                 ConnectionFeatures = new FeatureCollection(),
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
                 Transport = Mock.Of<IDuplexPipe>(),
+                ServerPeerSettings = new Http2PeerSettings(),
+                ClientPeerSettings = new Http2PeerSettings(),
             };
 
-            _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
+            _httpConnectionContext = context;
+            _http1Connection = new TestHttp1Connection(context);
             _http1Connection.Reset();
             _collection = _http1Connection;
+
+            var http2Stream = new Http2Stream(context);
+            http2Stream.Reset();
+            _http2Collection = http2Stream;
         }
 
         [Fact]
@@ -143,22 +151,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void Http2StreamFeatureCollectionDoesNotIncludeMinRateFeatures()
         {
-            var http2Stream = new Http2Stream(new Http2StreamContext
-            {
-                ServiceContext = new TestServiceContext(),
-                ConnectionFeatures = new FeatureCollection(),
-                TimeoutControl = Mock.Of<ITimeoutControl>(),
-                Transport = Mock.Of<IDuplexPipe>(),
-                ServerPeerSettings = new Http2PeerSettings(),
-                ClientPeerSettings = new Http2PeerSettings(),
-            });
-            var http2StreamCollection = (IFeatureCollection)http2Stream;
-
-            Assert.Null(http2StreamCollection.Get<IHttpMinRequestBodyDataRateFeature>());
-            Assert.Null(http2StreamCollection.Get<IHttpMinResponseDataRateFeature>());
+            Assert.Null(_http2Collection.Get<IHttpMinRequestBodyDataRateFeature>());
+            Assert.Null(_http2Collection.Get<IHttpMinResponseDataRateFeature>());
 
             Assert.NotNull(_collection.Get<IHttpMinRequestBodyDataRateFeature>());
             Assert.NotNull(_collection.Get<IHttpMinResponseDataRateFeature>());
+        }
+
+        [Fact]
+        public void Http2StreamFeatureCollectionDoesIncludeUpgradeFeature()
+        {
+            var upgradeFeature = _http2Collection.Get<IHttpUpgradeFeature>();
+
+            Assert.NotNull(upgradeFeature);
+            Assert.False(upgradeFeature.IsUpgradableRequest);
         }
 
         private void CompareGenericGetterToIndexer()
@@ -213,6 +219,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return featureCount;
         }
 
-        private Http1Connection CreateHttp1Connection() => new TestHttp1Connection(_http1ConnectionContext);
+        private Http1Connection CreateHttp1Connection() => new TestHttp1Connection(_httpConnectionContext);
     }
 }

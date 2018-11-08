@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
         // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected volatile bool _keepAlive = true;
-        protected bool _upgradeAvailable;
         private bool _canHaveBody;
         private bool _autoChunk;
         private Exception _applicationException;
@@ -116,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public abstract bool IsUpgradableRequest { get; }
+        public bool IsUpgradableRequest { get; private set; }
         public bool IsUpgraded { get; set; }
         public IPAddress RemoteIpAddress { get; set; }
         public int RemotePort { get; set; }
@@ -532,7 +531,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _keepAlive = false;
                 }
 
-                _upgradeAvailable = messageBody.RequestUpgrade;
+                IsUpgradableRequest = messageBody.RequestUpgrade;
 
                 InitializeStreams(messageBody);
 

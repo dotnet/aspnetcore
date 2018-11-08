@@ -61,8 +61,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool RequestTimedOut => _requestTimedOut;
 
-        public override bool IsUpgradableRequest => _upgradeAvailable;
-
         public MinDataRate MinRequestBodyDataRate { get; set; }
 
         public MinDataRate MinResponseDataRate { get; set; }

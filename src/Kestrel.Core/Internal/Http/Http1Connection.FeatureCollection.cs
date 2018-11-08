@@ -11,42 +11,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class Http1Connection : IHttpUpgradeFeature,
-                                           IHttpMinRequestBodyDataRateFeature,
+    public partial class Http1Connection : IHttpMinRequestBodyDataRateFeature,
                                            IHttpMinResponseDataRateFeature
     {
-        bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
-
-        async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
-        {
-            if (!((IHttpUpgradeFeature)this).IsUpgradableRequest)
-            {
-                throw new InvalidOperationException(CoreStrings.CannotUpgradeNonUpgradableRequest);
-            }
-
-            if (IsUpgraded)
-            {
-                throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
-            }
-
-            if (!ServiceContext.ConnectionManager.UpgradedConnectionCount.TryLockOne())
-            {
-                throw new InvalidOperationException(CoreStrings.UpgradedConnectionLimitReached);
-            }
-
-            IsUpgraded = true;
-
-            ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
-
-            StatusCode = StatusCodes.Status101SwitchingProtocols;
-            ReasonPhrase = "Switching Protocols";
-            ResponseHeaders["Connection"] = "Upgrade";
-
-            await FlushAsync(default(CancellationToken));
-
-            return _streams.Upgrade();
-        }
-
         MinDataRate IHttpMinRequestBodyDataRateFeature.MinDataRate
         {
             get => MinRequestBodyDataRate;
