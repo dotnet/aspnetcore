@@ -79,6 +79,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WsFedSample", "samples\WsFedSample\WsFedSample.csproj", "{5EC2E398-E46A-430D-8E4B-E91C8FC3E800}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{55052FE3-F8C2-4E6C-97B0-C02ED1DBEA62}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Security.Performance", "benchmarks\Microsoft.AspNetCore.Security.Performance\Microsoft.AspNetCore.Security.Performance.csproj", "{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -517,6 +521,22 @@ Global
 		{5EC2E398-E46A-430D-8E4B-E91C8FC3E800}.Release|x64.Build.0 = Release|Any CPU
 		{5EC2E398-E46A-430D-8E4B-E91C8FC3E800}.Release|x86.ActiveCfg = Release|Any CPU
 		{5EC2E398-E46A-430D-8E4B-E91C8FC3E800}.Release|x86.Build.0 = Release|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Debug|x64.Build.0 = Debug|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Debug|x86.Build.0 = Debug|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Release|x64.ActiveCfg = Release|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Release|x64.Build.0 = Release|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Release|x86.ActiveCfg = Release|Any CPU
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -549,6 +569,7 @@ Global
 		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
 		{B1FC6AAF-9BF2-4CDA-84A2-AA8BF7603F29} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
 		{5EC2E398-E46A-430D-8E4B-E91C8FC3E800} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
+		{556C4FAA-F4B1-4EA9-8921-CB1DF7D94C2A} = {55052FE3-F8C2-4E6C-97B0-C02ED1DBEA62}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}

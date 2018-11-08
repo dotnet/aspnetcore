@@ -30,3 +30,4 @@ project.lock.json
 /.vs/
 .vscode/
 global.json
+BenchmarkDotNet.Artifacts/

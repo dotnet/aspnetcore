@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Authorization
     public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
     {
         private readonly AuthorizationOptions _options;
+        private Task<AuthorizationPolicy> _cachedDefaultPolicy;
+        private Task<AuthorizationPolicy> _cachedRequiredPolicy;
 
         /// <summary>
         /// Creates a new instance of <see cref="DefaultAuthorizationPolicyProvider"/>.
@@ -35,7 +37,26 @@ namespace Microsoft.AspNetCore.Authorization
         /// <returns>The default authorization policy.</returns>
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
         {
-            return Task.FromResult(_options.DefaultPolicy);
+            return GetCachedPolicy(ref _cachedDefaultPolicy, _options.DefaultPolicy);
+        }
+
+        /// <summary>
+        /// Gets the required authorization policy.
+        /// </summary>
+        /// <returns>The required authorization policy.</returns>
+        public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+        {
+            return GetCachedPolicy(ref _cachedRequiredPolicy, _options.RequiredPolicy);
+        }
+
+        private Task<AuthorizationPolicy> GetCachedPolicy(ref Task<AuthorizationPolicy> cachedPolicy, AuthorizationPolicy currentPolicy)
+        {
+            var local = cachedPolicy;
+            if (local == null || local.Result != currentPolicy)
+            {
+                cachedPolicy = local = Task.FromResult(currentPolicy);
+            }
+            return local;
         }
 
         /// <summary>
