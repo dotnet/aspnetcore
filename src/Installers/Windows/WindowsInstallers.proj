@@ -1,11 +1,5 @@
 <Project>
 
-  <ItemDefinitionGroup>
-    <InstallerProject>
-      <BuildTargets>Build</BuildTargets>
-    </InstallerProject>
-  </ItemDefinitionGroup>
-
   <ItemGroup>
     <!-- Build the ANCM custom action -->
     <InstallerProject Include="AspNetCoreModule-Setup/CustomAction/aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
@@ -29,7 +23,7 @@
   </ItemGroup>
 
   <Target Name="Build">
-    <MSBuild Projects="%(InstallerProject.Identity)" Targets="%(BuildTargets)" Properties="%(AdditionalProperties)" />
+    <MSBuild Projects="@(InstallerProject)" Targets="Build" />
   </Target>
 
   <Target Name="Clean">
