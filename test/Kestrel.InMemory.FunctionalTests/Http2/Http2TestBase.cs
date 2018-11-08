@@ -1110,7 +1110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(expectedErrorCode, frame.GoAwayErrorCode);
         }
 
-        protected async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, int expectedLastStreamId, Http2ErrorCode expectedErrorCode, string expectedErrorMessage)
+        protected async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, int expectedLastStreamId, Http2ErrorCode expectedErrorCode, params string[] expectedErrorMessage)
             where TException : Exception
         {
             var frame = await ReceiveFrameAsync();
@@ -1125,10 +1125,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             VerifyGoAway(frame, expectedLastStreamId, expectedErrorCode);
 
-            if (expectedErrorMessage != null)
+            if (expectedErrorMessage?.Length > 0)
             {
                 var message = Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is TException);
-                Assert.Contains(expectedErrorMessage, message.Exception.Message);
+
+                Assert.Contains(expectedErrorMessage, expected => message.Exception.Message.Contains(expected));
             }
 
             await _connectionTask;

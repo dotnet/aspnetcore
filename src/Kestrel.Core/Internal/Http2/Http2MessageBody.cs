@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public static MessageBody For(Http2Stream context, MinDataRate minRequestBodyDataRate)
         {
-            if (context.EndStreamReceived && !context.RequestBodyStarted)
+            if (context.ReceivedEmptyRequestBody)
             {
                 return ZeroContentLengthClose;
             }

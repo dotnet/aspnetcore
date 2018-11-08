@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -191,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         [Theory]
         [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.HEADERS)]
+        [InlineData(Http2FrameType.CONTINUATION, Skip = "https://github.com/aspnet/KestrelHttpServer/issues/3077")]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -208,40 +209,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
 
-            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
-            for (var i = 0; i < 10; i++)
+            var cts = new CancellationTokenSource();
+
+            async Task AdvanceClockAndSendFrames()
             {
-                await SendDataAsync(1, new byte[100], endStream: false);
+                if (finalFrameType == Http2FrameType.CONTINUATION)
+                {
+                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, new byte[0]);
+                }
+
+                // There's a race when the appfunc is exiting about how soon it unregisters the stream, so retry until success.
+                while (!cts.Token.IsCancellationRequested)
+                {
+                    // Just past the timeout
+                    mockSystemClock.UtcNow += Constants.RequestBodyDrainTimeout + TimeSpan.FromTicks(1);
+                    (_connection as IRequestProcessor).Tick(mockSystemClock.UtcNow);
+
+                    // Send an extra frame to make it fail
+                    switch (finalFrameType)
+                    {
+                        case Http2FrameType.DATA:
+                            await SendDataAsync(1, new byte[100], endStream: false);
+                            break;
+
+                        case Http2FrameType.CONTINUATION:
+                            await SendContinuationAsync(1, Http2ContinuationFrameFlags.NONE, new byte[0]);
+                            break;
+
+                        default:
+                            throw new NotImplementedException(finalFrameType.ToString());
+                    }
+
+                    if (!cts.Token.IsCancellationRequested)
+                    {
+                        await Task.Delay(10);
+                    }
+                }
             }
 
-            // Just short of the timeout
-            mockSystemClock.UtcNow += Constants.RequestBodyDrainTimeout;
-            (_connection as IRequestProcessor).Tick(mockSystemClock.UtcNow);
+            var sendTask = AdvanceClockAndSendFrames();
 
-            // Still fine
-            await SendDataAsync(1, new byte[100], endStream: false);
-
-            // Just past the timeout
-            mockSystemClock.UtcNow += TimeSpan.FromTicks(1);
-            (_connection as IRequestProcessor).Tick(mockSystemClock.UtcNow);
-
-            // Send an extra frame to make it fail
-            switch (finalFrameType)
-            {
-                case Http2FrameType.DATA:
-                    await SendDataAsync(1, new byte[100], endStream: true);
-                    break;
-
-                case Http2FrameType.HEADERS:
-                    await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
-                    break;
-
-                default:
-                    throw new NotImplementedException(finalFrameType.ToString());
-            }
-
-            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 1,
+                Http2ErrorCode.STREAM_CLOSED,
                 CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, 1));
+
+            cts.Cancel();
+
+            await sendTask.DefaultTimeout();
         }
 
         [Fact]

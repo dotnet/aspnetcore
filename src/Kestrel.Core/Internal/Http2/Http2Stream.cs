@@ -70,6 +70,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override bool IsUpgradableRequest => false;
 
+        public bool ReceivedEmptyRequestBody
+        {
+            get
+            {
+                lock (_completionLock)
+                {
+                    return EndStreamReceived && !RequestBodyStarted;
+                }
+            }
+        }
+
         protected override void OnReset()
         {
             ResetHttp2Features();
@@ -326,24 +337,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (dataPayload.Length > 0)
             {
-                RequestBodyStarted = true;
-
-                if (endStream)
-                {
-                    // No need to send any more window updates for this stream now that we've received all the data.
-                    // Call before flushing the request body pipe, because that might induce a window update.
-                    _inputFlowControl.StopWindowUpdates();
-                }
-
-                _inputFlowControl.Advance((int)dataPayload.Length);
-
                 lock (_completionLock)
                 {
-                    if (IsAborted)
+                    RequestBodyStarted = true;
+
+                    if (endStream)
                     {
-                        // Ignore data frames for aborted streams, but only after counting them for purposes of connection level flow control.
-                        return Task.CompletedTask;
+                        // No need to send any more window updates for this stream now that we've received all the data.
+                        // Call before flushing the request body pipe, because that might induce a window update.
+                        _inputFlowControl.StopWindowUpdates();
                     }
+
+                    _inputFlowControl.Advance((int)dataPayload.Length);
 
                     // This check happens after flow control so that when we throw and abort, the byte count is returned to the connection
                     // level accounting.
@@ -358,15 +363,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         InputRemaining -= dataPayload.Length;
                     }
 
-                    foreach (var segment in dataPayload)
+                    // Ignore data frames for aborted streams, but only after counting them for purposes of connection level flow control.
+                    if (!IsAborted)
                     {
-                        RequestBodyPipe.Writer.Write(segment.Span);
-                    }
-                    var flushTask = RequestBodyPipe.Writer.FlushAsync();
+                        foreach (var segment in dataPayload)
+                        {
+                            RequestBodyPipe.Writer.Write(segment.Span);
+                        }
+                        var flushTask = RequestBodyPipe.Writer.FlushAsync();
 
-                    // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
-                    // _inputFlowControl.Advance() didn't throw.
-                    Debug.Assert(flushTask.IsCompleted);
+                        // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
+                        // _inputFlowControl.Advance() didn't throw.
+                        Debug.Assert(flushTask.IsCompleted);
+                    }
                 }
             }
 
