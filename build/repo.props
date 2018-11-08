@@ -13,6 +13,9 @@
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
+    <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
+    <!-- This creates false-positives on many of the native .dll's we produce or re-distribute from other teams. -->
+    <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
   </PropertyGroup>
 
   <ItemGroup>
