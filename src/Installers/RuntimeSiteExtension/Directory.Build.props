@@ -7,7 +7,7 @@
 
     <BaseIntermediateOutputPath>$(RepositoryRoot)obj\ar\</BaseIntermediateOutputPath>
     <DotNetUnpackFolder>$(BaseIntermediateOutputPath)$(SharedFxRid)\</DotNetUnpackFolder>
-    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFxRid)$.zip</DotNetRuntimeArchiveFileName>
+    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFxRid).zip</DotNetRuntimeArchiveFileName>
     <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
   </PropertyGroup>
