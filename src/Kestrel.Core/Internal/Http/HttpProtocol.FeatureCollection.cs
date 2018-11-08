@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public partial class HttpProtocol : IHttpRequestFeature,
                                         IHttpResponseFeature,
+                                        IHttpUpgradeFeature,
                                         IHttpConnectionFeature,
                                         IHttpRequestLifetimeFeature,
                                         IHttpRequestIdentifierFeature,
@@ -123,6 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
+        bool IHttpUpgradeFeature.IsUpgradableRequest => IsUpgradableRequest;
 
         IPAddress IHttpConnectionFeature.RemoteIpAddress
         {
@@ -192,7 +194,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void ResetHttp1Features()
         {
-            _currentIHttpUpgradeFeature = this;
             _currentIHttpMinRequestBodyDataRateFeature = this;
             _currentIHttpMinResponseDataRateFeature = this;
         }
@@ -211,6 +212,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
         {
             OnCompleted(callback, state);
+        }
+
+        async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
+        {
+            if (!IsUpgradableRequest)
+            {
+                throw new InvalidOperationException(CoreStrings.CannotUpgradeNonUpgradableRequest);
+            }
+
+            if (IsUpgraded)
+            {
+                throw new InvalidOperationException(CoreStrings.UpgradeCannotBeCalledMultipleTimes);
+            }
+
+            if (!ServiceContext.ConnectionManager.UpgradedConnectionCount.TryLockOne())
+            {
+                throw new InvalidOperationException(CoreStrings.UpgradedConnectionLimitReached);
+            }
+
+            IsUpgraded = true;
+
+            ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
+
+            StatusCode = StatusCodes.Status101SwitchingProtocols;
+            ReasonPhrase = "Switching Protocols";
+            ResponseHeaders["Connection"] = "Upgrade";
+
+            await FlushAsync();
+
+            return _streams.Upgrade();
         }
 
         void IHttpRequestLifetimeFeature.Abort()
