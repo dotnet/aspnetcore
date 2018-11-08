@@ -6,7 +6,7 @@
     <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
     <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
-    <SharedFxArchitecture>$(SharedFxRid.Substring($(SharedFxRid.LastIndexOf('-'))))</SharedFxArchitecture>
+    <SharedFxArchitecture>$(SharedFxRid.Substring($(SharedFxRid.LastIndexOf('x'))))</SharedFxArchitecture>
     <BuildRuntimeSiteExtension Condition="'$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86'">true</BuildRuntimeSiteExtension>
   </PropertyGroup>
 
@@ -15,7 +15,7 @@
     <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
     <ProjectToBuild Include="$(UnitTestFxProject)" />
     <ProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
-    <ProjectToBuild Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Include="$(RepositoryRoot)src\Installers\RuntimeSiteExtension\*.csproj" />
+    <ProjectToBuild Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Include="$(RepositoryRoot)src\Installers\RuntimeSiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
     <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
     <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
   </ItemGroup>
@@ -47,6 +47,7 @@
       <SharedFxBuildProperties>
         $(BuildProperties);
         SharedFxRid=$(SharedFxRid);
+        SharedFxArchitecture=$(SharedFxArchitecture);
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         PackageVersion=$(PackageVersion)
