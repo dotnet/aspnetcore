@@ -141,6 +141,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 b.Features.Add(new DefaultMetadataReferenceFeature() { References = metadataReferences });
                 b.Features.Add(new CompilationTagHelperFeature());
                 b.Features.Add(new DefaultTagHelperDescriptorProvider());
+                b.Features.Add(new ComponentTagHelperDescriptorProvider());
             });
 
             var feature = engine.Engine.Features.OfType<ITagHelperFeature>().Single();

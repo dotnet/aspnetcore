@@ -10,13 +10,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             int indentSize, 
             bool designTime, 
             bool suppressChecksum,
-            bool supressMetadataAttributes)
+            bool supressMetadataAttributes,
+            bool suppressPrimaryMethodBody)
         {
             IndentWithTabs = indentWithTabs;
             IndentSize = indentSize;
             DesignTime = designTime;
             SuppressChecksum = suppressChecksum;
             SuppressMetadataAttributes = supressMetadataAttributes;
+            SuppressPrimaryMethodBody = suppressPrimaryMethodBody;
         }
 
         public override bool DesignTime { get; }

@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             NamespaceDirective.Register(builder);
             PageDirective.Register(builder);
 
-            FunctionsDirective.Register(builder);
             InheritsDirective.Register(builder);
             SectionDirective.Register(builder);
 

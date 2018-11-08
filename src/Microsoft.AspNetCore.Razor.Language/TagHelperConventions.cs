@@ -6,5 +6,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     public static class TagHelperConventions
     {
         public static readonly string DefaultKind = "ITagHelper";
+
+        public static readonly string ComponentKind = "IComponent";
     }
 }

@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Build");
             var file = Path.Combine(Project.DirectoryPath, "SimpleTagHelper.cs");
             var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache");
-            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
+            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             // Assert - 1
             Assert.BuildPassed(result);
@@ -131,6 +131,152 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // File with error does not get written to disk.
                 Assert.FileDoesNotExist(result, IntermediateOutputPath, "Razor", "Views", "Home", "Index.cshtml.g.cs");
             }
+        }
+
+        [Fact]
+        [InitializeTestProject("MvcWithComponents")]
+        public async Task BuildComponents_ErrorInGeneratedCode_ReportsMSBuildError_OnIncrementalBuild()
+        {
+            // Introducing a Razor semantic error
+            ReplaceContent("@{ // Unterminated code block", "Views", "Shared", "NavMenu.razor");
+
+            // Regular build
+            await VerifyError();
+
+            // Incremental build
+            await VerifyError();
+
+            async Task VerifyError()
+            {
+                var result = await DotnetMSBuild("Build");
+
+                Assert.BuildFailed(result);
+
+                // This needs to be relative path. Tracked by https://github.com/aspnet/Razor/issues/2187.
+                var filePath = Path.Combine(Project.DirectoryPath, "Views", "Shared", "NavMenu.razor");
+                var location = filePath + "(1,2)";
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    // Absolute paths on OSX don't work well.
+                    location = null;
+                }
+
+                Assert.BuildError(result, "RZ1006", location: location);
+
+                // Compilation failed without creating the views assembly
+                Assert.FileDoesNotExist(result, IntermediateOutputPath, "MvcWithComponents.dll");
+                Assert.FileDoesNotExist(result, IntermediateOutputPath, "MvcWithComponents.Views.dll");
+
+                // File with error does not get written to disk.
+                Assert.FileDoesNotExist(result, IntermediateOutputPath, "RazorComponents", "Views", "Shared", "NavMenu.razor.g.cs");
+            }
+        }
+
+        [Fact]
+        [InitializeTestProject("MvcWithComponents")]
+        public async Task BuildComponents_RegeneratesComponentDefinition_WhenFilesChange()
+        {
+            // Act - 1
+            var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "MvcWithComponents.TagHelpers.output.cache");
+
+            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Shared", "NavMenu.razor.g.cs");
+            var generatedDefinitionFile = Path.Combine(RazorComponentIntermediateOutputPath, "Views", "Shared", "NavMenu.razor.g.cs");
+
+            // Assert - 1
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+            var outputFile = Path.Combine(OutputPath, "MvcWithComponents.dll");
+            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
+            var outputAssemblyThumbprint = GetThumbPrint(outputFile);
+
+            Assert.FileExists(result, generatedDefinitionFile);
+            var generatedDefinitionThumbprint = GetThumbPrint(generatedDefinitionFile);
+            Assert.FileExists(result, generatedFile);
+            var generatedFileThumbprint = GetThumbPrint(generatedFile);
+
+            Assert.FileExists(result, tagHelperOutputCache);
+            Assert.FileContains(
+                result,
+                tagHelperOutputCache,
+                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
+
+            var definitionThumbprint = GetThumbPrint(tagHelperOutputCache);
+
+            // Act - 2
+            ReplaceContent("Different things", "Views", "Shared", "NavMenu.razor");
+            result = await DotnetMSBuild("Build");
+
+            // Assert - 2
+            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
+            Assert.NotEqual(outputAssemblyThumbprint, GetThumbPrint(outputFile));
+
+            Assert.FileExists(result, generatedDefinitionFile);
+            Assert.NotEqual(generatedDefinitionThumbprint, GetThumbPrint(generatedDefinitionFile));
+            Assert.FileExists(result, generatedFile);
+            Assert.NotEqual(generatedFileThumbprint, GetThumbPrint(generatedFile));
+
+            Assert.FileExists(result, tagHelperOutputCache);
+            Assert.FileContains(
+                result,
+                tagHelperOutputCache,
+                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
+
+            // TODO:
+            Assert.Equal(definitionThumbprint, GetThumbPrint(tagHelperOutputCache));
+        }
+
+        [Fact]
+        [InitializeTestProject("MvcWithComponents")]
+        public async Task BuildComponents_DoesNotModifyFiles_IfFilesDoNotChange()
+        {
+            // Act - 1
+            var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "MvcWithComponents.TagHelpers.output.cache");
+
+            var file = Path.Combine(Project.DirectoryPath, "Views", "Shared", "NavMenu.razor.g.cs");
+            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Shared", "NavMenu.razor.g.cs");
+            var generatedDefinitionFile = Path.Combine(RazorComponentIntermediateOutputPath, "Views", "Shared", "NavMenu.razor.g.cs");
+
+            // Assert - 1
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+            var outputFile = Path.Combine(OutputPath, "MvcWithComponents.dll");
+            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
+            var outputAssemblyThumbprint = GetThumbPrint(outputFile);
+
+            Assert.FileExists(result, generatedDefinitionFile);
+            var generatedDefinitionThumbprint = GetThumbPrint(generatedDefinitionFile);
+            Assert.FileExists(result, generatedFile);
+            var generatedFileThumbprint = GetThumbPrint(generatedFile);
+
+            Assert.FileExists(result, tagHelperOutputCache);
+            Assert.FileContains(
+                result,
+                tagHelperOutputCache,
+                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
+
+            var definitionThumbprint = GetThumbPrint(tagHelperOutputCache);
+
+            // Act - 2
+            result = await DotnetMSBuild("Build");
+
+            // Assert - 2
+            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
+            Assert.Equal(outputAssemblyThumbprint, GetThumbPrint(outputFile));
+
+            Assert.FileExists(result, generatedDefinitionFile);
+            Assert.Equal(generatedDefinitionThumbprint, GetThumbPrint(generatedDefinitionFile));
+            Assert.FileExists(result, generatedFile);
+            Assert.Equal(generatedFileThumbprint, GetThumbPrint(generatedFile));
+
+            Assert.FileExists(result, tagHelperOutputCache);
+            Assert.FileContains(
+                result,
+                tagHelperOutputCache,
+                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
+
+            Assert.Equal(definitionThumbprint, GetThumbPrint(tagHelperOutputCache));
         }
 
         [Fact]

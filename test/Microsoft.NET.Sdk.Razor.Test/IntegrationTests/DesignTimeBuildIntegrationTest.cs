@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 Assert.BuildOutputContainsLine(
                     result,
-                    $@"RazorGenerateWithTargetPath: {filePath} {filePath} {Path.Combine(RazorIntermediateOutputPath, Path.ChangeExtension(filePath, ".g.cshtml.cs"))}");
+                    $@"RazorGenerateWithTargetPath: {filePath} {filePath} {Path.Combine(RazorIntermediateOutputPath, filePath + ".g.cs")}");
             }
         }
     }

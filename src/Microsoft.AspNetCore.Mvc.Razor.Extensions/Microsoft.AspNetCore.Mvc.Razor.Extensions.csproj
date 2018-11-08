@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\CodeGeneration\CodeWriterExtensions.cs">
-      <Link>Shared\CodeWriterExtensions.cs</Link>
-    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\CodeGeneration\CodeWriterExtensions.cs" Link="Shared\CodeWriterExtensions.cs" />
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\CSharpIdentifier.cs" Link="Shared\CSharpIdentifier.cs" />
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\Checksum.cs" Link="Shared\Checksum.cs" />
   </ItemGroup>
 
   <ItemGroup>

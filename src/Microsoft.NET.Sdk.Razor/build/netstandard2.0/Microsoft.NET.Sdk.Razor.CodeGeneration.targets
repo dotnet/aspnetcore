@@ -71,9 +71,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target
+    Name="_RazorEnsureCompiled"
+    Condition="!Exists('$(_RazorGenerateTargetReferenceAssembly)')"
+    DependsOnTargets="Compile" />
+
+  <Target
     Name="ResolveTagHelperRazorGenerateInputs"
-    DependsOnTargets="_EnsureRazorTasksAssemblyDefined;Compile"
-    Inputs="$(MSBuildAllProjects);@(RazorReferencePath)"
+    Inputs="$(MSBuildAllProjects);@(RazorReferencePath);$(_RazorGenerateTargetReferenceAssembly)"
+    DependsOnTargets="_RazorEnsureCompiled"
     Outputs="$(_RazorTagHelperInputCache)"
     Condition="'@(RazorGenerateWithTargetPath)' != ''">
 
@@ -100,7 +105,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Version="$(RazorLangVersion)"
       Configuration="@(ResolvedRazorConfiguration)"
       Extensions="@(ResolvedRazorExtension)"
-      Assemblies="@(RazorReferencePath)"
+      Assemblies="@(RazorReferencePath);$(_RazorGenerateTargetReferenceAssembly)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)">
       <Output
@@ -121,7 +126,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <RazorCoreGenerateDependsOn>
-      _EnsureRazorTasksAssemblyDefined;
       _HashRazorGenerateInputs;
       _ResolveRazorGenerateOutputs;
     </RazorCoreGenerateDependsOn>
@@ -167,14 +171,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ResolveGeneratedRazorCompileInputs">
     <ItemGroup>
-      <RazorCompile Include="@(_RazorGenerateOutput)" />
+      <RazorCompile 
+        Include="%(RazorGenerateWithTargetPath.GeneratedOutput)" 
+        Condition="'%(RazorGenerateWithTargetPath.DocumentKind)'=='mvc'" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="_EnsureRazorTasksAssemblyDefined">
-    <Error
-      Text="Assembly location for Razor SDK Tasks was not specified. The most likely cause is an older incompatible version of Microsoft.NET.Sdk.Razor, or Microsoft.NET.Sdk.Web used by this project. Please target a newer version of the .NET Core SDK."
-      Condition="'$(RazorSdkBuildTasksAssembly)' == ''" />
   </Target>
 
 </Project>

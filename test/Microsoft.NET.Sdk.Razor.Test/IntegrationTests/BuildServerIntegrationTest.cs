@@ -3,14 +3,10 @@
 
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.CodeAnalysis;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -92,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.Views.dll");
             Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.RazorCoreGenerate.cache");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
         }
 
         [Fact]
@@ -228,6 +224,35 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // Shutdown the server
                 fixture.Dispose();
             }
+        }
+
+        [Fact]
+        [InitializeTestProject("MvcWithComponents")]
+        public async Task Build_MvcWithComponents()
+        {
+            var tagHelperOutputCacheFile = Path.Combine(IntermediateOutputPath, "MvcWithComponents.TagHelpers.output.cache");
+
+            var result = await DotnetMSBuild(
+                "Build",
+                "/p:_RazorForceBuildServer=true");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "MvcWithComponents.dll");
+            Assert.FileExists(result, OutputPath, "MvcWithComponents.pdb");
+            Assert.FileExists(result, OutputPath, "MvcWithComponents.Views.dll");
+            Assert.FileExists(result, OutputPath, "MvcWithComponents.Views.pdb");
+
+            // Verify tag helper discovery from components work
+            Assert.FileExists(result, tagHelperOutputCacheFile);
+            Assert.FileContains(
+                result,
+                tagHelperOutputCacheFile,
+                @"""Name"":""MvcWithComponents.TestComponent""");
+
+            Assert.FileContains(
+                result,
+                tagHelperOutputCacheFile,
+                @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
         }
 
         private class TestProjectDirectory : ProjectDirectory

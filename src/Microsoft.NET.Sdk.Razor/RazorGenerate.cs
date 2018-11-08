@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         };
 
         private const string GeneratedOutput = "GeneratedOutput";
+        private const string DocumentKind = "DocumentKind";
         private const string TargetPath = "TargetPath";
         private const string FullPath = "FullPath";
         private const string Identity = "Identity";
@@ -40,6 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         [Required]
         public string TagHelperManifest { get; set; }
+
+        public bool GenerateDeclaration { get; set; }
 
         internal override string Command => "generate";
 
@@ -99,6 +102,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 builder.AppendLine("-o");
                 var outputPath = Path.Combine(ProjectRoot, input.GetMetadata(GeneratedOutput));
                 builder.AppendLine(outputPath);
+
+                var kind = input.GetMetadata(DocumentKind);
+                if (!string.IsNullOrEmpty(kind))
+                {
+                    builder.AppendLine("-k");
+                    builder.AppendLine(kind);
+                }
             }
 
             builder.AppendLine("-p");
@@ -112,6 +122,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             builder.AppendLine("-c");
             builder.AppendLine(Configuration[0].GetMetadata(Identity));
+
+            if (GenerateDeclaration)
+            {
+                builder.AppendLine("--generate-declaration");
+            }
 
             for (var i = 0; i < Extensions.Length; i++)
             {

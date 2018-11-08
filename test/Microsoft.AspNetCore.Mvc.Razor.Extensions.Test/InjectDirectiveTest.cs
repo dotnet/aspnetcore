@@ -194,22 +194,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
 
-            return codeDocument.GetDocumentIntermediateNode();
-        }
-
-        private string GetCSharpContent(IntermediateNode node)
-        {
-            var builder = new StringBuilder();
-            for (var i = 0; i < node.Children.Count; i++)
-            {
-                var child = node.Children[i] as IntermediateToken;
-                if (child.Kind == TokenKind.CSharp)
-                {
-                    builder.Append(child.Content);
-                }
-            }
-
-            return builder.ToString();
+            var irDocument = codeDocument.GetDocumentIntermediateNode();
+            irDocument.DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind;
+            return irDocument;
         }
 
         private class ClassNodeVisitor : IntermediateNodeWalker

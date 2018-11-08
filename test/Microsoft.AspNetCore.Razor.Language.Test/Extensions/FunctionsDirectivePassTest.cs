@@ -76,10 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         private static RazorProjectEngine CreateProjectEngine()
         {
-            return RazorProjectEngine.Create(b =>
-            {
-                FunctionsDirective.Register(b);
-            });
+            return RazorProjectEngine.Create();
         }
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)

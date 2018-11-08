@@ -38,15 +38,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache"),
                 @"""Name"":""SimpleMvc.SimpleTagHelper""");
 
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Contact.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_Layout.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_ValidationScriptsPartial.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "Error.g.cshtml.cs");
-            Assert.FileCountEquals(result, 8, RazorIntermediateOutputPath, "*.g.cshtml.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Contact.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_Layout.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_ValidationScriptsPartial.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "Error.cshtml.g.cs");
+            Assert.FileCountEquals(result, 8, RazorIntermediateOutputPath, "*.cshtml.g.cs");
         }
 
         [Fact]
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
             // If there's a parser error, the generated file contents is likely incorrect. The file should not be written to disk.
-            Assert.FileDoesNotExist(result, RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
+            Assert.FileDoesNotExist(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             // Act - 1
             var result = await DotnetMSBuild(RazorGenerateTarget);
-            var generatedFile = Path.Combine(Project.DirectoryPath, RazorIntermediateOutputPath, "Views", "Home", "About.g.cshtml.cs");
+            var generatedFile = Path.Combine(Project.DirectoryPath, RazorIntermediateOutputPath, "Views", "Home", "About.cshtml.g.cs");
 
             // Assert - 1
             Assert.BuildPassed(result);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Act - 1
             var result = await DotnetMSBuild(RazorGenerateTarget);
             var file = Path.Combine(Project.DirectoryPath, "Views", "Home", "Contact.cshtml");
-            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Contact.g.cshtml.cs");
+            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Contact.cshtml.g.cs");
 
             // Assert - 1
             Assert.BuildPassed(result);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             // Act - 1
             var result = await DotnetMSBuild(RazorGenerateTarget);
-            var file = Path.Combine(Project.DirectoryPath, RazorIntermediateOutputPath, "Views", "Home", "About.g.cshtml.cs");
+            var file = Path.Combine(Project.DirectoryPath, RazorIntermediateOutputPath, "Views", "Home", "About.cshtml.g.cs");
 
             // Assert - 1
             Assert.BuildPassed(result);
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild(RazorGenerateTarget);
             var file = Path.Combine(Project.DirectoryPath, "Views", "Home", "Index.cshtml");
             var renamed = Path.Combine(Project.DirectoryPath, "Views", "Home", "NewIndex.cshtml");
-            var generated = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
+            var generated = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             // Assert - 1
             Assert.BuildPassed(result);
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Assert - 2
             Assert.BuildPassed(result);
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "NewIndex.g.cshtml.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "NewIndex.cshtml.g.cs");
             Assert.FileDoesNotExist(result, generated);
         }
 
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Act - 1
             var result = await DotnetMSBuild(RazorGenerateTarget);
             var file = Path.Combine(Project.DirectoryPath, "Views", "Home", "Index.cshtml");
-            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
+            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             // Assert - 1
             Assert.BuildPassed(result);
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // We shouldn't need to hash the files
             Assert.FileDoesNotExist(result, Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorCoreGenerate.cache"));
 
-            Assert.FileCountEquals(result, 0, RazorIntermediateOutputPath, "*.g.cshtml.cs");
+            Assert.FileCountEquals(result, 0, RazorIntermediateOutputPath, "*.cshtml.g.cs");
         }
 
         [Fact]
@@ -243,8 +243,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.g.cshtml.cs");
-            Assert.FileCountEquals(result, 1, RazorIntermediateOutputPath, "*.g.cshtml.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cshtml.g.cs");
+            Assert.FileCountEquals(result, 1, RazorIntermediateOutputPath, "*.cshtml.g.cs");
         }
 
         [Fact]
@@ -265,8 +265,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.g.cshtml.cs");
-            Assert.FileCountEquals(result, 1, RazorIntermediateOutputPath, "*.g.cshtml.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cshtml.g.cs");
+            Assert.FileCountEquals(result, 1, RazorIntermediateOutputPath, "*.cshtml.g.cs");
         }
 
         [Fact]
@@ -287,13 +287,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFile.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFile2.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFileWithRename.g.cshtml.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFile.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFile2.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFileWithRename.cshtml.g.cs");
 
-            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile.cshtml")} LinkedFile.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFile.g.cshtml.cs")}");
-            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile2.cshtml")} LinkedFileOut\LinkedFile2.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFile2.g.cshtml.cs")}");
-            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile3.cshtml")} LinkedFileOut\LinkedFileWithRename.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFileWithRename.g.cshtml.cs")}");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile.cshtml")} LinkedFile.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFile.cshtml.g.cs")}");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile2.cshtml")} LinkedFileOut\LinkedFile2.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFile2.cshtml.g.cs")}");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile3.cshtml")} LinkedFileOut\LinkedFileWithRename.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFileWithRename.cshtml.g.cs")}");
         }
 
         [Fact]
@@ -342,17 +342,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Contact.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_Layout.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_ValidationScriptsPartial.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "Error.g.cshtml.cs");
-            Assert.FileExists(result, RazorIntermediateOutputPath, "temp.g.cshtml.cs");
-            Assert.FileCountEquals(result, 9, RazorIntermediateOutputPath, "*.g.cshtml.cs");
-            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {filePath} temp.cshtml {Path.Combine(RazorIntermediateOutputPath, "temp.g.cshtml.cs")}");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Contact.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_Layout.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_ValidationScriptsPartial.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "Error.cshtml.g.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "temp.cshtml.g.cs");
+            Assert.FileCountEquals(result, 9, RazorIntermediateOutputPath, "*.cshtml.g.cs");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {filePath} temp.cshtml {Path.Combine(RazorIntermediateOutputPath, "temp.cshtml.g.cs")}");
         }
     }
 }

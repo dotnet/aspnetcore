@@ -1,0 +1,12 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    CSharpCode - 
+        IntermediateToken -  - CSharp - #pragma warning disable 0414\n
+        IntermediateToken -  - CSharp - #pragma warning disable 0649\n
+        IntermediateToken -  - CSharp - #pragma warning disable 0169\n
+    NamespaceDeclaration -  - AspNetCore
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public sealed - BasicTest - global::Microsoft.AspNetCore.Components.Component - 
+            MethodDeclaration -  - public override - void - BuildRenderTree
+            CSharpCode - (58:3,12 [41] BasicTest.razor)
+                IntermediateToken - (58:3,12 [41] BasicTest.razor) - CSharp - \n    string SomeProperty { get; set; }\n

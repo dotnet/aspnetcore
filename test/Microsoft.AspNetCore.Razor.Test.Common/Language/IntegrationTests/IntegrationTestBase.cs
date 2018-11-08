@@ -132,6 +132,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 #endif
         }
 
+        public string FileExtension { get; set; } = ".cshtml";
+
         protected virtual void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
         }
@@ -193,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             var suffixIndex = FileName.LastIndexOf("_");
             var normalizedFileName = suffixIndex == -1 ? FileName : FileName.Substring(0, suffixIndex);
-            var sourceFileName = Path.ChangeExtension(normalizedFileName, ".cshtml");
+            var sourceFileName = Path.ChangeExtension(normalizedFileName, FileExtension);
             var testFile = TestFile.Create(sourceFileName, GetType().GetTypeInfo().Assembly);
             if (!testFile.Exists())
             {

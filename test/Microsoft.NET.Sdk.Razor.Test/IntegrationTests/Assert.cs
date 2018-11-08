@@ -4,6 +4,9 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -370,6 +373,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 {
                     throw new NupkgFileMissingException(result, nupkgPath, filePath);
                 }
+            }
+        }
+
+        public static void AssemblyContainsType(MSBuildResult result, string assemblyPath, string fullTypeName)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            assemblyPath = Path.Combine(result.Project.DirectoryPath, Path.Combine(assemblyPath));
+            using (var file = File.OpenRead(assemblyPath))
+            {
+                var peReader = new PEReader(file);
+                var metadataReader = peReader.GetMetadataReader();
+                var typeNames = metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
+                {
+                    var type = metadataReader.GetTypeDefinition(t);
+                    return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
+                });
+
+                Assert.Contains(fullTypeName, typeNames);
             }
         }
 

@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 indentSize: 4,
                 designTime: false,
                 suppressChecksum: false,
-                supressMetadataAttributes: false);
+                supressMetadataAttributes: false,
+                suppressPrimaryMethodBody: false);
         }
 
         public static RazorCodeGenerationOptions CreateDesignTimeDefault()
@@ -24,7 +25,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 indentSize: 4,
                 designTime: true,
                 suppressChecksum: false,
-                supressMetadataAttributes: true);
+                supressMetadataAttributes: true,
+                suppressPrimaryMethodBody: false);
         }
 
         public static RazorCodeGenerationOptions Create(Action<RazorCodeGenerationOptionsBuilder> configure)
@@ -93,5 +95,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </para>
         /// </remarks>
         public virtual bool SuppressMetadataAttributes { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if an empty body is generated for the primary method.
+        /// </summary>
+        public virtual bool SuppressPrimaryMethodBody { get; protected set; }
     }
 }

@@ -54,6 +54,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Inputs="$(MSBuildAllProjects);
                   @(RazorCompile);
                   $(AssemblyOriginatorKeyFile);
+                  $(_RazorCompileTargetReferenceAssembly);
                   @(RazorReferencePath);
                   @(CompiledLicenseFile);
                   @(LinkResource);
@@ -147,7 +148,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          Prefer32Bit="$(Prefer32Bit)"
          PreferredUILang="$(PreferredUILang)"
          ProvideCommandLineArgs="$(ProvideCommandLineArgs)"
-         References="@(RazorReferencePath)"
+         References="@(RazorReferencePath);$(_RazorCompileTargetReferenceAssembly)"
          ReportAnalyzer="$(ReportAnalyzer)"
          Resources="@(_RazorCoreCompileResourceInputs);@(CompiledLicenseFile)"
          ResponseFiles="$(CompilerResponseFile)"

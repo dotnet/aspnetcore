@@ -169,6 +169,26 @@ namespace Microsoft.AspNetCore.Razor.Language
             document.Items[typeof(RazorCodeGenerationOptions)] = codeGenerationOptions;
         }
 
+        public static string GetInputDocumentKind(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return (string)document.Items[typeof(InputDocumentKind)];
+        }
+
+        public static void SetInputDocumentKind(this RazorCodeDocument document, string kind)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            document.Items[typeof(InputDocumentKind)] = kind;
+        }
+
         private class ImportSyntaxTreesHolder
         {
             public ImportSyntaxTreesHolder(IReadOnlyList<RazorSyntaxTree> syntaxTrees)

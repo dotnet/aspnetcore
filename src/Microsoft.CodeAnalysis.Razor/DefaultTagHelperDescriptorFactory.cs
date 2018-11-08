@@ -23,7 +23,7 @@ namespace Microsoft.CodeAnalysis.Razor
         private readonly INamedTypeSymbol _restrictChildrenAttributeSymbol;
         private readonly INamedTypeSymbol _editorBrowsableAttributeSymbol;
 
-        private static readonly SymbolDisplayFormat FullNameTypeDisplayFormat =
+        internal static readonly SymbolDisplayFormat FullNameTypeDisplayFormat =
             SymbolDisplayFormat.FullyQualifiedFormat
                 .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
                 .WithMiscellaneousOptions(SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions & (~SymbolDisplayMiscellaneousOptions.UseSpecialTypes));
@@ -434,6 +434,6 @@ namespace Microsoft.CodeAnalysis.Razor
             return false;
         }
 
-        private static string GetFullName(ITypeSymbol type) => type.ToDisplayString(FullNameTypeDisplayFormat);
+        protected static string GetFullName(ITypeSymbol type) => type.ToDisplayString(FullNameTypeDisplayFormat);
     }
 }

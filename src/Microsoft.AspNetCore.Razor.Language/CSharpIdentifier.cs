@@ -1,31 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
+namespace Microsoft.AspNetCore.Razor.Language
 {
     internal static class CSharpIdentifier
     {
-        private const string CshtmlExtension = ".cshtml";
-
-        public static string GetClassNameFromPath(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return path;
-            }
-
-            if (path.EndsWith(CshtmlExtension, StringComparison.OrdinalIgnoreCase))
-            {
-                path = path.Substring(0, path.Length - CshtmlExtension.Length);
-            }
-
-            return SanitizeClassName(path);
-        }
-
         // CSharp Spec §2.4.2
         private static bool IsIdentifierStart(char character)
         {
@@ -51,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 category == UnicodeCategory.Format; // Cf
         }
 
-        public static string SanitizeClassName(string inputName)
+        public static string SanitizeIdentifier(string inputName)
         {
             if (!IsIdentifierStart(inputName[0]) && IsIdentifierPart(inputName[0]))
             {
