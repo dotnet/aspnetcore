@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.0;net461</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\test\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
 </Project>
