@@ -1062,10 +1062,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         _streams.TryRemove(streamId, out _);
                     }
                 }
-                else
-                {
-                    Debug.Assert(false, "Missing stream");
-                }
 
                 if (_activeStreamCount == 0)
                 {
