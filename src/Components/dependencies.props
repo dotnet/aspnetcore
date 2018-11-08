@@ -5,6 +5,10 @@
 
   <PropertyGroup>
     <!-- Fallback when not building from command line. -->
-    <InternalAspNetCoreSdkPackageVersion Condition="'$(InternalAspNetCoreSdkPackageVersion)' == ''">2.2.0-preview2-20181004.6</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition="'$(InternalAspNetCoreSdkPackageVersion)' == ''">3.0.0-alpha1-20181105.4</InternalAspNetCoreSdkPackageVersion>
+    <LastGoodAspBuildVersion>3.0.0-alpha1-10584</LastGoodAspBuildVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion Condition=" '$(MicrosoftAspNetCoreHostingPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion Condition=" '$(MicrosoftAspNetCoreServerKestrelPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion Condition=" '$(MicrosoftAspNetCoreStaticFilesPackageVersion)' == '' ">$(LastGoodAspBuildVersion)</MicrosoftAspNetCoreStaticFilesPackageVersion>
   </PropertyGroup>
 </Project>
