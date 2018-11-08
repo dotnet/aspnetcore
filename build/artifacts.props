@@ -13,7 +13,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="AspNetCoreRuntime.3.0.$(SharedFxArchitecture)" Category="noship" />
+    <PackageArtifact Include="AspNetCoreRuntime.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageArtifact Include="dotnet-dev-certs" Category="ship" />
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
     <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
