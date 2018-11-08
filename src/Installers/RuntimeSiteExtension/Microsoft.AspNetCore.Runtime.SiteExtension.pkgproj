@@ -37,23 +37,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\SiteExtensions\src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
+    <!-- Make sure redist folder is built and ready -->
+    <ProjectReference Include="..\Archive\Archive.Redist.zipproj" PrivateAssets="All" ReferenceOutputAssembly="False" />
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(PackageVersion)" />
   </ItemGroup>
-
-  <Target Name="Build" DependsOnTargets="ResolveProjectReferences;GetTargetPath">
-    <MakeDir Directories="$(OutputPath);$(DotNetUnpackFolder)" />
-
-    <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
-      SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationFolder="$(BaseIntermediateOutputPath)"
-      DestinationFileName="$(DotNetRuntimeArchiveFileName)" />
-
-    <Unzip
-      SourceFiles="$(DotNetRuntimeArchive)"
-      DestinationFolder="$(DotNetUnpackFolder)"
-      OverwriteReadOnlyFiles="true" />
-
-  </Target>
 
   <Target Name="CopyFilesToOutputDirectory" />
   <Target Name="CoreCompile" />
