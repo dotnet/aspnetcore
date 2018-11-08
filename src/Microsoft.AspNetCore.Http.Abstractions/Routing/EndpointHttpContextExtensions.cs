@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Http
+namespace Microsoft.AspNetCore.Http.Endpoints
 {
     /// <summary>
     /// Extension methods to expose Endpoint on HttpContext.
