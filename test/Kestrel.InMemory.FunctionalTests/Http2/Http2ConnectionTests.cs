@@ -816,19 +816,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendDataAsync(1, _helloWorldBytes, endStream: false);
 
+            // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
-                expectedErrorMessage: null);
-
-            // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
-            var closedMessage = CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1);
-            var halfClosedMessage = CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1);
-
-            var message = Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is Http2ConnectionErrorException);
-            Assert.True(message.Exception.Message.IndexOf(closedMessage) >= 0
-                || message.Exception.Message.IndexOf(halfClosedMessage) >= 0);
+                expectedErrorMessage: new[] {
+                    CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1),
+                    CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1)
+                });
         }
 
         [Fact]
@@ -1329,19 +1325,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Try to re-use the stream ID (http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1)
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+            // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
             await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: 1,
                 expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
-                expectedErrorMessage: null);
-
-            // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
-            var closedMessage = CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, streamId: 1);
-            var halfClosedMessage = CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.HEADERS, streamId: 1);
-
-            var message = Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is Http2ConnectionErrorException);
-            Assert.True(message.Exception.Message.IndexOf(closedMessage) >= 0
-                || message.Exception.Message.IndexOf(halfClosedMessage) >= 0);
+                expectedErrorMessage: new[] {
+                    CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, streamId: 1),
+                    CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.HEADERS, streamId: 1)
+                });
         }
 
         [Fact]
@@ -3782,12 +3774,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Logged without an exception.
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("the application completed without reading the entire request body."));
 
-            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
-            for (var i = 0; i < 10; i++)
-            {
-                await SendDataAsync(1, new byte[100], endStream: false);
-            }
-
             // These would be refused if the cool-down period had expired
             switch (finalFrameType)
             {
@@ -3830,12 +3816,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
 
-            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
-            for (var i = 0; i < 10; i++)
-            {
-                await SendDataAsync(1, new byte[100], endStream: false);
-            }
-
             // These would be refused if the cool-down period had expired
             switch (finalFrameType)
             {
@@ -3860,7 +3840,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
+        [InlineData(Http2FrameType.DATA, Skip = "Fixed in master with https://github.com/aspnet/KestrelHttpServer/pull/3024/")]
         [InlineData(Http2FrameType.HEADERS)]
         [InlineData(Http2FrameType.CONTINUATION)]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(Http2FrameType finalFrameType)
@@ -3877,21 +3857,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
 
-            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
-            for (var i = 0; i < 10; i++)
-            {
-                await SendDataAsync(1, new byte[100], endStream: false);
-            }
-
             switch (finalFrameType)
             {
                 case Http2FrameType.DATA:
                     await SendDataAsync(1, new byte[100], endStream: true);
                     // An extra one to break it
                     await SendDataAsync(1, new byte[100], endStream: true);
-
-                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
-                        CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, 1));
+                    
+                    // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
+                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                        ignoreNonGoAwayFrames: false,
+                        expectedLastStreamId: 1,
+                        expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
+                        expectedErrorMessage: new[] {
+                            CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1),
+                            CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1)
+                        });
                     break;
 
                 case Http2FrameType.HEADERS:
@@ -3899,8 +3880,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     // An extra one to break it
                     await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS, _requestTrailers);
 
-                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
-                        CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, 1));
+                    // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
+                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                        ignoreNonGoAwayFrames: false,
+                        expectedLastStreamId: 1,
+                        expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
+                        expectedErrorMessage: new[] {
+                            CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, streamId: 1),
+                            CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.HEADERS, streamId: 1)
+                        });
                     break;
 
                 case Http2FrameType.CONTINUATION:
@@ -3908,8 +3896,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, _requestTrailers);
                     // An extra one to break it. It's not a Continuation because that would fail with an error that no headers were in progress.
                     await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
-                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
-                        CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, 1));
+
+                    // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
+                    await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                        ignoreNonGoAwayFrames: false,
+                        expectedLastStreamId: 1,
+                        expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
+                        expectedErrorMessage: new[] {
+                            CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, streamId: 1),
+                            CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.HEADERS, streamId: 1)
+                        });
                     break;
                 default:
                     throw new NotImplementedException(finalFrameType.ToString());
@@ -3933,11 +3929,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
 
-            // There's a race when the appfunc is exiting about how soon it unregisters the stream.
-            for (var i = 0; i < 10; i++)
-            {
-                await SendDataAsync(1, new byte[100], endStream: false);
-            }
             await SendRstStreamAsync(1);
 
             // Send an extra frame to make it fail
@@ -3955,8 +3946,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     throw new NotImplementedException(finalFrameType.ToString());
             }
 
-            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.STREAM_CLOSED,
-                CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, 1));
+            // There's a race where either of these messages could be logged, depending on if the stream cleanup has finished yet.
+            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+                ignoreNonGoAwayFrames: false,
+                expectedLastStreamId: 1,
+                expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
+                expectedErrorMessage: new[] {
+                    CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, streamId: 1),
+                    CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(finalFrameType, streamId: 1)
+                });
         }
 
         public static TheoryData<byte[]> UpperCaseHeaderNameData
