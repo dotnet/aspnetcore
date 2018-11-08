@@ -10,10 +10,8 @@
     <Description>This site extension installs Microsoft.AspNetCore.All, Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
     <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(SharedFxArchitecture)</PackageId>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(SignType)' != '' ">
-    <SignOutput>True</SignOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <DotNetUnpackFolder>$(RepositoryRoot)obj\ar\$(SharedFxRid)\</DotNetUnpackFolder>
   </PropertyGroup>
 
   <ItemGroup>
