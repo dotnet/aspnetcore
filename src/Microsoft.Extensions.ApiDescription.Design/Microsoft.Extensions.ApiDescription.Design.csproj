@@ -42,11 +42,6 @@
       <PackagePath>tools/dotnet-getdocument.dll</PackagePath>
       <StrongName>$(AssemblySigningStrongName)</StrongName>
     </SignedPackageFile>
-    <SignedPackageFile Include="../dotnet-getdocument/bin/$(Configuration)/netcoreapp2.1/publish/dotnet-getdocument.exe">
-      <Certificate>$(AssemblySigningCertName)</Certificate>
-      <PackagePath>tools/dotnet-getdocument.exe</PackagePath>
-      <StrongName>$(AssemblySigningStrongName)</StrongName>
-    </SignedPackageFile>
     <SignedPackageFile Include="../GetDocumentInsider/bin/$(Configuration)/net461/GetDocument.Insider.exe">
       <Certificate>$(AssemblySigningCertName)</Certificate>
       <PackagePath>tools/net461/GetDocument.Insider.exe</PackagePath>
