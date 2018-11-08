@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.AzureKeyVault\Microsoft.AspNetCore.DataProtection.AzureKeyVault.csproj" />
+    <ProjectReference Include="..\..\AzureKeyVault\src\Microsoft.AspNetCore.DataProtection.AzureKeyVault.csproj" />
   </ItemGroup>
 
   <ItemGroup>

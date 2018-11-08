@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection\Microsoft.AspNetCore.DataProtection.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.DataProtection.AzureStorage\Microsoft.AspNetCore.DataProtection.AzureStorage.csproj" />
+    <ProjectReference Include="..\..\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
+    <ProjectReference Include="..\..\AzureStorage\src\Microsoft.AspNetCore.DataProtection.AzureStorage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
