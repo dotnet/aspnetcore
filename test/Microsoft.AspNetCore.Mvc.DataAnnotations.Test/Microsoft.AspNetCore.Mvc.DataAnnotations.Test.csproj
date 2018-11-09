@@ -9,5 +9,4 @@
 
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
   </ItemGroup>
-
 </Project>

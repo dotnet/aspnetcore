@@ -116,8 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 }
                 else if (string.Equals(attribute.Key, "class", StringComparison.OrdinalIgnoreCase))
                 {
-                    TagHelperAttribute classAttribute;
-                    var found = tagHelperOutput.Attributes.TryGetAttribute("class", out classAttribute);
+                    var found = tagHelperOutput.Attributes.TryGetAttribute("class", out var classAttribute);
                     Debug.Assert(found);
 
                     var newAttribute = new TagHelperAttribute(
@@ -394,8 +393,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 var wroteLeft = false;
                 if (_left != null)
                 {
-                    var htmlContent = _left as IHtmlContent;
-                    if (htmlContent != null)
+                    if (_left is IHtmlContent htmlContent)
                     {
                         // Ignore case where htmlContent is HtmlString.Empty. At worst, will add a leading space to the
                         // generated attribute value.

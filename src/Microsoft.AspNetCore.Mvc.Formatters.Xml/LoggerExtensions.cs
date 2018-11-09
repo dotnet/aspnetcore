@@ -4,9 +4,9 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
-    public static class LoggerExtensions
+    internal static class LoggerExtensions
     {
         private static readonly Action<ILogger, string, Exception> _failedToCreateXmlSerializer;
         private static readonly Action<ILogger, string, Exception> _failedToCreateDataContractSerializer;

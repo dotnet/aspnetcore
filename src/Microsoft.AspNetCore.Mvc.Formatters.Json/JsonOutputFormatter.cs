@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters

@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -44,9 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// used by the <see cref="CacheTagHelper"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
         public CacheTagHelper(
-#pragma warning disable PUB0001 // Pubternal type in public API
             CacheTagHelperMemoryCacheFactory factory,
-#pragma warning restore PUB0001
             HtmlEncoder htmlEncoder)
             : base(htmlEncoder)
         {

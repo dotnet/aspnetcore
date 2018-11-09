@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection

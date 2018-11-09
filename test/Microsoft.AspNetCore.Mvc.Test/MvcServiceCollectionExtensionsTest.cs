@@ -13,11 +13,9 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
+using Microsoft.AspNetCore.Mvc.Cors;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters.Json;
-using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -395,7 +393,7 @@ namespace Microsoft.AspNetCore.Mvc
                         typeof(IPostConfigureOptions<MvcJsonOptions>),
                         new[]
                         {
-                            typeof(MvcJsonOptions).Assembly.GetType("Microsoft.AspNetCore.Mvc.MvcJsonOptionsConfigureCompatibilityOptions", throwOnError: true),
+                            typeof(MvcJsonOptionsConfigureCompatibilityOptions),
                         }
                     },
                     {

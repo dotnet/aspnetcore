@@ -22,10 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="expressionTextCache">The <see cref="ExpressionTextCache"/>.</param>
         public ModelExpressionProvider(
             IModelMetadataProvider modelMetadataProvider,
-#pragma warning disable PUB0001 // Pubternal type in public API
-            ExpressionTextCache expressionTextCache
-#pragma warning restore PUB0001
-            )
+            ExpressionTextCache expressionTextCache)
         {
             if (modelMetadataProvider == null)
             {
