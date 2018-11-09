@@ -53,17 +53,11 @@
     <ShippedRepository Include="AzureIntegration" />
     <ShippedRepository Include="BasicMiddleware" />
     <ShippedRepository Include="BrowserLink" />
-    <ShippedRepository Include="Caching" />
-    <ShippedRepository Include="Common" />
-    <ShippedRepository Include="Configuration" />
     <ShippedRepository Include="CORS" />
     <ShippedRepository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
-    <ShippedRepository Include="DependencyInjection" />
     <ShippedRepository Include="Diagnostics" />
     <ShippedRepository Include="DotNetTools" />
     <ShippedRepository Include="EntityFrameworkCore" />
-    <ShippedRepository Include="EventNotification" />
-    <ShippedRepository Include="FileSystem" />
     <ShippedRepository Include="Hosting" />
     <ShippedRepository Include="HtmlAbstractions" />
     <ShippedRepository Include="HttpAbstractions" />
@@ -74,10 +68,8 @@
     <ShippedRepository Include="JsonPatch" />
     <ShippedRepository Include="KestrelHttpServer" />
     <ShippedRepository Include="Localization" />
-    <ShippedRepository Include="Logging" />
     <ShippedRepository Include="Mvc" />
     <ShippedRepository Include="MvcPrecompilation" />
-    <ShippedRepository Include="Options" />
     <ShippedRepository Include="Razor" />
     <ShippedRepository Include="ResponseCaching" />
     <ShippedRepository Include="Routing" />
@@ -85,7 +77,6 @@
     <ShippedRepository Include="Session" />
     <ShippedRepository Include="SignalR" />
     <ShippedRepository Include="StaticFiles" />
-    <ShippedRepository Include="Testing" />
     <ShippedRepository Include="WebSockets" RootPath="$(RepositoryRoot)src\WebSockets\" />
   </ItemGroup>
 </Project>

@@ -22,25 +22,9 @@
 	path = modules/BrowserLink
 	url = https://github.com/aspnet/BrowserLink.git
 	branch = release/2.1
-[submodule "modules/Caching"]
-	path = modules/Caching
-	url = https://github.com/aspnet/Caching.git
-	branch = release/2.1
-[submodule "modules/Common"]
-	path = modules/Common
-	url = https://github.com/aspnet/Common.git
-	branch = release/2.1
-[submodule "modules/Configuration"]
-	path = modules/Configuration
-	url = https://github.com/aspnet/Configuration.git
-	branch = release/2.1
 [submodule "modules/CORS"]
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git
-	branch = release/2.1
-[submodule "modules/DependencyInjection"]
-	path = modules/DependencyInjection
-	url = https://github.com/aspnet/DependencyInjection.git
 	branch = release/2.1
 [submodule "modules/Diagnostics"]
 	path = modules/Diagnostics
@@ -53,14 +37,6 @@
 [submodule "modules/EntityFrameworkCore"]
 	path = modules/EntityFrameworkCore
 	url = https://github.com/aspnet/EntityFrameworkCore.git
-	branch = release/2.1
-[submodule "modules/EventNotification"]
-	path = modules/EventNotification
-	url = https://github.com/aspnet/EventNotification.git
-	branch = release/2.1
-[submodule "modules/FileSystem"]
-	path = modules/FileSystem
-	url = https://github.com/aspnet/FileSystem.git
 	branch = release/2.1
 [submodule "modules/Hosting"]
 	path = modules/Hosting
@@ -102,10 +78,6 @@
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git
 	branch = release/2.1
-[submodule "modules/Logging"]
-	path = modules/Logging
-	url = https://github.com/aspnet/Logging.git
-	branch = release/2.1
 [submodule "modules/MetaPackages"]
 	path = modules/MetaPackages
 	url = https://github.com/aspnet/MetaPackages.git
@@ -121,10 +93,6 @@
 [submodule "modules/MvcPrecompilation"]
 	path = modules/MvcPrecompilation
 	url = https://github.com/aspnet/MvcPrecompilation.git
-	branch = release/2.1
-[submodule "modules/Options"]
-	path = modules/Options
-	url = https://github.com/aspnet/Options.git
 	branch = release/2.1
 [submodule "modules/Razor"]
 	path = modules/Razor
@@ -165,8 +133,4 @@
 [submodule "modules/Templating"]
 	path = modules/Templating
 	url = https://github.com/aspnet/Templating.git
-	branch = release/2.1
-[submodule "modules/Testing"]
-	path = modules/Testing
-	url = https://github.com/aspnet/Testing.git
 	branch = release/2.1
