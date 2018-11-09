@@ -250,7 +250,7 @@
     <WriteLinesToFile File="$(RepositoryRoot)artifacts\packages.csv" Lines="PackageId,Version;@(ArtifactInfo->WithMetadataValue('ArtifactType', 'NuGetPackage')->'%(PackageId),%(Version)')" Overwrite="true" />
   </Target>
 
-  <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
+  <Target Name="ComputeGraph" DependsOnTargets="GetProjectArtifactInfo;ResolveRepoInfo;GeneratePropsFiles">
     <RepoTasks.CheckRepoGraph Condition=" ! $([MSBuild]::IsOSUnixLike())"
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
@@ -306,8 +306,14 @@
            Condition=" @(ExternalDependency->WithMetadataValue('Version', '')->Count()) != 0 " />
   </Target>
 
+  <Target Name="_SetDesignTimeBuild">
+    <PropertyGroup>
+      <BuildProperties>$(BuildProperties);DesignTimeBuild=true</BuildProperties>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="FastCheck"
-    DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig;VerifyAllReposHaveNuGetPackageVerifier" />
+    DependsOnTargets="_SetDesignTimeBuild;ComputeGraph;VerifyPackageArtifactConfig;VerifyAllReposHaveNuGetPackageVerifier" />
 
   <Target Name="CheckExpectedPackagesExist">
     <ItemGroup>
