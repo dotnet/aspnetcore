@@ -66,10 +66,6 @@
 	path = modules/JavaScriptServices
 	url = https://github.com/aspnet/JavaScriptServices.git
 	branch = release/2.1
-[submodule "modules/JsonPatch"]
-	path = modules/JsonPatch
-	url = https://github.com/aspnet/JsonPatch.git
-	branch = release/2.1
 [submodule "modules/KestrelHttpServer"]
 	path = modules/KestrelHttpServer
 	url = https://github.com/aspnet/KestrelHttpServer.git
