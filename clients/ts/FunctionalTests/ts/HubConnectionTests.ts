@@ -7,11 +7,12 @@
 import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
-import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_URL } from "./Common";
+import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_HTTPS_URL, ENDPOINT_BASE_URL } from "./Common";
 import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
 
 const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
+const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL + "/testhub";
 const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub-nowebsockets";
 
 // On slower CI machines, these tests sometimes take longer than 5s
@@ -61,6 +62,35 @@ describe("hubConnection", () => {
                     done();
                 });
             });
+
+            // Run test in Node or Chrome, but not on macOS
+            if ((process && process.platform !== "darwin") && (typeof navigator === "undefined" || navigator.userAgent.search("Chrome") !== -1)) {
+                it("using https, can invoke server method and receive result", (done) => {
+                    const message = "你好，世界！";
+
+                    const hubConnection = getConnectionBuilder(transportType, TESTHUBENDPOINT_HTTPS_URL)
+                        .withHubProtocol(protocol)
+                        .build();
+
+                    hubConnection.onclose((error) => {
+                        expect(error).toBeUndefined();
+                        done();
+                    });
+
+                    hubConnection.start().then(() => {
+                        hubConnection.invoke("Echo", message).then((result) => {
+                            expect(result).toBe(message);
+                        }).catch((e) => {
+                            fail(e);
+                        }).then(() => {
+                            hubConnection.stop();
+                        });
+                    }).catch((e) => {
+                        fail(e);
+                        done();
+                    });
+                });
+            }
 
             it("can invoke server method non-blocking and not receive result", (done) => {
                 const message = "你好，世界！";

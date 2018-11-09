@@ -5,27 +5,35 @@ import { HttpTransportType, IHubProtocol, JsonHubProtocol } from "@aspnet/signal
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 export let ENDPOINT_BASE_URL: string;
+export let ENDPOINT_BASE_HTTPS_URL: string;
 
 if (typeof window !== "undefined" && (window as any).__karma__) {
     const args = (window as any).__karma__.config.args as string[];
-    let server = "";
+    let httpsServer = "";
+    let httpServer = "";
 
     for (let i = 0; i < args.length; i += 1) {
         switch (args[i]) {
             case "--server":
                 i += 1;
-                server = args[i];
+                const urls = args[i].split(";");
+                httpsServer = urls[0];
+                httpServer = urls[1];
+                console.log(httpServer);
                 break;
         }
     }
 
     // Running in Karma? Need to use an absolute URL
-    ENDPOINT_BASE_URL = server;
+    ENDPOINT_BASE_URL = httpServer;
+    ENDPOINT_BASE_HTTPS_URL = httpsServer;
     console.log(`Using SignalR Server: ${ENDPOINT_BASE_URL}`);
 } else if (typeof document !== "undefined") {
     ENDPOINT_BASE_URL = `${document.location.protocol}//${document.location.host}`;
 } else if (process && process.env && process.env.SERVER_URL) {
-    ENDPOINT_BASE_URL = process.env.SERVER_URL;
+    const urls = process.env.SERVER_URL.split(";");
+    ENDPOINT_BASE_HTTPS_URL = urls[0];
+    ENDPOINT_BASE_URL = urls[1];
 } else {
     throw new Error("The server could not be found.");
 }
