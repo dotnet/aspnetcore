@@ -15,7 +15,7 @@
   <Import Condition="Exists('..\..\obj\dependencies.g.props') AND '$(DotNetPackageVersionPropsPath)' == ''" Project="..\..\obj\dependencies.g.props" />
 
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.shfxproj' ">
-    <OutputPath>$(ArtifactsConfigurationDir)$(SharedFxRid)\$(MSBuildProjectName)\</OutputPath>
+    <OutputPath>$(RepositoryRoot)bin\fx\$(SharedFxRid)\$(MSBuildProjectName)\</OutputPath>
     <BaseIntermediateOutputPath>$(RepositoryRoot)obj\fx\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
 
     <CrossgenOutput Condition="'$(SharedFxRid)' == 'linux-arm'">false</CrossgenOutput>

@@ -45,7 +45,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7E80C58E
 		build\native.targets = build\native.targets
 		build\repo.props = build\repo.props
 		build\repo.targets = build\repo.targets
-		build\sources.props = build\sources.props
 		build\testsite.props = build\testsite.props
 	EndProjectSection
 EndProject

@@ -1,8 +1,10 @@
 <Project>
-  <Import Project="dependencies.props" />
-
+  <Import Project="..\..\..\build\dependencies.props" />
+  <Import Project="..\..\..\build\runtimes.props" />
   <PropertyGroup>
-    <AncmZipOutputPath>$(BuildDir)AspNetCoreModule.zip</AncmZipOutputPath>
+    <!-- TODO: temporary while we reorganize source code and refactor dependency management -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
     <StressTestWebSiteZipOutputPath>$(BuildDir)StressTestWebSite.zip</StressTestWebSiteZipOutputPath>
   </PropertyGroup>
 
@@ -27,18 +29,5 @@
 
   <ItemGroup Condition="'$(SkipIISForwardsCompatibilityTests)' == 'true'" >
       <ExcludeFromTest Include="$(RepositoryRoot)test\IIS.ForwardsCompatibility.FunctionalTests\*.csproj" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <!-- These properties are use by the automation that updates dependencies.props -->
-    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
-    <!-- These are for functional test projects that are only runable on windows -->
-    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'" Include="$(MicrosoftNETCoreApp21PackageVersion)" Arch="x86" />
   </ItemGroup>
 </Project>

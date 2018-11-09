@@ -8,11 +8,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <Import Project="version.props" />
-  <Import Project="dependencies.props" />
-
-  <PropertyGroup>
-    <VerifyVersion>false</VerifyVersion>
-  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
