@@ -359,8 +359,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanCloseStreamMethodEarly(string protocolName, HttpTransportType transportType, string path)
         {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                // Writing is not allowed after writer was completed.
+                // Can happen since we are closing the connection while the connection could still be writing the streaming data
+                return writeContext.LoggerName == typeof(HubConnectionContext).FullName &&
+                       writeContext.EventId.Name == "FailedWritingMessage";
+            }
+
             var protocol = HubProtocols[protocolName];
-            using (StartServer<Startup>(out var loggerFactory, out var fixture, LogLevel.Trace, $"{nameof(CanCloseStreamMethodEarly)}_{protocol.Name}_{transportType}_{path.TrimStart('/')}"))
+            using (StartServer<Startup>(out var loggerFactory, out var fixture, LogLevel.Trace, $"{nameof(CanCloseStreamMethodEarly)}_{protocol.Name}_{transportType}_{path.TrimStart('/')}", ExpectedErrors))
             {
                 var connection = CreateHubConnection(fixture.Url, path, transportType, protocol, loggerFactory);
                 try
