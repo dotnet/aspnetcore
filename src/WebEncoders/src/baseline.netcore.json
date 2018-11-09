@@ -1,0 +1,564 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.WebEncoders, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.WebEncoders.WebEncoderOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_TextEncoderSettings",
+          "Parameters": [],
+          "ReturnType": "System.Text.Encodings.Web.TextEncoderSettings",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_TextEncoderSettings",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Text.Encodings.Web.TextEncoderSettings"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.WebEncoders.Testing.HtmlTestEncoder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Text.Encodings.Web.HtmlEncoder",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MaxOutputCharactersPerInputCharacter",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "output",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Char[]"
+            },
+            {
+              "Name": "startIndex",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "characterCount",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "output",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "startIndex",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "characterCount",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WillEncode",
+          "Parameters": [
+            {
+              "Name": "unicodeScalar",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindFirstCharacterToEncode",
+          "Parameters": [
+            {
+              "Name": "text",
+              "Type": "System.Char*"
+            },
+            {
+              "Name": "textLength",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryEncodeUnicodeScalar",
+          "Parameters": [
+            {
+              "Name": "unicodeScalar",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "buffer",
+              "Type": "System.Char*"
+            },
+            {
+              "Name": "bufferLength",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "numberOfCharactersWritten",
+              "Type": "System.Int32",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.WebEncoders.Testing.JavaScriptTestEncoder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Text.Encodings.Web.JavaScriptEncoder",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MaxOutputCharactersPerInputCharacter",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "output",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Char[]"
+            },
+            {
+              "Name": "startIndex",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "characterCount",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "output",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "startIndex",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "characterCount",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WillEncode",
+          "Parameters": [
+            {
+              "Name": "unicodeScalar",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindFirstCharacterToEncode",
+          "Parameters": [
+            {
+              "Name": "text",
+              "Type": "System.Char*"
+            },
+            {
+              "Name": "textLength",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryEncodeUnicodeScalar",
+          "Parameters": [
+            {
+              "Name": "unicodeScalar",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "buffer",
+              "Type": "System.Char*"
+            },
+            {
+              "Name": "bufferLength",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "numberOfCharactersWritten",
+              "Type": "System.Int32",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.WebEncoders.Testing.UrlTestEncoder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Text.Encodings.Web.UrlEncoder",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MaxOutputCharactersPerInputCharacter",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "output",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Char[]"
+            },
+            {
+              "Name": "startIndex",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "characterCount",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "output",
+              "Type": "System.IO.TextWriter"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            },
+            {
+              "Name": "startIndex",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "characterCount",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WillEncode",
+          "Parameters": [
+            {
+              "Name": "unicodeScalar",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FindFirstCharacterToEncode",
+          "Parameters": [
+            {
+              "Name": "text",
+              "Type": "System.Char*"
+            },
+            {
+              "Name": "textLength",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryEncodeUnicodeScalar",
+          "Parameters": [
+            {
+              "Name": "unicodeScalar",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "buffer",
+              "Type": "System.Char*"
+            },
+            {
+              "Name": "bufferLength",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "numberOfCharactersWritten",
+              "Type": "System.Int32",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.EncoderServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddWebEncoders",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddWebEncoders",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.Extensions.WebEncoders.WebEncoderOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
