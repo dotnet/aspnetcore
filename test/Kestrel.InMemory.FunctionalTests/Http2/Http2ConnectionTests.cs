@@ -3953,7 +3953,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
                 expectedErrorMessage: new[] {
                     CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, streamId: 1),
-                    CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(finalFrameType, streamId: 1)
+                    CoreStrings.FormatHttp2ErrorStreamAborted(finalFrameType, streamId: 1)
                 });
         }
 
