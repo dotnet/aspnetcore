@@ -9,6 +9,8 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <!-- Test Placeholder -->
+
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
     <!-- We don't want to run build server when not running as tests. -->
     <UseRazorBuildServer>false</UseRazorBuildServer>

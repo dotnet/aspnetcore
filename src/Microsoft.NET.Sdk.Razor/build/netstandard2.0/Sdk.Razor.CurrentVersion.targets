@@ -276,10 +276,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(RazorDefaultConfiguration)'!=''">
 
     <ItemGroup>
-      <ResolvedRazorConfiguration Include="@(RazorConfiguration)" Condition="'%(RazorConfiguration.Identity)'=='$(RazorDefaultConfiguration)'" />
+      <ResolvedRazorConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(RazorDefaultConfiguration)')->Distinct())" />
     </ItemGroup>
 
-    <FindInList List="@(RazorExtension)" ItemSpecToFind="@(RazorConfiguration->Metadata('Extensions'))">
+    <FindInList List="@(RazorExtension)" ItemSpecToFind="@(ResolvedRazorConfiguration->Metadata('Extensions'))">
       <Output TaskParameter="ItemFound" ItemName="ResolvedRazorExtension" />
     </FindInList>
   </Target>
