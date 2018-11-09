@@ -13,6 +13,8 @@
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
+    <!-- SignCheck currently fails when verifying vsix files. See https://github.com/dotnet/arcade/issues/1306. -->
+    <DisableSignCheck>true</DisableSignCheck>
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
     <!-- This creates false-positives on many of the native .dll's we produce or re-distribute from other teams. -->
     <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
