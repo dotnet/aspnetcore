@@ -4,7 +4,7 @@
     <PrepareDependsOn>$(PrepareDependsOn)</PrepareDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNativeArtifactsInfo</GetArtifactInfoDependsOn>
     <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
-    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects;PackageStressTestApp</PackageDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);RunNativeTest</TestDependsOn>
     <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
     <SourceBase>$(RepositoryRoot)src\</SourceBase>
