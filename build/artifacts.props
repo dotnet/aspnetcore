@@ -108,7 +108,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.TagHelpers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Testing" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" Category="ship" />
