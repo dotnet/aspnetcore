@@ -3,7 +3,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <Import Project="version.props" />
-  <Import Project="build\dependencies.props" />
+  <Import Project="dependencies.overrides.props" />
 
   <PropertyGroup>
     <!-- Workaround microsoft/msbuild#3626 -->

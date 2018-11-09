@@ -1,19 +1,12 @@
 <Project>
-  <Import Project="dependencies.props" />
-
-  <ItemGroup>
-    <ExcludeFromTest Include="$(RepositoryRoot)test\AutobahnTestApp\*.csproj" />
-  </ItemGroup>
+  <Import Project="..\..\..\build\dependencies.props" />
+  <Import Project="..\..\..\build\runtimes.props" />
   <PropertyGroup>
-    <!-- These properties are use by the automation that updates dependencies.props -->
-    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageVersion>2.2.0-*</LineupPackageVersion>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
+    <!-- TODO: temporary while we reorganize source code and refactor dependency management -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\AutobahnTestApp\*.csproj" />
   </ItemGroup>
 </Project>
