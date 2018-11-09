@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="15.0">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <PropertyGroup>
     <VsixVersion>16.0</VsixVersion>
     
@@ -8,7 +8,7 @@
     <VSIXBuildNumber Condition="'$(VSIXBuildNumber)' == ''">$(BuildNumber)</VSIXBuildNumber>
     <VsixVersion Condition="'$(VSIXBuildNumber)'!=''">$(VsixVersion).$(VSIXBuildNumber)</VsixVersion>
     <VsixVersion Condition="'$(VSIXBuildNumber)'==''">$(VsixVersion).999999</VsixVersion>
-    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
