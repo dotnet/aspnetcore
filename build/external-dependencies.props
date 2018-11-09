@@ -27,6 +27,7 @@
     <!-- Packages from aspnet/Extensions -->
     <ExtensionsDependency Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
     <ExtensionsDependency Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Version="$(MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <ExtensionsDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)"  />
     <ExtensionsDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
@@ -88,7 +89,6 @@
    <ItemGroup>
     <ExternalDependency Include="@(ExtensionsDependency)" />
 
-    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <ExternalDependency Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <ExternalDependency Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <ExternalDependency Include="Castle.Core" Version="$(CastleCorePackageVersion)" />
