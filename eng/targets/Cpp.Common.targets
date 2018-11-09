@@ -1,0 +1,6 @@
+<!-- Targets for making .vcxproj better. -->
+<Project>
+
+  <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != ''" />
+
+</Project>
