@@ -10,9 +10,85 @@
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
       <AllMetapackage>false</AllMetapackage>
     </ExternalDependency>
+
+    <!-- For dependencies from aspnet/Extensions -->
+    <ExtensionsDependency>
+      <!-- The NuGet package version. Floating versions not allowed. -->
+      <Version></Version>
+      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.App metapackage. -->
+      <AppMetapackage>false</AppMetapackage>
+      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
+      <AllMetapackage>false</AllMetapackage>
+      <IsExtensionsPackage>true</IsExtensionsPackage>
+    </ExtensionsDependency>
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <!-- Packages from aspnet/Extensions -->
+    <ExtensionsDependency Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Version="$(MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)"  />
+    <ExtensionsDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Caching.Redis" Version="$(MicrosoftExtensionsCachingRedisPackageVersion)"  AllMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="$(MicrosoftExtensionsCachingSqlServerPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="$(MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion)"  AllMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsConfigurationFileExtensionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsConfigurationIniPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.KeyPerFile" Version="$(MicrosoftExtensionsConfigurationKeyPerFilePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftExtensionsConfigurationUserSecretsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration.Xml" Version="$(MicrosoftExtensionsConfigurationXmlPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="$(MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="$(MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion)"  />
+    <ExtensionsDependency Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.Analyzers" Version="$(MicrosoftExtensionsLoggingAnalyzersPackageVersion)"  Analyzer="true" Category="shipoob" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)"  AllMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.EventLog" Version="$(MicrosoftExtensionsLoggingEventLogPackageVersion)"  />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.EventSource" Version="$(MicrosoftExtensionsLoggingEventSourcePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)"  />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging.TraceSource" Version="$(MicrosoftExtensionsLoggingTraceSourcePackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Version="$(MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="$(MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion)"  />
+    <ExtensionsDependency Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Process.Sources" Version="$(MicrosoftExtensionsProcessSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.PropertyActivator.Sources" Version="$(MicrosoftExtensionsPropertyActivatorSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.RazorViews.Sources" Version="$(MicrosoftExtensionsRazorViewsSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.SecurityHelper.Sources" Version="$(MicrosoftExtensionsSecurityHelperSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.StackTrace.Sources" Version="$(MicrosoftExtensionsStackTraceSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.WebEncoders.Sources" Version="$(MicrosoftExtensionsWebEncodersSourcesPackageVersion)" />
+  </ItemGroup>
+
+   <ItemGroup>
+    <ExternalDependency Include="@(ExtensionsDependency)" />
+
     <ExternalDependency Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <ExternalDependency Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <ExternalDependency Include="Castle.Core" Version="$(CastleCorePackageVersion)" />

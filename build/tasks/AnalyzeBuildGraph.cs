@@ -111,16 +111,26 @@ namespace RepoTasks
             var dependencyMap = new Dictionary<string, List<ExternalDependency>>(StringComparer.OrdinalIgnoreCase);
             foreach (var dep in Dependencies)
             {
-                if (!dependencyMap.TryGetValue(dep.ItemSpec, out var versions))
+                if (dep.GetMetadata("IsExtensionsPackage") == "true")
                 {
-                    dependencyMap[dep.ItemSpec] = versions = new List<ExternalDependency>();
+                    buildPackageMap.Add(dep.ItemSpec, new ArtifactInfo.Package
+                    {
+                        PackageInfo = new PackageInfo(dep.ItemSpec, new NuGetVersion(dep.GetMetadata("Version")), null, null),
+                    });
                 }
-
-                versions.Add(new ExternalDependency
+                else
                 {
-                    PackageId = dep.ItemSpec,
-                    Version = dep.GetMetadata("Version"),
-                });
+                    if (!dependencyMap.TryGetValue(dep.ItemSpec, out var versions))
+                    {
+                        dependencyMap[dep.ItemSpec] = versions = new List<ExternalDependency>();
+                    }
+
+                    versions.Add(new ExternalDependency
+                    {
+                        PackageId = dep.ItemSpec,
+                        Version = dep.GetMetadata("Version"),
+                    });
+                }
             }
 
             var inconsistentVersions = new List<VersionMismatch>();

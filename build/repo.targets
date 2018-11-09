@@ -5,7 +5,6 @@
   <Import Project="SharedFx.targets" />
   <Import Project="SharedFxInstaller.targets" />
   <Import Project="Publish.targets" />
-  <Import Project="GenerateCode.targets" />
 
   <!-- Workaround for #1014 -->
   <Import Project="buildorder.props" Condition="$([MSBuild]::IsOSUnixLike())" />
