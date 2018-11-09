@@ -17,7 +17,6 @@ namespace TriageBuildFailures.GitHub
             return $"Branch:{branchName}";
         }
 
-        public const string HomeRepo = "AspNetCore";
         public const string PrivateRepo = "AspNetCore-Internal";
     }
 }
