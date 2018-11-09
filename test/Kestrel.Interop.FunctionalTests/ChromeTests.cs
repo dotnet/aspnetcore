@@ -4,18 +4,19 @@
 #if NETCOREAPP2_2
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using OpenQA.Selenium.Chrome;
 using Xunit;
 
 namespace Interop.FunctionalTests
@@ -40,7 +41,7 @@ namespace Interop.FunctionalTests
         private string NetLogPath { get; set; }
         private string StartupLogPath { get; set; }
         private string ShutdownLogPath { get; set; }
-        private string ChromeArgs { get; set; }
+        private string[] ChromeArgs { get; set; }
 
         private void InitializeArgs()
         {
@@ -48,17 +49,20 @@ namespace Interop.FunctionalTests
             StartupLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.su.json");
             ShutdownLogPath = Path.Combine(ResolvedLogOutputDirectory, $"{ResolvedTestMethodName}.sd.json");
 
-            ChromeArgs = $"--headless " +
-                $"--no-sandbox " +
-                $"--disable-gpu " +
-                $"--allow-insecure-localhost " +
-                $"--ignore-certificate-errors --enable-features=NetworkService " +
-                $"--enable-logging " +
-                $"--dump-dom " +
-                $"--virtual-time-budget=10000 " +
-                $"--log-net-log={NetLogPath} " +
-                $"--trace-startup --trace-startup-file={StartupLogPath} " +
-                $"--trace-shutdown --trace-shutdown-file={ShutdownLogPath}";
+            ChromeArgs = new [] {
+                $"--headless",
+                $"--no-sandbox",
+                $"--disable-gpu",
+                $"--allow-insecure-localhost",
+                $"--ignore-certificate-errors",
+                $"--enable-features=NetworkService",
+                $"--enable-logging",
+                $"--log-net-log={NetLogPath}",
+                $"--trace-startup",
+                $"--trace-startup-file={StartupLogPath}",
+                $"--trace-shutdown",
+                $"--trace-shutdown-file={ShutdownLogPath}"
+            };
         }
 
         [ConditionalTheory]
@@ -70,54 +74,48 @@ namespace Interop.FunctionalTests
         {
             InitializeArgs();
 
-            using (var server = new TestServer(async context =>
-            {
-                if (string.Equals(context.Request.Query["TestMethod"], "POST", StringComparison.OrdinalIgnoreCase))
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel(options =>
                 {
-                    await context.Response.WriteAsync(_postHtml);
-                }
-                else
+                    options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                    {
+                        listenOptions.Protocols = HttpProtocols.Http2;
+                        listenOptions.UseHttps(TestResources.GetTestCertificate());
+                    });
+                })
+                .ConfigureServices(AddTestLogging)
+                .Configure(app => app.Run(async context =>
                 {
-                    await context.Response.WriteAsync($"Interop {context.Request.Protocol} {context.Request.Method}");
-                }
-            },
-            new TestServiceContext(LoggerFactory),
-            options => options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                    if (string.Equals(context.Request.Query["TestMethod"], "POST", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await context.Response.WriteAsync(_postHtml);
+                    }
+                    else
+                    {
+                        await context.Response.WriteAsync($"Interop {context.Request.Protocol} {context.Request.Method}");
+                    }
+                }));
+
+            using (var host = hostBuilder.Build())
             {
-                listenOptions.Protocols = HttpProtocols.Http2;
-                listenOptions.UseHttps(TestResources.GetTestCertificate());
-            })))
-            {
-                var chromeOutput = await RunHeadlessChrome($"https://localhost:{server.Port}/{requestSuffix}");
+                await host.StartAsync();
+                var chromeOutput = RunHeadlessChrome($"https://localhost:{host.GetPort()}/{requestSuffix}");
 
                 AssertExpectedResponseOrShowDebugInstructions(expectedResponse, chromeOutput);
             }
         }
 
-        private async Task<string> RunHeadlessChrome(string testUrl)
+        private string RunHeadlessChrome(string testUrl)
         {
-            var chromeArgs = $"{ChromeArgs} {testUrl}";
-            var chromeStartInfo = new ProcessStartInfo
+            var chromeOptions = new ChromeOptions();
+            chromeOptions.AddArguments(ChromeArgs);
+
+            using (var driver = new ChromeDriver(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), chromeOptions))
             {
-                FileName = ChromeConstants.ExecutablePath,
-                Arguments = chromeArgs,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
-            };
+                driver.Navigate().GoToUrl(testUrl);
 
-            Logger.LogInformation($"Staring chrome: {ChromeConstants.ExecutablePath} {chromeArgs}");
-
-            var headlessChromeProcess = Process.Start(chromeStartInfo);
-            var chromeOutput = await headlessChromeProcess.StandardOutput.ReadToEndAsync();
-            var chromeError = await headlessChromeProcess.StandardError.ReadToEndAsync();
-            Logger.LogInformation($"Standard output: {chromeOutput}");
-            Logger.LogInformation($"Standard error: {chromeError}");
-
-            headlessChromeProcess.WaitForExit();
-
-            return chromeOutput;
+                return driver.PageSource;
+            }
         }
 
         private void AssertExpectedResponseOrShowDebugInstructions(string expectedResponse, string actualResponse)
