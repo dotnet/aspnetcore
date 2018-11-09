@@ -16,12 +16,17 @@ beforeAll(async () => {
     const options = debug ?
         { headless: false, slowMo: 100 } :
         { args: ['--no-sandbox'] };
+    const label = 'Launch puppeteer ';
 
-        try {
-            browser = await puppeteer.launch(options);
-        } catch (ex) {
-            error = ex;
-        }
+    console.log('Begin launching puppeteer');
+    console.time(label);
+
+    try {
+        browser = await puppeteer.launch(options);
+    } catch (ex) {
+        error = ex;
+    }
+    console.timeEnd(label);
 });
 
 afterAll(async () => {

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace FunctionalTests
 {
@@ -13,7 +14,7 @@ namespace FunctionalTests
     {
         private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(3);
 
-        public static Task<ProcessResult> RunProcessAsync(ProcessStartInfo processStartInfo)
+        public static Task<ProcessResult> RunProcessAsync(ProcessStartInfo processStartInfo, ILogger logger)
         {
             processStartInfo.UseShellExecute = false;
             processStartInfo.RedirectStandardError = true;
@@ -31,6 +32,7 @@ namespace FunctionalTests
             process.ErrorDataReceived += Process_ErrorDataReceived;
             process.OutputDataReceived += Process_OutputDataReceived;
 
+            logger.LogInformation($"Executing command '{process.StartInfo.FileName} {process.StartInfo.Arguments}'");
             process.Start();
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
@@ -52,7 +54,7 @@ namespace FunctionalTests
 
                 // This is a timeout.
                 process.Kill();
-                throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {Timeout}.");
+                throw new TimeoutException($"command '{process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {Timeout}.");
             });
 
             var waitTask = Task.Run(() =>
@@ -83,6 +85,7 @@ namespace FunctionalTests
 
             void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
             {
+                logger.LogInformation(e.Data);
                 lock (outputLock)
                 {
                     output.AppendLine(e.Data);
@@ -91,6 +94,7 @@ namespace FunctionalTests
 
             void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
             {
+                logger.LogInformation(e.Data);
                 lock (outputLock)
                 {
                     output.AppendLine(e.Data);
