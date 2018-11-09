@@ -1,0 +1,135 @@
+<Project>
+
+  <PropertyGroup>
+    <ResolveReferencesDependsOn>
+      ResolveCustomReferences;
+      $(ResolveReferencesDependsOn);
+    </ResolveReferencesDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      Projects should only use the latest package references when:
+        * preparing a new major or minor release (i.e. a non-servicing builds)
+        * when a project is a test or sample project
+        * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
+    -->
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' == 'true' AND ( '$(IsServicingBuild)' != 'true' OR '$(IsPackable)' == 'true' ) ">true</UseLatestPackageReferences>
+    <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
+
+    <!--
+      Projects should only use the project references instead of baseline package references when:
+        * preparing a new major or minor release (i.e. a non-servicing builds)
+        * when a project is a test or sample project
+      We don't use project references between components in servicing builds between compontents to preserve the baseline as much as possible.
+    -->
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseProjectReferences>
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
+    <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
+    <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
+    <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
+
+    <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
+
+    <!-- Order matters. Projects should be used when possible instead of packages. -->
+    <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
+      Include="@(ProjectReferenceProvider)"
+      Exclude="@(UnusedProjectReferenceProvider)" />
+
+    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+
+    <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
+  </ItemGroup>
+
+  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
+    <ItemGroup>
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
+
+      <!--
+        MSBuild does not provide a way to join on matching identities in a Condition,
+        but you can do a cartesian product of two item groups and filter out mismatched id's in a second pass.
+      -->
+      <_LatestPackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' == 'true' ">
+        <Id>%(LatestPackageReference.Identity)</Id>
+        <Version>%(LatestPackageReference.Version)</Version>
+      </_LatestPackageReferenceWithVersion>
+      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+
+      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
+      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
+      <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+
+      <!-- Resolve references from BaselinePackageReference for servicing builds. -->
+      <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
+        <Id>%(BaselinePackageReference.Identity)</Id>
+        <Version>%(BaselinePackageReference.Version)</Version>
+      </_BaselinePackageReferenceWithVersion>
+
+      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+
+      <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
+      <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <Reference Remove="@(_BaselinePackageReferenceWithVersion)" />
+
+      <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
+      <_PrivatePackageReferenceWithVersion Include="@(Reference->WithMetadataValue('PrivateAssets', 'All'))">
+        <Id>%(LatestPackageReference.Identity)</Id>
+        <Version>%(LatestPackageReference.Version)</Version>
+      </_PrivatePackageReferenceWithVersion>
+
+      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+
+      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
+      <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
+
+      <!-- Free up memory for unnecessary items -->
+      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
+      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" />
+      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" />
+      <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
+    </ItemGroup>
+<!--
+    <Error Condition="@(_ExplicitPackageReference->Count()) != 0"
+           Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead. " /> -->
+
+    <ItemGroup>
+      <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
+    </ItemGroup>
+
+    <Warning Condition="@(UnusedBaselinePackageReference->Count()) != 0"
+             Text="Package references changed since the last release. This could be a breaking change. References removed:%0A - @(UnusedBaselinePackageReference, '%0A -')" />
+
+    <Error Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)')"
+           Code="MSB3245"
+           Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;" />
+  </Target>
+
+  <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
+    <ItemGroup>
+      <_TargetFramework Remove="@(_TargetFramework)" />
+      <_TargetFramework Include="$(TargetFramework)" Condition="'$(TargetFramework)' != '' "/>
+      <_TargetFramework Include="$(TargetFrameworks)" Condition="'$(TargetFramework)' == '' "/>
+    </ItemGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_GetReferencesProvided"
+             Properties="TargetFramework=%(_TargetFramework.Identity)">
+      <Output TaskParameter="TargetOutputs" ItemName="ProvidesReference" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
+    <ItemGroup Condition=" '$(IsImplementationProject)' == 'true' OR '$(IsProjectReferenceProvider)' == 'true' ">
+      <ProvidesReference Include="$(AssemblyName)">
+        <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+      </ProvidesReference>
+    </ItemGroup>
+  </Target>
+</Project>

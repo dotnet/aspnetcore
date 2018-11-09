@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.7' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore;
+      Microsoft.AspNetCore.Server.IISIntegration;
+    </PackagesInPatch>
+  </PropertyGroup>
+
+</Project>

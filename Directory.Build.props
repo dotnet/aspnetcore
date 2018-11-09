@@ -34,5 +34,13 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <StandardTestTfms>netcoreapp2.1;net461</StandardTestTfms>
+  </PropertyGroup>
+
+  <Import Project="eng\Dependencies.props" />
+  <Import Project="eng\PatchConfig.props" />
+  <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
 </Project>

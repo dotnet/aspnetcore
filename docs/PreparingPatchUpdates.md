@@ -10,11 +10,15 @@ In order to prepare this repo to build a new servicing update, the following cha
     +  <AspNetCorePatchVersion>8</AspNetCorePatchVersion>
     ```
 
-* Update the package archive baselines. This is used to make sure each build
-  of the package archives we give to Azure only contains new files and does
+* Update the package archive baselines. This is used to make sure each build of the package archives we give to Azure only contains new files and does
   not require overwriting existing files. See [src/PackageArchive/ZipManifestGenerator/](/src/PackageArchive/ZipManifestGenerator/README.md) for instructions on how to run this tool.
 
-* Update the list of repositories which will contain changes in [build/submodules.props](/build/submodules.props).
+* Update the package baselines. This is used to ensure packages keep a consistent set of dependencies between releases.
+  See [eng/tools/BaselineGenerator/](/eng/tools/BaselineGenerator/README.md) for instructions on how to run this tool.
+
+* **For packages with source code in this repo (not a submodule):** Update the list of packages in [eng/PatchConfig.props](/eng/PatchConfig.props) to list which packages should be patching in this release.
+
+* **For packages still building from submodules:** Update the list of repositories which will contain changes in [build/submodules.props](/build/submodules.props).
 
     * `<ShippedRepository>` items represent repos which were released in a previous patch, and will not contain servicing updates in the next patch.
     * `<Repository>` items represent repos which will produce new packages in this patch.

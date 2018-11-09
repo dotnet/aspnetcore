@@ -1,8 +1,38 @@
 <Project>
   <!-- Properties which should be set after the project has been evaluated -->
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
+    <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
+  </PropertyGroup>
+
+  <Import Project="eng\Baseline.props" />
+
+  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
+    <!-- Always include framework metapackages in patch updates. -->
+    <IsPackageInThisPatch Condition="'$(IsFrameworkMetapackage)' == 'true'">true</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
+    <!-- Used to distinguish between packages building -->
+    <IsPackableInNonServicingBuild>true</IsPackableInNonServicingBuild>
+    <!-- Suppress creation of .nupkg for servicing builds. -->
+    <IsPackable Condition=" '$(IsPackageInThisPatch)' != 'true' ">false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' ">
+    <!-- This keeps assembly and package versions consistent across patches. If a package is not included in a patch, its version should stay at the baseline. -->
+    <Version>$(BaselinePackageVersion).0</Version>
+    <AssemblyVersion>$(BaselinePackageVersion).0</AssemblyVersion>
+    <PackageVersion>$(BaselinePackageVersion)</PackageVersion>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
     <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+
+    <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
+    <VerifyVersion>false</VerifyVersion>
 
     <EnableApiCheck Condition=" '$(EnableApiCheck)' != '' ">$(IsImplementationProject)</EnableApiCheck>
     <IsPackable Condition="'$(IsPackable)' == '' AND '$(IsImplementationProject)' == 'true' ">true</IsPackable>
@@ -14,4 +44,5 @@
   </PropertyGroup>
 
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
 </Project>
