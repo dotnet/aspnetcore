@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Razor/issues/2723")]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_ServerConnectionMutexCreationFails_FallsBackToInProcessRzc()
         {
