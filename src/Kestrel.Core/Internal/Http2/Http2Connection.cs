@@ -1045,11 +1045,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_stateLock)
             {
+                _activeStreamCount--;
+
                 // Get, Add, Remove so the steam is always registered in at least one collection at a time.
                 if (_streams.TryGetValue(streamId, out var stream))
                 {
-                    _activeStreamCount--;
-
                     if (stream.IsDraining)
                     {
                         stream.DrainExpiration =
