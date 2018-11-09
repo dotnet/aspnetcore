@@ -3,4 +3,3 @@ content/*.js;Microsoft.DotNet.Web.Spa.ProjectTemplates.*.nupkg; Exclude JavaScri
 content/*.js;Microsoft.DotNet.Web.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
 Templates/*.js;Microsoft.VisualStudio.Web.CodeGenerators.Mvc.*.nupkg; Exclude JavaScript files from codesigning in code generators
 *.js;signalr-*-javadoc.jar; Exclude JavaScript files in the generated javadocs
-*.dll|*.exe;IIS.StressTestWebSite.zip; This is a test asset which is only produced for manual upload into IIS stress testing.
