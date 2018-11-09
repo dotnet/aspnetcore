@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
