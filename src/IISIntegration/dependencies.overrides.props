@@ -2,11 +2,12 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <!-- These versions are pinned for backwards compatibility tests. -->
   <PropertyGroup Label="Package Versions: Pinned">
-    <MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>2.2.0-rtm-35665</MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>2.2.0-rtm-35665</MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>
-    <MicrosoftAspNetCoreServerIISStablePackageVersion>2.2.0-rtm-35665</MicrosoftAspNetCoreServerIISStablePackageVersion>
+  <!-- The AspNetCoreModule package versions are pinned to an older version for forwards and backwards compatibility tests. -->
+    <MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>2.2.0-preview3-35497</MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>2.2.0-preview3-35497</MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>
+    <MicrosoftAspNetCoreServerIISStablePackageVersion>2.2.0-preview3-35497</MicrosoftAspNetCoreServerIISStablePackageVersion>
+  <!-- These  package versions are pinned to 2.1 to create builds for functions -->
     <MicrosoftAspNetCoreAuthenticationCore21PackageVersion>2.1.0</MicrosoftAspNetCoreAuthenticationCore21PackageVersion>
     <MicrosoftAspNetCoreConnectionsAbstractions21PackageVersion>2.1.0</MicrosoftAspNetCoreConnectionsAbstractions21PackageVersion>
     <MicrosoftAspNetCoreHostingAbstractions21PackageVersion>2.1.0</MicrosoftAspNetCoreHostingAbstractions21PackageVersion>

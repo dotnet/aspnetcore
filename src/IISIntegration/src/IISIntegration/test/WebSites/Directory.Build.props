@@ -1,7 +1,0 @@
-<Project>
-  <Import Project="..\Directory.Build.props" />
-
-  <ItemGroup>
-    <PackageReference Remove="Internal.AspNetCore.Sdk" />
-  </ItemGroup>
-</Project>
