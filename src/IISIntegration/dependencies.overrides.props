@@ -1,0 +1,19 @@
+﻿<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+  <!-- These versions are pinned for backwards compatibility tests. -->
+  <PropertyGroup Label="Package Versions: Pinned">
+    <MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>2.2.0-rtm-35665</MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>2.2.0-rtm-35665</MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>
+    <MicrosoftAspNetCoreServerIISStablePackageVersion>2.2.0-rtm-35665</MicrosoftAspNetCoreServerIISStablePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCore21PackageVersion>2.1.0</MicrosoftAspNetCoreAuthenticationCore21PackageVersion>
+    <MicrosoftAspNetCoreConnectionsAbstractions21PackageVersion>2.1.0</MicrosoftAspNetCoreConnectionsAbstractions21PackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractions21PackageVersion>2.1.0</MicrosoftAspNetCoreHostingAbstractions21PackageVersion>
+    <MicrosoftAspNetCoreHttpSysSources21PackageVersion>2.1.0</MicrosoftAspNetCoreHttpSysSources21PackageVersion>
+    <SystemIOPipelines21PackageVersion>4.5.2</SystemIOPipelines21PackageVersion>
+    <SystemSecurityPrincipalWindows21PackageVersion>4.5.0</SystemSecurityPrincipalWindows21PackageVersion>
+  </PropertyGroup>
+</Project>
+
+
