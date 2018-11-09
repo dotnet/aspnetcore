@@ -1,0 +1,100 @@
+﻿<!-- Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. -->
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <AspNetCoreBaselineVersion>2.1.6</AspNetCoreBaselineVersion>
+  </PropertyGroup>
+  <!-- Package: Microsoft.AspNetCore.Cryptography.Internal-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.Internal' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.Internal' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.AspNetCore.Cryptography.KeyDerivation-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.DataProtection-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.DataProtection.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.AspNetCore.DataProtection.AzureKeyVault-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureKeyVault' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureKeyVault' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Azure.KeyVault" Version="[2.3.2, )" />
+    <BaselinePackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="[3.14.2, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.DataProtection.AzureStorage-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureStorage' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureStorage' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="WindowsAzure.Storage" Version="[8.1.4, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.DataProtection.Extensions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.DataProtection.Redis-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Redis' ">
+    <BaselinePackageVersion>0.4.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Redis' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="StackExchange.Redis.StrongName" Version="[1.2.4, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.DataProtection.SystemWeb-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.SystemWeb' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.SystemWeb' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.JsonPatch-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.WebSockets-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.1, )" />
+  </ItemGroup>
+</Project>

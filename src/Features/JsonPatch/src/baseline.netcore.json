@@ -1,0 +1,1985 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.JsonPatch, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.JsonPatchProperty",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Property",
+          "Parameters": [],
+          "ReturnType": "Newtonsoft.Json.Serialization.JsonProperty",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Property",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Newtonsoft.Json.Serialization.JsonProperty"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Parent",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Parent",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "property",
+              "Type": "Newtonsoft.Json.Serialization.JsonProperty"
+            },
+            {
+              "Name": "parent",
+              "Type": "System.Object"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ContractResolver",
+          "Parameters": [],
+          "ReturnType": "Newtonsoft.Json.Serialization.IContractResolver",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ContractResolver",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Newtonsoft.Json.Serialization.IContractResolver"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetOperations",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.JsonPatch.Operations.Operation>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Operations",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ContractResolver",
+          "Parameters": [],
+          "ReturnType": "Newtonsoft.Json.Serialization.IContractResolver",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ContractResolver",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Newtonsoft.Json.Serialization.IContractResolver"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Replace",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.String"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.String"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyTo",
+          "Parameters": [
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyTo",
+          "Parameters": [
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "logErrorAction",
+              "Type": "System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyTo",
+          "Parameters": [
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "adapter",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "operations",
+              "Type": "System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation>"
+            },
+            {
+              "Name": "contractResolver",
+              "Type": "Newtonsoft.Json.Serialization.IContractResolver"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Operations",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation<T0>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ContractResolver",
+          "Parameters": [],
+          "ReturnType": "Newtonsoft.Json.Serialization.IContractResolver",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ContractResolver",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Newtonsoft.Json.Serialization.IContractResolver"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.IJsonPatchDocument",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "position",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Add<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "position",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Replace<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Replace<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "position",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Replace<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            },
+            {
+              "Name": "position",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "value",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionFrom",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionTo",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionFrom",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionTo",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionFrom",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionFrom",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionTo",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionFrom",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionTo",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            },
+            {
+              "Name": "positionFrom",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy<T0>",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, T0>>"
+            },
+            {
+              "Name": "path",
+              "Type": "System.Linq.Expressions.Expression<System.Func<T0, System.Collections.Generic.IList<T0>>>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<T0>",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TProp",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyTo",
+          "Parameters": [
+            {
+              "Name": "objectToApplyTo",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyTo",
+          "Parameters": [
+            {
+              "Name": "objectToApplyTo",
+              "Type": "T0"
+            },
+            {
+              "Name": "logErrorAction",
+              "Type": "System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyTo",
+          "Parameters": [
+            {
+              "Name": "objectToApplyTo",
+              "Type": "T0"
+            },
+            {
+              "Name": "adapter",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "operations",
+              "Type": "System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation<T0>>"
+            },
+            {
+              "Name": "contractResolver",
+              "Type": "Newtonsoft.Json.Serialization.IContractResolver"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TModel",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.JsonPatchError",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AffectedObject",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Operation",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.Operations.Operation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ErrorMessage",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "affectedObject",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "errorMessage",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Operations.Operation",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.JsonPatch.Operations.OperationBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_value",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_value",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Apply",
+          "Parameters": [
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "adapter",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ShouldSerializevalue",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "op",
+              "Type": "System.String"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "from",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "op",
+              "Type": "System.String"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "from",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Operations.OperationBase",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_OperationType",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.Operations.OperationType",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_path",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_path",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_op",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_op",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_from",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_from",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ShouldSerializefrom",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "op",
+              "Type": "System.String"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "from",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Operations.Operation<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.JsonPatch.Operations.Operation",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Apply",
+          "Parameters": [
+            {
+              "Name": "objectToApplyTo",
+              "Type": "T0"
+            },
+            {
+              "Name": "adapter",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "op",
+              "Type": "System.String"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "from",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "op",
+              "Type": "System.String"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            },
+            {
+              "Name": "from",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TModel",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Operations.OperationType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Add",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Remove",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Replace",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Move",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Copy",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Test",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "5"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Invalid",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "6"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Helpers.GetValueResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_PropertyValue",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HasError",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "propertyValue",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "hasError",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Exception",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FailedOperation",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.JsonPatch.Operations.Operation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AffectedObject",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "jsonPatchError",
+              "Type": "Microsoft.AspNetCore.JsonPatch.JsonPatchError"
+            },
+            {
+              "Name": "innerException",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "jsonPatchError",
+              "Type": "Microsoft.AspNetCore.JsonPatch.JsonPatchError"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "innerException",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Converters.JsonPatchDocumentConverter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Newtonsoft.Json.JsonConverter",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CanConvert",
+          "Parameters": [
+            {
+              "Name": "objectType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ReadJson",
+          "Parameters": [
+            {
+              "Name": "reader",
+              "Type": "Newtonsoft.Json.JsonReader"
+            },
+            {
+              "Name": "objectType",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "existingValue",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "serializer",
+              "Type": "Newtonsoft.Json.JsonSerializer"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteJson",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "Newtonsoft.Json.JsonWriter"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "serializer",
+              "Type": "Newtonsoft.Json.JsonSerializer"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Converters.TypedJsonPatchDocumentConverter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.JsonPatch.Converters.JsonPatchDocumentConverter",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ReadJson",
+          "Parameters": [
+            {
+              "Name": "reader",
+              "Type": "Newtonsoft.Json.JsonReader"
+            },
+            {
+              "Name": "objectType",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "existingValue",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "serializer",
+              "Type": "Newtonsoft.Json.JsonSerializer"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Replace",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapterWithTest",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapterWithTest"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Add",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Move",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Replace",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ContractResolver",
+          "Parameters": [],
+          "ReturnType": "Newtonsoft.Json.Serialization.IContractResolver",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_LogErrorAction",
+          "Parameters": [],
+          "ReturnType": "System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Test",
+          "Parameters": [
+            {
+              "Name": "operation",
+              "Type": "Microsoft.AspNetCore.JsonPatch.Operations.Operation"
+            },
+            {
+              "Name": "objectToApplyTo",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapterWithTest",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "contractResolver",
+              "Type": "Newtonsoft.Json.Serialization.IContractResolver"
+            },
+            {
+              "Name": "logErrorAction",
+              "Type": "System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

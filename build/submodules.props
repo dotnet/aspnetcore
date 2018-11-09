@@ -77,6 +77,5 @@
     <ShippedRepository Include="Session" />
     <ShippedRepository Include="SignalR" />
     <ShippedRepository Include="StaticFiles" />
-    <ShippedRepository Include="WebSockets" RootPath="$(RepositoryRoot)src\WebSockets\" />
   </ItemGroup>
 </Project>

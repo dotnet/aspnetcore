@@ -1,0 +1,30 @@
+<Project>
+
+  <Target Name="EnsureBaselineIsUpdated"
+          Condition="'$(IsServicingBuild)' == 'true' AND '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)'"
+          BeforeTargets="BeforeBuild">
+    <Error Text="The package baseline ($(AspNetCoreBaselineVersion)) is out of date with the latest release of this repo ($(PreviousAspNetCoreReleaseVersion)).
+                 See $(RepositoryRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
+  </Target>
+
+  <!-- Temporary: this target is used to gather version information to pass to submodule builds. This can be removed after we finish merging submodules. -->
+  <Target Name="GetBaselineArtifactInfo"
+          Condition="'$(IsPackableInNonServicingBuild)' == 'true'"
+          Returns="@(ArtifactInfo)"
+          BeforeTargets="GetArtifactInfo">
+
+    <PropertyGroup>
+      <FullPackageOutputPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</FullPackageOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ArtifactInfo Include="$(FullPackageOutputPath)">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+        <IsShipped>true</IsShipped>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
+</Project>

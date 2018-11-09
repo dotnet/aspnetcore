@@ -3,9 +3,7 @@
 
   <PropertyGroup>
     <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
+    <IsFrameworkMetapackage>true</IsFrameworkMetapackage>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" PrivateAssets="All" />
-  </ItemGroup>
 </Project>

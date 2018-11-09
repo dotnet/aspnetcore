@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Remove="Internal.AspNetCore.Sdk" />
     <PackageReference Include="Microsoft.DotNet.Archive" Version="$(MicrosoftDotNetArchivePackageVersion)" />
     <PackageReference Include="NuGet.Build.Tasks" Version="$(NuGetInMSBuildVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DevDependency_MicrosoftExtensionsDependencyModelPackageVersion)" PrivateAssets="All" />
