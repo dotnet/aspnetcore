@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="PackSiteExtension.targets" />
 
   <PropertyGroup>
       <ComposeSdk Condition="$(SITE_EXTENSION_SDK_VERSION) == ''">True</ComposeSdk>
