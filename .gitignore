@@ -24,3 +24,4 @@ msbuild.ProjectImports.zip
 scripts/tmp/
 .dotnet/
 .tools/
+src/**/global.json

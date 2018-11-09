@@ -55,7 +55,6 @@
   <!-- Folder layout -->
   <PropertyGroup>
     <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepositoryRoot)artifacts\</ArtifactsDir>
-    <TestAssetsOutputPath>$(MSBuildThisFileDirectory)artifacts\testassets\</TestAssetsOutputPath>
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>

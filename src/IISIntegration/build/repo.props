@@ -2,8 +2,7 @@
   <Import Project="dependencies.props" />
 
   <PropertyGroup>
-    <!-- TODO: use the TestAssetsOutputPath variable and put this target into the project context, not the KoreBuild context. -->
-    <StressTestWebSiteZipOutputPath>$(MSBuildThisFileDirectory)..\..\..\artifacts\testassets\IIS.StressTestWebSite.zip</StressTestWebSiteZipOutputPath>
+    <StressTestWebSiteZipOutputPath>$(BuildDir)StressTestWebSite.zip</StressTestWebSiteZipOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
