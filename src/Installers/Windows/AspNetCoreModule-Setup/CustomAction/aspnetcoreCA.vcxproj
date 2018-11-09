@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <ANCM-Setup Condition="$(ANCM-Setup) == ''">$(MSBuildThisFileDirectory)..\</ANCM-Setup>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_IIS-SetupExportsPath>$(ANCM-Setup)IIS-Setup\build\exports.props</_IIS-SetupExportsPath>
+  </PropertyGroup>
+
+  <Import Condition="$(IIS-Setup) == '' AND Exists('$(_IIS-SetupExportsPath)')" Project="$(_IIS-SetupExportsPath)" />
+
+  <!-- Build error if submodule dependencies could not be found. -->
+  <Import Project="$(MSBuildProjectDirectory)\..\build\versions.props" Condition="Exists('$(MSBuildProjectDirectory)\..\build\versions.props')" />
+  <Import Project="$(MSBuildProjectDirectory)\..\build\settings.props" Condition="Exists('$(MSBuildProjectDirectory)\..\build\settings.props')" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{7C27E72F-54D0-4820-8CFA-5E4BE640974B}</ProjectGuid>
+    <RootNamespace>aspnetcoreca</RootNamespace>
+    <ProjectName>aspnetcoreCA</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <AdditionalIncludeDirectories>$(IIS-Common)version;$(IIS-Common)Include;$(IIS-Setup)iisca\lib;$(WIX)sdk\$(WixPlatformToolset)\inc;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>httpapi.lib;shlwapi.lib;ahadmin.lib;xmllite.lib;msi.lib;Version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>aspnetcoreCA.def</ModuleDefinitionFile>
+      <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
+      <AdditionalOptions>/NODEFAULTLIB:MSVCRT %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="aspnetcoreCA.cpp" />
+    <ClCompile Include="avoid_restart.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="aspnetcoreCA.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="aspnetcoreCA.rc">
+      <AdditionalIncludeDirectories>$(IIS-Common)version</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(IIS-Setup)iisca\lib\iisca.vcxproj">
+      <Project>{7324770c-0871-4d73-be3d-5e2f3e9e1b1e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(IIS-Common)lib\CommonLib.vcxproj">
+      <Project>{b54a8f61-60de-4ad9-87ca-d102f230678e}</Project>
+    </ProjectReference>
+     <FilesToSign Include="$(MSBuildProjectDirectory)\$(OutDir)$(TargetName)$(TargetExt)" Authenticode="Microsoft400" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <Target Name="EnsureImportsExist" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\build\versions.props'))" />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\build\settings.props'))" />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\build\copy-outputs.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\build\copy-outputs.targets'))" />
+  </Target>
+  <Import Project="$(MSBuildProjectDirectory)\..\build\copy-outputs.targets" Condition="Exists('$(MSBuildProjectDirectory)\..\build\copy-outputs.targets')" />
+</Project>

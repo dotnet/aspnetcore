@@ -4,14 +4,14 @@
         <PackageGroup Id="PG_ANCM">
             <RollbackBoundary Id="RB_ANCM" />
 
-            <MsiPackage Id="AspNetCoreModule_x86" SourceFile="$(var.BinPath)\aspnetcoremodule_x86_en.msi"
+            <MsiPackage Id="AspNetCoreModule_x86" SourceFile="$(var.BinPath)aspnetcoremodule_x86_en.msi"
                         Name="aspnetcoremodule_x86_en.msi"
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
                         InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM)" />
 
-            <MsiPackage Id="AspNetCoreModule_x64" SourceFile="$(var.BinPath)\aspnetcoremodule_x64_en.msi"
+            <MsiPackage Id="AspNetCoreModule_x64" SourceFile="$(var.BinPath)aspnetcoremodule_x64_en.msi"
                         Name="aspnetcoremodule_x64_en.msi"
                         Compressed="yes"
                         Vital="yes"
