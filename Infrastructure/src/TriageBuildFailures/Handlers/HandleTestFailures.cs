@@ -88,8 +88,9 @@ namespace TriageBuildFailures.Handlers
             foreach (var failure in tests)
             {
                 Reporter.Output($"Inspecting test failure {failure.Name}...");
-                var repo = TestToRepoMapper.FindRepo(failure.Name, Reporter);
-                var owner = TestToRepoMapper.FindOwner(failure.Name);
+                var failureArea = TestToAreaMapper.FindTestProductArea(failure.Name, Reporter);
+                var owner = "aspnet";
+                var repo = "AspNetCore-Internal";
 
                 var issuesTask = GHClient.GetFlakyIssues(owner, repo);
 
@@ -112,15 +113,23 @@ Other tests within that build may have failed with a similar message, but they a
 
 This test failed on {build.Branch}.
 
-CC {GetManagerMentions(repo)}";
+CC {GetOwnerMentions(failureArea)}";
 
                     //TODO: We'd like to link the test history here but TC api doens't make it easy
-                    var tags = new List<string> { GitHubClientWrapper.TestFailureTag, GitHubUtils.GetBranchLabel(build.Branch) };
+                    var issueLabels = new List<string>
+                    {
+                        GitHubClientWrapper.TestFailureTag,
+                        GitHubUtils.GetBranchLabel(build.Branch),
+                    };
+                    if (!string.IsNullOrEmpty(failureArea))
+                    {
+                        issueLabels.Add(failureArea);
+                    }
 
-                    var assignees = new string[] { GetManagerMentions(repo) };
+                    var assignees = GetOwnerNames(failureArea);
 
                     Reporter.Output($"Creating new issue for test failure {failure.Name}...");
-                    var issue = await GHClient.CreateIssue(owner, repo, subject, body, tags, assignees);
+                    var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
                     Reporter.Output($"Adding new issue to project '{GHClient.Config.FlakyProjectColumn}'");
                     await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);
@@ -149,19 +158,27 @@ CC {GetManagerMentions(repo)}";
             }
         }
 
-        private string GetManagerMentions(string repoName)
-        {
-            var repo = Config.GitHub.Repos.FirstOrDefault(r => r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
 
-            if (repo == null || string.IsNullOrEmpty(repo.Manager))
+        private string[] GetOwnerNames(string areaName)
+        {
+            var owners = Config.GitHub.IssueAreas
+                .FirstOrDefault(area => area.AreaName.Equals(areaName, StringComparison.OrdinalIgnoreCase))
+                ?.OwnerNames;
+
+            if (string.IsNullOrEmpty(owners))
             {
                 // Default to Eilon
-                return "Eilon";
+                return new[] { "Eilon" };
             }
             else
             {
-                return repo.Manager;
+                return owners.Split(',').Select(owner => owner.Trim()).ToArray();
             }
+        }
+
+        private string GetOwnerMentions(string areaName)
+        {
+            return GitHubUtils.GetAtMentions(GetOwnerNames(areaName));
         }
 
         private static string GetTestName(ICITestOccurrence testOccurrence)

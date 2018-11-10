@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,12 +44,12 @@ namespace TriageBuildFailures.Handlers
         public override async Task HandleFailure(ICIBuild build)
         {
             var log = GetClient(build).GetBuildLog(build);
-            var owner = TestToRepoMapper.FindOwner(build.BuildName);
+            var owner = "aspnet";
             var repo = GitHubUtils.PrivateRepo;
-            var issuesTask = GHClient.GetIssues(owner, repo);
+            var issues = await GHClient.GetIssues(owner, repo);
 
             var subject = $"{build.BuildName} failed";
-            var applicableIssues = GetApplicableIssues(await issuesTask, subject);
+            var applicableIssues = GetApplicableIssues(issues, subject);
 
             if (applicableIssues.Count() > 0)
             {
@@ -67,9 +66,14 @@ namespace TriageBuildFailures.Handlers
 {build.WebURL}
 
 CC {GitHubUtils.GetAtMentions(_Notifiers)}";
-                var tags = new List<string> { _BrokenBuildLabel, GitHubUtils.GetBranchLabel(build.Branch) };
+                var issueLabels = new[]
+                {
+                    _BrokenBuildLabel,
+                    GitHubUtils.GetBranchLabel(build.Branch)
+                };
 
-                await GHClient.CreateIssue(owner, repo, subject, body, tags, assignees: null);
+                // TODO: Would be nice if we could figure out how to map broken builds to failure areas
+                await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: null);
             }
         }
 

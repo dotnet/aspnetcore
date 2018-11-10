@@ -52,12 +52,6 @@ namespace TriageBuildFailures.GitHub
                     State = ItemStateFilter.Open
                 };
 
-                if (IssuesOnHomeRepo(repo))
-                {
-                    request.Labels.Add($"repo:{repo}");
-                    repo = GitHubUtils.HomeRepo;
-                }
-
                 var issues = await Client.Issue.GetAllForRepository(owner, repo, request);
                 var results = issues.Select(i => new GitHubIssue(i));
 
@@ -120,17 +114,6 @@ namespace TriageBuildFailures.GitHub
 
         public async Task<GitHubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels, IEnumerable<string> assignees)
         {
-            if (IssuesOnHomeRepo(repo))
-            {
-                if (labels == null)
-                {
-                    labels = new List<string>();
-                }
-
-                labels.Add($"repo:{repo}");
-                repo = GitHubUtils.HomeRepo;
-            }
-
             body = $"This issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{body}";
 
             if (body.Length > MaxBodyLength)
@@ -159,20 +142,31 @@ namespace TriageBuildFailures.GitHub
                 }
             }
 
+            // Before applying labels, make sure the labels exist
+            await EnsureLabelsExist(owner, repo, labels);
+
             MemoryCache.Default.Remove(GetIssueCacheKey(owner, repo));
             return new GitHubIssue(await Client.Issue.Create(owner, repo, newIssue));
+        }
+
+        private async Task EnsureLabelsExist(string owner, string repo, IList<string> labels)
+        {
+            // TODO: Do caching stuff?
+
+            var allLabelsInRepo = await Client.Issue.Labels.GetAllForRepository(owner, repo);
+            var labelsThatDontExist = labels.Except(allLabelsInRepo.Select(label => label.Name), StringComparer.OrdinalIgnoreCase).ToList();
+            if (labelsThatDontExist.Any())
+            {
+                foreach (var labelThatDoesntExist in labelsThatDontExist)
+                {
+                    await Client.Issue.Labels.Create(owner, repo, new NewLabel(labelThatDoesntExist, "#e89f02")); // ugly orange
+                }
+            }
         }
 
         private string GetIssueCacheKey(string owner, string repo)
         {
             return $"{owner}/{repo}";
-        }
-
-        private bool IssuesOnHomeRepo(string repoName)
-        {
-            var repo = Config.Repos.FirstOrDefault(r => r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
-
-            return repo == null ? false : repo.IssuesOnHomeRepo;
         }
     }
 }

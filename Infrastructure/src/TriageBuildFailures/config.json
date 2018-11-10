@@ -13,133 +13,50 @@
     "FlakyProjectColumn": 2260926,
     "BuildBuddyUsername": "ryanbrandenburg",
     "BotUsername": "aspnet-hello",
-    "Repos": [
+    "IssueAreas": [
       {
-        "Name": "Antiforgery",
-        "IssuesOnHomeRepo": true
+        "AreaName": "area-caching",
+        "OwnerNames": "mgirgin"
       },
       {
-        "Name": "Blazor",
-        "Manager": "mkArtakMSFT"
+        "AreaName": "area-common",
+        "OwnerNames": "mgirgin"
       },
       {
-        "Name": "Caching",
-        "Manager": "mgirgin"
+        "AreaName": "area-configuration",
+        "OwnerNames": "ajcvickers"
       },
       {
-        "Name": "Common",
-        "IssuesOnHomeRepo": true
+        "AreaName": "area-ef",
+        "OwnerNames": "ajcvickers"
       },
       {
-        "Name": "CORS",
-        "Manager": "mkArtakMSFT",
-        "IssuesOnHomeRepo": true
+        "AreaName": "area-mvc",
+        "OwnerNames": "mkArtakMSFT"
       },
       {
-        "Name": "DataProtection",
-        "IssuesOnHomeRepo": true
+        "AreaName": "area-options",
+        "OwnerNames": "ajcvickers"
       },
       {
-        "Name": "DependencyInjection",
-        "IssuesOnHomeRepo": true
+        "AreaName": "area-platform",
+        "OwnerNames": "mgirgin"
       },
       {
-        "Name": "Diagnostics",
-        "IssuesOnHomeRepo": true
+        "AreaName": "area-security",
+        "OwnerNames": "mgirgin"
       },
       {
-        "Name": "DotNetTools"
+        "AreaName": "area-servers",
+        "OwnerNames": "mgirgin"
       },
       {
-        "Name": "EntityFrameworkCore",
-        "Manager": "ajcvickers"
+        "AreaName": "area-tools",
+        "OwnerNames": "mkArtakMSFT"
       },
       {
-        "Name": "EventNotification",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "FileSystem",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "HttpAbstractions",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "HttpClientFactory",
-        "Manager": "rynowak"
-      },
-      {
-        "Name": "JsonPatch",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "KestrelHttpServer",
-        "Manager": "muratg"
-      },
-      {
-        "Name": "IISIntegration",
-        "Manager": "muratg",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "MusicStore",
-        "Manager": "mkArtakMSFT"
-      },
-      {
-        "Name": "Mvc",
-        "Manager": "mkArtakMSFT"
-      },
-      {
-        "Name": "Localization",
-        "Manager": "mkArtakMSFT",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "Options",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "Proxy",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "Razor",
-        "Manager": "mkArtakMSFT"
-      },
-      {
-        "Name": "ResponseCaching",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "Routing",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "Session",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "SignalR",
-        "Manager": "muratg"
-      },
-      {
-        "Name": "StaticFiles",
-        "IssuesOnHomeRepo": true,
-        "Manager": "muratg"
-      },
-      {
-        "Name": "Templating",
-        "Manager": "mkArtakMSFT"
-      },
-      {
-        "Name": "Testing",
-        "IssuesOnHomeRepo": true
-      },
-      {
-        "Name": "WebSockets",
-        "IssuesOnHomeRepo": true
+        "AreaName": "area-webtools",
+        "OwnerNames": "vijayrkn"
       }
     ]
   },
