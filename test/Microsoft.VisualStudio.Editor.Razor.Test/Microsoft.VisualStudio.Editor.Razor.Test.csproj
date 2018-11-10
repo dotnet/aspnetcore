@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.Editor.Razor.Test.Common\Microsoft.VisualStudio.Editor.Razor.Test.Common.csproj" />
   </ItemGroup>
 

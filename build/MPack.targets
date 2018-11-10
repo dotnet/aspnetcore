@@ -73,6 +73,7 @@
 
     <ItemGroup>
       <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
       <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
       <LanguageServiceAssembly Include="$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)" Condition="Exists('$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)')" />
       <LanguageServiceAssembly Include="%(LanguageServiceExtensionAssembly.Identity)" />

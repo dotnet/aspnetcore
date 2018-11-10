@@ -49,31 +49,31 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RazorLangVersion)'==''">
-    <RazorLangVersion Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'">2.1</RazorLangVersion>
+    <RazorLangVersion Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'">3.0</RazorLangVersion>
   </PropertyGroup>
 
   <!--
     Set the primary configuration supported by this SDK as the default configuration for Razor.
   -->
   <PropertyGroup Condition="'$(RazorDefaultConfiguration)'==''">
-    <RazorDefaultConfiguration Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'">MVC-2.1</RazorDefaultConfiguration>
+    <RazorDefaultConfiguration Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'">MVC-3.0</RazorDefaultConfiguration>
   </PropertyGroup>
 
   <ItemGroup>
     <!--
-      While technically the assembly in this package can provide support for the MVC-2.0 configuration, don't declare
+      While technically the assembly in this package can provide support for the MVC-2.X, don't declare
       it here. The IDE is hardcoded to inject 2.0 support when needed. The settings flowing through MSBuild should reflect
       the project's runtime.
     -->
-    <RazorConfiguration Include="MVC-2.1">
-      <Extensions>MVC-2.1;$(CustomRazorExtension)</Extensions>
+    <RazorConfiguration Include="MVC-3.0">
+      <Extensions>MVC-3.0;$(CustomRazorExtension)</Extensions>
     </RazorConfiguration>
   </ItemGroup>
 
   <ItemGroup>
-    <RazorExtension Include="MVC-2.1">
+    <RazorExtension Include="MVC-3.0">
       <AssemblyName>Microsoft.AspNetCore.Mvc.Razor.Extensions</AssemblyName>
-      <AssemblyFilePath>$(RazorSdkDirectoryRoot)extensions\mvc-2-1\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</AssemblyFilePath>
+      <AssemblyFilePath>$(RazorSdkDirectoryRoot)extensions\mvc-3-0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</AssemblyFilePath>
     </RazorExtension>
   </ItemGroup>
 

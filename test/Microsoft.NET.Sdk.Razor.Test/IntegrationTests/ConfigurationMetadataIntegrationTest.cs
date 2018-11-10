@@ -30,15 +30,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileContainsLine(
                 result,
                 razorAssemblyInfo,
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"2.1\")]");
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"3.0\")]");
             Assert.FileContainsLine(
                 result,
                 razorAssemblyInfo,
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-2.1\")]");
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-3.0\")]");
             Assert.FileContainsLine(
                 result,
                 razorAssemblyInfo,
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-2.1\", \"Microsoft.AspNetCore.Mvc.Razor.Extensions\")]");
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-3.0\", \"Microsoft.AspNetCore.Mvc.Razor.Extensions\")]");
         }
 
         [Fact]
@@ -57,15 +57,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotContainLine(
                 result,
                 razorAssemblyInfo,
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"2.1\")]");
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"3.0\")]");
             Assert.FileDoesNotContainLine(
                 result,
                 razorAssemblyInfo,
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-2.1\")]");
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-3.0\")]");
             Assert.FileDoesNotContainLine(
                 result,
                 razorAssemblyInfo,
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-2.1\", \"Microsoft.AspNetCore.Razor.Extensions\")]");
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-3.0\", \"Microsoft.AspNetCore.Razor.Extensions\")]");
         }
     }
 }

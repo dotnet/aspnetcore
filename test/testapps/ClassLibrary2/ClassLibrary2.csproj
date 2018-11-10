@@ -8,8 +8,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
 
     <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
-    <RazorLangVersion>2.1</RazorLangVersion>
-    <RazorDefaultConfiguration>MVC-2.1</RazorDefaultConfiguration>
+    <RazorLangVersion>3.0</RazorLangVersion>
+    <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">

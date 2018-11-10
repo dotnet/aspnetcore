@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Editor.Razor;
 using Xunit;
 
 using Mvc1_X = Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X;
+using Mvc2_X = Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X;
 using MvcLatest = Microsoft.AspNetCore.Mvc.Razor.Extensions;
 
 namespace Microsoft.CodeAnalysis.Razor
@@ -36,6 +37,11 @@ namespace Microsoft.CodeAnalysis.Razor
             HostProject_For_2_1 = new HostProject(
                 "/TestPath/SomePath/Test.csproj",
                 new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "MVC-2.1", Array.Empty<RazorExtension>()));
+
+            HostProject_For_3_0 = new HostProject(
+                "/TestPath/SomePath/Test.csproj",
+                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_3_0, "MVC-3.0", Array.Empty<RazorExtension>()));
+
             HostProject_For_UnknownConfiguration = new HostProject(
                 "/TestPath/SomePath/Test.csproj",
                 new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Blazor-0.1", Array.Empty<RazorExtension>()));
@@ -44,6 +50,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Snapshot_For_1_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_1_1, WorkspaceProject));
             Snapshot_For_2_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_2_0, WorkspaceProject));
             Snapshot_For_2_1 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_2_1, WorkspaceProject));
+            Snapshot_For_3_0 = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_3_0, WorkspaceProject));
             Snapshot_For_UnknownConfiguration = new DefaultProjectSnapshot(ProjectState.Create(Workspace.Services, HostProject_For_UnknownConfiguration, WorkspaceProject));
 
             CustomFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
@@ -60,6 +67,9 @@ namespace Microsoft.CodeAnalysis.Razor
                 new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
                     () => new LegacyProjectEngineFactory_2_1(),
                     typeof(LegacyProjectEngineFactory_2_1).GetCustomAttribute<ExportCustomProjectEngineFactoryAttribute>()),
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                    () => new LegacyProjectEngineFactory_3_0(),
+                    typeof(LegacyProjectEngineFactory_3_0).GetCustomAttribute<ExportCustomProjectEngineFactoryAttribute>()),
             };
 
             FallbackFactory = new FallbackProjectEngineFactory();
@@ -77,6 +87,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private HostProject HostProject_For_2_1 { get; }
 
+        private HostProject HostProject_For_3_0 { get; }
+
         private HostProject HostProject_For_UnknownConfiguration { get; }
 
         private ProjectSnapshot Snapshot_For_1_0 { get; }
@@ -87,11 +99,34 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private ProjectSnapshot Snapshot_For_2_1 { get; }
 
+        private ProjectSnapshot Snapshot_For_3_0 { get; }
+
         private ProjectSnapshot Snapshot_For_UnknownConfiguration { get; }
         
         private Project WorkspaceProject { get; }
 
         private Workspace Workspace { get; }
+
+        [Fact]
+        public void Create_CreatesDesignTimeTemplateEngine_ForVersion3_0()
+        {
+            // Arrange
+            var snapshot = Snapshot_For_3_0;
+
+            var factory = new DefaultProjectSnapshotProjectEngineFactory(FallbackFactory, CustomFactories);
+
+            // Act
+            var engine = factory.Create(snapshot, b =>
+            {
+                b.Features.Add(new MyCoolNewFeature());
+            });
+
+            // Assert
+            Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
+        }
 
         [Fact]
         public void Create_CreatesDesignTimeTemplateEngine_ForVersion2_1()
@@ -109,9 +144,11 @@ namespace Microsoft.CodeAnalysis.Razor
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
+            Assert.Empty(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
+
+            Assert.Single(engine.Engine.Features.OfType<Mvc2_X.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Single(engine.Engine.Features.OfType<Mvc2_X.MvcViewDocumentClassifierPass>());
+            Assert.Single(engine.Engine.Features.OfType<Mvc2_X.ViewComponentTagHelperPass>());
         }
 
         [Fact]
@@ -130,9 +167,9 @@ namespace Microsoft.CodeAnalysis.Razor
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
+            Assert.Single(engine.Engine.Features.OfType<Mvc2_X.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Single(engine.Engine.Features.OfType<Mvc2_X.MvcViewDocumentClassifierPass>());
+            Assert.Single(engine.Engine.Features.OfType<Mvc2_X.ViewComponentTagHelperPass>());
         }
 
         [Fact]
@@ -172,9 +209,18 @@ namespace Microsoft.CodeAnalysis.Razor
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
+            Assert.Single(engine.Engine.Features.OfType<Mvc1_X.MvcViewDocumentClassifierPass>());
+
             Assert.Empty(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
             Assert.Empty(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
             Assert.Empty(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
+
+            Assert.Empty(engine.Engine.Features.OfType<Mvc2_X.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Empty(engine.Engine.Features.OfType<Mvc2_X.MvcViewDocumentClassifierPass>());
+            Assert.Empty(engine.Engine.Features.OfType<Mvc2_X.ViewComponentTagHelperPass>());
+
+            Assert.Empty(engine.Engine.Features.OfType<Mvc1_X.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Empty(engine.Engine.Features.OfType<Mvc1_X.ViewComponentTagHelperPass>());
         }
 
         [Fact]

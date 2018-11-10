@@ -97,6 +97,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib", "test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj", "{72E89155-86C7-454E-BDD9-39F497F2F61B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X", "src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj", "{0693CA32-BB75-401E-BC08-72D6DEEB4C99}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test", "test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test.csproj", "{495A006C-D2B9-4AD0-9D33-60820BA501D8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X", "test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj", "{D87E5501-B832-46B6-ACD3-EC989E3D14ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -391,6 +397,30 @@ Global
 		{72E89155-86C7-454E-BDD9-39F497F2F61B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{72E89155-86C7-454E-BDD9-39F497F2F61B}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{72E89155-86C7-454E-BDD9-39F497F2F61B}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -432,6 +462,9 @@ Global
 		{7D9ECCEE-71D1-4A42-ABEE-876AFA1B4FC9} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{6EA56B2B-89EC-4C38-A384-97D203375B06} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{72E89155-86C7-454E-BDD9-39F497F2F61B} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{0693CA32-BB75-401E-BC08-72D6DEEB4C99} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{495A006C-D2B9-4AD0-9D33-60820BA501D8} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{D87E5501-B832-46B6-ACD3-EC989E3D14ED} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0035341D-175A-4D05-95E6-F1C2785A1E26}

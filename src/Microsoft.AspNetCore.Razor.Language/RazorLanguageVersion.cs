@@ -17,7 +17,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static readonly RazorLanguageVersion Version_2_1 = new RazorLanguageVersion(2, 1);
 
-        public static readonly RazorLanguageVersion Latest = Version_2_1;
+        public static readonly RazorLanguageVersion Version_3_0 = new RazorLanguageVersion(3, 0);
+
+        public static readonly RazorLanguageVersion Latest = Version_3_0;
 
         public static readonly RazorLanguageVersion Experimental = new RazorLanguageVersion(1337, 1337);
 
@@ -30,12 +32,17 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (string.Equals(languageVersion, "latest", StringComparison.OrdinalIgnoreCase))
             {
-                version = Version_2_1;
+                version = Latest;
                 return true;
             }
             else if (string.Equals(languageVersion, "experimental", StringComparison.OrdinalIgnoreCase))
             {
                 version = Experimental;
+                return true;
+            }
+            else if (languageVersion == "3.0")
+            {
+                version = Version_3_0;
                 return true;
             }
             else if (languageVersion == "2.1")

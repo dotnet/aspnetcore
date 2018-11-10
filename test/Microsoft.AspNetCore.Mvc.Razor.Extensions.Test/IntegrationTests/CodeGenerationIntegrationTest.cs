@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             : base(generateBaselines: null)
         {
             Configuration = RazorConfiguration.Create(
-                RazorLanguageVersion.Version_2_0,
-                "MVC-2.1",
-                new[] { new AssemblyExtension("MVC-2.1", typeof(ExtensionInitializer).Assembly) });
+                RazorLanguageVersion.Version_3_0,
+                "MVC-3.0",
+                new[] { new AssemblyExtension("MVC-3.0", typeof(ExtensionInitializer).Assembly) });
         }
 
         protected override CSharpCompilation BaseCompilation => DefaultBaseCompilation;

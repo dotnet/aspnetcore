@@ -41,11 +41,11 @@
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <MvcShim Condition="$(TargetFramework) != ''" Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim\bin\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.deps.json" />
-  </ItemGroup>
-
   <Target Name="CopyDepsFromShims" AfterTargets="Build">
+    <ItemGroup>
+      <MvcShim Condition="$(TargetFramework) != ''" Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim\bin\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.deps.json" />
+    </ItemGroup>
+
     <Copy SourceFiles="@(MvcShim)" DestinationFolder="$(OutputPath)" />
   </Target>
 </Project>

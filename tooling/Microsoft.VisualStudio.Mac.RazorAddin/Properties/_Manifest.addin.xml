@@ -5,6 +5,7 @@
     <Import assembly="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
     <Import assembly="Microsoft.AspNetCore.Razor.Language.dll" />
     <Import assembly="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+    <Import assembly="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
     <Import assembly="Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     <Import assembly="Microsoft.CodeAnalysis.Razor.dll" />
     <Import assembly="Microsoft.VisualStudio.Mac.LanguageServices.Razor.dll" />

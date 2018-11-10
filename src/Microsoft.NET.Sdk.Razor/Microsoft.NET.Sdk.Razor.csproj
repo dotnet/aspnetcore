@@ -45,7 +45,7 @@
       <MvcRazorExtenionOutput Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(MvcRazorExtenionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-2-1\" />
+    <Copy SourceFiles="@(MvcRazorExtenionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" />
 
     <ItemGroup>
       <ProjectOutput Include="..\Microsoft.NET.Sdk.Razor\bin\$(Configuration)\net46*\Microsoft.NET.Sdk.Razor.Tasks.*" />

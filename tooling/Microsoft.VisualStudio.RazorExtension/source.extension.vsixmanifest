@@ -26,6 +26,7 @@
     <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService64.servicehub.service.json" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Razor.Language.dll" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.AspNetCore.Razor.Language.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.CodeAnalysis.Razor.dll" />
