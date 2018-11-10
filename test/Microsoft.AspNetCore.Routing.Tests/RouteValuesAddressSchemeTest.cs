@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GetsNamedMatchesFor_EndpointsHaving_IRouteNameMetadata()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
 
             // Act
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GroupsMultipleEndpoints_WithSameName()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
             var endpoint3 = CreateEndpoint("/b", routeName: "named");
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GroupsMultipleEndpoints_WithSameName_IgnoringCase()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
             var endpoint3 = CreateEndpoint("/b", routeName: "NaMed");
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing
         public void EndpointDataSource_ChangeCallback_Refreshes_OutboundMatches()
         {
             // Arrange 1
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", requiredValues: new { });
             var dynamicDataSource = new DynamicEndpointDataSource(new[] { endpoint1 });
 
             // Act 1
@@ -93,21 +93,21 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Same(endpoint1, actual);
 
             // Arrange 2
-            var endpoint2 = CreateEndpoint("/b");
+            var endpoint2 = CreateEndpoint("/b", requiredValues: new { });
 
             // Act 2
             // Trigger change
             dynamicDataSource.AddEndpoint(endpoint2);
 
             // Arrange 2
-            var endpoint3 = CreateEndpoint("/c");
+            var endpoint3 = CreateEndpoint("/c", requiredValues: new { });
 
             // Act 2
             // Trigger change
             dynamicDataSource.AddEndpoint(endpoint3);
 
             // Arrange 3
-            var endpoint4 = CreateEndpoint("/d");
+            var endpoint4 = CreateEndpoint("/d", requiredValues: new { });
 
             // Act 3
             // Trigger change
@@ -146,13 +146,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
+                requiredValues: new { id = 7 });
             var endpoint2 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { id = 12 },
-                requiredValues: new { zipCode = 3510 },
-                routeName: "OrdersApi");
+                requiredValues: new { zipCode = 3510 });
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
 
             // Act
@@ -174,45 +172,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
+                requiredValues: new { id = 7 });
             var endpoint2 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
+                defaults: new { id = 12 });
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
-
-            // Act
-            var foundEndpoints = addressScheme.FindEndpoints(
-                new RouteValuesAddress
-                {
-                    ExplicitValues = new RouteValueDictionary(new { id = 13 }),
-                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
-                });
-
-            // Assert
-            var actual = Assert.Single(foundEndpoints);
-            Assert.Same(endpoint2, actual);
-        }
-
-        [Fact]
-        public void FindEndpoints_LookedUpByCriteria_MultipleMatches()
-        {
-            // Arrange
-            var endpoint1 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
-            var endpoint2 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
-            var endpoint3 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
-            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
 
             // Act
             var foundEndpoints = addressScheme.FindEndpoints(
@@ -223,7 +187,64 @@ namespace Microsoft.AspNetCore.Routing
                 });
 
             // Assert
-            Assert.Contains(endpoint1, foundEndpoints);
+            var actual = Assert.Single(foundEndpoints);
+            Assert.Same(endpoint1, actual);
+        }
+
+        [Fact]
+        public void FindEndpoints_LookedUpByCriteria_MultipleMatches()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                requiredValues: new { id = 7 });
+            var endpoint2 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent}/{zipCode}",
+                defaults: new { id = 12 },
+                requiredValues: new { id = 12 });
+            var endpoint3 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { id = 12 },
+                requiredValues: new { id = 12 });
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 12 }),
+                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
+                });
+
+            // Assert
+            Assert.Collection(foundEndpoints,
+                e => Assert.Equal(endpoint3, e),
+                e => Assert.Equal(endpoint2, e));
+        }
+
+        [Fact]
+        public void FindEndpoints_LookedUpByCriteria_ExcludeEndpointWithoutRouteValuesAddressMetadata()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                requiredValues: new { id = 7 });
+            var endpoint2 = CreateEndpoint("test");
+
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 7 }),
+                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
+                }).ToList();
+
+            // Assert
+            Assert.DoesNotContain(endpoint2, foundEndpoints);
             Assert.Contains(endpoint1, foundEndpoints);
         }
 
@@ -302,7 +323,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "/a",
-                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), });
+                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), new RouteValuesAddressMetadata(string.Empty), });
 
             // Act
             var addressScheme = CreateAddressScheme(endpoint);

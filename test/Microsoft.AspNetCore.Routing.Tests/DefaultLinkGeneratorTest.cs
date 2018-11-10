@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetLink_ParameterTransformer()
         {
             // Arrange
-            var endpoint = EndpointFactory.CreateRouteEndpoint("{controller:upper-case}/{name}");
+            var endpoint = EndpointFactory.CreateRouteEndpoint("{controller:upper-case}/{name}", requiredValues: new { controller = "Home", name = "Test" });
 
             Action<IServiceCollection> configure = (s) =>
             {
@@ -344,7 +344,10 @@ namespace Microsoft.AspNetCore.Routing
         public void GetLink_ParameterTransformer_ForQueryString()
         {
             // Arrange
-            var endpoint = EndpointFactory.CreateRouteEndpoint("{controller:upper-case}/{name}", policies: new { c = new UpperCaseParameterTransform(), });
+            var endpoint = EndpointFactory.CreateRouteEndpoint(
+                "{controller:upper-case}/{name}",
+                requiredValues: new { controller = "Home", name = "Test", c = "hithere", },
+                policies: new { c = new UpperCaseParameterTransform(), });
 
             Action<IServiceCollection> configure = (s) =>
             {

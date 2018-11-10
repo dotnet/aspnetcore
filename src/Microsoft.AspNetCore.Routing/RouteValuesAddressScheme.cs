@@ -125,6 +125,11 @@ namespace Microsoft.AspNetCore.Routing
                     continue;
                 }
 
+                if (endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>() == null)
+                {
+                    continue;
+                }
+
                 if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
                 {
                     continue;
