@@ -51,6 +51,10 @@
         "OwnerNames": "mgirgin"
       },
       {
+        "AreaName": "area-signalr",
+        "OwnerNames": "mgirgin"
+      },
+      {
         "AreaName": "area-tools",
         "OwnerNames": "mkArtakMSFT"
       },

@@ -25,8 +25,10 @@ namespace Common
 
                 // ASP.NET
                 ("Microsoft.AspNetCore.Authentication", "area-security"),
-                ("Microsoft.AspNetCore.Http", "arae-servers"),
+                ("Microsoft.AspNetCore.Http", "area-servers"),
+                ("Microsoft.AspNetCore.Mvc", "area-mvc"),
                 ("Microsoft.AspNetCore.Server", "area-servers"),
+                ("Microsoft.AspNetCore.SignalR", "area-signalr"),
                 ("Microsoft.AspNetCore.FunctionalTests.Microsoft.AspNetCore.Tests.WebHostFunctionalTests", "area-platform"),
                 ("Microsoft.Extensions.Http", "area-mvc"),
                 ("Microsoft.Extensions.Internal.Test", "area-servers"),
