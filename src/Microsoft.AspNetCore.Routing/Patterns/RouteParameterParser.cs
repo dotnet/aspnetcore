@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.AspNetCore.Routing.Internal;
 
 namespace Microsoft.AspNetCore.Routing.Patterns
 {
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 currentIndex++;
             }
 
-            var parseResults = ParseConstraints(parameter, parameterName, currentIndex, endIndex);
+            var parseResults = ParseConstraints(parameter, currentIndex, endIndex);
             currentIndex = parseResults.CurrentIndex;
 
             string defaultValue = null;
@@ -91,17 +90,16 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 parameterName,
                 defaultValue,
                 parameterKind,
-                parseResults.ParameterPolicies.ToArray(),
+                parseResults.ParameterPolicies,
                 encodeSlashes);
         }
 
         private static ParameterPolicyParseResults ParseConstraints(
             string text,
-            string parameterName,
             int currentIndex,
             int endIndex)
         {
-            var constraints = new List<RoutePatternParameterPolicyReference>();
+            var constraints = new ArrayBuilder<RoutePatternParameterPolicyReference>(0);
             var state = ParseState.Start;
             var startIndex = currentIndex;
             do
@@ -234,7 +232,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             } while (state != ParseState.End);
 
-            return new ParameterPolicyParseResults(currentIndex, constraints);
+            return new ParameterPolicyParseResults(currentIndex, constraints.ToArray());
         }
 
         private enum ParseState
@@ -249,9 +247,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         {
             public readonly int CurrentIndex;
 
-            public readonly IReadOnlyList<RoutePatternParameterPolicyReference> ParameterPolicies;
+            public readonly RoutePatternParameterPolicyReference[] ParameterPolicies;
 
-            public ParameterPolicyParseResults(int currentIndex, IReadOnlyList<RoutePatternParameterPolicyReference> parameterPolicies)
+            public ParameterPolicyParseResults(int currentIndex, RoutePatternParameterPolicyReference[] parameterPolicies)
             {
                 CurrentIndex = currentIndex;
                 ParameterPolicies = parameterPolicies;
