@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
+    <title>ASP.NET Core Extensions</title>
+    <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
+    <TargetFramework>net461</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(TrimmedVersion)</PackageId>
+    <MicrosoftAspNetCoreAppPackageVersion>$(PackageVersion)</MicrosoftAspNetCoreAppPackageVersion>
+    <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</HostingStartupRuntimeFrameworkVersion>
+
+    <TargetFramework>net461</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageType>AzureSiteExtension</PackageType>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSource>false</IncludeSource>
+    <ContentTargetFolders>content</ContentTargetFolders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(PackageVersion)" />
+
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+    <PackageReference Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" PrivateAssets="All" />
+
+    <ExcludePackageFileFromSigning  Include="Microsoft.Extensions.Logging.AzureAppServices.dll" />
+  </ItemGroup>
+
+</Project>
