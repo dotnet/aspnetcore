@@ -75,8 +75,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetJavaArtifactInfo" DependsOnTargets="DetectJava">
-    <ItemGroup Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true'">
+  <Target Name="GetJavaArtifactInfo" DependsOnTargets="DetectJava" Condition=" '$(SkipJavaClient)' != 'true' ">
+    <ItemGroup Condition="'$(HasJava)' == 'true'">
       <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
         <ArtifactType>JavaJar</ArtifactType>
         <Version>$(JavaClientVersion)</Version>
