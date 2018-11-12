@@ -16,11 +16,11 @@
     "IssueAreas": [
       {
         "AreaName": "area-caching",
-        "OwnerNames": "mgirgin"
+        "OwnerNames": "muratg"
       },
       {
         "AreaName": "area-common",
-        "OwnerNames": "mgirgin"
+        "OwnerNames": "muratg"
       },
       {
         "AreaName": "area-configuration",
@@ -40,19 +40,19 @@
       },
       {
         "AreaName": "area-platform",
-        "OwnerNames": "mgirgin"
+        "OwnerNames": "muratg"
       },
       {
         "AreaName": "area-security",
-        "OwnerNames": "mgirgin"
+        "OwnerNames": "muratg"
       },
       {
         "AreaName": "area-servers",
-        "OwnerNames": "mgirgin"
+        "OwnerNames": "muratg"
       },
       {
         "AreaName": "area-signalr",
-        "OwnerNames": "mgirgin"
+        "OwnerNames": "muratg"
       },
       {
         "AreaName": "area-tools",
