@@ -9,14 +9,9 @@
     <Dependency Include="Microsoft.AspNetCore.Authentication.Abstractions"             Version="$(MicrosoftAspNetCoreAuthenticationAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication.Cookies"                  Version="$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication.Core"                     Version="$(MicrosoftAspNetCoreAuthenticationCorePackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Authentication.Facebook"                 Version="$(MicrosoftAspNetCoreAuthenticationFacebookPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Authentication.Google"                   Version="$(MicrosoftAspNetCoreAuthenticationGooglePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication.JwtBearer"                Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount"         Version="$(MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication.OAuth"                    Version="$(MicrosoftAspNetCoreAuthenticationOAuthPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication.OpenIdConnect"            Version="$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Authentication.Twitter"                  Version="$(MicrosoftAspNetCoreAuthenticationTwitterPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Authentication.WsFederation"             Version="$(MicrosoftAspNetCoreAuthenticationWsFederationPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication"                          Version="$(MicrosoftAspNetCoreAuthenticationPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authorization.Policy"                    Version="$(MicrosoftAspNetCoreAuthorizationPolicyPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authorization"                           Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)" />
@@ -29,7 +24,6 @@
     <Dependency Include="Microsoft.AspNetCore.DataProtection.Extensions"               Version="$(MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.DataProtection"                          Version="$(MicrosoftAspNetCoreDataProtectionPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Diagnostics.Abstractions"                Version="$(MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore"         Version="$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Diagnostics.HealthChecks"                Version="$(MicrosoftAspNetCoreDiagnosticsHealthChecksPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Diagnostics"                             Version="$(MicrosoftAspNetCoreDiagnosticsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.HostFiltering"                           Version="$(MicrosoftAspNetCoreHostFilteringPackageVersion)" />
@@ -45,13 +39,9 @@
     <Dependency Include="Microsoft.AspNetCore.Http"                                    Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.HttpOverrides"                           Version="$(MicrosoftAspNetCoreHttpOverridesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.HttpsPolicy"                             Version="$(MicrosoftAspNetCoreHttpsPolicyPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"            Version="$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Identity.UI"                             Version="$(MicrosoftAspNetCoreIdentityUIPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Identity"                                Version="$(MicrosoftAspNetCoreIdentityPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.JsonPatch"                               Version="$(MicrosoftAspNetCoreJsonPatchPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Localization.Routing"                    Version="$(MicrosoftAspNetCoreLocalizationRoutingPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Localization"                            Version="$(MicrosoftAspNetCoreLocalizationPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.MiddlewareAnalysis"                      Version="$(MicrosoftAspNetCoreMiddlewareAnalysisPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Abstractions"                        Version="$(MicrosoftAspNetCoreMvcAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Analyzers"                           Version="$(MicrosoftAspNetCoreMvcAnalyzersPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.ApiExplorer"                         Version="$(MicrosoftAspNetCoreMvcApiExplorerPackageVersion)" />
@@ -61,16 +51,11 @@
     <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Json"                     Version="$(MicrosoftAspNetCoreMvcFormattersJsonPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Xml"                      Version="$(MicrosoftAspNetCoreMvcFormattersXmlPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Localization"                        Version="$(MicrosoftAspNetCoreMvcLocalizationPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"                    Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Razor"                               Version="$(MicrosoftAspNetCoreMvcRazorPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.RazorPages"                          Version="$(MicrosoftAspNetCoreMvcRazorPagesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.TagHelpers"                          Version="$(MicrosoftAspNetCoreMvcTagHelpersPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.ViewFeatures"                        Version="$(MicrosoftAspNetCoreMvcViewFeaturesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc"                                     Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.NodeServices"                            Version="$(MicrosoftAspNetCoreNodeServicesPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Owin"                                    Version="$(MicrosoftAspNetCoreOwinPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Razor.Language"                          Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Razor.Runtime"                           Version="$(MicrosoftAspNetCoreRazorRuntimePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Razor"                                   Version="$(MicrosoftAspNetCoreRazorPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.ResponseCaching.Abstractions"            Version="$(MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.ResponseCaching"                         Version="$(MicrosoftAspNetCoreResponseCachingPackageVersion)" />
@@ -91,24 +76,12 @@
     <Dependency Include="Microsoft.AspNetCore.SignalR.Core"                            Version="$(MicrosoftAspNetCoreSignalRCorePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.SignalR.Protocols.Json"                  Version="$(MicrosoftAspNetCoreSignalRProtocolsJsonPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.SignalR"                                 Version="$(MicrosoftAspNetCoreSignalRPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.SpaServices.Extensions"                  Version="$(MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.SpaServices"                             Version="$(MicrosoftAspNetCoreSpaServicesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.StaticFiles"                             Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.WebSockets"                              Version="$(MicrosoftAspNetCoreWebSocketsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.WebUtilities"                            Version="$(MicrosoftAspNetCoreWebUtilitiesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore"                                         Version="$(MicrosoftAspNetCorePackageVersion)" />
-    <Dependency Include="Microsoft.CodeAnalysis.Razor"                                 Version="$(MicrosoftCodeAnalysisRazorPackageVersion)" />
-    <Dependency Include="Microsoft.EntityFrameworkCore.Abstractions"                   Version="$(MicrosoftEntityFrameworkCoreAbstractionsPackageVersion)" />
-    <Dependency Include="Microsoft.EntityFrameworkCore.Analyzers"                      Version="$(MicrosoftEntityFrameworkCoreAnalyzersPackageVersion)" />
-    <Dependency Include="Microsoft.EntityFrameworkCore.Design"                         Version="$(MicrosoftEntityFrameworkCoreDesignPackageVersion)" />
-    <Dependency Include="Microsoft.EntityFrameworkCore.InMemory"                       Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
-    <Dependency Include="Microsoft.EntityFrameworkCore.Relational"                     Version="$(MicrosoftEntityFrameworkCoreRelationalPackageVersion)" />
-    <Dependency Include="Microsoft.EntityFrameworkCore.SqlServer"                      Version="$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
-    <Dependency Include="Microsoft.EntityFrameworkCore.Tools"                          Version="$(MicrosoftEntityFrameworkCoreToolsPackageVersion)" />
-    <Dependency Include="Microsoft.EntityFrameworkCore"                                Version="$(MicrosoftEntityFrameworkCorePackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
-    <Dependency Include="Microsoft.Extensions.Caching.SqlServer"                       Version="$(MicrosoftExtensionsCachingSqlServerPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Configuration.Abstractions"              Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Configuration.Binder"                    Version="$(MicrosoftExtensionsConfigurationBinderPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Configuration.CommandLine"               Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
