@@ -85,6 +85,15 @@ This targets file should only be imported by .shfxproj files.
     <RuntimeAssetsOutputPath Condition="'$(RuntimeAssetsOutputPath)' == ''">$(OutputPath)lib\$(TargetFramework)\</RuntimeAssetsOutputPath>
 
     <CrossGenToolDir>$(IntermediateOutputPath)crossgen\</CrossGenToolDir>
+    <!-- Crossgen executable name -->
+    <CrossGenExecutable>crossgen</CrossGenExecutable>
+    <CrossGenExecutable Condition=" '$(BaseSharedFxRid)' == 'win' ">$(CrossGenExecutable).exe</CrossGenExecutable>
+    <!-- Default crossgen executable relative path -->
+    <CrossGenTool>$(CrossGenExecutable)</CrossGenTool>
+    <!-- Disambiguated RID-specific crossgen executable relative path -->
+    <CrossGenTool Condition=" '$(SharedFxRid)' == 'linux-arm' ">x64_arm\$(CrossGenTool)</CrossGenTool>
+    <CrossGenTool Condition=" '$(SharedFxRid)' == 'linux-arm64' ">x64_arm64\$(CrossGenTool)</CrossGenTool>
+    <CrossGenTool Condition=" '$(SharedFxRid)' == 'win-arm' ">x86_arm\$(CrossGenTool)</CrossGenTool>
 
     <!-- Map BaseSharedFrameworkName into properties used by the SDK to determine publish output trimming and deps.json generation -->
     <MicrosoftNETPlatformLibrary>$(BaseSharedFrameworkName)</MicrosoftNETPlatformLibrary>
@@ -216,8 +225,6 @@ This targets file should only be imported by .shfxproj files.
 
     <PropertyGroup>
       <RuntimePackageName>Microsoft.NETCore.App</RuntimePackageName>
-      <CrossGenTool>crossgen</CrossGenTool>
-      <CrossGenTool Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(CrossGenTool).exe</CrossGenTool>
     </PropertyGroup>
 
     <ItemGroup>
@@ -239,7 +246,8 @@ This targets file should only be imported by .shfxproj files.
     </ItemGroup>
 
     <Error Text="Expected to resolve a single runtime package but instead resolved @(RuntimePackage->Count()) with identities %(RuntimePackage.Identity)" Condition="'@(RuntimePackage->Count())' != 1" />
-    <Error Text="Could not find crossgen in %(RuntimePackage.ResolvedPath)" Condition="@(CrossGenToolFile->Count()) == 0" />
+    <Error Text="Could not find crossgen $(CrossGenTool) in %(RuntimePackage.ResolvedPath)" Condition="@(CrossGenToolFile->Count()) == 0" />
+    <Error Text="Found multiple crossgen $(CrossGenTool) in %(RuntimePackage.ResolvedPath)" Condition="@(CrossGenToolFile->Count()) > 1" />
     <Error Text="Expected to resolve a single clr jit assembly but instead resolved @(ClrJitAssembly->Count()) with identities %(ClrJitAssembly.Identity)" Condition="'@(ClrJitAssembly->Count())' != 1" />
 
     <!-- Resolve list of assemblies to crossgen -->
@@ -292,7 +300,7 @@ This targets file should only be imported by .shfxproj files.
           SourceFiles="%(AssembliesToCrossgen.Source)"
           DestinationFiles="%(AssembliesToCrossgen.Destination)" />
     <Exec Condition="'$(CrossGenSharedFx)' != 'false'"
-          Command="$(CrossGenToolDir)$(CrossGenTool) @%(AssembliesToCrossgen.Rsp)"
+          Command="$(CrossGenToolDir)$(CrossGenExecutable) @%(AssembliesToCrossgen.Rsp)"
           EnvironmentVariables="COMPlus_PartialNGen=0"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="Normal" />
@@ -319,7 +327,7 @@ This targets file should only be imported by .shfxproj files.
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('%(AssembliesToCrossgen.Symbols)'))" />
     <WriteLinesToFile File="%(AssembliesToCrossgen.SymbolsRsp)" Lines="@(CrossGenSymbolsArgs)" Overwrite="true" />
 
-    <Exec Command="$(CrossGenToolDir)$(CrossGenTool) @%(AssembliesToCrossgen.SymbolsRsp)"
+    <Exec Command="$(CrossGenToolDir)$(CrossGenExecutable) @%(AssembliesToCrossgen.SymbolsRsp)"
           EnvironmentVariables="COMPlus_PartialNGen=0"
           IgnoreStandardErrorWarningFormat="true"
           StandardOutputImportance="Normal" />
