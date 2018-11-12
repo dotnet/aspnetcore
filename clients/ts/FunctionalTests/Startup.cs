@@ -13,7 +13,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -32,15 +34,13 @@ namespace FunctionalTests
             {
                 options.EnableDetailedErrors = true;
             })
-                .AddJsonProtocol(options =>
-                {
-                    // we are running the same tests with JSON and MsgPack protocols and having
-                    // consistent casing makes it cleaner to verify results
-                    options.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver();
-                })
-                .AddMessagePackProtocol();
-
-            services.AddCors();
+            .AddJsonProtocol(options =>
+            {
+                // we are running the same tests with JSON and MsgPack protocols and having
+                // consistent casing makes it cleaner to verify results
+                options.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver();
+            })
+            .AddMessagePackProtocol();
 
             services.AddAuthorization(options =>
             {
@@ -90,12 +90,36 @@ namespace FunctionalTests
 
             app.UseFileServer();
 
-            app.UseCors(policyBuilder =>
+            // Custom CORS to allow any origin + credentials (which isn't allowed by the CORS spec)
+            // This is for testing purposes only (karma hosts the client on its own server), never do this in production
+            app.Use((context, next) =>
             {
-                policyBuilder.AllowAnyOrigin()
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                var originHeader = context.Request.Headers[HeaderNames.Origin];
+                if (!StringValues.IsNullOrEmpty(originHeader))
+                {
+                    context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = originHeader;
+                    context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
+
+                    var requestMethod = context.Request.Headers[HeaderNames.AccessControlRequestMethod];
+                    if (!StringValues.IsNullOrEmpty(requestMethod))
+                    {
+                        context.Response.Headers[HeaderNames.AccessControlAllowMethods] = requestMethod;
+                    }
+
+                    var requestHeaders = context.Request.Headers[HeaderNames.AccessControlRequestHeaders];
+                    if (!StringValues.IsNullOrEmpty(requestHeaders))
+                    {
+                        context.Response.Headers[HeaderNames.AccessControlAllowHeaders] = requestHeaders;
+                    }
+                }
+
+                if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return Task.CompletedTask;
+                }
+
+                return next.Invoke();
             });
 
             app.UseConnections(routes =>
