@@ -57,6 +57,7 @@
     <Dependency Include="Microsoft.AspNetCore.Mvc.ViewFeatures"                        Version="$(MicrosoftAspNetCoreMvcViewFeaturesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc"                                     Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Razor"                                   Version="$(MicrosoftAspNetCoreRazorPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.Razor.Runtime"                           Version="$(MicrosoftAspNetCoreRazorRuntimePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.ResponseCaching.Abstractions"            Version="$(MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.ResponseCaching"                         Version="$(MicrosoftAspNetCoreResponseCachingPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.ResponseCompression"                     Version="$(MicrosoftAspNetCoreResponseCompressionPackageVersion)" />
