@@ -5,7 +5,6 @@ using MessagePack;
 using MessagePack.Formatters;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using System;
-using System.IO;
 
 namespace Microsoft.AspNetCore.Blazor.Server.Circuits
 {
@@ -16,6 +15,8 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
     /// </summary>
     internal class RenderBatchFormatterResolver : IFormatterResolver
     {
+        public static readonly RenderBatchFormatterResolver Instance = new RenderBatchFormatterResolver();
+
         public IMessagePackFormatter<T> GetFormatter<T>()
             => typeof(T) == typeof(RenderBatch) ? (IMessagePackFormatter<T>)RenderBatchFormatter.Instance : null;
 
@@ -30,17 +31,17 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
             public int Serialize(ref byte[] bytes, int offset, RenderBatch value, IFormatterResolver formatterResolver)
             {
                 // Instead of using MessagePackBinary.WriteBytes, we write into a stream that
-                // knows how to format its output as a MessagePack binary block. The benefit
+                // knows how to write the data using MessagePack writer APIs. The benefit
                 // is that we don't have to allocate a second large buffer to capture the
                 // RenderBatchWriter output - we can just write directly to the underlying
                 // output buffer.
-                using (var binaryBlockStream = new MessagePackBinaryBlockStream(bytes, offset))
-                using (var renderBatchWriter = new RenderBatchWriter(binaryBlockStream, leaveOpen: false))
+                using (var bufferStream = new MessagePackBufferStream(bytes, offset))
+                using (var renderBatchWriter = new RenderBatchWriter(bufferStream, leaveOpen: false))
                 {
                     renderBatchWriter.Write(value);
 
-                    bytes = binaryBlockStream.Buffer; // In case the buffer was expanded
-                    return (int)binaryBlockStream.Length;
+                    bytes = bufferStream.Buffer; // In case the buffer was expanded
+                    return (int)bufferStream.Length;
                 }
             }
         }

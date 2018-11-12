@@ -1,39 +1,23 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using MessagePack;
 using Microsoft.AspNetCore.Blazor.Server.Circuits;
 using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Server
 {
-    public class MessagePackBinaryBlockStreamTest
+    public class MessagePackBufferStreamTest
     {
         [Fact]
         public void NullBuffer_Throws()
         {
             var ex = Assert.Throws<ArgumentNullException>(() =>
             {
-                new MessagePackBinaryBlockStream(null, 0);
+                new MessagePackBufferStream(null, 0);
             });
 
             Assert.Equal("buffer", ex.ParamName);
-        }
-
-        [Fact]
-        public void WithNoWrites_JustOutputsHeader()
-        {
-            // Arrange
-            var buffer = new byte[100];
-            var offset = 58; // Arbitrary
-
-            // Act
-            new MessagePackBinaryBlockStream(buffer, offset).Dispose();
-
-            // Assert
-            Assert.Equal(MessagePackCode.Bin32, buffer[offset]);
-            Assert.Equal(0, ReadBigEndianInt32(buffer, offset + 1));
         }
 
         [Fact]
@@ -44,32 +28,30 @@ namespace Microsoft.AspNetCore.Blazor.Server
             var offset = 58; // Arbitrary
 
             // Act/Assert
-            using (var stream = new MessagePackBinaryBlockStream(buffer, offset))
+            using (var stream = new MessagePackBufferStream(buffer, offset))
             {
                 stream.Write(new byte[] { 10, 20, 30, 40 }, 1, 2); // Write 2 bytes
                 stream.Write(new byte[] { 101 }, 0, 1); // Write another 1 byte
                 stream.Close();
 
-                Assert.Equal(MessagePackCode.Bin32, buffer[offset]);
-                Assert.Equal(3, ReadBigEndianInt32(buffer, offset + 1));
-                Assert.Equal(20, buffer[offset + 5]);
-                Assert.Equal(30, buffer[offset + 6]);
-                Assert.Equal(101, buffer[offset + 7]);
+                Assert.Equal(20, buffer[offset]);
+                Assert.Equal(30, buffer[offset + 1]);
+                Assert.Equal(101, buffer[offset + 2]);
             }
         }
 
         [Fact]
-        public void LengthIncludesHeaderButPositionDoesNot()
+        public void LengthAndPositionAreEquivalent()
         {
             // Arrange
             var buffer = new byte[20];
             var offset = 3;
 
             // Act/Assert
-            using (var stream = new MessagePackBinaryBlockStream(buffer, offset))
+            using (var stream = new MessagePackBufferStream(buffer, offset))
             {
                 stream.Write(new byte[] { 0x01, 0x02 }, 0, 2);
-                Assert.Equal(7, stream.Length);
+                Assert.Equal(2, stream.Length);
                 Assert.Equal(2, stream.Position);
             }
         }
@@ -78,15 +60,15 @@ namespace Microsoft.AspNetCore.Blazor.Server
         public void WithWrites_ExpandsBufferWhenNeeded()
         {
             // Arrange
-            var origBuffer = new byte[15];
+            var origBuffer = new byte[10];
             var offset = 6;
             origBuffer[0] = 123; // So we can check it was retained during expansion
 
             // Act/Assert
-            using (var stream = new MessagePackBinaryBlockStream(origBuffer, offset))
+            using (var stream = new MessagePackBufferStream(origBuffer, offset))
             {
-                // We can fit the 6-byte offset plus 5-byte header plus 3 written bytes
-                // into the original 15-byte buffer
+                // We can fit the 6-byte offset plus 3 written bytes
+                // into the original 10-byte buffer
                 stream.Write(new byte[] { 10, 20, 30 }, 0, 3);
                 Assert.Same(origBuffer, stream.Buffer);
 
@@ -98,13 +80,11 @@ namespace Microsoft.AspNetCore.Blazor.Server
                 // Check the expanded buffer has the expected contents
                 stream.Close();
                 Assert.Equal(123, stream.Buffer[0]); // Retains other values from original buffer
-                Assert.Equal(MessagePackCode.Bin32, stream.Buffer[offset]);
-                Assert.Equal(5, ReadBigEndianInt32(stream.Buffer, offset + 1));
-                Assert.Equal(10, stream.Buffer[offset + 5]);
-                Assert.Equal(20, stream.Buffer[offset + 6]);
-                Assert.Equal(30, stream.Buffer[offset + 7]);
-                Assert.Equal(40, stream.Buffer[offset + 8]);
-                Assert.Equal(50, stream.Buffer[offset + 9]);
+                Assert.Equal(10, stream.Buffer[offset]);
+                Assert.Equal(20, stream.Buffer[offset + 1]);
+                Assert.Equal(30, stream.Buffer[offset + 2]);
+                Assert.Equal(40, stream.Buffer[offset + 3]);
+                Assert.Equal(50, stream.Buffer[offset + 4]);
             }
         }
 

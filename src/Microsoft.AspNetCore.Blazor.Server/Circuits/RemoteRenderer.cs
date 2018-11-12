@@ -3,8 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
+using MessagePack;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
+using Microsoft.AspNetCore.Blazor.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.JSInterop;
 
@@ -87,7 +89,15 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// <inheritdoc />
         protected override void UpdateDisplay(in RenderBatch batch)
         {
-            var task = _client.SendAsync("JS.RenderBatch", _id, batch);
+            // Send the render batch to the client
+            // Note that we have to capture the data as a byte[] synchronously here, because
+            // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
+            // The RenderBatch buffer will get reused by subsequent renders, so we need to
+            // snapshot its contents now.
+            // TODO: Consider using some kind of array pool instead of allocating a new
+            //       buffer on every render.
+            var batchBytes = MessagePackSerializer.Serialize(batch, RenderBatchFormatterResolver.Instance);
+            var task = _client.SendAsync("JS.RenderBatch", _id, batchBytes);
             CaptureAsyncExceptions(task);
         }
 

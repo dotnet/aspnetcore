@@ -126,10 +126,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // method on ISignalRServerBuilder so the developer always has to chain it onto
             // their own AddSignalR call. For now we're keeping it like this because it's
             // simpler for developers in common cases.
-            services.AddSignalR().AddMessagePackProtocol(options =>
-            {
-                options.FormatterResolvers.Insert(0, new RenderBatchFormatterResolver());
-            });
+            services.AddSignalR().AddMessagePackProtocol();
         }
     }
 }
