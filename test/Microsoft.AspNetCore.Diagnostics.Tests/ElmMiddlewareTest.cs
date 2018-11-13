@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
         }
 
         [Fact]
-        public async void Invoke_WithNonMatchingPath_IgnoresRequest()
+        public async Task Invoke_WithNonMatchingPath_IgnoresRequest()
         {
             // Arrange
             var elmStore = new ElmStore();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
         }
 
         [Fact]
-        public async void Invoke_WithMatchingPath_FulfillsRequest()
+        public async Task Invoke_WithMatchingPath_FulfillsRequest()
         {
             // Arrange
             var elmStore = new ElmStore();
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
         }
 
         [Fact]
-        public async void Invoke_BadRequestShowsError()
+        public async Task Invoke_BadRequestShowsError()
         {
             // Arrange
             var elmStore = new ElmStore();
