@@ -59,7 +59,6 @@
     <ShippedRepository Include="DotNetTools" />
     <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="Hosting" />
-    <ShippedRepository Include="HtmlAbstractions" />
     <ShippedRepository Include="HttpAbstractions" />
     <ShippedRepository Include="HttpClientFactory" />
     <ShippedRepository Include="HttpSysServer" />
