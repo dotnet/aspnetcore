@@ -6,6 +6,7 @@ export class EventForDotNet<TData extends UIEventArgs> {
     const element = event.target as Element;
     switch (event.type) {
 
+      case 'input':
       case 'change': {
         const targetIsCheckbox = isCheckbox(element);
         const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];

@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
-using System;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -126,6 +124,33 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             var appElement = MountTestComponent<EventPreventDefaultComponent>();
             appElement.FindElement(By.Id("form-2-button")).Click();
             Assert.Contains("about:blank", Browser.Url);
+        }
+
+        [Fact]
+        public void InputEvent_RespondsOnKeystrokes()
+        {
+            MountTestComponent<InputEventComponent>();
+
+            var input = Browser.FindElement(By.TagName("input"));
+            var output = Browser.FindElement(By.Id("test-result"));
+
+            WaitAssert.Equal(string.Empty, () => output.Text);
+
+            SendKeysSequentially(input, "abcdefghijklmnopqrstuvwxyz");
+            WaitAssert.Equal("abcdefghijklmnopqrstuvwxyz", () => output.Text);
+
+            input.SendKeys(Keys.Backspace);
+            WaitAssert.Equal("abcdefghijklmnopqrstuvwxy", () => output.Text);
+        }
+
+        void SendKeysSequentially(IWebElement target, string text)
+        {
+            // Calling it for each character works around some chars being skipped
+            // https://stackoverflow.com/a/40986041
+            foreach (var c in text)
+            {
+                target.SendKeys(c.ToString());
+            }
         }
     }
 }

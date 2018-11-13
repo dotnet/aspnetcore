@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
     // Input events
     [EventHandler("onchange", typeof(UIChangeEventArgs))]
-    [EventHandler("oninput", typeof(UIEventArgs))]
+    [EventHandler("oninput", typeof(UIChangeEventArgs))]
     [EventHandler("oninvalid", typeof(UIEventArgs))]
     [EventHandler("onreset", typeof(UIEventArgs))]
     [EventHandler("onselect", typeof(UIEventArgs))]
