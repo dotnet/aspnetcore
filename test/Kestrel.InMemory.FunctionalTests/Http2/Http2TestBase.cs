@@ -100,6 +100,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>("g", _4kHeaderValue),
         };
 
+        protected static IEnumerable<KeyValuePair<string, string>> ReadRateRequestHeaders(int expectedBytes) => new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(HeaderNames.Path, "/" + expectedBytes),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
+        };
+
         protected static readonly byte[] _helloBytes = Encoding.ASCII.GetBytes("hello");
         protected static readonly byte[] _worldBytes = Encoding.ASCII.GetBytes("world");
         protected static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
@@ -137,6 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _waitForAbortApplication;
         protected readonly RequestDelegate _waitForAbortFlushingApplication;
         protected readonly RequestDelegate _waitForAbortWithDataApplication;
+        protected readonly RequestDelegate _readRateApplication;
         protected readonly RequestDelegate _echoMethod;
         protected readonly RequestDelegate _echoHost;
         protected readonly RequestDelegate _echoPath;
@@ -313,6 +322,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
                 _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+            };
+
+            _readRateApplication = async context =>
+            {
+                var expectedBytes = int.Parse(context.Request.Path.Value.Substring(1));
+
+                var buffer = new byte[Http2PeerSettings.MinAllowedMaxFrameSize];
+                var received = 0;
+
+                while (received < expectedBytes)
+                {
+                    received += await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                }
+
+                var stalledReadTask = context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+
+                // Write to the response so the test knows the app started the stalled read.
+                await context.Response.Body.WriteAsync(new byte[1], 0, 1);
+
+                await stalledReadTask;
             };
 
             _echoMethod = context =>
