@@ -563,10 +563,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-            await InitializeConnectionAsync(_echoApplication);
+            await InitializeConnectionAsync(_readRateApplication);
 
             // _helloWorldBytes is 12 bytes, and 12 bytes / 240 bytes/sec = .05 secs which is far below the grace period.
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await StartStreamAsync(1, ReadRateRequestHeaders(_helloWorldBytes.Length), endStream: false);
             await SendDataAsync(1, _helloWorldBytes, endStream: false);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: _helloWorldBytes.Length,
+                withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
@@ -612,10 +612,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-            await InitializeConnectionAsync(_echoApplication);
+            await InitializeConnectionAsync(_readRateApplication);
 
             // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await StartStreamAsync(1, ReadRateRequestHeaders(_maxData.Length), endStream: false);
             await SendDataAsync(1, _maxData, endStream: false);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -624,7 +624,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: _maxData.Length,
+                withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
@@ -665,10 +665,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-            await InitializeConnectionAsync(_echoApplication);
+            await InitializeConnectionAsync(_readRateApplication);
 
             // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await StartStreamAsync(1, ReadRateRequestHeaders(_maxData.Length), endStream: false);
             await SendDataAsync(1, _maxData, endStream: false);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -677,11 +677,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: _maxData.Length,
+                withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
-            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+            await StartStreamAsync(3, ReadRateRequestHeaders(_maxData.Length), endStream: false);
             await SendDataAsync(3, _maxData, endStream: false);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -689,7 +689,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 3);
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: _maxData.Length,
+                withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 3);
 
@@ -734,10 +734,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
-            await InitializeConnectionAsync(_echoApplication);
+            await InitializeConnectionAsync(_readRateApplication);
 
             // _maxData is 16 KiB, and 16 KiB / 240 bytes/sec ~= 68 secs which is far above the grace period.
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await StartStreamAsync(1, ReadRateRequestHeaders(_maxData.Length), endStream: false);
             await SendDataAsync(1, _maxData, endStream: true);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -746,7 +746,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: _maxData.Length,
+                withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
 
-            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+            await StartStreamAsync(3, ReadRateRequestHeaders(_maxData.Length), endStream: false);
             await SendDataAsync(3, _maxData, endStream: false);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -763,7 +763,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 3);
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: _maxData.Length,
+                withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 3);
 
@@ -819,7 +819,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
                 else
                 {
-                    await _echoApplication(context);
+                    await _readRateApplication(context);
                 }
             });
 
@@ -830,7 +830,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
             await SendDataAsync(1, _maxData, endStream: true);
 
-            await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
+            await StartStreamAsync(3, ReadRateRequestHeaders(_helloWorldBytes.Length), endStream: false);
             await SendDataAsync(3, _helloWorldBytes, endStream: false);
 
             await ExpectAsync(Http2FrameType.HEADERS,
@@ -838,7 +838,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 3);
             await ExpectAsync(Http2FrameType.DATA,
-                withLength: _helloWorldBytes.Length,
+                withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 3);
 
@@ -859,10 +859,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.END_STREAM,
                 withStreamId: 1);
 
-            await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+            var updateFrame = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
                 withLength: 4,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 0);
+
+            var expectedUpdateSize = ((framesConnectionInWindow / 2) + 1) * _maxData.Length + _helloWorldBytes.Length;
+            Assert.Equal(expectedUpdateSize, updateFrame.WindowUpdateSizeIncrement);
 
             AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod);
 
