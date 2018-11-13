@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
-    public class RoutePrecedenceTests
+    public abstract class RoutePrecedenceTestsBase
     {
         [Theory]
         [InlineData("Employees/{id}", "Employees/{employeeId}")]
@@ -100,22 +98,34 @@ namespace Microsoft.AspNetCore.Routing.Template
             Assert.True(xPrecedence > yPrecedence);
         }
 
-        private static decimal ComputeMatched(string template)
+        [Fact]
+        public void ComputeGenerated_TooManySegments_ThrowHumaneError()
         {
-            return Compute(template, RoutePrecedence.ComputeInbound);
-        }
-        private static decimal ComputeGenerated(string template)
-        {
-            return Compute(template, RoutePrecedence.ComputeOutbound);
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                // Arrange & Act
+                ComputeGenerated("{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}/{i}/{j}/{k}/{l}/{m}/{n}/{o}/{p}/{q}/{r}/{s}/{t}/{u}/{v}/{w}/{x}/{y}/{z}/{a2}/{b2}/{b3}");
+            });
+
+            // Assert
+            Assert.Equal("Route exceeds the maximum number of allowed segments of 28 and is unable to be processed.", ex.Message);
         }
 
-        private static decimal Compute(string template, Func<RouteTemplate, decimal> func)
+        [Fact]
+        public void ComputeMatched_TooManySegments_ThrowHumaneError()
         {
-            var options = new Mock<IOptions<RouteOptions>>();
-            options.SetupGet(o => o.Value).Returns(new RouteOptions());
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                // Arrange & Act
+                ComputeMatched("{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}/{i}/{j}/{k}/{l}/{m}/{n}/{o}/{p}/{q}/{r}/{s}/{t}/{u}/{v}/{w}/{x}/{y}/{z}/{a2}/{b2}/{b3}");
+            });
 
-            var parsed = TemplateParser.Parse(template);
-            return func(parsed);
+            // Assert
+            Assert.Equal("Route exceeds the maximum number of allowed segments of 28 and is unable to be processed.", ex.Message);
         }
+
+        protected abstract decimal ComputeMatched(string template);
+
+        protected abstract decimal ComputeGenerated(string template);
     }
 }

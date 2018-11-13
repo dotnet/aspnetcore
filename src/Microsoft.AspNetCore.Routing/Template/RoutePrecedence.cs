@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         //       /api/template/{id:int} == 1.12
         public static decimal ComputeInbound(RouteTemplate template)
         {
+            ValidateSegementLength(template.Segments.Count);
+
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).
             var precedence = 0m;
@@ -40,6 +42,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         // See description on ComputeInbound(RouteTemplate)
         internal static decimal ComputeInbound(RoutePattern routePattern)
         {
+            ValidateSegementLength(routePattern.PathSegments.Count);
+
             var precedence = 0m;
 
             for (var i = 0; i < routePattern.PathSegments.Count; i++)
@@ -62,6 +66,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         //       /api/template/{id:int} == 5.54
         public static decimal ComputeOutbound(RouteTemplate template)
         {
+            ValidateSegementLength(template.Segments.Count);
+
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).
             var precedence = 0m;
@@ -82,6 +88,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         // see description on ComputeOutbound(RouteTemplate)
         internal static decimal ComputeOutbound(RoutePattern routePattern)
         {
+            ValidateSegementLength(routePattern.PathSegments.Count);
+
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).
             var precedence = 0m;
@@ -97,6 +105,15 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             return precedence;
+        }
+
+        private static void ValidateSegementLength(int length)
+        {
+            if (length > 28)
+            {
+                // An OverflowException will be thrown by Math.Pow when greater than 28
+                throw new InvalidOperationException("Route exceeds the maximum number of allowed segments of 28 and is unable to be processed.");
+            }
         }
 
         // Segments have the following order:
