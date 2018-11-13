@@ -28,7 +28,6 @@
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
     <PackageReference Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" PrivateAssets="All" />
 
-    <ExcludePackageFileFromSigning  Include="Microsoft.Extensions.Logging.AzureAppServices.dll" />
   </ItemGroup>
 
 </Project>
