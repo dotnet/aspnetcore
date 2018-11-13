@@ -1,0 +1,7 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <Target Name="CleanPublishDir" AfterTargets="CoreClean">
+    <RemoveDir Directories="$(PublishDir)" />
+  </Target>
+</Project>
