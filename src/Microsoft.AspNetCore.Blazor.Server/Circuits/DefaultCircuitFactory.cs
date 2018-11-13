@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Blazor.Server.Circuits
             var scope = _scopeFactory.CreateScope();
             var jsRuntime = new RemoteJSRuntime(client);
             var rendererRegistry = new RendererRegistry();
-            var renderer = new RemoteRenderer(scope.ServiceProvider, rendererRegistry, jsRuntime, client);
             var synchronizationContext = new CircuitSynchronizationContext();
+            var renderer = new RemoteRenderer(scope.ServiceProvider, rendererRegistry, jsRuntime, client, synchronizationContext);
 
             var circuitHost = new CircuitHost(
                 scope,

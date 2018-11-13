@@ -1,0 +1,7 @@
+<p>
+    After a 1 second delay, the output should be 100x😊, with no remaining "WAITING" markers.
+</p>
+
+<div id="concurrent-render-output">
+    @for (var i = 0; i < 100; i++) {<ConcurrentRenderChild />}
+</div>

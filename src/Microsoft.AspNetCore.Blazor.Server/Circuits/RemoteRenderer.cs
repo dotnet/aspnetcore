@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         private readonly IClientProxy _client;
         private readonly IJSRuntime _jsRuntime;
         private readonly RendererRegistry _rendererRegistry;
+        private readonly SynchronizationContext _syncContext;
         private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
         private long _nextRenderId = 1;
@@ -40,16 +41,19 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// <param name="rendererRegistry">The <see cref="RendererRegistry"/>.</param>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
         /// <param name="client">The <see cref="IClientProxy"/>.</param>
+        /// <param name="syncContext">A <see cref="SynchronizationContext"/> that can be used to serialize renderer operations.</param>
         public RemoteRenderer(
             IServiceProvider serviceProvider,
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
-            IClientProxy client)
+            IClientProxy client,
+            SynchronizationContext syncContext)
             : base(serviceProvider)
         {
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
             _client = client;
+            _syncContext = syncContext;
 
             _id = _rendererRegistry.Add(this);
         }
@@ -93,6 +97,19 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         public void Dispose()
         {
             _rendererRegistry.TryRemove(_id);
+        }
+
+        protected override void AddToRenderQueue(int componentId, RenderFragment renderFragment)
+        {
+            // Render operations are not thread-safe, so they need to be serialized.
+            // This also ensures that when the renderer invokes component lifecycle
+            // methods, it does so on the expected sync context.
+            // We have to use "Post" (for async execution) because if it blocked, it
+            // could deadlock when a child triggers a parent re-render.
+            _syncContext.Post(_ =>
+            {
+                base.AddToRenderQueue(componentId, renderFragment);
+            }, null);
         }
 
         /// <inheritdoc />

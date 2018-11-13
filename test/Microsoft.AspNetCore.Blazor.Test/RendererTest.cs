@@ -1130,7 +1130,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert 3: After we complete the first UI update in which a given
             // event handler ID is disposed, we can no longer reuse that event handler ID
             render1TCS.SetResult(null);
-            await Task.Delay(100); // From here we can't see when the async disposal is completed. Just give it plenty of time (Task.Yield isn't enough).
+            await Task.Delay(500); // From here we can't see when the async disposal is completed. Just give it plenty of time (Task.Yield isn't enough).
             var ex = Assert.Throws<ArgumentException>(() =>
             {
                 renderer.DispatchEvent(componentId, eventHandlerId, new UIEventArgs());

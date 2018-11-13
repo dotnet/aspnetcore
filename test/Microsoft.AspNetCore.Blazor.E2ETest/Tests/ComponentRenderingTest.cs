@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Configuration.Assemblies;
 using System.Linq;
 using System.Numerics;
+using System.Threading.Tasks;
 using BasicTestApp;
 using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
@@ -532,6 +533,23 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 e => Assert.Equal("The", e.Text),
                 e => Assert.Equal("", e.Text),
                 e => Assert.Equal("End", e.Text));
+        }
+
+        [Fact]
+        public async Task CanAcceptSimultaneousRenderRequests()
+        {
+            var expectedOutput = string.Join(
+                string.Empty,
+                Enumerable.Range(0, 100).Select(_ => "😊"));
+
+            var appElement = MountTestComponent<ConcurrentRenderParent>();
+
+            // It's supposed to pause the rendering for this long. The WaitAssert below
+            // allows it to take up extra time if needed.
+            await Task.Delay(1000);
+
+            var outputElement = appElement.FindElement(By.Id("concurrent-render-output"));
+            WaitAssert.Equal(expectedOutput, () => outputElement.Text);
         }
 
         static IAlert SwitchToAlert(IWebDriver driver)

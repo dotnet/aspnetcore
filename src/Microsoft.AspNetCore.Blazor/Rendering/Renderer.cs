@@ -140,7 +140,13 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             frame = frame.WithAttributeEventHandlerId(id);
         }
 
-        internal void AddToRenderQueue(int componentId, RenderFragment renderFragment)
+        /// <summary>
+        /// Schedules a render for the specified <paramref name="componentId"/>. Its display
+        /// will be populated using the specified <paramref name="renderFragment"/>.
+        /// </summary>
+        /// <param name="componentId">The ID of the component to render.</param>
+        /// <param name="renderFragment">A <see cref="RenderFragment"/> that will supply the updated UI contents.</param>
+        protected internal virtual void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
             var componentState = GetOptionalComponentState(componentId);
             if (componentState == null)
