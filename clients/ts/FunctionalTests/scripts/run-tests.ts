@@ -33,11 +33,12 @@ setTimeout(() => {
     process.exit(1);
 }, 1000 * 60 * 10);
 
-function waitForMatch(command: string, process: ChildProcess, regex: RegExp): Promise<RegExpMatchArray> {
-    return new Promise<RegExpMatchArray>((resolve, reject) => {
+function waitForMatches(command: string, process: ChildProcess, regex: RegExp, matchCount: number): Promise<RegExpMatchArray> {
+    return new Promise<string[]>((resolve, reject) => {
         const commandDebug = _debug(`${command}`);
         try {
             let lastLine = "";
+            let results: string[] = null;
 
             async function onData(this: Readable, chunk: string | Buffer): Promise<void> {
                 try {
@@ -50,15 +51,23 @@ function waitForMatch(command: string, process: ChildProcess, regex: RegExp): Pr
                         lastLine = "";
 
                         chunk = chunk.substring(lineEnd + EOL.length);
+                        const res = regex.exec(chunkLine);
+                        if (results == null && res != null) {
+                            results = res;
+                        } else if (res != null) {
+                            results = Array<string>().concat(results, res);
+                        }
 
-                        const results = regex.exec(chunkLine);
-                        commandDebug(chunkLine);
-                        if (results && results.length > 0) {
+                        // * 2 because each match will have the original line plus the match
+                        if (results && results.length >= matchCount * 2) {
                             resolve(results);
                             return;
                         }
+
+                        commandDebug(chunkLine);
                         lineEnd = chunk.indexOf(EOL);
                     }
+
                     lastLine = chunk.toString();
                 } catch (e) {
                     this.removeAllListeners("data");
@@ -158,15 +167,17 @@ function runKarma(karmaConfig) {
     });
 }
 
-function runJest(url: string) {
+function runJest(httpsUrl: string, httpUrl: string) {
     const jestPath = path.resolve(__dirname, "..", "..", "common", "node_modules", "jest", "bin", "jest.js");
     const configPath = path.resolve(__dirname, "..", "func.jest.config.js");
 
     console.log("Starting Node tests using Jest.");
     return new Promise<number>((resolve, reject) => {
         const logStream = fs.createWriteStream(path.resolve(__dirname, "..", "..", "..", "..", "artifacts", "logs", "node.functionaltests.log"));
-        const p = exec(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: url }, timeout: 200000, maxBuffer: 10 * 1024 * 1024 },
+        // Use NODE_TLS_REJECT_UNAUTHORIZED to allow our test cert to be used by the Node tests (NEVER use this environment variable outside of testing)
+        const p = exec(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: `${httpsUrl};${httpUrl}`, NODE_TLS_REJECT_UNAUTHORIZED: 0 }, timeout: 200000, maxBuffer: 10 * 1024 * 1024 },
             (error: any, stdout, stderr) => {
+                console.log("Finished Node tests.");
                 if (error) {
                     console.log(error.message);
                     return resolve(error.code);
@@ -183,7 +194,7 @@ function runJest(url: string) {
         const serverPath = path.resolve(__dirname, "..", "bin", configuration, "netcoreapp2.2", "FunctionalTests.dll");
 
         debug(`Launching Functional Test Server: ${serverPath}`);
-        let desiredServerUrl = "http://127.0.0.1:0";
+        let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";
 
         if (sauce) {
             // SauceLabs can only proxy certain ports for Edge and Safari.
@@ -212,11 +223,12 @@ function runJest(url: string) {
         process.on("exit", cleanup);
 
         debug("Waiting for Functional Test Server to start");
-        const matches = await waitForMatch("dotnet", dotnet, /Now listening on: (http:\/\/[^\/]+:[\d]+)/);
-        const url = matches[1];
-        debug(`Functional Test Server has started at ${url}`);
+        const matches = await waitForMatches("dotnet", dotnet, /Now listening on: (https?:\/\/[^\/]+:[\d]+)/, 2);
+        const httpsUrl = matches[1];
+        const httpUrl = matches[3];
+        debug(`Functional Test Server has started at ${httpsUrl} and ${httpUrl}`);
 
-        debug(`Using SignalR Server: ${url}`);
+        debug(`Using SignalR Server: ${httpsUrl} and ${httpUrl}`);
 
         // Start karma server
         const conf = {
@@ -238,9 +250,9 @@ function runJest(url: string) {
         }
 
         // Pass server URL to tests
-        conf.client.args = ["--server", url];
+        conf.client.args = ["--server", `${httpsUrl};${httpUrl}`];
 
-        const jestExit = await runJest(url);
+        const jestExit = await runJest(httpsUrl, httpUrl);
 
         // Check if we got any browsers
         let karmaExit;

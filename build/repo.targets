@@ -75,8 +75,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetJavaArtifactInfo">
-    <ItemGroup Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true'">
+  <Target Name="GetJavaArtifactInfo" DependsOnTargets="DetectJava" Condition=" '$(SkipJavaClient)' != 'true' ">
+    <ItemGroup Condition="'$(HasJava)' == 'true'">
       <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
         <ArtifactType>JavaJar</ArtifactType>
         <Version>$(JavaClientVersion)</Version>
@@ -88,7 +88,7 @@
         <Category>ship</Category>
       </ArtifactInfo>
 
-      <FilesToSign Include="$(BuildDir)\%(Jars.Identity)" Certificate="MicrosoftJAR" />
+      <FilesToSign Include="$(BuildDir)\%(Jars.Identity)" Certificate="$(JarSigningCertName)" />
       <FilesToExcludeFromSigning Include="$(BuildDir)\%(PomFile.Identity)" />
     </ItemGroup>
   </Target>

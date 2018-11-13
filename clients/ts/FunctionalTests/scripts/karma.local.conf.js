@@ -57,8 +57,9 @@ try {
         ChromeHeadlessNoSandbox: {
           base: 'ChromeHeadless',
 
+          // Ignore cert errors to allow our test cert to work (NEVER do this outside of testing)
           // ChromeHeadless runs about 10x slower on Windows 7 machines without the --proxy switches below. Why? ¯\_(ツ)_/¯
-          flags: ["--no-sandbox", "--proxy-server='direct://'", "--proxy-bypass-list=*"]
+          flags: ["--no-sandbox", "--proxy-server='direct://'", "--proxy-bypass-list=*", "--allow-insecure-localhost", "--ignore-certificate-errors"]
         }
       },
     });
