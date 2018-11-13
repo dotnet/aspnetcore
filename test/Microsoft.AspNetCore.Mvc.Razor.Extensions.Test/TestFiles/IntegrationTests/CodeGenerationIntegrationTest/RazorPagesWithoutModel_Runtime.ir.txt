@@ -20,20 +20,10 @@ Document -
             DefaultTagHelperRuntime - 
             FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(7, 2, true);
                 HtmlContent - (7:1,0 [2] RazorPagesWithoutModel.cshtml)
                     IntermediateToken - (7:1,0 [2] RazorPagesWithoutModel.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(81, 2, true);
                 HtmlContent - (81:4,0 [2] RazorPagesWithoutModel.cshtml)
                     IntermediateToken - (81:4,0 [2] RazorPagesWithoutModel.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(381, 75, true);
                 HtmlContent - (381:19,0 [75] RazorPagesWithoutModel.cshtml)
                     IntermediateToken - (381:19,0 [2] RazorPagesWithoutModel.cshtml) - Html - \n
                     IntermediateToken - (383:20,0 [4] RazorPagesWithoutModel.cshtml) - Html - <h1>
@@ -45,55 +35,27 @@ Document -
                     IntermediateToken - (425:21,19 [24] RazorPagesWithoutModel.cshtml) - Html -  class="form-horizontal"
                     IntermediateToken - (449:21,43 [1] RazorPagesWithoutModel.cshtml) - Html - >
                     IntermediateToken - (450:21,44 [6] RazorPagesWithoutModel.cshtml) - Html - \n    
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(456, 31, false);
                 TagHelper - (456:22,4 [31] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - DivTagHelper
                     PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
                     DefaultTagHelperExecute - 
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(487, 6, true);
                 HtmlContent - (487:22,35 [6] RazorPagesWithoutModel.cshtml)
                     IntermediateToken - (487:22,35 [6] RazorPagesWithoutModel.cshtml) - Html - \n    
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(493, 237, false);
                 TagHelper - (493:23,4 [237] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - BeginContext(517, 48, true);
                         HtmlContent - (517:23,28 [48] RazorPagesWithoutModel.cshtml)
                             IntermediateToken - (517:23,28 [10] RazorPagesWithoutModel.cshtml) - Html - \n        
                             IntermediateToken - (527:24,8 [6] RazorPagesWithoutModel.cshtml) - Html - <label
                             IntermediateToken - (533:24,14 [31] RazorPagesWithoutModel.cshtml) - Html -  class="col-md-2 control-label"
                             IntermediateToken - (564:24,45 [1] RazorPagesWithoutModel.cshtml) - Html - >
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - EndContext();
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - BeginContext(566, 4, false);
                         CSharpExpression - (566:24,47 [4] RazorPagesWithoutModel.cshtml)
                             IntermediateToken - (566:24,47 [4] RazorPagesWithoutModel.cshtml) - CSharp - Name
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - EndContext();
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - BeginContext(570, 18, true);
                         HtmlContent - (570:24,51 [18] RazorPagesWithoutModel.cshtml)
                             IntermediateToken - (570:24,51 [8] RazorPagesWithoutModel.cshtml) - Html - </label>
                             IntermediateToken - (578:24,59 [10] RazorPagesWithoutModel.cshtml) - Html - \n        
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - EndContext();
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - BeginContext(588, 130, false);
                         TagHelper - (588:25,8 [130] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
                             DefaultTagHelperBody - 
-                                CSharpCode - 
-                                    IntermediateToken -  - CSharp - BeginContext(611, 101, true);
                                 HtmlContent - (611:25,31 [101] RazorPagesWithoutModel.cshtml)
                                     IntermediateToken - (611:25,31 [14] RazorPagesWithoutModel.cshtml) - Html - \n            
                                     IntermediateToken - (625:26,12 [6] RazorPagesWithoutModel.cshtml) - Html - <input
@@ -105,46 +67,22 @@ Document -
                                     IntermediateToken - (694:27,37 [1] RazorPagesWithoutModel.cshtml) - Html - >
                                     IntermediateToken - (695:27,38 [7] RazorPagesWithoutModel.cshtml) - Html - </span>
                                     IntermediateToken - (702:27,45 [10] RazorPagesWithoutModel.cshtml) - Html - \n        
-                                CSharpCode - 
-                                    IntermediateToken -  - CSharp - EndContext();
                             DefaultTagHelperCreate -  - DivTagHelper
                             PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                             DefaultTagHelperExecute - 
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - EndContext();
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - BeginContext(718, 6, true);
                         HtmlContent - (718:28,14 [6] RazorPagesWithoutModel.cshtml)
                             IntermediateToken - (718:28,14 [6] RazorPagesWithoutModel.cshtml) - Html - \n    
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - EndContext();
                     DefaultTagHelperCreate -  - DivTagHelper
                     PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                     DefaultTagHelperExecute - 
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(730, 6, true);
                 HtmlContent - (730:29,10 [6] RazorPagesWithoutModel.cshtml)
                     IntermediateToken - (730:29,10 [6] RazorPagesWithoutModel.cshtml) - Html - \n    
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(736, 174, false);
                 TagHelper - (736:30,4 [174] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - BeginContext(760, 10, true);
                         HtmlContent - (760:30,28 [10] RazorPagesWithoutModel.cshtml)
                             IntermediateToken - (760:30,28 [10] RazorPagesWithoutModel.cshtml) - Html - \n        
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - EndContext();
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - BeginContext(770, 128, false);
                         TagHelper - (770:31,8 [128] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
                             DefaultTagHelperBody - 
-                                CSharpCode - 
-                                    IntermediateToken -  - CSharp - BeginContext(809, 83, true);
                                 HtmlContent - (809:31,47 [83] RazorPagesWithoutModel.cshtml)
                                     IntermediateToken - (809:31,47 [14] RazorPagesWithoutModel.cshtml) - Html - \n            
                                     IntermediateToken - (823:32,12 [7] RazorPagesWithoutModel.cshtml) - Html - <button
@@ -154,32 +92,18 @@ Document -
                                     IntermediateToken - (869:32,58 [4] RazorPagesWithoutModel.cshtml) - Html - Save
                                     IntermediateToken - (873:32,62 [9] RazorPagesWithoutModel.cshtml) - Html - </button>
                                     IntermediateToken - (882:32,71 [10] RazorPagesWithoutModel.cshtml) - Html - \n        
-                                CSharpCode - 
-                                    IntermediateToken -  - CSharp - EndContext();
                             DefaultTagHelperCreate -  - DivTagHelper
                             PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
                             DefaultTagHelperExecute - 
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - EndContext();
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - BeginContext(898, 6, true);
                         HtmlContent - (898:33,14 [6] RazorPagesWithoutModel.cshtml)
                             IntermediateToken - (898:33,14 [6] RazorPagesWithoutModel.cshtml) - Html - \n    
-                        CSharpCode - 
-                            IntermediateToken -  - CSharp - EndContext();
                     DefaultTagHelperCreate -  - DivTagHelper
                     PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                     DefaultTagHelperExecute - 
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(910, 11, true);
                 HtmlContent - (910:34,10 [11] RazorPagesWithoutModel.cshtml)
                     IntermediateToken - (910:34,10 [2] RazorPagesWithoutModel.cshtml) - Html - \n
                     IntermediateToken - (912:35,0 [7] RazorPagesWithoutModel.cshtml) - Html - </form>
                     IntermediateToken - (919:35,7 [2] RazorPagesWithoutModel.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
             CSharpCode - (95:5,12 [283] RazorPagesWithoutModel.cshtml)
                 IntermediateToken - (95:5,12 [283] RazorPagesWithoutModel.cshtml) - CSharp - \n    public IActionResult OnPost(Customer customer)\n    {\n        Name = customer.Name;\n        return Redirect("~/customers/inlinepagemodels/");\n    }\n\n    public string Name { get; set; }\n\n    public class Customer\n    {\n        public string Name { get; set; }\n    }\n
             Inject - 

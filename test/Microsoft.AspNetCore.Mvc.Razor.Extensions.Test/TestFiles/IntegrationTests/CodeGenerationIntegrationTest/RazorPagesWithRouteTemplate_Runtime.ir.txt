@@ -15,39 +15,19 @@ Document -
         RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithRouteTemplate - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(16, 2, true);
                 HtmlContent - (16:1,0 [2] RazorPagesWithRouteTemplate.cshtml)
                     IntermediateToken - (16:1,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(79, 2, true);
                 HtmlContent - (79:4,0 [2] RazorPagesWithRouteTemplate.cshtml)
                     IntermediateToken - (79:4,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(193, 19, true);
                 HtmlContent - (193:11,0 [19] RazorPagesWithRouteTemplate.cshtml)
                     IntermediateToken - (193:11,0 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
                     IntermediateToken - (195:12,0 [4] RazorPagesWithRouteTemplate.cshtml) - Html - <h1>
                     IntermediateToken - (199:12,4 [13] RazorPagesWithRouteTemplate.cshtml) - Html - New Customer 
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(213, 10, false);
                 CSharpExpression - (213:12,18 [10] RazorPagesWithRouteTemplate.cshtml)
                     IntermediateToken - (213:12,18 [10] RazorPagesWithRouteTemplate.cshtml) - CSharp - Model.Name
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(223, 7, true);
                 HtmlContent - (223:12,28 [7] RazorPagesWithRouteTemplate.cshtml)
                     IntermediateToken - (223:12,28 [5] RazorPagesWithRouteTemplate.cshtml) - Html - </h1>
                     IntermediateToken - (228:12,33 [2] RazorPagesWithRouteTemplate.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
             CSharpCode - (93:5,12 [97] RazorPagesWithRouteTemplate.cshtml)
                 IntermediateToken - (93:5,12 [97] RazorPagesWithRouteTemplate.cshtml) - CSharp - \n    public class NewModel : PageModel\n    {\n        public string Name { get; set; }\n    }\n
             Inject - 

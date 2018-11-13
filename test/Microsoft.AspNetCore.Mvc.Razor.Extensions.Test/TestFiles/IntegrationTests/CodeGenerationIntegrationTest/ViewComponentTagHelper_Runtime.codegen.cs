@@ -46,10 +46,7 @@ namespace AspNetCore
 
 #line default
 #line hidden
-            BeginContext(59, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
-            BeginContext(61, 50, false);
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("vc:test", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
             }
             );
@@ -75,7 +72,6 @@ namespace AspNetCore
             }
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            EndContext();
         }
         #pragma warning restore 1998
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

@@ -19,14 +19,8 @@ Document -
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (30:1,2 [26] ViewComponentTagHelper.cshtml)
                     IntermediateToken - (30:1,2 [26] ViewComponentTagHelper.cshtml) - CSharp - \n    var foo = "Hello";\n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(59, 2, true);
                 HtmlContent - (59:4,0 [2] ViewComponentTagHelper.cshtml)
                     IntermediateToken - (59:4,0 [2] ViewComponentTagHelper.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(61, 50, false);
                 TagHelper - (61:5,0 [50] ViewComponentTagHelper.cshtml) - vc:test - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - AllTagHelper
@@ -36,8 +30,6 @@ Document -
                             IntermediateToken - (83:5,22 [3] ViewComponentTagHelper.cshtml) - CSharp - foo
                     PreallocatedTagHelperProperty - (93:5,32 [6] ViewComponentTagHelper.cshtml) - __tagHelperAttribute_0 - bar - Bar
                     DefaultTagHelperExecute - 
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
             Inject - 
             Inject - 
             Inject - 

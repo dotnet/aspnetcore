@@ -19,9 +19,7 @@ namespace Test.Namespace
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-            BeginContext(34, 20, true);
             WriteLiteral("<h1>Hi There!</h1>\r\n");
-            EndContext();
         }
         #pragma warning restore 1998
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

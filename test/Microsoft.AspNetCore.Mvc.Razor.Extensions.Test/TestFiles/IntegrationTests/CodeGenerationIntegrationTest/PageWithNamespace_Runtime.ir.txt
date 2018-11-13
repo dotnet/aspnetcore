@@ -13,15 +13,11 @@ Document -
         RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_PageWithNamespace - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(34, 20, true);
                 HtmlContent - (34:2,0 [20] PageWithNamespace.cshtml)
                     IntermediateToken - (34:2,0 [4] PageWithNamespace.cshtml) - Html - <h1>
                     IntermediateToken - (38:2,4 [9] PageWithNamespace.cshtml) - Html - Hi There!
                     IntermediateToken - (47:2,13 [5] PageWithNamespace.cshtml) - Html - </h1>
                     IntermediateToken - (52:2,18 [2] PageWithNamespace.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
             Inject - 
             Inject - 
             Inject - 

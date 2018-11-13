@@ -25,25 +25,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-            BeginContext(16, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
-            BeginContext(79, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
-            BeginContext(193, 19, true);
             WriteLiteral("\r\n<h1>New Customer ");
-            EndContext();
-            BeginContext(213, 10, false);
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithRouteTemplate.cshtml"
             Write(Model.Name);
 
 #line default
 #line hidden
-            EndContext();
-            BeginContext(223, 7, true);
             WriteLiteral("</h1>\r\n");
-            EndContext();
         }
         #pragma warning restore 1998
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithRouteTemplate.cshtml"

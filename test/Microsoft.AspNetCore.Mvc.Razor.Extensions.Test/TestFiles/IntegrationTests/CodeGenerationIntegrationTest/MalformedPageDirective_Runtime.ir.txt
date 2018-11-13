@@ -14,8 +14,6 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 MalformedDirective - (0:0,0 [6] MalformedPageDirective.cshtml) - page
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(6, 49, true);
                 HtmlContent - (6:0,6 [49] MalformedPageDirective.cshtml)
                     IntermediateToken - (6:0,6 [8] MalformedPageDirective.cshtml) - Html - "foo\n\n
                     IntermediateToken - (14:2,0 [4] MalformedPageDirective.cshtml) - Html - <h1>
@@ -25,8 +23,6 @@ Document -
                     IntermediateToken - (33:3,0 [3] MalformedPageDirective.cshtml) - Html - <p>
                     IntermediateToken - (36:3,3 [15] MalformedPageDirective.cshtml) - Html - We are awesome.
                     IntermediateToken - (51:3,18 [4] MalformedPageDirective.cshtml) - Html - </p>
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
             Inject - 
             Inject - 
             Inject - 

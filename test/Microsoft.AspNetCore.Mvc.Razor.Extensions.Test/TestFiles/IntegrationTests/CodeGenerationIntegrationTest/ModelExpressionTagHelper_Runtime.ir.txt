@@ -15,20 +15,10 @@ Document -
             DefaultTagHelperRuntime - 
             FieldDeclaration -  - private - global::InputTestTagHelper - __InputTestTagHelper
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(17, 2, true);
                 HtmlContent - (17:1,0 [2] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(64, 2, true);
                 HtmlContent - (64:3,0 [2] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (64:3,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(66, 25, false);
                 TagHelper - (66:4,0 [25] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - InputTestTagHelper
@@ -39,16 +29,8 @@ Document -
                             IntermediateToken - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - CSharp - Date
                             IntermediateToken -  - CSharp - )
                     DefaultTagHelperExecute - 
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(91, 2, true);
                 HtmlContent - (91:4,25 [2] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (91:4,25 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(93, 27, false);
                 TagHelper - (93:5,0 [27] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - InputTestTagHelper
@@ -58,14 +40,8 @@ Document -
                             IntermediateToken - (111:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
                             IntermediateToken -  - CSharp - )
                     DefaultTagHelperExecute - 
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(120, 2, true);
                 HtmlContent - (120:5,27 [2] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (120:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
             Inject - 
             Inject - 
             Inject - 
