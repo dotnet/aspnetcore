@@ -527,8 +527,8 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             var toggle = appElement.FindElement(By.Id("toggle"));
             toggle.Click();
 
-            Assert.Collection(
-                tfoot.FindElements(By.TagName("td")),
+            WaitAssert.Collection(
+                () => tfoot.FindElements(By.TagName("td")),
                 e => Assert.Equal("The", e.Text),
                 e => Assert.Equal("", e.Text),
                 e => Assert.Equal("End", e.Text));
