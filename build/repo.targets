@@ -306,14 +306,8 @@
            Condition=" @(ExternalDependency->WithMetadataValue('Version', '')->Count()) != 0 " />
   </Target>
 
-  <Target Name="_SetDesignTimeBuild">
-    <PropertyGroup>
-      <BuildProperties>$(BuildProperties);DesignTimeBuild=true</BuildProperties>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="FastCheck"
-    DependsOnTargets="_SetDesignTimeBuild;ComputeGraph;VerifyPackageArtifactConfig;VerifyAllReposHaveNuGetPackageVerifier" />
+    DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig;VerifyAllReposHaveNuGetPackageVerifier" />
 
   <Target Name="CheckExpectedPackagesExist">
     <ItemGroup>
