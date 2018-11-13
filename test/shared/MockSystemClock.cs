@@ -24,6 +24,10 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
+        public long UtcNowTicks => UtcNow.Ticks;
+
+        public DateTimeOffset UtcNowUnsynchronized => UtcNow;
+
         public int UtcNowCalled { get; private set; }
     }
 }

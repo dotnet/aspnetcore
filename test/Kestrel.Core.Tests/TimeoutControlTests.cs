@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Debugger = mockDebugger.Object;
 
             var now = DateTimeOffset.Now;
-            _timeoutControl.Initialize(now);
+            _timeoutControl.Initialize(now.Ticks);
             _timeoutControl.SetTimeout(1, TimeoutReason.RequestHeaders);
             _timeoutControl.Tick(now.AddTicks(2).Add(Heartbeat.Interval));
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Initialize timestamp
             var now = DateTimeOffset.UtcNow;
-            _timeoutControl.Initialize(now);
+            _timeoutControl.Initialize(now.Ticks);
 
             _timeoutControl.StartRequestBody(minRate);
             _timeoutControl.StartTimingRead();
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Initialize timestamp
             var now = DateTimeOffset.UtcNow;
-            _timeoutControl.Initialize(now);
+            _timeoutControl.Initialize(now.Ticks);
 
             _timeoutControl.StartRequestBody(minRate);
             _timeoutControl.StartTimingRead();
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
             // Initialize timestamp
-            _timeoutControl.Initialize(_systemClock.UtcNow);
+            _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
 
             _timeoutControl.StartRequestBody(minRate);
             _timeoutControl.StartTimingRead();
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
             // Initialize timestamp
-            _timeoutControl.Initialize(_systemClock.UtcNow);
+            _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
 
             _timeoutControl.StartRequestBody(minRate);
             _timeoutControl.StartTimingRead();
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var startTime = _systemClock.UtcNow;
 
             // Initialize timestamp
-            _timeoutControl.Initialize(startTime);
+            _timeoutControl.Initialize(startTime.Ticks);
 
             _timeoutControl.StartRequestBody(minRate);
             _timeoutControl.StartTimingRead();
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Initialize timestamp
             var now = DateTimeOffset.UtcNow;
-            _timeoutControl.Initialize(now);
+            _timeoutControl.Initialize(now.Ticks);
             _timeoutControl.InitializeHttp2(flowControl);
 
             _timeoutControl.StartRequestBody(minRate);
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Initialize timestamp
             var now = DateTimeOffset.UtcNow;
-            _timeoutControl.Initialize(now);
+            _timeoutControl.Initialize(now.Ticks);
 
             _timeoutControl.StartRequestBody(minRate);
             _timeoutControl.StartTimingRead();
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
             // Initialize timestamp
-            _timeoutControl.Initialize(_systemClock.UtcNow);
+            _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
 
             // Should complete within 4 seconds, but the timeout is adjusted by adding Heartbeat.Interval
             _timeoutControl.BytesWrittenToBuffer(minRate, 400);
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Initialize timestamp
             var startTime = _systemClock.UtcNow;
-            _timeoutControl.Initialize(startTime);
+            _timeoutControl.Initialize(startTime.Ticks);
 
             // Should complete within 1 second, but the timeout is adjusted by adding Heartbeat.Interval
             _timeoutControl.BytesWrittenToBuffer(minRate, 100);
@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
             // Initialize timestamp
-            _timeoutControl.Initialize(_systemClock.UtcNow);
+            _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
 
             // Should complete within 5 seconds, but the timeout is adjusted by adding Heartbeat.Interval
             _timeoutControl.BytesWrittenToBuffer(minRate, 500);
@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Initialize timestamp
             var startTime = _systemClock.UtcNow;
-            _timeoutControl.Initialize(startTime);
+            _timeoutControl.Initialize(startTime.Ticks);
 
             // 5 consecutive 100 byte writes.
             for (var i = 0; i < numWrites - 1; i++)
@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var minRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
 
             // Initialize timestamp
-            _timeoutControl.Initialize(_systemClock.UtcNow);
+            _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
 
             // Should complete within 4 seconds, but the timeout is adjusted by adding Heartbeat.Interval
             _timeoutControl.BytesWrittenToBuffer(minRate, 400);
@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var minRate = new MinDataRate(bytesPerSecond, gracePeriod);
 
             // Initialize timestamp
-            _timeoutControl.Initialize(_systemClock.UtcNow);
+            _timeoutControl.Initialize(_systemClock.UtcNow.Ticks);
 
             _timeoutControl.StartRequestBody(minRate);
             _timeoutControl.StartTimingRead();

@@ -1052,8 +1052,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     if (stream.IsDraining)
                     {
-                        stream.DrainExpiration =
-                            _context.ServiceContext.SystemClock.UtcNow + Constants.RequestBodyDrainTimeout;
+                        stream.DrainExpirationTicks =
+                            _context.ServiceContext.SystemClock.UtcNowTicks + Constants.RequestBodyDrainTimeout.Ticks;
 
                         _drainingStreams.TryAdd(streamId, stream);
                     }
@@ -1096,7 +1096,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             foreach (var stream in _drainingStreams)
             {
-                if (now > stream.Value.DrainExpiration)
+                if (now.Ticks > stream.Value.DrainExpirationTicks)
                 {
                     RemoveDrainingStream(stream.Key);
                 }
