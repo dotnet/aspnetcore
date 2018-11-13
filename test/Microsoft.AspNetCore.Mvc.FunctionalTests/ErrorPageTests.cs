@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async void AggregateException_FlattensInnerExceptions()
+        public async Task AggregateException_FlattensInnerExceptions()
         {
             // Arrange
             var aggregateException = "AggregateException: One or more errors occurred.";

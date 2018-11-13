@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         }
 
         [Fact]
-        public async void ProcessAsync_InvokesComponentsProcessAsyncInCorrectOrder()
+        public async Task ProcessAsync_InvokesComponentsProcessAsyncInCorrectOrder()
         {
             // Arrange
             var tagHelperContext = new TagHelperContext(
