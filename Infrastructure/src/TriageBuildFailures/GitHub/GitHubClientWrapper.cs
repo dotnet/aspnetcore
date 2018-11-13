@@ -159,7 +159,7 @@ namespace TriageBuildFailures.GitHub
             {
                 foreach (var labelThatDoesntExist in labelsThatDontExist)
                 {
-                    await Client.Issue.Labels.Create(owner, repo, new NewLabel(labelThatDoesntExist, "#e89f02")); // ugly orange
+                    await Client.Issue.Labels.Create(owner, repo, new NewLabel(labelThatDoesntExist, "e89f02")); // ugly orange
                 }
             }
         }
