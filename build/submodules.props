@@ -36,44 +36,47 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="AADIntegration" />
-    <Repository Include="Antiforgery" />
-    <Repository Include="AzureIntegration" />
-    <Repository Include="BasicMiddleware" />
-    <Repository Include="BrowserLink" />
-    <Repository Include="CORS" />
-    <Repository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
-    <Repository Include="Diagnostics" />
-    <Repository Include="DotNetTools" />
-    <Repository Include="EntityFrameworkCore" />
-    <Repository Include="Hosting" />
-    <Repository Include="HtmlAbstractions" />
-    <Repository Include="HttpAbstractions" />
-    <Repository Include="HttpClientFactory" />
-    <Repository Include="HttpSysServer" />
-    <Repository Include="Identity" />
-    <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <Repository Include="JavaScriptServices" />
-    <Repository Include="JsonPatch" />
-    <Repository Include="KestrelHttpServer" />
-    <Repository Include="Localization" />
-    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
-    <Repository Include="Mvc" />
-    <Repository Include="MvcPrecompilation" />
-    <Repository Include="Razor" />
-    <Repository Include="ResponseCaching" />
-    <Repository Include="Routing" />
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
-    <Repository Include="Security" />
-    <Repository Include="Session" />
-    <Repository Include="SignalR" />
-    <Repository Include="StaticFiles" />
+    <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="WebSockets" RootPath="$(RepositoryRoot)src\WebSockets\" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="MusicStore" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ShippedRepository Include="AADIntegration" />
+    <ShippedRepository Include="Antiforgery" />
+    <ShippedRepository Include="AzureIntegration" />
+    <ShippedRepository Include="BasicMiddleware" />
+    <ShippedRepository Include="BrowserLink" />
+    <ShippedRepository Include="CORS" />
+    <ShippedRepository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
+    <ShippedRepository Include="Diagnostics" />
+    <ShippedRepository Include="DotNetTools" />
+    <ShippedRepository Include="EntityFrameworkCore" />
+    <ShippedRepository Include="Hosting" />
+    <ShippedRepository Include="HtmlAbstractions" />
+    <ShippedRepository Include="HttpAbstractions" />
+    <ShippedRepository Include="HttpClientFactory" />
+    <ShippedRepository Include="HttpSysServer" />
+    <ShippedRepository Include="Identity" />
+    <ShippedRepository Include="JavaScriptServices" />
+    <ShippedRepository Include="JsonPatch" />
+    <ShippedRepository Include="KestrelHttpServer" />
+    <ShippedRepository Include="Localization" />
+    <ShippedRepository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <ShippedRepository Include="Mvc" />
+    <ShippedRepository Include="MvcPrecompilation" />
+    <ShippedRepository Include="Razor" />
+    <ShippedRepository Include="ResponseCaching" />
+    <ShippedRepository Include="Routing" />
+    <ShippedRepository Include="Security" />
+    <ShippedRepository Include="Session" />
+    <ShippedRepository Include="SignalR" />
+    <ShippedRepository Include="StaticFiles" />
+    <ShippedRepository Include="WebSockets" RootPath="$(RepositoryRoot)src\WebSockets\" />
   </ItemGroup>
 </Project>

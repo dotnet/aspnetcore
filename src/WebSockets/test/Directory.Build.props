@@ -1,5 +1,5 @@
 <Project>
-  <Import Project="..\Directory.Build.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
     <DeveloperBuildTestTfms>netcoreapp2.2</DeveloperBuildTestTfms>
@@ -7,7 +7,7 @@
 
     <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <!--
       Workaround for "Use executable flags in Microsoft.NET.Test.Sdk" (https://github.com/Microsoft/vstest/issues/792).

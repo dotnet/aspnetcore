@@ -2,8 +2,8 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseLabel>rtm</PreReleaseLabel>
+    <AspNetCorePatchVersion>1</AspNetCorePatchVersion>
+    <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">$([System.DateTime]::Now.ToString('yyMMdd'))-99</BuildNumber>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>

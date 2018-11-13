@@ -245,6 +245,7 @@
     <ItemGroup>
       <_UndeclaredPackageArtifact Include="%(ArtifactInfo.PackageId)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
       <_UndeclaredPackageArtifact Remove="@(PackageArtifact)" />
+      <RepositoryBuildOrder Remove="@(ShippedRepository)" />
     </ItemGroup>
 
     <Error Text="Undeclared package artifacts. Add these to artifacts.props:%0A  - @(_UndeclaredPackageArtifact, '%0A  - ')"

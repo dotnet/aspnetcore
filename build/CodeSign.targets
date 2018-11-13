@@ -12,6 +12,10 @@
         <AdditionalProperties>RepositoryRoot=%(Repository.RootPath)</AdditionalProperties>
         <Build>%(Repository.Build)</Build>
       </_RepositoryProject>
+      <_ShippedRepositoryProject Include="$(MSBuildProjectFullPath)" Condition="'%(ShippedRepository.Identity)' != ''">
+        <AdditionalProperties>RepositoryRoot=%(ShippedRepository.RootPath)</AdditionalProperties>
+        <Build>false</Build>
+      </_ShippedRepositoryProject>
     </ItemGroup>
 
     <PropertyGroup>
@@ -28,17 +32,27 @@
     </PropertyGroup>
 
     <MSBuild Projects="@(_RepositoryProject)"
+             Condition="@(_RepositoryProject->Count()) != 0"
              Targets="_GetFileSignInfo"
              Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);DesignTimeBuild=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="_RepoFileSignInfo" />
     </MSBuild>
+    <MSBuild Projects="@(_ShippedRepositoryProject)"
+             Condition="@(_ShippedRepositoryProject->Count()) != 0"
+             Targets="_GetFileSignInfo"
+             Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);IsFinalBuild=true;DesignTimeBuild=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_ShippedRepoFileSignInfo" />
+    </MSBuild>
 
     <ItemGroup>
       <!-- If repos were not built, only use this info to collect the mapping of FileName -> Certificate. Otherwise, include .nupkg and .zips in signing. -->
       <_FilesToSign Include="@(_RepoFileSignInfo)" Condition="'%(_RepoFileSignInfo.IsFileToSign)' == 'true' AND ('$(_ReposWereBuilt)' == 'true' OR '%(_RepoFileSignInfo.Container)' != '' ) " />
+      <_FilesToSign Include="@(_ShippedRepoFileSignInfo)" Condition="'%(_ShippedRepoFileSignInfo.IsFileToSign)' == 'true' AND '%(_ShippedRepoFileSignInfo.Container)' != '' " />
       <FilesToSign Include="@(_FilesToSign)" />
 
+      <FilesToExcludeFromSigning Include="@(_ShippedRepoFileSignInfo->'%(FileName)%(Extension)')" Condition="'%(_ShippedRepoFileSignInfo.IsFileToExcludeFromSign)' == 'true'" />
       <FilesToExcludeFromSigning Include="@(_RepoFileSignInfo->'%(FileName)%(Extension)')" Condition="'%(_RepoFileSignInfo.IsFileToExcludeFromSign)' == 'true'" />
       <!-- Workaround for the way we have both repo and Universe builds, crossgen AND uncrossgened outputs. This prevents duplicate configuration between 'exclude' and 'sign' options. -->
       <FilesToExcludeFromSigning Remove="@(FilesToSign->'%(FileName)%(Extension)')" />
