@@ -46,6 +46,7 @@
 
     <ProjectToBuild Include="
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
+                      $(RepositoryRoot)src\DataProtection\**\*.*proj;
                       $(RepositoryRoot)src\Html\**\*.*proj;
                       $(RepositoryRoot)src\Middleware\**\*.*proj;
                       "

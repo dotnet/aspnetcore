@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
   </ItemGroup>
 
 </Project>

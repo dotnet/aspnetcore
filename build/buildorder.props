@@ -12,7 +12,6 @@
     <RepositoryBuildOrder Include="HttpAbstractions" Order="6" />
     <RepositoryBuildOrder Include="HttpClientFactory" Order="6" />
     <RepositoryBuildOrder Include="Hosting" Order="7" />
-    <RepositoryBuildOrder Include="DataProtection" Order="8" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <RepositoryBuildOrder Include="KestrelHttpServer" Order="8" />
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" />

@@ -54,7 +54,6 @@
     <ShippedRepository Include="BasicMiddleware" />
     <ShippedRepository Include="BrowserLink" />
     <ShippedRepository Include="CORS" />
-    <ShippedRepository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <ShippedRepository Include="Diagnostics" />
     <ShippedRepository Include="DotNetTools" />
     <ShippedRepository Include="EntityFrameworkCore" />

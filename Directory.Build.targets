@@ -22,9 +22,16 @@
 
   <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' ">
     <!-- This keeps assembly and package versions consistent across patches. If a package is not included in a patch, its version should stay at the baseline. -->
-    <Version>$(BaselinePackageVersion).0</Version>
     <AssemblyVersion>$(BaselinePackageVersion).0</AssemblyVersion>
-    <PackageVersion>$(BaselinePackageVersion)</PackageVersion>
+    <!--
+      Ideally, we would also set the project version to match the baseline in case NuGet turns a ProjectReference into a nuspec depenendency, but
+      NuGet does not currently handle conflicts between packages and projects which have the same package id/version.
+      See https://github.com/NuGet/Home/issues/6795.
+
+      Because we still use static analysis to scrape versions, only set this during static analysis, which can be detected by checking for both NoBuild and DesignTimeBuild.
+    -->
+    <Version Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</Version>
+    <PackageVersion Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
