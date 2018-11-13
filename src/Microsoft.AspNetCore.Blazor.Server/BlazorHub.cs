@@ -78,6 +78,14 @@ namespace Microsoft.AspNetCore.Blazor.Server
             EnsureCircuitHost().BeginInvokeDotNetFromJS(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
         }
 
+        /// <summary>
+        /// Intended for framework use only. Applications should not call this method directly.
+        /// </summary>
+        public void OnRenderCompleted(long renderId, string errorMessageOrNull)
+        {
+            EnsureCircuitHost().Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
+        }
+
         private async void CircuitHost_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var circuitHost = (CircuitHost)sender;

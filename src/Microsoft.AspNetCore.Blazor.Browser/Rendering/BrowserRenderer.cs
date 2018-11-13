@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.JSInterop;
 using Mono.WebAssembly.Interop;
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
 {
@@ -64,8 +65,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             var componentId = AssignRootComponentId(component);
 
             // The only reason we're calling this synchronously is so that, if it throws,
-            // we get the exception back *before* attempting the first UpdateDisplay
-            // (otherwise the logged exception will come from UpdateDisplay instead of here)
+            // we get the exception back *before* attempting the first UpdateDisplayAsync
+            // (otherwise the logged exception will come from UpdateDisplayAsync instead of here)
             // When implementing support for out-of-process runtimes, we'll need to call this
             // asynchronously and ensure we surface any exceptions correctly.
             ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         }
 
         /// <inheritdoc />
-        protected override void UpdateDisplay(in RenderBatch batch)
+        protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
             if (JSRuntime.Current is MonoWebAssemblyJSRuntime mono)
             {
@@ -94,12 +95,12 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
                     "Blazor._internal.renderBatch",
                     _browserRendererId,
                     batch);
+                return Task.CompletedTask;
             }
             else
             {
-                // When implementing support for an out-of-process JS runtime, we'll need to
-                // do something here to serialize and transmit the RenderBatch efficiently.
-                throw new NotImplementedException("TODO: Support BrowserRenderer.UpdateDisplay on other runtimes.");
+                // This renderer is not used for server-side Blazor.
+                throw new NotImplementedException($"{nameof(BrowserRenderer)} is supported only with in-process JS runtimes.");
             }
         }
     }

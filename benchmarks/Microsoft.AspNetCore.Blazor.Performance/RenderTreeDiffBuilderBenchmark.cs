@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
@@ -92,9 +93,8 @@ namespace Microsoft.AspNetCore.Blazor.Performance
             {
             }
 
-            protected override void UpdateDisplay(in RenderBatch renderBatch)
-            {
-            }
+            protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+                => Task.CompletedTask;
         }
 
         private class TestServiceProvider : IServiceProvider

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Server
@@ -376,7 +377,7 @@ namespace Microsoft.AspNetCore.Blazor.Server
             {
             }
 
-            protected override void UpdateDisplay(in RenderBatch renderBatch)
+            protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
                 => throw new NotImplementedException();
         }
     }

@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
@@ -77,7 +79,8 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Updates the visible UI.
         /// </summary>
         /// <param name="renderBatch">The changes to the UI since the previous call.</param>
-        protected abstract void UpdateDisplay(in RenderBatch renderBatch);
+        /// <returns>A <see cref="Task"/> to represent the UI update process.</returns>
+        protected abstract Task UpdateDisplayAsync(in RenderBatch renderBatch);
 
         /// <summary>
         /// Notifies the specified component that an event has occurred.
@@ -169,6 +172,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private void ProcessRenderQueue()
         {
             _isBatchInProgress = true;
+            var updateDisplayTask = Task.CompletedTask;
 
             try
             {
@@ -180,12 +184,12 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 }
 
                 var batch = _batchBuilder.ToBatch();
-                UpdateDisplay(batch);
+                updateDisplayTask = UpdateDisplayAsync(batch);
                 InvokeRenderCompletedCalls(batch.UpdatedComponents);
             }
             finally
             {
-                RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange());
+                RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
                 _batchBuilder.Clear();
                 _isBatchInProgress = false;
             }
@@ -217,13 +221,31 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             }
         }
 
-        private void RemoveEventHandlerIds(ArrayRange<int> eventHandlerIds)
+        private void RemoveEventHandlerIds(ArrayRange<int> eventHandlerIds, Task afterTask)
         {
-            var array = eventHandlerIds.Array;
-            var count = eventHandlerIds.Count;
-            for (var i = 0; i < count; i++)
+            if (eventHandlerIds.Count == 0)
             {
-                _eventBindings.Remove(array[i]);
+                return;
+            }
+
+            if (afterTask.IsCompleted)
+            {
+                var array = eventHandlerIds.Array;
+                var count = eventHandlerIds.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    _eventBindings.Remove(array[i]);
+                }
+            }
+            else
+            {
+                // We need to delay the actual removal (e.g., until we've confirmed the client
+                // has processed the batch and hence can be sure not to reuse the handler IDs
+                // any further). We must clone the data because the underlying RenderBatchBuilder
+                // may be reused and hence modified by an unrelated subsequent batch.
+                var eventHandlerIdsClone = eventHandlerIds.Clone();
+                afterTask.ContinueWith(_ =>
+                    RemoveEventHandlerIds(eventHandlerIdsClone, Task.CompletedTask));
             }
         }
     }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Razor;
 using Microsoft.AspNetCore.Blazor.Rendering;
@@ -370,9 +371,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public void AttachComponent(IComponent component)
                 => AssignRootComponentId(component);
 
-            protected override void UpdateDisplay(in RenderBatch renderBatch)
+            protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             {
                 LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();
+                return Task.CompletedTask;
             }
         }
 

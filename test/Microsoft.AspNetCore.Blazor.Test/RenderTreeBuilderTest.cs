@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Test.Helpers;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Test
@@ -1060,7 +1061,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
             }
 
-            protected override void UpdateDisplay(in RenderBatch renderBatch)
+            protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
                 => throw new NotImplementedException();
         }
     }

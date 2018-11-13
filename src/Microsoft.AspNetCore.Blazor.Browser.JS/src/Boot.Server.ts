@@ -23,8 +23,15 @@ function boot() {
     .build();
 
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
-  connection.on('JS.RenderBatch', (browserRendererId: number, batchData: Uint8Array) => {
-    renderBatch(browserRendererId, new OutOfProcessRenderBatch(batchData));
+  connection.on('JS.RenderBatch', (browserRendererId: number, renderId: number, batchData: Uint8Array) => {
+    try {
+      renderBatch(browserRendererId, new OutOfProcessRenderBatch(batchData));
+      connection.send('OnRenderCompleted', renderId, null);
+    } catch (ex) {
+      // If there's a rendering exception, notify server *and* throw on client
+      connection.send('OnRenderCompleted', renderId, ex.toString());
+      throw ex;
+    }
   });
 
   connection.on('JS.Error', unhandledError);

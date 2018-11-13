@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
         public T InstantiateComponent<T>() where T : IComponent
             => (T)InstantiateComponent(typeof(T));
 
-        protected override void UpdateDisplay(in RenderBatch renderBatch)
+        protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {
             OnUpdateDisplay?.Invoke(renderBatch);
 
@@ -49,6 +50,10 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
             // Clone other data, as underlying storage will get reused by later batches
             capturedBatch.ReferenceFrames = renderBatch.ReferenceFrames.ToArray();
             capturedBatch.DisposedComponentIDs = renderBatch.DisposedComponentIDs.ToList();
+
+            // This renderer updates the UI synchronously, like the WebAssembly one.
+            // To test async UI updates, subclass TestRenderer and override UpdateDisplayAsync.
+            return Task.CompletedTask;
         }
     }
 }

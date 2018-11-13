@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,5 +41,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
             => ((IEnumerable)new ArraySegment<T>(Array, 0, Count)).GetEnumerator();
+
+        /// <summary>
+        /// Creates a shallow clone of the instance.
+        /// </summary>
+        /// <returns></returns>
+        public ArrayRange<T> Clone()
+        {
+            var buffer = new T[Count];
+            System.Array.Copy(Array, buffer, Count);
+            return new ArrayRange<T>(buffer, Count);
+        }
     }
 }
