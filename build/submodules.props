@@ -55,7 +55,6 @@
     <ShippedRepository Include="BrowserLink" />
     <ShippedRepository Include="CORS" />
     <ShippedRepository Include="Diagnostics" />
-    <ShippedRepository Include="DotNetTools" />
     <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="Hosting" />
     <ShippedRepository Include="HttpAbstractions" />

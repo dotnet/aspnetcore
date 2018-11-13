@@ -4,6 +4,26 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <AspNetCoreBaselineVersion>2.1.6</AspNetCoreBaselineVersion>
   </PropertyGroup>
+  <!-- Package: dotnet-dev-certs-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' AND '$(TargetFramework)' == 'netcoreapp2.1' " />
+  <!-- Package: dotnet-sql-cache-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' AND '$(TargetFramework)' == 'netcoreapp2.1' " />
+  <!-- Package: dotnet-user-secrets-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-user-secrets' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'dotnet-user-secrets' AND '$(TargetFramework)' == 'netcoreapp2.1' " />
+  <!-- Package: dotnet-watch-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-watch' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'dotnet-watch' AND '$(TargetFramework)' == 'netcoreapp2.1' " />
   <!-- Package: Microsoft.AspNetCore.Cryptography.Internal-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.Internal' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
@@ -18,21 +38,6 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[2.1.1, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.DataProtection-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.DataProtection.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' ">
@@ -79,6 +84,21 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.SystemWeb' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.DataProtection-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Html.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Html.Abstractions' ">

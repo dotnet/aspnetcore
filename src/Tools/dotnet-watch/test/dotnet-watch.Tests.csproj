@@ -16,11 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Process.Sources" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
-  </ItemGroup>
-
-  <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestSettings:RestoreSources</_Parameter1>
       <_Parameter2>$(RestoreSources)</_Parameter2>
