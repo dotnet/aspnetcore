@@ -3,6 +3,6 @@
         "version": "3.0.100-preview-009730"
     },
     "msbuild-sdks": {
-        "Internal.AspNetCore.Sdk": "3.0.0-alpha1-20181109.6"
+        "Internal.AspNetCore.Sdk": "3.0.0-alpha1-20181112.1"
     }
 }
