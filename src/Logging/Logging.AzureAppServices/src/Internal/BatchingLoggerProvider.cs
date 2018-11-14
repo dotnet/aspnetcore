@@ -18,6 +18,8 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         private readonly int? _batchSize;
         private readonly IDisposable _optionsChangeToken;
 
+        private int _messagesDropped;
+
         private BlockingCollection<LogMessage> _messageQueue;
         private Task _outputTask;
         private CancellationTokenSource _cancellationTokenSource;
@@ -85,6 +87,16 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
                     limit--;
                 }
 
+                var messagesDropped = Interlocked.Exchange(ref _messagesDropped, 0);
+                if (messagesDropped != 0)
+                {
+                    _currentBatch.Add(new LogMessage()
+                    {
+                        Message = $"{messagesDropped} message(s) dropped because of queue size limit. Increase the queue size or decrease logging verbosity to avoid this.{Environment.NewLine}",
+                        Timestamp = DateTimeOffset.Now
+                    });
+                }
+
                 if (_currentBatch.Count > 0)
                 {
                     try
@@ -98,8 +110,10 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
 
                     _currentBatch.Clear();
                 }
-
-                await IntervalAsync(_interval, _cancellationTokenSource.Token);
+                else
+                {
+                    await IntervalAsync(_interval, _cancellationTokenSource.Token);
+                }
             }
         }
 
@@ -114,7 +128,10 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             {
                 try
                 {
-                    _messageQueue.Add(new LogMessage { Message = message, Timestamp = timestamp }, _cancellationTokenSource.Token);
+                    if (!_messageQueue.TryAdd(new LogMessage { Message = message, Timestamp = timestamp }, millisecondsTimeout: 0, cancellationToken: _cancellationTokenSource.Token))
+                    {
+                        Interlocked.Increment(ref _messagesDropped);
+                    }
                 }
                 catch
                 {
