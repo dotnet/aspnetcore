@@ -4,12 +4,16 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Testing.xunit;
 
 namespace Interop.FunctionalTests
 {
-    public static class ChromeConstants
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
+    public class SkipIfChromeUnavailableAttribute : Attribute, ITestCondition
     {
-        public static string ExecutablePath { get; } = ResolveChromeExecutablePath();
+        public bool IsMet => string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JENKINS_HOME")) && (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")) || File.Exists(ResolveChromeExecutablePath()));
+
+        public string SkipReason => "This is running on Jenkins or Chrome/Chromium is not installed and this is a dev environment.";
 
         private static string ResolveChromeExecutablePath()
         {

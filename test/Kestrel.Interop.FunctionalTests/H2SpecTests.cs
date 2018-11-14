@@ -8,7 +8,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
@@ -17,7 +16,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace H2Spec.FunctionalTests
+namespace Interop.FunctionalTests
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81,
@@ -47,7 +46,7 @@ namespace H2Spec.FunctionalTests
             {
                 await host.StartAsync();
 
-                H2SpecCommands.RunTest(testCase.Id, GetPort(host), testCase.Https, Logger);
+                H2SpecCommands.RunTest(testCase.Id, host.GetPort(), testCase.Https, Logger);
             }
         }
 
@@ -129,14 +128,6 @@ namespace H2Spec.FunctionalTests
                 await context.Request.Body.CopyToAsync(Stream.Null);
                 await context.Response.WriteAsync("Hello World");
             });
-        }
-
-        private static int GetPort(IWebHost host)
-        {
-            return host.ServerFeatures.Get<IServerAddressesFeature>().Addresses
-                .Select(a => new Uri(a))
-                .First()
-                .Port;
         }
     }
 }
