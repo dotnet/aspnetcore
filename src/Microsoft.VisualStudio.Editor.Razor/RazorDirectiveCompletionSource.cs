@@ -21,8 +21,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         // Internal for testing
         internal static readonly object DescriptionKey = new object();
+        // Hardcoding the Guid here to avoid a reference to Microsoft.VisualStudio.ImageCatalog.dll
+        // that is not present in Visual Studio for Mac
+        internal static readonly Guid ImageCatalogGuid = new Guid("{ae27a6b0-e345-4288-96df-5eaf394ee369}");
         internal static readonly ImageElement DirectiveImageGlyph = new ImageElement(
-            new ImageId(KnownImageIds.ImageCatalogGuid, KnownImageIds.Type),
+            new ImageId(ImageCatalogGuid, 3233), // KnownImageIds.Type = 3233
             "Razor Directive.");
         internal static readonly ImmutableArray<CompletionFilter> DirectiveCompletionFilters = new[] {
             new CompletionFilter("Razor Directive", "r", DirectiveImageGlyph)
