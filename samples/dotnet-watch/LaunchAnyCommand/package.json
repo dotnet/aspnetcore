@@ -1,8 +1,0 @@
-{
-  "name": "any-command",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "custom": "node say-hello.js"
-  }
-}

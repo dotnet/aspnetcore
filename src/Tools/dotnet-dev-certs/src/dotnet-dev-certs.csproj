@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <OutputType>exe</OutputType>
+    <Description>Command line tool to generate certificates used in ASP.NET Core during development.</Description>
+    <RootNamespace>Microsoft.AspNetCore.DeveloperCertificates.Tools</RootNamespace>
+    <PackageTags>dotnet;developercertificates</PackageTags>
+    <PackAsTool>true</PackAsTool>
+    <!-- This is a requirement for Microsoft tool packages only. -->
+    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\src\CliContext.cs" Link="CliContext.cs" />
+    <Compile Include="..\..\shared\src\CommandLineApplicationExtensions.cs" Link="CommandLineApplicationExtensions.cs" />
+    <Compile Include="..\..\shared\src\ConsoleReporter.cs" Link="ConsoleReporter.cs" />
+    <Compile Include="..\..\shared\src\DebugHelper.cs" Link="DebugHelper.cs" />
+    <Compile Include="..\..\shared\src\Ensure.cs" Link="Ensure.cs" />
+    <Compile Include="..\..\shared\src\IConsole.cs" Link="IConsole.cs" />
+    <Compile Include="..\..\shared\src\IReporter.cs" Link="IReporter.cs" />
+    <Compile Include="..\..\shared\src\NullReporter.cs" Link="NullReporter.cs" />
+    <Compile Include="..\..\shared\src\PhysicalConsole.cs" Link="PhysicalConsole.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="System.Security.Cryptography.Cng" />
+  </ItemGroup>
+
+</Project>

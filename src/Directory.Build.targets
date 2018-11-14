@@ -1,7 +1,0 @@
-<Project>
-  <Import Project="..\Directory.Build.targets" />
-
-  <Target Name="CleanPublishDir" AfterTargets="CoreClean">
-    <RemoveDir Directories="$(PublishDir)" />
-  </Target>
-</Project>
