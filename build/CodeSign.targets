@@ -52,11 +52,17 @@
       <_FilesToSign Include="@(_ShippedRepoFileSignInfo)" Condition="'%(_ShippedRepoFileSignInfo.IsFileToSign)' == 'true' AND '%(_ShippedRepoFileSignInfo.Container)' != '' " />
       <FilesToSign Include="@(_FilesToSign)" />
 
+      <!-- Normalize FilesToExcludeFromSigning to filename + extension. -->
+      <_Temp Remove="@(_Temp)" />
+      <_Temp Include="@(FilesToExcludeFromSigning)" />
+      <FilesToExcludeFromSigning Remove="@(FilesToExcludeFromSigning)" />
+      <FilesToExcludeFromSigning Include="@(_Temp->'%(FileName)%(Extension)')" />
+      <_Temp Remove="@(_Temp)" />
+
       <FilesToExcludeFromSigning Include="@(_ShippedRepoFileSignInfo->'%(FileName)%(Extension)')" Condition="'%(_ShippedRepoFileSignInfo.IsFileToExcludeFromSign)' == 'true'" />
       <FilesToExcludeFromSigning Include="@(_RepoFileSignInfo->'%(FileName)%(Extension)')" Condition="'%(_RepoFileSignInfo.IsFileToExcludeFromSign)' == 'true'" />
       <!-- Workaround for the way we have both repo and Universe builds, crossgen AND uncrossgened outputs. This prevents duplicate configuration between 'exclude' and 'sign' options. -->
       <FilesToExcludeFromSigning Remove="@(FilesToSign->'%(FileName)%(Extension)')" />
-      <FilesToExcludeFromSigning Remove="@(_FilesToSign->'%(FileName)%(Extension)')" />
     </ItemGroup>
   </Target>
 
