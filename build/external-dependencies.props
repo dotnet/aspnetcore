@@ -84,6 +84,8 @@
     <ExtensionsDependency Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
     <ExtensionsDependency Include="Microsoft.Extensions.WebEncoders.Sources" Version="$(MicrosoftExtensionsWebEncodersSourcesPackageVersion)" />
     <ExtensionsDependency Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
+
+    <ExtensionsDependency Include="Microsoft.Extensions.Buffers.Testing.Sources" Version="$(MicrosoftExtensionsBuffersTestingSourcesPackageVersion)" />
   </ItemGroup>
 
    <ItemGroup>

@@ -22,7 +22,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
