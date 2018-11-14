@@ -58,10 +58,6 @@
 	path = modules/JavaScriptServices
 	url = https://github.com/aspnet/JavaScriptServices.git
 	branch = release/2.1
-[submodule "modules/KestrelHttpServer"]
-	path = modules/KestrelHttpServer
-	url = https://github.com/aspnet/KestrelHttpServer.git
-	branch = release/2.1
 [submodule "modules/Localization"]
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git

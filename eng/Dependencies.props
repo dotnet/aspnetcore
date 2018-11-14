@@ -5,11 +5,15 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <Import Project="dependencies.temp.props" />
+
   <ItemGroup Label="ProdCon dependencies">
     <!-- These dependencies must use version variables because they may be overriden by ProdCon builds. -->
+    <LatestPackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Version="$(MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
@@ -25,18 +29,22 @@
     <LatestPackageReference Include="Microsoft.Extensions.WebEncoders.Sources" Version="$(MicrosoftExtensionsWebEncodersSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
+    <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
+    <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
     <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Label="External dependencies">
+    <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
     <LatestPackageReference Include="Newtonsoft.Json" Version="9.0.1" Condition="'$(UseMSBuildJsonNet)' == 'true'" />
     <!-- This version should be used by runtime packages -->
     <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" Condition="'$(UseMSBuildJsonNet)' != 'true'" />
+    <LatestPackageReference Include="Utf8Json" Version="1.3.7" />
     <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
     <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
     <LatestPackageReference Include="xunit.assert" Version="2.3.1" />

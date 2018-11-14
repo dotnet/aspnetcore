@@ -63,7 +63,6 @@
     <ShippedRepository Include="Identity" />
     <ShippedRepository Include="JavaScriptServices" />
     <ShippedRepository Include="JsonPatch" />
-    <ShippedRepository Include="KestrelHttpServer" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="Mvc" />
     <ShippedRepository Include="MvcPrecompilation" />
