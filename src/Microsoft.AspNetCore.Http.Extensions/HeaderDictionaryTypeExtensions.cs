@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (value.HasValue)
             {
-                headers[name] = HeaderUtilities.FormatDate(value.Value);
+                headers[name] = HeaderUtilities.FormatDate(value.GetValueOrDefault());
             }
             else
             {

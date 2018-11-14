@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Http
                 ThrowIfReadOnly();
                 if (value.HasValue)
                 {
-                    this[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(value.Value);
+                    this[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(value.GetValueOrDefault());
                 }
                 else
                 {

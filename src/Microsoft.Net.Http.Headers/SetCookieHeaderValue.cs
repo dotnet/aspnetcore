@@ -105,13 +105,13 @@ namespace Microsoft.Net.Http.Headers
 
             if (Expires.HasValue)
             {
-                expires = HeaderUtilities.FormatDate(Expires.Value);
+                expires = HeaderUtilities.FormatDate(Expires.GetValueOrDefault());
                 length += SeparatorToken.Length + ExpiresToken.Length + EqualsToken.Length + expires.Length;
             }
 
             if (MaxAge.HasValue)
             {
-                maxAge = HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.Value.TotalSeconds);
+                maxAge = HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.GetValueOrDefault().TotalSeconds);
                 length += SeparatorToken.Length + MaxAgeToken.Length + EqualsToken.Length + maxAge.Length;
             }
 
@@ -212,12 +212,12 @@ namespace Microsoft.Net.Http.Headers
 
             if (Expires.HasValue)
             {
-                AppendSegment(builder, ExpiresToken, HeaderUtilities.FormatDate(Expires.Value));
+                AppendSegment(builder, ExpiresToken, HeaderUtilities.FormatDate(Expires.GetValueOrDefault()));
             }
 
             if (MaxAge.HasValue)
             {
-                AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.Value.TotalSeconds));
+                AppendSegment(builder, MaxAgeToken, HeaderUtilities.FormatNonNegativeInt64((long)MaxAge.GetValueOrDefault().TotalSeconds));
             }
 
             if (Domain != null)

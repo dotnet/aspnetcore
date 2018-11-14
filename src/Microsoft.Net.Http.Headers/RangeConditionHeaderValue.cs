@@ -54,7 +54,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if (_entityTag == null)
             {
-                return HeaderUtilities.FormatDate(_lastModified.Value);
+                return HeaderUtilities.FormatDate(_lastModified.GetValueOrDefault());
             }
             return _entityTag.ToString();
         }
@@ -70,7 +70,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (_entityTag == null)
             {
-                return (other._lastModified != null) && (_lastModified.Value == other._lastModified.Value);
+                return (other._lastModified != null) && (_lastModified.GetValueOrDefault() == other._lastModified.GetValueOrDefault());
             }
 
             return _entityTag.Equals(other._entityTag);
@@ -80,7 +80,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if (_entityTag == null)
             {
-                return _lastModified.Value.GetHashCode();
+                return _lastModified.GetValueOrDefault().GetHashCode();
             }
 
             return _entityTag.GetHashCode();
