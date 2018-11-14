@@ -149,18 +149,21 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
         {
             var (process, lines) = RunProcess(fileName, arguments, prefix, logger);
 
-            if (!process.WaitForExit((int)timeout.TotalMilliseconds))
+            using (process)
             {
-                process.Close();
-                logger.LogError("Closing process '{processName}' because it is running longer than the configured timeout.", fileName);
+                if (!process.WaitForExit((int)timeout.TotalMilliseconds))
+                {
+                    process.Close();
+                    logger.LogError("Closing process '{processName}' because it is running longer than the configured timeout.", fileName);
+                }
+
+                // Need to WaitForExit without a timeout to guarantee the output stream has written everything
+                process.WaitForExit();
+
+                output = string.Join(Environment.NewLine, lines);
+
+                return process.ExitCode;
             }
-
-            // Need to WaitForExit without a timeout to guarantee the output stream has written everything
-            process.WaitForExit();
-
-            output = string.Join(Environment.NewLine, lines);
-
-            return process.ExitCode;
         }
 
         private static (Process, ConcurrentQueue<string>) RunProcess(string fileName, string arguments, string prefix, ILogger logger)
@@ -179,9 +182,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 EnableRaisingEvents = true
             };
 
-            var exitCode = 0;
             var lines = new ConcurrentQueue<string>();
-            process.Exited += (_, __) => exitCode = process.ExitCode;
             process.OutputDataReceived += (_, a) =>
             {
                 LogIfNotNull(logger.LogInformation, $"'{prefix}' stdout: {{0}}", a.Data);
