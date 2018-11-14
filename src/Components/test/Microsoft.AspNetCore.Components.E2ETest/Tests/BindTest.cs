@@ -218,9 +218,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
-            target.SendKeys("-42\t");
-            WaitAssert.Equal("-42", () => boundValue.Text);
-            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+            target.SendKeys("42\t");
+            WaitAssert.Equal("42", () => boundValue.Text);
+            Assert.Equal("42", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
@@ -410,11 +410,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
-            // Decimal should preserve trailing zeros
             target.Clear();
             target.SendKeys("0.0000000000000000000000000001\t");
             WaitAssert.Equal("0.0000000000000000000000000001", () => boundValue.Text);
             Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            // Decimal should preserve trailing zeros
+            target.Clear();
+            target.SendKeys("0.010\t");
+            WaitAssert.Equal("0.010", () => boundValue.Text);
+            Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
