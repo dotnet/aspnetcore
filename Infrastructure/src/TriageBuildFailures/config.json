@@ -66,98 +66,6 @@
   },
   "TeamCity": {
     "Server": "aspnetci",
-    "BuildIdAllowList": [
-      // MISC
-      "Lite_Public_Performance",
-      "Lite_Infrastructure_AspNetCoreModuleSetup",
-      "Coherence_SiteExtension",
-      "Lite_UniverseTest",
-      "Lite_KestrelStressTest",
-      "Lite_Entropy",
-      // Main Build
-      "AspNetCore_master_WindowsInstallers",
-      "Coherence_UpdateRepos",
-      "UniverseCoherence",
-      "Coherence_SharedFxLinuxMusl",
-      "Coherence_RuntimeStoreInstallers",
-      "Coherence_CoherencePackageCacheWin",
-      "Lite_Infrastructure_WindowsHostingBundle",
-      "Lite_Infrastructure_SetupSharedFramework",
-      "Coherence_UpdateUniverse",
-      "Lite_Public_DnxTools",
-      "CoherenceSigned",
-      "Coherence_Finale",
-      "Coherence_CoherencePackageCacheLinux",
-      "Coherence_CoherencePackageCacheOsx",
-      "Coherence_CoherencePackageCacheWin86",
-      "Coherence_BuildAndSignAncmInstallers",
-      "AspNetCore_Publish",
-      // Project builds
-      "Lite_DockerLogging",
-      "Lite_EntityFrameworkTest",
-      "Lite_EntityFramework",
-      "Lite_KestrelHttpServer",
-      "Lite_IISIntegration",
-      "Lite_MusicStore",
-      "Lite_MvcTest",
-      "Lite_SignalR",
-      "Lite_Razor",
-      "Lite_RazorLiveShare",
-      "Lite_Templating",
-      // Universe tests
-      "Lite_MusicStoreTest",
-      "XPlat_Mac_MacUniverseCoreCLR",
-      "XPlat_HighSierraOsxUniverse",
-      "XPlat_Linux_UbuntuUniverseCoreCLR",
-      "XPlat_Windows_Win7_Universe",
-      "XPlat_Windows_Win8_Universe",
-      "XPlat_Windows_Win10Universe",
-      "XPlat_Windows_Win2008r2_Universe",
-      // Release 21 Public
-      "Releases_21Public_UpdateUniverse",
-      "Releases_21Public_UniverseCoherence",
-      "Releases_21Public_RuntimeStoreInstallers",
-      "Releases_21Public_CoherencePackageCacheOsx",
-      "Releases_21Public_CoherencePackageCacheLinux",
-      "Releases_21Public_CoherencePackageCacheWin",
-      "Releases_21Public_CoherencePackageCacheWin86",
-      "Releases_21Public_UbuntuUniverse",
-      "Releases_21Public_OsxUniverse",
-      "Releases_21Public_HighSierraOsxUniverse",
-      "Releases_21Public_SetupSharedFramework",
-      "Releases_21Public_SharedFxLinuxMusl",
-      "Releases_21Public_AncmInstallers",
-      "Releases_21Public_Signed",
-      "Releases_21Public_Publish",
-      "Releases_21Public_Win2012",
-      "Releases_21Public_WindowsHostingBundle",
-      "Releases_21Public_SiteExtension",
-      "Releases_21Public_Finale",
-      // Release 22 Public
-      "Releases_22xPublic_UpdateRepos",
-      "Releases_22xPublic_UniverseCoherence",
-      "Releases_22xPublic_BuildAndSignAncmInstallers",
-      "Releases_22xPublic_OsxUniverse",
-      "Releases_22xPublic_HighSierraOsxUniverse",
-      "Releases_22xPublic_UbuntuUniverse",
-      "Releases_22xPublic_Win2012",
-      "Releases_22xPublic_UpdateUniverse",
-      "Releases_22xPublic_Signed",
-      "Releases_22xPublic_SetupSharedFramework",
-      "Releases_22xPublic_SharedFxLinuxMusl",
-      "Releases_22xPublic_SiteExtension",
-      "Releases_22xPublic_CoherencePackageCacheLinux",
-      "Releases_22xPublic_CoherencePackageCacheWin",
-      "Releases_22xPublic_CoherencePackageCacheOsx",
-      "Releases_22xPublic_CoherencePackageCacheWin86",
-      "Releases_22xPublic_Publish",
-      "Releases_22xPublic_PbTestWindowsServer2012",
-      "Releases_22xPublic_RuntimeStoreInstallers",
-      "Releases_22xPublic_WindowsInstallers",
-      "Releases_22xPublic_Finale",
-      // Maintenance builds
-      "Maintenance_Backup"
-    ],
     "BuildIdIgnoreList": [
       "Releases_21Public_SiteExtensionReproNuGetIssue",
       "Lite_Infrastructure_AspNetCoreModuleSetup",
@@ -175,31 +83,6 @@
   "VSTS": {
     "Account": "dnceng",
     "BuildPath": "\\aspnet",
-    "BuildIdAllowList": [
-      // OOB Builds
-      "1", //BuildTools-ci
-      "8", //BuildTools-ci-official
-      // Projects
-      "23", //Extensions-ci
-      "25", //Mvc-ci
-      "26", //SignalR-ci
-      "27", //IISIntegration-ci
-      "36", //Templating-ci
-      "39", //Caching-ci
-      "40", //Razor-ci
-      "46", //Routing-ci
-      "49", //DotNetTools-ci
-      "51", //EntityFrameworkCore-ci
-      "58", //Session-ci
-      "61", //HttpSysServer-ci
-      "135", //aspnet-Blazor-ci-official
-      "66", //KestrelHttpServer-ci
-      "69", //Logging-ci
-      "91", //AspNetCore-fast-pr-validation
-      "190", //IISIntegration-ci-21
-      // Universe
-      "134" //aspnet-Universe-e2e-tests
-    ],
     "BuildIdIgnoreList": [
       "21", //aspnet-Universe-ci-official Due to https://github.com/aspnet/AspNetCore-Internal/issues/878
       "189" //AspNetCore-site-extensions @pakrym is still bringing this online, so it will be too noisy for now.

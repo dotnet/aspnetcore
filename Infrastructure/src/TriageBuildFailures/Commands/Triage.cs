@@ -66,7 +66,6 @@ namespace TriageBuildFailures.Commands
         private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase>
         {
             new HandleLowValueBuilds(),
-            new HandleNonAllowedBuilds(),
             new HandleUniverseMovedOn(),
             new HandleSnapshotDependency(),
             new HandleTestFailures(),
