@@ -6,6 +6,8 @@
   <Import Project="dependencies.overrides.props" />
 
   <PropertyGroup>
+    <AddImplicitReferences>false</AddImplicitReferences>
+    <IsSubfolderBuild>true</IsSubfolderBuild>
     <!-- Workaround microsoft/msbuild#3626 -->
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
   </PropertyGroup>

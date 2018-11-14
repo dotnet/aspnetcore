@@ -10,8 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
   </ItemGroup>
 
 </Project>

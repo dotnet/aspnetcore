@@ -1,7 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <!-- TODO: remove this file once we merge release/2.1 and the project baseline work. -->
-    <Version>2.2.0</Version>
-    <PackageVersion>2.2.0</PackageVersion>
-  </PropertyGroup>
-</Project>

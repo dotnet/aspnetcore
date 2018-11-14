@@ -1,0 +1,15 @@
+<Baseline Version="2.2.0">
+  <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.Abstractions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Html.Abstractions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.JsonPatch" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.2.0" />
+</Baseline>

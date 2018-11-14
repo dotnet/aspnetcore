@@ -2,19 +2,20 @@
   <PropertyGroup>
     <UnitTestFxProject>$(RepositoryRoot)src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
     <UnitTestFxProject>$([MSBuild]::NormalizePath($(UnitTestFxProject)))</UnitTestFxProject>
-    <CodeSignDependsOn>$(CodeSignDependsOn);GetSharedFxFilesToSign</CodeSignDependsOn>
+    <CodeSignDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CodeSignDependsOn);GetSharedFxFilesToSign</CodeSignDependsOn>
     <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
     <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfo);GetFxProjectArtifactInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.pkgproj" />
-    <ProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
-    <ProjectToBuild Include="$(UnitTestFxProject)" />
-    <ProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
-    <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
-    <ProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
+    <FxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.pkgproj" />
+    <FxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
+    <FxProjectToBuild Include="$(UnitTestFxProject)" />
+    <FxProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
+    <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
+    <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
   </ItemGroup>
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
@@ -43,7 +44,7 @@
   <Target Name="_BuildSharedFxProjects" DependsOnTargets="GeneratePropsFiles;ResolveCommitHash">
 
     <PropertyGroup>
-      <_RestoreGraphProjectInput>@(ProjectToBuild)</_RestoreGraphProjectInput>
+      <_RestoreGraphProjectInput>@(FxProjectToBuild)</_RestoreGraphProjectInput>
       <SharedFxBuildProperties>
         $(BuildProperties);
         SharedFxRid=$(SharedFxRid);
@@ -56,11 +57,11 @@
              Targets="Restore"
              Properties="$(SharedFxBuildProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
 
-    <MSBuild Projects="@(ProjectToBuild)"
+    <MSBuild Projects="@(FxProjectToBuild)"
              Properties="$(SharedFxBuildProperties)"
              BuildInParallel="true" />
 
-    <MSBuild Projects="@(ProjectToBuild)"
+    <MSBuild Projects="@(FxProjectToBuild)"
              Targets="Pack"
              Properties="$(SharedFxBuildProperties);NoBuild=true"
              BuildInParallel="true"
@@ -96,6 +97,37 @@
       Importance="High"
       Condition="'$(TEAMCITY_VERSION)' != '' AND Exists('$(UnitTestFxTrxLogFile)')" />
     <Error Text="SharedFx.UnitTests failed with exit code '$(VsTestExitCode)'." Condition=" $(VsTestExitCode) != 0 " />
+  </Target>
+
+  <Target Name="GetFxProjectArtifactInfo" Returns="@(ArtifactInfo)">
+    <PropertyGroup>
+      <_InspectionTargetsFile>$(MSBuildProjectDirectory)\Project.Inspection.targets</_InspectionTargetsFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_Temp Remove="@(_Temp)" />
+    </ItemGroup>
+
+    <MSBuild Targets="GetArtifactInfo"
+             Projects="@(FxProjectToBuild)"
+             Condition="@(FxProjectToBuild->Count()) != 0"
+             Properties="$(BuildProperties);DesignTimeBuild=true;EnableApiCheck=false;NoBuild=true;CustomAfterMicrosoftCommonTargets=$(_InspectionTargetsFile);CustomAfterMicrosoftCommonCrossTargetingTargets=$(_InspectionTargetsFile)"
+             BuildInParallel="$(BuildInParallel)"
+             RemoveProperties="$(_BuildPropertiesToRemove)">
+
+      <Output TaskParameter="TargetOutputs" ItemName="_Temp" />
+    </MSBuild>
+
+    <ItemGroup>
+      <!-- Output from this target may include items representing assemblies inside the nupkg. -->
+      <ArtifactInfo Include="@(_Temp)" Condition="'%(_Temp.Container)' == ''" />
+
+      <!-- Nupkgs or assemblies in the nupkg that should be signed -->
+      <FilesToSign Include="@(_Temp)" Condition=" '%(_Temp.ShouldBeSigned)' == 'true' " />
+
+      <!-- Nupkgs or assemblies in the nupkg that should not be signed -->
+      <FilesToExcludeFromSigning Include="@(_Temp)" Condition=" '%(_Temp.ShouldBeSigned)' != 'true' " />
+    </ItemGroup>
   </Target>
 
 </Project>

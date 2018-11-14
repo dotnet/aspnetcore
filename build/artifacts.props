@@ -199,7 +199,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.WebEncoders" Category="ship" />
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="ship" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />
     <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="ship" />

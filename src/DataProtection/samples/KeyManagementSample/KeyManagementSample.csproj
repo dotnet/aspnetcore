@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
-    <ProjectReference Include="..\..\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
   </ItemGroup>
 
 </Project>

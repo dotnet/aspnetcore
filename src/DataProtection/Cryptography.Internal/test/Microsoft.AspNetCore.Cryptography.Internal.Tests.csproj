@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
   </ItemGroup>
 
 </Project>

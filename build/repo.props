@@ -4,6 +4,8 @@
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
+    <DisableDefaultItems>true</DisableDefaultItems>
+    <BuildSolutions>false</BuildSolutions>
 
     <SkipTests>false</SkipTests>
     <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
@@ -44,6 +46,18 @@
 
     <SharedFrameworkName Include="Microsoft.AspNetCore.All" />
     <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectToExclude Include="$(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
+
+    <ProjectToBuild Include="
+                      $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
+                      $(RepositoryRoot)src\DataProtection\**\*.*proj;
+                      $(RepositoryRoot)src\Html\**\*.*proj;
+                      $(RepositoryRoot)src\Middleware\**\*.*proj;
+                      "
+                    Exclude="@(ProjectToExclude)" />
   </ItemGroup>
 
   <!-- Properties for publishing -->

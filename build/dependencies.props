@@ -19,6 +19,7 @@
     <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(KoreBuildVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
     <InternalAspNetCoreSiteExtensionSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSiteExtensionSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">2.2.1-build-20181114.3</InternalAspNetCoreSdkPackageVersion>
   </PropertyGroup>
 
   <!-- These are package versions that should not be overridden or updated by automation. -->
@@ -30,6 +31,8 @@
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>2.2.0</MicrosoftEntityFrameworkCorePackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.2.0</MicrosoftExtensionsCachingMemoryPackageVersion>
@@ -85,6 +88,7 @@
     <MicrosoftExtensionsStackTraceSourcesPackageVersion>2.2.0</MicrosoftExtensionsStackTraceSourcesPackageVersion>
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.2.0</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.2.0</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.2.0</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
 
     <!-- 3rd party dependencies -->

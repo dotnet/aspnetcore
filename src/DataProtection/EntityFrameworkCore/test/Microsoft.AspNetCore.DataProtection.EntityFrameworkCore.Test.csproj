@@ -5,11 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
+    <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
   </ItemGroup>
 
 </Project>

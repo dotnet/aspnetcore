@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <Reference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
   </ItemGroup>
 
 </Project>

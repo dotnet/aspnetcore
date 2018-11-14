@@ -56,7 +56,6 @@ foreach ($package in $remoteDeps.SelectNodes('//Package')) {
 
 if (-not $NoCommit) {
     $currentBranch = Invoke-Block { & git rev-parse --abbrev-ref HEAD }
-
     $destinationBranch = "dotnetbot/UpdateDeps"
     Invoke-Block { & git checkout -tb $destinationBranch "origin/$GithubUpstreamBranch" }
 }

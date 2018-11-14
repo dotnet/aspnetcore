@@ -4,7 +4,7 @@
     <CodeSignDependsOn>$(CodeSignDependsOn);CollectFileSignInfo</CodeSignDependsOn>
   </PropertyGroup>
 
-  <Target Name="CollectFileSignInfo" DependsOnTargets="_PrepareRepositories">
+  <Target Name="CollectFileSignInfo" DependsOnTargets="_PrepareRepositories;GetProjectArtifactInfo;GetFxProjectArtifactInfo">
 
     <ItemGroup>
       <_RepositoryProject Remove="@(_RepositoryProject)" />

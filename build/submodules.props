@@ -53,18 +53,15 @@
     <ShippedRepository Include="BasicMiddleware" />
     <ShippedRepository Include="BrowserLink" />
     <ShippedRepository Include="CORS" />
-    <ShippedRepository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <ShippedRepository Include="Diagnostics" />
     <ShippedRepository Include="DotNetTools" />
     <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="Hosting" />
-    <ShippedRepository Include="HtmlAbstractions" />
     <ShippedRepository Include="HttpAbstractions" />
     <ShippedRepository Include="HttpClientFactory" />
     <ShippedRepository Include="HttpSysServer" />
     <ShippedRepository Include="Identity" />
     <ShippedRepository Include="JavaScriptServices" />
-    <ShippedRepository Include="JsonPatch" />
     <ShippedRepository Include="KestrelHttpServer" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="MetaPackages" PatchPolicy="CascadeVersions" />
@@ -77,6 +74,5 @@
     <ShippedRepository Include="Session" />
     <ShippedRepository Include="SignalR" />
     <ShippedRepository Include="StaticFiles" />
-    <ShippedRepository Include="WebSockets" RootPath="$(RepositoryRoot)src\WebSockets\" />
   </ItemGroup>
 </Project>

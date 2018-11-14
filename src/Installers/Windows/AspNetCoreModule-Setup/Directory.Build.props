@@ -21,7 +21,7 @@
           The actual handler folder version is dependent on the ANCMMsiVersion -->
     <ANCMOutOfProcessNugetPackageHandlerVersion>2.0.0</ANCMOutOfProcessNugetPackageHandlerVersion>
 
-    <!-- Location of main folders--> 
+    <!-- Location of main folders-->
     <AspNetCoreSetupRoot>$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
     <IIS-Setup>$(AspNetCoreSetupRoot)IIS-Setup\</IIS-Setup>
     <IIS-Common>$(IIS-Setup)IIS-Common\</IIS-Common>

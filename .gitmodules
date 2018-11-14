@@ -42,10 +42,6 @@
 	path = modules/Hosting
 	url = https://github.com/aspnet/Hosting.git
 	branch = release/2.2
-[submodule "modules/HtmlAbstractions"]
-	path = modules/HtmlAbstractions
-	url = https://github.com/aspnet/HtmlAbstractions.git
-	branch = release/2.2
 [submodule "modules/HttpAbstractions"]
 	path = modules/HttpAbstractions
 	url = https://github.com/aspnet/HttpAbstractions.git
@@ -65,10 +61,6 @@
 [submodule "modules/JavaScriptServices"]
 	path = modules/JavaScriptServices
 	url = https://github.com/aspnet/JavaScriptServices.git
-	branch = release/2.2
-[submodule "modules/JsonPatch"]
-	path = modules/JsonPatch
-	url = https://github.com/aspnet/JsonPatch.git
 	branch = release/2.2
 [submodule "modules/KestrelHttpServer"]
 	path = modules/KestrelHttpServer
