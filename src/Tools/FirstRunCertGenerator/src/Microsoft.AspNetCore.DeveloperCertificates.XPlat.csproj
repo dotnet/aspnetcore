@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Description>Package for the CLI first run experience.</Description>
+    <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
+    <PackageTags>aspnet;cli</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

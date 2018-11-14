@@ -1,4 +1,8 @@
 <Baseline Version="2.2.0">
+  <Package Id="dotnet-dev-certs" Version="2.2.0" />
+  <Package Id="dotnet-sql-cache" Version="2.2.0" />
+  <Package Id="dotnet-user-secrets" Version="2.2.0" />
+  <Package Id="dotnet-watch" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection" Version="2.2.0" />

@@ -7,7 +7,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="DotNetTools" Order="1" />
     <RepositoryBuildOrder Include="Razor" Order="6" />
     <RepositoryBuildOrder Include="HttpAbstractions" Order="6" />
     <RepositoryBuildOrder Include="HttpClientFactory" Order="6" />

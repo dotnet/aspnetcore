@@ -49,12 +49,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectToExclude Include="$(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
+    <ProjectToExclude Include="
+                       $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
+                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
+                       " />
 
     <ProjectToBuild Include="
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                       $(RepositoryRoot)src\DataProtection\**\*.*proj;
                       $(RepositoryRoot)src\Html\**\*.*proj;
+                      $(RepositoryRoot)src\Tools\**\*.*proj;
                       $(RepositoryRoot)src\Middleware\**\*.*proj;
                       "
                     Exclude="@(ProjectToExclude)" />

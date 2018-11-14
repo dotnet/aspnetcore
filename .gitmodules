@@ -30,10 +30,6 @@
 	path = modules/Diagnostics
 	url = https://github.com/aspnet/Diagnostics.git
 	branch = release/2.2
-[submodule "modules/DotNetTools"]
-	path = modules/DotNetTools
-	url = https://github.com/aspnet/DotNetTools.git
-	branch = release/2.2
 [submodule "modules/EntityFrameworkCore"]
 	path = modules/EntityFrameworkCore
 	url = https://github.com/aspnet/EntityFrameworkCore.git

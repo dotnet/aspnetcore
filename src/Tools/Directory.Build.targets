@@ -1,0 +1,11 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <UseLatestPackageReferences Condition=" '$(PackAsTool)' == 'true' ">true</UseLatestPackageReferences>
+  </PropertyGroup>
+
+  <Target Name="CleanPublishDir" AfterTargets="CoreClean">
+    <RemoveDir Directories="$(PublishDir)" />
+  </Target>
+</Project>
