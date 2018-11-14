@@ -1154,8 +1154,8 @@ Arguments:
         //
         WINHTTP_HELPER::sm_pfnWinHttpWebSocketShutdown(
             _hWebSocketRequest,
-            1011, // indicate that a server is terminating the connection because it encountered
-                  // an unexpected condition that prevent it from fulfilling the request
+            WINHTTP_WEB_SOCKET_SERVER_ERROR_CLOSE_STATUS, // indicate that a server is terminating the connection because it encountered
+                                                          // an unexpected condition that prevent it from fulfilling the request
             NULL, // Reason
             0);   // length og Reason
     }
