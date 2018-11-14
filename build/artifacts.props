@@ -102,6 +102,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Localization" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.RazorPages" Category="ship" />
