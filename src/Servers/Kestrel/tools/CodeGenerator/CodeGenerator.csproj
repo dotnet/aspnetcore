@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsImplementationProject>false</IsImplementationProject>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\Core\src</StartWorkingDirectory>
+    <StartArguments>Internal/Http/HttpHeaders.Generated.cs Internal/Http/HttpProtocol.Generated.cs Internal/Infrastructure/HttpUtilities.Generated.cs</StartArguments>
+  </PropertyGroup>
+
+</Project>
