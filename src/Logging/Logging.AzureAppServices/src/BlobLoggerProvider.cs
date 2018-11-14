@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices
 {
     /// <summary>
     /// The <see cref="ILoggerProvider"/> implementation that stores messages by appending them to Azure Blob in batches.
@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         /// Creates a new instance of <see cref="BlobLoggerProvider"/>
         /// </summary>
         /// <param name="options"></param>
-        public BlobLoggerProvider(IOptionsMonitor<AzureBlobLoggerOptions> options)
+        internal BlobLoggerProvider(IOptionsMonitor<AzureBlobLoggerOptions> options)
             : this(options, null)
         {
             _blobReferenceFactory = name => new BlobAppendReferenceWrapper(
@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         /// </summary>
         /// <param name="blobReferenceFactory">The container to store logs to.</param>
         /// <param name="options"></param>
-        public BlobLoggerProvider(
+        internal BlobLoggerProvider(
             IOptionsMonitor<AzureBlobLoggerOptions> options,
             Func<string, ICloudAppendBlob> blobReferenceFactory) :
             base(options)
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             _httpClient = new HttpClient();
         }
 
-        protected override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
+        internal override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
         {
             var eventGroups = messages.GroupBy(GetBlobKey);
             foreach (var eventGroup in eventGroups)

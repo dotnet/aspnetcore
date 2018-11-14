@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.AzureAppServices.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices.Test
@@ -121,7 +120,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             {
             }
 
-            protected override Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token)
+            internal override Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token)
             {
                 Batches.Add(messages.ToArray());
                 return Task.CompletedTask;

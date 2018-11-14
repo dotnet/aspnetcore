@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices
 {
     [ProviderAlias("AzureAppServicesFile")]
     public class FileLoggerProvider : BatchingLoggerProvider
@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
         private readonly int? _maxFileSize;
         private readonly int? _maxRetainedFiles;
 
-        public FileLoggerProvider(IOptionsMonitor<AzureFileLoggerOptions> options) : base(options)
+        internal FileLoggerProvider(IOptionsMonitor<AzureFileLoggerOptions> options) : base(options)
         {
             var loggerOptions = options.CurrentValue;
             _path = loggerOptions.LogDirectory;
@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             _maxRetainedFiles = loggerOptions.RetainedFileCountLimit;
         }
 
-        protected override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
+        internal override async Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken cancellationToken)
         {
             Directory.CreateDirectory(_path);
 
@@ -57,12 +57,12 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
             return Path.Combine(_path, $"{_fileName}{group.Year:0000}{group.Month:00}{group.Day:00}.txt");
         }
 
-        public (int Year, int Month, int Day) GetGrouping(LogMessage message)
+        private (int Year, int Month, int Day) GetGrouping(LogMessage message)
         {
             return (message.Timestamp.Year, message.Timestamp.Month, message.Timestamp.Day);
         }
 
-        protected void RollFiles()
+        private void RollFiles()
         {
             if (_maxRetainedFiles > 0)
             {

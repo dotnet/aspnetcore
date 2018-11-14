@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,10 +7,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices
 {
     /// <inheritdoc />
-    public class BlobAppendReferenceWrapper : ICloudAppendBlob
+    internal class BlobAppendReferenceWrapper : ICloudAppendBlob
     {
         private readonly Uri _fullUri;
         private readonly HttpClient _client;

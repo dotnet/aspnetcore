@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Text;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices
 {
-    public class BatchingLogger : ILogger
+    internal class BatchingLogger : ILogger
     {
         private readonly BatchingLoggerProvider _provider;
         private readonly string _category;

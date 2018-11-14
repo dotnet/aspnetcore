@@ -1,0 +1,24 @@
+[
+    {
+    "TypeId": "public class Microsoft.Extensions.Logging.AzureAppServices.AzureAppServicesDiagnosticsSettings",
+    "Kind": "Removal"
+    },
+    {
+    "TypeId": "public class Microsoft.Extensions.Logging.AzureAppServices.AzureBlobLoggerOptions : Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions",
+    "Kind": "Removal"
+    },
+    {
+    "TypeId": "public class Microsoft.Extensions.Logging.AzureAppServices.AzureFileLoggerOptions : Microsoft.Extensions.Logging.AzureAppServices.Internal.BatchingLoggerOptions",
+    "Kind": "Removal"
+    },
+    {
+    "TypeId": "public static class Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions",
+    "MemberId": "public static Microsoft.Extensions.Logging.ILoggerFactory AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggerFactory factory)",
+    "Kind": "Removal"
+    },
+    {
+    "TypeId": "public static class Microsoft.Extensions.Logging.AzureAppServicesLoggerFactoryExtensions",
+    "MemberId": "public static Microsoft.Extensions.Logging.ILoggerFactory AddAzureWebAppDiagnostics(this Microsoft.Extensions.Logging.ILoggerFactory factory, Microsoft.Extensions.Logging.AzureAppServices.AzureAppServicesDiagnosticsSettings settings)",
+    "Kind": "Removal"
+    }
+]

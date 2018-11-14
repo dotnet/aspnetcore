@@ -1,8 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.AzureAppServices.Internal;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices.Test
 {

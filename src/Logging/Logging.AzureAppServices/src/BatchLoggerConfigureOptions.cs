@@ -4,9 +4,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Logging.AzureAppServices.Internal
+namespace Microsoft.Extensions.Logging.AzureAppServices
 {
-    public class BatchLoggerConfigureOptions : IConfigureOptions<BatchingLoggerOptions>
+    internal class BatchLoggerConfigureOptions : IConfigureOptions<BatchingLoggerOptions>
     {
         private readonly IConfiguration _configuration;
         private readonly string _isEnabledKey;
