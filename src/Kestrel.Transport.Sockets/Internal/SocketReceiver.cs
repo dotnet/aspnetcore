@@ -15,11 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public SocketAwaitableEventArgs WaitForDataAsync()
         {
-#if NETCOREAPP2_1
-            _awaitableEventArgs.SetBuffer(Memory<byte>.Empty);
-#else
             _awaitableEventArgs.SetBuffer(Array.Empty<byte>(), 0, 0);
-#endif
 
             if (!_socket.ReceiveAsync(_awaitableEventArgs))
             {
