@@ -266,6 +266,7 @@ Routine Description:
     HRESULT hr = S_OK;
     //DWORD dwBuffSize = RECEIVE_BUFFER_SIZE;
 
+    *fHandleCreated = FALSE;
     _pHandler = pHandler;
 
     EnterCriticalSection(&_RequestLock);
@@ -1145,21 +1146,34 @@ Arguments:
     _fCleanupInProgress = TRUE;
 
     _fIndicateCompletionToIis = TRUE;
-    //
-    // We need cancel IO for fast error handling
-    // Reivist the code once CanelOutstandingIO api is available
-    //
-    /*if (_pWebSocketContext != NULL) 
+
+    if (reason == ClientDisconnect || reason == ServerStateUnavailable)
     {
-        _pWebSocketContext->CancelOutstandingIO();
-    }*/
-    _pHttpContext->CancelIo();
+        //
+        // Calling shutdown to notify the backend about disonnect
+        //
+        WINHTTP_HELPER::sm_pfnWinHttpWebSocketShutdown(
+            _hWebSocketRequest,
+            1011, // indicate that a server is terminating the connection because it encountered
+                  // an unexpected condition that prevent it from fulfilling the request
+            NULL, // Reason
+            0);   // length og Reason
+    }
+
+    if (reason == ServerDisconnect || reason == ServerStateUnavailable)
+    {
+        _pHttpContext->CancelIo();
+        //
+        // CancelIo sometime may not be able to cannel pending websocket IO
+        // ResetConnection to force IISWebsocket module to release the pipeline
+        //
+        _pHttpContext->GetResponse()->ResetConnection();
+    }
 
     //
     // Don't close the handle here,
     // as it trigger a WinHttp callback and let IIS pipeline continue
     // Handle should be closed only in IndicateCompletionToIIS
-    IndicateCompletionToIIS();
 Finished:
     if (fLocked)
     {
