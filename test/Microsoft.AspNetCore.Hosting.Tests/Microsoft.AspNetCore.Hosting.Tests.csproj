@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Hosting\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.Hosting\Microsoft.Extensions.Hosting.csproj" />
     <ProjectReference Include="..\TestAssets\TestStartupAssembly1\TestStartupAssembly1.csproj" />
   </ItemGroup>
 

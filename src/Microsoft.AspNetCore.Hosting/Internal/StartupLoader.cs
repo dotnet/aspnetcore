@@ -267,19 +267,19 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             return type;
         }
 
-        private static ConfigureBuilder FindConfigureDelegate(Type startupType, string environmentName)
+        internal static ConfigureBuilder FindConfigureDelegate(Type startupType, string environmentName)
         {
             var configureMethod = FindMethod(startupType, "Configure{0}", environmentName, typeof(void), required: true);
             return new ConfigureBuilder(configureMethod);
         }
 
-        private static ConfigureContainerBuilder FindConfigureContainerDelegate(Type startupType, string environmentName)
+        internal static ConfigureContainerBuilder FindConfigureContainerDelegate(Type startupType, string environmentName)
         {
             var configureMethod = FindMethod(startupType, "Configure{0}Container", environmentName, typeof(void), required: false);
             return new ConfigureContainerBuilder(configureMethod);
         }
 
-        private static ConfigureServicesBuilder FindConfigureServicesDelegate(Type startupType, string environmentName)
+        internal static ConfigureServicesBuilder FindConfigureServicesDelegate(Type startupType, string environmentName)
         {
             var servicesMethod = FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false)
                 ?? FindMethod(startupType, "Configure{0}Services", environmentName, typeof(void), required: false);
