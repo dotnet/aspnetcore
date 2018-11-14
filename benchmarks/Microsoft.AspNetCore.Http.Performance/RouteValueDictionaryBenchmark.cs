@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Routing
     {
         private RouteValueDictionary _arrayValues;
         private RouteValueDictionary _propertyValues;
+        private RouteValueDictionary _arrayValuesEmpty;
 
         // We modify the route value dictionaries in many of these benchmarks.
         [IterationSetup]
@@ -21,7 +22,20 @@ namespace Microsoft.AspNetCore.Routing
                 { "controller", "Home" },
                 { "id", "17" },
             };
+            _arrayValuesEmpty = new RouteValueDictionary();
             _propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17" });
+        }
+
+        [Benchmark]
+        public void Ctor_Values_RouteValueDictionary_EmptyArray()
+        {
+            new RouteValueDictionary(_arrayValuesEmpty);
+        }
+
+        [Benchmark]
+        public void Ctor_Values_RouteValueDictionary_Array()
+        {
+            new RouteValueDictionary(_arrayValues);
         }
 
         [Benchmark]
@@ -47,7 +61,136 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Benchmark]
-        public RouteValueDictionary ConditionalAdd_ContainsKeyAdd()
+        public void ContainsKey_Array_Found()
+        {
+            _arrayValues.ContainsKey("id");
+        }
+
+        [Benchmark]
+        public void ContainsKey_Array_NotFound()
+        {
+            _arrayValues.ContainsKey("name");
+        }
+
+        [Benchmark]
+        public void ContainsKey_Properties_Found()
+        {
+            _propertyValues.ContainsKey("id");
+        }
+
+        [Benchmark]
+        public void ContainsKey_Properties_NotFound()
+        {
+            _propertyValues.ContainsKey("name");
+        }
+
+        [Benchmark]
+        public void TryAdd_Properties_AtCapacity_KeyExists()
+        {
+            var propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17", area = "root" });
+            propertyValues.TryAdd("id", "15");
+        }
+
+        [Benchmark]
+        public void TryAdd_Properties_AtCapacity_KeyDoesNotExist()
+        {
+            var propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17", area = "root" });
+            _propertyValues.TryAdd("name", "Service");
+        }
+
+        [Benchmark]
+        public void TryAdd_Properties_NotAtCapacity_KeyExists()
+        {
+            var propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17" });
+            propertyValues.TryAdd("id", "15");
+        }
+
+        [Benchmark]
+        public void TryAdd_Properties_NotAtCapacity_KeyDoesNotExist()
+        {
+            var propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17" });
+            _propertyValues.TryAdd("name", "Service");
+        }
+
+        [Benchmark]
+        public void TryAdd_Array_AtCapacity_KeyExists()
+        {
+            var arrayValues = new RouteValueDictionary
+                {
+                    { "action", "Index" },
+                    { "controller", "Home" },
+                    { "id", "17" },
+                    { "area", "root" }
+                };
+            arrayValues.TryAdd("id", "15");
+        }
+
+        [Benchmark]
+        public void TryAdd_Array_AtCapacity_KeyDoesNotExist()
+        {
+            var arrayValues = new RouteValueDictionary
+                {
+                    { "action", "Index" },
+                    { "controller", "Home" },
+                    { "id", "17" },
+                    { "area", "root" }
+                };
+            arrayValues.TryAdd("name", "Service");
+        }
+
+        [Benchmark]
+        public void TryAdd_Array_NotAtCapacity_KeyExists()
+        {
+            var arrayValues = new RouteValueDictionary
+                {
+                    { "action", "Index" },
+                    { "controller", "Home" },
+                    { "id", "17" }
+                };
+            arrayValues.TryAdd("id", "15");
+        }
+
+        [Benchmark]
+        public void TryAdd_Array_NotAtCapacity_KeyDoesNotExist()
+        {
+            var arrayValues = new RouteValueDictionary
+                {
+                    { "action", "Index" },
+                    { "controller", "Home" },
+                    { "id", "17" },
+                };
+            arrayValues.TryAdd("name", "Service");
+        }
+
+        [Benchmark]
+        public void ConditionalAdd_Array()
+        {
+            var arrayValues = new RouteValueDictionary()
+                {
+                    { "action", "Index" },
+                    { "controller", "Home" },
+                    { "id", "17" },
+                };
+
+            if (!arrayValues.ContainsKey("name"))
+            {
+                arrayValues.Add("name", "Service");
+            }
+        }
+
+        [Benchmark]
+        public void ConditionalAdd_Properties()
+        {
+            var propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17" });
+
+            if (!propertyValues.ContainsKey("name"))
+            {
+                propertyValues.Add("name", "Service");
+            }
+        }
+
+        [Benchmark]
+        public RouteValueDictionary ConditionalAdd_ContainsKey_Array()
         {
             var dictionary = _arrayValues;
 
@@ -68,7 +211,7 @@ namespace Microsoft.AspNetCore.Routing
 
             return dictionary;
         }
-        
+
         [Benchmark]
         public RouteValueDictionary ConditionalAdd_TryAdd()
         {

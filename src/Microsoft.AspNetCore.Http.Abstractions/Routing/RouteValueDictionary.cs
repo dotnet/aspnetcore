@@ -97,7 +97,6 @@ namespace Microsoft.AspNetCore.Routing
         /// Only public instance non-index properties are considered.
         /// </remarks>
         public RouteValueDictionary(object values)
-            : this()
         {
             if (values is RouteValueDictionary dictionary)
             {
@@ -109,20 +108,27 @@ namespace Microsoft.AspNetCore.Routing
                     return;
                 }
 
-                var other = dictionary._arrayStorage;
-                var storage = new KeyValuePair<string, object>[other.Length];
-                if (dictionary._count != 0)
+                var count = dictionary._count;
+                if (count > 0)
                 {
-                    Array.Copy(other, 0, storage, 0, dictionary._count);
+                    var other = dictionary._arrayStorage;
+                    var storage = new KeyValuePair<string, object>[count];
+                    Array.Copy(other, 0, storage, 0, count);
+                    _arrayStorage = storage;
+                    _count = count;
+                }
+                else
+                {
+                    _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
                 }
 
-                _arrayStorage = storage;
-                _count = dictionary._count;
                 return;
             }
 
             if (values is IEnumerable<KeyValuePair<string, object>> keyValueEnumerable)
             {
+                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+
                 foreach (var kvp in keyValueEnumerable)
                 {
                     Add(kvp.Key, kvp.Value);
@@ -133,6 +139,8 @@ namespace Microsoft.AspNetCore.Routing
 
             if (values is IEnumerable<KeyValuePair<string, string>> stringValueEnumerable)
             {
+                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+
                 foreach (var kvp in stringValueEnumerable)
                 {
                     Add(kvp.Key, kvp.Value);
@@ -146,7 +154,10 @@ namespace Microsoft.AspNetCore.Routing
                 var storage = new PropertyStorage(values);
                 _propertyStorage = storage;
                 _count = storage.Properties.Length;
-                return;
+            }
+            else
+            {
+                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
             }
         }
 
@@ -260,8 +271,7 @@ namespace Microsoft.AspNetCore.Routing
 
             EnsureCapacity(_count + 1);
 
-            var index = FindIndex(key);
-            if (index >= 0)
+            if (ContainsKeyArray(key))
             {
                 var message = Resources.FormatRouteValueDictionary_DuplicateKey(key, nameof(RouteValueDictionary));
                 throw new ArgumentException(message, nameof(key));
@@ -305,7 +315,18 @@ namespace Microsoft.AspNetCore.Routing
                 ThrowArgumentNullExceptionForKey();
             }
 
-            return TryGetValue(key, out var _);
+            return ContainsKeyCore(key);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ContainsKeyCore(string key)
+        {
+            if (_propertyStorage == null)
+            {
+                return ContainsKeyArray(key);
+            }
+
+            return ContainsKeyProperties(key);
         }
 
         /// <inheritdoc />
@@ -460,13 +481,7 @@ namespace Microsoft.AspNetCore.Routing
                 ThrowArgumentNullExceptionForKey();
             }
 
-            // Since this is an attempt to write to the dictionary, just make it an array if it isn't. If the code
-            // path we're on event tries to write to the dictionary, it will likely get 'upgraded' at some point,
-            // so we do it here to keep the code size and complexity down.
-            EnsureCapacity(Count);
-
-            var index = FindIndex(key);
-            if (index >= 0)
+            if (ContainsKeyCore(key))
             {
                 return false;
             }
@@ -600,6 +615,42 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             value = null;
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ContainsKeyArray(string key)
+        {
+            var array = _arrayStorage;
+            var count = _count;
+
+            // Elide bounds check for indexing.
+            if ((uint)count <= (uint)array.Length)
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ContainsKeyProperties(string key)
+        {
+            var properties = _propertyStorage.Properties;
+            for (var i = 0; i < properties.Length; i++)
+            {
+                if (string.Equals(properties[i].Name, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
 
