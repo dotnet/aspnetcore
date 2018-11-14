@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -23,23 +24,34 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// </summary>
         public static string TestProjectName = "TestProject";
 
+        private static readonly Dictionary<Assembly, Solution> _solutionCache = new Dictionary<Assembly, Solution>();
+
         public static Project Create(Assembly testAssembly, string[] sources)
         {
-            var fileNamePrefix = DefaultFilePathPrefix;
-
-            var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
-
-            var solution = new AdhocWorkspace()
-                .CurrentSolution
-                .AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp);
-
-            foreach (var defaultCompileLibrary in DependencyContext.Load(testAssembly).CompileLibraries)
+            Solution solution;
+            lock (_solutionCache)
             {
-                foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
+                if (!_solutionCache.TryGetValue(testAssembly, out solution))
                 {
-                    solution = solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
+                    var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
+                    solution = new AdhocWorkspace()
+                        .CurrentSolution
+                        .AddProject(projectId, TestProjectName, TestProjectName, LanguageNames.CSharp);
+
+                    foreach (var defaultCompileLibrary in DependencyContext.Load(testAssembly).CompileLibraries)
+                    {
+                        foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
+                        {
+                            solution = solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(resolveReferencePath));
+                        }
+                    }
+
+                    _solutionCache.Add(testAssembly, solution);
                 }
             }
+
+            var testProject = solution.ProjectIds.Single();
+            var fileNamePrefix = DefaultFilePathPrefix;
 
             for (var i = 0; i < sources.Length; i++)
             {
@@ -50,11 +62,11 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
                 }
                 newFileName += ".cs";
 
-                var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
+                var documentId = DocumentId.CreateNewId(testProject, debugName: newFileName);
                 solution = solution.AddDocument(documentId, newFileName, SourceText.From(sources[i]));
             }
 
-            return solution.GetProject(projectId);
+            return solution.GetProject(testProject);
         }
 
         // Required to resolve compilation assemblies inside unit tests
