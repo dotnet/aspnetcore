@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state)
+        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _totalBytesCommitted += bytesCommitted;
             }
 
-            return FlushAsync();
+            return FlushAsync(cancellationToken);
         }
 
         public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders)

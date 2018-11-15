@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public interface IHttpOutputProducer : IDisposable
     {
         void Abort(ConnectionAbortedException abortReason);
-        Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state);
+        Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state, CancellationToken cancellationToken);
         Task FlushAsync(CancellationToken cancellationToken);
         Task Write100ContinueAsync(CancellationToken cancellationToken);
         void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders);

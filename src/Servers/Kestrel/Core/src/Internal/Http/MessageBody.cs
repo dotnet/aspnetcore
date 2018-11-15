@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             while (true)
             {
-                var result = await _context.RequestBodyPipe.Reader.ReadAsync();
+                var result = await _context.RequestBodyPipe.Reader.ReadAsync(cancellationToken);
                 var readableBuffer = result.Buffer;
                 var consumed = readableBuffer.End;
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             while (true)
             {
-                var result = await _context.RequestBodyPipe.Reader.ReadAsync();
+                var result = await _context.RequestBodyPipe.Reader.ReadAsync(cancellationToken);
                 var readableBuffer = result.Buffer;
                 var consumed = readableBuffer.End;
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             // - The WriteAsync(ReadOnlyMemory<byte>) isn't overridden on the destination
                             // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
 #if NETCOREAPP2_1
-                            await destination.WriteAsync(memory);
+                            await destination.WriteAsync(memory, cancellationToken);
 #else
                             var array = memory.GetArray();
                             await destination.WriteAsync(array.Array, array.Offset, array.Count, cancellationToken);

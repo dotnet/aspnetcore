@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // TODO: RST_STREAM?
         }
 
-        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state)
+        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

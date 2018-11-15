@@ -148,6 +148,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // TryRead can throw OperationCanceledException https://github.com/dotnet/corefx/issues/32029
+                // beacuse of buggy logic, this works around that for now
+            }
             catch (BadHttpRequestException ex)
             {
                 // At this point, the response has already been written, so this won't result in a 4XX response;

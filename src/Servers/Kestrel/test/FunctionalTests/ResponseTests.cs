@@ -217,6 +217,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        public async Task ResponseBodyWriteAsyncCanBeCancelled()
+        {
+            var serviceContext = new TestServiceContext(LoggerFactory);
+            var cts = new CancellationTokenSource();
+            var appTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writeBlockedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (var server = new TestServer(async context =>
+            {
+                try
+                {
+                    await context.Response.WriteAsync("hello", cts.Token).DefaultTimeout();
+
+                    var data = new byte[1024 * 1024 * 10];
+
+                    var timerTask = Task.Delay(TimeSpan.FromSeconds(1));
+                    var writeTask = context.Response.Body.WriteAsync(data, 0, data.Length, cts.Token).DefaultTimeout();
+                    var completedTask = await Task.WhenAny(writeTask, timerTask);
+
+                    while (completedTask == writeTask)
+                    {
+                        await writeTask;
+                        timerTask = Task.Delay(TimeSpan.FromSeconds(1));
+                        writeTask = context.Response.Body.WriteAsync(data, 0, data.Length, cts.Token).DefaultTimeout();
+                        completedTask = await Task.WhenAny(writeTask, timerTask);
+                    }
+
+                    writeBlockedTcs.TrySetResult(null);
+
+                    await writeTask;
+                }
+                catch (Exception ex)
+                {
+                    appTcs.TrySetException(ex);
+                    writeBlockedTcs.TrySetException(ex);
+                }
+                finally
+                {
+                    appTcs.TrySetResult(null);
+                }
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection.Receive($"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "5",
+                        "hello");
+
+                    await writeBlockedTcs.Task.DefaultTimeout();
+
+                    cts.Cancel();
+
+                    await Assert.ThrowsAsync<OperationCanceledException>(() => appTcs.Task).DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
         public Task ResponseStatusCodeSetBeforeHttpContextDisposeAppException()
         {
             return ResponseStatusCodeSetBeforeHttpContextDispose(

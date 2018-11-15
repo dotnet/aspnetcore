@@ -928,7 +928,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task WriteChunkedAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
-            return Output.WriteAsync(_writeChunk, data);
+            return Output.WriteAsync(_writeChunk, data, cancellationToken);
         }
 
         private static long WriteChunk(PipeWriter writableBuffer, ReadOnlyMemory<byte> buffer)
