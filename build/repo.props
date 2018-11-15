@@ -4,6 +4,8 @@
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
+    <DisableDefaultItems>true</DisableDefaultItems>
+    <BuildSolutions>false</BuildSolutions>
 
     <SkipTests>false</SkipTests>
     <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
@@ -13,8 +15,6 @@
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
-    <!-- SignCheck currently fails when verifying vsix files. See https://github.com/dotnet/arcade/issues/1306. -->
-    <DisableSignCheck>true</DisableSignCheck>
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
     <!-- This creates false-positives on many of the native .dll's we produce or re-distribute from other teams. -->
     <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
@@ -47,6 +47,22 @@
     <NativeInstaller Include="rh.rhel.7-x64" FileExt=".rpm" />
 
     <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectToExclude Include="
+                       $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
+                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
+                       " />
+
+    <ProjectToBuild Include="
+                      $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
+                      $(RepositoryRoot)src\DataProtection\**\*.*proj;
+                      $(RepositoryRoot)src\Html\**\*.*proj;
+                      $(RepositoryRoot)src\Tools\**\*.*proj;
+                      $(RepositoryRoot)src\Middleware\**\*.*proj;
+                      "
+                    Exclude="@(ProjectToExclude)" />
   </ItemGroup>
 
   <!-- Properties for publishing -->

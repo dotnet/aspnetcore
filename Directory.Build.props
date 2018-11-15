@@ -17,6 +17,8 @@
       replace PackageLicenseUrl with PackageLicenseExpression.
     -->
     <NoWarn>$(NoWarn);NU5125</NoWarn>
+    <!-- Suppress warnings about using SemVer 2.0. -->
+    <NoWarn>$(NoWarn);NU5105</NoWarn>
 
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
@@ -49,6 +51,16 @@
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
   </PropertyGroup>
 
+  <!-- Certificate names used for Authenticode signing. -->
+  <PropertyGroup Condition=" '$(DisableCodeSigning)' != 'true' ">
+    <AssemblySigningCertName>Microsoft400</AssemblySigningCertName>
+    <AssemblySigning3rdPartyCertName>3PartySHA2</AssemblySigning3rdPartyCertName>
+    <PowerShellSigningCertName>Microsoft400</PowerShellSigningCertName>
+    <PackageSigningCertName>NuGet</PackageSigningCertName>
+    <VsixSigningCertName>VsixSHA2</VsixSigningCertName>
+    <JarSigningCertName>MicrosoftJAR</JarSigningCertName>
+  </PropertyGroup>
+
   <Import Project="build\external-dependencies.props" />
   <Import Project="build\sources.props" />
 
@@ -75,8 +87,16 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <StandardTestTfms>netcoreapp2.2;net461</StandardTestTfms>
+  </PropertyGroup>
+
+  <Import Project="eng\Dependencies.props" />
+  <Import Project="eng\PatchConfig.props" />
+  <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\targets\RuntimeIdentifiers.props" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
+  <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\SharedFx.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.shfxproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
 

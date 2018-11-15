@@ -11,6 +11,8 @@
     <VersionSuffix>$(PreReleaseLabel)-$(BuildNumber)</VersionSuffix>
     <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumber)</BrandingVersionSuffix>
 
+    <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
+    <IsServicingBuild Condition=" '$(PreReleaseLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Run the build with /p:IsFinalBuild=true to produce the product with 'final' branding and versioning -->
     <IsFinalBuild Condition=" '$(IsFinalBuild)' == '' ">false</IsFinalBuild>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
@@ -34,6 +36,9 @@
     <VersionSuffix Condition=" '$(VersionMetadata)' != '' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
 
     <SharedFxCliBlobChannel>master</SharedFxCliBlobChannel>
+
+    <!-- This is used for error checking to ensure generated code and baselines are up to date when we increment the patch. -->
+    <PreviousAspNetCoreReleaseVersion Condition=" '$(AspNetCorePatchVersion)' != '0' ">$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$([MSBuild]::Subtract($(AspNetCorePatchVersion), 1))</PreviousAspNetCoreReleaseVersion>
   </PropertyGroup>
 
   <!-- Run 'dotnet msbuild version.props' to test changes to this file. -->

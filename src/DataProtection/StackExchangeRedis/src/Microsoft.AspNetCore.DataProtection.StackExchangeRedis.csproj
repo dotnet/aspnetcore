@@ -9,11 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <Reference Include="StackExchange.Redis" />
   </ItemGroup>
 
 </Project>

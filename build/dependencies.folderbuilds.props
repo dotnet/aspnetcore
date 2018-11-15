@@ -1,7 +1,7 @@
 ﻿<!-- This file is temporary while we rework dependencies management. It is used when building individual folders as if they were repos. -->
 <Project>
   <PropertyGroup>
-    <InternalAspNetCoreSdkPackageVersion Condition="'$(InternalAspNetCoreSdkPackageVersion)' == ''">3.0.0-alpha1-20181108.8</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition="'$(InternalAspNetCoreSdkPackageVersion)' == ''">3.0.0-build-20181114.5</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
     <MicrosoftAspNetCoreAuthenticationCorePackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
     <MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>

@@ -43,6 +43,7 @@
       <FilesToSign Include="Microsoft.Extensions.Options.DataAnnotations.dll"               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Options.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Primitives.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.WebEncoders.dll"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
     <!-- These files came from the aspnet/EntityFrameworkCore build, but have to be re-signed because we crossgen them. -->
       <FilesToSign Include="Microsoft.EntityFrameworkCore.Abstractions.dll"                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.EntityFrameworkCore.Design.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />

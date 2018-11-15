@@ -26,17 +26,9 @@
 	path = modules/Diagnostics
 	url = https://github.com/aspnet/Diagnostics.git
 	branch = master
-[submodule "modules/DotNetTools"]
-	path = modules/DotNetTools
-	url = https://github.com/aspnet/DotNetTools.git
-	branch = master
 [submodule "modules/Hosting"]
 	path = modules/Hosting
 	url = https://github.com/aspnet/Hosting.git
-	branch = master
-[submodule "modules/HtmlAbstractions"]
-	path = modules/HtmlAbstractions
-	url = https://github.com/aspnet/HtmlAbstractions.git
 	branch = master
 [submodule "modules/HttpAbstractions"]
 	path = modules/HttpAbstractions
@@ -57,10 +49,6 @@
 [submodule "modules/JavaScriptServices"]
 	path = modules/JavaScriptServices
 	url = https://github.com/aspnet/JavaScriptServices.git
-	branch = master
-[submodule "modules/JsonPatch"]
-	path = modules/JsonPatch
-	url = https://github.com/aspnet/JsonPatch.git
 	branch = master
 [submodule "modules/KestrelHttpServer"]
 	path = modules/KestrelHttpServer

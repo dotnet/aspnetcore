@@ -7,16 +7,12 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="JsonPatch" Order="1" />
-    <RepositoryBuildOrder Include="DotNetTools" Order="1" />
-    <RepositoryBuildOrder Include="HtmlAbstractions" Order="1" />
     <RepositoryBuildOrder Include="Razor" Order="6" />
     <RepositoryBuildOrder Include="HttpAbstractions" Order="6" />
     <RepositoryBuildOrder Include="HttpClientFactory" Order="6" />
     <RepositoryBuildOrder Include="Hosting" Order="7" />
     <RepositoryBuildOrder Include="KestrelHttpServer" Order="8" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" />
-    <RepositoryBuildOrder Include="DataProtection" Order="9" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="10" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
@@ -28,7 +24,6 @@
     <RepositoryBuildOrder Include="Routing" Order="12" />
     <RepositoryBuildOrder Include="Diagnostics" Order="12" />
     <RepositoryBuildOrder Include="Localization" Order="13" />
-    <RepositoryBuildOrder Include="WebSockets" Order="13" RootPath="$(RepositoryRoot)src\WebSockets\" />
     <RepositoryBuildOrder Include="Security" Order="13" />
     <RepositoryBuildOrder Include="MetaPackages" Order="13" />
     <RepositoryBuildOrder Include="Mvc" Order="14" />

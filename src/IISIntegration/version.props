@@ -3,16 +3,15 @@
     <DotNetMajorVersion>3</DotNetMajorVersion>
     <DotNetMinorVersion>0</DotNetMinorVersion>
     <DotNetPatchVersion>0</DotNetPatchVersion>
+    <PreReleaseLabel>alpha1</PreReleaseLabel>
+    <BuildNumber Condition="'$(BuildNumber)' == ''">$([System.DateTime]::Now.ToString('yyMMdd'))-99</BuildNumber>
     <VersionPrefix>$(DotNetMajorVersion).$(DotNetMinorVersion).$(DotNetPatchVersion)</VersionPrefix>
     <AspNetCoreModuleVersionMajor>13</AspNetCoreModuleVersionMajor>
     <AspNetCoreModuleVersionMinor>$(DotNetMinorVersion)</AspNetCoreModuleVersionMinor>
     <AspNetCoreModuleVersionRevision>$(DotNetPatchVersion)</AspNetCoreModuleVersionRevision>
-    <VersionSuffix>alpha1</VersionSuffix>
-    <VersionSuffix Condition="'$(BuildServerIIS21)' == 'true'">ancm-oob</VersionSuffix>
-    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
-    <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
-    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <PackageVersion>$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition="'$(IncludePreReleaseLabelInPackageVersion)' != 'false' ">$(VersionPrefix)-$(PreReleaseLabel)-$(BuildNumber)</PackageVersion>
+    <Version>$(PackageVersion)</Version>
     <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
   </PropertyGroup>
 </Project>

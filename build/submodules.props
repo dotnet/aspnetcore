@@ -41,18 +41,14 @@
     <Repository Include="AzureIntegration" />
     <Repository Include="BasicMiddleware" />
     <Repository Include="CORS" />
-    <Repository Include="DataProtection" RootPath="$(RepositoryRoot)src\DataProtection\" />
     <Repository Include="Diagnostics" />
-    <Repository Include="DotNetTools" />
     <Repository Include="Hosting" />
-    <Repository Include="HtmlAbstractions" />
     <Repository Include="HttpAbstractions" />
     <Repository Include="HttpClientFactory" />
     <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <Repository Include="JavaScriptServices" />
-    <Repository Include="JsonPatch" />
     <Repository Include="KestrelHttpServer" />
     <Repository Include="Localization" />
     <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
@@ -65,7 +61,6 @@
     <Repository Include="SignalR" />
     <Repository Include="StaticFiles" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="WebSockets" RootPath="$(RepositoryRoot)src\WebSockets\" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
