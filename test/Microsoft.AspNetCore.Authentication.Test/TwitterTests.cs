@@ -175,6 +175,94 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         }
 
         [Fact]
+        public async Task HandleRequestAsync_RedirectsToAccessDeniedPathWhenExplicitlySet()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = BackchannelRequestToken
+                };
+                o.AccessDeniedPath = "/access-denied";
+                o.Events.OnRemoteFailure = context => throw new InvalidOperationException("This event should not be called.");
+            },
+            async context =>
+            {
+                var properties = new AuthenticationProperties();
+                properties.Items["testkey"] = "testvalue";
+                await context.ChallengeAsync("Twitter", properties);
+                return true;
+            });
+            var transaction = await server.SendAsync("http://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            var location = transaction.Response.Headers.Location.AbsoluteUri;
+            Assert.Contains("https://api.twitter.com/oauth/authenticate?oauth_token=", location);
+            Assert.True(transaction.Response.Headers.TryGetValues(HeaderNames.SetCookie, out var setCookie));
+            Assert.True(SetCookieHeaderValue.TryParseList(setCookie.ToList(), out var setCookieValues));
+            Assert.Single(setCookieValues);
+            var setCookieValue = setCookieValues.Single();
+            var cookie = new CookieHeaderValue(setCookieValue.Name, setCookieValue.Value);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/signin-twitter?denied=ABCDEFG");
+            request.Headers.Add(HeaderNames.Cookie, cookie.ToString());
+            var client = server.CreateClient();
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/access-denied?ReturnUrl=%2Fchallenge", response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task BadCallbackCallsAccessDeniedWithState()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = BackchannelRequestToken
+                };
+                o.Events = new TwitterEvents()
+                {
+                    OnAccessDenied = context =>
+                    {
+                        Assert.NotNull(context.Properties);
+                        Assert.Equal("testvalue", context.Properties.Items["testkey"]);
+                        context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+                        context.HandleResponse();
+                        return Task.CompletedTask;
+                    }
+                };
+            },
+            async context =>
+            {
+                var properties = new AuthenticationProperties();
+                properties.Items["testkey"] = "testvalue";
+                await context.ChallengeAsync("Twitter", properties);
+                return true;
+            });
+            var transaction = await server.SendAsync("http://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            var location = transaction.Response.Headers.Location.AbsoluteUri;
+            Assert.Contains("https://api.twitter.com/oauth/authenticate?oauth_token=", location);
+            Assert.True(transaction.Response.Headers.TryGetValues(HeaderNames.SetCookie, out var setCookie));
+            Assert.True(SetCookieHeaderValue.TryParseList(setCookie.ToList(), out var setCookieValues));
+            Assert.Single(setCookieValues);
+            var setCookieValue = setCookieValues.Single();
+            var cookie = new CookieHeaderValue(setCookieValue.Name, setCookieValue.Value);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/signin-twitter?denied=ABCDEFG");
+            request.Headers.Add(HeaderNames.Cookie, cookie.ToString());
+            var client = server.CreateClient();
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
+        }
+
+        [Fact]
         public async Task BadCallbackCallsRemoteAuthFailedWithState()
         {
             var server = CreateServer(o =>
@@ -190,7 +278,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                     OnRemoteFailure = context =>
                     {
                         Assert.NotNull(context.Failure);
-                        Assert.Equal("The user denied permissions.", context.Failure.Message);
+                        Assert.Equal("Access was denied by the resource owner or by the remote server.", context.Failure.Message);
                         Assert.NotNull(context.Properties);
                         Assert.Equal("testvalue", context.Properties.Items["testkey"]);
                         context.Response.StatusCode = StatusCodes.Status406NotAcceptable;

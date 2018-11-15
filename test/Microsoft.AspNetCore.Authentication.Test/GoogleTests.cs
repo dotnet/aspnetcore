@@ -360,6 +360,70 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
+        public async Task ReplyPathWithAccessDeniedErrorFails(bool redirect)
+        {
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.StateDataFormat = new TestStateDataFormat();
+                o.Events = redirect ? new OAuthEvents()
+                {
+                    OnAccessDenied = ctx =>
+                    {
+                        ctx.Response.Redirect("/error?FailureMessage=AccessDenied");
+                        ctx.HandleResponse();
+                        return Task.FromResult(0);
+                    }
+                } : new OAuthEvents();
+            });
+            var sendTask = server.SendAsync("https://example.com/signin-google?error=access_denied&error_description=SoBad&error_uri=foobar&state=protected_state",
+                ".AspNetCore.Correlation.Google.correlationId=N");
+            if (redirect)
+            {
+                var transaction = await sendTask;
+                Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+                Assert.Equal("/error?FailureMessage=AccessDenied", transaction.Response.Headers.GetValues("Location").First());
+            }
+            else
+            {
+                var error = await Assert.ThrowsAnyAsync<Exception>(() => sendTask);
+                Assert.Equal("Access was denied by the resource owner or by the remote server.", error.GetBaseException().Message);
+            }
+        }
+
+        [Fact]
+        public async Task ReplyPathWithAccessDeniedError_AllowsCustomizingPath()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.StateDataFormat = new TestStateDataFormat();
+                o.AccessDeniedPath = "/access-denied";
+                o.Events = new OAuthEvents()
+                {
+                    OnAccessDenied = ctx =>
+                    {
+                        Assert.Equal("/access-denied", ctx.AccessDeniedPath.Value);
+                        Assert.Equal("http://testhost/redirect", ctx.ReturnUrl);
+                        Assert.Equal("ReturnUrl", ctx.ReturnUrlParameter);
+                        ctx.AccessDeniedPath = "/custom-denied-page";
+                        ctx.ReturnUrl = "http://www.google.com/";
+                        ctx.ReturnUrlParameter = "rurl";
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+            var transaction = await server.SendAsync("https://example.com/signin-google?error=access_denied&error_description=SoBad&error_uri=foobar&state=protected_state",
+                ".AspNetCore.Correlation.Google.correlationId=N");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/custom-denied-page?rurl=http%3A%2F%2Fwww.google.com%2F", transaction.Response.Headers.GetValues("Location").First());
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
         public async Task ReplyPathWithErrorFails(bool redirect)
         {
             var server = CreateServer(o =>
@@ -378,7 +442,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 } : new OAuthEvents();
             });
             var sendTask = server.SendAsync("https://example.com/signin-google?error=OMG&error_description=SoBad&error_uri=foobar&state=protected_state",
-                ".AspNetCore.Correlation.Google.corrilationId=N");
+                ".AspNetCore.Correlation.Google.correlationId=N");
             if (redirect)
             {
                 var transaction = await sendTask;
@@ -1205,7 +1269,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 Assert.Equal("protected_state", protectedText);
                 var properties = new AuthenticationProperties(new Dictionary<string, string>()
                 {
-                    { ".xsrf", "corrilationId" },
+                    { ".xsrf", "correlationId" },
                     { "testkey", "testvalue" }
                 });
                 properties.RedirectUri = "http://testhost/redirect";

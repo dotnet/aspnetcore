@@ -63,6 +63,16 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var error = query["error"];
             if (!StringValues.IsNullOrEmpty(error))
             {
+                // Note: access_denied errors are special protocol errors indicating the user didn't
+                // approve the authorization demand requested by the remote authorization server.
+                // Since it's a frequent scenario (that is not caused by incorrect configuration),
+                // denied errors are handled differently using HandleAccessDeniedErrorAsync().
+                // Visit https://tools.ietf.org/html/rfc6749#section-4.1.2.1 for more information.
+                if (StringValues.Equals(error, "access_denied"))
+                {
+                    return await HandleAccessDeniedErrorAsync(properties);
+                }
+
                 var failureMessage = new StringBuilder();
                 failureMessage.Append(error);
                 var errorDescription = query["error_description"];
@@ -194,7 +204,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                properties.RedirectUri = CurrentUri;
+                properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
             }
 
             // OAuth2 10.12 CSRF
