@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Builder
 
         public string Name { get; }
         public string Pattern { get; }
-        public Type ControllerType { get; set; }
 
         // Non-inline defaults
         public RouteValueDictionary Defaults { get; }

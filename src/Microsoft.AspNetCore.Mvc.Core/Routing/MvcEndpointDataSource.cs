@@ -139,16 +139,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         // - Home/Login
                         foreach (var endpointInfo in ConventionalEndpointInfos)
                         {
-                            if (endpointInfo.ControllerType != null &&
-                                endpointInfo.ControllerType != typeof(ControllerBase))
-                            {
-                                if (!ValidateControllerConstraint(action, endpointInfo))
-                                {
-                                    // Action descriptor does not belong to a controller of the specified type
-                                    continue;
-                                }
-                            }
-
                             // An 'endpointInfo' is applicable if:
                             // 1. it has a parameter (or default value) for 'required' non-null route value
                             // 2. it does not have a parameter (or default value) for 'required' null route value
@@ -242,16 +232,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             return null;
-        }
-
-        private static bool ValidateControllerConstraint(ActionDescriptor action, MvcEndpointInfo endpointInfo)
-        {
-            if (action is ControllerActionDescriptor controllerActionDescriptor)
-            {
-                return endpointInfo.ControllerType.IsAssignableFrom(controllerActionDescriptor.ControllerTypeInfo);
-            }
-
-            return false;
         }
 
         // CreateEndpoints processes the route pattern, replacing area/controller/action parameters with endpoint values
