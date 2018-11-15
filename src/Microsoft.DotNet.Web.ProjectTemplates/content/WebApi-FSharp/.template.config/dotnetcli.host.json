@@ -11,11 +11,6 @@
       "longName": "exclude-launch-settings",
       "shortName": ""
     },
-    "TargetFrameworkOverride": {
-      "isHidden": "true",
-      "longName": "target-framework-override",
-      "shortName": ""
-    },
     "Framework": {
       "longName": "framework"
     },

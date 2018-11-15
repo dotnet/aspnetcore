@@ -13,37 +13,12 @@ namespace Templates.Test
         {
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void MvcTemplate_NoAuth_Works_NetFramework_ForDefaultTemplate()
-            => MvcTemplate_NoAuthImpl("net461", languageOverride: default);
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void MvcTemplate_NoAuth_Works_NetFramework_ForFSharpTemplate()
-            => MvcTemplate_NoAuthImpl("net461", languageOverride: "F#");
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void MvcTemplate_NoAuth_NoHttps_Works_NetFramework_ForDefaultTemplate()
-            => MvcTemplate_NoAuthImpl("net461", languageOverride: default, true);
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void MvcTemplate_NoAuth_NoHttps_Works_NetFramework_ForFSharpTemplate()
-            => MvcTemplate_NoAuthImpl("net461", languageOverride: "F#", true);
-
-        [Fact]
-        public void MvcTemplate_NoAuth_Works_NetCore_ForDefaultTemplate()
-            => MvcTemplate_NoAuthImpl(null, languageOverride: default);
-
-        [Fact(Skip = "https://github.com/aspnet/Templating/issues/673")]
-        public void MvcTemplate_NoAuth_Works_NetCore_ForFSharpTemplate()
-            => MvcTemplate_NoAuthImpl(null, languageOverride: "F#");
-
-        private void MvcTemplate_NoAuthImpl(string targetFrameworkOverride, string languageOverride, bool noHttps = false)
+        [Theory]
+        [InlineData(null)]
+        [InlineData("F#", Skip = "https://github.com/aspnet/Templating/issues/673")]
+        private void MvcTemplate_NoAuthImpl(string languageOverride)
         {
-            RunDotNetNew("mvc", targetFrameworkOverride, language: languageOverride, noHttps: noHttps);
+            RunDotNetNew("mvc", language: languageOverride);
 
             AssertDirectoryExists("Areas", false);
             AssertDirectoryExists("Extensions", false);
@@ -58,21 +33,9 @@ namespace Templates.Test
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
-            if (targetFrameworkOverride != null)
-            {
-                if (noHttps)
-                {
-                    Assert.DoesNotContain("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
-                }
-                else
-                {
-                    Assert.Contains("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
-                }
-            }
-
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                using (var aspNetProcess = StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                     aspNetProcess.AssertOk("/Home/Privacy");
@@ -80,27 +43,12 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void MvcTemplate_IndividualAuth_Works_NetFramework()
-            => MvcTemplate_IndividualAuthImpl("net461");
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void MvcTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
-            => MvcTemplate_IndividualAuthImpl("net461", false, true);
-
-        [Fact]
-        public void MvcTemplate_IndividualAuth_Works_NetCore()
-            => MvcTemplate_IndividualAuthImpl(null);
-
-        [Fact]
-        public void MvcTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
-            => MvcTemplate_IndividualAuthImpl(null, true);
-
-        private void MvcTemplate_IndividualAuthImpl(string targetFrameworkOverride, bool useLocalDB = false, bool noHttps = false)
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void MvcTemplate_IndividualAuthImpl(bool useLocalDB)
         {
-            RunDotNetNew("mvc", targetFrameworkOverride, auth: "Individual", useLocalDB: useLocalDB);
+            RunDotNetNew("mvc", auth: "Individual", useLocalDB: useLocalDB);
 
             AssertDirectoryExists("Extensions", false);
             AssertFileExists("urlRewrite.config", false);
@@ -112,18 +60,13 @@ namespace Templates.Test
                 Assert.Contains(".db", projectFileContents);
             }
 
-            if (targetFrameworkOverride != null)
-            {
-                Assert.Contains("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
-            }
-
             RunDotNetEfCreateMigration("mvc");
 
             AssertEmptyMigration("mvc");
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                using (var aspNetProcess = StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                     aspNetProcess.AssertOk("/Home/Privacy");

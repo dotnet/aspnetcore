@@ -13,23 +13,14 @@ namespace Templates.Test
         {
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void EmptyWebTemplate_Works_NetFramework()
-            => EmptyWebTemplateImpl("net461");
-
         [Fact]
-        public void EmptyWebTemplate_Works_NetCore()
-            => EmptyWebTemplateImpl(null);
-
-        private void EmptyWebTemplateImpl(string targetFrameworkOverride)
+        public void EmptyWebTemplate()
         {
-            RunDotNetNew("web", targetFrameworkOverride);
+            RunDotNetNew("web");
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                using (var aspNetProcess = StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                 }

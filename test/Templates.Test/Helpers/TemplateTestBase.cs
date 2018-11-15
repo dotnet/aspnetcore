@@ -59,16 +59,11 @@ $@"<Project>
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
         }
 
-        protected void RunDotNetNew(string templateName, string targetFrameworkOverride, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
+        protected void RunDotNetNew(string templateName, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
         {
             SetAfterDirectoryBuildPropsContents();
 
             var args = $"new {templateName} --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
-
-            if (!string.IsNullOrEmpty(targetFrameworkOverride))
-            {
-                args += $" --target-framework-override {targetFrameworkOverride}";
-            }
 
             if (!string.IsNullOrEmpty(auth))
             {
@@ -214,9 +209,9 @@ $@"<Project>
             return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
         }
 
-        protected AspNetProcess StartAspNetProcess(string targetFrameworkOverride, bool publish = false)
+        protected AspNetProcess StartAspNetProcess(bool publish = false)
         {
-            return new AspNetProcess(Output, TemplateOutputDir, ProjectName, targetFrameworkOverride, publish);
+            return new AspNetProcess(Output, TemplateOutputDir, ProjectName, publish);
         }
 
         public void Dispose()

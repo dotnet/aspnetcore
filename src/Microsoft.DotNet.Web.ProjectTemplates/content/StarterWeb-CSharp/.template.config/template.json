@@ -30,12 +30,6 @@
       ],
       "modifiers": [
         {
-          "condition": "(TargetFrameworkOverride == '')",
-          "exclude": [
-            "app.config"
-          ]
-        },
-        {
           "condition": "(!OrganizationalAuth && !IndividualAuth)",
           "exclude": [
             "Views/Shared/_LoginPartial.Identity.cshtml",
@@ -299,13 +293,6 @@
       "datatype": "bool",
       "defaultValue": "false",
       "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
-    },
-    "TargetFrameworkOverride": {
-      "type": "parameter",
-      "description": "Overrides the target framework",
-      "replaces": "TargetFrameworkOverride",
-      "datatype": "string",
-      "defaultValue": ""
     },
     "Framework": {
       "type": "parameter",

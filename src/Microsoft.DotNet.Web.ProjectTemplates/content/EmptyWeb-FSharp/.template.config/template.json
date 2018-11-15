@@ -21,12 +21,6 @@
     {
       "modifiers": [
         {
-          "condition": "(TargetFrameworkOverride == '')",
-          "exclude": [
-            "app.config"
-          ]
-        },
-        {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "Properties/launchSettings.json"
@@ -81,13 +75,6 @@
         "fallbackVariableName": "HttpsPortGenerated"
       },
       "replaces": "44300"
-    },
-    "TargetFrameworkOverride": {
-      "type": "parameter",
-      "description": "Overrides the target framework",
-      "replaces": "TargetFrameworkOverride",
-      "datatype": "string",
-      "defaultValue": ""
     },
     "Framework": {
       "type": "parameter",

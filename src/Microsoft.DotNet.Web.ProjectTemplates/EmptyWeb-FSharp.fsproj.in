@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp3.0</TargetFramework>
-    <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
-    <AspNetCoreHostingModel Condition="'$(TargetFrameworkOverride)' == ''">InProcess</AspNetCoreHostingModel>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
   </PropertyGroup>
 
@@ -13,11 +12,8 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore" Version="${MicrosoftAspNetCorePackageVersion}" />
   </ItemGroup>
 
 </Project>

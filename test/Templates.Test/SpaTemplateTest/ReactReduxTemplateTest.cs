@@ -16,6 +16,6 @@ namespace Templates.Test.SpaTemplateTest
 
         [Fact]
         public void ReactReduxTemplate_Works_NetCore()
-            => SpaTemplateImpl(null, "reactredux");
+            => SpaTemplateImpl("reactredux");
     }
 }

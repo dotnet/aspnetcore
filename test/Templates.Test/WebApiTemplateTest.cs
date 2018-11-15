@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,23 +12,14 @@ namespace Templates.Test
         {
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void WebApiTemplate_Works_NetFramework()
-            => WebApiTemplateImpl("net461");
-
         [Fact]
-        public void WebApiTemplate_Works_NetCore()
-            => WebApiTemplateImpl(null);
-
-        private void WebApiTemplateImpl(string targetFrameworkOverride)
+        public void WebApiTemplate()
         {
-            RunDotNetNew("webapi", targetFrameworkOverride);
+            RunDotNetNew("webapi");
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                using (var aspNetProcess = StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/api/values");
                     aspNetProcess.AssertNotFound("/");

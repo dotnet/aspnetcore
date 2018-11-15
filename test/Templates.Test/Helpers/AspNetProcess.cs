@@ -27,7 +27,7 @@ namespace Templates.Test.Helpers
         private readonly HttpClient _httpClient;
         private readonly ITestOutputHelper _output;
 
-        public AspNetProcess(ITestOutputHelper output, string workingDirectory, string projectName, string targetFrameworkOverride, bool publish)
+        public AspNetProcess(ITestOutputHelper output, string workingDirectory, string projectName, bool publish)
         {
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
@@ -41,7 +41,6 @@ namespace Templates.Test.Helpers
             var now = DateTimeOffset.Now;
             new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
 
-            var framework = string.IsNullOrEmpty(targetFrameworkOverride) ? DefaultFramework : targetFrameworkOverride;
             if (publish)
             {
                 output.WriteLine("Publishing ASP.NET application...");
@@ -53,7 +52,7 @@ namespace Templates.Test.Helpers
                 ProcessEx
                     .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}")
                     .WaitForExit(assertSuccess: true);
-                workingDirectory = Path.Combine(workingDirectory, "bin", "Release", framework, "publish");
+                workingDirectory = Path.Combine(workingDirectory, "bin", "Release", DefaultFramework, "publish");
                 if (File.Exists(Path.Combine(workingDirectory, "ClientApp", "package.json")))
                 {
                     Npm.RestoreWithRetry(output, Path.Combine(workingDirectory, "ClientApp"));
@@ -78,24 +77,10 @@ namespace Templates.Test.Helpers
             }
 
             output.WriteLine("Running ASP.NET application...");
-            if (framework.StartsWith("netcore"))
-            {
-                var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{framework}/{projectName}.dll";
-                _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
-                _listeningUri = GetListeningUri(output);
-            }
-            else
-            {
-                var exeFullPath = publish
-                    ? Path.Combine(workingDirectory, $"{projectName}.exe")
-                    : Path.Combine(workingDirectory, "bin", "Debug", framework, $"{projectName}.exe");
-                using (new AddFirewallExclusion(exeFullPath))
-                {
-                    _process = ProcessEx.Run(output, workingDirectory, exeFullPath, envVars: envVars);
-                    _listeningUri = GetListeningUri(output);
-                }
-            }
 
+            var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{DefaultFramework}/{projectName}.dll";
+            _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
+            _listeningUri = GetListeningUri(output);
         }
 
         public void VisitInBrowser(IWebDriver driver)

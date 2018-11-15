@@ -13,23 +13,10 @@ namespace Templates.Test
         {
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void RazorPagesTemplate_NoAuth_Works_NetFramework()
-            => RazorPagesTemplate_NoAuthImpl("net461");
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void RazorPagesTemplate_NoAuth_NoHttps_Works_NetFramework()
-            => RazorPagesTemplate_NoAuthImpl("net461", true);
-
         [Fact]
-        public void RazorPagesTemplate_NoAuth_Works_NetCore()
-            => RazorPagesTemplate_NoAuthImpl(null);
-
-        private void RazorPagesTemplate_NoAuthImpl(string targetFrameworkOverride, bool noHttps = false)
+        private void RazorPagesTemplate_NoAuthImpl()
         {
-            RunDotNetNew("razor", targetFrameworkOverride, noHttps: noHttps);
+            RunDotNetNew("razor");
 
             AssertFileExists("Pages/Shared/_LoginPartial.cshtml", false);
 
@@ -40,21 +27,9 @@ namespace Templates.Test
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
-            if (targetFrameworkOverride != null)
-            {
-                if (noHttps)
-                {
-                    Assert.DoesNotContain("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
-                }
-                else
-                {
-                    Assert.Contains("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
-                }
-            }
-
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                using (var aspNetProcess = StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                     aspNetProcess.AssertOk("/Privacy");
@@ -62,27 +37,12 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void RazorPagesTemplate_IndividualAuth_Works_NetFramework()
-            => RazorPagesTemplate_IndividualAuthImpl("net461");
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public void RazorPagesTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
-            => RazorPagesTemplate_IndividualAuthImpl("net461", false, true);
-
-        [Fact]
-        public void RazorPagesTemplate_IndividualAuth_Works_NetCore()
-            => RazorPagesTemplate_IndividualAuthImpl(null);
-
-        [Fact]
-        public void RazorPagesTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
-            => RazorPagesTemplate_IndividualAuthImpl(null, true);
-
-        private void RazorPagesTemplate_IndividualAuthImpl(string targetFrameworkOverride, bool useLocalDB = false, bool noHttps = false)
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void RazorPagesTemplate_IndividualAuthImpl( bool useLocalDB)
         {
-            RunDotNetNew("razor", targetFrameworkOverride, auth: "Individual", useLocalDB: useLocalDB);
+            RunDotNetNew("razor", auth: "Individual", useLocalDB: useLocalDB);
 
             AssertFileExists("Pages/Shared/_LoginPartial.cshtml", true);
 
@@ -92,18 +52,13 @@ namespace Templates.Test
                 Assert.Contains(".db", projectFileContents);
             }
 
-            if (targetFrameworkOverride != null)
-            {
-                Assert.Contains("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
-            }
-
             RunDotNetEfCreateMigration("razorpages");
 
             AssertEmptyMigration("razorpages");
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                using (var aspNetProcess = StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                     aspNetProcess.AssertOk("/Privacy");
