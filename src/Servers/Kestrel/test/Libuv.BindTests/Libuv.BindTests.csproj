@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <TestGroupName>Libuv.BindTests</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\BindTests\**\*.cs" />
+    <Compile Include="..\Libuv.FunctionalTests\TransportSelector.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
+  </ItemGroup>
+
+</Project>

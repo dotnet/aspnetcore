@@ -1,0 +1,15 @@
+{
+  "Default": {
+    "Client": "Wrk",
+    "PresetHeaders": "Json",
+
+    "Source": {
+      "Repository": "https://github.com/aspnet/KestrelHttpServer.git",
+      "BranchOrCommit": "release/2.2",
+      "Project": "benchmarkapps/PlatformBenchmarks/PlatformBenchmarks.csproj"
+    }
+  },
+  "JsonPlatform": {
+    "Path": "/json"
+  }
+}

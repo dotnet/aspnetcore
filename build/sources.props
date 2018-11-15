@@ -8,12 +8,6 @@
       $(DotNetRestoreSources);
     </RestoreSources>
 
-    <!-- This is the 2.2.0 RTM feed. This is necessary until 2.2.0 ships to nuget.org -->
-    <RestoreSources>
-      $(RestoreSources);
-      https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-2/20181110-02/final/index.json;
-    </RestoreSources>
-
     <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' ">
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;

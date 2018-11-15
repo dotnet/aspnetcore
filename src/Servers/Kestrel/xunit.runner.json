@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json.schemastore.org/xunit.runner.schema",
+  "appDomain": "denied",
+  "methodDisplay": "method",
+  "longRunningTestSeconds": 60,
+  "maxParallelThreads": -1
+}

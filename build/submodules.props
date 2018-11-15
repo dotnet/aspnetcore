@@ -61,7 +61,6 @@
     <ShippedRepository Include="HttpSysServer" />
     <ShippedRepository Include="Identity" />
     <ShippedRepository Include="JavaScriptServices" />
-    <ShippedRepository Include="KestrelHttpServer" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="Mvc" />
