@@ -1,9 +1,0 @@
-<!--
-Workaround for https://github.com/dotnet/project-system/issues/2129 - VS does not support using MSBuild variables for PackageReference items.
-Using a variable breaks a bunch of stuff, so this file is injected into the VSIX csproj only when building on commandline.
--->
-<Project ToolsVersion="15.0">
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(VisualStudio_NewtonsoftJsonPackageVersion)" />
-  </ItemGroup>
-</Project>
