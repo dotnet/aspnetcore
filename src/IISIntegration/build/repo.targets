@@ -23,7 +23,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ANCMProject Include="$(MSBuildThisFileDirectory)..\IISIntegration.sln $(BuildArgs)  -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"/>
+      <ANCMProject Include="$(MSBuildThisFileDirectory)..\IISIntegration.sln $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"/>
     </ItemGroup>
 
     <Error
