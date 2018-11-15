@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <TestGroupName>Sockets.FunctionalTests</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\FunctionalTests\**\*.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="System.Net.Http.WinHttpHandler" />
+  </ItemGroup>
+
+</Project>

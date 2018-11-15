@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)test\**\*.cs" />
+    <Compile Include="$(RepositoryRoot)\src\Shared\Buffers.Testing\*.cs" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="System.Memory" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <TestGroupName>Sockets.BindTests</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\BindTests\**\*.cs" />
+    <Compile Include="..\Sockets.FunctionalTests\TransportSelector.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)test\**\*.cs" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+    <Reference Include="CodeGenerator" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+  </ItemGroup>
+
+</Project>
