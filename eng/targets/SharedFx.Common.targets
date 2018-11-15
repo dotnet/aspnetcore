@@ -332,4 +332,21 @@ This targets file should only be imported by .shfxproj files.
   </Target>
 
   <Target Name="CreateManifestResourceNames" />
+
+  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
+    <PropertyGroup>
+      <FullPackageOutputPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</FullPackageOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ArtifactInfo Include="$(FullPackageOutputPath)">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+        <Certificate>$(PackageSigningCertName)</Certificate>
+        <ShouldBeSigned>true</ShouldBeSigned>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
 </Project>
