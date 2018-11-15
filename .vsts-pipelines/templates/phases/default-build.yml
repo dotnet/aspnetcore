@@ -1,0 +1,118 @@
+#
+# Obsolete! New projects should use .azure/templates/jobs/default-build.yml instead
+#
+# TODO: remove this once templated projects have referenced the new location.
+#
+# default-build.yml
+# Description: Defines a build phase for invoking build.sh/cmd
+# Parameters:
+#   phaseName: string
+#       The name of the phase. Defaults to the name of the OS.
+#   queueName: string
+#       The name of the VSTS agent queue to use.
+#   agentOs: string
+#       Used in templates to define variables which are OS specific. Typically from the set { Windows, Linux, macOS }
+#   buildArgs: string
+#       Additional arguments to pass to the build.sh/cmd script.
+#       Note: -ci is always passed
+#   beforeBuild: [steps]
+#       Additional steps to run before build.sh/cmd
+#   afterBuild: [steps]
+#       Additional steps to run after build.sh/cmd
+#   artifacts:
+#      publish: boolean
+#           Should artifacts be published
+#      path: string
+#           The file path to artifacts output
+#      name: string
+#           The name of the artifact container
+#   variables: { string: string }
+#     A map of custom variables
+#   matrix: { string: { string: string } }
+#     A map of matrix configurations and variables. https://docs.microsoft.com/en-us/vsts/pipelines/yaml-schema?view=vsts#matrix
+#   demands: string | [ string ]
+#     A list of agent demands. https://docs.microsoft.com/en-us/vsts/pipelines/yaml-schema?view=vsts#demands
+#   dependsOn: string | [ string ]
+#     For fan-out/fan-in. https://docs.microsoft.com/en-us/vsts/pipelines/yaml-schema?view=vsts#phase
+
+#
+# See https://docs.microsoft.com/en-us/vsts/pipelines/yaml-schema for details
+#
+
+parameters:
+  agentOs: 'Windows'
+  # phaseName: ''
+  queueName: ''
+  buildArgs: ''
+  configuration: 'Release'
+  demands: []
+  beforeBuild: []
+  afterBuild: []
+  variables: {}
+  dependsOn: ''
+  # matrix: {} - don't define an empty object default because there is no way in template expression yet to check "if isEmpty(parameters.matrix)"
+  artifacts:
+    publish: true
+    path: 'artifacts/'  # TODO: this is going to change when we converge with dotnet/arcade tooling
+
+phases:
+- phase: ${{ coalesce(parameters.phaseName, parameters.agentOs) }}
+  dependsOn: ${{ parameters.dependsOn }}
+  queue:
+    # If a matrix of builds has been configured, run the matrix in parallel
+    ${{ if ne(parameters.matrix, '') }}:
+      parallel: 4 # Pick 4 as the default because we usually don't have a matrix of more than 4 configs, and there is no way to say parallel: all
+      matrix: ${{ parameters.matrix }}
+    # Map friendly OS names to the right queue
+    ${{ if ne(parameters.queueName, '') }}:
+      name: ${{ parameters.queueName }}
+    ${{ if and(eq(parameters.queueName, ''), eq(parameters.agentOs, 'macOS')) }}:
+      name: Hosted macOS Preview
+    ${{ if and(eq(parameters.queueName, ''), eq(parameters.agentOs, 'Linux')) }}:
+      name: Hosted Linux Preview
+    ${{ if and(eq(parameters.queueName, ''), eq(parameters.agentOs, 'Windows')) }}:
+      name: Hosted VS2017
+    demands: ${{ parameters.demands }}
+  variables:
+    AgentOsName: ${{ parameters.agentOs }}
+    ASPNETCORE_TEST_LOG_MAXPATH: "200" # Keep test log file name length low enough for artifact zipping
+    DOTNET_HOME: $(Agent.WorkFolder)/.dotnet
+    BuildScriptArgs: ${{ parameters.buildArgs }}
+    BuildConfiguration: ${{ parameters.configuration }}
+    ${{ insert }}: ${{ parameters.variables }}
+  steps:
+  - script: echo "This build template is obsolete and will be removed in the future. Please update your schema to use the  .azure/templates/jobs/default-build.yml template"
+    displayName: THIS TEMPLATE IS OBSOLETE
+  - checkout: self
+    clean: true
+  - ${{ parameters.beforeBuild }}
+  - ${{ if eq(parameters.agentOs, 'Windows') }}:
+    - script: .\buildWithProcDump.cmd -ci /p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
+      displayName: Run build.cmd
+  - ${{ if ne(parameters.agentOs, 'Windows') }}:
+    - script: ./build.sh -ci -p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
+      displayName: Run build.sh
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: always()
+    inputs:
+      testRunner: vstest
+      testResultsFiles: 'artifacts/logs/**/*.trx'
+  - task: PublishTestResults@2
+    displayName: Publish junit test results
+    condition: always()
+    inputs:
+      testRunner: junit
+      testResultsFiles: 'artifacts/logs/**/*.junit.xml'
+  - ${{ if eq(parameters.artifacts.publish, 'true') }}:
+    - task: PublishBuildArtifacts@1
+      displayName: Upload artifacts
+      condition: eq(variables['system.pullrequest.isfork'], false)
+      inputs:
+        pathtoPublish: ${{ parameters.artifacts.path }}
+        ${{ if eq(parameters.artifacts.name, '') }}:
+          artifactName: artifacts-$(AgentOsName)-$(BuildConfiguration)
+        ${{ if ne(parameters.artifacts.name, '') }}:
+          artifactName: ${{ parameters.artifacts.name }}
+        artifactType: Container
+  - ${{ parameters.afterBuild }}
