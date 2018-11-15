@@ -1,0 +1,27 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <DefineConstants Condition="'$(InnerLoop)' != ''">$(DefineConstants);INNER_LOOP</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- https://github.com/aspnet/KestrelHttpServer/issues/2350 -->
+    <EnableApiCheck>false</EnableApiCheck>
+    <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)shared\</KestrelSharedSourceRoot>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsTestProject)' == 'true' ">
+    <!--
+      Workaround for "Use executable flags in Microsoft.NET.Test.Sdk" (https://github.com/Microsoft/vstest/issues/792).
+      Remove when fixed.
+    -->
+    <HasRuntimeOutput>true</HasRuntimeOutput>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
+    <None Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+  </ItemGroup>
+</Project>

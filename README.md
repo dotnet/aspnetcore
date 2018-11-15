@@ -3,8 +3,6 @@ ASP.NET Core
 
 ASP.NET Core is an open-source and cross-platform framework for building modern cloud based internet connected applications, such as web apps, IoT apps and mobile backends. ASP.NET Core apps can run on .NET Core or on the full .NET Framework. It was architected to provide an optimized development framework for apps that are deployed to the cloud or run on-premises. It consists of modular components with minimal overhead, so you retain flexibility while constructing your solutions. You can develop and run your ASP.NET Core apps cross-platform on Windows, Mac and Linux. [Learn more about ASP.NET Core](https://docs.microsoft.com/aspnet/core/).
 
-ASP.NET Core 2.1 is now available! See the [release notes](https://github.com/aspnet/AspNetCore/releases/tag/2.1.0) for further details and check our [releases](https://github.com/aspnet/AspNetCore/releases/) for the latest patch release.
-
 ## Get Started
 
 Follow the [Getting Started](https://docs.microsoft.com/aspnet/core/getting-started) instructions in the [ASP.NET Core docs](https://docs.microsoft.com/aspnet/index).
@@ -16,11 +14,11 @@ Also check out the [.NET Homepage](https://www.microsoft.com/net) for released v
 Some of the best ways to contribute are to try things out, file issues, join in design conversations,
 and make pull-requests.
 
-* [Download our latest daily builds](./docs/daily-builds.md)
+* [Download our latest daily builds](./docs/DailyBuilds.md)
 * Follow along with the development of ASP.NET Core:
     * [Community Standup](http://live.asp.net): The community standup is held every week and streamed live to YouTube. You can view past standups in the linked playlist.
     * [Roadmap](https://github.com/aspnet/AspNetCore/wiki/Roadmap): The schedule and milestone themes for ASP.NET Core.
-* [Build ASP.NET Core source code](./docs/build-from-source.md)
+* [Build ASP.NET Core source code](./docs/BuildFromSource.md)
 * Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
 ## Reporting security issues and bugs
@@ -33,7 +31,7 @@ These are some other repos for related projects:
 
 * [Documentation](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/aspnet/core/
 * [Entity Framework Core](https://github.com/aspnet/EntityFrameworkCore) - data access technology
-* [Tooling](https://github.com/aspnet/Tooling) - Visual Studio tooling, editors, and dialogs
+* [Extensions](https://github.com/aspnet/Extensions) - Logging, configuration, dependency injection, and more.
 
 ## Code of conduct
 

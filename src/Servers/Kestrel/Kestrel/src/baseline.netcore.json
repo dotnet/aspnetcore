@@ -1,0 +1,70 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseKestrel",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseKestrel",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "options",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseKestrel",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

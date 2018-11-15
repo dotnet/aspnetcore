@@ -1,0 +1,140 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseSockets",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseSockets",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "endPointInformation",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation"
+            },
+            {
+              "Name": "dispatcher",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IConnectionDispatcher"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransport",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions>"
+            },
+            {
+              "Name": "applicationLifetime",
+              "Type": "Microsoft.AspNetCore.Hosting.IApplicationLifetime"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IOQueueCount",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IOQueueCount",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

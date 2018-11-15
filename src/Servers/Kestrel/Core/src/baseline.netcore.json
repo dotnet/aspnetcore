@@ -1,0 +1,2197 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Core, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.ListenOptionsConnectionLoggingExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseConnectionLogging",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseConnectionLogging",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "loggerName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "fileName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "fileName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "password",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "fileName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "password",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "storeName",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreName"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "storeName",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreName"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.String"
+            },
+            {
+              "Name": "allowInvalid",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "storeName",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreName"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.String"
+            },
+            {
+              "Name": "allowInvalid",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "location",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreLocation"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "storeName",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreName"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.String"
+            },
+            {
+              "Name": "allowInvalid",
+              "Type": "System.Boolean"
+            },
+            {
+              "Name": "location",
+              "Type": "System.Security.Cryptography.X509Certificates.StoreLocation"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "serverCertificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "serverCertificate",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttps",
+          "Parameters": [
+            {
+              "Name": "listenOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions"
+            },
+            {
+              "Name": "httpsOptions",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.KestrelServerOptionsSystemdExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseSystemd",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseSystemd",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.EndpointConfiguration",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IsHttps",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ListenOptions",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HttpsOptions",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConfigSection",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfigurationSection",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Options",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Configuration",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Endpoint",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.EndpointConfiguration>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Endpoint",
+          "Parameters": [
+            {
+              "Name": "address",
+              "Type": "System.Net.IPAddress"
+            },
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Endpoint",
+          "Parameters": [
+            {
+              "Name": "address",
+              "Type": "System.Net.IPAddress"
+            },
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Endpoint",
+          "Parameters": [
+            {
+              "Name": "endPoint",
+              "Type": "System.Net.IPEndPoint"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Endpoint",
+          "Parameters": [
+            {
+              "Name": "endPoint",
+              "Type": "System.Net.IPEndPoint"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LocalhostEndpoint",
+          "Parameters": [
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LocalhostEndpoint",
+          "Parameters": [
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AnyIPEndpoint",
+          "Parameters": [
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AnyIPEndpoint",
+          "Parameters": [
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UnixSocketEndpoint",
+          "Parameters": [
+            {
+              "Name": "socketPath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UnixSocketEndpoint",
+          "Parameters": [
+            {
+              "Name": "socketPath",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleEndpoint",
+          "Parameters": [
+            {
+              "Name": "handle",
+              "Type": "System.UInt64"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleEndpoint",
+          "Parameters": [
+            {
+              "Name": "handle",
+              "Type": "System.UInt64"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Load",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Https.ClientCertificateMode",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "NoCertificate",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "AllowCertificate",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "RequireCertificate",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ServerCertificate",
+          "Parameters": [],
+          "ReturnType": "System.Security.Cryptography.X509Certificates.X509Certificate2",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ServerCertificate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Security.Cryptography.X509Certificates.X509Certificate2"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ServerCertificateSelector",
+          "Parameters": [],
+          "ReturnType": "System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, System.String, System.Security.Cryptography.X509Certificates.X509Certificate2>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ServerCertificateSelector",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, System.String, System.Security.Cryptography.X509Certificates.X509Certificate2>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClientCertificateMode",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Https.ClientCertificateMode",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClientCertificateMode",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Https.ClientCertificateMode"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClientCertificateValidation",
+          "Parameters": [],
+          "ReturnType": "System.Func<System.Security.Cryptography.X509Certificates.X509Certificate2, System.Security.Cryptography.X509Certificates.X509Chain, System.Net.Security.SslPolicyErrors, System.Boolean>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClientCertificateValidation",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<System.Security.Cryptography.X509Certificates.X509Certificate2, System.Security.Cryptography.X509Certificates.X509Chain, System.Net.Security.SslPolicyErrors, System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SslProtocols",
+          "Parameters": [],
+          "ReturnType": "System.Security.Authentication.SslProtocols",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SslProtocols",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Security.Authentication.SslProtocols"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CheckCertificateRevocation",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CheckCertificateRevocation",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HandshakeTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HandshakeTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.IO.IOException",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Throw",
+          "Parameters": [
+            {
+              "Name": "reason",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.RequestRejectionReason"
+            },
+            {
+              "Name": "method",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Http1",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Http2",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Http1AndHttp2",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "3"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Hosting.Server.IServer"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Features",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.IServer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Options",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "application",
+              "Type": "Microsoft.AspNetCore.Hosting.Server.IHttpApplication<T0>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.IServer",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TContext",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StopAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.IServer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>"
+            },
+            {
+              "Name": "transportFactory",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MaxResponseBufferSize",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxResponseBufferSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxRequestBufferSize",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxRequestBufferSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxRequestLineSize",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxRequestLineSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxRequestHeadersTotalSize",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxRequestHeadersTotalSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxRequestHeaderCount",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxRequestHeaderCount",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxRequestBodySize",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxRequestBodySize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_KeepAliveTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_KeepAliveTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RequestHeadersTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RequestHeadersTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxConcurrentConnections",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxConcurrentConnections",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxConcurrentUpgradedConnections",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxConcurrentUpgradedConnections",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MinRequestBodyDataRate",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MinRequestBodyDataRate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MinResponseDataRate",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MinResponseDataRate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AddServerHeader",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AddServerHeader",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationSchedulingMode",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.SchedulingMode",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ApplicationSchedulingMode",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.SchedulingMode"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AllowSynchronousIO",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AllowSynchronousIO",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationServices",
+          "Parameters": [],
+          "ReturnType": "System.IServiceProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ApplicationServices",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Limits",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConfigurationLoader",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConfigurationLoader",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureEndpointDefaults",
+          "Parameters": [
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureHttpsDefaults",
+          "Parameters": [
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "config",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Listen",
+          "Parameters": [
+            {
+              "Name": "address",
+              "Type": "System.Net.IPAddress"
+            },
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Listen",
+          "Parameters": [
+            {
+              "Name": "address",
+              "Type": "System.Net.IPAddress"
+            },
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Listen",
+          "Parameters": [
+            {
+              "Name": "endPoint",
+              "Type": "System.Net.IPEndPoint"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Listen",
+          "Parameters": [
+            {
+              "Name": "endPoint",
+              "Type": "System.Net.IPEndPoint"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ListenLocalhost",
+          "Parameters": [
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ListenLocalhost",
+          "Parameters": [
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ListenAnyIP",
+          "Parameters": [
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ListenAnyIP",
+          "Parameters": [
+            {
+              "Name": "port",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ListenUnixSocket",
+          "Parameters": [
+            {
+              "Name": "socketPath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ListenUnixSocket",
+          "Parameters": [
+            {
+              "Name": "socketPath",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ListenHandle",
+          "Parameters": [
+            {
+              "Name": "handle",
+              "Type": "System.UInt64"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ListenHandle",
+          "Parameters": [
+            {
+              "Name": "handle",
+              "Type": "System.UInt64"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+        "Microsoft.AspNetCore.Connections.IConnectionBuilder"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Type",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ListenType",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HandleType",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.FileHandleType",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HandleType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.FileHandleType"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IPEndPoint",
+          "Parameters": [],
+          "ReturnType": "System.Net.IPEndPoint",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IPEndPoint",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.IPEndPoint"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SocketPath",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FileHandle",
+          "Parameters": [],
+          "ReturnType": "System.UInt64",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_KestrelServerOptions",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NoDelay",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NoDelay",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionAdapters",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationServices",
+          "Parameters": [],
+          "ReturnType": "System.IServiceProvider",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Use",
+          "Parameters": [
+            {
+              "Name": "middleware",
+              "Type": "System.Func<Microsoft.AspNetCore.Connections.ConnectionDelegate, Microsoft.AspNetCore.Connections.ConnectionDelegate>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Connections.ConnectionDelegate",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BytesPerSecond",
+          "Parameters": [],
+          "ReturnType": "System.Double",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_GracePeriod",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "bytesPerSecond",
+              "Type": "System.Double"
+            },
+            {
+              "Name": "gracePeriod",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.ServerAddress",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Host",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PathBase",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Port",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Scheme",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsUnixPipe",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UnixPipePath",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FromUrl",
+          "Parameters": [
+            {
+              "Name": "url",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.ServerAddress",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.Features.IConnectionTimeoutFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SetTimeout",
+          "Parameters": [
+            {
+              "Name": "timeSpan",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ResetTimeout",
+          "Parameters": [
+            {
+              "Name": "timeSpan",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CancelTimeout",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.Features.IDecrementConcurrentConnectionCountFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ReleaseConnection",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttp2StreamIdFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_StreamId",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MinDataRate",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MinDataRate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MinDataRate",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MinDataRate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Core.Features.ITlsApplicationProtocolFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationProtocol",
+          "Parameters": [],
+          "ReturnType": "System.ReadOnlyMemory<System.Byte>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.IO.Pipelines.DuplexPipe+DuplexPipePair",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Transport",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Application",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "transport",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            },
+            {
+              "Name": "application",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

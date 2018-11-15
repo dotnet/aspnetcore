@@ -25,3 +25,4 @@ scripts/tmp/
 .dotnet/
 .tools/
 src/**/global.json
+launchSettings.json

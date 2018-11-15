@@ -4,6 +4,14 @@ Build ASP.NET Core from Source
 Building ASP.NET Core from source allows you tweak and customize ASP.NET Core, and
 to contribute your improvements back to the project.
 
+## :warning: Temporary instructions
+
+We are currently in the middle of restructing our repositories. While this work is being done, the following instructions will help you be more productive while working on this repo.
+
+1. Before opening a solution, run `build.cmd /p:_ProjectsOnly=true /p:SkipTests=true`. This will only build the projects which have merged into this repo, not the git submodules.
+2. Use (or create) a solution which is scoped to your project file. The build system does not use .sln files. These only exist for developer productivity in Visual Studio, so feel free to adjust the projects in .sln files to match your workload.
+3. Questions? Contact @aspnet for help.
+
 ## Install pre-requistes
 
 ### Windows

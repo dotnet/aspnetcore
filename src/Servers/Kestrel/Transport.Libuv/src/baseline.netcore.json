@@ -1,0 +1,88 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.WebHostBuilderLibuvExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseLibuv",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseLibuv",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ThreadCount",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ThreadCount",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

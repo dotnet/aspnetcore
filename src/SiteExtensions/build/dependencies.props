@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.2.1-build-20181114.3</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>3.0.0-build-20181114.5</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1-rtm-31076</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0-rtm-35515</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>

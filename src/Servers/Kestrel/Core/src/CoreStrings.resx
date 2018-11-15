@@ -1,0 +1,593 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BadRequest" xml:space="preserve">
+    <value>Bad request.</value>
+  </data>
+  <data name="BadRequest_BadChunkSizeData" xml:space="preserve">
+    <value>Bad chunk size data.</value>
+  </data>
+  <data name="BadRequest_BadChunkSuffix" xml:space="preserve">
+    <value>Bad chunk suffix.</value>
+  </data>
+  <data name="BadRequest_ChunkedRequestIncomplete" xml:space="preserve">
+    <value>Chunked request incomplete.</value>
+  </data>
+  <data name="BadRequest_FinalTransferCodingNotChunked" xml:space="preserve">
+    <value>The message body length cannot be determined because the final transfer coding was set to '{detail}' instead of 'chunked'.</value>
+  </data>
+  <data name="BadRequest_HeadersExceedMaxTotalSize" xml:space="preserve">
+    <value>Request headers too long.</value>
+  </data>
+  <data name="BadRequest_InvalidCharactersInHeaderName" xml:space="preserve">
+    <value>Invalid characters in header name.</value>
+  </data>
+  <data name="BadRequest_InvalidContentLength_Detail" xml:space="preserve">
+    <value>Invalid content length: {detail}</value>
+  </data>
+  <data name="BadRequest_InvalidHostHeader" xml:space="preserve">
+    <value>Invalid Host header.</value>
+  </data>
+  <data name="BadRequest_InvalidHostHeader_Detail" xml:space="preserve">
+    <value>Invalid Host header: '{detail}'</value>
+  </data>
+  <data name="BadRequest_InvalidRequestHeadersNoCRLF" xml:space="preserve">
+    <value>Invalid request headers: missing final CRLF in header fields.</value>
+  </data>
+  <data name="BadRequest_InvalidRequestHeader_Detail" xml:space="preserve">
+    <value>Invalid request header: '{detail}'</value>
+  </data>
+  <data name="BadRequest_InvalidRequestLine" xml:space="preserve">
+    <value>Invalid request line.</value>
+  </data>
+  <data name="BadRequest_InvalidRequestLine_Detail" xml:space="preserve">
+    <value>Invalid request line: '{detail}'</value>
+  </data>
+  <data name="BadRequest_InvalidRequestTarget_Detail" xml:space="preserve">
+    <value>Invalid request target: '{detail}'</value>
+  </data>
+  <data name="BadRequest_LengthRequired" xml:space="preserve">
+    <value>{detail} request contains no Content-Length or Transfer-Encoding header.</value>
+  </data>
+  <data name="BadRequest_LengthRequiredHttp10" xml:space="preserve">
+    <value>{detail} request contains no Content-Length header.</value>
+  </data>
+  <data name="BadRequest_MalformedRequestInvalidHeaders" xml:space="preserve">
+    <value>Malformed request: invalid headers.</value>
+  </data>
+  <data name="BadRequest_MethodNotAllowed" xml:space="preserve">
+    <value>Method not allowed.</value>
+  </data>
+  <data name="BadRequest_MissingHostHeader" xml:space="preserve">
+    <value>Request is missing Host header.</value>
+  </data>
+  <data name="BadRequest_MultipleContentLengths" xml:space="preserve">
+    <value>Multiple Content-Length headers.</value>
+  </data>
+  <data name="BadRequest_MultipleHostHeaders" xml:space="preserve">
+    <value>Multiple Host headers.</value>
+  </data>
+  <data name="BadRequest_RequestLineTooLong" xml:space="preserve">
+    <value>Request line too long.</value>
+  </data>
+  <data name="BadRequest_RequestHeadersTimeout" xml:space="preserve">
+    <value>Reading the request headers timed out.</value>
+  </data>
+  <data name="BadRequest_TooManyHeaders" xml:space="preserve">
+    <value>Request contains too many headers.</value>
+  </data>
+  <data name="BadRequest_UnexpectedEndOfRequestContent" xml:space="preserve">
+    <value>Unexpected end of request content.</value>
+  </data>
+  <data name="BadRequest_UnrecognizedHTTPVersion" xml:space="preserve">
+    <value>Unrecognized HTTP version: '{detail}'</value>
+  </data>
+  <data name="BadRequest_UpgradeRequestCannotHavePayload" xml:space="preserve">
+    <value>Requests with 'Connection: Upgrade' cannot have content in the request body.</value>
+  </data>
+  <data name="FallbackToIPv4Any" xml:space="preserve">
+    <value>Failed to bind to http://[::]:{port} (IPv6Any). Attempting to bind to http://0.0.0.0:{port} instead.</value>
+  </data>
+  <data name="ResponseStreamWasUpgraded" xml:space="preserve">
+    <value>Cannot write to response body after connection has been upgraded.</value>
+  </data>
+  <data name="BigEndianNotSupported" xml:space="preserve">
+    <value>Kestrel does not support big-endian architectures.</value>
+  </data>
+  <data name="MaxRequestBufferSmallerThanRequestHeaderBuffer" xml:space="preserve">
+    <value>Maximum request buffer size ({requestBufferSize}) must be greater than or equal to maximum request header size ({requestHeaderSize}).</value>
+  </data>
+  <data name="MaxRequestBufferSmallerThanRequestLineBuffer" xml:space="preserve">
+    <value>Maximum request buffer size ({requestBufferSize}) must be greater than or equal to maximum request line size ({requestLineSize}).</value>
+  </data>
+  <data name="ServerAlreadyStarted" xml:space="preserve">
+    <value>Server has already started.</value>
+  </data>
+  <data name="UnknownTransportMode" xml:space="preserve">
+    <value>Unknown transport mode: '{mode}'.</value>
+  </data>
+  <data name="InvalidAsciiOrControlChar" xml:space="preserve">
+    <value>Invalid non-ASCII or control character in header: {character}</value>
+  </data>
+  <data name="InvalidContentLength_InvalidNumber" xml:space="preserve">
+    <value>Invalid Content-Length: "{value}". Value must be a positive integral number.</value>
+  </data>
+  <data name="NonNegativeNumberOrNullRequired" xml:space="preserve">
+    <value>Value must be null or a non-negative number.</value>
+  </data>
+  <data name="NonNegativeNumberRequired" xml:space="preserve">
+    <value>Value must be a non-negative number.</value>
+  </data>
+  <data name="PositiveNumberRequired" xml:space="preserve">
+    <value>Value must be a positive number.</value>
+  </data>
+  <data name="PositiveNumberOrNullRequired" xml:space="preserve">
+    <value>Value must be null or a positive number.</value>
+  </data>
+  <data name="UnixSocketPathMustBeAbsolute" xml:space="preserve">
+    <value>Unix socket path must be absolute.</value>
+  </data>
+  <data name="AddressBindingFailed" xml:space="preserve">
+    <value>Failed to bind to address {address}.</value>
+  </data>
+  <data name="BindingToDefaultAddress" xml:space="preserve">
+    <value>No listening endpoints were configured. Binding to {address} by default.</value>
+  </data>
+  <data name="ConfigureHttpsFromMethodCall" xml:space="preserve">
+    <value>HTTPS endpoints can only be configured using {methodName}.</value>
+  </data>
+  <data name="ConfigurePathBaseFromMethodCall" xml:space="preserve">
+    <value>A path base can only be configured using {methodName}.</value>
+  </data>
+  <data name="DynamicPortOnLocalhostNotSupported" xml:space="preserve">
+    <value>Dynamic port binding is not supported when binding to localhost. You must either bind to 127.0.0.1:0 or [::1]:0, or both.</value>
+  </data>
+  <data name="EndpointAlreadyInUse" xml:space="preserve">
+    <value>Failed to bind to address {endpoint}: address already in use.</value>
+  </data>
+  <data name="InvalidUrl" xml:space="preserve">
+    <value>Invalid URL: '{url}'.</value>
+  </data>
+  <data name="NetworkInterfaceBindingFailed" xml:space="preserve">
+    <value>Unable to bind to {address} on the {interfaceName} interface: '{error}'.</value>
+  </data>
+  <data name="OverridingWithKestrelOptions" xml:space="preserve">
+    <value>Overriding address(es) '{addresses}'. Binding to endpoints defined in {methodName} instead.</value>
+  </data>
+  <data name="OverridingWithPreferHostingUrls" xml:space="preserve">
+    <value>Overriding endpoints defined in UseKestrel() because {settingName} is set to true. Binding to address(es) '{addresses}' instead.</value>
+  </data>
+  <data name="UnsupportedAddressScheme" xml:space="preserve">
+    <value>Unrecognized scheme in server address '{address}'. Only 'http://' is supported.</value>
+  </data>
+  <data name="HeadersAreReadOnly" xml:space="preserve">
+    <value>Headers are read-only, response has already started.</value>
+  </data>
+  <data name="KeyAlreadyExists" xml:space="preserve">
+    <value>An item with the same key has already been added.</value>
+  </data>
+  <data name="HeaderNotAllowedOnResponse" xml:space="preserve">
+    <value>Setting the header {name} is not allowed on responses with status code {statusCode}.</value>
+  </data>
+  <data name="ParameterReadOnlyAfterResponseStarted" xml:space="preserve">
+    <value>{name} cannot be set because the response has already started.</value>
+  </data>
+  <data name="RequestProcessingAborted" xml:space="preserve">
+    <value>Request processing didn't complete within the shutdown timeout.</value>
+  </data>
+  <data name="TooFewBytesWritten" xml:space="preserve">
+    <value>Response Content-Length mismatch: too few bytes written ({written} of {expected}).</value>
+  </data>
+  <data name="TooManyBytesWritten" xml:space="preserve">
+    <value>Response Content-Length mismatch: too many bytes written ({written} of {expected}).</value>
+  </data>
+  <data name="UnhandledApplicationException" xml:space="preserve">
+    <value>The response has been aborted due to an unhandled application exception.</value>
+  </data>
+  <data name="WritingToResponseBodyNotSupported" xml:space="preserve">
+    <value>Writing to the response body is invalid for responses with status code {statusCode}.</value>
+  </data>
+  <data name="ConnectionShutdownError" xml:space="preserve">
+    <value>Connection shutdown abnormally.</value>
+  </data>
+  <data name="RequestProcessingEndError" xml:space="preserve">
+    <value>Connection processing ended abnormally.</value>
+  </data>
+  <data name="CannotUpgradeNonUpgradableRequest" xml:space="preserve">
+    <value>Cannot upgrade a non-upgradable request. Check IHttpUpgradeFeature.IsUpgradableRequest to determine if a request can be upgraded.</value>
+  </data>
+  <data name="UpgradedConnectionLimitReached" xml:space="preserve">
+    <value>Request cannot be upgraded because the server has already opened the maximum number of upgraded connections.</value>
+  </data>
+  <data name="UpgradeCannotBeCalledMultipleTimes" xml:space="preserve">
+    <value>IHttpUpgradeFeature.UpgradeAsync was already called and can only be called once per connection.</value>
+  </data>
+  <data name="BadRequest_RequestBodyTooLarge" xml:space="preserve">
+    <value>Request body too large.</value>
+  </data>
+  <data name="MaxRequestBodySizeCannotBeModifiedAfterRead" xml:space="preserve">
+    <value>The maximum request body size cannot be modified after the app has already started reading from the request body.</value>
+  </data>
+  <data name="MaxRequestBodySizeCannotBeModifiedForUpgradedRequests" xml:space="preserve">
+    <value>The maximum request body size cannot be modified after the request has been upgraded.</value>
+  </data>
+  <data name="PositiveTimeSpanRequired" xml:space="preserve">
+    <value>Value must be a positive TimeSpan.</value>
+  </data>
+  <data name="NonNegativeTimeSpanRequired" xml:space="preserve">
+    <value>Value must be a non-negative TimeSpan.</value>
+  </data>
+  <data name="MinimumGracePeriodRequired" xml:space="preserve">
+    <value>The request body rate enforcement grace period must be greater than {heartbeatInterval} second.</value>
+  </data>
+  <data name="SynchronousReadsDisallowed" xml:space="preserve">
+    <value>Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.</value>
+  </data>
+  <data name="SynchronousWritesDisallowed" xml:space="preserve">
+    <value>Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true instead.</value>
+  </data>
+  <data name="PositiveNumberOrNullMinDataRateRequired" xml:space="preserve">
+    <value>Value must be a positive number. To disable a minimum data rate, use null where a MinDataRate instance is expected.</value>
+  </data>
+  <data name="ConcurrentTimeoutsNotSupported" xml:space="preserve">
+    <value>Concurrent timeouts are not supported.</value>
+  </data>
+  <data name="PositiveFiniteTimeSpanRequired" xml:space="preserve">
+    <value>Timespan must be positive and finite.</value>
+  </data>
+  <data name="EndPointRequiresAtLeastOneProtocol" xml:space="preserve">
+    <value>An endpoint must be configured to serve at least one protocol.</value>
+  </data>
+  <data name="EndPointHttp2NotNegotiated" xml:space="preserve">
+    <value>HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.</value>
+  </data>
+  <data name="HPackErrorDynamicTableSizeUpdateTooLarge" xml:space="preserve">
+    <value>A dynamic table size of {size} octets is greater than the configured maximum size of {maxSize} octets.</value>
+  </data>
+  <data name="HPackErrorIndexOutOfRange" xml:space="preserve">
+    <value>Index {index} is outside the bounds of the header field table.</value>
+  </data>
+  <data name="HPackHuffmanErrorIncomplete" xml:space="preserve">
+    <value>Input data could not be fully decoded.</value>
+  </data>
+  <data name="HPackHuffmanErrorEOS" xml:space="preserve">
+    <value>Input data contains the EOS symbol.</value>
+  </data>
+  <data name="HPackHuffmanErrorDestinationTooSmall" xml:space="preserve">
+    <value>The destination buffer is not large enough to store the decoded data.</value>
+  </data>
+  <data name="HPackHuffmanError" xml:space="preserve">
+    <value>Huffman decoding error.</value>
+  </data>
+  <data name="HPackStringLengthTooLarge" xml:space="preserve">
+    <value>Decoded string length of {length} octets is greater than the configured maximum length of {maxStringLength} octets.</value>
+  </data>
+  <data name="HPackErrorIncompleteHeaderBlock" xml:space="preserve">
+    <value>The header block was incomplete and could not be fully decoded.</value>
+  </data>
+  <data name="Http2ErrorStreamIdEven" xml:space="preserve">
+    <value>The client sent a {frameType} frame with even stream ID {streamId}.</value>
+  </data>
+  <data name="Http2ErrorPushPromiseReceived" xml:space="preserve">
+    <value>The client sent a A PUSH_PROMISE frame.</value>
+  </data>
+  <data name="Http2ErrorHeadersInterleaved" xml:space="preserve">
+    <value>The client sent a {frameType} frame to stream ID {streamId} before signaling of the header block for stream ID {headersStreamId}.</value>
+  </data>
+  <data name="Http2ErrorStreamIdZero" xml:space="preserve">
+    <value>The client sent a {frameType} frame with stream ID 0.</value>
+  </data>
+  <data name="Http2ErrorStreamIdNotZero" xml:space="preserve">
+    <value>The client sent a {frameType} frame with stream ID different than 0.</value>
+  </data>
+  <data name="Http2ErrorPaddingTooLong" xml:space="preserve">
+    <value>The client sent a {frameType} frame with padding longer than or with the same length as the sent data.</value>
+  </data>
+  <data name="Http2ErrorStreamClosed" xml:space="preserve">
+    <value>The client sent a {frameType} frame to closed stream ID {streamId}.</value>
+  </data>
+  <data name="Http2ErrorStreamHalfClosedRemote" xml:space="preserve">
+    <value>The client sent a {frameType} frame to stream ID {streamId} which is in the "half-closed (remote) state".</value>
+  </data>
+  <data name="Http2ErrorStreamSelfDependency" xml:space="preserve">
+    <value>The client sent a {frameType} frame with dependency information that would cause stream ID {streamId} to depend on itself.</value>
+  </data>
+  <data name="Http2ErrorUnexpectedFrameLength" xml:space="preserve">
+    <value>The client sent a {frameType} frame with length different than {expectedLength}.</value>
+  </data>
+  <data name="Http2ErrorSettingsLengthNotMultipleOfSix" xml:space="preserve">
+    <value>The client sent a SETTINGS frame with a length that is not a multiple of 6.</value>
+  </data>
+  <data name="Http2ErrorSettingsAckLengthNotZero" xml:space="preserve">
+    <value>The client sent a SETTINGS frame with ACK set and length different than 0.</value>
+  </data>
+  <data name="Http2ErrorSettingsParameterOutOfRange" xml:space="preserve">
+    <value>The client sent a SETTINGS frame with a value for parameter {parameter} that is out of range.</value>
+  </data>
+  <data name="Http2ErrorWindowUpdateIncrementZero" xml:space="preserve">
+    <value>The client sent a WINDOW_UPDATE frame with a window size increment of 0.</value>
+  </data>
+  <data name="Http2ErrorContinuationWithNoHeaders" xml:space="preserve">
+    <value>The client sent a CONTINUATION frame not preceded by a HEADERS frame.</value>
+  </data>
+  <data name="Http2ErrorStreamIdle" xml:space="preserve">
+    <value>The client sent a {frameType} frame to idle stream ID {streamId}.</value>
+  </data>
+  <data name="Http2ErrorTrailersContainPseudoHeaderField" xml:space="preserve">
+    <value>The client sent trailers containing one or more pseudo-header fields.</value>
+  </data>
+  <data name="Http2ErrorHeaderNameUppercase" xml:space="preserve">
+    <value>The client sent a header with uppercase characters in its name.</value>
+  </data>
+  <data name="Http2ErrorTrailerNameUppercase" xml:space="preserve">
+    <value>The client sent a trailer with uppercase characters in its name.</value>
+  </data>
+  <data name="Http2ErrorHeadersWithTrailersNoEndStream" xml:space="preserve">
+    <value>The client sent a HEADERS frame containing trailers without setting the END_STREAM flag.</value>
+  </data>
+  <data name="Http2ErrorMissingMandatoryPseudoHeaderFields" xml:space="preserve">
+    <value>Request headers missing one or more mandatory pseudo-header fields.</value>
+  </data>
+  <data name="Http2ErrorPseudoHeaderFieldAfterRegularHeaders" xml:space="preserve">
+    <value>Pseudo-header field found in request headers after regular header fields.</value>
+  </data>
+  <data name="Http2ErrorUnknownPseudoHeaderField" xml:space="preserve">
+    <value>Request headers contain unknown pseudo-header field.</value>
+  </data>
+  <data name="Http2ErrorResponsePseudoHeaderField" xml:space="preserve">
+    <value>Request headers contain response-specific pseudo-header field.</value>
+  </data>
+  <data name="Http2ErrorDuplicatePseudoHeaderField" xml:space="preserve">
+    <value>Request headers contain duplicate pseudo-header field.</value>
+  </data>
+  <data name="Http2ErrorConnectionSpecificHeaderField" xml:space="preserve">
+    <value>Request headers contain connection-specific header field.</value>
+  </data>
+  <data name="UnableToConfigureHttpsBindings" xml:space="preserve">
+    <value>Unable to configure default https bindings because no IDefaultHttpsProvider service was provided.</value>
+  </data>
+  <data name="AuthenticationFailed" xml:space="preserve">
+    <value>Failed to authenticate HTTPS connection.</value>
+  </data>
+  <data name="AuthenticationTimedOut" xml:space="preserve">
+    <value>Authentication of the HTTPS connection timed out.</value>
+  </data>
+  <data name="InvalidServerCertificateEku" xml:space="preserve">
+    <value>Certificate {thumbprint} cannot be used as an SSL server certificate. It has an Extended Key Usage extension but the usages do not include Server Authentication (OID 1.3.6.1.5.5.7.3.1).</value>
+  </data>
+  <data name="PositiveTimeSpanRequired1" xml:space="preserve">
+    <value>Value must be a positive TimeSpan.</value>
+  </data>
+  <data name="ServerCertificateRequired" xml:space="preserve">
+    <value>The server certificate parameter is required.</value>
+  </data>
+  <data name="BindingToDefaultAddresses" xml:space="preserve">
+    <value>No listening endpoints were configured. Binding to {address0} and {address1} by default.</value>
+  </data>
+  <data name="CertNotFoundInStore" xml:space="preserve">
+    <value>The requested certificate {subject} could not be found in {storeLocation}/{storeName} with AllowInvalid setting: {allowInvalid}.</value>
+  </data>
+  <data name="EndpointMissingUrl" xml:space="preserve">
+    <value>The endpoint {endpointName} is missing the required 'Url' parameter.</value>
+  </data>
+  <data name="NoCertSpecifiedNoDevelopmentCertificateFound" xml:space="preserve">
+    <value>Unable to configure HTTPS endpoint. No server certificate was specified, and the default developer certificate could not be found.
+To generate a developer certificate run 'dotnet dev-certs https'. To trust the certificate (Windows and macOS only) run 'dotnet dev-certs https --trust'.
+For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054.</value>
+  </data>
+  <data name="MultipleCertificateSources" xml:space="preserve">
+    <value>The endpoint {endpointName} specified multiple certificate sources.</value>
+  </data>
+  <data name="WritingToResponseBodyAfterResponseCompleted" xml:space="preserve">
+    <value>Cannot write to the response body, the response has completed.</value>
+  </data>
+  <data name="BadRequest_RequestBodyTimeout" xml:space="preserve">
+    <value>Reading the request body timed out due to data arriving too slowly. See MinRequestBodyDataRate.</value>
+  </data>
+  <data name="ConnectionAbortedByApplication" xml:space="preserve">
+    <value>The connection was aborted by the application.</value>
+  </data>
+  <data name="ConnectionAbortedDuringServerShutdown" xml:space="preserve">
+    <value>The connection was aborted because the server is shutting down and request processing didn't complete within the time specified by HostOptions.ShutdownTimeout.</value>
+  </data>
+  <data name="ConnectionTimedBecauseResponseMininumDataRateNotSatisfied" xml:space="preserve">
+    <value>The connection was timed out by the server because the response was not read by the client at the specified minimum data rate.</value>
+  </data>
+  <data name="ConnectionTimedOutByServer" xml:space="preserve">
+    <value>The connection was timed out by the server.</value>
+  </data>
+  <data name="Http2ErrorFrameOverLimit" xml:space="preserve">
+    <value>The received frame size of {size} exceeds the limit {limit}.</value>
+  </data>
+  <data name="Http2ErrorMinTlsVersion" xml:space="preserve">
+    <value>Tls 1.2 or later must be used for HTTP/2. {protocol} was negotiated.</value>
+  </data>
+  <data name="Http2ErrorInvalidPreface" xml:space="preserve">
+    <value>Invalid HTTP/2 connection preface.</value>
+  </data>
+  <data name="InvalidEmptyHeaderName" xml:space="preserve">
+    <value>Header name cannot be a null or empty string.</value>
+  </data>
+  <data name="ConnectionOrStreamAbortedByCancellationToken" xml:space="preserve">
+    <value>The connection or stream was aborted because a write operation was aborted with a CancellationToken.</value>
+  </data>
+  <data name="Http2ErrorInitialWindowSizeInvalid" xml:space="preserve">
+    <value>The client sent a SETTINGS frame with a SETTINGS_INITIAL_WINDOW_SIZE that caused a flow-control window to exceed the maximum size.</value>
+  </data>
+  <data name="Http2ErrorWindowUpdateSizeInvalid" xml:space="preserve">
+    <value>The client sent a WINDOW_UPDATE frame that caused a flow-control window to exceed the maximum size.</value>
+  </data>
+  <data name="Http2ConnectionFaulted" xml:space="preserve">
+    <value>The HTTP/2 connection faulted.</value>
+  </data>
+  <data name="Http2StreamResetByClient" xml:space="preserve">
+    <value>The client reset the request stream.</value>
+  </data>
+  <data name="Http2StreamAborted" xml:space="preserve">
+    <value>The request stream was aborted.</value>
+  </data>
+  <data name="Http2ErrorFlowControlWindowExceeded" xml:space="preserve">
+    <value>The client sent more data than what was available in the flow-control window.</value>
+  </data>
+  <data name="Http2ErrorConnectMustNotSendSchemeOrPath" xml:space="preserve">
+    <value>CONNECT requests must not send :scheme or :path headers.</value>
+  </data>
+  <data name="Http2ErrorMethodInvalid" xml:space="preserve">
+    <value>The Method '{method}' is invalid.</value>
+  </data>
+  <data name="Http2StreamErrorPathInvalid" xml:space="preserve">
+    <value>The request :path is invalid: '{path}'</value>
+  </data>
+  <data name="Http2StreamErrorSchemeMismatch" xml:space="preserve">
+    <value>The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.</value>
+  </data>
+  <data name="Http2StreamErrorLessDataThanLength" xml:space="preserve">
+    <value>Less data received than specified in the Content-Length header.</value>
+  </data>
+  <data name="Http2StreamErrorMoreDataThanLength" xml:space="preserve">
+    <value>More data received than specified in the Content-Length header.</value>
+  </data>
+  <data name="Http2StreamErrorAfterHeaders" xml:space="preserve">
+    <value>An error occurred after the response headers were sent, a reset is being sent.</value>
+  </data>
+  <data name="Http2ErrorMaxStreams" xml:space="preserve">
+    <value>A new stream was refused because this connection has reached its stream limit.</value>
+  </data>
+  <data name="GreaterThanZeroRequired" xml:space="preserve">
+    <value>A value greater than zero is required.</value>
+  </data>
+  <data name="ArgumentOutOfRange" xml:space="preserve">
+    <value>A value between {min} and {max} is required.</value>
+  </data>
+  <data name="HPackErrorDynamicTableSizeUpdateNotAtBeginningOfHeaderBlock" xml:space="preserve">
+    <value>Dynamic tables size update did not occur at the beginning of the first header block.</value>
+  </data>
+  <data name="HPackErrorNotEnoughBuffer" xml:space="preserve">
+    <value>The given buffer was too small to encode any headers.</value>
+  </data>
+  <data name="HPackErrorIntegerTooBig" xml:space="preserve">
+    <value>The decoded integer exceeds the maximum value of Int32.MaxValue.</value>
+  </data>
+  <data name="ConnectionAbortedByClient" xml:space="preserve">
+    <value>The client closed the connection.</value>
+  </data>
+  <data name="Http2ErrorStreamAborted" xml:space="preserve">
+    <value>A frame of type {frameType} was received after stream {streamId} was reset or aborted.</value>
+  </data>
+</root>

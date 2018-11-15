@@ -1,0 +1,1060 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Connections.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Connections.ConnectionBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Connections.IConnectionBuilder"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationServices",
+          "Parameters": [],
+          "ReturnType": "System.IServiceProvider",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Use",
+          "Parameters": [
+            {
+              "Name": "middleware",
+              "Type": "System.Func<Microsoft.AspNetCore.Connections.ConnectionDelegate, Microsoft.AspNetCore.Connections.ConnectionDelegate>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Connections.ConnectionDelegate",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "applicationServices",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.ConnectionBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseConnectionHandler<T0>",
+          "Parameters": [
+            {
+              "Name": "connectionBuilder",
+              "Type": "Microsoft.AspNetCore.Connections.IConnectionBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TConnectionHandler",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Connections.ConnectionHandler"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "Use",
+          "Parameters": [
+            {
+              "Name": "connectionBuilder",
+              "Type": "Microsoft.AspNetCore.Connections.IConnectionBuilder"
+            },
+            {
+              "Name": "middleware",
+              "Type": "System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, System.Func<System.Threading.Tasks.Task>, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Run",
+          "Parameters": [
+            {
+              "Name": "connectionBuilder",
+              "Type": "Microsoft.AspNetCore.Connections.IConnectionBuilder"
+            },
+            {
+              "Name": "middleware",
+              "Type": "System.Func<Microsoft.AspNetCore.Connections.ConnectionContext, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.ConnectionContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConnectionId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Features",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Items",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Items",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Transport",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Transport",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.ConnectionDelegate",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.MulticastDelegate",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.Connections.ConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BeginInvoke",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.Connections.ConnectionContext"
+            },
+            {
+              "Name": "callback",
+              "Type": "System.AsyncCallback"
+            },
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.IAsyncResult",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EndInvoke",
+          "Parameters": [
+            {
+              "Name": "result",
+              "Type": "System.IAsyncResult"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "object",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "method",
+              "Type": "System.IntPtr"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.ConnectionHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnConnectedAsync",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.Connections.ConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.ConnectionItems",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Items",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "items",
+              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.DefaultConnectionContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Connections.ConnectionContext",
+      "ImplementedInterfaces": [
+        "System.IDisposable",
+        "Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature",
+        "Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature",
+        "Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature",
+        "Microsoft.AspNetCore.Connections.Features.IConnectionUserFeature",
+        "Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConnectionId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Features",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_User",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionUserFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_User",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionUserFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Items",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Items",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Application",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Application",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Transport",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Transport",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionClosed",
+          "Parameters": [],
+          "ReturnType": "System.Threading.CancellationToken",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConnectionClosed",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Abort",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "id",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "id",
+              "Type": "System.String"
+            },
+            {
+              "Name": "transport",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            },
+            {
+              "Name": "application",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.AddressInUseException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.InvalidOperationException",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "inner",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.ConnectionAbortedException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.OperationCanceledException",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "inner",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.ConnectionResetException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.IO.IOException",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "inner",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationServices",
+          "Parameters": [],
+          "ReturnType": "System.IServiceProvider",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Use",
+          "Parameters": [
+            {
+              "Name": "middleware",
+              "Type": "System.Func<Microsoft.AspNetCore.Connections.ConnectionDelegate, Microsoft.AspNetCore.Connections.ConnectionDelegate>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Connections.IConnectionBuilder",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Connections.ConnectionDelegate",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.TransferFormat",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Binary",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Text",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.IConnectionHeartbeatFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnHeartbeat",
+          "Parameters": [
+            {
+              "Name": "action",
+              "Type": "System.Action<System.Object>"
+            },
+            {
+              "Name": "state",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConnectionId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.IConnectionInherentKeepAliveFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HasInherentKeepAlive",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Items",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Object, System.Object>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Items",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IDictionary<System.Object, System.Object>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionClosed",
+          "Parameters": [],
+          "ReturnType": "System.Threading.CancellationToken",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConnectionClosed",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Abort",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Transport",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Transport",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.IConnectionUserFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_User",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_User",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.IMemoryPoolFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MemoryPool",
+          "Parameters": [],
+          "ReturnType": "System.Buffers.MemoryPool<System.Byte>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Connections.Features.ITransferFormatFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_SupportedFormats",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Connections.TransferFormat",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ActiveFormat",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Connections.TransferFormat",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ActiveFormat",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Connections.TransferFormat"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

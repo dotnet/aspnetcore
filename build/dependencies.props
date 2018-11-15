@@ -93,6 +93,8 @@
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.0.0-preview-181113-11</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersSourcesPackageVersion>3.0.0-preview-181113-11</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-preview-181113-11</MicrosoftExtensionsWebEncodersPackageVersion>
+    <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>3.0.0-alpha1-10727</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
+    <MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>3.0.0-alpha1-10727</MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <MicrosoftEntityFrameworkCoreAbstractionsPackageVersion>3.0.0-preview-181109-02</MicrosoftEntityFrameworkCoreAbstractionsPackageVersion>
     <MicrosoftEntityFrameworkCoreAnalyzersPackageVersion>3.0.0-preview-181109-02</MicrosoftEntityFrameworkCoreAnalyzersPackageVersion>
@@ -117,7 +119,7 @@
     <!-- Determined by build tools -->
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
     <InternalAspNetCoreSiteExtensionSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSiteExtensionSdkPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">2.2.1-build-20181114.3</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">3.0.0-build-20181114.5</InternalAspNetCoreSdkPackageVersion>
   </PropertyGroup>
 
   <!-- These are package versions that should not be overridden or updated by automation. -->

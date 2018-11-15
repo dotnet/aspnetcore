@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>7.3</LangVersion>
 
     <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>

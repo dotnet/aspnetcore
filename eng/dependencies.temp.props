@@ -4,14 +4,16 @@ This is required to provide dependencies for samples and tests.
  -->
 <Project>
   <ItemGroup>
-    <LatestPackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="3.0.0-alpha1-10717" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="3.0.0-alpha1-10717" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="3.0.0-alpha1-10717" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Hosting" Version="3.0.0-alpha1-10717" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="3.0.0-alpha1-10717" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Http.Features" Version="3.0.0-alpha1-10717" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="3.0.0-alpha1-10717" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="3.0.0-alpha1-10717" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Http" Version="3.0.0-alpha1-10717" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Hosting" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Http.Features" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Http" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.Net.Http.Headers" Version="3.0.0-alpha1-10727" />
   </ItemGroup>
 </Project>
