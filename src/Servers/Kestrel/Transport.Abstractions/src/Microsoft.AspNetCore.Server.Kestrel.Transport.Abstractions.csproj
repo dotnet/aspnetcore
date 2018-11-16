@@ -11,7 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(KestrelSharedSourceRoot)src\ThrowHelper.cs" />
     <Compile Include="$(RepositoryRoot)src\Shared\Buffers.MemoryPool\*.cs" />
   </ItemGroup>
 
