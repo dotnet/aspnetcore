@@ -3,7 +3,6 @@
 
 using System;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Test;
 using Xunit;
 
