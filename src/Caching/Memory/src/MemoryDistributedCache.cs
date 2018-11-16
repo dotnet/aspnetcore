@@ -5,6 +5,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Distributed
@@ -16,13 +18,21 @@ namespace Microsoft.Extensions.Caching.Distributed
         private readonly IMemoryCache _memCache;
 
         public MemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> optionsAccessor)
+            : this(optionsAccessor, NullLoggerFactory.Instance) { }
+
+        public MemoryDistributedCache(IOptions<MemoryDistributedCacheOptions> optionsAccessor, ILoggerFactory loggerFactory)
         {
             if (optionsAccessor == null)
             {
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
 
-            _memCache = new MemoryCache(optionsAccessor.Value);
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _memCache = new MemoryCache(optionsAccessor.Value, loggerFactory);
         }
 
         public byte[] Get(string key)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,11 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory.Infrastructure;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Caching.Memory
 {
-    public class CapacityTests
+    public class CapacityTests : LoggedTestBase
     {
         [Fact]
         public void MemoryDistributedCacheOptionsDefaultsTo200MBSizeLimit()
@@ -115,7 +116,7 @@ namespace Microsoft.Extensions.Caching.Memory
             var cache = new MemoryCache(new MemoryCacheOptions
             {
                 SizeLimit = long.MaxValue
-            });
+            }, LoggerFactory);
 
             var entryOptions = new MemoryCacheEntryOptions { Size = long.MaxValue };
             var sem = new SemaphoreSlim(0, 1);
