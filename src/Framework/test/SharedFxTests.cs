@@ -77,11 +77,19 @@ namespace Microsoft.AspNetCore
                 Assert.NotEmpty(obj.Value["assemblyVersion"].Value<string>());
                 Assert.NotEmpty(obj.Value["fileVersion"].Value<string>());
             });
-            Assert.All(runtimeLibrary["native"], item =>
+
+            if (TestData.GetSharedFxRuntimeIdentifier().StartsWith("win"))
             {
-                var obj = Assert.IsType<JProperty>(item);
-                Assert.StartsWith($"runtimes/{rid}/native/", obj.Name);
-            });
+                Assert.All(runtimeLibrary["native"], item =>
+                {
+                    var obj = Assert.IsType<JProperty>(item);
+                    Assert.StartsWith($"runtimes/{rid}/native/", obj.Name);
+                });
+            }
+            else
+            {
+                Assert.Null(runtimeLibrary["native"]);
+            }
         }
 
         [Fact]
