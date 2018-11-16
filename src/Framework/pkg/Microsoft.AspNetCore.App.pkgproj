@@ -23,6 +23,14 @@ This package requires the ASP.NET Core runtime. This runtime is installed by the
     <Content Include="_._" PackagePath="lib\$(TargetFramework)\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.App.shfxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <OutputItemType>_ResolvedFxProjects</OutputItemType>
+    </ProjectReference>
+  </ItemGroup>
+
   <Import Project="..\Microsoft.AspNetCore.App.props" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

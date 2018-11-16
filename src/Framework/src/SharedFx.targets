@@ -18,7 +18,7 @@ This targets file should only be imported by .shfxproj files.
       PrepareForPublish;
       ComputeAndCopyFilesToPublishDirectory;
       GeneratePublishDependencyFile;
-      GenerateSharedFxDependencyFile;
+      GenerateSharedFxMetadataFiles;
       GeneratePublishRuntimeConfigurationFile;
       CopySharedFxToOutput;
       CollectSharedFxOutput;
@@ -78,6 +78,7 @@ This targets file should only be imported by .shfxproj files.
     <!-- If symbols generation is disabled, there is no use in producing a symbols.nupkg files. -->
     <IncludeSymbols Condition="'$(CrossgenSymbolsOutput)' == 'false'">false</IncludeSymbols>
 
+    <ManifestOutputDir Condition="'$(ManifestOutputDir)' == ''">$(OutputPath)manifest\</ManifestOutputDir>
     <MetadataOutputPath Condition="'$(MetadataOutputPath)' == ''">$(OutputPath)files\</MetadataOutputPath>
     <SymbolsOutputPath Condition="'$(SymbolsOutputPath)' == ''">$(OutputPath)symbols\</SymbolsOutputPath>
     <NativeAssetsOutputPath Condition="'$(NativeAssetsOutputPath)' == ''">$(OutputPath)native\</NativeAssetsOutputPath>
@@ -99,6 +100,7 @@ This targets file should only be imported by .shfxproj files.
     <ProjectRuntimeConfigFilePath>$(PublishRuntimeConfigFilePath)</ProjectRuntimeConfigFilePath>
     <SharedFxDepsFilePath>$(MetadataOutputPath)$(SharedFxName).deps.json</SharedFxDepsFilePath>
     <VersionFileOutputPath>$(MetadataOutputPath).version</VersionFileOutputPath>
+    <PlatformManifestOutputPath>$(ManifestOutputDir)$(SharedFxName).PlatformManifest.txt</PlatformManifestOutputPath>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
@@ -115,6 +117,8 @@ This targets file should only be imported by .shfxproj files.
       <MetadataOutputPath>$(MetadataOutputPath)</MetadataOutputPath>
       <RuntimeAssetsOutputPath>$(RuntimeAssetsOutputPath)</RuntimeAssetsOutputPath>
       <NativeAssetsOutputPath>$(NativeAssetsOutputPath)</NativeAssetsOutputPath>
+      <!-- Don't include the platform manifest in installer assets. -->
+      <ManifestOutputDir>$(ManifestOutputDir)</ManifestOutputDir>
       <SharedFxName>$(SharedFxName)</SharedFxName>
       <PackageId>$(PackageId)</PackageId>
     </TargetPathWithTargetPlatformMoniker>
@@ -170,17 +174,18 @@ This targets file should only be imported by .shfxproj files.
       Overwrite="true" />
   </Target>
 
-  <!-- Generates the .deps.json file for a shared framework. -->
-  <Target Name="GenerateSharedFxDependencyFile"
+  <!-- Generates the .deps.json and PlatformManifest.txt files for a shared framework. -->
+  <Target Name="GenerateSharedFxMetadataFiles"
           Inputs="$(PublishDepsFilePath);$(ProjectAssetsFile);$(MSBuildAllProjects)"
           Outputs="$(SharedFxDepsFilePath)">
-    <ProcessSharedFrameworkDeps
+    <GenerateSharedFrameworkMetadataFiles
       FrameworkName="$(SharedFxName)"
       FrameworkVersion="$(SharedFxVersion)"
       AssetsFilePath="$(ProjectAssetsFile)"
       TargetFramework="$(TargetFramework)"
       DepsFilePath="$(PublishDepsFilePath)"
-      OutputPath="$(SharedFxDepsFilePath)"
+      DepsFileOutputPath="$(SharedFxDepsFilePath)"
+      PlatformManifestOutputPath="$(PlatformManifestOutputPath)"
       BaseRuntimeIdentifier="$(BaseSharedFxRid)" />
   </Target>
 
