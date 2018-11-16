@@ -54,6 +54,5 @@
 
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
-  <Import Project="eng\targets\SharedFx.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.shfxproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
 </Project>

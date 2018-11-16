@@ -5,31 +5,11 @@
     <IsFrameworkMetapackage>true</IsFrameworkMetapackage>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.pkgproj' ">
-    <IsPackable Condition=" '$([System.IO.Path]::GetDirectoryName($(MSBuildProjectDirectory)))' == 'pkg'">true</IsPackable>
-
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\pkg\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-  </PropertyGroup>
-
   <!--
     Currently, the shared framework builds by using PackageReference to internally generate the deps.json files and move bits between projects.
     For local builds, this import is required to point to packages which actually exists. Run "build.cmd /t:GeneratePropsFiles /p:BuildNumber=xyz" to
     build the shared framework against a particular set of packages.
   -->
   <Import Condition="Exists('..\..\obj\dependencies.g.props') AND '$(DotNetPackageVersionPropsPath)' == ''" Project="..\..\obj\dependencies.g.props" />
-
-  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.shfxproj' ">
-    <OutputPath>$(RepositoryRoot)bin\fx\$(SharedFxRid)\$(MSBuildProjectName)\</OutputPath>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\fx\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-
-    <CrossgenOutput Condition="'$(SharedFxRid)' == 'linux-arm'">false</CrossgenOutput>
-    <CrossgenSymbolsOutput Condition=" '$(CrossgenOutput)' == 'false' OR '$(SharedFxRid)' == 'osx-x64'">false</CrossgenSymbolsOutput>
-
-    <IncludeSymbols>true</IncludeSymbols>
-    <NuspecFile>$(MSBuildThisFileDirectory)runtime.fx.nuspec</NuspecFile>
-    <PackageTags>aspnetcore;shared-framework</PackageTags>
-    <!-- Workaround for invalid NU5109 error when packing on macOS. -->
-    <NoPackageAnalysis>true</NoPackageAnalysis>
-  </PropertyGroup>
 
 </Project>

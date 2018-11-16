@@ -4,7 +4,7 @@ This targets file should only be imported by .shfxproj files.
 -->
 <Project>
 
-  <Import Project="..\..\build\tasks\RepoTasks.tasks" />
+  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
 
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -94,21 +94,14 @@ This targets file should only be imported by .shfxproj files.
     <PublishDepsFilePath>$(IntermediateOutputPath)$(SharedFxName).publish.deps.json</PublishDepsFilePath>
 
     <!-- The output path of generated files -->
-    <ProjectRuntimeConfigFilePath>$(MetadataOutputPath)$(SharedFxName).runtimeconfig.json</ProjectRuntimeConfigFilePath>
+    <PublishRuntimeConfigFilePath>$(MetadataOutputPath)$(SharedFxName).runtimeconfig.json</PublishRuntimeConfigFilePath>
+    <!-- The SDK renamed PublishRuntimeConfigFilePath to PublishRuntimeConfigFilePath, so set both to be safe. -->
+    <ProjectRuntimeConfigFilePath>$(PublishRuntimeConfigFilePath)</ProjectRuntimeConfigFilePath>
     <SharedFxDepsFilePath>$(MetadataOutputPath)$(SharedFxName).deps.json</SharedFxDepsFilePath>
     <VersionFileOutputPath>$(MetadataOutputPath).version</VersionFileOutputPath>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
-    <!-- Defines different types of project references. -->
-    <FrameworkProjectReference>
-      <OutputItemType>_ResolvedFrameworkProjectReferencePaths</OutputItemType>
-    </FrameworkProjectReference>
-
-    <PackageProjectReference>
-      <OutputItemType>_ResolvedPackageProjectReferencePaths</OutputItemType>
-    </PackageProjectReference>
-
     <TargetPathWithTargetPlatformMoniker>
       <!--
         This lists all folders of assets which should be collected into the same folder in a shared framework installer.
@@ -129,7 +122,6 @@ This targets file should only be imported by .shfxproj files.
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)">
-      <IsImplicitlyDefined>true</IsImplicitlyDefined>
       <Publish>true</Publish>
       <PrivateAssets>All</PrivateAssets>
       <ExcludeAssets>Native</ExcludeAssets>
@@ -138,10 +130,8 @@ This targets file should only be imported by .shfxproj files.
 
     <PackageReference Include="@(Dependency)">
       <IncludeAssets>Runtime;Native</IncludeAssets>
+      <Publish>true</Publish>
     </PackageReference>
-
-    <ProjectReference Include="@(FrameworkProjectReference)" />
-    <ProjectReference Include="@(PackageProjectReference)" />
   </ItemGroup>
 
   <!-- Check some required properties before building a shared framework/ -->
@@ -186,12 +176,12 @@ This targets file should only be imported by .shfxproj files.
           Outputs="$(SharedFxDepsFilePath)">
     <ProcessSharedFrameworkDeps
       FrameworkName="$(SharedFxName)"
+      FrameworkVersion="$(SharedFxVersion)"
       AssetsFilePath="$(ProjectAssetsFile)"
+      TargetFramework="$(TargetFramework)"
       DepsFilePath="$(PublishDepsFilePath)"
       OutputPath="$(SharedFxDepsFilePath)"
-      PackagesToRemove="@(_ResolvedFrameworkProjectReferencePaths->'%(PackageId)')"
-      ResolvedPackageProjectReferences="@(_ResolvedPackageProjectReferencePaths)"
-      Runtime="$(BaseSharedFxRid)" />
+      BaseRuntimeIdentifier="$(BaseSharedFxRid)" />
   </Target>
 
   <!-- Optimizes shared framework output -->
@@ -274,7 +264,6 @@ This targets file should only be imported by .shfxproj files.
       <_PlatformAssemblyPaths Remove="@(_PlatformAssemblyPaths)" />
       <_PlatformAssemblyPaths Include="$(CrossGenToolDir)" />
       <_PlatformAssemblyPaths Include="$(PublishDir)" />
-      <_PlatformAssemblyPaths Include="%(_ResolvedFrameworkProjectReferencePaths.RuntimeAssetsOutputPath)" Condition="'%(_ResolvedFrameworkProjectReferencePaths.RuntimeAssetsOutputPath)' != ''" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -359,5 +348,28 @@ This targets file should only be imported by .shfxproj files.
         <IsContainer>true</IsContainer>
       </ArtifactInfo>
     </ItemGroup>
+  </Target>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        rid=$(SharedFxRid);
+        description=$(PackageDescription);
+        tags=$(PackageTags.Replace(';', ' '));
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        copyright=$(Copyright);
+        targetFramework=$(TargetFramework);
+        symbolsAssets=$([MSBuild]::NormalizeDirectory($(SymbolsOutputPath)));
+        nativeAssets=$([MSBuild]::NormalizeDirectory($(NativeAssetsOutputPath)));
+        runtimeAssets=$([MSBuild]::NormalizeDirectory($(RuntimeAssetsOutputPath)));
+      </NuspecProperties>
+    </PropertyGroup>
   </Target>
 </Project>

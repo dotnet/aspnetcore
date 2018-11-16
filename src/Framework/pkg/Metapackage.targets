@@ -1,0 +1,72 @@
+<Project>
+  <PropertyGroup>
+    <!-- There is no build output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- There are no symbols. -->
+    <IncludeSymbols>false</IncludeSymbols>
+    <!-- There is no API to check -->
+    <EnableApiCheck>false</EnableApiCheck>
+    <!-- Manually control dependencies -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- The only build output of a pkgproj is the project -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <!-- Do not include dependencies in the genreate nuspec. -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <TargetPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</TargetPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(IntermediateOutputPath)\runtime.json" PackagePath="\" />
+
+    <PackageReference Include="Microsoft.NETCore.App">
+      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
+      <PrivateAssets>All</PrivateAssets>
+      <AllowExplicitVersion>true</AllowExplicitVersion>
+    </PackageReference>
+
+    <PackageReference Include="@(Dependency)" />
+  </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <TargetPathWithTargetPlatformMoniker>
+      <PackageId>$(PackageId)</PackageId>
+    </TargetPathWithTargetPlatformMoniker>
+  </ItemDefinitionGroup>
+
+  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
+
+  <Target Name="GenerateRuntimeJson" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <_SupportedRids Include="$(SupportedRuntimeIdentifiers)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <RuntimeJsonFileContent>
+{
+  "runtimes": {
+    @(_SupportedRids->'"%(Identity)": { "$(PackageId)": { "runtime.%(Identity).$(PackageId)": "$(PackageVersion)" } }', ',%0A    ')
+  }
+}
+      </RuntimeJsonFileContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile Lines="$(RuntimeJsonFileContent)" File="$(IntermediateOutputPath)\runtime.json" Overwrite="true" />
+  </Target>
+
+  <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <Content Include="@(ReferencePath)" Condition="'%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App'">
+        <PackagePath>ref/$(TargetFramework)/%(ReferencePath.FileName)%(ReferencePath.Extension)</PackagePath>
+      </Content>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyFilesToOutputDirectory" />
+  <Target Name="CoreCompile" DependsOnTargets="ResolveReferenceItemsForPackage" />
+  <Target Name="CreateManifestResourceNames" />
+</Project>

@@ -125,7 +125,7 @@
     <Dependency Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.WebEncoders"                             Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <Dependency Include="Microsoft.Net.Http.Headers"                                   Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
-    <Dependency Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" VersionRangeType="Minimum" />
+    <Dependency Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
   </ItemGroup>
 
 </Project>
