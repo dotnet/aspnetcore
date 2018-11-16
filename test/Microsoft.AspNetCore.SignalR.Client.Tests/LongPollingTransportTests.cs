@@ -8,30 +8,21 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Moq;
 using Moq.Protected;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public class LongPollingTransportTests : VerifiableLoggedTest
     {
         private static readonly Uri TestUri = new Uri("http://example.com/?id=1234");
-
-        public LongPollingTransportTests(ITestOutputHelper output) : base(output)
-        {
-        }
 
         [Fact]
         public async Task LongPollingTransportStopsPollAndSendLoopsWhenTransportStopped()
@@ -258,11 +249,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                 });
 
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 using (var httpClient = new HttpClient(mockHttpHandler.Object))
                 {
-                    var longPollingTransport = new LongPollingTransport(httpClient, loggerFactory);
+                    var longPollingTransport = new LongPollingTransport(httpClient, LoggerFactory);
 
                     await longPollingTransport.StartAsync(TestUri, TransferFormat.Binary).OrTimeout();
 

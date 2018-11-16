@@ -6,28 +6,20 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Moq.Protected;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public class ServerSentEventsTransportTests : VerifiableLoggedTest
     {
-        public ServerSentEventsTransportTests(ITestOutputHelper output) : base(output)
-        {
-        }
-
         [Fact]
         public async Task CanStartStopSSETransport()
         {
@@ -55,9 +47,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             try
             {
                 using (var httpClient = new HttpClient(mockHttpHandler.Object))
-                using (StartVerifiableLog(out var loggerFactory))
+                using (StartVerifiableLog())
                 {
-                    var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                    var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
                     await sseTransport.StartAsync(
                         new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
 
@@ -98,9 +90,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 Task transportActiveTask;
                 try
@@ -146,9 +138,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
                     new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
@@ -236,9 +228,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
                     new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
@@ -263,9 +255,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
                     new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
@@ -317,9 +309,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
                     new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
@@ -352,9 +344,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary).OrTimeout());
 
@@ -379,9 +371,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 });
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
-            using (StartVerifiableLog(out var loggerFactory, $"{nameof(SSETransportThrowsForInvalidTransferFormat)}_{transferFormat}"))
+            using (StartVerifiableLog())
             {
-                var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory);
+                var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
                     sseTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
 

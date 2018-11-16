@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
     {
         private readonly RedisServerFixture<Startup> _serverFixture;
 
-        public RedisEndToEndTests(RedisServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(output)
+        public RedisEndToEndTests(RedisServerFixture<Startup> serverFixture)
         {
             if (serverFixture == null)
             {
@@ -43,12 +43,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task HubConnectionCanSendAndReceiveMessages(HttpTransportType transportType, string protocolName)
         {
-            using (StartVerifiableLog(out var loggerFactory, testName:
-                $"{nameof(HubConnectionCanSendAndReceiveMessages)}_{transportType.ToString()}_{protocolName}"))
+            using (StartVerifiableLog())
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
 
-                var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, loggerFactory);
+                var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, LoggerFactory);
 
                 await connection.StartAsync().OrTimeout();
                 var str = await connection.InvokeAsync<string>("Echo", "Hello, World!").OrTimeout();
@@ -64,13 +63,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task HubConnectionCanSendAndReceiveGroupMessages(HttpTransportType transportType, string protocolName)
         {
-            using (StartVerifiableLog(out var loggerFactory, testName:
-                $"{nameof(HubConnectionCanSendAndReceiveGroupMessages)}_{transportType.ToString()}_{protocolName}"))
+            using (StartVerifiableLog())
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
 
-                var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, loggerFactory);
-                var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, loggerFactory);
+                var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, LoggerFactory);
+                var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, LoggerFactory);
 
                 var tcs = new TaskCompletionSource<string>();
                 connection.On<string>("Echo", message => tcs.TrySetResult(message));
@@ -97,13 +95,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         [MemberData(nameof(TransportTypesAndProtocolTypes))]
         public async Task CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser(HttpTransportType transportType, string protocolName)
         {
-            using (StartVerifiableLog(out var loggerFactory, testName:
-                $"{nameof(CanSendAndReceiveUserMessagesFromMultipleConnectionsWithSameUser)}_{transportType.ToString()}_{protocolName}"))
+            using (StartVerifiableLog())
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
 
-                var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, loggerFactory, userName: "userA");
-                var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, loggerFactory, userName: "userA");
+                var connection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, LoggerFactory, userName: "userA");
+                var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, LoggerFactory, userName: "userA");
 
                 var tcs = new TaskCompletionSource<string>();
                 connection.On<string>("Echo", message => tcs.TrySetResult(message));
@@ -130,13 +127,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             // Regression test:
             // When multiple connections from the same user were connected and one left, it used to unsubscribe from the user channel
             // Now we keep track of users connections and only unsubscribe when no users are listening
-            using (StartVerifiableLog(out var loggerFactory, testName:
-                $"{nameof(CanSendAndReceiveUserMessagesWhenOneConnectionWithUserDisconnects)}_{transportType.ToString()}_{protocolName}"))
+            using (StartVerifiableLog())
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
 
-                var firstConnection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, loggerFactory, userName: "userA");
-                var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, loggerFactory, userName: "userA");
+                var firstConnection = CreateConnection(_serverFixture.FirstServer.Url + "/echo", transportType, protocol, LoggerFactory, userName: "userA");
+                var secondConnection = CreateConnection(_serverFixture.SecondServer.Url + "/echo", transportType, protocol, LoggerFactory, userName: "userA");
 
                 var tcs = new TaskCompletionSource<string>();
                 firstConnection.On<string>("Echo", message => tcs.TrySetResult(message));

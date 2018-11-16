@@ -3,10 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -14,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         private readonly Func<WriteContext, bool> _globalExpectedErrorsFilter;
 
-        public FunctionalTestBase(ITestOutputHelper output) : base(output)
+        public FunctionalTestBase()
         {
             // Suppress errors globally here
             _globalExpectedErrorsFilter = (writeContext) => false;
@@ -38,17 +35,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             };
         }
 
-        public IDisposable StartServer<T>(out ILoggerFactory loggerFactory, out InProcessTestServer<T> testServer, LogLevel minLogLevel, [CallerMemberName] string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null) where T : class
+        public IDisposable StartServer<T>(out InProcessTestServer<T> testServer, Func<WriteContext, bool> expectedErrorsFilter = null) where T : class
         {
-            var disposable = base.StartVerifiableLog(out loggerFactory, minLogLevel, testName, ResolveExpectedErrorsFilter(expectedErrorsFilter));
-            testServer = new InProcessTestServer<T>(loggerFactory);
-            return new MultiDisposable(testServer, disposable);
-        }
-
-        public IDisposable StartServer<T>(out ILoggerFactory loggerFactory, out InProcessTestServer<T> testServer, [CallerMemberName] string testName = null, Func<WriteContext, bool> expectedErrorsFilter = null) where T : class
-        {
-            var disposable = base.StartVerifiableLog(out loggerFactory, testName, ResolveExpectedErrorsFilter(expectedErrorsFilter));
-            testServer = new InProcessTestServer<T>(loggerFactory);
+            var disposable = base.StartVerifiableLog(ResolveExpectedErrorsFilter(expectedErrorsFilter));
+            testServer = new InProcessTestServer<T>(LoggerFactory);
             return new MultiDisposable(testServer, disposable);
         }
 

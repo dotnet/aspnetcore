@@ -13,17 +13,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HubConnectionTests : VerifiableLoggedTest
     {
-        public HubConnectionTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         [Fact]
         public async Task InvokeThrowsIfSerializingMessageFails()
         {
@@ -123,11 +117,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task ServerTimeoutIsDisabledWhenUsingTransportWithInherentKeepAlive()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var testConnection = new TestConnection();
                 testConnection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestKeepAliveFeature() { HasInherentKeepAlive = true });
-                var hubConnection = CreateHubConnection(testConnection, loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(testConnection, loggerFactory: LoggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(1);
 
                 await hubConnection.StartAsync().OrTimeout();
@@ -148,6 +142,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task PendingInvocationsAreTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -156,9 +151,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                        writeContext.EventId.Name == "ShutdownWithError";
             }
 
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
+            using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
             {
-                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: LoggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(2000);
 
                 await hubConnection.StartAsync().OrTimeout();

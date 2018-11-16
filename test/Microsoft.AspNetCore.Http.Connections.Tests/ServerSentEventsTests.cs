@@ -6,33 +6,25 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
-using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
     public class ServerSentEventsTests : VerifiableLoggedTest
     {
-        public ServerSentEventsTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         [Fact]
         public async Task SSESetsContentType()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
                 var context = new DefaultHttpContext();
 
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory);
+                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
                 connection.Transport.Output.Complete();
 
@@ -46,7 +38,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task SSETurnsResponseBufferingOff()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
@@ -54,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var feature = new HttpBufferingFeature();
                 context.Features.Set<IHttpBufferingFeature>(feature);
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: connection.ConnectionId, loggerFactory);
+                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: connection.ConnectionId, LoggerFactory);
 
                 connection.Transport.Output.Complete();
 
@@ -67,7 +59,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task SSEWritesMessages()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
@@ -75,7 +67,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory);
+                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
                 var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -89,7 +81,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task SSEWritesVeryLargeMessages()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
@@ -97,7 +89,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory);
+                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
 
                 var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -117,13 +109,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData("Hello\r\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]
         public async Task SSEAddsAppropriateFraming(string message, string expected)
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
                 var context = new DefaultHttpContext();
 
-                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory);
+                var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, LoggerFactory);
                 var ms = new MemoryStream();
                 context.Response.Body = ms;
 
