@@ -29,6 +29,7 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
       @aspnet/signalr;
       Microsoft.AspNetCore.Authentication.Google;
+      Microsoft.AspNetCore.Http;
     </PackagesInPatch>
   </PropertyGroup>
 
