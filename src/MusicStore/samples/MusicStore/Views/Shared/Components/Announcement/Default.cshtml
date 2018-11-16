@@ -1,0 +1,10 @@
+﻿@model Album
+
+@if (Model != null)
+{
+    <li>
+        <br />
+        <small><i><label title="New Arrivals!" style="color:red">New Arrivals!</label></i></small>
+        <i><a id="NewArrivalsPanel" asp-area="" asp-controller="Store" asp-action="Details" asp-route-id="@Model.AlbumId">@Model.Title</a></i>
+    </li>
+}

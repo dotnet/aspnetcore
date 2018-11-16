@@ -1,0 +1,70 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+/* styles for validation helpers */
+.field-validation-error {
+    color: #b94a48;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+input.input-validation-error {
+    border: 1px solid #b94a48;
+}
+
+input[type="checkbox"].input-validation-error {
+    border: 0 none;
+}
+
+.validation-summary-errors {
+    color: #b94a48;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+
+
+/* Music Store additions */
+
+ul#album-list li {
+    height: 160px;
+}
+
+ul#album-list li img:hover {
+    box-shadow: 1px 1px 7px #777;
+}
+
+ul#album-list li img {
+    box-shadow: 1px 1px 5px #999;
+    border: none;
+    padding: 0;
+}
+
+ul#album-list li a, ul#album-details li a {
+    text-decoration:none;
+}
+
+ul#album-list li a:hover {
+    background: none;
+    -webkit-text-shadow: 1px 1px 2px #bbb;
+    text-shadow: 1px 1px 2px #bbb;
+    color: #363430;
+}
