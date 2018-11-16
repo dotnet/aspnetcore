@@ -51,9 +51,17 @@ $@"<Project>
     <Import Project=""Directory.Build.After.props"" Condition=""Exists('Directory.Build.After.props')"" />
 </Project>";
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), directoryBuildPropsContent);
+
+            // TODO: remove this once we get a newer version of the SDK which supports an implicit FrameworkReference
+            // cref https://github.com/aspnet/websdk/issues/424
             var directoryBuildTargetsContent =
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
+
+    <ItemGroup>
+       <FrameworkReference Remove=""Microsoft.AspNetCore.App"" />
+       <PackageReference Include=""Microsoft.AspNetCore.App"" Version=""$(BundledAspNetCoreAppPackageVersion)"" IsImplicitlyDefined=""true"" />
+    </ItemGroup>
 </Project>";
 
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
@@ -135,7 +143,7 @@ $@"<Project>
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value;
 
-            var args = $"\"{dotNetEfFullPath}\" migrations add {migrationName}";
+            var args = $"\"{dotNetEfFullPath}\" --verbose migrations add {migrationName}";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63

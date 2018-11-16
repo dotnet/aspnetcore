@@ -14,4 +14,8 @@
     <RepositoryType>git</RepositoryType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="*.in" />
+  </ItemGroup>
 </Project>
