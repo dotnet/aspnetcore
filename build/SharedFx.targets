@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <UnitTestFxProject>$(RepositoryRoot)src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
+    <UnitTestFxProject>$(RepositoryRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj</UnitTestFxProject>
     <UnitTestFxProject>$([MSBuild]::NormalizePath($(UnitTestFxProject)))</UnitTestFxProject>
     <CodeSignDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CodeSignDependsOn);GetSharedFxFilesToSign</CodeSignDependsOn>
     <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>

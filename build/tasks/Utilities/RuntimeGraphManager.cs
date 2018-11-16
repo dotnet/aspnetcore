@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.DependencyModel;
-using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;

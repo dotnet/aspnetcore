@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -9,6 +10,13 @@ namespace Microsoft.AspNetCore
 {
     public class SharedFxTests
     {
+        private readonly string _expectedTfm;
+
+        public SharedFxTests()
+        {
+            _expectedTfm = "netcoreapp" + TestData.GetPackageVersion().Substring(0, 3);
+        }
+
         [Fact]
         public void ItContainsValidRuntimeConfigFile()
         {
@@ -20,7 +28,7 @@ namespace Microsoft.AspNetCore
             var runtimeConfig = JObject.Parse(File.ReadAllText(runtimeConfigFilePath));
 
             Assert.Equal("Microsoft.NETCore.App", (string)runtimeConfig["runtimeOptions"]["framework"]["name"]);
-            Assert.Equal("netcoreapp" + TestData.GetPackageVersion().Substring(0, 3), (string)runtimeConfig["runtimeOptions"]["tfm"]);
+            Assert.Equal(_expectedTfm, (string)runtimeConfig["runtimeOptions"]["tfm"]);
 
             Assert.Equal(TestData.GetMicrosoftNETCoreAppPackageVersion(), (string)runtimeConfig["runtimeOptions"]["framework"]["version"]);
         }
@@ -32,13 +40,13 @@ namespace Microsoft.AspNetCore
             var rid = TestData.GetSharedFxRuntimeIdentifier();
 
             var target = $".NETCoreApp,Version=v{TestData.GetPackageVersion().Substring(0, 3)}/{rid}";
+            var ridPackageId = $"runtime.{rid}.Microsoft.AspNetCore.App";
 
             AssertEx.FileExists(depsFilePath);
 
             var depsFile = JObject.Parse(File.ReadAllText(depsFilePath));
 
             Assert.Equal(target, (string)depsFile["runtimeTarget"]["name"]);
-            Assert.NotNull(depsFile["targets"][target]);
             Assert.NotNull(depsFile["compilationOptions"]);
             Assert.Empty(depsFile["compilationOptions"]);
             Assert.NotEmpty(depsFile["runtimes"][rid]);
@@ -47,8 +55,41 @@ namespace Microsoft.AspNetCore
                 var prop = Assert.IsType<JProperty>(item);
                 var lib = Assert.IsType<JObject>(prop.Value);
                 Assert.Equal("package", lib["type"].Value<string>());
-                Assert.StartsWith("sha512-", lib["sha512"].Value<string>());
+                Assert.Empty(lib["sha512"].Value<string>());
             });
+
+            Assert.NotNull(depsFile["libraries"][$"Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"]);
+            Assert.NotNull(depsFile["libraries"][$"runtime.{rid}.Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"]);
+            Assert.Equal(2, depsFile["libraries"].Values().Count());
+
+            var targetLibraries = depsFile["targets"][target];
+            Assert.Equal(2, targetLibraries.Values().Count());
+            var metapackage = targetLibraries[$"Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"];
+            Assert.Null(metapackage["runtime"]);
+            Assert.Null(metapackage["native"]);
+
+            var runtimeLibrary = targetLibraries[$"{ridPackageId}/{TestData.GetPackageVersion()}"];
+            Assert.Null(runtimeLibrary["dependencies"]);
+            Assert.All(runtimeLibrary["runtime"], item =>
+            {
+                var obj = Assert.IsType<JProperty>(item);
+                Assert.StartsWith($"runtimes/{rid}/lib/{_expectedTfm}/", obj.Name);
+                Assert.NotEmpty(obj.Value["assemblyVersion"].Value<string>());
+                Assert.NotEmpty(obj.Value["fileVersion"].Value<string>());
+            });
+
+            if (TestData.GetSharedFxRuntimeIdentifier().StartsWith("win"))
+            {
+                Assert.All(runtimeLibrary["native"], item =>
+                {
+                    var obj = Assert.IsType<JProperty>(item);
+                    Assert.StartsWith($"runtimes/{rid}/native/", obj.Name);
+                });
+            }
+            else
+            {
+                Assert.Null(runtimeLibrary["native"]);
+            }
         }
 
         [Fact]

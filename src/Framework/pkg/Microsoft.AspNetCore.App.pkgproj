@@ -1,0 +1,30 @@
+<Project>
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\pkg\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+
+    <!-- Don't add TFM to the project output path of shared framework projects -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <PackageTags>aspnetcore</PackageTags>
+    <IsPackable>true</IsPackable>
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application.
+
+This package requires the ASP.NET Core runtime. This runtime is installed by the .NET Core SDK, or can be acquired separately using installers available at https://aka.ms/dotnet-download.
+    </PackageDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(MSBuildProjectName).targets" PackagePath="build\$(TargetFramework)\" />
+    <Content Include="_._" PackagePath="lib\$(TargetFramework)\" />
+  </ItemGroup>
+
+  <Import Project="..\Microsoft.AspNetCore.App.props" />
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="Metapackage.targets" />
+</Project>

@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Framework\**\*.shfxproj">
+    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <OutputItemType>_ResolvedFxProjects</OutputItemType>
     </ProjectReference>
