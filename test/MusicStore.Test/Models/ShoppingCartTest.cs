@@ -2,6 +2,7 @@
 // See License.txt in the project root for license information
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MusicStore.Models;
@@ -19,7 +20,7 @@ namespace MusicStore.Test
         }
 
         [Fact]
-        public async void ComputesTotal()
+        public async Task ComputesTotal()
         {
             var cartId = Guid.NewGuid().ToString();
             using (var db = _fixture.CreateContext())
