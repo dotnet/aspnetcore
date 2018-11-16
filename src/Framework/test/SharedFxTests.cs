@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore
             var unexpected = actualAssemblies.Except(expectedAssemblies)
                 .Where(s => !string.Equals(s, "aspnetcorev2_inprocess", StringComparison.Ordinal)); // this native assembly only appears in Windows builds.
 
-            if (_expectedRid.StartsWith("win") && !_expectedRid.Contains("arm"))
+            if (_expectedRid.StartsWith("win", StringComparison.Ordinal) && !_expectedRid.Contains("arm"))
             {
                 Assert.Contains("aspnetcorev2_inprocess", actualAssemblies);
             }
