@@ -1,0 +1,43 @@
+﻿@model VerifyCodeViewModel
+@{
+    ViewBag.Title = "Verify";
+}
+
+<h2>@ViewBag.Title.</h2>
+
+<form asp-controller="Account" asp-action="VerifyCode" asp-route-returnurl="@Model.ReturnUrl" method="post" class="form-horizontal" role="form">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <input asp-for="Provider" type="hidden" />
+    <input asp-for="RememberMe" type="hidden" />
+    <h4>Enter verification code</h4>
+    <p class="text-danger">
+        For DEMO only: You can type in this code in the below text box to proceed: [ @ViewBag.Code ]
+        <br />
+        Please change this code to register an SMS/Email service in IdentityConfig to send a message.
+    </p>
+    <hr />
+    <div class="form-group">
+        <label asp-for="Code" class="col-md-2 control-label"></label>
+        <div class="col-md-10">
+            <input asp-for="Code" class="form-control" />
+            <span asp-validation-for="Code" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <div class="checkbox">
+                <input asp-for="RememberBrowser" />
+                <label asp-for="RememberBrowser"></label>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" class="btn btn-default" value="Submit" />
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
