@@ -66,10 +66,6 @@
 	path = modules/MetaPackages
 	url = https://github.com/aspnet/MetaPackages.git
 	branch = release/2.2
-[submodule "modules/MusicStore"]
-	path = modules/MusicStore
-	url = https://github.com/aspnet/MusicStore.git
-	branch = release/2.2
 [submodule "modules/Mvc"]
 	path = modules/Mvc
 	url = https://github.com/aspnet/Mvc.git
