@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public SocketAwaitableEventArgs ReceiveAsync(Memory<byte> buffer)
         {
-#if NETCOREAPP2_1
+#if NETCOREAPP2_1 || NETCOREAPP3_0
             _awaitableEventArgs.SetBuffer(buffer);
 #elif NETSTANDARD2_0
             var segment = buffer.GetArray();

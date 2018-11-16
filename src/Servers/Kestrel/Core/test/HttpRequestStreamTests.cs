@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
             Assert.Throws<NotSupportedException>(() => stream.BeginWrite(new byte[1], 0, 1, null, null));
         }
-#elif NETCOREAPP2_2
+#elif NETCOREAPP2_2 || NETCOREAPP3_0
 #else
 #error Target framework needs to be updated
 #endif

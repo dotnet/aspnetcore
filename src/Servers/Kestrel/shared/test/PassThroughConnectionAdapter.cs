@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Testing
                 _innerStream.Close();
             }
 
-#if NETCOREAPP2_2
+#if NETCOREAPP2_2 || NETCOREAPP3_0
             public override int Read(Span<byte> buffer)
             {
                 return _innerStream.Read(buffer);
