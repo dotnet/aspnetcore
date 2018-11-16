@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.TestHost\Microsoft.AspNetCore.TestHost.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Extensions.Hosting\Microsoft.Extensions.Hosting.csproj" />
   </ItemGroup>
 
   <ItemGroup>
