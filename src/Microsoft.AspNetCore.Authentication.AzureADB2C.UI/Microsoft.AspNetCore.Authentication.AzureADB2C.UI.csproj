@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>ASP.NET Core Azure Active Directory B2C Integration provides components for easily integrating Azure Active Directory B2C authentication within your ASP.NET Core application.</Description>
     <RazorAssemblyDescription>Precompiled views assembly for the ASP.NET Core Azure Active Directory B2C Integration package.</RazorAssemblyDescription>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageTags>aspnetcore;authentication;AzureADB2C</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
