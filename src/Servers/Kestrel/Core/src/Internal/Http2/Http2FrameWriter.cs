@@ -529,6 +529,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_writeLock)
             {
+                if (_completed)
+                {
+                    return Task.CompletedTask;
+                }
+
                 _outgoingFrame.PrepareGoAway(lastStreamId, errorCode);
                 WriteHeaderUnsynchronized();
 
