@@ -1,0 +1,298 @@
+{
+  "AssemblyIdentity": "Microsoft.Extensions.Http.Polly, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Polly.HttpRequestMessageExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetPolicyExecutionContext",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            }
+          ],
+          "ReturnType": "Polly.Context",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetPolicyExecutionContext",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "context",
+              "Type": "Polly.Context"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Http.PolicyHttpMessageHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Net.Http.DelegatingHandler",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendCoreAsync",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "context",
+              "Type": "Polly.Context"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "policy",
+              "Type": "Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "policySelector",
+              "Type": "System.Func<System.Net.Http.HttpRequestMessage, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage>>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.PollyHttpClientBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddPolicyHandler",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder"
+            },
+            {
+              "Name": "policy",
+              "Type": "Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddPolicyHandler",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder"
+            },
+            {
+              "Name": "policySelector",
+              "Type": "System.Func<System.Net.Http.HttpRequestMessage, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage>>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddPolicyHandler",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder"
+            },
+            {
+              "Name": "policySelector",
+              "Type": "System.Func<System.IServiceProvider, System.Net.Http.HttpRequestMessage, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage>>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddPolicyHandlerFromRegistry",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder"
+            },
+            {
+              "Name": "policyKey",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddPolicyHandlerFromRegistry",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder"
+            },
+            {
+              "Name": "policySelector",
+              "Type": "System.Func<Polly.Registry.IReadOnlyPolicyRegistry<System.String>, System.Net.Http.HttpRequestMessage, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage>>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddTransientHttpErrorPolicy",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder"
+            },
+            {
+              "Name": "configurePolicy",
+              "Type": "System.Func<Polly.PolicyBuilder<System.Net.Http.HttpResponseMessage>, Polly.IAsyncPolicy<System.Net.Http.HttpResponseMessage>>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.PollyServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddPolicyRegistry",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Polly.Registry.IPolicyRegistry<System.String>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddPolicyRegistry",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "registry",
+              "Type": "Polly.Registry.IPolicyRegistry<System.String>"
+            }
+          ],
+          "ReturnType": "Polly.Registry.IPolicyRegistry<System.String>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
