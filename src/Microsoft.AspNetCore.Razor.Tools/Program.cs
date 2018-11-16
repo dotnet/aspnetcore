@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
             outputWriter.Dispose();
             errorWriter.Dispose();
 
+            Console.Write(output);
+            Console.Error.Write(error);
+
             // This will no-op if server logging is not enabled.
             ServerLogger.Log(output);
             ServerLogger.Log(error);
