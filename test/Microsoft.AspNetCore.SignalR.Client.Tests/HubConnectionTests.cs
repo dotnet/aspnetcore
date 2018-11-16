@@ -16,39 +16,44 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HubConnectionTests : VerifiableLoggedTest
     {
-        public HubConnectionTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         [Fact]
         public async Task InvokeThrowsIfSerializingMessageFails()
         {
-            var exception = new InvalidOperationException();
-            var hubConnection = CreateHubConnection(new TestConnection(), protocol: MockHubProtocol.Throw(exception));
-            await hubConnection.StartAsync().OrTimeout();
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "FailedToSendInvocation";
+            }
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var exception = new InvalidOperationException();
+                var hubConnection = CreateHubConnection(new TestConnection(), protocol: MockHubProtocol.Throw(exception), LoggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
 
-            var actualException =
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.InvokeAsync<int>("test").OrTimeout());
-            Assert.Same(exception, actualException);
+                var actualException =
+                    await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.InvokeAsync<int>("test").OrTimeout());
+                Assert.Same(exception, actualException);
+            }
         }
 
         [Fact]
         public async Task SendAsyncThrowsIfSerializingMessageFails()
         {
-            var exception = new InvalidOperationException();
-            var hubConnection = CreateHubConnection(new TestConnection(), protocol: MockHubProtocol.Throw(exception));
-            await hubConnection.StartAsync().OrTimeout();
+            using (StartVerifiableLog())
+            {
+                var exception = new InvalidOperationException();
+                var hubConnection = CreateHubConnection(new TestConnection(), protocol: MockHubProtocol.Throw(exception), LoggerFactory);
+                await hubConnection.StartAsync().OrTimeout();
 
-            var actualException =
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.SendAsync("test").OrTimeout());
-            Assert.Same(exception, actualException);
+                var actualException =
+                    await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.SendAsync("test").OrTimeout());
+                Assert.Same(exception, actualException);
+            }
         }
 
         [Fact]
@@ -77,60 +82,80 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task PendingInvocationsAreCanceledWhenConnectionClosesCleanly()
         {
-            var hubConnection = CreateHubConnection(new TestConnection());
+            using (StartVerifiableLog())
+            {
+                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: LoggerFactory);
 
-            await hubConnection.StartAsync().OrTimeout();
-            var invokeTask = hubConnection.InvokeAsync<int>("testMethod").OrTimeout();
-            await hubConnection.StopAsync().OrTimeout();
+                await hubConnection.StartAsync().OrTimeout();
+                var invokeTask = hubConnection.InvokeAsync<int>("testMethod").OrTimeout();
+                await hubConnection.StopAsync().OrTimeout();
 
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask);
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask);
+            }
         }
 
         [Fact]
         public async Task PendingInvocationsAreTerminatedWithExceptionWhenTransportCompletesWithError()
         {
-            var connection = new TestConnection();
-            var hubConnection = CreateHubConnection(connection, protocol: Mock.Of<IHubProtocol>());
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       (writeContext.EventId.Name == "ShutdownWithError" ||
+                       writeContext.EventId.Name == "ServerDisconnectedWithError");
+            }
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var connection = new TestConnection();
+                var hubConnection = CreateHubConnection(connection, protocol: Mock.Of<IHubProtocol>(), LoggerFactory);
 
-            await hubConnection.StartAsync().OrTimeout();
-            var invokeTask = hubConnection.InvokeAsync<int>("testMethod").OrTimeout();
+                await hubConnection.StartAsync().OrTimeout();
+                var invokeTask = hubConnection.InvokeAsync<int>("testMethod").OrTimeout();
 
-            var exception = new InvalidOperationException();
-            connection.CompleteFromTransport(exception);
+                var exception = new InvalidOperationException();
+                connection.CompleteFromTransport(exception);
 
-            var actualException = await Assert.ThrowsAsync<InvalidOperationException>(async () => await invokeTask);
-            Assert.Equal(exception, actualException);
+                var actualException = await Assert.ThrowsAsync<InvalidOperationException>(async () => await invokeTask);
+                Assert.Equal(exception, actualException);
+            }
         }
 
         [Fact]
         public async Task ConnectionTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
         {
-            var hubConnection = CreateHubConnection(new TestConnection());
-            hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(100);
-
-            var closeTcs = new TaskCompletionSource<Exception>();
-            hubConnection.Closed += ex =>
+            bool ExpectedErrors(WriteContext writeContext)
             {
-                closeTcs.TrySetResult(ex);
-                return Task.CompletedTask;
-            };
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "ShutdownWithError";
+            }
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: LoggerFactory);
+                hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(100);
 
-            await hubConnection.StartAsync().OrTimeout();
+                var closeTcs = new TaskCompletionSource<Exception>();
+                hubConnection.Closed += ex =>
+                {
+                    closeTcs.TrySetResult(ex);
+                    return Task.CompletedTask;
+                };
 
-            var exception = Assert.IsType<TimeoutException>(await closeTcs.Task.OrTimeout());
+                await hubConnection.StartAsync().OrTimeout();
 
-            // We use an interpolated string so the tests are accurate on non-US machines.
-            Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
+                var exception = Assert.IsType<TimeoutException>(await closeTcs.Task.OrTimeout());
+
+                // We use an interpolated string so the tests are accurate on non-US machines.
+                Assert.Equal($"Server timeout ({hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.", exception.Message);
+            }
         }
 
         [Fact]
         public async Task ServerTimeoutIsDisabledWhenUsingTransportWithInherentKeepAlive()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var testConnection = new TestConnection();
                 testConnection.Features.Set<IConnectionInherentKeepAliveFeature>(new TestKeepAliveFeature() { HasInherentKeepAlive = true });
-                var hubConnection = CreateHubConnection(testConnection, loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(testConnection, loggerFactory: LoggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(1);
 
                 await hubConnection.StartAsync().OrTimeout();
@@ -151,6 +176,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task PendingInvocationsAreTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -159,9 +185,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                        writeContext.EventId.Name == "ShutdownWithError";
             }
 
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
+            using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
             {
-                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(new TestConnection(), loggerFactory: LoggerFactory);
                 hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(2000);
 
                 await hubConnection.StartAsync().OrTimeout();
@@ -177,12 +203,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task StreamIntsToServer()
         {
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            using (StartVerifiableLog())
             {
                 var connection = new TestConnection();
-                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().OrTimeout();
 
                 var channel = Channel.CreateUnbounded<int>();
@@ -206,7 +233,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 channel.Writer.TryComplete();
                 var completion = await connection.ReadSentJsonAsync().OrTimeout();
                 Assert.Equal(HubProtocolConstants.StreamCompleteMessageType, completion["type"]);
-                
+
                 await connection.ReceiveJsonMessage(
                     new { type = HubProtocolConstants.CompletionMessageType, invocationId = invocation["invocationId"], result = 42 }
                     ).OrTimeout();
@@ -216,12 +243,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task StreamIntsToServerViaSend()
         {
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            using (StartVerifiableLog())
             {
                 var connection = new TestConnection();
-                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().OrTimeout();
 
                 var channel = Channel.CreateUnbounded<int>();
@@ -246,12 +274,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task StreamsObjectsToServer()
         {
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            using (StartVerifiableLog())
             {
                 var connection = new TestConnection();
-                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().OrTimeout();
 
                 var channel = Channel.CreateUnbounded<object>();
@@ -289,12 +318,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task UploadStreamCancelationSendsStreamComplete()
         {
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            using (StartVerifiableLog())
             {
                 var connection = new TestConnection();
-                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().OrTimeout();
 
                 var cts = new CancellationTokenSource();
@@ -321,12 +351,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task InvocationCanCompleteBeforeStreamCompletes()
         {
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace))
+            using (StartVerifiableLog())
             {
                 var connection = new TestConnection();
-                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().OrTimeout();
 
                 var channel = Channel.CreateUnbounded<int>();
@@ -346,6 +377,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        [LogLevel(LogLevel.Trace)]
         public async Task WrongTypeOnServerResponse()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -354,10 +386,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                        (writeContext.EventId.Name == "ServerDisconnectedWithError"
                         || writeContext.EventId.Name == "ShutdownWithError");
             }
-            using (StartVerifiableLog(out var loggerFactory, LogLevel.Trace, expectedErrorsFilter: ExpectedErrors))
+            using (StartVerifiableLog(ExpectedErrors))
             {
                 var connection = new TestConnection();
-                var hubConnection = CreateHubConnection(connection, loggerFactory: loggerFactory);
+                var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().OrTimeout();
 
                 // we expect to get sent ints, and receive an int back

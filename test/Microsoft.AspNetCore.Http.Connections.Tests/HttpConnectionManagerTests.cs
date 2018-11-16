@@ -10,23 +10,17 @@ using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
 {
     public class HttpConnectionManagerTests : VerifiableLoggedTest
     {
-        public HttpConnectionManagerTests(ITestOutputHelper output)
-            : base(output)
-        {
-        }
-
         [Fact]
         public void NewConnectionsHaveConnectionId()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection();
 
                 Assert.NotNull(connection.ConnectionId);
@@ -52,13 +46,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [InlineData(ConnectionStates.CloseGracefully | ConnectionStates.ApplicationFaulted | ConnectionStates.TransportNotFaulted)]
         public async Task DisposingConnectionsClosesBothSidesOfThePipe(ConnectionStates states)
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var closeGracefully = (states & ConnectionStates.CloseGracefully) != 0;
                 var applicationFaulted = (states & ConnectionStates.ApplicationFaulted) != 0;
                 var transportFaulted = (states & ConnectionStates.TransportFaulted) != 0;
 
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection();
 
                 if (applicationFaulted)
@@ -123,9 +117,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public void NewConnectionsCanBeRetrieved()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection();
 
                 Assert.NotNull(connection.ConnectionId);
@@ -138,9 +132,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public void AddNewConnection()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
                 var transport = connection.Transport;
@@ -157,9 +151,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public void RemoveConnection()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
                 var transport = connection.Transport;
@@ -179,9 +173,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task CloseConnectionsEndsAllPendingConnections()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
                 connection.ApplicationTask = Task.Run(async () =>
@@ -227,9 +221,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task DisposingConnectionMultipleTimesWaitsOnConnectionClose()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
                 var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -250,9 +244,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task DisposingConnectionMultipleGetsExceptionFromTransportOrApp()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
                 var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -277,9 +271,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task DisposingConnectionMultipleGetsCancellation()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
                 var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -301,9 +295,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task DisposeInactiveConnection()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
                 Assert.NotNull(connection.ConnectionId);
@@ -317,9 +311,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task DisposeInactiveConnectionWithNoPipes()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var connectionManager = CreateConnectionManager(loggerFactory);
+                var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection();
 
                 Assert.NotNull(connection.ConnectionId);
@@ -334,10 +328,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task ApplicationLifetimeIsHookedUp()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var appLifetime = new TestApplicationLifetime();
-                var connectionManager = CreateConnectionManager(loggerFactory, appLifetime);
+                var connectionManager = CreateConnectionManager(LoggerFactory, appLifetime);
                 var tcs = new TaskCompletionSource<object>();
 
                 appLifetime.Start();
@@ -360,12 +354,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         [Fact]
         public async Task ApplicationLifetimeCanStartBeforeHttpConnectionManagerInitialized()
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
                 var appLifetime = new TestApplicationLifetime();
                 appLifetime.Start();
 
-                var connectionManager = CreateConnectionManager(loggerFactory, appLifetime);
+                var connectionManager = CreateConnectionManager(LoggerFactory, appLifetime);
                 var tcs = new TaskCompletionSource<object>();
 
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);

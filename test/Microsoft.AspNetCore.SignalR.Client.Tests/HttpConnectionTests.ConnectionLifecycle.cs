@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -22,16 +21,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         public class ConnectionLifecycle : VerifiableLoggedTest
         {
-            public ConnectionLifecycle(ITestOutputHelper output) : base(output)
-            {
-            }
-
             [Fact]
             public async Task CanStartStartedConnection()
             {
-                using (StartVerifiableLog(out var loggerFactory))
+                using (StartVerifiableLog())
                 {
-                    await WithConnectionAsync(CreateConnection(loggerFactory: loggerFactory), async (connection) =>
+                    await WithConnectionAsync(CreateConnection(loggerFactory: LoggerFactory), async (connection) =>
                     {
                         await connection.StartAsync(TransferFormat.Text).OrTimeout();
                         await connection.StartAsync(TransferFormat.Text).OrTimeout();
@@ -42,10 +37,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanStartStartingConnection()
             {
-                using (StartVerifiableLog(out var loggerFactory))
+                using (StartVerifiableLog())
                 {
                     await WithConnectionAsync(
-                        CreateConnection(loggerFactory: loggerFactory, transport: new TestTransport(onTransportStart: SyncPoint.Create(out var syncPoint))),
+                        CreateConnection(loggerFactory: LoggerFactory, transport: new TestTransport(onTransportStart: SyncPoint.Create(out var syncPoint))),
                         async (connection) =>
                         {
                             var firstStart = connection.StartAsync(TransferFormat.Text).OrTimeout();
@@ -62,10 +57,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CannotStartConnectionOnceDisposed()
             {
-                using (StartVerifiableLog(out var loggerFactory))
+                using (StartVerifiableLog())
                 {
                     await WithConnectionAsync(
-                        CreateConnection(loggerFactory: loggerFactory),
+                        CreateConnection(loggerFactory: LoggerFactory),
                         async (connection) =>
                         {
                             await connection.StartAsync(TransferFormat.Text).OrTimeout();
@@ -90,7 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                            writeContext.EventId.Name == "ErrorStartingTransport";
                 }
 
-                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
                 {
                     var startCounter = 0;
                     var expected = new Exception("Transport failed to start");
@@ -120,7 +115,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await WithConnectionAsync(
                         CreateConnection(
-                            loggerFactory: loggerFactory,
+                            loggerFactory: LoggerFactory,
                             transportType: HttpTransports.All,
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
                         async (connection) =>
@@ -141,7 +136,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                            writeContext.EventId.Name == "ErrorStartingTransport";
                 }
 
-                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
                 {
                     var startCounter = 0;
                     var availableTransports = 3;
@@ -154,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await WithConnectionAsync(
                         CreateConnection(
-                            loggerFactory: loggerFactory,
+                            loggerFactory: LoggerFactory,
                             transportType: HttpTransports.All,
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
                         async (connection) =>
@@ -176,10 +171,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeUnstartedConnection()
             {
-                using (StartVerifiableLog(out var loggerFactory))
+                using (StartVerifiableLog())
                 {
                     await WithConnectionAsync(
-                        CreateConnection(loggerFactory: loggerFactory),
+                        CreateConnection(loggerFactory: LoggerFactory),
                         async (connection) =>
                         {
                             await connection.DisposeAsync();
@@ -191,11 +186,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeStartingConnection()
             {
-                using (StartVerifiableLog(out var loggerFactory))
+                using (StartVerifiableLog())
                 {
                     await WithConnectionAsync(
                         CreateConnection(
-                            loggerFactory: loggerFactory,
+                            loggerFactory: LoggerFactory,
                             transport: new TestTransport(
                                 onTransportStart: SyncPoint.Create(out var transportStart),
                                 onTransportStop: SyncPoint.Create(out var transportStop))),
@@ -225,11 +220,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task CanDisposeDisposingConnection()
             {
-                using (StartVerifiableLog(out var loggerFactory))
+                using (StartVerifiableLog())
                 {
                     await WithConnectionAsync(
                         CreateConnection(
-                            loggerFactory: loggerFactory,
+                            loggerFactory: LoggerFactory,
                             transport: new TestTransport(onTransportStop: SyncPoint.Create(out var transportStop))),
                         async (connection) =>
                     {
@@ -290,7 +285,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                            writeContext.EventId.Name == "ErrorSending";
                 }
 
-                using (StartVerifiableLog(out var loggerFactory, expectedErrorsFilter: ExpectedErrors))
+                using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
@@ -312,7 +307,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     });
 
                     await WithConnectionAsync(
-                        CreateConnection(httpHandler, loggerFactory),
+                        CreateConnection(httpHandler, LoggerFactory),
                         async (connection) =>
                         {
                             await connection.StartAsync(TransferFormat.Text).OrTimeout();
@@ -349,7 +344,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task SSEWaitsForResponseToStart()
             {
-                using (StartVerifiableLog(out var loggerFactory))
+                using (StartVerifiableLog())
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
@@ -360,10 +355,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);
                     });
 
-                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), loggerFactory);
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), LoggerFactory);
 
                     await WithConnectionAsync(
-                        CreateConnection(httpHandler, loggerFactory: loggerFactory, transport: sse),
+                        CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse),
                         async (connection) =>
                         {
                             var startTask = connection.StartAsync(TransferFormat.Text).OrTimeout();

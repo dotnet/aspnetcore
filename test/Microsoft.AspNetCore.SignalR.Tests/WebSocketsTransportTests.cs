@@ -15,17 +15,12 @@ using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Testing.xunit;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
     [Collection(EndToEndTestsCollection.Name)]
     public class WebSocketsTransportTests : FunctionalTestBase
     {
-        public WebSocketsTransportTests(ITestOutputHelper output) : base(output)
-        {
-        }
-
         [ConditionalFact]
         [WebSocketsSupportedCondition]
         public void HttpOptionsSetOntoWebSocketOptions()
@@ -57,9 +52,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportStopsSendAndReceiveLoopsWhenTransportIsStopped()
         {
-            using (StartServer<Startup>(out var loggerFactory, out var server))
+            using (StartServer<Startup>(out var server))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
                     TransferFormat.Binary).OrTimeout();
                 await webSocketsTransport.StopAsync().OrTimeout();
@@ -71,9 +66,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportSendsUserAgent()
         {
-            using (StartServer<Startup>(out var loggerFactory, out var server))
+            using (StartServer<Startup>(out var server))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/httpheader"),
                     TransferFormat.Binary).OrTimeout();
 
@@ -99,9 +94,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportSendsXRequestedWithHeader()
         {
-            using (StartServer<Startup>(out var loggerFactory, out var server))
+            using (StartServer<Startup>(out var server))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/httpheader"),
                     TransferFormat.Binary).OrTimeout();
 
@@ -122,9 +117,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportStopsWhenConnectionChannelClosed()
         {
-            using (StartServer<Startup>(out var loggerFactory, out var server))
+            using (StartServer<Startup>(out var server))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
                     TransferFormat.Binary);
                 webSocketsTransport.Output.Complete();
@@ -138,9 +133,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransferFormat.Binary)]
         public async Task WebSocketsTransportStopsWhenConnectionClosedByTheServer(TransferFormat transferFormat)
         {
-            using (StartServer<Startup>(out var loggerFactory, out var server))
+            using (StartServer<Startup>(out var server))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echoAndClose"), transferFormat);
 
                 await webSocketsTransport.Output.WriteAsync(new byte[] { 0x42 });
@@ -160,9 +155,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransferFormat.Binary)]
         public async Task WebSocketsTransportSetsTransferFormat(TransferFormat transferFormat)
         {
-            using (StartServer<Startup>(out var loggerFactory, out var server))
+            using (StartServer<Startup>(out var server))
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: LoggerFactory, accessTokenProvider: null);
 
                 await webSocketsTransport.StartAsync(new Uri(server.WebSocketsUrl + "/echo"),
                     transferFormat).OrTimeout();
@@ -178,9 +173,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [WebSocketsSupportedCondition]
         public async Task WebSocketsTransportThrowsForInvalidTransferFormat(TransferFormat transferFormat)
         {
-            using (StartVerifiableLog(out var loggerFactory))
+            using (StartVerifiableLog())
             {
-                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, loggerFactory: loggerFactory, accessTokenProvider: null);
+                var webSocketsTransport = new WebSocketsTransport(httpConnectionOptions: null, LoggerFactory, accessTokenProvider: null);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
                     webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
 
