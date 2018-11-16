@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Http
 {
@@ -42,8 +43,8 @@ namespace Microsoft.Extensions.Http
         /// a handler can be pooled before it is scheduled for removal from the pool and disposal.
         /// </para>
         /// <para>
-        /// Pooling of handlers is desirable as each handler typially manages its own underlying HTTP connections; creating
-        /// more handlers than necessary can result in connection delays. Some handlers also keep connections open indefinitly
+        /// Pooling of handlers is desirable as each handler typically manages its own underlying HTTP connections; creating
+        /// more handlers than necessary can result in connection delays. Some handlers also keep connections open indefinitely
         /// which can prevent the handler from reacting to DNS changes. The value of <see cref="HandlerLifetime"/> should be
         /// chosen with an understanding of the application's requirement to respond to changes in the network environment.
         /// </para>
@@ -67,5 +68,32 @@ namespace Microsoft.Extensions.Http
                 _handlerLifetime = value;
             }
         }
+
+        /// <summary>
+        /// <para>
+        /// Gets or sets a value that determines whether the <see cref="IHttpClientFactory"/> will
+        /// create a dependency injection scope when building an <see cref="HttpMessageHandler"/>.
+        /// If <c>false</c> (default), a scope will be created, otherwise a scope will not be created.
+        /// </para>
+        /// <para>
+        /// This option is provided for compatibility with existing applications. It is recommended
+        /// to use the default setting for new applications.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The <see cref="IHttpClientFactory"/> will (by default) create a dependency injection scope
+        /// each time it creates an <see cref="HttpMessageHandler"/>. The created scope has the same
+        /// lifetime as the message handler, and will be disposed when the message handler is disposed.
+        /// </para>
+        /// <para>
+        /// When operations that are part of <see cref="HttpMessageHandlerBuilderActions"/> are executed
+        /// they will be provided with the scoped <see cref="IServiceProvider"/> via 
+        /// <see cref="HttpMessageHandlerBuilder.Services"/>. This includes retrieving a message handler
+        /// from dependency injection, such as one registered using 
+        /// <see cref="HttpClientBuilderExtensions.AddHttpMessageHandler{THandler}(IHttpClientBuilder)"/>.
+        /// </para>
+        /// </remarks>
+        public bool SuppressHandlerScope { get; set; }
     }
 }

@@ -14,5 +14,10 @@ namespace Microsoft.Extensions.Http
             : base(innerHandler)
         {
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            // The lifetime of this is tracked separately by ActiveHandlerTrackingEntry
+        }
     }
 }

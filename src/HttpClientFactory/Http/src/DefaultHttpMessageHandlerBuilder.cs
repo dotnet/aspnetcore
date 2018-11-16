@@ -9,6 +9,11 @@ namespace Microsoft.Extensions.Http
 {
     internal class DefaultHttpMessageHandlerBuilder : HttpMessageHandlerBuilder
     {
+        public DefaultHttpMessageHandlerBuilder(IServiceProvider services)
+        {
+            Services = services;
+        }
+
         private string _name;
 
         public override string Name
@@ -28,6 +33,8 @@ namespace Microsoft.Extensions.Http
         public override HttpMessageHandler PrimaryHandler { get; set; } = new HttpClientHandler();
 
         public override IList<DelegatingHandler> AdditionalHandlers { get; } = new List<DelegatingHandler>();
+
+        public override IServiceProvider Services { get; }
 
         public override HttpMessageHandler Build()
         {

@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Http
         /// Gets or sets the name of the <see cref="HttpClient"/> being created.
         /// </summary>
         /// <remarks>
-        /// The <see cref="Name"/> is set by the <see cref="IHttpClientFactory"/> instructure
+        /// The <see cref="Name"/> is set by the <see cref="IHttpClientFactory"/> infrastructure
         /// and is public for unit testing purposes only. Setting the <see cref="Name"/> outside of
         /// testing scenarios may have unpredictable results.
         /// </remarks>
@@ -38,6 +38,19 @@ namespace Microsoft.Extensions.Http
         /// <see cref="HttpClient"/> pipeline.
         /// </summary>
         public abstract IList<DelegatingHandler> AdditionalHandlers { get; }
+
+        /// <summary>
+        /// Gets an <see cref="IServiceProvider"/> which can be used to resolve services
+        /// from the dependency injection container.
+        /// </summary>
+        /// <remarks>
+        /// This property is sensitive to the value of 
+        /// <see cref="HttpClientFactoryOptions.SuppressHandlerScope"/>. If <c>true</c> this
+        /// property will be a reference to the application's root service provider. If <c>false</c>
+        /// (default) this will be a reference to a scoped service provider that has the same
+        /// lifetime as the handler being created.
+        /// </remarks>
+        public virtual IServiceProvider Services { get; }
 
         /// <summary>
         /// Creates an <see cref="HttpMessageHandler"/>.

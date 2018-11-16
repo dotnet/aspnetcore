@@ -15,10 +15,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http
 {
-    internal class DefaultHttpClientFactory : IHttpClientFactory
+    internal class DefaultHttpClientFactory : IHttpClientFactory, IHttpMessageHandlerFactory
     {
+        private static readonly TimerCallback _cleanupCallback = (s) => ((DefaultHttpClientFactory)s).CleanupTimer_Tick();
         private readonly ILogger _logger;
         private readonly IServiceProvider _services;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IOptionsMonitor<HttpClientFactoryOptions> _optionsMonitor;
         private readonly IHttpMessageHandlerBuilderFilter[] _filters;
         private readonly Func<string, Lazy<ActiveHandlerTrackingEntry>> _entryFactory;
@@ -36,7 +38,6 @@ namespace Microsoft.Extensions.Http
         // There's no need for the factory itself to be disposable. If you stop using it, eventually everything will
         // get reclaimed.
         private Timer _cleanupTimer;
-        private TimerCallback _cleanupCallback;
         private readonly object _cleanupTimerLock;
         private readonly object _cleanupActiveLock;
 
@@ -59,6 +60,7 @@ namespace Microsoft.Extensions.Http
 
         public DefaultHttpClientFactory(
             IServiceProvider services,
+            IServiceScopeFactory scopeFactory,
             ILoggerFactory loggerFactory,
             IOptionsMonitor<HttpClientFactoryOptions> optionsMonitor,
             IEnumerable<IHttpMessageHandlerBuilderFilter> filters)
@@ -66,6 +68,11 @@ namespace Microsoft.Extensions.Http
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
+            }
+
+            if (scopeFactory == null)
+            {
+                throw new ArgumentNullException(nameof(scopeFactory));
             }
 
             if (loggerFactory == null)
@@ -84,6 +91,7 @@ namespace Microsoft.Extensions.Http
             }
 
             _services = services;
+            _scopeFactory = scopeFactory;
             _optionsMonitor = optionsMonitor;
             _filters = filters.ToArray();
 
@@ -102,7 +110,6 @@ namespace Microsoft.Extensions.Http
             _expiredHandlers = new ConcurrentQueue<ExpiredHandlerTrackingEntry>();
             _expiryCallback = ExpiryTimer_Tick;
 
-            _cleanupCallback = CleanupTimer_Tick;
             _cleanupTimerLock = new object();
             _cleanupActiveLock = new object();
         }
@@ -114,10 +121,8 @@ namespace Microsoft.Extensions.Http
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var entry = _activeHandlers.GetOrAdd(name, _entryFactory).Value;
-            var client = new HttpClient(entry.Handler, disposeHandler: false);
-
-            StartHandlerEntryTimer(entry);
+            var handler = CreateHandler(name);
+            var client = new HttpClient(handler, disposeHandler: false);
 
             var options = _optionsMonitor.Get(name);
             for (var i = 0; i < options.HttpClientActions.Count; i++)
@@ -128,42 +133,73 @@ namespace Microsoft.Extensions.Http
             return client;
         }
 
+        public HttpMessageHandler CreateHandler(string name)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            var entry = _activeHandlers.GetOrAdd(name, _entryFactory).Value;
+
+            StartHandlerEntryTimer(entry);
+
+            return entry.Handler;
+        }
+
         // Internal for tests
         internal ActiveHandlerTrackingEntry CreateHandlerEntry(string name)
         {
-            var builder = _services.GetRequiredService<HttpMessageHandlerBuilder>();
-            builder.Name = name;
+            var services = _services;
+            var scope = (IServiceScope)null;
 
             var options = _optionsMonitor.Get(name);
-
-            // This is similar to the initialization pattern in:
-            // https://github.com/aspnet/Hosting/blob/e892ed8bbdcd25a0dafc1850033398dc57f65fe1/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs#L188
-            Action<HttpMessageHandlerBuilder> configure = Configure;
-            for (var i = _filters.Length -1; i >= 0; i--)
+            if (!options.SuppressHandlerScope)
             {
-                configure = _filters[i].Configure(configure);
+                scope = _scopeFactory.CreateScope();
+                services = scope.ServiceProvider;
             }
 
-            configure(builder);
-
-            // Wrap the handler so we can ensure the inner handler outlives the outer handler.
-            var handler = new LifetimeTrackingHttpMessageHandler(builder.Build());
-
-            // Note that we can't start the timer here. That would introduce a very very subtle race condition
-            // with very short expiry times. We need to wait until we've actually handed out the handler once
-            // to start the timer.
-            // 
-            // Otherwise it would be possible that we start the timer here, immediately expire it (very short
-            // timer) and then dispose it without ever creating a client. That would be bad. It's unlikely
-            // this would happen, but we want to be sure.
-            return new ActiveHandlerTrackingEntry(name, handler, options.HandlerLifetime);
-
-            void Configure(HttpMessageHandlerBuilder b)
+            try
             {
-                for (var i = 0; i < options.HttpMessageHandlerBuilderActions.Count; i++)
+                var builder = services.GetRequiredService<HttpMessageHandlerBuilder>();
+                builder.Name = name;
+
+                // This is similar to the initialization pattern in:
+                // https://github.com/aspnet/Hosting/blob/e892ed8bbdcd25a0dafc1850033398dc57f65fe1/src/Microsoft.AspNetCore.Hosting/Internal/WebHost.cs#L188
+                Action<HttpMessageHandlerBuilder> configure = Configure;
+                for (var i = _filters.Length - 1; i >= 0; i--)
                 {
-                    options.HttpMessageHandlerBuilderActions[i](b);
+                    configure = _filters[i].Configure(configure);
                 }
+
+                configure(builder);
+
+                // Wrap the handler so we can ensure the inner handler outlives the outer handler.
+                var handler = new LifetimeTrackingHttpMessageHandler(builder.Build());
+
+                // Note that we can't start the timer here. That would introduce a very very subtle race condition
+                // with very short expiry times. We need to wait until we've actually handed out the handler once
+                // to start the timer.
+                // 
+                // Otherwise it would be possible that we start the timer here, immediately expire it (very short
+                // timer) and then dispose it without ever creating a client. That would be bad. It's unlikely
+                // this would happen, but we want to be sure.
+                return new ActiveHandlerTrackingEntry(name, handler, scope, options.HandlerLifetime);
+
+                void Configure(HttpMessageHandlerBuilder b)
+                {
+                    for (var i = 0; i < options.HttpMessageHandlerBuilderActions.Count; i++)
+                    {
+                        options.HttpMessageHandlerBuilderActions[i](b);
+                    }
+                }
+            }
+            catch
+            {
+                // If something fails while creating the handler, dispose the services.
+                scope?.Dispose();
+                throw;
             }
         }
 
@@ -195,7 +231,7 @@ namespace Microsoft.Extensions.Http
         // Internal so it can be overridden in tests
         internal virtual void StartHandlerEntryTimer(ActiveHandlerTrackingEntry entry)
         {
-            entry.StartExpiryTimer(ExpiryTimer_Tick);
+            entry.StartExpiryTimer(_expiryCallback);
         }
 
         // Internal so it can be overridden in tests
@@ -205,7 +241,7 @@ namespace Microsoft.Extensions.Http
             {
                 if (_cleanupTimer == null)
                 {
-                    _cleanupTimer = new Timer(_cleanupCallback, null, DefaultCleanupInterval, Timeout.InfiniteTimeSpan);
+                    _cleanupTimer = NonCapturingTimer.Create(_cleanupCallback, this, DefaultCleanupInterval, Timeout.InfiniteTimeSpan);
                 }
             }
         }
@@ -221,7 +257,7 @@ namespace Microsoft.Extensions.Http
         }
 
         // Internal for tests
-        internal void CleanupTimer_Tick(object state)
+        internal void CleanupTimer_Tick()
         {
             // Stop any pending timers, we'll restart the timer if there's anything left to process after cleanup.
             //
@@ -233,20 +269,20 @@ namespace Microsoft.Extensions.Http
             // whether we need to start the timer.
             StopCleanupTimer();
 
+            if (!Monitor.TryEnter(_cleanupActiveLock))
+            {
+                // We don't want to run a concurrent cleanup cycle. This can happen if the cleanup cycle takes
+                // a long time for some reason. Since we're running user code inside Dispose, it's definitely
+                // possible.
+                //
+                // If we end up in that position, just make sure the timer gets started again. It should be cheap
+                // to run a 'no-op' cleanup.
+                StartCleanupTimer();
+                return;
+            }
+
             try
             {
-                if (!Monitor.TryEnter(_cleanupActiveLock))
-                {
-                    // We don't want to run a concurrent cleanup cycle. This can happen if the cleanup cycle takes
-                    // a long time for some reason. Since we're running user code inside Dispose, it's definitely
-                    // possible.
-                    //
-                    // If we end up in that position, just make sure the timer gets started again. It should be cheap
-                    // to run a 'no-op' cleanup.
-                    StartCleanupTimer();
-                    return;
-                }
-
                 var initialCount = _expiredHandlers.Count;
                 Log.CleanupCycleStart(_logger, initialCount);
 
@@ -257,13 +293,14 @@ namespace Microsoft.Extensions.Http
                 {
                     // Since we're the only one removing from _expired, TryDequeue must always succeed.
                     _expiredHandlers.TryDequeue(out var entry);
-                    Debug.Assert(entry != null, "Entry was null, we should always get an entry back from TryDeqeue");
+                    Debug.Assert(entry != null, "Entry was null, we should always get an entry back from TryDequeue");
 
                     if (entry.CanDispose)
                     {
                         try
                         {
                             entry.InnerHandler.Dispose();
+                            entry.Scope?.Dispose();
                             disposedCount++;
                         }
                         catch (Exception ex)

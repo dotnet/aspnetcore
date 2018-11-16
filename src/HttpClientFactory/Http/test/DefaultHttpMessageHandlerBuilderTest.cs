@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -10,6 +11,13 @@ namespace Microsoft.Extensions.Http
 {
     public class DefaultHttpMessageHandlerBuilderTest
     {
+        public DefaultHttpMessageHandlerBuilderTest()
+        {
+            Services = new ServiceCollection().BuildServiceProvider();
+        }
+
+        public IServiceProvider Services { get; }
+
         // Testing this because it's an important design detail. If someone wants to globally replace the handler
         // they can do so by replacing this service. It's important that the Factory isn't the one to instantiate
         // the handler. The factory has no defaults - it only applies options.
@@ -17,7 +25,7 @@ namespace Microsoft.Extensions.Http
         public void Ctor_SetsPrimaryHandler()
         {
             // Arrange & Act
-            var builder = new DefaultHttpMessageHandlerBuilder();
+            var builder = new DefaultHttpMessageHandlerBuilder(Services);
 
             // Act
             Assert.IsType<HttpClientHandler>(builder.PrimaryHandler);
@@ -28,7 +36,7 @@ namespace Microsoft.Extensions.Http
         public void Build_NoAdditionalHandlers_ReturnsPrimaryHandler()
         {
             // Arrange
-            var builder = new DefaultHttpMessageHandlerBuilder()
+            var builder = new DefaultHttpMessageHandlerBuilder(Services)
             {
                 PrimaryHandler = Mock.Of<HttpMessageHandler>(),
             };
@@ -44,7 +52,7 @@ namespace Microsoft.Extensions.Http
         public void Build_SomeAdditionalHandlers_PutsTogetherDelegatingHandlers()
         {
             // Arrange
-            var builder = new DefaultHttpMessageHandlerBuilder()
+            var builder = new DefaultHttpMessageHandlerBuilder(Services)
             {
                 PrimaryHandler = Mock.Of<HttpMessageHandler>(),
                 AdditionalHandlers =
@@ -71,7 +79,7 @@ namespace Microsoft.Extensions.Http
         public void Build_PrimaryHandlerIsNull_ThrowsException()
         {
             // Arrange
-            var builder = new DefaultHttpMessageHandlerBuilder()
+            var builder = new DefaultHttpMessageHandlerBuilder(Services)
             {
                 PrimaryHandler = null,
             };
@@ -85,7 +93,7 @@ namespace Microsoft.Extensions.Http
         public void Build_AdditionalHandlerIsNull_ThrowsException()
         {
             // Arrange
-            var builder = new DefaultHttpMessageHandlerBuilder()
+            var builder = new DefaultHttpMessageHandlerBuilder(Services)
             {
                 AdditionalHandlers =
                 {
@@ -102,7 +110,7 @@ namespace Microsoft.Extensions.Http
         public void Build_AdditionalHandlerHasNonNullInnerHandler_ThrowsException()
         {
             // Arrange
-            var builder = new DefaultHttpMessageHandlerBuilder()
+            var builder = new DefaultHttpMessageHandlerBuilder(Services)
             {
                 AdditionalHandlers =
                 {

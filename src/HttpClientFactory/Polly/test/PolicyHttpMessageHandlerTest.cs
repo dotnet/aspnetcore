@@ -139,7 +139,7 @@ namespace Microsoft.Extensions.Http
             var expected = new HttpResponseMessage();
             handler.OnSendAsync = (req, c, ct) =>
             {
-                // The inner cancellation token is created by polly, it will trigger the timeout.
+                // The inner cancellation token is created by Polly, it will trigger the timeout.
                 Assert.True(ct.CanBeCanceled);
                 if (callCount == 0)
                 {

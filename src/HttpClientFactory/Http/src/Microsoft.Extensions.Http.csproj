@@ -13,6 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)TypeNameHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\**\*.cs" />
   </ItemGroup>
 

@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.Extensions.Http
 {
@@ -11,15 +13,21 @@ namespace Microsoft.Extensions.Http
     // for the 'expiry' pool simplifies the threading requirements significantly.
     internal class ActiveHandlerTrackingEntry
     {
+        private static readonly TimerCallback _timerCallback = (s) => ((ActiveHandlerTrackingEntry)s).Timer_Tick();
         private readonly object _lock;
         private bool _timerInitialized;
         private Timer _timer;
         private TimerCallback _callback;
 
-        public ActiveHandlerTrackingEntry(string name, LifetimeTrackingHttpMessageHandler handler, TimeSpan lifetime)
+        public ActiveHandlerTrackingEntry(
+            string name,
+            LifetimeTrackingHttpMessageHandler handler,
+            IServiceScope scope,
+            TimeSpan lifetime)
         {
             Name = name;
             Handler = handler;
+            Scope = scope;
             Lifetime = lifetime;
 
             _lock = new object();
@@ -30,6 +38,8 @@ namespace Microsoft.Extensions.Http
         public TimeSpan Lifetime { get; }
 
         public string Name { get; }
+
+        public IServiceScope Scope { get; }
 
         public void StartExpiryTimer(TimerCallback callback)
         {
@@ -58,23 +68,25 @@ namespace Microsoft.Extensions.Http
                 }
 
                 _callback = callback;
-                _timer = new Timer(Timer_Tick, null, Lifetime, Timeout.InfiniteTimeSpan);
-
-                Volatile.Write(ref _timerInitialized, true);
+                _timer = NonCapturingTimer.Create(_timerCallback, this, Lifetime, Timeout.InfiniteTimeSpan);
+                _timerInitialized = true;
             }
         }
 
-        private void Timer_Tick(object state)
+        private void Timer_Tick()
         {
             Debug.Assert(_callback != null);
             Debug.Assert(_timer != null);
 
             lock (_lock)
             {
-                _timer.Dispose();
-                _timer = null;
+                if (_timer != null)
+                {
+                    _timer.Dispose();
+                    _timer = null;
 
-                _callback(this);
+                    _callback(this);
+                }
             }
         }
     }
