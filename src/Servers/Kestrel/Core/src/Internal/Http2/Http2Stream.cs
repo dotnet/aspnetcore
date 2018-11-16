@@ -66,7 +66,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
         private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
         internal bool RstStreamReceived => (_completionState & StreamCompletionFlags.RstStreamReceived) == StreamCompletionFlags.RstStreamReceived;
-        internal bool IsDraining => (_completionState & StreamCompletionFlags.Draining) == StreamCompletionFlags.Draining;
 
         public bool ReceivedEmptyRequestBody
         {
@@ -94,8 +93,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
 
-                    ApplyCompletionFlag(StreamCompletionFlags.Draining);
-
                     var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (states.OldState != states.NewState)
                     {
@@ -117,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             finally
             {
-                _context.StreamLifetimeHandler.OnStreamCompleted(StreamId);
+                _context.StreamLifetimeHandler.OnStreamCompleted(this);
             }
         }
 
@@ -509,7 +506,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             RstStreamReceived = 1,
             EndStreamReceived = 2,
             Aborted = 4,
-            Draining = 8,
         }
     }
 }
