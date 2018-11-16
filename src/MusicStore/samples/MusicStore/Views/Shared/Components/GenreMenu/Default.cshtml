@@ -1,0 +1,17 @@
+﻿@model IEnumerable<string>
+
+<li class="dropdown">
+    <a asp-area="" asp-controller="Store" asp-action="Index" class="dropdown-toggle" data-toggle="dropdown">Store <b class="caret"></b></a>
+    <ul class="dropdown-menu">
+        @foreach (var genreName in Model)
+        {
+            <li>
+                <a asp-area="" asp-controller="Store" asp-action="Browse" asp-route-Genre="@genreName">@genreName</a>
+            </li>
+        }
+        <li class="divider"></li>
+        <li>
+            <a asp-area="" asp-controller="Store" asp-action="Index">More...</a>
+        </li>
+    </ul>
+</li>
