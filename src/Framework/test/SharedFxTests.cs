@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore
                 .Select(i =>
                 {
                     var fileName = i.Split('|')[0];
-                    return fileName.EndsWith(".dll")
+                    return fileName.EndsWith(".dll", StringComparison.Ordinal)
                         ? fileName.Substring(0, fileName.Length - 4)
                         : fileName;
                 })
