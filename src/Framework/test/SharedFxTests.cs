@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore
                 Assert.NotEmpty(obj.Value["fileVersion"].Value<string>());
             });
 
-            if (_expectedRid.StartsWith("win"))
+            if (_expectedRid.StartsWith("win", StringComparison.Ordinal) && !_expectedRid.Contains("arm"))
             {
                 Assert.All(runtimeLibrary["native"], item =>
                 {
