@@ -6,6 +6,8 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <Import Project="..\Microsoft.AspNetCore.App.props" />
+
   <ItemGroup>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>PackageVersion</_Parameter1>
@@ -38,9 +40,19 @@
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
-      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData" Condition="'%(_ResolvedFrameworkReference.Identity)' != ''">
-        <_Parameter1>SharedFxMetadataOutput:%(_ResolvedFrameworkReference.SharedFxName)</_Parameter1>
+      <ExpectedAssemblyNames Include="%(Dependency.AssemblyName)" />
+      <ExpectedAssemblyNames Include="@(Dependency)" Condition="'%(Dependency.AssemblyName)' == '' " />
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>SharedFxDependencies</_Parameter1>
+        <_Parameter2>@(ExpectedAssemblyNames)</_Parameter2>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>MetadataOutputPath</_Parameter1>
         <_Parameter2>%(_ResolvedFrameworkReference.MetadataOutputPath)</_Parameter2>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>ManifestOutputDir</_Parameter1>
+        <_Parameter2>%(_ResolvedFrameworkReference.ManifestOutputDir)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
   </Target>

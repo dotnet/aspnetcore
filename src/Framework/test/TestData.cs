@@ -16,6 +16,12 @@ namespace Microsoft.AspNetCore
 
         public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("SharedFxRid");
 
+        public static string GetSharedFxDependencies() => GetTestDataValue("SharedFxDependencies");
+
+        public static string GetMetadataOutput() => GetTestDataValue("MetadataOutputPath");
+
+        public static string GetManifestOutputDir() => GetTestDataValue("ManifestOutputDir");
+
         public static string GetTestDataValue(string key)
              => typeof(TestData).Assembly.GetCustomAttributes<TestDataAttribute>().Single(d => d.Key == key).Value;
     }

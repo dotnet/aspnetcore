@@ -14,7 +14,7 @@ using RepoTasks.Utilities;
 
 namespace RepoTasks
 {
-    public class ProcessSharedFrameworkDeps : Task
+    public class GenerateSharedFrameworkMetadataFiles : Task
     {
         [Required]
         public string AssetsFilePath { get; set; }
@@ -23,7 +23,7 @@ namespace RepoTasks
         public string DepsFilePath { get; set; }
 
         [Required]
-        public string OutputPath { get; set; }
+        public string DepsFileOutputPath { get; set; }
 
         [Required]
         public string TargetFramework { get; set; }
@@ -36,6 +36,9 @@ namespace RepoTasks
 
         [Required]
         public string BaseRuntimeIdentifier { get; set; }
+
+        [Required]
+        public string PlatformManifestOutputPath { get; set; }
 
         public override bool Execute()
         {
@@ -65,27 +68,38 @@ namespace RepoTasks
             var runtimeFiles = new List<RuntimeFile>();
             var nativeFiles = new List<RuntimeFile>();
             var resourceAssemblies = new List<ResourceAssembly>();
+            var platformManifest = new List<string>();
 
             foreach (var library in context.RuntimeLibraries)
             {
                 foreach (var file in library.RuntimeAssemblyGroups.SelectMany(g => g.RuntimeFiles))
                 {
-                    var path = $"runtimes/{context.Target.Runtime}/lib/{TargetFramework}/{Path.GetFileName(file.Path)}";
+                    var fileName = Path.GetFileName(file.Path);
+                    var path = $"runtimes/{context.Target.Runtime}/lib/{TargetFramework}/{fileName}";
                     runtimeFiles.Add(
                         new RuntimeFile(
                             path,
                             file.AssemblyVersion,
                             file.FileVersion));
+
+                    platformManifest.Add($"{fileName}|{FrameworkName}|{file.AssemblyVersion}|{file.FileVersion}");
                 }
 
                 foreach (var file in library.NativeLibraryGroups.SelectMany(g => g.RuntimeFiles))
                 {
-                    var path = $"runtimes/{context.Target.Runtime}/native/{Path.GetFileName(file.Path)}";
+                    var fileName = Path.GetFileName(file.Path);
+                    var path = $"runtimes/{context.Target.Runtime}/native/{fileName}";
                     nativeFiles.Add(
                         new RuntimeFile(
                             path,
                             file.AssemblyVersion,
                             file.FileVersion));
+
+                    if (!Version.TryParse(file.FileVersion, out var fileVersion))
+                    {
+                        fileVersion = new Version(0, 0, 0, 0);
+                    }
+                    platformManifest.Add($"{fileName}|{FrameworkName}||{fileVersion}");
                 }
 
                 resourceAssemblies.AddRange(
@@ -126,7 +140,12 @@ namespace RepoTasks
                 expandedGraph
                 );
 
-            using (var depsStream = File.Create(OutputPath))
+            Directory.CreateDirectory(Path.GetDirectoryName(PlatformManifestOutputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(DepsFileOutputPath));
+
+            File.WriteAllLines(PlatformManifestOutputPath, platformManifest.OrderBy(n => n));
+
+            using (var depsStream = File.Create(DepsFileOutputPath))
             {
                 new DependencyContextWriter().Write(context, depsStream);
             }
