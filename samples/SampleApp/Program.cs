@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SampleApp
 {
@@ -23,6 +25,8 @@ namespace SampleApp
             CustomApplicationBuilder();
 
             StartupClass(args);
+
+            HostBuilderWithWebHost(args);
         }
 
         private static void HelloWorld()
@@ -89,6 +93,22 @@ namespace SampleApp
             {
                 host.Run();
             }
+        }
+
+        private static void HostBuilderWithWebHost(string[] args)
+        {
+            var host = new HostBuilder()
+                .ConfigureAppConfiguration(config =>
+                {
+                    config.AddCommandLine(args);
+                })
+                .ConfigureWebHostDefaults(builder =>
+                {
+                    builder.UseStartup<Startup>();
+                })
+                .Build();
+
+            host.Run();
         }
     }
 }
