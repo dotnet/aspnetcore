@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Http\Microsoft.AspNetCore.Http.csproj" />
   </ItemGroup>
