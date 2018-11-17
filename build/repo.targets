@@ -12,7 +12,7 @@
       <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\build</SiteExtensionOutputDirectory>
       <TestProjectDirectory>$(RepositoryRoot)\test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\</TestProjectDirectory>
       <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-dev/</SiteExtensionFeed>
-      <SiteExtensionNETCoreAppPackageVersion>$(MicrosoftNETCoreApp22PackageVersion)</SiteExtensionNETCoreAppPackageVersion>
+      <SiteExtensionNETCoreAppPackageVersion>$(MicrosoftNETCoreAppPackageVersion)</SiteExtensionNETCoreAppPackageVersion>
   </PropertyGroup>
 
   <Target Name="_AddTestRuntimes">
