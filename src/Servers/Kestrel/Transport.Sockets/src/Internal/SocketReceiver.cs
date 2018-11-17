@@ -15,7 +15,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public SocketAwaitableEventArgs WaitForDataAsync()
         {
+#if NETCOREAPP2_1
+            _awaitableEventArgs.SetBuffer(Memory<byte>.Empty);
+#elif NETSTANDARD2_0
             _awaitableEventArgs.SetBuffer(Array.Empty<byte>(), 0, 0);
+#else
+#error TFMs need to be updated
+#endif
 
             if (!_socket.ReceiveAsync(_awaitableEventArgs))
             {
