@@ -119,7 +119,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Log.StartTransport(_logger, transferFormat, resolvedUrl);
 
-            await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);
+            try
+            {
+                await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);
+            }
+            catch
+            {
+                _webSocket.Dispose();
+                throw;
+            }
 
             Log.StartedTransport(_logger);
 
