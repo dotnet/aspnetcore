@@ -1,13 +1,25 @@
-Markup block - Gen<None> - 15 - (0:0,0)
-    Tag block - Gen<TagHelper> - 15 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p class="@do {
-        class - DoubleQuotes
-            Markup block - Gen<None> - 5 - (10:0,10)
-                Markup block - Gen<DynAttr:@(10:0,10)> - 5 - (10:0,10)
-                    Statement block - Gen<None> - 5 - (10:0,10)
-                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Code span - Gen<Stmt> - [do {] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:3
-                            SyntaxKind.Keyword;[do];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.LeftBrace;[{];
+RazorDocument - [0..15)::15 - [<p class="@do {]
+    MarkupBlock - [0..15)::15
+        MarkupTagHelperElement - [0..15)::15 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..15)::15
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..15)::13 - class - DoubleQuotes - Unbound - [ class="@do {]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [10..15)::5
+                        MarkupDynamicAttributeValue - [10..15)::5 - [@do {]
+                            GenericBlock - [10..15)::5
+                                CSharpCodeBlock - [10..15)::5
+                                    CSharpTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        Transition;[@];
+                                    CSharpStatementLiteral - [11..15)::4 - [do {] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                                        Keyword;[do];
+                                        Whitespace;[ ];
+                                        LeftBrace;[{];

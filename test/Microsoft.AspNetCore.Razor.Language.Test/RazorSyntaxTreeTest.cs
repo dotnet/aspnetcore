@@ -1,9 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Test
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
         }
 
         [Fact]
-        public void Parse_Persists_FilePath()
+        public void Parse_NodesReturnCorrectFilePath()
         {
             // Arrange
             var filePath = "test.cshtml";
@@ -38,24 +37,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             Assert.Empty(syntaxTree.Diagnostics);
             Assert.NotNull(syntaxTree);
 
-            var spans = new List<SyntaxTreeNode>();
-            GetChildren(syntaxTree.Root);
-            Assert.All(spans, node => Assert.Equal(filePath, node.Start.FilePath));
-
-            void GetChildren(SyntaxTreeNode node)
-            {
-                if (node is Block block)
-                {
-                    foreach (var child in block.Children)
-                    {
-                        GetChildren(child);
-                    }
-                }
-                else
-                {
-                    spans.Add(node);
-                }
-            }
+            var children = syntaxTree.Root.DescendantNodes();
+            Assert.All(children, node => Assert.Equal(filePath, node.GetSourceLocation(source).FilePath));
         }
 
         [Fact]
@@ -69,10 +52,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var syntaxTree = RazorSyntaxTree.Parse(source, options);
 
             // Assert
+            var root = syntaxTree.Root;
             Assert.NotNull(syntaxTree);
-            Assert.Equal(6, syntaxTree.Root.Children.Count);
-            var block = Assert.IsType<Block>(syntaxTree.Root.Children[4]);
-            Assert.Equal(BlockKindInternal.Directive, block.Type);
+            Assert.Equal(61, root.EndPosition);
+            Assert.Single(root.DescendantNodes().Where(n => n is RazorDirectiveBodySyntax body && body.Keyword.GetContent() == "tagHelperPrefix"));
+            Assert.Empty(root.DescendantNodes().Where(n => n is MarkupTagBlockSyntax));
             Assert.Empty(syntaxTree.Diagnostics);
         }
     }

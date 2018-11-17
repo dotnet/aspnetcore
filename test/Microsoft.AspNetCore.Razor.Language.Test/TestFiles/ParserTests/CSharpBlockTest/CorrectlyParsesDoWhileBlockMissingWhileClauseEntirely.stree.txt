@@ -1,16 +1,18 @@
-Statement block - Gen<None> - 21 - (0:0,0)
-    Code span - Gen<Stmt> - [do { var foo = bar; }] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:14
-        SyntaxKind.Keyword;[do];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..21)::21 - [do { var foo = bar; }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..21)::21 - [do { var foo = bar; }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[do];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Identifier;[bar];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

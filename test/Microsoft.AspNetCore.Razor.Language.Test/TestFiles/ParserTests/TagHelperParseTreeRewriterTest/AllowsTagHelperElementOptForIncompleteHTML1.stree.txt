@@ -1,4 +1,5 @@
-Markup block - Gen<None> - 2 - (0:0,0)
-    Markup span - Gen<Markup> - [<!] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.Bang;[!];
+RazorDocument - [0..2)::2 - [<!]
+    MarkupBlock - [0..2)::2
+        MarkupTextLiteral - [0..2)::2 - [<!] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Bang;[!];

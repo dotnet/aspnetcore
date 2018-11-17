@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         // use a value identity instead of object identity so a deserialized instance matches the original instance.
         public string Kind { get; }
-        public string Data { get; }
+        public object Data { get; }
 
         public SyntaxAnnotation()
         {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             Kind = kind;
         }
 
-        public SyntaxAnnotation(string kind, string data)
+        public SyntaxAnnotation(string kind, object data)
             : this(kind)
         {
             Data = data;

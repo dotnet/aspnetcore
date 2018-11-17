@@ -1,12 +1,16 @@
-Markup block - Gen<None> - 10 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1015(8:0,8 [2] )]> - 8 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Identifier;[section];
-        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (8:0,8) - Tokens:1
-            SyntaxKind.Unknown;[];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:1
-        SyntaxKind.NewLine;[LF];
+RazorDocument - [0..10)::10 - [@sectionLF]
+    MarkupBlock - [0..10)::10
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..8)::8
+            RazorDirective - [0..8)::8 - Directive:{section;RazorBlock;Unrestricted} [RZ1015(8:0,8 [2] )]
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..8)::7
+                    RazorMetaCode - [1..8)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[section];
+                    CSharpCodeBlock - [8..8)::0
+                        CSharpStatementLiteral - [8..8)::0 - [] - Gen<DirectiveToken {SectionName;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Marker;[];
+        MarkupTextLiteral - [8..10)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];

@@ -1,10 +1,11 @@
-Markup block - Gen<None> - 5 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-            SyntaxKind.OpenAngle;[<];
-        MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Bang;[!];
-        Markup span - Gen<Markup> - [p /] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:3
-            SyntaxKind.Text;[p];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
+RazorDocument - [0..5)::5 - [<!p /]
+    MarkupBlock - [0..5)::5
+        MarkupTagBlock - [0..5)::5 - [<!p /]
+            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [2..5)::3 - [p /] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[p];
+                Whitespace;[ ];
+                ForwardSlash;[/];

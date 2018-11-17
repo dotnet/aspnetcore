@@ -1,3 +1,29 @@
-Markup block - Gen<None> - 33 - (0:0,0)
-    Tag block - Gen<TagHelper> - 33 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p @do { someattribute="btn"></p>
+RazorDocument - [0..33)::33 - [<p @do { someattribute="btn"></p>]
+    MarkupBlock - [0..33)::33
+        MarkupTagHelperElement - [0..33)::33 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..33)::33
+                MarkupTextLiteral - [0..3)::3 - [<p ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    Whitespace;[ ];
+                CSharpCodeBlock - [3..33)::30
+                    CSharpTransition - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    CSharpStatementLiteral - [4..29)::25 - [do { someattribute="btn">] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                        Keyword;[do];
+                        Whitespace;[ ];
+                        LeftBrace;[{];
+                        Whitespace;[ ];
+                        Identifier;[someattribute];
+                        Assign;[=];
+                        StringLiteral;["btn"];
+                        GreaterThan;[>];
+                    MarkupBlock - [29..33)::4
+                        MarkupTagBlock - [29..33)::4 - [</p>]
+                            MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                OpenAngle;[<];
+                                ForwardSlash;[/];
+                                Text;[p];
+                                CloseAngle;[>];
+                    CSharpStatementLiteral - [33..33)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                        Marker;[];

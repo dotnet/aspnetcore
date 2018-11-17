@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Xunit;
@@ -88,33 +89,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .TagMatchingRuleDescriptor(rule => rule.RequireTagName("taghelper"))
                 .TypeName("TestTagHelper")
                 .Build();
-            var engine = RazorProjectEngine.Create(builder =>
-            {
-                builder.AddTagHelpers(taghelper);
-                builder.SetImportFeature(new TestImportProjectFeature());
-            });
+            var engine = RazorProjectEngine.Create();
 
-            var sourceProjectItem = new TestRazorProjectItem("test.cshtml")
-            {
-                Content = source
-            };
+            var sourceDocument = TestRazorSourceDocument.Create(source, normalizeNewLines: true);
+            var importDocument = TestRazorSourceDocument.Create("@addTagHelper *, TestAssembly", filePath: "import.cshtml", relativePath: "import.cshtml");
 
-            var codeDocument = engine.ProcessDesignTime(sourceProjectItem);
+            var codeDocument = engine.ProcessDesignTime(sourceDocument, importSources: new []{ importDocument }, new []{ taghelper });
 
             return codeDocument;
-        }
-
-        private class TestImportProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
-        {
-            public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
-            {
-                var importProjectItem = new TestRazorProjectItem("import.cshtml")
-                {
-                    Content = "@addTagHelper *, TestAssembly"
-                };
-
-                return new[] { importProjectItem };
-            }
         }
     }
 }

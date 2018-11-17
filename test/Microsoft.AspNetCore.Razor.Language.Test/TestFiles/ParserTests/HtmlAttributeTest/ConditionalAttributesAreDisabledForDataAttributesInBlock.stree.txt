@@ -1,26 +1,32 @@
-Markup block - Gen<None> - 29 - (0:0,0)
-    Tag block - Gen<None> - 22 - (0:0,0)
-        Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[span];
-        Markup block - Gen<None> - 16 - (5:0,5)
-            Markup span - Gen<Markup> - [ data-foo='] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[data-foo];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.SingleQuote;['];
-            Expression block - Gen<Expr> - 4 - (16:0,16)
-                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
-                    SyntaxKind.Transition;[@];
-                Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (17:0,17) - Tokens:1
-                    SyntaxKind.Identifier;[foo];
-            Markup span - Gen<Markup> - ['] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:1
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (22:0,22)
-        Markup span - Gen<Markup> - [</span>] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[span];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..29)::29 - [<span data-foo='@foo'></span>]
+    MarkupTagBlock - [0..22)::22 - [<span data-foo='@foo'>]
+        MarkupTextLiteral - [0..5)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[span];
+        MarkupAttributeBlock - [5..21)::16 - [ data-foo='@foo']
+            MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [6..14)::8 - [data-foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[data-foo];
+            Equals;[=];
+            MarkupTextLiteral - [15..16)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+            GenericBlock - [16..20)::4
+                CSharpCodeBlock - [16..20)::4
+                    CSharpImplicitExpression - [16..20)::4
+                        CSharpTransition - [16..17)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        CSharpImplicitExpressionBody - [17..20)::3
+                            CSharpCodeBlock - [17..20)::3
+                                CSharpExpressionLiteral - [17..20)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                    Identifier;[foo];
+            MarkupTextLiteral - [20..21)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [21..22)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            CloseAngle;[>];
+    MarkupTagBlock - [22..29)::7 - [</span>]
+        MarkupTextLiteral - [22..29)::7 - [</span>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[span];
+            CloseAngle;[>];

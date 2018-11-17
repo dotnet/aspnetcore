@@ -1,6 +1,25 @@
-Markup block - Gen<None> - 24 - (0:0,0)
-    Tag block - Gen<TagHelper> - 24 - (0:0,0) - strong - catchAllTagHelper
-        SelfClosing - <strong catchAll="hi" />
-        catchAll - DoubleQuotes
-            Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
-                SyntaxKind.Text;[hi];
+RazorDocument - [0..24)::24 - [<strong catchAll="hi" />]
+    MarkupBlock - [0..24)::24
+        MarkupTagHelperElement - [0..24)::24 - strong[SelfClosing] - catchAllTagHelper
+            MarkupTagHelperStartTag - [0..24)::24
+                MarkupTextLiteral - [0..7)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                MarkupTagHelperAttribute - [7..21)::14 - catchAll - DoubleQuotes - Unbound - [ catchAll="hi"]
+                    MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [8..16)::8 - [catchAll] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[catchAll];
+                    Equals;[=];
+                    MarkupTextLiteral - [17..18)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [18..20)::2
+                        MarkupLiteralAttributeValue - [18..20)::2 - [hi]
+                            MarkupTextLiteral - [18..20)::2 - [hi] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[hi];
+                    MarkupTextLiteral - [20..21)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [21..24)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

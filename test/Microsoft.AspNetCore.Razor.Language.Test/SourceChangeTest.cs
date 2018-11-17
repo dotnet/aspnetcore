@@ -101,19 +101,19 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void GetEditedContent_Span_ReturnsNewContent()
+        public void GetEditedContent_SyntaxNode_ReturnsNewContent()
         {
             // Arrange
-            var builder = new SpanBuilder(new SourceLocation(0, 0, 0));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "Hello, "));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "World"));
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "Hello, "));
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "World"));
 
-            var span = new Span(builder);
+            var node = SyntaxFactory.MarkupTextLiteral(builder.ToList()).CreateRed();
 
             var change = new SourceChange(2, 2, "heyo");
 
             // Act
-            var result = change.GetEditedContent(span);
+            var result = change.GetEditedContent(node);
 
             // Act
             Assert.Equal("Heheyoo, World", result);
@@ -123,16 +123,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GetOffSet_SpanIsOwner_ReturnsOffset()
         {
             // Arrange
-            var builder = new SpanBuilder(new SourceLocation(13, 0, 0));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "Hello, "));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "World"));
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "Hello, "));
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "World"));
 
-            var span = new Span(builder);
+            var node = SyntaxFactory.MarkupTextLiteral(builder.ToList()).CreateRed(null, 13);
 
             var change = new SourceChange(15, 2, "heyo");
 
             // Act
-            var result = change.GetOffset(span);
+            var result = change.GetOffset(node);
 
             // Act
             Assert.Equal(2, result);
@@ -142,18 +142,18 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GetOffSet_SpanIsNotOwnerOfChange_ThrowsException()
         {
             // Arrange
-            var builder = new SpanBuilder(new SourceLocation(13, 0, 0));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "Hello, "));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "World"));
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "Hello, "));
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "World"));
 
-            var span = new Span(builder);
+            var node = SyntaxFactory.MarkupTextLiteral(builder.ToList()).CreateRed(null, 13);
 
             var change = new SourceChange(12, 2, "heyo");
 
-            var expected = $"The node '{span}' is not the owner of change '{change}'.";
+            var expected = $"The node '{node}' is not the owner of change '{change}'.";
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => { change.GetOffset(span); });
+            var exception = Assert.Throws<InvalidOperationException>(() => { change.GetOffset(node); });
             Assert.Equal(expected, exception.Message);
         }
 
@@ -161,16 +161,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GetOrigninalText_SpanIsOwner_ReturnsContent()
         {
             // Arrange
-            var builder = new SpanBuilder(new SourceLocation(13, 0, 0));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "Hello, "));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "World"));
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "Hello, "));
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "World"));
 
-            var span = new Span(builder);
+            var node = SyntaxFactory.MarkupTextLiteral(builder.ToList()).CreateRed(null, 13);
 
             var change = new SourceChange(15, 2, "heyo");
 
             // Act
-            var result = change.GetOriginalText(span);
+            var result = change.GetOriginalText(node);
 
             // Act
             Assert.Equal("ll", result);
@@ -180,16 +180,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GetOrigninalText_SpanIsOwner_ReturnsContent_ZeroLengthSpan()
         {
             // Arrange
-            var builder = new SpanBuilder(new SourceLocation(13, 0, 0));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "Hello, "));
-            builder.Accept(SyntaxFactory.Token(SyntaxKind.Unknown, "World"));
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "Hello, "));
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Marker, "World"));
 
-            var span = new Span(builder);
+            var node = SyntaxFactory.MarkupTextLiteral(builder.ToList()).CreateRed(null, 13);
 
             var change = new SourceChange(15, 0, "heyo");
 
             // Act
-            var result = change.GetOriginalText(span);
+            var result = change.GetOriginalText(node);
 
             // Act
             Assert.Equal(string.Empty, result);

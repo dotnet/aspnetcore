@@ -1,34 +1,41 @@
-Markup block - Gen<None> - 51 - (0:0,0)
-    Tag block - Gen<None> - 33 - (0:0,0)
-        Markup span - Gen<Markup> - [<script] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[script];
-        Markup block - Gen<Attr:type, type='@(7:0,7),'@(31:0,31)> - 25 - (7:0,7)
-            Markup span - Gen<None> - [ type='] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[type];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.SingleQuote;['];
-            Markup span - Gen<LitAttr:@(14:0,14)> - [text/html] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:3
-                SyntaxKind.Text;[text];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[html];
-            Markup span - Gen<LitAttr: @(23:0,23)> - [ invalid] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[invalid];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:1
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [<input />] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:5
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.Text;[input];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.ForwardSlash;[/];
-        SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 9 - (42:0,42)
-        Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (42:0,42) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[script];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..51)::51 - [<script type='text/html invalid'><input /></script>]
+    MarkupBlock - [0..51)::51
+        MarkupTagBlock - [0..33)::33 - [<script type='text/html invalid'>]
+            MarkupTextLiteral - [0..7)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+            MarkupAttributeBlock - [7..32)::25 - [ type='text/html invalid']
+                MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                MarkupTextLiteral - [8..12)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[type];
+                Equals;[=];
+                MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+                GenericBlock - [14..31)::17
+                    MarkupLiteralAttributeValue - [14..23)::9 - [text/html]
+                        MarkupTextLiteral - [14..23)::9 - [text/html] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[text];
+                            ForwardSlash;[/];
+                            Text;[html];
+                    MarkupLiteralAttributeValue - [23..31)::8 - [ invalid]
+                        MarkupTextLiteral - [23..24)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        MarkupTextLiteral - [24..31)::7 - [invalid] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[invalid];
+                MarkupTextLiteral - [31..32)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+            MarkupTextLiteral - [32..33)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                CloseAngle;[>];
+        MarkupTextLiteral - [33..42)::9 - [<input />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[input];
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];
+        MarkupTagBlock - [42..51)::9 - [</script>]
+            MarkupTextLiteral - [42..51)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

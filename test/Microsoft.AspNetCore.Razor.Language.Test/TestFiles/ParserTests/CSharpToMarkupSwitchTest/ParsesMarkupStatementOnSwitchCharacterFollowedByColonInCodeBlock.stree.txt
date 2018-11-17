@@ -1,26 +1,31 @@
-Statement block - Gen<None> - 22 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [ if(foo) {] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:7
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-    Markup block - Gen<None> - 8 - (11:0,11)
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-            SyntaxKind.Colon;[:];
-        Markup span - Gen<Markup> - [BarLF] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:2
-            SyntaxKind.Text;[Bar];
-            SyntaxKind.NewLine;[LF];
-    Code span - Gen<Stmt> - [} ] - SpanEditHandler;Accepts:Any - (19:1,0) - Tokens:2
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (21:1,2) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..22)::22 - [{ if(foo) { @:BarLF} }]
+    CSharpStatement - [0..22)::22
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..22)::22
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..21)::20
+                CSharpStatementLiteral - [1..11)::10 - [ if(foo) {] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Whitespace;[ ];
+                    Keyword;[if];
+                    LeftParenthesis;[(];
+                    Identifier;[foo];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                MarkupBlock - [11..19)::8
+                    MarkupTextLiteral - [11..12)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTransition - [12..13)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    RazorMetaCode - [13..14)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+                        Colon;[:];
+                    MarkupTextLiteral - [14..19)::5 - [BarLF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        Text;[Bar];
+                        NewLine;[LF];
+                CSharpStatementLiteral - [19..21)::2 - [} ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    RightBrace;[}];
+                    Whitespace;[ ];
+            RazorMetaCode - [21..22)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

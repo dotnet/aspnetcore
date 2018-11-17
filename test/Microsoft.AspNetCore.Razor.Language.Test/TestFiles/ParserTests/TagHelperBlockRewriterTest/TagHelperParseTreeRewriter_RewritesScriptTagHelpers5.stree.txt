@@ -1,9 +1,39 @@
-Markup block - Gen<None> - 41 - (0:0,0)
-    Tag block - Gen<TagHelper> - 41 - (0:0,0) - script - scripttaghelper
-        SelfClosing - <script class="foo" style="color:red;" />
-        class - DoubleQuotes
-            Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-                SyntaxKind.Text;[foo];
-        style - DoubleQuotes
-            Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:1
-                SyntaxKind.Text;[color:red;];
+RazorDocument - [0..41)::41 - [<script class="foo" style="color:red;" />]
+    MarkupBlock - [0..41)::41
+        MarkupTagHelperElement - [0..41)::41 - script[SelfClosing] - scripttaghelper
+            MarkupTagHelperStartTag - [0..41)::41
+                MarkupTextLiteral - [0..7)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[script];
+                MarkupTagHelperAttribute - [7..19)::12 - class - DoubleQuotes - Unbound - [ class="foo"]
+                    MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [8..13)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [14..15)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [15..18)::3
+                        MarkupLiteralAttributeValue - [15..18)::3 - [foo]
+                            MarkupTextLiteral - [15..18)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[foo];
+                    MarkupTextLiteral - [18..19)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTagHelperAttribute - [19..38)::19 - style - DoubleQuotes - Unbound - [ style="color:red;"]
+                    MarkupTextLiteral - [19..20)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [20..25)::5 - [style] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[style];
+                    Equals;[=];
+                    MarkupTextLiteral - [26..27)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [27..37)::10
+                        MarkupLiteralAttributeValue - [27..37)::10 - [color:red;]
+                            MarkupTextLiteral - [27..37)::10 - [color:red;] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[color:red;];
+                    MarkupTextLiteral - [37..38)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [38..41)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

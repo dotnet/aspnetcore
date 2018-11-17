@@ -1,15 +1,29 @@
-Markup block - Gen<None> - 20 - (0:0,0)
-    Tag block - Gen<TagHelper> - 20 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p bar="false' ></p>
-        bar - DoubleQuotes
-            Markup block - Gen<None> - 12 - (8:0,8)
-                Markup span - Gen<Markup> - [false'] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:2
-                    SyntaxKind.Text;[false];
-                    SyntaxKind.SingleQuote;['];
-                Markup span - Gen<Markup> - [ ></p>] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:6
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.CloseAngle;[>];
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[p];
-                    SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..20)::20 - [<p bar="false' ></p>]
+    MarkupBlock - [0..20)::20
+        MarkupTagHelperElement - [0..20)::20 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..20)::20
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..20)::18 - bar - DoubleQuotes - Unbound - [ bar="false' ></p>]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..6)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bar];
+                    Equals;[=];
+                    MarkupTextLiteral - [7..8)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [8..20)::12
+                        MarkupLiteralAttributeValue - [8..14)::6 - [false']
+                            MarkupTextLiteral - [8..14)::6 - [false'] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[false];
+                                SingleQuote;['];
+                        MarkupLiteralAttributeValue - [14..20)::6 - [ ></p>]
+                            MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                            MarkupTextLiteral - [15..20)::5 - [></p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                CloseAngle;[>];
+                                OpenAngle;[<];
+                                ForwardSlash;[/];
+                                Text;[p];
+                                CloseAngle;[>];

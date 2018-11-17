@@ -11,10 +11,5 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             get { return CSharpCodeParser.DefaultKeywords; }
         }
-
-        internal override BlockFactory CreateBlockFactory()
-        {
-            return new BlockFactory(Factory ?? CreateSpanFactory());
-        }
     }
 }

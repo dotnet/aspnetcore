@@ -1,45 +1,47 @@
-Statement block - Gen<None> - 42 - (0:0,0)
-    Code span - Gen<Stmt> - [for(int i = 0; i < 10; i++) {] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:23
-        SyntaxKind.Keyword;[for];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Keyword;[int];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[i];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.IntegerLiteral;[0];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[i];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LessThan;[<];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.IntegerLiteral;[10];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[i];
-        SyntaxKind.Increment;[++];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-    Markup block - Gen<None> - 12 - (29:0,29)
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Tag block - Gen<None> - 3 - (30:0,30)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (30:0,30) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
-            SyntaxKind.Text;[Foo];
-        Tag block - Gen<None> - 4 - (36:0,36)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:None - (41:0,41) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..42)::42 - [for(int i = 0; i < 10; i++) { <p>Foo</p> }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..29)::29 - [for(int i = 0; i < 10; i++) {] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[for];
+        LeftParenthesis;[(];
+        Keyword;[int];
+        Whitespace;[ ];
+        Identifier;[i];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        IntegerLiteral;[0];
+        Semicolon;[;];
+        Whitespace;[ ];
+        Identifier;[i];
+        Whitespace;[ ];
+        LessThan;[<];
+        Whitespace;[ ];
+        IntegerLiteral;[10];
+        Semicolon;[;];
+        Whitespace;[ ];
+        Identifier;[i];
+        Increment;[++];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+    MarkupBlock - [29..41)::12
+        MarkupTextLiteral - [29..30)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+        MarkupTagBlock - [30..33)::3 - [<p>]
+            MarkupTextLiteral - [30..33)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [33..36)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Foo];
+        MarkupTagBlock - [36..40)::4 - [</p>]
+            MarkupTextLiteral - [36..40)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [40..41)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+    CSharpStatementLiteral - [41..42)::1 - [}] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        RightBrace;[}];

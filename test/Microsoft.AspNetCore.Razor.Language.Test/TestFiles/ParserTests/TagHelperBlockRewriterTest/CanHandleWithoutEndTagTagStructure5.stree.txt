@@ -1,16 +1,25 @@
-Markup block - Gen<None> - 25 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[div];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<TagHelper> - 7 - (5:0,5) - input - InputTagHelper
-        StartTagOnly - <input>
-    Tag block - Gen<TagHelper> - 7 - (12:0,12) - input - InputTagHelper
-        StartTagOnly - <input>
-    Tag block - Gen<None> - 6 - (19:0,19)
-        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[div];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..25)::25 - [<div><input><input></div>]
+    MarkupBlock - [0..25)::25
+        MarkupTagBlock - [0..5)::5 - [<div>]
+            MarkupTextLiteral - [0..5)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
+                CloseAngle;[>];
+        MarkupTagHelperElement - [5..12)::7 - input[StartTagOnly] - InputTagHelper
+            MarkupTagHelperStartTag - [5..12)::7
+                MarkupTextLiteral - [5..12)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                    CloseAngle;[>];
+        MarkupTagHelperElement - [12..19)::7 - input[StartTagOnly] - InputTagHelper
+            MarkupTagHelperStartTag - [12..19)::7
+                MarkupTextLiteral - [12..19)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                    CloseAngle;[>];
+        MarkupTagBlock - [19..25)::6 - [</div>]
+            MarkupTextLiteral - [19..25)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];

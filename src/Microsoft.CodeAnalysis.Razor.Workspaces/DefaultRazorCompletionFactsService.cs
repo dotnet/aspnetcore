@@ -6,6 +6,7 @@ using System.Composition;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -68,12 +69,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 return false;
             }
 
-            if (owner.ChunkGenerator is ExpressionChunkGenerator &&
-                owner.Tokens.All(IsDirectiveCompletableToken) &&
-                // Do not provide IntelliSense for explicit expressions. Explicit expressions will usually look like:
-                // [@] [(] [DateTime.Now] [)]
-                owner.Parent?.Children.Count > 1 &&
-                owner.Parent.Children[1] == owner)
+            // Do not provide IntelliSense for explicit expressions. Explicit expressions will usually look like:
+            // [@] [(] [DateTime.Now] [)]
+            var isImplicitExpression = owner.FirstAncestorOrSelf<CSharpImplicitExpressionSyntax>() != null;
+            if (isImplicitExpression &&
+                owner.ChildNodes().All(n => n.IsToken && IsDirectiveCompletableToken((AspNetCore.Razor.Language.Syntax.SyntaxToken)n)))
             {
                 return true;
             }
@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             return token.Kind == SyntaxKind.Identifier ||
                 // Marker symbol
-                token.Kind == SyntaxKind.Unknown;
+                token.Kind == SyntaxKind.Marker;
         }
     }
 }

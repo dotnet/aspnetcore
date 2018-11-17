@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public static readonly string TransitionString = "@";
         public static readonly string StartCommentSequence = "@*";
         public static readonly string EndCommentSequence = "*@";
+        public static readonly string SpanContextKind = "SpanData";
 
         public static class CSharp
         {

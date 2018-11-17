@@ -1,9 +1,12 @@
-Expression block - Gen<Expr> - 10 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Expr> - [foo.bar()] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:5
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
+CSharpCodeBlock - [0..10)::10 - [@foo.bar()]
+    CSharpImplicitExpression - [0..10)::10
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpImplicitExpressionBody - [1..10)::9
+            CSharpCodeBlock - [1..10)::9
+                CSharpExpressionLiteral - [1..10)::9 - [foo.bar()] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    Identifier;[foo];
+                    Dot;[.];
+                    Identifier;[bar];
+                    LeftParenthesis;[(];
+                    RightParenthesis;[)];

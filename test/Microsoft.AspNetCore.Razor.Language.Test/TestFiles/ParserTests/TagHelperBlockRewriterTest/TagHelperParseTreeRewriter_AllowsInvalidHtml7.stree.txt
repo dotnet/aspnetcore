@@ -1,21 +1,31 @@
-Markup block - Gen<None> - 21 - (0:0,0)
-    Tag block - Gen<None> - 2 - (0:0,0)
-        Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-    Tag block - Gen<None> - 1 - (2:0,2)
-        Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-            SyntaxKind.OpenAngle;[<];
-    Tag block - Gen<TagHelper> - 17 - (3:0,3) - p - ptaghelper
-        StartTagAndEndTag - <p> ... </p>
-        SyntaxKind.HtmlTextLiteral - [/>] - [6..8) - FullWidth: 2 - Slots: 1
-            SyntaxKind.List - [/>] - [6..8) - FullWidth: 2 - Slots: 2
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<None> - 8 - (8:0,8)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
-        SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..21)::21 - [</<<p>/><strong></p>>]
+    MarkupBlock - [0..21)::21
+        MarkupTagBlock - [0..2)::2 - [</]
+            MarkupTextLiteral - [0..2)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+        MarkupTagBlock - [2..3)::1 - [<]
+            MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+        MarkupTagHelperElement - [3..20)::17 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [3..6)::3
+                MarkupTextLiteral - [3..6)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [6..8)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                ForwardSlash;[/];
+                CloseAngle;[>];
+            MarkupTagBlock - [8..16)::8 - [<strong>]
+                MarkupTextLiteral - [8..16)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [16..20)::4
+                MarkupTextLiteral - [16..20)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];
+        MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            CloseAngle;[>];

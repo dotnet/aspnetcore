@@ -1,3 +1,14 @@
-Markup block - Gen<None> - 15 - (0:0,0)
-    Tag block - Gen<TagHelper> - 15 - (0:0,0) - input - InputTagHelper1 - InputTagHelper2
-        StartTagAndEndTag - <input> ... </input>
+RazorDocument - [0..15)::15 - [<input></input>]
+    MarkupBlock - [0..15)::15
+        MarkupTagHelperElement - [0..15)::15 - input[StartTagAndEndTag] - InputTagHelper1 - InputTagHelper2
+            MarkupTagHelperStartTag - [0..7)::7
+                MarkupTextLiteral - [0..7)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [7..15)::8
+                MarkupTextLiteral - [7..15)::8 - [</input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[input];
+                    CloseAngle;[>];

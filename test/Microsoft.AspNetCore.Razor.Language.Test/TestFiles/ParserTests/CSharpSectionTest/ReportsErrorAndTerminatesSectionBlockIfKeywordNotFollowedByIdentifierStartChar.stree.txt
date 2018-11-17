@@ -1,31 +1,35 @@
-Markup block - Gen<None> - 25 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1015(9:0,9 [1] )]> - 9 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-    Markup span - Gen<Markup> - [9 { ] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:4
-        SyntaxKind.Text;[9];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[{];
-        SyntaxKind.Whitespace;[ ];
-    Tag block - Gen<None> - 3 - (13:0,13)
-        Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[p];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [Foo] - [16..19) - FullWidth: 3 - Slots: 1
-        SyntaxKind.Text;[Foo];
-    Tag block - Gen<None> - 4 - (19:0,19)
-        Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[p];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ }] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[}];
+RazorDocument - [0..25)::25 - [@section 9 { <p>Foo</p> }]
+    MarkupBlock - [0..25)::25
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..9)::9
+            RazorDirective - [0..9)::9 - Directive:{section;RazorBlock;Unrestricted} [RZ1015(9:0,9 [1] )]
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..9)::8
+                    RazorMetaCode - [1..8)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[section];
+                    CSharpCodeBlock - [8..9)::1
+                        CSharpStatementLiteral - [8..9)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+        MarkupTextLiteral - [9..13)::4 - [9 { ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[9];
+            Whitespace;[ ];
+            Text;[{];
+            Whitespace;[ ];
+        MarkupTagBlock - [13..16)::3 - [<p>]
+            MarkupTextLiteral - [13..16)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [16..19)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Foo];
+        MarkupTagBlock - [19..23)::4 - [</p>]
+            MarkupTextLiteral - [19..23)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [23..25)::2 - [ }] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[}];

@@ -69,7 +69,7 @@ Document -
                     DefaultTagHelperProperty - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml) - type - string TestNamespace.InputTagHelper2.Type - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - password
-                    DefaultTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.NoQuotes
+                    DefaultTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (270:14,31 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (270:14,31 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - blah
                     DefaultTagHelperExecute - 

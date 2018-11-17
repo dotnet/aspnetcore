@@ -1,3 +1,10 @@
-Markup block - Gen<None> - 11 - (0:0,0)
-    Tag block - Gen<TagHelper> - 11 - (0:0,0) - th:myth - mythTagHelper
-        SelfClosing - <th:myth />
+RazorDocument - [0..11)::11 - [<th:myth />]
+    MarkupBlock - [0..11)::11
+        MarkupTagHelperElement - [0..11)::11 - th:myth[SelfClosing] - mythTagHelper
+            MarkupTagHelperStartTag - [0..11)::11
+                MarkupTextLiteral - [0..11)::11 - [<th:myth />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[th:myth];
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

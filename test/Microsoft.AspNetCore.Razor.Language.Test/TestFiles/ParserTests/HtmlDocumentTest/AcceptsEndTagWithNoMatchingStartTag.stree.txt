@@ -1,13 +1,14 @@
-Markup block - Gen<None> - 14 - (0:0,0)
-    Markup span - Gen<Markup> - [Foo ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-        SyntaxKind.Text;[Foo];
-        SyntaxKind.Whitespace;[ ];
-    Tag block - Gen<None> - 6 - (4:0,4)
-        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[div];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ Bar] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:2
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[Bar];
+RazorDocument - [0..14)::14 - [Foo </div> Bar]
+    MarkupBlock - [0..14)::14
+        MarkupTextLiteral - [0..4)::4 - [Foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Foo];
+            Whitespace;[ ];
+        MarkupTagBlock - [4..10)::6 - [</div>]
+            MarkupTextLiteral - [4..10)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];
+        MarkupTextLiteral - [10..14)::4 - [ Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[Bar];

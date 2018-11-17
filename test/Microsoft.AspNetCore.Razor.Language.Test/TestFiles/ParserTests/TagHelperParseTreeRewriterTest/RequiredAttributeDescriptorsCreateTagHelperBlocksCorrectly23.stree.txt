@@ -1,25 +1,58 @@
-Markup block - Gen<None> - 63 - (0:0,0)
-    Tag block - Gen<TagHelper> - 63 - (0:0,0) - div - divTagHelper
-        StartTagAndEndTag - <div style="" class="btn"> ... </div>
-        style - DoubleQuotes
-            Markup block - Gen<None> - 0 - (0:0,0)
-        class - DoubleQuotes
-            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
-                SyntaxKind.Text;[btn];
-        SyntaxKind.HtmlTextLiteral - [words] - [26..31) - FullWidth: 5 - Slots: 1
-            SyntaxKind.Text;[words];
-        Tag block - Gen<None> - 8 - (31:0,31)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (31:0,31) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlTextLiteral - [and] - [39..42) - FullWidth: 3 - Slots: 1
-            SyntaxKind.Text;[and];
-        Tag block - Gen<None> - 9 - (42:0,42)
-            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (42:0,42) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlTextLiteral - [spaces] - [51..57) - FullWidth: 6 - Slots: 1
-            SyntaxKind.Text;[spaces];
+RazorDocument - [0..63)::63 - [<div style="" class="btn">words<strong>and</strong>spaces</div>]
+    MarkupBlock - [0..63)::63
+        MarkupTagHelperElement - [0..63)::63 - div[StartTagAndEndTag] - divTagHelper
+            MarkupTagHelperStartTag - [0..26)::26
+                MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[div];
+                MarkupTagHelperAttribute - [4..13)::9 - style - DoubleQuotes - Unbound - [ style=""]
+                    MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [5..10)::5 - [style] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[style];
+                    Equals;[=];
+                    MarkupTextLiteral - [11..12)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [12..12)::0
+                        MarkupTextLiteral - [12..12)::0 - []
+                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTagHelperAttribute - [13..25)::12 - class - DoubleQuotes - Unbound - [ class="btn"]
+                    MarkupTextLiteral - [13..14)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [14..19)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [20..21)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [21..24)::3
+                        MarkupLiteralAttributeValue - [21..24)::3 - [btn]
+                            MarkupTextLiteral - [21..24)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[btn];
+                    MarkupTextLiteral - [24..25)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTextLiteral - [26..31)::5 - [words] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[words];
+            MarkupTagBlock - [31..39)::8 - [<strong>]
+                MarkupTextLiteral - [31..39)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [39..42)::3 - [and] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[and];
+            MarkupTagBlock - [42..51)::9 - [</strong>]
+                MarkupTextLiteral - [42..51)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [51..57)::6 - [spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[spaces];
+            MarkupTagHelperEndTag - [57..63)::6
+                MarkupTextLiteral - [57..63)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[div];
+                    CloseAngle;[>];

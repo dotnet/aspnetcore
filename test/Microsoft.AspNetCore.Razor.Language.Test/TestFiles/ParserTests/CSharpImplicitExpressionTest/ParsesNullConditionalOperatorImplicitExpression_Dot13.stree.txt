@@ -1,14 +1,17 @@
-Expression block - Gen<Expr> - 22 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Expr> - [val?.more(false)?.abc] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:10
-        SyntaxKind.Identifier;[val];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[more];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Keyword;[false];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[abc];
+CSharpCodeBlock - [0..22)::22 - [@val?.more(false)?.abc]
+    CSharpImplicitExpression - [0..22)::22
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpImplicitExpressionBody - [1..22)::21
+            CSharpCodeBlock - [1..22)::21
+                CSharpExpressionLiteral - [1..22)::21 - [val?.more(false)?.abc] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    Identifier;[val];
+                    QuestionMark;[?];
+                    Dot;[.];
+                    Identifier;[more];
+                    LeftParenthesis;[(];
+                    Keyword;[false];
+                    RightParenthesis;[)];
+                    QuestionMark;[?];
+                    Dot;[.];
+                    Identifier;[abc];

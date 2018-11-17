@@ -1,10 +1,10 @@
-Markup block - Gen<None> - 2 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Comment block - Gen<RazorComment> - 2 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Comment span - Gen<None> - [] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-            SyntaxKind.Unknown;[];
+RazorDocument - [0..2)::2 - [@*]
+    MarkupBlock - [0..2)::2
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        RazorComment - [0..2)::2
+            RazorCommentTransition;[@];
+            RazorCommentStar;[*];
+            RazorCommentLiteral;[<Missing>];
+            RazorCommentStar;[<Missing>];RZ1028(0:0,0 [2] )
+            RazorCommentTransition;[<Missing>];

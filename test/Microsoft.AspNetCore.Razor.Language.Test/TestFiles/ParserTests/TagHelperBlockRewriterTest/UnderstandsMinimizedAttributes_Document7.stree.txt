@@ -1,4 +1,16 @@
-Markup block - Gen<None> - 27 - (0:0,0)
-    Tag block - Gen<TagHelper> - 27 - (0:0,0) - input - InputTagHelper3
-        SelfClosing - <input string-dictionary />
-        string-dictionary - Minimized
+RazorDocument - [0..27)::27 - [<input string-dictionary />]
+    MarkupBlock - [0..27)::27
+        MarkupTagHelperElement - [0..27)::27 - input[SelfClosing] - InputTagHelper3
+            MarkupTagHelperStartTag - [0..27)::27
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupMinimizedTagHelperAttribute - [6..24)::18 - string-dictionary - Minimized - Bound - [ string-dictionary]
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..24)::17 - [string-dictionary] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[string-dictionary];
+                MarkupTextLiteral - [24..27)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

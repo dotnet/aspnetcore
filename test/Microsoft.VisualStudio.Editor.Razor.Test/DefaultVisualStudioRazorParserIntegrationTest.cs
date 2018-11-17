@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
-using Microsoft.CodeAnalysis;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Test;
@@ -27,13 +27,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public DefaultVisualStudioRazorParserIntegrationTest()
         {
-            Workspace = TestWorkspace.Create();
+            Workspace = CodeAnalysis.TestWorkspace.Create();
             ProjectSnapshot = new EphemeralProjectSnapshot(Workspace.Services, TestProjectPath);
         }
 
         private ProjectSnapshot ProjectSnapshot { get; }
 
-        private Workspace Workspace { get; }
+        private CodeAnalysis.Workspace Workspace { get; }
 
         [ForegroundFact]
         public async Task BufferChangeStartsFullReparseIfChangeOverlapsMultipleSpans()
@@ -70,7 +70,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var original = new StringTextSnapshot("foo @await Html baz");
             using (var manager = CreateParserManager(original))
             {
-                var factory = new SpanFactory();
                 var changed = new StringTextSnapshot("foo @await Html. baz");
                 var edit = new TestEdit(15, 0, original, 1, changed, ".");
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
@@ -80,19 +79,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 // Assert
                 Assert.Equal(2, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("await Html").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.Whitespace | AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(". baz")));
+                VerifyCurrentSyntaxTree(manager);
             }
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlockAfterIdentifiers()
+        public async Task ImpExprAcceptsDCIInStmtBlkAfterIdentifiers()
         {
-            var factory = new SpanFactory();
+            // ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlockAfterIdentifiers
             var changed = new StringTextSnapshot("@{" + Environment.NewLine
                                                 + "    @DateTime." + Environment.NewLine
                                                 + "}");
@@ -107,22 +101,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 {
                     manager.ApplyEdit(testEdit);
                     Assert.Equal(1, manager.ParseCount);
-                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
-                        factory.EmptyHtml(),
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                            factory.Code(Environment.NewLine + "    ")
-                                .AsStatement()
-                                .AutoCompleteWith(autoCompleteString: null),
-                            new ExpressionBlock(
-                                factory.CodeTransition(),
-                                factory.Code(expectedCode)
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                            factory.Code(Environment.NewLine).AsStatement(),
-                            factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                        factory.EmptyHtml()));
+
+                    VerifyPartialParseTree(manager, changed.GetText(), expectedCode);
                 };
 
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
@@ -149,9 +129,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlock()
+        public async Task ImpExprAcceptsDCIInStatementBlock()
         {
-            var factory = new SpanFactory();
+            // ImpExprAcceptsDotlessCommitInsertionsInStatementBlock
             var changed = new StringTextSnapshot("@{" + Environment.NewLine
                                                     + "    @DateT." + Environment.NewLine
                                                     + "}");
@@ -166,22 +146,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 {
                     manager.ApplyEdit(testEdit);
                     Assert.Equal(1, manager.ParseCount);
-                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
-                        factory.EmptyHtml(),
-                        new StatementBlock(
-                            factory.CodeTransition(),
-                            factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                            factory.Code(Environment.NewLine + "    ")
-                                .AsStatement()
-                                .AutoCompleteWith(autoCompleteString: null),
-                            new ExpressionBlock(
-                                factory.CodeTransition(),
-                                factory.Code(expectedCode)
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                       .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                            factory.Code(Environment.NewLine).AsStatement(),
-                            factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                        factory.EmptyHtml()));
+                    VerifyPartialParseTree(manager, changed.GetText(), expectedCode);
                 };
 
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
@@ -200,9 +165,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertions()
+        public async Task ImpExprProvisionallyAcceptsDCI()
         {
-            var factory = new SpanFactory();
+            // ImpExprProvisionallyAcceptsDotlessCommitInsertions
             var changed = new StringTextSnapshot("foo @DateT. baz");
             var original = new StringTextSnapshot("foo @DateT baz");
             var edit = new TestEdit(10, 0, original, 1, changed, ".");
@@ -213,12 +178,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     manager.ApplyEdit(testEdit);
                     Assert.Equal(1, manager.ParseCount);
 
-                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(" baz")));
+                    VerifyPartialParseTree(manager, testEdit.NewSnapshot.GetText(), expectedCode);
                 };
 
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
@@ -236,19 +196,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 await manager.WaitForReparseAsync();
 
                 Assert.Equal(2, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(". baz")));
+                VerifyCurrentSyntaxTree(manager);
             }
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertionsAfterIdentifiers()
+        public async Task ImpExprProvisionallyAcceptsDCIAfterIdentifiers()
         {
-            var factory = new SpanFactory();
+            // ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertionsAfterIdentifiers
             var changed = new StringTextSnapshot("foo @DateTime. baz");
             var original = new StringTextSnapshot("foo @DateTime baz");
             var edit = new TestEdit(13, 0, original, 1, changed, ".");
@@ -259,12 +214,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     manager.ApplyEdit(testEdit);
                     Assert.Equal(1, manager.ParseCount);
 
-                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(" baz")));
+                    VerifyPartialParseTree(manager, testEdit.NewSnapshot.GetText(), expectedCode);
                 };
 
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
@@ -288,19 +238,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 await manager.WaitForReparseAsync();
 
                 Assert.Equal(2, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("DateTime.Now").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(". baz")));
+                VerifyCurrentSyntaxTree(manager);
             }
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionProvisionallyAcceptsCaseInsensitiveDotlessCommitInsertions_NewRoslynIntegration()
+        public async Task ImpExprProvisionallyAccCaseInsensitiveDCI_NewRoslynIntegration()
         {
-            var factory = new SpanFactory();
+            // ImplicitExpressionProvisionallyAcceptsCaseInsensitiveDotlessCommitInsertions_NewRoslynIntegration
             var original = new StringTextSnapshot("foo @date baz");
             var changed = new StringTextSnapshot("foo @date. baz");
             var edit = new TestEdit(9, 0, original, 1, changed, ".");
@@ -311,12 +256,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     applyEdit();
                     Assert.Equal(1, manager.ParseCount);
 
-                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code(expectedCode).AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(" baz")));
+                    VerifyPartialParseTree(manager, changed.GetText(), expectedCode);
                 };
 
                 await manager.InitializeWithDocumentAsync(edit.OldSnapshot);
@@ -351,20 +291,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 await manager.WaitForReparseAsync();
 
                 Assert.Equal(2, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(". baz")));
+                VerifyCurrentSyntaxTree(manager);
             }
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionRejectsChangeWhichWouldHaveBeenAcceptedIfLastChangeWasProvisionallyAcceptedOnDifferentSpan()
+        public async Task ImpExprRejectsAcceptableChangeIfPrevWasProvisionallyAccepted()
         {
+            // ImplicitExpressionRejectsChangeWhichWouldHaveBeenAcceptedIfLastChangeWasProvisionallyAcceptedOnDifferentSpan
             // Arrange
-            var factory = new SpanFactory();
             var dotTyped = new TestEdit(8, 0, new StringTextSnapshot("foo @foo @bar"), 1, new StringTextSnapshot("foo @foo. @bar"), ".");
             var charTyped = new TestEdit(14, 0, new StringTextSnapshot("foo @foo. @bar"), 1, new StringTextSnapshot("foo @foo. @barb"), "b");
             using (var manager = CreateParserManager(dotTyped.OldSnapshot))
@@ -379,29 +314,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 // Assert
                 Assert.Equal(2, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot,
-                    new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("foo")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(". "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("barb")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.EmptyHtml()));
+                VerifyPartialParseTree(manager, charTyped.NewSnapshot.GetText());
             }
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionAcceptsIdentifierTypedAfterDotIfLastChangeWasProvisionalAcceptanceOfDot()
+        public async Task ImpExprAcceptsIdentifierTypedAfterDotIfLastChangeProvisional()
         {
+            // ImplicitExpressionAcceptsIdentifierTypedAfterDotIfLastChangeWasProvisionalAcceptanceOfDot
             // Arrange
-            var factory = new SpanFactory();
             var dotTyped = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 1, new StringTextSnapshot("foo @foo. bar"), ".");
             var charTyped = new TestEdit(9, 0, new StringTextSnapshot("foo @foo. bar"), 1, new StringTextSnapshot("foo @foo.b bar"), "b");
             using (var manager = CreateParserManager(dotTyped.OldSnapshot))
@@ -416,23 +337,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 // Assert
                 Assert.Equal(1, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot,
-                    new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("foo.b")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(" bar")));
+                VerifyPartialParseTree(manager, charTyped.NewSnapshot.GetText());
             }
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpression_AcceptsParenthesisAtEnd_SingleEdit()
+        public async Task ImpExpr_AcceptsParenthesisAtEnd_SingleEdit()
         {
             // Arrange
-            var factory = new SpanFactory();
             var edit = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 2, new StringTextSnapshot("foo @foo() bar"), "()");
 
             using (var manager = CreateParserManager(edit.OldSnapshot))
@@ -444,24 +356,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 // Assert
                 Assert.Equal(1, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(
-                    manager.PartialParsingSyntaxTreeRoot,
-                    new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("foo()")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(" bar")));
+                VerifyPartialParseTree(manager, edit.NewSnapshot.GetText());
             }
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpression_AcceptsParenthesisAtEnd_TwoEdits()
+        public async Task ImpExpr_AcceptsParenthesisAtEnd_TwoEdits()
         {
             // Arrange
-            var factory = new SpanFactory();
             var edit1 = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 1, new StringTextSnapshot("foo @foo( bar"), "(");
             var edit2 = new TestEdit(9, 0, new StringTextSnapshot("foo @foo( bar"), 1, new StringTextSnapshot("foo @foo() bar"), ")");
             using (var manager = CreateParserManager(edit1.OldSnapshot))
@@ -476,33 +378,24 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 // Assert
                 Assert.Equal(1, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(
-                    manager.PartialParsingSyntaxTreeRoot,
-                    new MarkupBlock(
-                        factory.Markup("foo "),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("foo()")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Markup(" bar")));
+                VerifyPartialParseTree(manager, edit2.NewSnapshot.GetText());
             }
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfIfKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfIfKeywordTyped()
         {
             await RunTypeKeywordTestAsync("if");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfDoKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfDoKeywordTyped()
         {
             await RunTypeKeywordTestAsync("do");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfTryKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfTryKeywordTyped()
         {
             await RunTypeKeywordTestAsync("try");
         }
@@ -514,63 +407,82 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfForEachKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfForEachKeywordTyped()
         {
             await RunTypeKeywordTestAsync("foreach");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfWhileKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfWhileKeywordTyped()
         {
             await RunTypeKeywordTestAsync("while");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfSwitchKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfSwitchKeywordTyped()
         {
             await RunTypeKeywordTestAsync("switch");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfLockKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfLockKeywordTyped()
         {
             await RunTypeKeywordTestAsync("lock");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfUsingKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfUsingKeywordTyped()
         {
             await RunTypeKeywordTestAsync("using");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfSectionKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfSectionKeywordTyped()
         {
             await RunTypeKeywordTestAsync("section");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfInheritsKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfInheritsKeywordTyped()
         {
             await RunTypeKeywordTestAsync("inherits");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfFunctionsKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfFunctionsKeywordTyped()
         {
             await RunTypeKeywordTestAsync("functions");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfNamespaceKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfNamespaceKeywordTyped()
         {
             await RunTypeKeywordTestAsync("namespace");
         }
 
         [ForegroundFact]
-        public async Task ImplicitExpressionCorrectlyTriggersReparseIfClassKeywordTyped()
+        public async Task ImpExprCorrectlyTriggersReparseIfClassKeywordTyped()
         {
             await RunTypeKeywordTestAsync("class");
+        }
+
+        private void VerifyPartialParseTree(TestParserManager manager, string content, string expectedCode = null)
+        {
+            if (expectedCode != null)
+            {
+                // Verify if the syntax tree represents the expected input.
+                var syntaxTreeContent = manager.PartialParsingSyntaxTreeRoot.ToFullString();
+                Assert.Contains(expectedCode, syntaxTreeContent);
+            }
+
+            var sourceDocument = TestRazorSourceDocument.Create(content);
+            var syntaxTree = RazorSyntaxTree.Create(manager.PartialParsingSyntaxTreeRoot, sourceDocument, manager.CurrentSyntaxTree.Diagnostics, manager.CurrentSyntaxTree.Options);
+            BaselineTest(syntaxTree);
+        }
+
+        private void VerifyCurrentSyntaxTree(TestParserManager manager)
+        {
+            BaselineTest(manager.CurrentSyntaxTree);
         }
 
         private TestParserManager CreateParserManager(ITextSnapshot originalSnapshot)
@@ -707,7 +619,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             public RazorSyntaxTree CurrentSyntaxTree { get; private set; }
 
-            public Block PartialParsingSyntaxTreeRoot => _parser._partialParser.SyntaxTreeRoot;
+            public SyntaxNode PartialParsingSyntaxTreeRoot => _parser._partialParser.ModifiedSyntaxTreeRoot;
 
             public async Task InitializeWithDocumentAsync(ITextSnapshot snapshot)
             {

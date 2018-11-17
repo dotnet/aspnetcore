@@ -1,29 +1,37 @@
-Expression block - Gen<Expr> - 25 - (0:0,0)
-    Code span - Gen<Expr> - [Repeat(10,LF    ] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (0:0,0) - Tokens:6
-        SyntaxKind.Identifier;[Repeat];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.IntegerLiteral;[10];
-        SyntaxKind.Comma;[,];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[    ];
-    Template block - Gen<Template> - 8 - (16:1,4)
-        Markup block - Gen<None> - 8 - (16:1,4)
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (16:1,4) - Tokens:1
-                SyntaxKind.Transition;[@];
-            MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (17:1,5) - Tokens:1
-                SyntaxKind.Colon;[:];
-            Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (18:1,6) - Tokens:1
-                SyntaxKind.Whitespace;[ ];
-            Statement block - Gen<None> - 3 - (19:1,7)
-                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (19:1,7) - Tokens:1
-                    SyntaxKind.Transition;[@];
-                MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (20:1,8) - Tokens:1
-                    SyntaxKind.LeftBrace;[{];
-                Code span - Gen<Stmt> - [] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (21:1,9) - Tokens:1
-                    SyntaxKind.Unknown;[];
-                MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (21:1,9) - Tokens:1
-                    SyntaxKind.RightBrace;[}];
-            Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (22:1,10) - Tokens:1
-                SyntaxKind.NewLine;[LF];
-    Code span - Gen<Expr> - [)] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (24:2,0) - Tokens:1
-        SyntaxKind.RightParenthesis;[)];
+CSharpCodeBlock - [0..25)::25 - [Repeat(10,LF    @: @{}LF)]
+    CSharpImplicitExpression - [0..25)::25
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpImplicitExpressionBody - [0..25)::25
+            CSharpCodeBlock - [0..25)::25
+                CSharpExpressionLiteral - [0..16)::16 - [Repeat(10,LF    ] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14
+                    Identifier;[Repeat];
+                    LeftParenthesis;[(];
+                    IntegerLiteral;[10];
+                    Comma;[,];
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                CSharpTemplateBlock - [16..24)::8
+                    MarkupBlock - [16..24)::8
+                        MarkupTransition - [16..17)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        RazorMetaCode - [17..18)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+                            Colon;[:];
+                        MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        CSharpCodeBlock - [19..22)::3
+                            CSharpStatement - [19..22)::3
+                                CSharpTransition - [19..20)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpStatementBody - [20..22)::2
+                                    RazorMetaCode - [20..21)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        LeftBrace;[{];
+                                    CSharpCodeBlock - [21..21)::0
+                                        CSharpStatementLiteral - [21..21)::0 - [] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                                            Marker;[];
+                                    RazorMetaCode - [21..22)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        RightBrace;[}];
+                        MarkupTextLiteral - [22..24)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            NewLine;[LF];
+                CSharpExpressionLiteral - [24..25)::1 - [)] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    RightParenthesis;[)];

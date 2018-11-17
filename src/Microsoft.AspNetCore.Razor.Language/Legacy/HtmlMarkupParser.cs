@@ -19,10 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SyntaxFactory.Token(SyntaxKind.Bang, "!"),
             SyntaxFactory.Token(SyntaxKind.OpenAngle, "<"),
         };
-        private static readonly SyntaxToken[] singleHyphenArray = new[]
-        {
-            SyntaxFactory.Token(SyntaxKind.Text, "-")
-        };
 
         private static readonly char[] ValidAfterTypeAttributeNameCharacters = { ' ', '\t', '\r', '\n', '\f', '=' };
         private SourceLocation _lastTagStart = SourceLocation.Zero;
@@ -54,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
         }
 
-        public ParserBase CodeParser { get; set; }
+        public CSharpCodeParser CodeParser { get; set; }
 
         public ISet<string> VoidElements
         {
@@ -68,26 +64,57 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get { return CaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase; }
         }
 
-        protected override bool TokenKindEquals(SyntaxKind x, SyntaxKind y) => x == y;
-
-        public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
+        // Special tags include <!--, <!DOCTYPE, <![CDATA and <? tags
+        private bool AtSpecialTag
         {
-            span.Kind = SpanKindInternal.Markup;
-            span.ChunkGenerator = new MarkupChunkGenerator();
-            base.BuildSpan(span, start, content);
+            get
+            {
+                if (At(SyntaxKind.OpenAngle))
+                {
+                    if (NextIs(SyntaxKind.Bang))
+                    {
+                        return !IsBangEscape(lookahead: 1);
+                    }
+
+                    return NextIs(SyntaxKind.QuestionMark);
+                }
+
+                return false;
+            }
         }
 
-        protected override void OutputSpanBeforeRazorComment()
+        public RazorDocumentSyntax ParseDocument()
         {
-            Output(SpanKindInternal.Markup);
+            if (Context == null)
+            {
+                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
+            }
+
+            using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
+            using (PushSpanContextConfig(DefaultMarkupSpanContext))
+            {
+                var builder = pooledResult.Builder;
+                NextToken();
+                while (!EndOfFile)
+                {
+                    SkipToAndParseCode(builder, SyntaxKind.OpenAngle);
+                    ParseTagInDocumentContext(builder);
+                }
+                AcceptMarkerTokenIfNecessary();
+                builder.Add(OutputAsMarkupLiteral());
+
+                var markup = SyntaxFactory.MarkupBlock(builder.ToList());
+
+                return SyntaxFactory.RazorDocument(markup);
+            }
         }
 
-        protected void SkipToAndParseCode(SyntaxKind type)
+        private void SkipToAndParseCode(in SyntaxListBuilder<RazorSyntaxNode> builder, SyntaxKind type)
         {
-            SkipToAndParseCode(token => token.Kind == type);
+            SkipToAndParseCode(builder, token => token.Kind == type);
         }
 
-        protected void SkipToAndParseCode(Func<SyntaxToken, bool> condition)
+        private void SkipToAndParseCode(in SyntaxListBuilder<RazorSyntaxNode> builder, Func<SyntaxToken, bool> condition)
         {
             SyntaxToken last = null;
             var startOfLine = false;
@@ -96,14 +123,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (Context.NullGenerateWhitespaceAndNewLine)
                 {
                     Context.NullGenerateWhitespaceAndNewLine = false;
-                    Span.ChunkGenerator = SpanChunkGenerator.Null;
+                    SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
                     AcceptWhile(token => token.Kind == SyntaxKind.Whitespace);
                     if (At(SyntaxKind.NewLine))
                     {
                         AcceptAndMoveNext();
                     }
 
-                    Output(SpanKindInternal.Markup);
+                    builder.Add(OutputAsMarkupEphemeralLiteral());
                 }
                 else if (At(SyntaxKind.NewLine))
                 {
@@ -128,10 +155,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             Accept(last);
                             last = null;
                         }
-                        Output(SpanKindInternal.Markup);
+                        builder.Add(OutputAsMarkupLiteral());
                         Accept(transition);
-                        Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.Markup);
+                        SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                        builder.Add(OutputAsMarkupEphemeralLiteral());
                         AcceptAndMoveNext();
                         continue; // while
                     }
@@ -162,30 +189,40 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         }
                     }
 
-                    OtherParserBlock();
+                    OtherParserBlock(builder);
                 }
                 else if (At(SyntaxKind.RazorCommentTransition))
                 {
+                    var shouldRenderWhitespace = true;
                     if (last != null)
                     {
                         // Don't render the whitespace between the start of the line and the razor comment.
                         if (startOfLine && last.Kind == SyntaxKind.Whitespace)
                         {
-                            AddMarkerTokenIfNecessary();
+                            AcceptMarkerTokenIfNecessary();
                             // Output the tokens that may have been accepted prior to the whitespace.
-                            Output(SpanKindInternal.Markup);
+                            builder.Add(OutputAsMarkupLiteral());
 
-                            Span.ChunkGenerator = SpanChunkGenerator.Null;
+                            SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                            shouldRenderWhitespace = false;
                         }
 
                         Accept(last);
                         last = null;
                     }
 
-                    AddMarkerTokenIfNecessary();
-                    Output(SpanKindInternal.Markup);
+                    AcceptMarkerTokenIfNecessary();
+                    if (shouldRenderWhitespace)
+                    {
+                        builder.Add(OutputAsMarkupLiteral());
+                    }
+                    else
+                    {
+                        builder.Add(OutputAsMarkupEphemeralLiteral());
+                    }
 
-                    RazorComment();
+                    var comment = ParseRazorComment();
+                    builder.Add(comment);
 
                     // Handle the whitespace and newline at the end of a razor comment.
                     if (startOfLine &&
@@ -194,8 +231,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         AcceptWhile(IsSpacingToken(includeNewLines: false));
                         AcceptAndMoveNext();
-                        Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.Markup);
+                        SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                        builder.Add(OutputAsMarkupEphemeralLiteral());
                     }
                 }
                 else
@@ -222,282 +259,461 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected static Func<SyntaxToken, bool> IsSpacingToken(bool includeNewLines)
+        /// <summary>
+        /// Reads the content of a tag (if present) in the MarkupDocument (or MarkupSection) context,
+        /// where we don't care about maintaining a stack of tags.
+        /// </summary>
+        private void ParseTagInDocumentContext(in SyntaxListBuilder<RazorSyntaxNode> builder)
         {
-            return token => token.Kind == SyntaxKind.Whitespace || (includeNewLines && token.Kind == SyntaxKind.NewLine);
-        }
-
-        private void OtherParserBlock()
-        {
-            AddMarkerTokenIfNecessary();
-            Output(SpanKindInternal.Markup);
-
-            using (PushSpanConfig())
+            if (At(SyntaxKind.OpenAngle))
             {
-                CodeParser.ParseBlock();
-            }
-
-            Span.Start = CurrentLocation;
-            Initialize(Span);
-            NextToken();
-        }
-
-        private bool IsBangEscape(int lookahead)
-        {
-            var potentialBang = Lookahead(lookahead);
-
-            if (potentialBang != null &&
-                potentialBang.Kind == SyntaxKind.Bang)
-            {
-                var afterBang = Lookahead(lookahead + 1);
-
-                return afterBang != null &&
-                    afterBang.Kind == SyntaxKind.Text &&
-                    !string.Equals(afterBang.Content, "DOCTYPE", StringComparison.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
-
-        private void OptionalBangEscape()
-        {
-            if (IsBangEscape(lookahead: 0))
-            {
-                Output(SpanKindInternal.Markup);
-
-                // Accept the parser escape character '!'.
-                Assert(SyntaxKind.Bang);
-                AcceptAndMoveNext();
-
-                // Setup the metacode span that we will be outputing.
-                Span.ChunkGenerator = SpanChunkGenerator.Null;
-                Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
-            }
-        }
-
-        public override void ParseBlock()
-        {
-            if (Context == null)
-            {
-                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
-            }
-
-            using (PushSpanConfig(DefaultMarkupSpan))
-            {
-                using (Context.Builder.StartBlock(BlockKindInternal.Markup))
+                if (NextIs(SyntaxKind.Bang))
                 {
-                    Span.Start = CurrentLocation;
-
-                    if (!NextToken())
+                    // Checking to see if we meet the conditions of a special '!' tag: <!DOCTYPE, <![CDATA[, <!--.
+                    if (!IsBangEscape(lookahead: 1))
                     {
+                        if (Lookahead(2)?.Kind == SyntaxKind.DoubleHyphen)
+                        {
+                            builder.Add(OutputAsMarkupLiteral());
+                        }
+
+                        AcceptAndMoveNext(); // Accept '<'
+                        ParseBangTag(builder);
+
                         return;
                     }
 
-                    AcceptWhile(IsSpacingToken(includeNewLines: true));
+                    // We should behave like a normal tag that has a parser escape, fall through to the normal
+                    // tag logic.
+                }
+                else if (NextIs(SyntaxKind.QuestionMark))
+                {
+                    AcceptAndMoveNext(); // Accept '<'
+                    TryParseXmlPI(builder);
+                    return;
+                }
 
-                    if (CurrentToken.Kind == SyntaxKind.OpenAngle)
-                    {
-                        // "<" => Implicit Tag Block
-                        TagBlock(new Stack<Tuple<SyntaxToken, SourceLocation>>());
-                    }
-                    else if (CurrentToken.Kind == SyntaxKind.Transition)
-                    {
-                        // "@" => Explicit Tag/Single Line Block OR Template
-                        Output(SpanKindInternal.Markup);
+                builder.Add(OutputAsMarkupLiteral());
 
-                        // Definitely have a transition span
-                        Assert(SyntaxKind.Transition);
-                        AcceptAndMoveNext();
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                        Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        Output(SpanKindInternal.Transition);
-                        if (At(SyntaxKind.Transition))
+                // Start tag block
+                using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
+                {
+                    var tagBuilder = pooledResult.Builder;
+                    AcceptAndMoveNext(); // Accept '<'
+
+                    if (!At(SyntaxKind.ForwardSlash))
+                    {
+                        ParseOptionalBangEscape(tagBuilder);
+
+                        // Parsing a start tag
+                        var scriptTag = At(SyntaxKind.Text) &&
+                                        string.Equals(CurrentToken.Content, "script", StringComparison.OrdinalIgnoreCase);
+                        TryAccept(SyntaxKind.Text);
+                        ParseTagContent(tagBuilder); // Parse the tag, don't care about the content
+                        TryAccept(SyntaxKind.ForwardSlash);
+                        TryAccept(SyntaxKind.CloseAngle);
+
+                        // If the script tag expects javascript content then we should do minimal parsing until we reach
+                        // the end script tag. Don't want to incorrectly parse a "var tag = '<input />';" as an HTML tag.
+                        if (scriptTag && !CurrentScriptTagExpectsHtml(tagBuilder))
                         {
-                            Span.ChunkGenerator = SpanChunkGenerator.Null;
-                            AcceptAndMoveNext();
-                            Output(SpanKindInternal.MetaCode);
+                            tagBuilder.Add(OutputAsMarkupLiteral());
+                            var block = SyntaxFactory.MarkupTagBlock(tagBuilder.ToList());
+                            builder.Add(block);
+
+                            SkipToEndScriptAndParseCode(builder);
+                            return;
                         }
-                        AfterTransition();
                     }
                     else
                     {
-                        Context.ErrorSink.OnError(
-                            RazorDiagnosticFactory.CreateParsing_MarkupBlockMustStartWithTag(
-                                new SourceSpan(CurrentStart, CurrentToken.Content.Length)));
+                        // Parsing an end tag
+                        // This section can accept things like: '</p  >' or '</p>' etc.
+                        TryAccept(SyntaxKind.ForwardSlash);
+
+                        // Whitespace here is invalid (according to the spec)
+                        ParseOptionalBangEscape(tagBuilder);
+                        TryAccept(SyntaxKind.Text);
+                        TryAccept(SyntaxKind.Whitespace);
+                        TryAccept(SyntaxKind.CloseAngle);
                     }
-                    Output(SpanKindInternal.Markup);
+
+                    tagBuilder.Add(OutputAsMarkupLiteral());
+
+                    // End tag block
+                    var tagBlock = SyntaxFactory.MarkupTagBlock(tagBuilder.ToList());
+                    builder.Add(tagBlock);
                 }
             }
         }
 
-        private void DefaultMarkupSpan(SpanBuilder span)
+        private void ParseTagContent(in SyntaxListBuilder<RazorSyntaxNode> builder)
         {
-            span.ChunkGenerator = new MarkupChunkGenerator();
-            span.EditHandler = new SpanEditHandler(Language.TokenizeString, AcceptedCharactersInternal.Any);
-        }
-
-        private void AfterTransition()
-        {
-            // "@:" => Explicit Single Line Block
-            if (CurrentToken.Kind == SyntaxKind.Text && CurrentToken.Content.Length > 0 && CurrentToken.Content[0] == ':')
+            if (!At(SyntaxKind.Whitespace) && !At(SyntaxKind.NewLine))
             {
-                // Split the token
-                var split = Language.SplitToken(CurrentToken, 1, SyntaxKind.Colon);
-
-                // The first part (left) is added to this span and we return a MetaCode span
-                Accept(split.Item1);
-                Span.ChunkGenerator = SpanChunkGenerator.Null;
-                Output(SpanKindInternal.MetaCode);
-                if (split.Item2 != null)
+                // We should be right after the tag name, so if there's no whitespace or new line, something is wrong
+                RecoverToEndOfTag(builder);
+            }
+            else
+            {
+                // We are here ($): <tag$ foo="bar" biz="~/Baz" />
+                while (!EndOfFile && !IsEndOfTag())
                 {
-                    Accept(split.Item2);
+                    BeforeAttribute(builder);
                 }
-                NextToken();
-                SingleLineMarkup();
-            }
-            else if (CurrentToken.Kind == SyntaxKind.OpenAngle)
-            {
-                TagBlock(new Stack<Tuple<SyntaxToken, SourceLocation>>());
             }
         }
 
-        private void SingleLineMarkup()
+        private bool IsEndOfTag()
         {
-            // Parse until a newline, it's that simple!
-            // First, signal to code parser that whitespace is significant to us.
-            var old = Context.WhiteSpaceIsSignificantToAncestorBlock;
-            Context.WhiteSpaceIsSignificantToAncestorBlock = true;
-            Span.EditHandler = new SpanEditHandler(Language.TokenizeString);
-            SkipToAndParseCode(SyntaxKind.NewLine);
-            if (!EndOfFile && CurrentToken.Kind == SyntaxKind.NewLine)
+            if (At(SyntaxKind.ForwardSlash))
             {
+                if (NextIs(SyntaxKind.CloseAngle))
+                {
+                    return true;
+                }
+                else
+                {
+                    AcceptAndMoveNext();
+                }
+            }
+            return At(SyntaxKind.CloseAngle) || At(SyntaxKind.OpenAngle);
+        }
+
+        private void BeforeAttribute(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        {
+            // http://dev.w3.org/html5/spec/tokenization.html#before-attribute-name-state
+            // Capture whitespace
+            var whitespace = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+
+            if (At(SyntaxKind.Transition) || At(SyntaxKind.RazorCommentTransition))
+            {
+                // Transition outside of attribute value => Switch to recovery mode
+                Accept(whitespace);
+                RecoverToEndOfTag(builder);
+                return;
+            }
+
+            // http://dev.w3.org/html5/spec/tokenization.html#attribute-name-state
+            // Read the 'name' (i.e. read until the '=' or whitespace/newline)
+            var nameTokens = Enumerable.Empty<SyntaxToken>();
+            var whitespaceAfterAttributeName = Enumerable.Empty<SyntaxToken>();
+            if (IsValidAttributeNameToken(CurrentToken))
+            {
+                nameTokens = ReadWhile(token =>
+                                 token.Kind != SyntaxKind.Whitespace &&
+                                 token.Kind != SyntaxKind.NewLine &&
+                                 token.Kind != SyntaxKind.Equals &&
+                                 token.Kind != SyntaxKind.CloseAngle &&
+                                 token.Kind != SyntaxKind.OpenAngle &&
+                                 (token.Kind != SyntaxKind.ForwardSlash || !NextIs(SyntaxKind.CloseAngle)));
+
+                // capture whitespace after attribute name (if any)
+                whitespaceAfterAttributeName = ReadWhile(
+                    token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+            }
+            else
+            {
+                // Unexpected character in tag, enter recovery
+                Accept(whitespace);
+                RecoverToEndOfTag(builder);
+                return;
+            }
+
+            if (!At(SyntaxKind.Equals))
+            {
+                // Minimized attribute
+
+                // We are at the prefix of the next attribute or the end of tag. Put it back so it is parsed later.
+                PutCurrentBack();
+                PutBack(whitespaceAfterAttributeName);
+
+                // Output anything prior to the attribute, in most cases this will be the tag name:
+                // |<input| checked />. If in-between other attributes this will noop or output malformed attribute
+                // content (if the previous attribute was malformed).
+                builder.Add(OutputAsMarkupLiteral());
+
+                Accept(whitespace);
+                var namePrefix = OutputAsMarkupLiteral();
+                Accept(nameTokens);
+                var name = OutputAsMarkupLiteral();
+
+                var minimizedAttributeBlock = SyntaxFactory.MarkupMinimizedAttributeBlock(namePrefix, name);
+                builder.Add(minimizedAttributeBlock);
+
+                return;
+            }
+
+            // Not a minimized attribute, parse as if it were well-formed (if attribute turns out to be malformed we
+            // will go into recovery).
+            builder.Add(OutputAsMarkupLiteral());
+
+            var attributeBlock = ParseAttributePrefix(whitespace, nameTokens, whitespaceAfterAttributeName);
+
+            builder.Add(attributeBlock);
+        }
+
+        private MarkupAttributeBlockSyntax ParseAttributePrefix(
+            IEnumerable<SyntaxToken> whitespace,
+            IEnumerable<SyntaxToken> nameTokens,
+            IEnumerable<SyntaxToken> whitespaceAfterAttributeName)
+        {
+            // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
+            var nameContent = string.Concat(nameTokens.Select(s => s.Content));
+            var attributeCanBeConditional =
+                Context.FeatureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes ||
+                !nameContent.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
+
+            // Accept the whitespace and name
+            Accept(whitespace);
+            var namePrefix = OutputAsMarkupLiteral();
+            Accept(nameTokens);
+            var name = OutputAsMarkupLiteral();
+
+            // Since this is not a minimized attribute, the whitespace after attribute name belongs to this attribute.
+            Accept(whitespaceAfterAttributeName);
+            var nameSuffix = OutputAsMarkupLiteral();
+            Assert(SyntaxKind.Equals); // We should be at "="
+            var equalsToken = EatCurrentToken();
+
+            var whitespaceAfterEquals = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+            var quote = SyntaxKind.Marker;
+            if (At(SyntaxKind.SingleQuote) || At(SyntaxKind.DoubleQuote))
+            {
+                // Found a quote, the whitespace belongs to this attribute.
+                Accept(whitespaceAfterEquals);
+                quote = CurrentToken.Kind;
                 AcceptAndMoveNext();
-                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             }
-            PutCurrentBack();
-            Context.WhiteSpaceIsSignificantToAncestorBlock = old;
-            Output(SpanKindInternal.Markup);
-        }
-
-        private void TagBlock(Stack<Tuple<SyntaxToken, SourceLocation>> tags)
-        {
-            // Skip Whitespace and Text
-            var complete = false;
-            do
+            else if (whitespaceAfterEquals.Any())
             {
-                SkipToAndParseCode(SyntaxKind.OpenAngle);
+                // No quotes found after the whitespace. Put it back so that it can be parsed later.
+                PutCurrentBack();
+                PutBack(whitespaceAfterEquals);
+            }
 
-                // Output everything prior to the OpenAngle into a markup span
-                Output(SpanKindInternal.Markup);
+            MarkupTextLiteralSyntax valuePrefix = null;
+            RazorBlockSyntax attributeValue = null;
+            MarkupTextLiteralSyntax valueSuffix = null;
 
-                // Do not want to start a new tag block if we're at the end of the file.
-                IDisposable tagBlockWrapper = null;
-                try
+            if (attributeCanBeConditional)
+            {
+                SpanContext.ChunkGenerator = SpanChunkGenerator.Null; // The block chunk generator will render the prefix
+
+                // We now have the value prefix which is usually whitespace and/or a quote
+                valuePrefix = OutputAsMarkupLiteral();
+
+                // Read the attribute value only if the value is quoted
+                // or if there is no whitespace between '=' and the unquoted value.
+                if (quote != SyntaxKind.Marker || !whitespaceAfterEquals.Any())
                 {
-                    var atSpecialTag = AtSpecialTag;
-
-                    if (!EndOfFile && !atSpecialTag)
+                    using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
                     {
-                        // Start a Block tag.  This is used to wrap things like <p> or <a class="btn"> etc.
-                        tagBlockWrapper = Context.Builder.StartBlock(BlockKindInternal.Tag);
-                    }
-
-                    if (EndOfFile)
-                    {
-                        EndTagBlock(tags, complete: true);
-                    }
-                    else
-                    {
-                        _bufferedOpenAngle = null;
-                        _lastTagStart = CurrentStart;
-                        Assert(SyntaxKind.OpenAngle);
-                        _bufferedOpenAngle = CurrentToken;
-                        var tagStart = CurrentStart;
-                        if (!NextToken())
+                        var attributeValueBuilder = pooledResult.Builder;
+                        // Read the attribute value.
+                        while (!EndOfFile && !IsEndOfAttributeValue(quote, CurrentToken))
                         {
-                            Accept(_bufferedOpenAngle);
-                            EndTagBlock(tags, complete: false);
+                            ParseAttributeValue(attributeValueBuilder, quote);
                         }
-                        else
+
+                        if (attributeValueBuilder.Count > 0)
                         {
-                            complete = AfterTagStart(tagStart, tags, atSpecialTag, tagBlockWrapper);
+                            attributeValue = SyntaxFactory.GenericBlock(attributeValueBuilder.ToList());
                         }
                     }
-
-                    if (complete)
-                    {
-                        // Completed tags have no accepted characters inside of blocks.
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                    }
-
-                    // Output the contents of the tag into its own markup span.
-                    Output(SpanKindInternal.Markup);
                 }
-                finally
+
+                // Capture the suffix
+                if (quote != SyntaxKind.Marker && At(quote))
                 {
-                    // Will be null if we were at end of file or special tag when initially created.
-                    if (tagBlockWrapper != null)
+                    AcceptAndMoveNext();
+                    // Again, block chunk generator will render the suffix
+                    SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                    valueSuffix = OutputAsMarkupLiteral();
+                }
+            }
+            else if (quote != SyntaxKind.Marker || !whitespaceAfterEquals.Any())
+            {
+                valuePrefix = OutputAsMarkupLiteral();
+
+                using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
+                {
+                    var attributeValueBuilder = pooledResult.Builder;
+                    // Not a "conditional" attribute, so just read the value
+                    SkipToAndParseCode(attributeValueBuilder, token => IsEndOfAttributeValue(quote, token));
+
+                    // Output already accepted tokens if any as markup literal
+                    var literalValue = OutputAsMarkupLiteral();
+                    attributeValueBuilder.Add(literalValue);
+
+                    // Capture the attribute value (will include everything in-between the attribute's quotes).
+                    attributeValue = SyntaxFactory.GenericBlock(attributeValueBuilder.ToList());
+                }
+
+                if (quote != SyntaxKind.Marker)
+                {
+                    TryAccept(quote);
+                    valueSuffix = OutputAsMarkupLiteral();
+                }
+            }
+            else
+            {
+                // There is no quote and there is whitespace after equals. There is no attribute value.
+            }
+
+            return SyntaxFactory.MarkupAttributeBlock(namePrefix, name, nameSuffix, equalsToken, valuePrefix, attributeValue, valueSuffix);
+        }
+
+        private void ParseAttributeValue(in SyntaxListBuilder<RazorSyntaxNode> builder, SyntaxKind quote)
+        {
+            var prefixStart = CurrentStart;
+            var prefixTokens = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
+
+            if (At(SyntaxKind.Transition))
+            {
+                if (NextIs(SyntaxKind.Transition))
+                {
+                    // Wrapping this in a block so that the ConditionalAttributeCollapser doesn't rewrite it.
+                    using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
                     {
-                        // End tag block
-                        tagBlockWrapper.Dispose();
+                        var markupBuilder = pooledResult.Builder;
+                        Accept(prefixTokens);
+
+                        // Render a single "@" in place of "@@".
+                        SpanContext.ChunkGenerator = new LiteralAttributeChunkGenerator(
+                            new LocationTagged<string>(string.Concat(prefixTokens.Select(s => s.Content)), prefixStart),
+                            new LocationTagged<string>(CurrentToken.Content, CurrentStart));
+                        AcceptAndMoveNext();
+                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                        markupBuilder.Add(OutputAsMarkupLiteral());
+
+                        SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                        AcceptAndMoveNext();
+                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                        markupBuilder.Add(OutputAsMarkupEphemeralLiteral());
+
+                        var markupBlock = SyntaxFactory.MarkupBlock(markupBuilder.ToList());
+                        builder.Add(markupBlock);
+                    }
+                }
+                else
+                {
+                    Accept(prefixTokens);
+                    var valueStart = CurrentStart;
+                    PutCurrentBack();
+
+                    var prefix = OutputAsMarkupLiteral();
+
+                    // Dynamic value, start a new block and set the chunk generator
+                    using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
+                    {
+                        var dynamicAttributeValueBuilder = pooledResult.Builder;
+
+                        OtherParserBlock(dynamicAttributeValueBuilder);
+                        var value = SyntaxFactory.MarkupDynamicAttributeValue(prefix, SyntaxFactory.GenericBlock(dynamicAttributeValueBuilder.ToList()));
+                        builder.Add(value);
                     }
                 }
             }
-            while (tags.Count > 0);
+            else
+            {
+                Accept(prefixTokens);
+                var prefix = OutputAsMarkupLiteral();
 
-            EndTagBlock(tags, complete);
+                // Literal value
+                // 'quote' should be "Unknown" if not quoted and tokens coming from the tokenizer should never have
+                // "Unknown" type.
+                var valueTokens = ReadWhile(token =>
+                    // These three conditions find separators which break the attribute value into portions
+                    token.Kind != SyntaxKind.Whitespace &&
+                    token.Kind != SyntaxKind.NewLine &&
+                    token.Kind != SyntaxKind.Transition &&
+                    // This condition checks for the end of the attribute value (it repeats some of the checks above
+                    // but for now that's ok)
+                    !IsEndOfAttributeValue(quote, token));
+                Accept(valueTokens);
+                var value = OutputAsMarkupLiteral();
+
+                var literalAttributeValue = SyntaxFactory.MarkupLiteralAttributeValue(prefix, value);
+                builder.Add(literalAttributeValue);
+            }
         }
 
-        private bool AfterTagStart(SourceLocation tagStart,
-                                   Stack<Tuple<SyntaxToken, SourceLocation>> tags,
-                                   bool atSpecialTag,
-                                   IDisposable tagBlockWrapper)
+        private void RecoverToEndOfTag(in SyntaxListBuilder<RazorSyntaxNode> builder)
         {
+            // Accept until ">", "/" or "<", but parse code
+            while (!EndOfFile)
+            {
+                SkipToAndParseCode(builder, IsTagRecoveryStopPoint);
+                if (!EndOfFile)
+                {
+                    EnsureCurrent();
+                    switch (CurrentToken.Kind)
+                    {
+                        case SyntaxKind.SingleQuote:
+                        case SyntaxKind.DoubleQuote:
+                            ParseQuoted(builder);
+                            break;
+                        case SyntaxKind.OpenAngle:
+                        // Another "<" means this tag is invalid.
+                        case SyntaxKind.ForwardSlash:
+                        // Empty tag
+                        case SyntaxKind.CloseAngle:
+                            // End of tag
+                            return;
+                        default:
+                            AcceptAndMoveNext();
+                            break;
+                    }
+                }
+            }
+        }
+
+        private bool IsTagRecoveryStopPoint(SyntaxToken token)
+        {
+            return token.Kind == SyntaxKind.CloseAngle ||
+                   token.Kind == SyntaxKind.ForwardSlash ||
+                   token.Kind == SyntaxKind.OpenAngle ||
+                   token.Kind == SyntaxKind.SingleQuote ||
+                   token.Kind == SyntaxKind.DoubleQuote;
+        }
+
+        private bool IsEndOfAttributeValue(SyntaxKind quote, SyntaxToken token)
+        {
+            return EndOfFile || token == null ||
+                   (quote != SyntaxKind.Marker
+                        ? token.Kind == quote // If quoted, just wait for the quote
+                        : IsUnquotedEndOfAttributeValue(token));
+        }
+
+        private bool IsUnquotedEndOfAttributeValue(SyntaxToken token)
+        {
+            // If unquoted, we have a larger set of terminating characters:
+            // http://dev.w3.org/html5/spec/tokenization.html#attribute-value-unquoted-state
+            // Also we need to detect "/" and ">"
+            return token.Kind == SyntaxKind.DoubleQuote ||
+                   token.Kind == SyntaxKind.SingleQuote ||
+                   token.Kind == SyntaxKind.OpenAngle ||
+                   token.Kind == SyntaxKind.Equals ||
+                   (token.Kind == SyntaxKind.ForwardSlash && NextIs(SyntaxKind.CloseAngle)) ||
+                   token.Kind == SyntaxKind.CloseAngle ||
+                   token.Kind == SyntaxKind.Whitespace ||
+                   token.Kind == SyntaxKind.NewLine;
+        }
+
+        private void ParseQuoted(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        {
+            var type = CurrentToken.Kind;
+            AcceptAndMoveNext();
+            SkipToAndParseCode(builder, type);
             if (!EndOfFile)
             {
-                switch (CurrentToken.Kind)
-                {
-                    case SyntaxKind.ForwardSlash:
-                        // End Tag
-                        return EndTag(tagStart, tags, tagBlockWrapper);
-                    case SyntaxKind.Bang:
-                        // Comment, CDATA, DOCTYPE, or a parser-escaped HTML tag.
-                        if (atSpecialTag)
-                        {
-                            Accept(_bufferedOpenAngle);
-                            return BangTag();
-                        }
-                        else
-                        {
-                            goto default;
-                        }
-                    case SyntaxKind.QuestionMark:
-                        // XML PI
-                        Accept(_bufferedOpenAngle);
-                        return XmlPI();
-                    default:
-                        // Start Tag
-                        return StartTag(tags, tagBlockWrapper);
-                }
+                Assert(type);
+                AcceptAndMoveNext();
             }
-            if (tags.Count == 0)
-            {
-                Context.ErrorSink.OnError(
-                    RazorDiagnosticFactory.CreateParsing_OuterTagMissingName(
-                        new SourceSpan(CurrentStart, contentLength: 1 /* end of file */)));
-            }
-            return false;
         }
 
-        private bool XmlPI()
-        {
-            // Accept "?"
-            Assert(SyntaxKind.QuestionMark);
-            AcceptAndMoveNext();
-            return AcceptUntilAll(SyntaxKind.QuestionMark, SyntaxKind.CloseAngle);
-        }
-
-        private bool BangTag()
+        private bool ParseBangTag(in SyntaxListBuilder<RazorSyntaxNode> builder)
         {
             // Accept "!"
             Assert(SyntaxKind.Bang);
@@ -506,27 +722,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 if (IsHtmlCommentAhead())
                 {
-                    using (Context.Builder.StartBlock(BlockKindInternal.HtmlComment))
+                    using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
                     {
+                        var htmlCommentBuilder = pooledResult.Builder;
+
                         // Accept the double-hyphen token at the beginning of the comment block.
                         AcceptAndMoveNext();
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
+                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                        htmlCommentBuilder.Add(OutputAsMarkupLiteral());
 
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
+                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
                         while (!EndOfFile)
                         {
-                            SkipToAndParseCode(SyntaxKind.DoubleHyphen);
+                            SkipToAndParseCode(htmlCommentBuilder, SyntaxKind.DoubleHyphen);
                             var lastDoubleHyphen = AcceptAllButLastDoubleHyphens();
 
                             if (At(SyntaxKind.CloseAngle))
                             {
                                 // Output the content in the comment block as a separate markup
-                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.Whitespace);
+                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
+                                htmlCommentBuilder.Add(OutputAsMarkupLiteral());
 
                                 // This is the end of a comment block
                                 Accept(lastDoubleHyphen);
                                 AcceptAndMoveNext();
-                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
+                                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                                htmlCommentBuilder.Add(OutputAsMarkupLiteral());
+                                var commentBlock = SyntaxFactory.MarkupCommentBlock(htmlCommentBuilder.ToList());
+                                builder.Add(commentBlock);
                                 return true;
                             }
                             else if (lastDoubleHyphen != null)
@@ -540,48 +763,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     if (AcceptAndMoveNext())
                     {
-                        return CData();
+                        return TryParseCData(builder);
                     }
                 }
                 else
                 {
                     AcceptAndMoveNext();
-                    return AcceptUntilAll(SyntaxKind.CloseAngle);
+                    return AcceptTokenUntilAll(builder, SyntaxKind.CloseAngle);
                 }
             }
 
             return false;
-        }
-
-        protected SyntaxToken AcceptAllButLastDoubleHyphens()
-        {
-            var lastDoubleHyphen = CurrentToken;
-            AcceptWhile(s =>
-            {
-                if (NextIs(SyntaxKind.DoubleHyphen))
-                {
-                    lastDoubleHyphen = s;
-                    return true;
-                }
-
-                return false;
-            });
-
-            NextToken();
-
-            if (At(SyntaxKind.Text) && IsHyphen(CurrentToken))
-            {
-                // Doing this here to maintain the order of tokens
-                if (!NextIs(SyntaxKind.CloseAngle))
-                {
-                    Accept(lastDoubleHyphen);
-                    lastDoubleHyphen = null;
-                }
-
-                AcceptAndMoveNext();
-            }
-
-            return lastDoubleHyphen;
         }
 
         internal static bool IsHyphen(SyntaxToken token)
@@ -592,7 +784,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected bool IsHtmlCommentAhead()
         {
             // From HTML5 Specification, available at http://www.w3.org/TR/html52/syntax.html#comments
-            
+
             // Comments must have the following format:
             // 1. The string "<!--"
             // 2. Optionally, text, with the additional restriction that the text
@@ -682,7 +874,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        private bool CData()
+        private bool TryParseCData(in SyntaxListBuilder<RazorSyntaxNode> builder)
         {
             if (CurrentToken.Kind == SyntaxKind.Text && string.Equals(CurrentToken.Content, "cdata", StringComparison.OrdinalIgnoreCase))
             {
@@ -690,7 +882,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     if (CurrentToken.Kind == SyntaxKind.LeftBracket)
                     {
-                        return AcceptUntilAll(SyntaxKind.RightBracket, SyntaxKind.RightBracket, SyntaxKind.CloseAngle);
+                        return AcceptTokenUntilAll(builder, SyntaxKind.RightBracket, SyntaxKind.RightBracket, SyntaxKind.CloseAngle);
                     }
                 }
             }
@@ -698,9 +890,671 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        private bool EndTag(SourceLocation tagStart,
-                            Stack<Tuple<SyntaxToken, SourceLocation>> tags,
-                            IDisposable tagBlockWrapper)
+        private bool TryParseXmlPI(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        {
+            // Accept "?"
+            Assert(SyntaxKind.QuestionMark);
+            AcceptAndMoveNext();
+            return AcceptTokenUntilAll(builder, SyntaxKind.QuestionMark, SyntaxKind.CloseAngle);
+        }
+
+        private void ParseOptionalBangEscape(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        {
+            if (IsBangEscape(lookahead: 0))
+            {
+                builder.Add(OutputAsMarkupLiteral());
+
+                // Accept the parser escape character '!'.
+                Assert(SyntaxKind.Bang);
+                AcceptAndMoveNext();
+
+                // Setup the metacode span that we will be outputing.
+                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                builder.Add(OutputAsMetaCode(Output()));
+            }
+        }
+
+        private bool IsBangEscape(int lookahead)
+        {
+            var potentialBang = Lookahead(lookahead);
+
+            if (potentialBang != null &&
+                potentialBang.Kind == SyntaxKind.Bang)
+            {
+                var afterBang = Lookahead(lookahead + 1);
+
+                return afterBang != null &&
+                    afterBang.Kind == SyntaxKind.Text &&
+                    !string.Equals(afterBang.Content, "DOCTYPE", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private void SkipToEndScriptAndParseCode(in SyntaxListBuilder<RazorSyntaxNode> builder, AcceptedCharactersInternal endTagAcceptedCharacters = AcceptedCharactersInternal.Any)
+        {
+            // Special case for <script>: Skip to end of script tag and parse code
+            var seenEndScript = false;
+
+            while (!seenEndScript && !EndOfFile)
+            {
+                SkipToAndParseCode(builder, SyntaxKind.OpenAngle);
+                var tagStart = CurrentStart;
+
+                if (NextIs(SyntaxKind.ForwardSlash))
+                {
+                    var openAngle = CurrentToken;
+                    NextToken(); // Skip over '<', current is '/'
+                    var solidus = CurrentToken;
+                    NextToken(); // Skip over '/', current should be text
+
+                    if (At(SyntaxKind.Text) &&
+                        string.Equals(CurrentToken.Content, ScriptTagName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        seenEndScript = true;
+                    }
+
+                    // We put everything back because we just wanted to look ahead to see if the current end tag that we're parsing is
+                    // the script tag.  If so we'll generate correct code to encompass it.
+                    PutCurrentBack(); // Put back whatever was after the solidus
+                    PutBack(solidus); // Put back '/'
+                    PutBack(openAngle); // Put back '<'
+
+                    // We just looked ahead, this NextToken will set CurrentToken to an open angle bracket.
+                    NextToken();
+                }
+
+                if (seenEndScript)
+                {
+                    builder.Add(OutputAsMarkupLiteral());
+
+                    using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
+                    {
+                        var tagBuilder = pooledResult.Builder;
+                        SpanContext.EditHandler.AcceptedCharacters = endTagAcceptedCharacters;
+
+                        AcceptAndMoveNext(); // '<'
+                        AcceptAndMoveNext(); // '/'
+                        SkipToAndParseCode(tagBuilder, SyntaxKind.CloseAngle);
+                        if (!TryAccept(SyntaxKind.CloseAngle))
+                        {
+                            Context.ErrorSink.OnError(
+                                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                                    new SourceSpan(SourceLocationTracker.Advance(tagStart, "</"), ScriptTagName.Length),
+                                    ScriptTagName));
+                            var closeAngle = SyntaxFactory.MissingToken(SyntaxKind.CloseAngle);
+                            Accept(closeAngle);
+                        }
+                        tagBuilder.Add(OutputAsMarkupLiteral());
+                        builder.Add(SyntaxFactory.MarkupTagBlock(tagBuilder.ToList()));
+                    }
+                }
+                else
+                {
+                    AcceptAndMoveNext(); // Accept '<' (not the closing script tag's open angle)
+                }
+            }
+        }
+
+        private bool CurrentScriptTagExpectsHtml(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        {
+            Debug.Assert(!builder.IsNull);
+
+            MarkupAttributeBlockSyntax typeAttribute = null;
+            for (var i = 0; i < builder.Count; i++)
+            {
+                var node = builder[i];
+                if (node.IsToken || node.IsTrivia)
+                {
+                    continue;
+                }
+
+                if (node is MarkupAttributeBlockSyntax attributeBlock &&
+                    attributeBlock.Value.Children.Count > 0 &&
+                    IsTypeAttribute(attributeBlock))
+                {
+                    typeAttribute = attributeBlock;
+                    break;
+                }
+            }
+
+            if (typeAttribute != null)
+            {
+                var contentValues = typeAttribute.Value.CreateRed().DescendantNodes().Where(n => n.IsToken).Cast<Syntax.SyntaxToken>();
+
+                var scriptType = string.Concat(contentValues.Select(t => t.Content)).Trim();
+
+                // Does not allow charset parameter (or any other parameters).
+                return string.Equals(scriptType, "text/html", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        private static bool IsTypeAttribute(MarkupAttributeBlockSyntax attributeBlock)
+        {
+            if (attributeBlock.Name.LiteralTokens.Count == 0)
+            {
+                return false;
+            }
+
+            var trimmedStartContent = attributeBlock.Name.ToFullString().TrimStart();
+            if (trimmedStartContent.StartsWith("type", StringComparison.OrdinalIgnoreCase) &&
+                (trimmedStartContent.Length == 4 ||
+                ValidAfterTypeAttributeNameCharacters.Contains(trimmedStartContent[4])))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected SyntaxToken AcceptAllButLastDoubleHyphens()
+        {
+            var lastDoubleHyphen = CurrentToken;
+            AcceptWhile(s =>
+            {
+                if (NextIs(SyntaxKind.DoubleHyphen))
+                {
+                    lastDoubleHyphen = s;
+                    return true;
+                }
+
+                return false;
+            });
+
+            NextToken();
+
+            if (At(SyntaxKind.Text) && IsHyphen(CurrentToken))
+            {
+                // Doing this here to maintain the order of tokens
+                if (!NextIs(SyntaxKind.CloseAngle))
+                {
+                    Accept(lastDoubleHyphen);
+                    lastDoubleHyphen = null;
+                }
+
+                AcceptAndMoveNext();
+            }
+
+            return lastDoubleHyphen;
+        }
+
+        private bool AcceptTokenUntilAll(in SyntaxListBuilder<RazorSyntaxNode> builder, params SyntaxKind[] endSequence)
+        {
+            while (!EndOfFile)
+            {
+                SkipToAndParseCode(builder, endSequence[0]);
+                if (AcceptAll(endSequence))
+                {
+                    return true;
+                }
+            }
+            Debug.Assert(EndOfFile);
+            SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
+            return false;
+        }
+
+        public MarkupBlockSyntax ParseBlock()
+        {
+            if (Context == null)
+            {
+                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
+            }
+
+            using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
+            using (PushSpanContextConfig(DefaultMarkupSpanContext))
+            {
+                var builder = pooledResult.Builder;
+                if (!NextToken())
+                {
+                    return null;
+                }
+
+                AcceptWhile(IsSpacingToken(includeNewLines: true));
+
+                if (CurrentToken.Kind == SyntaxKind.OpenAngle)
+                {
+                    // "<" => Implicit Tag Block
+                    ParseTagBlock(builder, new Stack<Tuple<SyntaxToken, SourceLocation>>());
+                }
+                else if (CurrentToken.Kind == SyntaxKind.Transition)
+                {
+                    // "@" => Explicit Tag/Single Line Block OR Template
+
+                    // Output whitespace
+                    builder.Add(OutputAsMarkupLiteral());
+
+                    // Definitely have a transition span
+                    Assert(SyntaxKind.Transition);
+                    AcceptAndMoveNext();
+                    SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                    SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                    var transition = GetNodeWithSpanContext(SyntaxFactory.MarkupTransition(Output()));
+                    builder.Add(transition);
+                    if (At(SyntaxKind.Transition))
+                    {
+                        SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                        AcceptAndMoveNext();
+                        builder.Add(OutputAsMetaCode(Output(), AcceptedCharactersInternal.Any));
+                    }
+                    ParseAfterTransition(builder);
+                }
+                else
+                {
+                    Context.ErrorSink.OnError(
+                        RazorDiagnosticFactory.CreateParsing_MarkupBlockMustStartWithTag(
+                            new SourceSpan(CurrentStart, CurrentToken.Content.Length)));
+                }
+                builder.Add(OutputAsMarkupLiteral());
+
+                var markupBlock = builder.ToList();
+
+                return SyntaxFactory.MarkupBlock(markupBlock);
+            }
+        }
+
+        private void ParseAfterTransition(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        {
+            // "@:" => Explicit Single Line Block
+            if (CurrentToken.Kind == SyntaxKind.Text && CurrentToken.Content.Length > 0 && CurrentToken.Content[0] == ':')
+            {
+                // Split the token
+                var split = Language.SplitToken(CurrentToken, 1, SyntaxKind.Colon);
+
+                // The first part (left) is added to this span and we return a MetaCode span
+                Accept(split.Item1);
+                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                builder.Add(OutputAsMetaCode(Output(), AcceptedCharactersInternal.Any));
+                if (split.Item2 != null)
+                {
+                    Accept(split.Item2);
+                }
+                NextToken();
+                ParseSingleLineMarkup(builder);
+            }
+            else if (CurrentToken.Kind == SyntaxKind.OpenAngle)
+            {
+                ParseTagBlock(builder, new Stack<Tuple<SyntaxToken, SourceLocation>>());
+            }
+        }
+
+        private void ParseSingleLineMarkup(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        {
+            // Parse until a newline, it's that simple!
+            // First, signal to code parser that whitespace is significant to us.
+            var old = Context.WhiteSpaceIsSignificantToAncestorBlock;
+            Context.WhiteSpaceIsSignificantToAncestorBlock = true;
+            SpanContext.EditHandler = new SpanEditHandler(Language.TokenizeString);
+            SkipToAndParseCode(builder, SyntaxKind.NewLine);
+            if (!EndOfFile && CurrentToken.Kind == SyntaxKind.NewLine)
+            {
+                AcceptAndMoveNext();
+                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+            }
+            PutCurrentBack();
+            Context.WhiteSpaceIsSignificantToAncestorBlock = old;
+            builder.Add(OutputAsMarkupLiteral());
+        }
+
+        private void ParseTagBlock(in SyntaxListBuilder<RazorSyntaxNode> builder, Stack<Tuple<SyntaxToken, SourceLocation>> tags)
+        {
+            // TODO: This is really ugly and needs to be cleaned up.
+
+            // Skip Whitespace and Text
+            var completeTag = false;
+            var blockAlreadyBuilt = false;
+            do
+            {
+                SkipToAndParseCode(builder, SyntaxKind.OpenAngle);
+
+                // Output everything prior to the OpenAngle into a markup span
+                builder.Add(OutputAsMarkupLiteral());
+
+                var tagBuilder = builder;
+                IDisposable tagBuilderDisposable = null;
+                try
+                {
+                    if (EndOfFile)
+                    {
+                        // Do not want to start a new tag block if we're at the end of the file.
+                        EndTagBlock(builder, tags, complete: true);
+                    }
+                    else
+                    {
+                        var atSpecialTag = AtSpecialTag;
+                        if (!atSpecialTag)
+                        {
+                            // Start a tag block.  This is used to wrap things like <p> or <a class="btn"> etc.
+                            var pooledResult = Pool.Allocate<RazorSyntaxNode>();
+                            tagBuilderDisposable = pooledResult;
+                            tagBuilder = pooledResult.Builder;
+                        }
+                        _bufferedOpenAngle = null;
+                        _lastTagStart = CurrentStart;
+                        Assert(SyntaxKind.OpenAngle);
+                        _bufferedOpenAngle = CurrentToken;
+                        var tagStart = CurrentStart;
+                        if (!NextToken())
+                        {
+                            Accept(_bufferedOpenAngle);
+                            EndTagBlock(tagBuilder, tags, complete: false);
+                        }
+                        else if (atSpecialTag && At(SyntaxKind.Bang))
+                        {
+                            Accept(_bufferedOpenAngle);
+                            completeTag = ParseBangTag(builder);
+                            blockAlreadyBuilt = completeTag;
+                        }
+                        else
+                        {
+                            var result = ParseAfterTagStart(tagBuilder, builder, tagStart, tags);
+                            completeTag = result.Item1;
+                            blockAlreadyBuilt = result.Item2;
+                        }
+                    }
+
+                    if (completeTag)
+                    {
+                        // Completed tags have no accepted characters inside of blocks.
+                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                    }
+
+                    if (blockAlreadyBuilt)
+                    {
+                        // Output the contents of the tag into its own markup span.
+                        builder.Add(OutputAsMarkupLiteral());
+                    }
+                    else if (tagBuilderDisposable != null)
+                    {
+                        // A new tag block was started. Build it.
+                        // Output the contents of the tag into its own markup span.
+                        tagBuilder.Add(OutputAsMarkupLiteral());
+                        var tagBlock = SyntaxFactory.MarkupTagBlock(tagBuilder.ToList());
+                        builder.Add(tagBlock);
+                    }
+                }
+                finally
+                {
+                    // Will be null if we were at end of file or special tag when initially created.
+                    if (tagBuilderDisposable != null)
+                    {
+                        // End tag block
+                        tagBuilderDisposable.Dispose();
+                    }
+                }
+            }
+            while (tags.Count > 0);
+
+            EndTagBlock(builder, tags, completeTag);
+        }
+
+        private Tuple<bool, bool> ParseAfterTagStart(
+            in SyntaxListBuilder<RazorSyntaxNode> builder,
+            in SyntaxListBuilder<RazorSyntaxNode> parentBuilder,
+            SourceLocation tagStart,
+            Stack<Tuple<SyntaxToken, SourceLocation>> tags)
+        {
+            var blockAlreadyBuilt = false;
+            if (!EndOfFile)
+            {
+                switch (CurrentToken.Kind)
+                {
+                    case SyntaxKind.ForwardSlash:
+                        // End Tag
+                        return ParseEndTag(builder, parentBuilder, tagStart, tags);
+                    case SyntaxKind.QuestionMark:
+                        // XML PI
+                        Accept(_bufferedOpenAngle);
+                        var complete = TryParseXmlPI(builder);
+                        // No block is created for Xml PI. So return the same value as complete.
+                        blockAlreadyBuilt = complete;
+                        return Tuple.Create(complete, blockAlreadyBuilt);
+                    default:
+                        // Start Tag
+                        return ParseStartTag(builder, parentBuilder, tags);
+                }
+            }
+            if (tags.Count == 0)
+            {
+                Context.ErrorSink.OnError(
+                    RazorDiagnosticFactory.CreateParsing_OuterTagMissingName(
+                        new SourceSpan(CurrentStart, contentLength: 1 /* end of file */)));
+            }
+
+            return Tuple.Create(false, blockAlreadyBuilt);
+        }
+
+        private Tuple<bool, bool> ParseStartTag(
+            in SyntaxListBuilder<RazorSyntaxNode> builder,
+            in SyntaxListBuilder<RazorSyntaxNode> parentBuilder,
+            Stack<Tuple<SyntaxToken, SourceLocation>> tags)
+        {
+            SyntaxToken bangToken = null;
+            SyntaxToken potentialTagNameToken;
+
+            if (At(SyntaxKind.Bang))
+            {
+                bangToken = CurrentToken;
+
+                potentialTagNameToken = Lookahead(count: 1);
+            }
+            else
+            {
+                potentialTagNameToken = CurrentToken;
+            }
+
+            SyntaxToken tagName;
+
+            if (potentialTagNameToken == null || potentialTagNameToken.Kind != SyntaxKind.Text)
+            {
+                tagName = SyntaxFactory.Token(SyntaxKind.Marker, string.Empty);
+            }
+            else if (bangToken != null)
+            {
+                tagName = SyntaxFactory.Token(SyntaxKind.Text, "!" + potentialTagNameToken.Content);
+            }
+            else
+            {
+                tagName = potentialTagNameToken;
+            }
+
+            var tag = Tuple.Create(tagName, _lastTagStart);
+
+            if (tags.Count == 0 &&
+                // Note tagName may contain a '!' escape character. This ensures <!text> doesn't match here.
+                // <!text> tags are treated like any other escaped HTML start tag.
+                string.Equals(tag.Item1.Content, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase))
+            {
+                builder.Add(OutputAsMarkupLiteral());
+                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+
+                Accept(_bufferedOpenAngle);
+                var textLocation = CurrentStart;
+                Assert(SyntaxKind.Text);
+
+                AcceptAndMoveNext();
+
+                var bookmark = CurrentStart.AbsoluteIndex;
+                var tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
+                var empty = At(SyntaxKind.ForwardSlash);
+                if (empty)
+                {
+                    Accept(tokens);
+                    Assert(SyntaxKind.ForwardSlash);
+                    AcceptAndMoveNext();
+                    bookmark = CurrentStart.AbsoluteIndex;
+                    tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
+                }
+
+                if (!TryAccept(SyntaxKind.CloseAngle))
+                {
+                    Context.Source.Position = bookmark;
+                    NextToken();
+                    Context.ErrorSink.OnError(
+                        RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
+                            new SourceSpan(textLocation, contentLength: 4 /* text */)));
+
+                    RecoverTextTag();
+                }
+                else
+                {
+                    Accept(tokens);
+                    SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                }
+
+                if (!empty)
+                {
+                    tags.Push(tag);
+                }
+
+                var transition = GetNodeWithSpanContext(SyntaxFactory.MarkupTransition(Output()));
+                builder.Add(transition);
+                var tagBlock = SyntaxFactory.MarkupTagBlock(builder.ToList());
+                parentBuilder.Add(tagBlock);
+
+                return Tuple.Create(true, true);
+            }
+
+            Accept(_bufferedOpenAngle);
+            ParseOptionalBangEscape(builder);
+            TryAccept(SyntaxKind.Text);
+            return ParseRestOfTag(builder, parentBuilder, tag, tags);
+        }
+
+        private Tuple<bool, bool> ParseRestOfTag(
+            in SyntaxListBuilder<RazorSyntaxNode> builder,
+            in SyntaxListBuilder<RazorSyntaxNode> parentBuilder,
+            Tuple<SyntaxToken, SourceLocation> tag,
+            Stack<Tuple<SyntaxToken, SourceLocation>> tags)
+        {
+            var blockAlreadyBuilt = false;
+            ParseTagContent(builder);
+
+            // We are now at a possible end of the tag
+            // Found '<', so we just abort this tag.
+            if (At(SyntaxKind.OpenAngle))
+            {
+                return Tuple.Create(false, blockAlreadyBuilt);
+            }
+
+            var isEmpty = At(SyntaxKind.ForwardSlash);
+            // Found a solidus, so don't accept it but DON'T push the tag to the stack
+            if (isEmpty)
+            {
+                AcceptAndMoveNext();
+            }
+
+            // Check for the '>' to determine if the tag is finished
+            var seenClose = TryAccept(SyntaxKind.CloseAngle);
+            if (!seenClose)
+            {
+                Context.ErrorSink.OnError(
+                    RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                        new SourceSpan(
+                            SourceLocationTracker.Advance(tag.Item2, "<"),
+                            Math.Max(tag.Item1.Content.Length, 1)),
+                        tag.Item1.Content));
+            }
+            else
+            {
+                if (!isEmpty)
+                {
+                    // Is this a void element?
+                    var tagName = tag.Item1.Content.Trim();
+                    if (VoidElements.Contains(tagName))
+                    {
+                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                        builder.Add(OutputAsMarkupLiteral());
+                        var tagBlock = SyntaxFactory.MarkupTagBlock(builder.ToList());
+                        parentBuilder.Add(tagBlock);
+                        blockAlreadyBuilt = true;
+
+                        // Technically, void elements like "meta" are not allowed to have end tags. Just in case they do,
+                        // we need to look ahead at the next set of tokens. If we see "<", "/", tag name, accept it and the ">" following it
+                        // Place a bookmark
+                        var bookmark = CurrentStart.AbsoluteIndex;
+
+                        // Skip whitespace
+                        var whiteSpace = ReadWhile(IsSpacingToken(includeNewLines: true));
+
+                        // Open Angle
+                        if (At(SyntaxKind.OpenAngle) && NextIs(SyntaxKind.ForwardSlash))
+                        {
+                            var openAngle = CurrentToken;
+                            NextToken();
+                            Assert(SyntaxKind.ForwardSlash);
+                            var solidus = CurrentToken;
+                            NextToken();
+                            if (At(SyntaxKind.Text) && string.Equals(CurrentToken.Content, tagName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                // Accept up to here
+                                Accept(whiteSpace);
+                                parentBuilder.Add(OutputAsMarkupLiteral()); // Output the whitespace
+
+                                using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
+                                {
+                                    var tagBuilder = pooledResult.Builder;
+                                    Accept(openAngle);
+                                    Accept(solidus);
+                                    AcceptAndMoveNext();
+
+                                    // Accept to '>', '<' or EOF
+                                    AcceptUntil(SyntaxKind.CloseAngle, SyntaxKind.OpenAngle);
+                                    // Accept the '>' if we saw it. And if we do see it, we're complete
+                                    var complete = TryAccept(SyntaxKind.CloseAngle);
+
+                                    if (complete)
+                                    {
+                                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                                    }
+
+                                    // Output the closing void element
+                                    tagBuilder.Add(OutputAsMarkupLiteral());
+                                    parentBuilder.Add(SyntaxFactory.MarkupTagBlock(tagBuilder.ToList()));
+
+                                    return Tuple.Create(complete, blockAlreadyBuilt);
+                                }
+                            }
+                        }
+
+                        // Go back to the bookmark and just finish this tag at the close angle
+                        Context.Source.Position = bookmark;
+                        NextToken();
+                    }
+                    else if (string.Equals(tagName, ScriptTagName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!CurrentScriptTagExpectsHtml(builder))
+                        {
+                            SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                            builder.Add(OutputAsMarkupLiteral());
+                            var tagBlock = SyntaxFactory.MarkupTagBlock(builder.ToList());
+                            parentBuilder.Add(tagBlock);
+                            blockAlreadyBuilt = true;
+
+                            SkipToEndScriptAndParseCode(parentBuilder, endTagAcceptedCharacters: AcceptedCharactersInternal.None);
+                        }
+                        else
+                        {
+                            // Push the script tag onto the tag stack, it should be treated like all other HTML tags.
+                            tags.Push(tag);
+                        }
+                    }
+                    else
+                    {
+                        // Push the tag on to the stack
+                        tags.Push(tag);
+                    }
+                }
+            }
+            return Tuple.Create(seenClose, blockAlreadyBuilt);
+        }
+
+        private Tuple<bool, bool> ParseEndTag(
+            in SyntaxListBuilder<RazorSyntaxNode> builder,
+            in SyntaxListBuilder<RazorSyntaxNode> parentBuilder,
+            SourceLocation tagStart,
+            Stack<Tuple<SyntaxToken, SourceLocation>> tags)
         {
             // Accept "/" and move next
             Assert(SyntaxKind.ForwardSlash);
@@ -709,7 +1563,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 Accept(_bufferedOpenAngle);
                 Accept(forwardSlash);
-                return false;
+                return Tuple.Create(false, false);
             }
             else
             {
@@ -740,30 +1594,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     string.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) &&
                     matched)
                 {
-                    return EndTextTag(forwardSlash, tagBlockWrapper);
+                    return EndTextTag(builder, parentBuilder, forwardSlash);
                 }
                 Accept(_bufferedOpenAngle);
                 Accept(forwardSlash);
 
-                OptionalBangEscape();
+                ParseOptionalBangEscape(builder);
 
                 AcceptUntil(SyntaxKind.CloseAngle);
 
                 // Accept the ">"
-                return Optional(SyntaxKind.CloseAngle);
+                return Tuple.Create(TryAccept(SyntaxKind.CloseAngle), false);
             }
         }
 
-        private void RecoverTextTag()
-        {
-            // We don't want to skip-to and parse because there shouldn't be anything in the body of text tags.
-            AcceptUntil(SyntaxKind.CloseAngle, SyntaxKind.NewLine);
-
-            // Include the close angle in the text tag block if it's there, otherwise just move on
-            Optional(SyntaxKind.CloseAngle);
-        }
-
-        private bool EndTextTag(SyntaxToken solidus, IDisposable tagBlockWrapper)
+        private Tuple<bool, bool> EndTextTag(
+            in SyntaxListBuilder<RazorSyntaxNode> builder,
+            in SyntaxListBuilder<RazorSyntaxNode> parentBuilder,
+            SyntaxToken solidus)
         {
             Accept(_bufferedOpenAngle);
             Accept(solidus);
@@ -772,7 +1620,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Assert(SyntaxKind.Text);
             AcceptAndMoveNext();
 
-            var seenCloseAngle = Optional(SyntaxKind.CloseAngle);
+            var seenCloseAngle = TryAccept(SyntaxKind.CloseAngle);
 
             if (!seenCloseAngle)
             {
@@ -780,689 +1628,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
                         new SourceSpan(textLocation, contentLength: 4 /* text */)));
 
-                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
+                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
                 RecoverTextTag();
             }
             else
             {
-                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             }
 
-            Span.ChunkGenerator = SpanChunkGenerator.Null;
+            SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
 
-            CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKindInternal.Transition);
+            var transition = GetNodeWithSpanContext(SyntaxFactory.MarkupTransition(Output()));
+            builder.Add(transition);
+            var tagBlock = SyntaxFactory.MarkupTagBlock(builder.ToList());
+            parentBuilder.Add(tagBlock);
 
-            return seenCloseAngle;
-        }
-
-        // Special tags include <!--, <!DOCTYPE, <![CDATA and <? tags
-        private bool AtSpecialTag
-        {
-            get
-            {
-                if (At(SyntaxKind.OpenAngle))
-                {
-                    if (NextIs(SyntaxKind.Bang))
-                    {
-                        return !IsBangEscape(lookahead: 1);
-                    }
-
-                    return NextIs(SyntaxKind.QuestionMark);
-                }
-
-                return false;
-            }
-        }
-
-        private bool IsTagRecoveryStopPoint(SyntaxToken token)
-        {
-            return token.Kind == SyntaxKind.CloseAngle ||
-                   token.Kind == SyntaxKind.ForwardSlash ||
-                   token.Kind == SyntaxKind.OpenAngle ||
-                   token.Kind == SyntaxKind.SingleQuote ||
-                   token.Kind == SyntaxKind.DoubleQuote;
-        }
-
-        private void TagContent()
-        {
-            if (!At(SyntaxKind.Whitespace) && !At(SyntaxKind.NewLine))
-            {
-                // We should be right after the tag name, so if there's no whitespace or new line, something is wrong
-                RecoverToEndOfTag();
-            }
-            else
-            {
-                // We are here ($): <tag$ foo="bar" biz="~/Baz" />
-                while (!EndOfFile && !IsEndOfTag())
-                {
-                    BeforeAttribute();
-                }
-            }
-        }
-
-        private bool IsEndOfTag()
-        {
-            if (At(SyntaxKind.ForwardSlash))
-            {
-                if (NextIs(SyntaxKind.CloseAngle))
-                {
-                    return true;
-                }
-                else
-                {
-                    AcceptAndMoveNext();
-                }
-            }
-            return At(SyntaxKind.CloseAngle) || At(SyntaxKind.OpenAngle);
-        }
-
-        private void BeforeAttribute()
-        {
-            // http://dev.w3.org/html5/spec/tokenization.html#before-attribute-name-state
-            // Capture whitespace
-            var whitespace = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
-
-            if (At(SyntaxKind.Transition) || At(SyntaxKind.RazorCommentTransition))
-            {
-                // Transition outside of attribute value => Switch to recovery mode
-                Accept(whitespace);
-                RecoverToEndOfTag();
-                return;
-            }
-
-            // http://dev.w3.org/html5/spec/tokenization.html#attribute-name-state
-            // Read the 'name' (i.e. read until the '=' or whitespace/newline)
-            var name = Enumerable.Empty<SyntaxToken>();
-            var whitespaceAfterAttributeName = Enumerable.Empty<SyntaxToken>();
-            if (IsValidAttributeNameToken(CurrentToken))
-            {
-                name = ReadWhile(token =>
-                                 token.Kind != SyntaxKind.Whitespace &&
-                                 token.Kind != SyntaxKind.NewLine &&
-                                 token.Kind != SyntaxKind.Equals &&
-                                 token.Kind != SyntaxKind.CloseAngle &&
-                                 token.Kind != SyntaxKind.OpenAngle &&
-                                 (token.Kind != SyntaxKind.ForwardSlash || !NextIs(SyntaxKind.CloseAngle)));
-
-                // capture whitespace after attribute name (if any)
-                whitespaceAfterAttributeName = ReadWhile(
-                    token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
-            }
-            else
-            {
-                // Unexpected character in tag, enter recovery
-                Accept(whitespace);
-                RecoverToEndOfTag();
-                return;
-            }
-
-            if (!At(SyntaxKind.Equals))
-            {
-                // Minimized attribute
-
-                // We are at the prefix of the next attribute or the end of tag. Put it back so it is parsed later.
-                PutCurrentBack();
-                PutBack(whitespaceAfterAttributeName);
-
-                // Output anything prior to the attribute, in most cases this will be the tag name:
-                // |<input| checked />. If in-between other attributes this will noop or output malformed attribute
-                // content (if the previous attribute was malformed).
-                Output(SpanKindInternal.Markup);
-
-                using (Context.Builder.StartBlock(BlockKindInternal.Markup))
-                {
-                    Accept(whitespace);
-                    Accept(name);
-                    Output(SpanKindInternal.Markup);
-                }
-
-                return;
-            }
-
-            // Not a minimized attribute, parse as if it were well-formed (if attribute turns out to be malformed we
-            // will go into recovery).
-            Output(SpanKindInternal.Markup);
-
-            // Start a new markup block for the attribute
-            using (Context.Builder.StartBlock(BlockKindInternal.Markup))
-            {
-                AttributePrefix(whitespace, name, whitespaceAfterAttributeName);
-            }
-        }
-
-        private void AttributePrefix(
-            IEnumerable<SyntaxToken> whitespace,
-            IEnumerable<SyntaxToken> nameTokens,
-            IEnumerable<SyntaxToken> whitespaceAfterAttributeName)
-        {
-            // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
-            var name = string.Concat(nameTokens.Select(s => s.Content));
-            var attributeCanBeConditional =
-                Context.FeatureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes ||
-                !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
-
-            // Accept the whitespace and name
-            Accept(whitespace);
-            Accept(nameTokens);
-
-            // Since this is not a minimized attribute, the whitespace after attribute name belongs to this attribute.
-            Accept(whitespaceAfterAttributeName);
-            Assert(SyntaxKind.Equals); // We should be at "="
-            AcceptAndMoveNext();
-
-            var whitespaceAfterEquals = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
-            var quote = SyntaxKind.Unknown;
-            if (At(SyntaxKind.SingleQuote) || At(SyntaxKind.DoubleQuote))
-            {
-                // Found a quote, the whitespace belongs to this attribute.
-                Accept(whitespaceAfterEquals);
-                quote = CurrentToken.Kind;
-                AcceptAndMoveNext();
-            }
-            else if (whitespaceAfterEquals.Any())
-            {
-                // No quotes found after the whitespace. Put it back so that it can be parsed later.
-                PutCurrentBack();
-                PutBack(whitespaceAfterEquals);
-            }
-
-            // We now have the prefix: (i.e. '      foo="')
-            var prefix = new LocationTagged<string>(string.Concat(Span.Tokens.Select(s => s.Content)), Span.Start);
-
-            if (attributeCanBeConditional)
-            {
-                Span.ChunkGenerator = SpanChunkGenerator.Null; // The block chunk generator will render the prefix
-                Output(SpanKindInternal.Markup);
-
-                // Read the attribute value only if the value is quoted
-                // or if there is no whitespace between '=' and the unquoted value.
-                if (quote != SyntaxKind.Unknown || !whitespaceAfterEquals.Any())
-                {
-                    // Read the attribute value.
-                    while (!EndOfFile && !IsEndOfAttributeValue(quote, CurrentToken))
-                    {
-                        AttributeValue(quote);
-                    }
-                }
-
-                // Capture the suffix
-                var suffix = new LocationTagged<string>(string.Empty, CurrentStart);
-                if (quote != SyntaxKind.Unknown && At(quote))
-                {
-                    suffix = new LocationTagged<string>(CurrentToken.Content, CurrentStart);
-                    AcceptAndMoveNext();
-                }
-
-                if (Span.Tokens.Count > 0)
-                {
-                    // Again, block chunk generator will render the suffix
-                    Span.ChunkGenerator = SpanChunkGenerator.Null;
-                    Output(SpanKindInternal.Markup);
-                }
-
-                // Create the block chunk generator
-                Context.Builder.CurrentBlock.ChunkGenerator = new AttributeBlockChunkGenerator(
-                    name, prefix, suffix);
-            }
-            else
-            {
-                // Output the attribute name, the equals and optional quote. Ex: foo="
-                Output(SpanKindInternal.Markup);
-
-                if (quote == SyntaxKind.Unknown && whitespaceAfterEquals.Any())
-                {
-                    return;
-                }
-
-                // Not a "conditional" attribute, so just read the value
-                SkipToAndParseCode(token => IsEndOfAttributeValue(quote, token));
-
-                // Output the attribute value (will include everything in-between the attribute's quotes).
-                Output(SpanKindInternal.Markup);
-
-                if (quote != SyntaxKind.Unknown)
-                {
-                    Optional(quote);
-                }
-                Output(SpanKindInternal.Markup);
-            }
-        }
-
-        private void AttributeValue(SyntaxKind quote)
-        {
-            var prefixStart = CurrentStart;
-            var prefix = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
-
-            if (At(SyntaxKind.Transition))
-            {
-                if (NextIs(SyntaxKind.Transition))
-                {
-                    // Wrapping this in a block so that the ConditionalAttributeCollapser doesn't rewrite it.
-                    using (Context.Builder.StartBlock(BlockKindInternal.Markup))
-                    {
-                        Accept(prefix);
-
-                        // Render a single "@" in place of "@@".
-                        Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
-                            new LocationTagged<string>(string.Concat(prefix.Select(s => s.Content)), prefixStart),
-                            new LocationTagged<string>(CurrentToken.Content, CurrentStart));
-                        AcceptAndMoveNext();
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
-
-                        Span.ChunkGenerator = SpanChunkGenerator.Null;
-                        AcceptAndMoveNext();
-                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
-                    }
-                }
-                else
-                {
-                    Accept(prefix);
-                    var valueStart = CurrentStart;
-                    PutCurrentBack();
-
-                    // Output the prefix but as a null-span. DynamicAttributeBlockChunkGenerator will render it
-                    Span.ChunkGenerator = SpanChunkGenerator.Null;
-
-                    // Dynamic value, start a new block and set the chunk generator
-                    using (Context.Builder.StartBlock(BlockKindInternal.Markup))
-                    {
-                        Context.Builder.CurrentBlock.ChunkGenerator =
-                            new DynamicAttributeBlockChunkGenerator(
-                                new LocationTagged<string>(string.Concat(prefix.Select(s => s.Content)), prefixStart),
-                                valueStart);
-
-                        OtherParserBlock();
-                    }
-                }
-            }
-            else
-            {
-                Accept(prefix);
-
-                // Literal value
-                // 'quote' should be "Unknown" if not quoted and tokens coming from the tokenizer should never have
-                // "Unknown" type.
-                var valueStart = CurrentStart;
-                var value = ReadWhile(token =>
-                    // These three conditions find separators which break the attribute value into portions
-                    token.Kind != SyntaxKind.Whitespace &&
-                    token.Kind != SyntaxKind.NewLine &&
-                    token.Kind != SyntaxKind.Transition &&
-                    // This condition checks for the end of the attribute value (it repeats some of the checks above
-                    // but for now that's ok)
-                    !IsEndOfAttributeValue(quote, token));
-                Accept(value);
-                Span.ChunkGenerator = new LiteralAttributeChunkGenerator(
-                    new LocationTagged<string>(string.Concat(prefix.Select(s => s.Content)), prefixStart),
-                    new LocationTagged<string>(string.Concat(value.Select(s => s.Content)), valueStart));
-            }
-            Output(SpanKindInternal.Markup);
-        }
-
-        private bool IsEndOfAttributeValue(SyntaxKind quote, SyntaxToken token)
-        {
-            return EndOfFile || token == null ||
-                   (quote != SyntaxKind.Unknown
-                        ? token.Kind == quote // If quoted, just wait for the quote
-                        : IsUnquotedEndOfAttributeValue(token));
-        }
-
-        private bool IsUnquotedEndOfAttributeValue(SyntaxToken token)
-        {
-            // If unquoted, we have a larger set of terminating characters:
-            // http://dev.w3.org/html5/spec/tokenization.html#attribute-value-unquoted-state
-            // Also we need to detect "/" and ">"
-            return token.Kind == SyntaxKind.DoubleQuote ||
-                   token.Kind == SyntaxKind.SingleQuote ||
-                   token.Kind == SyntaxKind.OpenAngle ||
-                   token.Kind == SyntaxKind.Equals ||
-                   (token.Kind == SyntaxKind.ForwardSlash && NextIs(SyntaxKind.CloseAngle)) ||
-                   token.Kind == SyntaxKind.CloseAngle ||
-                   token.Kind == SyntaxKind.Whitespace ||
-                   token.Kind == SyntaxKind.NewLine;
-        }
-
-        private void RecoverToEndOfTag()
-        {
-            // Accept until ">", "/" or "<", but parse code
-            while (!EndOfFile)
-            {
-                SkipToAndParseCode(IsTagRecoveryStopPoint);
-                if (!EndOfFile)
-                {
-                    EnsureCurrent();
-                    switch (CurrentToken.Kind)
-                    {
-                        case SyntaxKind.SingleQuote:
-                        case SyntaxKind.DoubleQuote:
-                            ParseQuoted();
-                            break;
-                        case SyntaxKind.OpenAngle:
-                        // Another "<" means this tag is invalid.
-                        case SyntaxKind.ForwardSlash:
-                        // Empty tag
-                        case SyntaxKind.CloseAngle:
-                            // End of tag
-                            return;
-                        default:
-                            AcceptAndMoveNext();
-                            break;
-                    }
-                }
-            }
-        }
-
-        private void ParseQuoted()
-        {
-            var type = CurrentToken.Kind;
-            AcceptAndMoveNext();
-            ParseQuoted(type);
-        }
-
-        private void ParseQuoted(SyntaxKind type)
-        {
-            SkipToAndParseCode(type);
-            if (!EndOfFile)
-            {
-                Assert(type);
-                AcceptAndMoveNext();
-            }
-        }
-
-        private bool StartTag(Stack<Tuple<SyntaxToken, SourceLocation>> tags, IDisposable tagBlockWrapper)
-        {
-            SyntaxToken bangToken = null;
-            SyntaxToken potentialTagNameToken;
-
-            if (At(SyntaxKind.Bang))
-            {
-                bangToken = CurrentToken;
-
-                potentialTagNameToken = Lookahead(count: 1);
-            }
-            else
-            {
-                potentialTagNameToken = CurrentToken;
-            }
-
-            SyntaxToken tagName;
-
-            if (potentialTagNameToken == null || potentialTagNameToken.Kind != SyntaxKind.Text)
-            {
-                tagName = SyntaxFactory.Token(SyntaxKind.Unknown, string.Empty);
-            }
-            else if (bangToken != null)
-            {
-                tagName = SyntaxFactory.Token(SyntaxKind.Text, "!" + potentialTagNameToken.Content);
-            }
-            else
-            {
-                tagName = potentialTagNameToken;
-            }
-
-            var tag = Tuple.Create(tagName, _lastTagStart);
-
-            if (tags.Count == 0 &&
-                // Note tagName may contain a '!' escape character. This ensures <!text> doesn't match here.
-                // <!text> tags are treated like any other escaped HTML start tag.
-                string.Equals(tag.Item1.Content, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase))
-            {
-                Output(SpanKindInternal.Markup);
-                Span.ChunkGenerator = SpanChunkGenerator.Null;
-
-                Accept(_bufferedOpenAngle);
-                var textLocation = CurrentStart;
-                Assert(SyntaxKind.Text);
-
-                AcceptAndMoveNext();
-
-                var bookmark = CurrentStart.AbsoluteIndex;
-                var tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
-                var empty = At(SyntaxKind.ForwardSlash);
-                if (empty)
-                {
-                    Accept(tokens);
-                    Assert(SyntaxKind.ForwardSlash);
-                    AcceptAndMoveNext();
-                    bookmark = CurrentStart.AbsoluteIndex;
-                    tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
-                }
-
-                if (!Optional(SyntaxKind.CloseAngle))
-                {
-                    Context.Source.Position = bookmark;
-                    NextToken();
-                    Context.ErrorSink.OnError(
-                        RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
-                            new SourceSpan(textLocation, contentLength: 4 /* text */)));
-
-                    RecoverTextTag();
-                }
-                else
-                {
-                    Accept(tokens);
-                    Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                }
-
-                if (!empty)
-                {
-                    tags.Push(tag);
-                }
-
-                CompleteTagBlockWithSpan(tagBlockWrapper, Span.EditHandler.AcceptedCharacters, SpanKindInternal.Transition);
-
-                return true;
-            }
-
-            Accept(_bufferedOpenAngle);
-            OptionalBangEscape();
-            Optional(SyntaxKind.Text);
-            return RestOfTag(tag, tags, tagBlockWrapper);
-        }
-
-        private bool RestOfTag(Tuple<SyntaxToken, SourceLocation> tag,
-                               Stack<Tuple<SyntaxToken, SourceLocation>> tags,
-                               IDisposable tagBlockWrapper)
-        {
-            TagContent();
-
-            // We are now at a possible end of the tag
-            // Found '<', so we just abort this tag.
-            if (At(SyntaxKind.OpenAngle))
-            {
-                return false;
-            }
-
-            var isEmpty = At(SyntaxKind.ForwardSlash);
-            // Found a solidus, so don't accept it but DON'T push the tag to the stack
-            if (isEmpty)
-            {
-                AcceptAndMoveNext();
-            }
-
-            // Check for the '>' to determine if the tag is finished
-            var seenClose = Optional(SyntaxKind.CloseAngle);
-            if (!seenClose)
-            {
-                Context.ErrorSink.OnError(
-                    RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
-                        new SourceSpan(
-                            SourceLocationTracker.Advance(tag.Item2, "<"),
-                            Math.Max(tag.Item1.Content.Length, 1)),
-                        tag.Item1.Content));
-            }
-            else
-            {
-                if (!isEmpty)
-                {
-                    // Is this a void element?
-                    var tagName = tag.Item1.Content.Trim();
-                    if (VoidElements.Contains(tagName))
-                    {
-                        CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharactersInternal.None, SpanKindInternal.Markup);
-
-                        // Technically, void elements like "meta" are not allowed to have end tags. Just in case they do,
-                        // we need to look ahead at the next set of tokens. If we see "<", "/", tag name, accept it and the ">" following it
-                        // Place a bookmark
-                        var bookmark = CurrentStart.AbsoluteIndex;
-
-                        // Skip whitespace
-                        var whiteSpace = ReadWhile(IsSpacingToken(includeNewLines: true));
-
-                        // Open Angle
-                        if (At(SyntaxKind.OpenAngle) && NextIs(SyntaxKind.ForwardSlash))
-                        {
-                            var openAngle = CurrentToken;
-                            NextToken();
-                            Assert(SyntaxKind.ForwardSlash);
-                            var solidus = CurrentToken;
-                            NextToken();
-                            if (At(SyntaxKind.Text) && string.Equals(CurrentToken.Content, tagName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                // Accept up to here
-                                Accept(whiteSpace);
-                                Output(SpanKindInternal.Markup); // Output the whitespace
-
-                                using (Context.Builder.StartBlock(BlockKindInternal.Tag))
-                                {
-                                    Accept(openAngle);
-                                    Accept(solidus);
-                                    AcceptAndMoveNext();
-
-                                    // Accept to '>', '<' or EOF
-                                    AcceptUntil(SyntaxKind.CloseAngle, SyntaxKind.OpenAngle);
-                                    // Accept the '>' if we saw it. And if we do see it, we're complete
-                                    var complete = Optional(SyntaxKind.CloseAngle);
-
-                                    if (complete)
-                                    {
-                                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                                    }
-
-                                    // Output the closing void element
-                                    Output(SpanKindInternal.Markup);
-
-                                    return complete;
-                                }
-                            }
-                        }
-
-                        // Go back to the bookmark and just finish this tag at the close angle
-                        Context.Source.Position = bookmark;
-                        NextToken();
-                    }
-                    else if (string.Equals(tagName, ScriptTagName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (!CurrentScriptTagExpectsHtml())
-                        {
-                            CompleteTagBlockWithSpan(tagBlockWrapper, AcceptedCharactersInternal.None, SpanKindInternal.Markup);
-
-                            SkipToEndScriptAndParseCode(endTagAcceptedCharacters: AcceptedCharactersInternal.None);
-                        }
-                        else
-                        {
-                            // Push the script tag onto the tag stack, it should be treated like all other HTML tags.
-                            tags.Push(tag);
-                        }
-                    }
-                    else
-                    {
-                        // Push the tag on to the stack
-                        tags.Push(tag);
-                    }
-                }
-            }
-            return seenClose;
-        }
-
-        private void SkipToEndScriptAndParseCode(AcceptedCharactersInternal endTagAcceptedCharacters = AcceptedCharactersInternal.Any)
-        {
-            // Special case for <script>: Skip to end of script tag and parse code
-            var seenEndScript = false;
-
-            while (!seenEndScript && !EndOfFile)
-            {
-                SkipToAndParseCode(SyntaxKind.OpenAngle);
-                var tagStart = CurrentStart;
-
-                if (NextIs(SyntaxKind.ForwardSlash))
-                {
-                    var openAngle = CurrentToken;
-                    NextToken(); // Skip over '<', current is '/'
-                    var solidus = CurrentToken;
-                    NextToken(); // Skip over '/', current should be text
-
-                    if (At(SyntaxKind.Text) &&
-                        string.Equals(CurrentToken.Content, ScriptTagName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        seenEndScript = true;
-                    }
-
-                    // We put everything back because we just wanted to look ahead to see if the current end tag that we're parsing is
-                    // the script tag.  If so we'll generate correct code to encompass it.
-                    PutCurrentBack(); // Put back whatever was after the solidus
-                    PutBack(solidus); // Put back '/'
-                    PutBack(openAngle); // Put back '<'
-
-                    // We just looked ahead, this NextToken will set CurrentToken to an open angle bracket.
-                    NextToken();
-                }
-
-                if (seenEndScript)
-                {
-                    Output(SpanKindInternal.Markup);
-
-                    using (Context.Builder.StartBlock(BlockKindInternal.Tag))
-                    {
-                        Span.EditHandler.AcceptedCharacters = endTagAcceptedCharacters;
-
-                        AcceptAndMoveNext(); // '<'
-                        AcceptAndMoveNext(); // '/'
-                        SkipToAndParseCode(SyntaxKind.CloseAngle);
-                        if (!Optional(SyntaxKind.CloseAngle))
-                        {
-                            Context.ErrorSink.OnError(
-                                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
-                                    new SourceSpan(SourceLocationTracker.Advance(tagStart, "</"), ScriptTagName.Length),
-                                    ScriptTagName));
-                        }
-                        Output(SpanKindInternal.Markup);
-                    }
-                }
-                else
-                {
-                    AcceptAndMoveNext(); // Accept '<' (not the closing script tag's open angle)
-                }
-            }
-        }
-
-        private void CompleteTagBlockWithSpan(IDisposable tagBlockWrapper,
-                                              AcceptedCharactersInternal acceptedCharacters,
-                                              SpanKindInternal spanKind)
-        {
-            Debug.Assert(tagBlockWrapper != null,
-                "Tag block wrapper should not be null when attempting to complete a block");
-
-            Span.EditHandler.AcceptedCharacters = acceptedCharacters;
-            // Write out the current span into the block before closing it.
-            Output(spanKind);
-            // Finish the tag block
-            tagBlockWrapper.Dispose();
-        }
-
-        private bool AcceptUntilAll(params SyntaxKind[] endSequence)
-        {
-            while (!EndOfFile)
-            {
-                SkipToAndParseCode(endSequence[0]);
-                if (AcceptAll(endSequence))
-                {
-                    return true;
-                }
-            }
-            Debug.Assert(EndOfFile);
-            Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
-            return false;
+            return Tuple.Create(seenCloseAngle, true);
         }
 
         private bool RemoveTag(Stack<Tuple<SyntaxToken, SourceLocation>> tags, string tagName, SourceLocation tagStart)
@@ -1495,7 +1676,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        private void EndTagBlock(Stack<Tuple<SyntaxToken, SourceLocation>> tags, bool complete)
+        private void RecoverTextTag()
+        {
+            // We don't want to skip-to and parse because there shouldn't be anything in the body of text tags.
+            AcceptUntil(SyntaxKind.CloseAngle, SyntaxKind.NewLine);
+
+            // Include the close angle in the text tag block if it's there, otherwise just move on
+            TryAccept(SyntaxKind.CloseAngle);
+        }
+
+        private void EndTagBlock(
+            in SyntaxListBuilder<RazorSyntaxNode> builder,
+            Stack<Tuple<SyntaxToken, SourceLocation>> tags,
+            bool complete)
         {
             if (tags.Count > 0)
             {
@@ -1514,14 +1707,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else if (complete)
             {
-                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             }
             tags.Clear();
             if (!Context.DesignTimeMode)
             {
                 var shouldAcceptWhitespaceAndNewLine = true;
 
-                if (Context.Builder.LastSpan.Kind == SpanKindInternal.Transition)
+                // Check if the previous span was a transition.
+                var previousSpan = builder.Count > 0 ? GetLastSpan(builder[builder.Count - 1]) : null;
+                if (previousSpan != null && previousSpan.Kind == SyntaxKind.MarkupTransition)
                 {
                     var tokens = ReadWhile(
                         f => (f.Kind == SyntaxKind.Whitespace) || (f.Kind == SyntaxKind.NewLine));
@@ -1543,272 +1738,57 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     // Accept whitespace and a single newline if present
                     AcceptWhile(SyntaxKind.Whitespace);
-                    Optional(SyntaxKind.NewLine);
+                    TryAccept(SyntaxKind.NewLine);
                 }
             }
-            else if (Span.EditHandler.AcceptedCharacters == AcceptedCharactersInternal.Any)
+            else if (SpanContext.EditHandler.AcceptedCharacters == AcceptedCharactersInternal.Any)
             {
                 AcceptWhile(SyntaxKind.Whitespace);
-                Optional(SyntaxKind.NewLine);
+                TryAccept(SyntaxKind.NewLine);
             }
             PutCurrentBack();
 
             if (!complete)
             {
-                AddMarkerTokenIfNecessary();
-            }
-            Output(SpanKindInternal.Markup);
-        }
-
-        internal static bool IsValidAttributeNameToken(SyntaxToken token)
-        {
-            if (token == null)
-            {
-                return false;
+                AcceptMarkerTokenIfNecessary();
             }
 
-            // These restrictions cover most of the spec defined: http://www.w3.org/TR/html5/syntax.html#attributes-0
-            // However, it's not all of it. For instance we don't special case control characters or allow OpenAngle.
-            // It also doesn't try to exclude Razor specific features such as the @ transition. This is based on the
-            // expectation that the parser handles such scenarios prior to falling through to name resolution.
-            var tokenType = token.Kind;
-            return tokenType != SyntaxKind.Whitespace &&
-                tokenType != SyntaxKind.NewLine &&
-                tokenType != SyntaxKind.CloseAngle &&
-                tokenType != SyntaxKind.OpenAngle &&
-                tokenType != SyntaxKind.ForwardSlash &&
-                tokenType != SyntaxKind.DoubleQuote &&
-                tokenType != SyntaxKind.SingleQuote &&
-                tokenType != SyntaxKind.Equals &&
-                tokenType != SyntaxKind.Unknown;
+            builder.Add(OutputAsMarkupLiteral());
         }
 
-        public void ParseDocument()
+        public MarkupBlockSyntax ParseRazorBlock(Tuple<string, string> nestingSequences, bool caseSensitive)
         {
             if (Context == null)
             {
                 throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
             }
 
-            using (PushSpanConfig(DefaultMarkupSpan))
+            using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
+            using (PushSpanContextConfig(DefaultMarkupSpanContext))
             {
-                using (Context.Builder.StartBlock(BlockKindInternal.Markup))
-                {
-                    Span.Start = CurrentLocation;
+                var builder = pooledResult.Builder;
 
-                    ParserState = ParserState.Misc;
-                    NextToken();
-                    while (!EndOfFile)
-                    {
-                        SkipToAndParseCode(SyntaxKind.OpenAngle);
-                        ScanTagInDocumentContext();
-                    }
-                    AddMarkerTokenIfNecessary();
-                    Output(SpanKindInternal.Markup);
-                }
+                NextToken();
+                CaseSensitive = caseSensitive;
+                NestingBlock(builder, nestingSequences);
+                AcceptMarkerTokenIfNecessary();
+                builder.Add(OutputAsMarkupLiteral());
+
+                return SyntaxFactory.MarkupBlock(builder.ToList());
             }
         }
 
-        /// <summary>
-        /// Reads the content of a tag (if present) in the MarkupDocument (or MarkupSection) context,
-        /// where we don't care about maintaining a stack of tags.
-        /// </summary>
-        private void ScanTagInDocumentContext()
-        {
-            if (At(SyntaxKind.OpenAngle))
-            {
-                if (NextIs(SyntaxKind.Bang))
-                {
-                    // Checking to see if we meet the conditions of a special '!' tag: <!DOCTYPE, <![CDATA[, <!--.
-                    if (!IsBangEscape(lookahead: 1))
-                    {
-                        if (Lookahead(2)?.Kind == SyntaxKind.DoubleHyphen)
-                        {
-                            Output(SpanKindInternal.Markup);
-                        }
-
-                        AcceptAndMoveNext(); // Accept '<'
-                        BangTag();
-
-                        return;
-                    }
-
-                    // We should behave like a normal tag that has a parser escape, fall through to the normal
-                    // tag logic.
-                }
-                else if (NextIs(SyntaxKind.QuestionMark))
-                {
-                    AcceptAndMoveNext(); // Accept '<'
-                    XmlPI();
-                    return;
-                }
-
-                if (ParserState == ParserState.Content)
-                {
-                    Output(SpanKindInternal.Markup, SyntaxKind.HtmlTextLiteral);
-                }
-                else
-                {
-                    Output(SpanKindInternal.Markup);
-                }
-
-                // Start tag block
-                var tagBlock = Context.Builder.StartBlock(BlockKindInternal.Tag);
-
-                AcceptAndMoveNext(); // Accept '<'
-
-                if (!At(SyntaxKind.ForwardSlash))
-                {
-                    ParserState = ParserState.StartTag;
-                    OptionalBangEscape();
-
-                    // Parsing a start tag
-                    var scriptTag = At(SyntaxKind.Text) &&
-                                    string.Equals(CurrentToken.Content, "script", StringComparison.OrdinalIgnoreCase);
-                    Optional(SyntaxKind.Text);
-                    TagContent(); // Parse the tag, don't care about the content
-                    Optional(SyntaxKind.ForwardSlash);
-                    Optional(SyntaxKind.CloseAngle);
-
-                    ParserState = ParserState.Content;
-
-                    // If the script tag expects javascript content then we should do minimal parsing until we reach
-                    // the end script tag. Don't want to incorrectly parse a "var tag = '<input />';" as an HTML tag.
-                    if (scriptTag && !CurrentScriptTagExpectsHtml())
-                    {
-                        Output(SpanKindInternal.Markup);
-                        tagBlock.Dispose();
-
-                        SkipToEndScriptAndParseCode();
-                        return;
-                    }
-                }
-                else
-                {
-                    // Parsing an end tag
-                    // This section can accept things like: '</p  >' or '</p>' etc.
-                    ParserState = ParserState.EndTag;
-                    Optional(SyntaxKind.ForwardSlash);
-
-                    // Whitespace here is invalid (according to the spec)
-                    OptionalBangEscape();
-                    Optional(SyntaxKind.Text);
-                    Optional(SyntaxKind.Whitespace);
-                    Optional(SyntaxKind.CloseAngle);
-                    ParserState = ParserState.Content;
-                }
-
-                Output(SpanKindInternal.Markup);
-
-                // End tag block
-                tagBlock.Dispose();
-            }
-        }
-
-        private bool CurrentScriptTagExpectsHtml()
-        {
-            var blockBuilder = Context.Builder.CurrentBlock;
-
-            Debug.Assert(blockBuilder != null);
-
-            var typeAttribute = blockBuilder.Children
-                .OfType<Block>()
-                .Where(block =>
-                    block.ChunkGenerator is AttributeBlockChunkGenerator &&
-                    block.Children.Count() >= 2)
-                .FirstOrDefault(IsTypeAttribute);
-
-            if (typeAttribute != null)
-            {
-                var contentValues = typeAttribute.Children
-                    .OfType<Span>()
-                    .Where(childSpan => childSpan.ChunkGenerator is LiteralAttributeChunkGenerator)
-                    .Select(childSpan => childSpan.Content);
-
-                var scriptType = string.Concat(contentValues).Trim();
-
-                // Does not allow charset parameter (or any other parameters).
-                return string.Equals(scriptType, "text/html", StringComparison.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
-
-        private static bool IsTypeAttribute(Block block)
-        {
-
-            if (!(block.Children.First() is Span span))
-            {
-                return false;
-            }
-
-            var trimmedStartContent = span.Content.TrimStart();
-            if (trimmedStartContent.StartsWith("type", StringComparison.OrdinalIgnoreCase) &&
-                (trimmedStartContent.Length == 4 ||
-                ValidAfterTypeAttributeNameCharacters.Contains(trimmedStartContent[4])))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public void ParseRazorBlock(Tuple<string, string> nestingSequences, bool caseSensitive)
-        {
-            if (Context == null)
-            {
-                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
-            }
-
-            using (PushSpanConfig(DefaultMarkupSpan))
-            {
-                Span.Start = CurrentLocation;
-
-                using (Context.Builder.StartBlock(BlockKindInternal.Markup))
-                {
-                    NextToken();
-                    CaseSensitive = caseSensitive;
-                    if (nestingSequences.Item1 == null)
-                    {
-                        NonNestingSection(nestingSequences.Item2.Split());
-                    }
-                    else
-                    {
-                        NestingSection(nestingSequences);
-                    }
-                    AddMarkerTokenIfNecessary();
-                    Output(SpanKindInternal.Markup);
-                }
-            }
-        }
-
-        private void NonNestingSection(string[] nestingSequenceComponents)
-        {
-            do
-            {
-                SkipToAndParseCode(token => token.Kind == SyntaxKind.OpenAngle || AtEnd(nestingSequenceComponents));
-                ScanTagInDocumentContext();
-                if (!EndOfFile && AtEnd(nestingSequenceComponents))
-                {
-                    break;
-                }
-            }
-            while (!EndOfFile);
-
-            PutCurrentBack();
-        }
-
-        private void NestingSection(Tuple<string, string> nestingSequences)
+        private void NestingBlock(in SyntaxListBuilder<RazorSyntaxNode> builder, Tuple<string, string> nestingSequences)
         {
             var nesting = 1;
             while (nesting > 0 && !EndOfFile)
             {
-                SkipToAndParseCode(token =>
+                SkipToAndParseCode(builder, token =>
                     token.Kind == SyntaxKind.Text ||
                     token.Kind == SyntaxKind.OpenAngle);
                 if (At(SyntaxKind.Text))
                 {
-                    nesting += ProcessTextToken(nestingSequences, nesting);
+                    nesting += ProcessTextToken(builder, nestingSequences, nesting);
                     if (CurrentToken != null)
                     {
                         AcceptAndMoveNext();
@@ -1820,50 +1800,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
                 else
                 {
-                    ScanTagInDocumentContext();
+                    ParseTagInDocumentContext(builder);
                 }
             }
         }
 
-        private bool AtEnd(string[] nestingSequenceComponents)
-        {
-            EnsureCurrent();
-            if (string.Equals(CurrentToken.Content, nestingSequenceComponents[0], Comparison))
-            {
-                var bookmark = Context.Source.Position - CurrentToken.Content.Length;
-                try
-                {
-                    foreach (var component in nestingSequenceComponents)
-                    {
-                        if (!EndOfFile && !string.Equals(CurrentToken.Content, component, Comparison))
-                        {
-                            return false;
-                        }
-                        NextToken();
-                        while (!EndOfFile && IsSpacingToken(includeNewLines: true)(CurrentToken))
-                        {
-                            NextToken();
-                        }
-                    }
-                    return true;
-                }
-                finally
-                {
-                    Context.Source.Position = bookmark;
-                    NextToken();
-                }
-            }
-            return false;
-        }
-
-        private int ProcessTextToken(Tuple<string, string> nestingSequences, int currentNesting)
+        private int ProcessTextToken(in SyntaxListBuilder<RazorSyntaxNode> builder, Tuple<string, string> nestingSequences, int currentNesting)
         {
             for (var i = 0; i < CurrentToken.Content.Length; i++)
             {
-                var nestingDelta = HandleNestingSequence(nestingSequences.Item1, i, currentNesting, 1);
+                var nestingDelta = HandleNestingSequence(builder, nestingSequences.Item1, i, currentNesting, 1);
                 if (nestingDelta == 0)
                 {
-                    nestingDelta = HandleNestingSequence(nestingSequences.Item2, i, currentNesting, -1);
+                    nestingDelta = HandleNestingSequence(builder, nestingSequences.Item2, i, currentNesting, -1);
                 }
 
                 if (nestingDelta != 0)
@@ -1874,7 +1823,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return 0;
         }
 
-        private int HandleNestingSequence(string sequence, int position, int currentNesting, int retIfMatched)
+        private int HandleNestingSequence(in SyntaxListBuilder<RazorSyntaxNode> builder, string sequence, int position, int currentNesting, int retIfMatched)
         {
             if (sequence != null &&
                 CurrentToken.Content[position] == sequence[0] &&
@@ -1924,6 +1873,79 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
             return 0;
+        }
+
+        private Syntax.GreenNode GetLastSpan(RazorSyntaxNode node)
+        {
+            if (node == null)
+            {
+                return null;
+            }
+
+            // Find the last token of this node and return its immediate non-list parent.
+            var red = node.CreateRed();
+            var last = red.GetLastTerminal();
+            if (last == null)
+            {
+                return null;
+            }
+
+            while (last.Green.IsToken || last.Green.IsList)
+            {
+                last = last.Parent;
+            }
+
+            return last.Green;
+        }
+
+        private void DefaultMarkupSpanContext(SpanContextBuilder spanContext)
+        {
+            spanContext.ChunkGenerator = new MarkupChunkGenerator();
+            spanContext.EditHandler = new SpanEditHandler(Language.TokenizeString, AcceptedCharactersInternal.Any);
+        }
+
+        private void OtherParserBlock(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        {
+            AcceptMarkerTokenIfNecessary();
+            builder.Add(OutputAsMarkupLiteral());
+
+            RazorSyntaxNode codeBlock;
+            using (PushSpanContextConfig())
+            {
+                codeBlock = CodeParser.ParseBlock();
+            }
+
+            builder.Add(codeBlock);
+            InitializeContext(SpanContext);
+            NextToken();
+        }
+
+        protected static Func<SyntaxToken, bool> IsSpacingToken(bool includeNewLines)
+        {
+            return token => token.Kind == SyntaxKind.Whitespace || (includeNewLines && token.Kind == SyntaxKind.NewLine);
+        }
+
+        internal static bool IsValidAttributeNameToken(SyntaxToken token)
+        {
+            if (token == null)
+            {
+                return false;
+            }
+
+            // These restrictions cover most of the spec defined: http://www.w3.org/TR/html5/syntax.html#attributes-0
+            // However, it's not all of it. For instance we don't special case control characters or allow OpenAngle.
+            // It also doesn't try to exclude Razor specific features such as the @ transition. This is based on the
+            // expectation that the parser handles such scenarios prior to falling through to name resolution.
+            var tokenType = token.Kind;
+            return tokenType != SyntaxKind.Whitespace &&
+                tokenType != SyntaxKind.NewLine &&
+                tokenType != SyntaxKind.CloseAngle &&
+                tokenType != SyntaxKind.OpenAngle &&
+                tokenType != SyntaxKind.ForwardSlash &&
+                tokenType != SyntaxKind.DoubleQuote &&
+                tokenType != SyntaxKind.SingleQuote &&
+                tokenType != SyntaxKind.Equals &&
+                tokenType != SyntaxKind.Marker;
         }
     }
 }

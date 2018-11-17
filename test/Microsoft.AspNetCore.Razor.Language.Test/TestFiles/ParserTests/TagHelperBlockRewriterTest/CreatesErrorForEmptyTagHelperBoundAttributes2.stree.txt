@@ -1,7 +1,25 @@
-Markup block - Gen<None> - 25 - (0:0,0)
-    Tag block - Gen<TagHelper> - 25 - (0:0,0) - myth - mythTagHelper
-        SelfClosing - <myth bound='    true' />
-        bound - SingleQuotes
-            Code span - Gen<Expr> - [    true] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:2
-                SyntaxKind.Whitespace;[    ];
-                SyntaxKind.Text;[true];
+RazorDocument - [0..25)::25 - [<myth bound='    true' />]
+    MarkupBlock - [0..25)::25
+        MarkupTagHelperElement - [0..25)::25 - myth[SelfClosing] - mythTagHelper
+            MarkupTagHelperStartTag - [0..25)::25
+                MarkupTextLiteral - [0..5)::5 - [<myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[myth];
+                MarkupTagHelperAttribute - [5..22)::17 - bound - SingleQuotes - Bound - [ bound='    true']
+                    MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [6..11)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound];
+                    Equals;[=];
+                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [13..21)::8
+                        CSharpExpressionLiteral - [13..21)::8 - [    true] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                            Whitespace;[    ];
+                            Text;[true];
+                    MarkupTextLiteral - [21..22)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [22..25)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

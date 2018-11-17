@@ -1,25 +1,29 @@
-Markup block - Gen<None> - 19 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Markup span - Gen<Markup> - [@] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Markup span - Gen<Markup> - [@] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Expression block - Gen<Expr> - 4 - (9:0,9)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:1
-            SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (10:0,10) - Tokens:1
-            SyntaxKind.Identifier;[bar];
-    Tag block - Gen<None> - 6 - (13:0,13)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..19)::19 - [<foo>@@@@@bar</foo>]
+    MarkupBlock - [0..19)::19
+        MarkupTagBlock - [0..5)::5 - [<foo>]
+            MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[foo];
+                CloseAngle;[>];
+        MarkupEphemeralTextLiteral - [5..6)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:Any
+            Transition;[@];
+        MarkupTextLiteral - [6..7)::1 - [@] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Transition;[@];
+        MarkupEphemeralTextLiteral - [7..8)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:Any
+            Transition;[@];
+        MarkupTextLiteral - [8..9)::1 - [@] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Transition;[@];
+        CSharpCodeBlock - [9..13)::4
+            CSharpImplicitExpression - [9..13)::4
+                CSharpTransition - [9..10)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [10..13)::3
+                    CSharpCodeBlock - [10..13)::3
+                        CSharpExpressionLiteral - [10..13)::3 - [bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                            Identifier;[bar];
+        MarkupTagBlock - [13..19)::6 - [</foo>]
+            MarkupTextLiteral - [13..19)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[foo];
+                CloseAngle;[>];

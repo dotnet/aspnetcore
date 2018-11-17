@@ -5,16 +5,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class MarkupChunkGenerator : SpanChunkGenerator
     {
-        public override void GenerateChunk(Span target, ChunkGeneratorContext context)
-        {
-            //context.ChunkTreeBuilder.AddLiteralChunk(target.Content, target);
-        }
-
-        public override void Accept(ParserVisitor visitor, Span span)
-        {
-            visitor.VisitMarkupSpan(this, span);
-        }
-
         public override string ToString()
         {
             return "Markup";

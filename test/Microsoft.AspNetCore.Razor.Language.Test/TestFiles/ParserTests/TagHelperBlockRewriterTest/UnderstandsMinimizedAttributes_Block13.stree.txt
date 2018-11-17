@@ -1,19 +1,39 @@
-Markup block - Gen<None> - 34 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 34 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 31 - (2:0,2)
-            Tag block - Gen<TagHelper> - 31 - (2:0,2) - input - InputTagHelper3
-                SelfClosing - <input string-prefix-value=''/>
-                string-prefix-value - SingleQuotes
-                    Markup block - Gen<None> - 0 - (0:0,0)
-        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
-            SyntaxKind.Unknown;[];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (33:0,33) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (34:0,34) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..34)::34 - [@{<input string-prefix-value=''/>}]
+    MarkupBlock - [0..34)::34
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..34)::34
+            CSharpStatement - [0..34)::34
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..34)::33
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..33)::31
+                        MarkupBlock - [2..33)::31
+                            MarkupTagHelperElement - [2..33)::31 - input[SelfClosing] - InputTagHelper3
+                                MarkupTagHelperStartTag - [2..33)::31
+                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        Text;[input];
+                                    MarkupTagHelperAttribute - [8..31)::23 - string-prefix-value - SingleQuotes - Bound - [ string-prefix-value='']
+                                        MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                        MarkupTextLiteral - [9..28)::19 - [string-prefix-value] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Text;[string-prefix-value];
+                                        Equals;[=];
+                                        MarkupTextLiteral - [29..30)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                            SingleQuote;['];
+                                        MarkupTagHelperAttributeValue - [30..30)::0
+                                            MarkupTextLiteral - [30..30)::0 - []
+                                        MarkupTextLiteral - [30..31)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                            SingleQuote;['];
+                                    MarkupTextLiteral - [31..33)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        ForwardSlash;[/];
+                                        CloseAngle;[>];
+                        CSharpStatementLiteral - [33..33)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [33..34)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [34..34)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

@@ -9,50 +9,11 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
-    internal class SyntaxToken : SyntaxNode
+    internal class SyntaxToken : RazorSyntaxNode
     {
         internal SyntaxToken(GreenNode green, SyntaxNode parent, int position)
-            : this(green, parent, null, position)
-        {
-        }
-
-        // Temporary plumbing
-        internal SyntaxToken(GreenNode green, SyntaxNode parent, Span parentSpan, int position)
             : base(green, parent, position)
         {
-            Debug.Assert(parent == null || !parent.Green.IsList, "list cannot be a parent");
-            Debug.Assert(green == null || green.IsToken, "green must be a token");
-
-            ParentSpan = parentSpan;
-        }
-
-        // Temporary plumbing
-        internal Span ParentSpan { get; }
-
-        // Temporary plumbing
-        internal SourceLocation Start
-        {
-            get
-            {
-                if (ParentSpan == null)
-                {
-                    return SourceLocation.Undefined;
-                }
-
-                var tracker = new SourceLocationTracker(ParentSpan.Start);
-                for (var i = 0; i < ParentSpan.Tokens.Count; i++)
-                {
-                    var token = ParentSpan.Tokens[i];
-                    if (object.ReferenceEquals(this, token))
-                    {
-                        break;
-                    }
-
-                    tracker.UpdateLocation(token.Content);
-                }
-
-                return tracker.CurrentLocation;
-            }
         }
 
         internal new InternalSyntax.SyntaxToken Green => (InternalSyntax.SyntaxToken)base.Green;
@@ -107,32 +68,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public override SyntaxTriviaList GetLeadingTrivia()
         {
-            if (Green.LeadingTrivia == null)
+            var leading = Green.GetLeadingTrivia();
+            if (leading == null)
             {
                 return default(SyntaxTriviaList);
             }
 
-            return new SyntaxTriviaList(Green.LeadingTrivia.CreateRed(this, Position), Position);
+            return new SyntaxTriviaList(leading.CreateRed(this, Position), Position);
         }
 
         public override SyntaxTriviaList GetTrailingTrivia()
         {
-            var trailingGreen = Green.TrailingTrivia;
-            if (trailingGreen == null)
+            var trailing = Green.GetTrailingTrivia();
+            if (trailing == null)
             {
                 return default(SyntaxTriviaList);
             }
 
-            var leading = Green.LeadingTrivia;
-            int index = 0;
+            var leading = Green.GetLeadingTrivia();
+            var index = 0;
             if (leading != null)
             {
                 index = leading.IsList ? leading.SlotCount : 1;
             }
             int trailingPosition = Position + FullWidth;
-            trailingPosition -= trailingGreen.FullWidth;
+            trailingPosition -= trailing.FullWidth;
 
-            return new SyntaxTriviaList(trailingGreen.CreateRed(this, trailingPosition), trailingPosition, index);
+            return new SyntaxTriviaList(trailing.CreateRed(this, trailingPosition), trailingPosition, index);
         }
 
         public override string ToString()

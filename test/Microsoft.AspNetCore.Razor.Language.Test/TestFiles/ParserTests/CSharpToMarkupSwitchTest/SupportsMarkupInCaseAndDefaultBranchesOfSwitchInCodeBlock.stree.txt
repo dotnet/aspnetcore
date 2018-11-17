@@ -1,146 +1,151 @@
-Statement block - Gen<None> - 236 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [ switch(foo) {LF    case 0:LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:14
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[switch];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[    ];
-        SyntaxKind.Keyword;[case];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.IntegerLiteral;[0];
-        SyntaxKind.Colon;[:];
-        SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 20 - (30:2,0)
-        Markup span - Gen<Markup> - [        ] - SpanEditHandler;Accepts:Any - (30:2,0) - Tokens:1
-            SyntaxKind.Whitespace;[        ];
-        Tag block - Gen<None> - 3 - (38:2,8)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (38:2,8) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (41:2,11) - Tokens:1
-            SyntaxKind.Text;[Foo];
-        Tag block - Gen<None> - 4 - (44:2,14)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (44:2,14) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (48:2,18) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-    Code span - Gen<Stmt> - [        break;LF    case 1:LF] - SpanEditHandler;Accepts:Any - (50:3,0) - Tokens:10
-        SyntaxKind.Whitespace;[        ];
-        SyntaxKind.Keyword;[break];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[    ];
-        SyntaxKind.Keyword;[case];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.IntegerLiteral;[1];
-        SyntaxKind.Colon;[:];
-        SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 20 - (79:5,0)
-        Markup span - Gen<Markup> - [        ] - SpanEditHandler;Accepts:Any - (79:5,0) - Tokens:1
-            SyntaxKind.Whitespace;[        ];
-        Tag block - Gen<None> - 3 - (87:5,8)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (87:5,8) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Bar] - SpanEditHandler;Accepts:Any - (90:5,11) - Tokens:1
-            SyntaxKind.Text;[Bar];
-        Tag block - Gen<None> - 4 - (93:5,14)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (93:5,14) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (97:5,18) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-    Code span - Gen<Stmt> - [        return;LF    case 2:LF        {LF] - SpanEditHandler;Accepts:Any - (99:6,0) - Tokens:13
-        SyntaxKind.Whitespace;[        ];
-        SyntaxKind.Keyword;[return];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[    ];
-        SyntaxKind.Keyword;[case];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.IntegerLiteral;[2];
-        SyntaxKind.Colon;[:];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[        ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 24 - (140:9,0)
-        Markup span - Gen<Markup> - [            ] - SpanEditHandler;Accepts:Any - (140:9,0) - Tokens:1
-            SyntaxKind.Whitespace;[            ];
-        Tag block - Gen<None> - 3 - (152:9,12)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (152:9,12) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Baz] - SpanEditHandler;Accepts:Any - (155:9,15) - Tokens:1
-            SyntaxKind.Text;[Baz];
-        Tag block - Gen<None> - 4 - (158:9,18)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (158:9,18) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (162:9,22) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 24 - (164:10,0)
-        Markup span - Gen<Markup> - [            ] - SpanEditHandler;Accepts:Any - (164:10,0) - Tokens:1
-            SyntaxKind.Whitespace;[            ];
-        Tag block - Gen<None> - 3 - (176:10,12)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (176:10,12) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Boz] - SpanEditHandler;Accepts:Any - (179:10,15) - Tokens:1
-            SyntaxKind.Text;[Boz];
-        Tag block - Gen<None> - 4 - (182:10,18)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (182:10,18) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (186:10,22) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-    Code span - Gen<Stmt> - [        }LF    default:LF] - SpanEditHandler;Accepts:Any - (188:11,0) - Tokens:7
-        SyntaxKind.Whitespace;[        ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[    ];
-        SyntaxKind.Keyword;[default];
-        SyntaxKind.Colon;[:];
-        SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 20 - (213:13,0)
-        Markup span - Gen<Markup> - [        ] - SpanEditHandler;Accepts:Any - (213:13,0) - Tokens:1
-            SyntaxKind.Whitespace;[        ];
-        Tag block - Gen<None> - 3 - (221:13,8)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (221:13,8) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Biz] - SpanEditHandler;Accepts:Any - (224:13,11) - Tokens:1
-            SyntaxKind.Text;[Biz];
-        Tag block - Gen<None> - 4 - (227:13,14)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (227:13,14) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (231:13,18) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-    Code span - Gen<Stmt> - [} ] - SpanEditHandler;Accepts:Any - (233:14,0) - Tokens:2
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (235:14,2) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..236)::236 - [{ switch(foo) {LF    case 0:LF        <p>Foo</p>LF        break;LF    case 1:LF        <p>Bar</p>LF        return;LF    case 2:LF        {LF            <p>Baz</p>LF            <p>Boz</p>LF        }LF    default:LF        <p>Biz</p>LF} }]
+    CSharpStatement - [0..236)::236
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..236)::236
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..235)::234
+                CSharpStatementLiteral - [1..30)::29 - [ switch(foo) {LF    case 0:LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Whitespace;[ ];
+                    Keyword;[switch];
+                    LeftParenthesis;[(];
+                    Identifier;[foo];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Keyword;[case];
+                    Whitespace;[ ];
+                    IntegerLiteral;[0];
+                    Colon;[:];
+                    NewLine;[LF];
+                MarkupBlock - [30..50)::20
+                    MarkupTextLiteral - [30..38)::8 - [        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[        ];
+                    MarkupTagBlock - [38..41)::3 - [<p>]
+                        MarkupTextLiteral - [38..41)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [41..44)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Foo];
+                    MarkupTagBlock - [44..48)::4 - [</p>]
+                        MarkupTextLiteral - [44..48)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [48..50)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        NewLine;[LF];
+                CSharpStatementLiteral - [50..79)::29 - [        break;LF    case 1:LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Whitespace;[        ];
+                    Keyword;[break];
+                    Semicolon;[;];
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Keyword;[case];
+                    Whitespace;[ ];
+                    IntegerLiteral;[1];
+                    Colon;[:];
+                    NewLine;[LF];
+                MarkupBlock - [79..99)::20
+                    MarkupTextLiteral - [79..87)::8 - [        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[        ];
+                    MarkupTagBlock - [87..90)::3 - [<p>]
+                        MarkupTextLiteral - [87..90)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [90..93)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Bar];
+                    MarkupTagBlock - [93..97)::4 - [</p>]
+                        MarkupTextLiteral - [93..97)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [97..99)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        NewLine;[LF];
+                CSharpStatementLiteral - [99..140)::41 - [        return;LF    case 2:LF        {LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Whitespace;[        ];
+                    Keyword;[return];
+                    Semicolon;[;];
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Keyword;[case];
+                    Whitespace;[ ];
+                    IntegerLiteral;[2];
+                    Colon;[:];
+                    NewLine;[LF];
+                    Whitespace;[        ];
+                    LeftBrace;[{];
+                    NewLine;[LF];
+                MarkupBlock - [140..164)::24
+                    MarkupTextLiteral - [140..152)::12 - [            ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[            ];
+                    MarkupTagBlock - [152..155)::3 - [<p>]
+                        MarkupTextLiteral - [152..155)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [155..158)::3 - [Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Baz];
+                    MarkupTagBlock - [158..162)::4 - [</p>]
+                        MarkupTextLiteral - [158..162)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [162..164)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        NewLine;[LF];
+                MarkupBlock - [164..188)::24
+                    MarkupTextLiteral - [164..176)::12 - [            ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[            ];
+                    MarkupTagBlock - [176..179)::3 - [<p>]
+                        MarkupTextLiteral - [176..179)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [179..182)::3 - [Boz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Boz];
+                    MarkupTagBlock - [182..186)::4 - [</p>]
+                        MarkupTextLiteral - [182..186)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [186..188)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        NewLine;[LF];
+                CSharpStatementLiteral - [188..213)::25 - [        }LF    default:LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Whitespace;[        ];
+                    RightBrace;[}];
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Keyword;[default];
+                    Colon;[:];
+                    NewLine;[LF];
+                MarkupBlock - [213..233)::20
+                    MarkupTextLiteral - [213..221)::8 - [        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[        ];
+                    MarkupTagBlock - [221..224)::3 - [<p>]
+                        MarkupTextLiteral - [221..224)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [224..227)::3 - [Biz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Biz];
+                    MarkupTagBlock - [227..231)::4 - [</p>]
+                        MarkupTextLiteral - [227..231)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [231..233)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        NewLine;[LF];
+                CSharpStatementLiteral - [233..235)::2 - [} ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    RightBrace;[}];
+                    Whitespace;[ ];
+            RazorMetaCode - [235..236)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

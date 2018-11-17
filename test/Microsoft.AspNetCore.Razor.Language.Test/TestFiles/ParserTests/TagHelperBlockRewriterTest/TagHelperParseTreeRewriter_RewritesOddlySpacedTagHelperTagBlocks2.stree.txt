@@ -1,28 +1,70 @@
-Markup block - Gen<None> - 77 - (0:0,0)
-    Tag block - Gen<TagHelper> - 77 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p      class="     foo"    style="   color :  red  ;   "    > ... </p>
-        class - DoubleQuotes
-            Markup span - Gen<Markup> - [     foo] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:2
-                SyntaxKind.Whitespace;[     ];
-                SyntaxKind.Text;[foo];
-        style - DoubleQuotes
-            Markup block - Gen<None> - 21 - (35:0,35)
-                Markup span - Gen<Markup> - [   color] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:2
-                    SyntaxKind.Whitespace;[   ];
-                    SyntaxKind.Text;[color];
-                Markup span - Gen<Markup> - [ :] - SpanEditHandler;Accepts:Any - (43:0,43) - Tokens:2
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[:];
-                Markup span - Gen<Markup> - [  red] - SpanEditHandler;Accepts:Any - (45:0,45) - Tokens:2
-                    SyntaxKind.Whitespace;[  ];
-                    SyntaxKind.Text;[red];
-                Markup span - Gen<Markup> - [  ;] - SpanEditHandler;Accepts:Any - (50:0,50) - Tokens:2
-                    SyntaxKind.Whitespace;[  ];
-                    SyntaxKind.Text;[;];
-                Markup span - Gen<Markup> - [   ] - SpanEditHandler;Accepts:Any - (53:0,53) - Tokens:1
-                    SyntaxKind.Whitespace;[   ];
-        SyntaxKind.HtmlTextLiteral - [Hello World] - [62..73) - FullWidth: 11 - Slots: 1
-            SyntaxKind.List - [Hello World] - [62..73) - FullWidth: 11 - Slots: 3
-                SyntaxKind.Text;[Hello];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[World];
+RazorDocument - [0..77)::77 - [<p      class="     foo"    style="   color :  red  ;   "    >Hello World</p>]
+    MarkupBlock - [0..77)::77
+        MarkupTagHelperElement - [0..77)::77 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..62)::62
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..24)::22 - class - DoubleQuotes - Unbound - [      class="     foo"]
+                    MarkupTextLiteral - [2..8)::6 - [      ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[      ];
+                    MarkupTextLiteral - [8..13)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [14..15)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [15..23)::8
+                        MarkupLiteralAttributeValue - [15..23)::8 - [     foo]
+                            MarkupTextLiteral - [15..20)::5 - [     ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[     ];
+                            MarkupTextLiteral - [20..23)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[foo];
+                    MarkupTextLiteral - [23..24)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTagHelperAttribute - [24..57)::33 - style - DoubleQuotes - Unbound - [    style="   color :  red  ;   "]
+                    MarkupTextLiteral - [24..28)::4 - [    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[    ];
+                    MarkupTextLiteral - [28..33)::5 - [style] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[style];
+                    Equals;[=];
+                    MarkupTextLiteral - [34..35)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [35..56)::21
+                        MarkupLiteralAttributeValue - [35..43)::8 - [   color]
+                            MarkupTextLiteral - [35..38)::3 - [   ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[   ];
+                            MarkupTextLiteral - [38..43)::5 - [color] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[color];
+                        MarkupLiteralAttributeValue - [43..45)::2 - [ :]
+                            MarkupTextLiteral - [43..44)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                            MarkupTextLiteral - [44..45)::1 - [:] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[:];
+                        MarkupLiteralAttributeValue - [45..50)::5 - [  red]
+                            MarkupTextLiteral - [45..47)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[  ];
+                            MarkupTextLiteral - [47..50)::3 - [red] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[red];
+                        MarkupLiteralAttributeValue - [50..53)::3 - [  ;]
+                            MarkupTextLiteral - [50..52)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[  ];
+                            MarkupTextLiteral - [52..53)::1 - [;] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[;];
+                        MarkupLiteralAttributeValue - [53..56)::3 - [   ]
+                            MarkupTextLiteral - [53..56)::3 - [   ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[   ];
+                    MarkupTextLiteral - [56..57)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [57..62)::5 - [    >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[    ];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [62..73)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Hello];
+                Whitespace;[ ];
+                Text;[World];
+            MarkupTagHelperEndTag - [73..77)::4
+                MarkupTextLiteral - [73..77)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

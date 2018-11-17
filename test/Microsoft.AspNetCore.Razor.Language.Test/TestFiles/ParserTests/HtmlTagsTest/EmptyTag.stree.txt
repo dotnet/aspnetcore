@@ -1,12 +1,12 @@
-Markup block - Gen<None> - 6 - (0:0,0)
-    Tag block - Gen<None> - 2 - (0:0,0)
-        Markup span - Gen<Markup> - [<>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 3 - (2:0,2)
-        Markup span - Gen<Markup> - [</>] - SpanEditHandler;Accepts:None - (2:0,2) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
+MarkupBlock - [0..6)::6 - [<></> ]
+    MarkupTagBlock - [0..2)::2 - [<>]
+        MarkupTextLiteral - [0..2)::2 - [<>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            CloseAngle;[>];
+    MarkupTagBlock - [2..5)::3 - [</>]
+        MarkupTextLiteral - [2..5)::3 - [</>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            CloseAngle;[>];
+    MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+        Whitespace;[ ];

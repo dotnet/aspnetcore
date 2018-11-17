@@ -1,10 +1,16 @@
-Directive block - Gen<Directive:{functions;CodeBlock;Unrestricted} [RZ1006(10:0,10 [1] )]> - 16 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [functions] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.Identifier;[functions];
-    MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (10:0,10) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [LFfoo] - CodeBlockEditHandler;Accepts:Any;CodeBlock - (11:0,11) - Tokens:2
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Identifier;[foo];
+CSharpCodeBlock - [0..16)::16 - [@functions{LFfoo]
+    RazorDirective - [0..16)::16 - Directive:{functions;CodeBlock;Unrestricted} [RZ1006(10:0,10 [1] )]
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        RazorDirectiveBody - [1..16)::15
+            RazorMetaCode - [1..10)::9 - Gen<None> - SpanEditHandler;Accepts:None
+                Identifier;[functions];
+            CSharpCodeBlock - [10..16)::6
+                RazorMetaCode - [10..11)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd
+                    LeftBrace;[{];
+                CSharpCodeBlock - [11..16)::5
+                    CSharpStatementLiteral - [11..16)::5 - [LFfoo] - Gen<Stmt> - CodeBlockEditHandler;Accepts:Any;CodeBlock
+                        NewLine;[LF];
+                        Identifier;[foo];
+                RazorMetaCode - [16..16)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                    RightBrace;[<Missing>];

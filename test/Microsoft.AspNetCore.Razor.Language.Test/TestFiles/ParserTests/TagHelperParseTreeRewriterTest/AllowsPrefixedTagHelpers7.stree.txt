@@ -1,18 +1,19 @@
-Markup block - Gen<None> - 21 - (0:0,0)
-    Tag block - Gen<None> - 10 - (0:0,0)
-        Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-            SyntaxKind.OpenAngle;[<];
-        MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Bang;[!];
-        Markup span - Gen<Markup> - [th:myth>] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:2
-            SyntaxKind.Text;[th:myth];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 11 - (10:0,10)
-        Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-        MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:1
-            SyntaxKind.Bang;[!];
-        Markup span - Gen<Markup> - [th:myth>] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:2
-            SyntaxKind.Text;[th:myth];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..21)::21 - [<!th:myth></!th:myth>]
+    MarkupBlock - [0..21)::21
+        MarkupTagBlock - [0..10)::10 - [<!th:myth>]
+            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [2..10)::8 - [th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[th:myth];
+                CloseAngle;[>];
+        MarkupTagBlock - [10..21)::11 - [</!th:myth>]
+            MarkupTextLiteral - [10..12)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+            RazorMetaCode - [12..13)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [13..21)::8 - [th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[th:myth];
+                CloseAngle;[>];

@@ -1,7 +1,7 @@
-Markup block - Gen<None> - 7 - (0:0,0)
-    Tag block - Gen<None> - 7 - (0:0,0)
-        Transition span - Gen<None> - [<text/>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[text];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..7)::7 - [<text/>]
+    MarkupTagBlock - [0..7)::7 - [<text/>]
+        MarkupTransition - [0..7)::7 - Gen<None> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[text];
+            ForwardSlash;[/];
+            CloseAngle;[>];

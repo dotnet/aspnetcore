@@ -1,30 +1,30 @@
-Statement block - Gen<None> - 65 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Stmt> - [try { someMethod(); } catch(Exception) when { anotherMethod(); }] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:26
-        SyntaxKind.Keyword;[try];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[someMethod];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[catch];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[Exception];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[when];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[anotherMethod];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..65)::65 - [@try { someMethod(); } catch(Exception) when { anotherMethod(); }]
+    CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    CSharpStatementLiteral - [1..65)::64 - [try { someMethod(); } catch(Exception) when { anotherMethod(); }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[try];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[someMethod];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[catch];
+        LeftParenthesis;[(];
+        Identifier;[Exception];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        Keyword;[when];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[anotherMethod];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

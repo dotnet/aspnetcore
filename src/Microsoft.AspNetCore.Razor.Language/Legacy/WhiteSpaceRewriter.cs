@@ -1,41 +1,70 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class WhiteSpaceRewriter : MarkupRewriter
+    internal class WhitespaceRewriter : SyntaxRewriter
     {
-        protected override bool CanRewrite(Block block)
+        public override SyntaxNode Visit(SyntaxNode node)
         {
-            return block.Type == BlockKindInternal.Expression && Parent != null;
+            if (node == null)
+            {
+                return base.Visit(node);
+            }
+
+            var children = node.ChildNodes();
+            for (var i = 0; i < children.Count; i++)
+            {
+                var child = children[i];
+                if (child is CSharpCodeBlockSyntax codeBlock &&
+                    TryRewriteWhitespace(codeBlock, out var rewritten, out var whitespaceLiteral))
+                {
+                    // Replace the existing code block with the whitespace literal
+                    // followed by the rewritten code block (with the code whitespace removed).
+                    node = node.ReplaceNode(codeBlock, new SyntaxNode[] { whitespaceLiteral, rewritten });
+
+                    // Since we replaced node, its children are different. Update our collection.
+                    children = node.ChildNodes();
+                }
+            }
+
+            return base.Visit(node);
         }
 
-        protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)
+        private bool TryRewriteWhitespace(CSharpCodeBlockSyntax codeBlock, out CSharpCodeBlockSyntax rewritten, out SyntaxNode whitespaceLiteral)
         {
-            var newBlock = new BlockBuilder(block);
-            newBlock.Children.Clear();
-            var ws = block.Children.FirstOrDefault() as Span;
-            IEnumerable<SyntaxTreeNode> newNodes = block.Children;
-            if (ws.Content.All(char.IsWhiteSpace))
-            {
-                // Add this node to the parent
-                var builder = new SpanBuilder(ws);
-                builder.ClearTokens();
-                FillSpan(builder, ws.Start, ws.Content);
-                parent.Children.Add(builder.Build());
+            // Rewrite any whitespace represented as code at the start of a line preceding an expression block.
+            // We want it to be rendered as Markup.
 
-                // Remove the old whitespace node
-                newNodes = block.Children.Skip(1);
+            rewritten = null;
+            whitespaceLiteral = null;
+            var children = codeBlock.ChildNodes();
+            if (children.Count < 2)
+            {
+                return false;
             }
 
-            foreach (SyntaxTreeNode node in newNodes)
+            if (children[0] is CSharpStatementLiteralSyntax literal &&
+                (children[1] is CSharpExplicitExpressionSyntax || children[1] is CSharpImplicitExpressionSyntax))
             {
-                newBlock.Children.Add(node);
+                var containsNonWhitespace = literal.DescendantNodes()
+                    .Where(n => n.IsToken)
+                    .Cast<SyntaxToken>()
+                    .Any(t => !string.IsNullOrWhiteSpace(t.Content));
+
+                if (!containsNonWhitespace)
+                {
+                    // Literal node is all whitespace. Can rewrite.
+                    whitespaceLiteral = SyntaxFactory.MarkupTextLiteral(literal.LiteralTokens);
+                    rewritten = codeBlock.ReplaceNode(literal, newNode: null);
+                    return true;
+                }
             }
-            return newBlock.Build();
+
+            return false;
         }
     }
 }

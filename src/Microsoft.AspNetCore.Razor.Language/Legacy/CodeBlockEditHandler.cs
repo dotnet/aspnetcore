@@ -4,17 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CodeBlockEditHandler : SpanEditHandler
     {
-        public CodeBlockEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer) : base(tokenizer)
+        public CodeBlockEditHandler(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer) : base(tokenizer)
         {
         }
 
-        protected override PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
+        protected override PartialParseResultInternal CanAcceptChange(SyntaxNode target, SourceChange change)
         {
             if (IsAcceptableDeletion(target, change))
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool IsAcceptableReplacement(Span target, SourceChange change)
+        internal static bool IsAcceptableReplacement(SyntaxNode target, SourceChange change)
         {
             if (!change.IsReplace)
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool IsAcceptableDeletion(Span target, SourceChange change)
+        internal static bool IsAcceptableDeletion(SyntaxNode target, SourceChange change)
         {
             if (!change.IsDelete)
             {
@@ -72,11 +72,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal static bool ModifiesInvalidContent(Span target, SourceChange change)
+        internal static bool ModifiesInvalidContent(SyntaxNode target, SourceChange change)
         {
-            var relativePosition = change.Span.AbsoluteIndex - target.Start.AbsoluteIndex;
+            var relativePosition = change.Span.AbsoluteIndex - target.Position;
 
-            if (target.Content.IndexOfAny(new[] { '{', '}' }, relativePosition, change.Span.Length) >= 0)
+            if (target.GetContent().IndexOfAny(new[] { '{', '}' }, relativePosition, change.Span.Length) >= 0)
             {
                 return true;
             }

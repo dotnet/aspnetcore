@@ -1,9 +1,26 @@
-Markup block - Gen<None> - 17 - (0:0,0)
-    Tag block - Gen<TagHelper> - 17 - (0:0,0) - p - PTagHelper
-        StartTagAndEndTag - <p> ... </p>
-        SyntaxKind.HtmlTextLiteral - [LF] - [3..5) - FullWidth: 2 - Slots: 1
-            SyntaxKind.NewLine;[LF];
-        Tag block - Gen<TagHelper> - 6 - (5:1,0) - br - BRTagHelper
-            SelfClosing - <br />
-        SyntaxKind.HtmlTextLiteral - [LF] - [11..13) - FullWidth: 2 - Slots: 1
-            SyntaxKind.NewLine;[LF];
+RazorDocument - [0..17)::17 - [<p>LF<br />LF</p>]
+    MarkupBlock - [0..17)::17
+        MarkupTagHelperElement - [0..17)::17 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [3..5)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+            MarkupTagHelperElement - [5..11)::6 - br[SelfClosing] - BRTagHelper
+                MarkupTagHelperStartTag - [5..11)::6
+                    MarkupTextLiteral - [5..11)::6 - [<br />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[br];
+                        Whitespace;[ ];
+                        ForwardSlash;[/];
+                        CloseAngle;[>];
+            MarkupTextLiteral - [11..13)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+            MarkupTagHelperEndTag - [13..17)::4
+                MarkupTextLiteral - [13..17)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

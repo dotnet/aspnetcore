@@ -1,25 +1,28 @@
-Expression block - Gen<Expr> - 34 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Expr> - [foo.bar[4 * (8 + 7)]["fo\"o"].baz] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:21
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.LeftBracket;[[];
-        SyntaxKind.IntegerLiteral;[4];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Star;[*];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.IntegerLiteral;[8];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Plus;[+];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.IntegerLiteral;[7];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.RightBracket;[]];
-        SyntaxKind.LeftBracket;[[];
-        SyntaxKind.StringLiteral;["fo\"o"];
-        SyntaxKind.RightBracket;[]];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[baz];
+CSharpCodeBlock - [0..34)::34 - [@foo.bar[4 * (8 + 7)]["fo\"o"].baz]
+    CSharpImplicitExpression - [0..34)::34
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpImplicitExpressionBody - [1..34)::33
+            CSharpCodeBlock - [1..34)::33
+                CSharpExpressionLiteral - [1..34)::33 - [foo.bar[4 * (8 + 7)]["fo\"o"].baz] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    Identifier;[foo];
+                    Dot;[.];
+                    Identifier;[bar];
+                    LeftBracket;[[];
+                    IntegerLiteral;[4];
+                    Whitespace;[ ];
+                    Star;[*];
+                    Whitespace;[ ];
+                    LeftParenthesis;[(];
+                    IntegerLiteral;[8];
+                    Whitespace;[ ];
+                    Plus;[+];
+                    Whitespace;[ ];
+                    IntegerLiteral;[7];
+                    RightParenthesis;[)];
+                    RightBracket;[]];
+                    LeftBracket;[[];
+                    StringLiteral;["fo\"o"];
+                    RightBracket;[]];
+                    Dot;[.];
+                    Identifier;[baz];

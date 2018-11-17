@@ -1,20 +1,31 @@
-Markup block - Gen<None> - 26 - (0:0,0)
-    Tag block - Gen<TagHelper> - 17 - (0:0,0) - strong - strongtaghelper
-        StartTagAndEndTag - <strong> ... </strong>
-    Tag block - Gen<None> - 4 - (17:0,17)
-        Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
-            SyntaxKind.OpenAngle;[<];
-        MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (18:0,18) - Tokens:1
-            SyntaxKind.Bang;[!];
-        Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:2
-            SyntaxKind.Text;[p];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 5 - (21:0,21)
-        Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-        MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-            SyntaxKind.Bang;[!];
-        Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:2
-            SyntaxKind.Text;[p];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..26)::26 - [<strong></strong><!p></!p>]
+    MarkupBlock - [0..26)::26
+        MarkupTagHelperElement - [0..17)::17 - strong[StartTagAndEndTag] - strongtaghelper
+            MarkupTagHelperStartTag - [0..8)::8
+                MarkupTextLiteral - [0..8)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [8..17)::9
+                MarkupTextLiteral - [8..17)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
+        MarkupTagBlock - [17..21)::4 - [<!p>]
+            MarkupTextLiteral - [17..18)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+            RazorMetaCode - [18..19)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [19..21)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTagBlock - [21..26)::5 - [</!p>]
+            MarkupTextLiteral - [21..23)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+            RazorMetaCode - [23..24)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [24..26)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[p];
+                CloseAngle;[>];

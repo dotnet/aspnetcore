@@ -1,0 +1,33 @@
+RazorDocument - [0..28)::28 - [@functions { foo(); bar(); }]
+    MarkupBlock - [0..28)::28
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..28)::28
+            RazorDirective - [0..28)::28 - Directive:{functions;CodeBlock;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..28)::27
+                    RazorMetaCode - [1..10)::9 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[functions];
+                    CSharpCodeBlock - [10..28)::18
+                        MarkupTextLiteral - [10..11)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                            Whitespace;[ ];
+                        RazorMetaCode - [11..12)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
+                            LeftBrace;[{];
+                        CSharpCodeBlock - [12..27)::15
+                            CSharpStatementLiteral - [12..27)::15 - [ foo(); bar(); ] - Gen<Stmt> - CodeBlockEditHandler;Accepts:Any;CodeBlock
+                                Whitespace;[ ];
+                                Identifier;[foo];
+                                LeftParenthesis;[(];
+                                RightParenthesis;[)];
+                                Semicolon;[;];
+                                Whitespace;[ ];
+                                Identifier;[bar];
+                                LeftParenthesis;[(];
+                                RightParenthesis;[)];
+                                Semicolon;[;];
+                                Whitespace;[ ];
+                        RazorMetaCode - [27..28)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            RightBrace;[}];
+        MarkupTextLiteral - [28..28)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

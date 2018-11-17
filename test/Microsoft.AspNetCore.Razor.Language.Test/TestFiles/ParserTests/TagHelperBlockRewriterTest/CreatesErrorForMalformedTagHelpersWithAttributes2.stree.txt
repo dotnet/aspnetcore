@@ -1,6 +1,27 @@
-Markup block - Gen<None> - 24 - (0:0,0)
-    Tag block - Gen<TagHelper> - 24 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p bar="false"" <strong>
-        bar - DoubleQuotes
-            Markup span - Gen<Markup> - [false] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:1
-                SyntaxKind.Text;[false];
+RazorDocument - [0..24)::24 - [<p bar="false"" <strong>]
+    MarkupBlock - [0..24)::24
+        MarkupTagHelperElement - [0..24)::24 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..24)::24
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..14)::12 - bar - DoubleQuotes - Unbound - [ bar="false"]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..6)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bar];
+                    Equals;[=];
+                    MarkupTextLiteral - [7..8)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [8..13)::5
+                        MarkupLiteralAttributeValue - [8..13)::5 - [false]
+                            MarkupTextLiteral - [8..13)::5 - [false] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[false];
+                    MarkupTextLiteral - [13..14)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [14..24)::10 - [" <strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    DoubleQuote;["];
+                    Whitespace;[ ];
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];

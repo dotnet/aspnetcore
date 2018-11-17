@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override SyntaxToken CreateMarkerToken()
         {
-            return SyntaxFactory.Token(SyntaxKind.Unknown, string.Empty);
+            return SyntaxFactory.Token(SyntaxKind.Marker, string.Empty);
         }
 
         public override SyntaxKind GetKnownTokenType(KnownTokenType type)
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return SyntaxKind.Keyword;
                 case KnownTokenType.NewLine:
                     return SyntaxKind.NewLine;
-                case KnownTokenType.WhiteSpace:
+                case KnownTokenType.Whitespace:
                     return SyntaxKind.Whitespace;
                 case KnownTokenType.Transition:
                     return SyntaxKind.Transition;
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 case KnownTokenType.CommentBody:
                     return SyntaxKind.RazorCommentLiteral;
                 default:
-                    return SyntaxKind.Unknown;
+                    return SyntaxKind.Marker;
             }
         }
 
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return SyntaxKind.LessThan;
                 default:
                     Debug.Fail("FlipBracket must be called with a bracket character");
-                    return SyntaxKind.Unknown;
+                    return SyntaxKind.Marker;
             }
         }
 

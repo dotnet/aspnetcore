@@ -1,6 +1,28 @@
-Markup block - Gen<None> - 18 - (0:0,0)
-    Tag block - Gen<TagHelper> - 18 - (0:0,0) - p - pTagHelper
-        StartTagAndEndTag - <p class="btn"> ... </p
-        class - DoubleQuotes
-            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-                SyntaxKind.Text;[btn];
+RazorDocument - [0..18)::18 - [<p class="btn"></p]
+    MarkupBlock - [0..18)::18
+        MarkupTagHelperElement - [0..18)::18 - p[StartTagAndEndTag] - pTagHelper
+            MarkupTagHelperStartTag - [0..15)::15
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..14)::12 - class - DoubleQuotes - Unbound - [ class="btn"]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [10..13)::3
+                        MarkupLiteralAttributeValue - [10..13)::3 - [btn]
+                            MarkupTextLiteral - [10..13)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[btn];
+                    MarkupTextLiteral - [13..14)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [15..18)::3
+                MarkupTextLiteral - [15..18)::3 - [</p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];

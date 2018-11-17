@@ -1,41 +1,46 @@
-Statement block - Gen<None> - 49 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [ if (true) { var val = @x; if (val != 3) { } } ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:35
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Keyword;[true];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[val];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Transition;[@];
-        SyntaxKind.Identifier;[x];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[val];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.NotEqual;[!=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.IntegerLiteral;[3];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (48:0,48) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..49)::49 - [{ if (true) { var val = @x; if (val != 3) { } } }]
+    CSharpStatement - [0..49)::49
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..49)::49
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..48)::47
+                CSharpStatementLiteral - [1..48)::47 - [ if (true) { var val = @x; if (val != 3) { } } ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Whitespace;[ ];
+                    Keyword;[if];
+                    Whitespace;[ ];
+                    LeftParenthesis;[(];
+                    Keyword;[true];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    Whitespace;[ ];
+                    Identifier;[var];
+                    Whitespace;[ ];
+                    Identifier;[val];
+                    Whitespace;[ ];
+                    Assign;[=];
+                    Whitespace;[ ];
+                    Transition;[@];
+                    Identifier;[x];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+                    Keyword;[if];
+                    Whitespace;[ ];
+                    LeftParenthesis;[(];
+                    Identifier;[val];
+                    Whitespace;[ ];
+                    NotEqual;[!=];
+                    Whitespace;[ ];
+                    IntegerLiteral;[3];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    Whitespace;[ ];
+                    RightBrace;[}];
+                    Whitespace;[ ];
+                    RightBrace;[}];
+                    Whitespace;[ ];
+            RazorMetaCode - [48..49)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

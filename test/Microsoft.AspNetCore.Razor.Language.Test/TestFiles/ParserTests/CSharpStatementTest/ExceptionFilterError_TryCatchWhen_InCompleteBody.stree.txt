@@ -1,27 +1,27 @@
-Statement block - Gen<None> - 53 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Stmt> - [try { someMethod(); } catch(Exception) when (true) {] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:23
-        SyntaxKind.Keyword;[try];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[someMethod];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[catch];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[Exception];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[when];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Keyword;[true];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
+CSharpCodeBlock - [0..53)::53 - [@try { someMethod(); } catch(Exception) when (true) {]
+    CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    CSharpStatementLiteral - [1..53)::52 - [try { someMethod(); } catch(Exception) when (true) {] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[try];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[someMethod];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[catch];
+        LeftParenthesis;[(];
+        Identifier;[Exception];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        Keyword;[when];
+        Whitespace;[ ];
+        LeftParenthesis;[(];
+        Keyword;[true];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];

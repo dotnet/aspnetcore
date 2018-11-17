@@ -1,42 +1,53 @@
-Markup block - Gen<None> - 41 - (0:0,0)
-    Tag block - Gen<None> - 36 - (0:0,0)
-        Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-            SyntaxKind.OpenAngle;[<];
-        MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Bang;[!];
-        Markup span - Gen<Markup> - [p] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-            SyntaxKind.Text;[p];
-        Markup block - Gen<Attr:class, class='@(3:0,3),'@(34:0,34)> - 32 - (3:0,3)
-            Markup span - Gen<None> - [ class='] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[class];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.SingleQuote;['];
-            Markup span - Gen<LitAttr:@(11:0,11)> - [btn1] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-                SyntaxKind.Text;[btn1];
-            Markup block - Gen<DynAttr: @(15:0,15)> - 14 - (15:0,15)
-                Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-                    SyntaxKind.Whitespace;[ ];
-                Expression block - Gen<Expr> - 13 - (16:0,16)
-                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
-                        SyntaxKind.Transition;[@];
-                    Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (17:0,17) - Tokens:3
-                        SyntaxKind.Identifier;[DateTime];
-                        SyntaxKind.Dot;[.];
-                        SyntaxKind.Identifier;[Now];
-            Markup span - Gen<LitAttr: @(29:0,29)> - [ btn2] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:2
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[btn2];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (34:0,34) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (35:0,35) - Tokens:1
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 5 - (36:0,36)
-        Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-        MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:1
-            SyntaxKind.Bang;[!];
-        Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:2
-            SyntaxKind.Text;[p];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..41)::41 - [<!p class='btn1 @DateTime.Now btn2'></!p>]
+    MarkupBlock - [0..41)::41
+        MarkupTagBlock - [0..36)::36 - [<!p class='btn1 @DateTime.Now btn2'>]
+            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [2..3)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[p];
+            MarkupAttributeBlock - [3..35)::32 - [ class='btn1 @DateTime.Now btn2']
+                MarkupTextLiteral - [3..4)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                MarkupTextLiteral - [4..9)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[class];
+                Equals;[=];
+                MarkupTextLiteral - [10..11)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+                GenericBlock - [11..34)::23
+                    MarkupLiteralAttributeValue - [11..15)::4 - [btn1]
+                        MarkupTextLiteral - [11..15)::4 - [btn1] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[btn1];
+                    MarkupDynamicAttributeValue - [15..29)::14 - [ @DateTime.Now]
+                        MarkupTextLiteral - [15..16)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        GenericBlock - [16..29)::13
+                            CSharpCodeBlock - [16..29)::13
+                                CSharpImplicitExpression - [16..29)::13
+                                    CSharpTransition - [16..17)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        Transition;[@];
+                                    CSharpImplicitExpressionBody - [17..29)::12
+                                        CSharpCodeBlock - [17..29)::12
+                                            CSharpExpressionLiteral - [17..29)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                Identifier;[DateTime];
+                                                Dot;[.];
+                                                Identifier;[Now];
+                    MarkupLiteralAttributeValue - [29..34)::5 - [ btn2]
+                        MarkupTextLiteral - [29..30)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        MarkupTextLiteral - [30..34)::4 - [btn2] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[btn2];
+                MarkupTextLiteral - [34..35)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+            MarkupTextLiteral - [35..36)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                CloseAngle;[>];
+        MarkupTagBlock - [36..41)::5 - [</!p>]
+            MarkupTextLiteral - [36..38)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+            RazorMetaCode - [38..39)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [39..41)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[p];
+                CloseAngle;[>];

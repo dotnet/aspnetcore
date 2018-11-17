@@ -1,19 +1,23 @@
-Markup block - Gen<None> - 13 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 5 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Code span - Gen<Stmt> - [LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (2:0,2) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (4:1,0) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<None> - [LF] - SpanEditHandler;Accepts:Any - (5:1,1) - Tokens:1
-        SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 6 - (7:2,0)
-        Markup span - Gen<Markup> - [<html>] - SpanEditHandler;Accepts:Any - (7:2,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[html];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..13)::13 - [@{LF}LF<html>]
+    MarkupBlock - [0..13)::13
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..5)::5
+            CSharpStatement - [0..5)::5
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..5)::4
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..4)::2
+                        CSharpStatementLiteral - [2..4)::2 - [LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            NewLine;[LF];
+                    RazorMetaCode - [4..5)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupEphemeralTextLiteral - [5..7)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+        MarkupTagBlock - [7..13)::6 - [<html>]
+            MarkupTextLiteral - [7..13)::6 - [<html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[html];
+                CloseAngle;[>];

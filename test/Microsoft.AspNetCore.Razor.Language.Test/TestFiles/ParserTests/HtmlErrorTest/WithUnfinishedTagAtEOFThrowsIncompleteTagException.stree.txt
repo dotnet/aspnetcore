@@ -1,12 +1,15 @@
-Markup block - Gen<None> - 12 - (0:0,0)
-    Tag block - Gen<None> - 12 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-        Markup block - Gen<Attr:bar, bar=@(4:0,4),@(12:0,12)> - 8 - (4:0,4)
-            Markup span - Gen<None> - [ bar=] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:3
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[bar];
-                SyntaxKind.Equals;[=];
-            Markup span - Gen<LitAttr:@(9:0,9)> - [baz] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                SyntaxKind.Text;[baz];
+MarkupBlock - [0..12)::12 - [<foo bar=baz]
+    MarkupTagBlock - [0..12)::12 - [<foo bar=baz]
+        MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[foo];
+        MarkupAttributeBlock - [4..12)::8 - [ bar=baz]
+            MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [5..8)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[bar];
+            Equals;[=];
+            GenericBlock - [9..12)::3
+                MarkupLiteralAttributeValue - [9..12)::3 - [baz]
+                    MarkupTextLiteral - [9..12)::3 - [baz] - Gen<None> - SpanEditHandler;Accepts:Any
+                        Text;[baz];

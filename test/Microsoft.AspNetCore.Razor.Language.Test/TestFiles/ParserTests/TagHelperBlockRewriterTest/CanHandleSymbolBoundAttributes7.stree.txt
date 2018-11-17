@@ -1,7 +1,33 @@
-Markup block - Gen<None> - 32 - (0:0,0)
-    Tag block - Gen<TagHelper> - 32 - (0:0,0) - div - CatchAllTagHelper
-        StartTagAndEndTag - <div bound #local='value'> ... </div>
-        bound - Minimized
-        #local - SingleQuotes
-            Markup span - Gen<Markup> - [value] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:1
-                SyntaxKind.Text;[value];
+RazorDocument - [0..32)::32 - [<div bound #local='value'></div>]
+    MarkupBlock - [0..32)::32
+        MarkupTagHelperElement - [0..32)::32 - div[StartTagAndEndTag] - CatchAllTagHelper
+            MarkupTagHelperStartTag - [0..26)::26
+                MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[div];
+                MarkupMinimizedTagHelperAttribute - [4..10)::6 - bound - Minimized - Unbound - [ bound]
+                    MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [5..10)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound];
+                MarkupTagHelperAttribute - [10..25)::15 - #local - SingleQuotes - Bound - [ #local='value']
+                    MarkupTextLiteral - [10..11)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [11..17)::6 - [#local] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[#local];
+                    Equals;[=];
+                    MarkupTextLiteral - [18..19)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [19..24)::5
+                        MarkupTextLiteral - [19..24)::5 - [value] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[value];
+                    MarkupTextLiteral - [24..25)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [26..32)::6
+                MarkupTextLiteral - [26..32)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[div];
+                    CloseAngle;[>];

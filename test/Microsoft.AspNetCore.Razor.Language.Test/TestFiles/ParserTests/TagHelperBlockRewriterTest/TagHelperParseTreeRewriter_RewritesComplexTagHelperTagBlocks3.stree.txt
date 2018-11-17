@@ -1,15 +1,29 @@
-Markup block - Gen<None> - 32 - (0:0,0)
-    Tag block - Gen<TagHelper> - 32 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [Hello World ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:4
-            SyntaxKind.Text;[Hello];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[World];
-            SyntaxKind.Whitespace;[ ];
-        Expression block - Gen<Expr> - 13 - (15:0,15)
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
-                SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (16:0,16) - Tokens:3
-                SyntaxKind.Identifier;[DateTime];
-                SyntaxKind.Dot;[.];
-                SyntaxKind.Identifier;[Now];
+RazorDocument - [0..32)::32 - [<p>Hello World @DateTime.Now</p>]
+    MarkupBlock - [0..32)::32
+        MarkupTagHelperElement - [0..32)::32 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [3..15)::12 - [Hello World ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Hello];
+                Whitespace;[ ];
+                Text;[World];
+                Whitespace;[ ];
+            CSharpCodeBlock - [15..28)::13
+                CSharpImplicitExpression - [15..28)::13
+                    CSharpTransition - [15..16)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    CSharpImplicitExpressionBody - [16..28)::12
+                        CSharpCodeBlock - [16..28)::12
+                            CSharpExpressionLiteral - [16..28)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                Identifier;[DateTime];
+                                Dot;[.];
+                                Identifier;[Now];
+            MarkupTagHelperEndTag - [28..32)::4
+                MarkupTextLiteral - [28..32)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

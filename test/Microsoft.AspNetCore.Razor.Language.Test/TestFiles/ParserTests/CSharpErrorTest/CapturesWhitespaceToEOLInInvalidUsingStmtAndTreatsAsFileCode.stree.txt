@@ -1,5 +1,5 @@
-Statement block - Gen<None> - 17 - (0:0,0)
-    Code span - Gen<Stmt> - [using          LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-        SyntaxKind.Keyword;[using];
-        SyntaxKind.Whitespace;[          ];
-        SyntaxKind.NewLine;[LF];
+CSharpCodeBlock - [0..17)::17 - [using          LF]
+    CSharpStatementLiteral - [0..17)::17 - [using          LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[using];
+        Whitespace;[          ];
+        NewLine;[LF];

@@ -1,16 +1,18 @@
-Statement block - Gen<None> - 38 - (0:0,0)
-    Code span - Gen<Stmt> - [foreach(var f in Foo) { /* foo bar baz] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:14
-        SyntaxKind.Keyword;[foreach];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[f];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[in];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[Foo];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.CSharpComment;[/* foo bar baz];RZ1001(24:0,24 [1] )
+CSharpCodeBlock - [0..38)::38 - [foreach(var f in Foo) { /* foo bar baz]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..38)::38 - [foreach(var f in Foo) { /* foo bar baz] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[foreach];
+        LeftParenthesis;[(];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[f];
+        Whitespace;[ ];
+        Keyword;[in];
+        Whitespace;[ ];
+        Identifier;[Foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        CSharpComment;[/* foo bar baz];RZ1001(24:0,24 [1] )

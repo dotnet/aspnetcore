@@ -1,1 +1,1 @@
-Markup block - Gen<None> - 0 - (0:0,0)
+MarkupBlock - [0..0)::0 - []

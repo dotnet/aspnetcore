@@ -1,20 +1,49 @@
-Markup block - Gen<None> - 54 - (0:0,0)
-    Tag block - Gen<TagHelper> - 54 - (0:0,0) - input - InputTagHelper2 - InputTagHelper3
-        SelfClosing - <input class='@DateTime.Now + 1' bound-required-int />
-        class - SingleQuotes
-            Markup block - Gen<None> - 17 - (14:0,14)
-                Markup block - Gen<DynAttr:@(14:0,14)> - 13 - (14:0,14)
-                    Expression block - Gen<Expr> - 13 - (14:0,14)
-                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (15:0,15) - Tokens:3
-                            SyntaxKind.Identifier;[DateTime];
-                            SyntaxKind.Dot;[.];
-                            SyntaxKind.Identifier;[Now];
-                Markup span - Gen<LitAttr: @(27:0,27)> - [ +] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:2
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[+];
-                Markup span - Gen<LitAttr: @(29:0,29)> - [ 1] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:2
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[1];
-        bound-required-int - Minimized
+RazorDocument - [0..54)::54 - [<input class='@DateTime.Now + 1' bound-required-int />]
+    MarkupBlock - [0..54)::54
+        MarkupTagHelperElement - [0..54)::54 - input[SelfClosing] - InputTagHelper2 - InputTagHelper3
+            MarkupTagHelperStartTag - [0..54)::54
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupTagHelperAttribute - [6..32)::26 - class - SingleQuotes - Unbound - [ class='@DateTime.Now + 1']
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..12)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [14..31)::17
+                        MarkupDynamicAttributeValue - [14..27)::13 - [@DateTime.Now]
+                            GenericBlock - [14..27)::13
+                                CSharpCodeBlock - [14..27)::13
+                                    CSharpImplicitExpression - [14..27)::13
+                                        CSharpTransition - [14..15)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                            Transition;[@];
+                                        CSharpImplicitExpressionBody - [15..27)::12
+                                            CSharpCodeBlock - [15..27)::12
+                                                CSharpExpressionLiteral - [15..27)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                    Identifier;[DateTime];
+                                                    Dot;[.];
+                                                    Identifier;[Now];
+                        MarkupLiteralAttributeValue - [27..29)::2 - [ +]
+                            MarkupTextLiteral - [27..28)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                            MarkupTextLiteral - [28..29)::1 - [+] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[+];
+                        MarkupLiteralAttributeValue - [29..31)::2 - [ 1]
+                            MarkupTextLiteral - [29..30)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                            MarkupTextLiteral - [30..31)::1 - [1] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[1];
+                    MarkupTextLiteral - [31..32)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupMinimizedTagHelperAttribute - [32..51)::19 - bound-required-int - Minimized - Bound - [ bound-required-int]
+                    MarkupTextLiteral - [32..33)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [33..51)::18 - [bound-required-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound-required-int];
+                MarkupTextLiteral - [51..54)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

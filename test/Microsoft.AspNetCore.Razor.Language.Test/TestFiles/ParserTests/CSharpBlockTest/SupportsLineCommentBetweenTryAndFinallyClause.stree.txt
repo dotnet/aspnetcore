@@ -1,27 +1,29 @@
-Statement block - Gen<None> - 50 - (0:0,0)
-    Code span - Gen<Stmt> - [try { bar(); }LF// FooLF// BarLFfinally { baz(); }] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:25
-        SyntaxKind.Keyword;[try];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.CSharpComment;[// Foo];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.CSharpComment;[// Bar];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Keyword;[finally];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[baz];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..50)::50 - [try { bar(); }LF// FooLF// BarLFfinally { baz(); }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..50)::50 - [try { bar(); }LF// FooLF// BarLFfinally { baz(); }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[try];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[bar];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        NewLine;[LF];
+        CSharpComment;[// Foo];
+        NewLine;[LF];
+        CSharpComment;[// Bar];
+        NewLine;[LF];
+        Keyword;[finally];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[baz];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

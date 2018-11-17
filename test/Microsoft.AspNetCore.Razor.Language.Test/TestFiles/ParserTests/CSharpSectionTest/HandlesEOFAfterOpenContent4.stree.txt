@@ -1,21 +1,27 @@
-Markup block - Gen<None> - 20 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1006(13:0,13 [1] )]> - 20 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (9:0,9) - Tokens:1
-            SyntaxKind.Identifier;[foo];
-        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhitespace - (12:0,12) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (13:0,13) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 6 - (14:0,14)
-            Markup span - Gen<Markup> - [LF abc] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:3
-                SyntaxKind.NewLine;[LF];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[abc];
+RazorDocument - [0..20)::20 - [@section foo {LF abc]
+    MarkupBlock - [0..20)::20
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..20)::20
+            RazorDirective - [0..20)::20 - Directive:{section;RazorBlock;Unrestricted} [RZ1006(13:0,13 [1] )]
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..20)::19
+                    RazorMetaCode - [1..8)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[section];
+                    CSharpCodeBlock - [8..20)::12
+                        CSharpStatementLiteral - [8..9)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [9..12)::3 - [foo] - Gen<DirectiveToken {SectionName;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[foo];
+                        MarkupTextLiteral - [12..13)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                            Whitespace;[ ];
+                        RazorMetaCode - [13..14)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd
+                            LeftBrace;[{];
+                        MarkupBlock - [14..20)::6
+                            MarkupTextLiteral - [14..20)::6 - [LF abc] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                NewLine;[LF];
+                                Whitespace;[ ];
+                                Text;[abc];
+                        RazorMetaCode - [20..20)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                            RightBrace;[<Missing>];

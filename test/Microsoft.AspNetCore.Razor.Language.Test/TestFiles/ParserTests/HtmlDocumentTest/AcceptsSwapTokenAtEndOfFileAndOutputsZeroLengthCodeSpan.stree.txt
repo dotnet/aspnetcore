@@ -1,10 +1,14 @@
-Markup block - Gen<None> - 1 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Expression block - Gen<Expr> - 1 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:1
-            SyntaxKind.Unknown;[];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..1)::1 - [@]
+    MarkupBlock - [0..1)::1
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..1)::1
+            CSharpImplicitExpression - [0..1)::1
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [1..1)::0
+                    CSharpCodeBlock - [1..1)::0
+                        CSharpExpressionLiteral - [1..1)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                            Marker;[];
+        MarkupTextLiteral - [1..1)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

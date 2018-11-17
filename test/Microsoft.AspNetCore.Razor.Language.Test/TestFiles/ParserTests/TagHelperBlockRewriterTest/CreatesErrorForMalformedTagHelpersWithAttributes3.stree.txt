@@ -1,12 +1,26 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Tag block - Gen<TagHelper> - 23 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p bar='false  <strong>
-        bar - SingleQuotes
-            Markup block - Gen<None> - 15 - (8:0,8)
-                Markup span - Gen<Markup> - [false] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:1
-                    SyntaxKind.Text;[false];
-                Markup span - Gen<Markup> - [  <strong>] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:4
-                    SyntaxKind.Whitespace;[  ];
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[strong];
-                    SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..23)::23 - [<p bar='false  <strong>]
+    MarkupBlock - [0..23)::23
+        MarkupTagHelperElement - [0..23)::23 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..23)::23
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..23)::21 - bar - SingleQuotes - Unbound - [ bar='false  <strong>]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..6)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bar];
+                    Equals;[=];
+                    MarkupTextLiteral - [7..8)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [8..23)::15
+                        MarkupLiteralAttributeValue - [8..13)::5 - [false]
+                            MarkupTextLiteral - [8..13)::5 - [false] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[false];
+                        MarkupLiteralAttributeValue - [13..23)::10 - [  <strong>]
+                            MarkupTextLiteral - [13..15)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[  ];
+                            MarkupTextLiteral - [15..23)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                OpenAngle;[<];
+                                Text;[strong];
+                                CloseAngle;[>];

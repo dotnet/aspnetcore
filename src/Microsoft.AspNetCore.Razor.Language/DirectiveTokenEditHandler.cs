@@ -4,17 +4,17 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
-using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DirectiveTokenEditHandler : SpanEditHandler
     {
-        public DirectiveTokenEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer) : base(tokenizer)
+        public DirectiveTokenEditHandler(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer) : base(tokenizer)
         {
         }
 
-        protected override PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
+        protected override PartialParseResultInternal CanAcceptChange(SyntaxNode target, SourceChange change)
         {
             if (AcceptedCharacters == AcceptedCharactersInternal.NonWhitespace)
             {
@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return PartialParseResultInternal.Rejected;
-
         }
 
         private static bool ContainsWhitespace(string content)

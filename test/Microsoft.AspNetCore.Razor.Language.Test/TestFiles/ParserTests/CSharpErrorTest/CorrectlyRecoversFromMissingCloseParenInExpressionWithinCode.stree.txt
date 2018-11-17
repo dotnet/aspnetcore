@@ -1,24 +1,29 @@
-Statement block - Gen<None> - 29 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [string.Format(] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:4
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Format];
-        SyntaxKind.LeftParenthesis;[(];
-    Markup block - Gen<None> - 13 - (15:0,15)
-        Tag block - Gen<None> - 6 - (15:0,15)
-            Markup span - Gen<Markup> - [<html>] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[html];
-                SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<None> - 7 - (21:0,21)
-            Markup span - Gen<Markup> - [</html>] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[html];
-                SyntaxKind.CloseAngle;[>];
-    Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:1
-        SyntaxKind.Unknown;[];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (28:0,28) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..29)::29 - [{string.Format(<html></html>}]
+    CSharpStatement - [0..29)::29
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..29)::29
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..28)::27
+                CSharpStatementLiteral - [1..15)::14 - [string.Format(] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Keyword;[string];
+                    Dot;[.];
+                    Identifier;[Format];
+                    LeftParenthesis;[(];
+                MarkupBlock - [15..28)::13
+                    MarkupTagBlock - [15..21)::6 - [<html>]
+                        MarkupTextLiteral - [15..21)::6 - [<html>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[html];
+                            CloseAngle;[>];
+                    MarkupTagBlock - [21..28)::7 - [</html>]
+                        MarkupTextLiteral - [21..28)::7 - [</html>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[html];
+                            CloseAngle;[>];
+                CSharpStatementLiteral - [28..28)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Marker;[];
+            RazorMetaCode - [28..29)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

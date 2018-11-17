@@ -1,14 +1,25 @@
-Markup block - Gen<None> - 40 - (0:0,0)
-    Tag block - Gen<TagHelper> - 40 - (0:0,0) - th:myth - mythTagHelper
-        StartTagAndEndTag - <th:myth> ... </th:myth>
-        Tag block - Gen<None> - 10 - (9:0,9)
-            Markup span - Gen<Markup> - [<th:my2th>] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[th:my2th];
-                SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<None> - 11 - (19:0,19)
-            Markup span - Gen<Markup> - [</th:my2th>] - SpanEditHandler;Accepts:Any - (19:0,19) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[th:my2th];
-                SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..40)::40 - [<th:myth><th:my2th></th:my2th></th:myth>]
+    MarkupBlock - [0..40)::40
+        MarkupTagHelperElement - [0..40)::40 - th:myth[StartTagAndEndTag] - mythTagHelper
+            MarkupTagHelperStartTag - [0..9)::9
+                MarkupTextLiteral - [0..9)::9 - [<th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[th:myth];
+                    CloseAngle;[>];
+            MarkupTagBlock - [9..19)::10 - [<th:my2th>]
+                MarkupTextLiteral - [9..19)::10 - [<th:my2th>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[th:my2th];
+                    CloseAngle;[>];
+            MarkupTagBlock - [19..30)::11 - [</th:my2th>]
+                MarkupTextLiteral - [19..30)::11 - [</th:my2th>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[th:my2th];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [30..40)::10
+                MarkupTextLiteral - [30..40)::10 - [</th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[th:myth];
+                    CloseAngle;[>];

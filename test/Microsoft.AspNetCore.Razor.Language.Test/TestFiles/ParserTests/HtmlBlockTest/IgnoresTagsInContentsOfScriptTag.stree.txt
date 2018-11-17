@@ -1,28 +1,31 @@
-Markup block - Gen<None> - 36 - (0:0,0)
-    Tag block - Gen<None> - 8 - (0:0,0)
-        Markup span - Gen<Markup> - [<script>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[script];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [foo<bar baz='] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:7
-        SyntaxKind.Text;[foo];
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.Text;[bar];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[baz];
-        SyntaxKind.Equals;[=];
-        SyntaxKind.SingleQuote;['];
-    Expression block - Gen<Expr> - 4 - (21:0,21)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:1
-            SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [boz] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (22:0,22) - Tokens:1
-            SyntaxKind.Identifier;[boz];
-    Markup span - Gen<Markup> - ['>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:2
-        SyntaxKind.SingleQuote;['];
-        SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 9 - (27:0,27)
-        Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:None - (27:0,27) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[script];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..36)::36 - [<script>foo<bar baz='@boz'></script>]
+    MarkupTagBlock - [0..8)::8 - [<script>]
+        MarkupTextLiteral - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[script];
+            CloseAngle;[>];
+    MarkupTextLiteral - [8..21)::13 - [foo<bar baz='] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        Text;[foo];
+        OpenAngle;[<];
+        Text;[bar];
+        Whitespace;[ ];
+        Text;[baz];
+        Equals;[=];
+        SingleQuote;['];
+    CSharpCodeBlock - [21..25)::4
+        CSharpImplicitExpression - [21..25)::4
+            CSharpTransition - [21..22)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Transition;[@];
+            CSharpImplicitExpressionBody - [22..25)::3
+                CSharpCodeBlock - [22..25)::3
+                    CSharpExpressionLiteral - [22..25)::3 - [boz] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                        Identifier;[boz];
+    MarkupTextLiteral - [25..27)::2 - ['>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        SingleQuote;['];
+        CloseAngle;[>];
+    MarkupTagBlock - [27..36)::9 - [</script>]
+        MarkupTextLiteral - [27..36)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[script];
+            CloseAngle;[>];

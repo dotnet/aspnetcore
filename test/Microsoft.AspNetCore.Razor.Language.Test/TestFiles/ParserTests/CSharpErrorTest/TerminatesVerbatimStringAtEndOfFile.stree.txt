@@ -1,16 +1,18 @@
-Statement block - Gen<None> - 60 - (0:0,0)
-    Code span - Gen<Stmt> - [if(foo) { var foo = @"blah LFblah; LF<p>Foo</p>LFblah LFblah] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:14
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.StringLiteral;[@"blah LFblah; LF<p>Foo</p>LFblah LFblah];RZ1000(20:0,20 [1] )
+CSharpCodeBlock - [0..60)::60 - [if(foo) { var foo = @"blah LFblah; LF<p>Foo</p>LFblah LFblah]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..60)::60 - [if(foo) { var foo = @"blah LFblah; LF<p>Foo</p>LFblah LFblah] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        StringLiteral;[@"blah LFblah; LF<p>Foo</p>LFblah LFblah];RZ1000(20:0,20 [1] )

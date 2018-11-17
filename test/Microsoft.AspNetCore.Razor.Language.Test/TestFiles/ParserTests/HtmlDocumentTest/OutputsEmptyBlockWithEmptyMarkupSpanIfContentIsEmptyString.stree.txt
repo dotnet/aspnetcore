@@ -1,3 +1,4 @@
-Markup block - Gen<None> - 0 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..0)::0 - []
+    MarkupBlock - [0..0)::0
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

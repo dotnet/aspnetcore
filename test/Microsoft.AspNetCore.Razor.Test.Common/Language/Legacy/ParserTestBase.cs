@@ -31,8 +31,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal ParserTestBase()
         {
-            Factory = CreateSpanFactory();
-            BlockFactory = CreateBlockFactory();
             TestProjectRoot = TestProject.GetProjectDirectory(GetType());
         }
 
@@ -41,10 +39,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// Use this when spans were not created in document order.
         /// </summary>
         protected bool FixupSpans { get; set; }
-
-        internal SpanFactory Factory { get; private set; }
-
-        internal BlockFactory BlockFactory { get; private set; }
 
 #if GENERATE_BASELINES
         protected bool GenerateBaselines { get; set; } = true;
@@ -93,13 +87,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 #endif
         }
 
-        internal void AssertSyntaxTreeNodeMatchesBaseline(RazorSyntaxTree syntaxTree)
-        {
-            AssertSyntaxTreeNodeMatchesBaseline(syntaxTree.Root, syntaxTree.Source.FilePath, syntaxTree.Diagnostics.ToArray());
-        }
+        protected int BaselineTestCount { get; set; }
 
-        internal void AssertSyntaxTreeNodeMatchesBaseline(Block root, string filePath, params RazorDiagnostic[] diagnostics)
+        internal virtual void AssertSyntaxTreeNodeMatchesBaseline(RazorSyntaxTree syntaxTree)
         {
+            var root = syntaxTree.Root;
+            var diagnostics = syntaxTree.Diagnostics;
+            var filePath = syntaxTree.Source.FilePath;
             if (FileName == null)
             {
                 var message = $"{nameof(AssertSyntaxTreeNodeMatchesBaseline)} should only be called from a parser test ({nameof(FileName)} is null).";
@@ -112,16 +106,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 throw new InvalidOperationException(message);
             }
 
-            var baselineFileName = Path.ChangeExtension(FileName, ".stree.txt");
-            var baselineDiagnosticsFileName = Path.ChangeExtension(FileName, ".diag.txt");
-            var baselineClassifiedSpansFileName = Path.ChangeExtension(FileName, ".cspans.txt");
-            var baselineTagHelperSpansFileName = Path.ChangeExtension(FileName, ".tspans.txt");
+            var fileName = BaselineTestCount > 0 ? FileName + $"_{BaselineTestCount}" : FileName;
+            var baselineFileName = Path.ChangeExtension(fileName, ".stree.txt");
+            var baselineDiagnosticsFileName = Path.ChangeExtension(fileName, ".diag.txt");
+            var baselineClassifiedSpansFileName = Path.ChangeExtension(fileName, ".cspans.txt");
+            var baselineTagHelperSpansFileName = Path.ChangeExtension(fileName, ".tspans.txt");
+            BaselineTestCount++;
 
             if (GenerateBaselines)
             {
                 // Write syntax tree baseline
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFileName);
-                File.WriteAllText(baselineFullPath, SyntaxTreeNodeSerializer.Serialize(root));
+                File.WriteAllText(baselineFullPath, SyntaxNodeSerializer.Serialize(root));
 
                 // Write diagnostics baseline
                 var baselineDiagnosticsFullPath = Path.Combine(TestProjectRoot, baselineDiagnosticsFileName);
@@ -137,11 +133,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 // Write classified spans baseline
                 var classifiedSpansBaselineFullPath = Path.Combine(TestProjectRoot, baselineClassifiedSpansFileName);
-                File.WriteAllText(classifiedSpansBaselineFullPath, ClassifiedSpanSerializer.Serialize(root, filePath));
+                File.WriteAllText(classifiedSpansBaselineFullPath, ClassifiedSpanSerializer.Serialize(syntaxTree));
 
                 // Write tag helper spans baseline
                 var tagHelperSpansBaselineFullPath = Path.Combine(TestProjectRoot, baselineTagHelperSpansFileName);
-                var serializedTagHelperSpans = TagHelperSpanSerializer.Serialize(root, filePath);
+                var serializedTagHelperSpans = TagHelperSpanSerializer.Serialize(syntaxTree);
                 if (!string.IsNullOrEmpty(serializedTagHelperSpans))
                 {
                     File.WriteAllText(tagHelperSpansBaselineFullPath, serializedTagHelperSpans);
@@ -162,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             var baseline = stFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            SyntaxTreeNodeVerifier.Verify(root, baseline);
+            SyntaxNodeVerifier.Verify(root, baseline);
 
             // Verify diagnostics
             var baselineDiagnostics = string.Empty;
@@ -183,8 +179,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else
             {
-                var classifiedSpanBaseline = classifiedSpanFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                ClassifiedSpanVerifier.Verify(root, filePath, classifiedSpanBaseline);
+                var classifiedSpanBaseline = new string[0];
+                classifiedSpanBaseline = classifiedSpanFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                ClassifiedSpanVerifier.Verify(syntaxTree, classifiedSpanBaseline);
             }
 
             // Verify tag helper spans
@@ -193,12 +190,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (tagHelperSpanFile.Exists())
             {
                 tagHelperSpanBaseline = tagHelperSpanFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                TagHelperSpanVerifier.Verify(syntaxTree, tagHelperSpanBaseline);
             }
-
-            TagHelperSpanVerifier.Verify(root, filePath, tagHelperSpanBaseline);
         }
 
-        private static string SerializeDiagnostic(RazorDiagnostic diagnostic)
+        protected static string SerializeDiagnostic(RazorDiagnostic diagnostic)
         {
             var content = RazorDiagnosticSerializer.Serialize(diagnostic);
             var normalized = NormalizeNewLines(content);
@@ -221,16 +217,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             AssertSyntaxTreeNodeMatchesBaseline(syntaxTree);
         }
 
-        internal virtual void BaselineTest(Block root, string filePath = null, bool verifySyntaxTree = true, params RazorDiagnostic[] diagnostics)
-        {
-            if (verifySyntaxTree)
-            {
-                SyntaxTreeVerifier.Verify(root);
-            }
-
-            AssertSyntaxTreeNodeMatchesBaseline(root, filePath, diagnostics);
-        }
-
         internal RazorSyntaxTree ParseBlock(string document, bool designTime)
         {
             return ParseBlock(RazorLanguageVersion.Latest, document, designTime);
@@ -248,28 +234,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal abstract RazorSyntaxTree ParseBlock(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime);
 
-        internal RazorSyntaxTree ParseDocument(string document, bool designTime = false)
+        internal RazorSyntaxTree ParseDocument(string document, bool designTime = false, RazorParserFeatureFlags featureFlags = null)
         {
-            return ParseDocument(RazorLanguageVersion.Latest, document, designTime);
+            return ParseDocument(RazorLanguageVersion.Latest, document, designTime, featureFlags);
         }
 
-        internal RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, bool designTime = false)
+        internal RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, bool designTime = false, RazorParserFeatureFlags featureFlags = null)
         {
-            return ParseDocument(version, document, null, designTime);
+            return ParseDocument(version, document, null, designTime, featureFlags);
         }
 
-        internal RazorSyntaxTree ParseDocument(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
+        internal RazorSyntaxTree ParseDocument(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false, RazorParserFeatureFlags featureFlags = null)
         {
-            return ParseDocument(RazorLanguageVersion.Latest, document, directives, designTime);
+            return ParseDocument(RazorLanguageVersion.Latest, document, directives, designTime, featureFlags);
         }
 
-        internal virtual RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
+        internal virtual RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false, RazorParserFeatureFlags featureFlags = null)
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
 
-            var options = CreateParserOptions(version, directives, designTime);
+            var options = CreateParserOptions(version, directives, designTime, featureFlags);
             var context = new ParserContext(source, options);
 
             var codeParser = new CSharpCodeParser(directives, context);
@@ -278,9 +264,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             codeParser.HtmlParser = markupParser;
             markupParser.CodeParser = codeParser;
 
-            markupParser.ParseDocument();
+            var root = markupParser.ParseDocument().CreateRed();
 
-            var root = context.Builder.Build();
             var diagnostics = context.ErrorSink.Errors;
 
             var codeDocument = RazorCodeDocument.Create(source);
@@ -298,22 +283,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
+
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
-            var parser = new HtmlMarkupParser(context);
-            parser.CodeParser = new CSharpCodeParser(directives, context)
-            {
-                HtmlParser = parser,
-            };
+            var codeParser = new CSharpCodeParser(directives, context);
+            var markupParser = new HtmlMarkupParser(context);
 
-            parser.ParseBlock();
+            codeParser.HtmlParser = markupParser;
+            markupParser.CodeParser = codeParser;
 
-            var root = context.Builder.Build();
+            var root = markupParser.ParseBlock().CreateRed();
+
             var diagnostics = context.ErrorSink.Errors;
 
-            return RazorSyntaxTree.Create(root, source, diagnostics, options);
+            var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
+
+            return syntaxTree;
         }
 
         internal RazorSyntaxTree ParseCodeBlock(string document, bool designTime = false)
@@ -329,39 +316,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, filePath: null, normalizeNewLines: true);
+            var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
+
             var options = CreateParserOptions(version, directives, designTime);
             var context = new ParserContext(source, options);
 
-            var parser = new CSharpCodeParser(directives, context);
-            parser.HtmlParser = new HtmlMarkupParser(context)
-            {
-                CodeParser = parser,
-            };
+            var codeParser = new CSharpCodeParser(directives, context);
+            var markupParser = new HtmlMarkupParser(context);
 
-            parser.ParseBlock();
+            codeParser.HtmlParser = markupParser;
+            markupParser.CodeParser = codeParser;
 
-            var root = context.Builder.Build();
+            var root = codeParser.ParseBlock().CreateRed();
+
             var diagnostics = context.ErrorSink.Errors;
 
-            return RazorSyntaxTree.Create(root, source, diagnostics, options);
-        }
+            var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
 
-        internal SpanFactory CreateSpanFactory()
-        {
-            return new SpanFactory();
+            return syntaxTree;
         }
-
-        internal abstract BlockFactory CreateBlockFactory();
 
         internal virtual void ParseBlockTest(string document)
         {
             ParseBlockTest(document, null, false, new RazorDiagnostic[0]);
-        }
-
-        internal virtual void ParseBlockTest(string document, bool designTime)
-        {
-            ParseBlockTest(document, null, designTime, new RazorDiagnostic[0]);
         }
 
         internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives)
@@ -381,55 +358,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual void ParseBlockTest(RazorLanguageVersion version, string document)
         {
-            ParseBlockTest(version, document, expectedRoot: null);
+            ParseBlockTest(version, document, false, null);
         }
 
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, Block expectedRoot)
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, params RazorDiagnostic[] expectedErrors)
         {
-            ParseBlockTest(version, document, expectedRoot, false, null);
+            ParseBlockTest(document, directives, false, expectedErrors);
         }
 
-        internal virtual void ParseBlockTest(string document, Block expectedRoot)
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
-            ParseBlockTest(document, expectedRoot, false, null);
+            ParseBlockTest(version, document, null, designTime, expectedErrors);
         }
 
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expectedRoot)
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
-            ParseBlockTest(document, directives, expectedRoot, false, null);
+            ParseBlockTest(RazorLanguageVersion.Latest, document, directives, designTime, expectedErrors);
         }
 
-        internal virtual void ParseBlockTest(string document, Block expectedRoot, bool designTime)
-        {
-            ParseBlockTest(document, expectedRoot, designTime, null);
-        }
-
-        internal virtual void ParseBlockTest(string document, Block expectedRoot, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseBlockTest(document, expectedRoot, false, expectedErrors);
-        }
-
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expectedRoot, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseBlockTest(document, directives, expectedRoot, false, expectedErrors);
-        }
-
-        internal virtual void ParseBlockTest(string document, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseBlockTest(document, null, expected, designTime, expectedErrors);
-        }
-
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseBlockTest(version, document, null, expected, designTime, expectedErrors);
-        }
-
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseBlockTest(RazorLanguageVersion.Latest, document, directives, expected, designTime, expectedErrors);
-        }
-
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseBlock(version, document, directives, designTime);
 
@@ -478,24 +425,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, null, false);
         }
 
-        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives)
+        internal virtual void ParseDocumentTest(string document, params RazorDiagnostic[] expectedErrors)
         {
-            ParseDocumentTest(document, directives, expected: null);
+            ParseDocumentTest(document, false, expectedErrors);
         }
 
-        internal virtual void ParseDocumentTest(string document, Block expectedRoot)
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, params RazorDiagnostic[] expectedErrors)
         {
-            ParseDocumentTest(document, expectedRoot, false, null);
-        }
-
-        internal virtual void ParseDocumentTest(string document, Block expectedRoot, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseDocumentTest(document, expectedRoot, false, expectedErrors);
-        }
-
-        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseDocumentTest(document, directives, expected, false, expectedErrors);
+            ParseDocumentTest(document, directives, false, expectedErrors);
         }
 
         internal virtual void ParseDocumentTest(string document, bool designTime)
@@ -503,277 +440,57 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, null, designTime);
         }
 
-        internal virtual void ParseDocumentTest(string document, Block expectedRoot, bool designTime)
+        internal virtual void ParseDocumentTest(string document, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
-            ParseDocumentTest(document, expectedRoot, designTime, null);
+            ParseDocumentTest(document, null, designTime, expectedErrors);
         }
 
-        internal virtual void ParseDocumentTest(string document, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseDocumentTest(document, null, expected, designTime, expectedErrors);
-        }
-
-        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseDocument(document, directives, designTime);
 
             BaselineTest(result);
         }
 
-        internal static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot)
-        {
-            EvaluateResults(result, expectedRoot, null);
-        }
-
-        internal static void EvaluateResults(RazorSyntaxTree result, Block expectedRoot, IList<RazorDiagnostic> expectedErrors)
-        {
-            EvaluateParseTree(result.Root, expectedRoot);
-            EvaluateRazorErrors(result.Diagnostics, expectedErrors);
-        }
-
-        internal static void EvaluateParseTree(Block actualRoot, Block expectedRoot)
-        {
-            // Evaluate the result
-            var collector = new ErrorCollector();
-
-            if (expectedRoot == null)
-            {
-                Assert.Null(actualRoot);
-            }
-            else
-            {
-                // Link all the nodes
-                expectedRoot.LinkNodes();
-                Assert.NotNull(actualRoot);
-                EvaluateSyntaxTreeNode(collector, actualRoot, expectedRoot);
-                if (collector.Success)
-                {
-                    WriteTraceLine("Parse Tree Validation Succeeded:" + Environment.NewLine + collector.Message);
-                }
-                else
-                {
-                    Assert.True(false, Environment.NewLine + collector.Message);
-                }
-            }
-        }
-
-        private static void EvaluateSyntaxTreeNode(ErrorCollector collector, SyntaxTreeNode actual, SyntaxTreeNode expected)
-        {
-            if (actual == null)
-            {
-                AddNullActualError(collector, actual, expected);
-                return;
-            }
-
-            if (actual.IsBlock != expected.IsBlock)
-            {
-                AddMismatchError(collector, actual, expected);
-            }
-            else
-            {
-                if (expected.IsBlock)
-                {
-                    EvaluateBlock(collector, (Block)actual, (Block)expected);
-                }
-                else
-                {
-                    EvaluateSpan(collector, (Span)actual, (Span)expected);
-                }
-            }
-        }
-
-        private static void EvaluateSpan(ErrorCollector collector, Span actual, Span expected)
-        {
-            if (!Equals(expected, actual))
-            {
-                AddMismatchError(collector, actual, expected);
-            }
-            else
-            {
-                AddPassedMessage(collector, expected);
-            }
-        }
-
-        private static void EvaluateBlock(ErrorCollector collector, Block actual, Block expected)
-        {
-            if (actual.Type != expected.Type || !expected.ChunkGenerator.Equals(actual.ChunkGenerator))
-            {
-                AddMismatchError(collector, actual, expected);
-            }
-            else
-            {
-                if (actual is TagHelperBlock)
-                {
-                    EvaluateTagHelperBlock(collector, actual as TagHelperBlock, expected as TagHelperBlock);
-                }
-
-                AddPassedMessage(collector, expected);
-                using (collector.Indent())
-                {
-                    var expectedNodes = expected.Children.GetEnumerator();
-                    var actualNodes = actual.Children.GetEnumerator();
-                    while (expectedNodes.MoveNext())
-                    {
-                        if (!actualNodes.MoveNext())
-                        {
-                            collector.AddError("{0} - FAILED :: No more elements at this node", expectedNodes.Current);
-                        }
-                        else
-                        {
-                            EvaluateSyntaxTreeNode(collector, actualNodes.Current, expectedNodes.Current);
-                        }
-                    }
-                    while (actualNodes.MoveNext())
-                    {
-                        collector.AddError("End of Node - FAILED :: Found Node: {0}", actualNodes.Current);
-                    }
-                }
-            }
-        }
-
-        private static void EvaluateTagHelperBlock(ErrorCollector collector, TagHelperBlock actual, TagHelperBlock expected)
-        {
-            if (expected == null)
-            {
-                AddMismatchError(collector, actual, expected);
-            }
-            else
-            {
-                if (!string.Equals(expected.TagName, actual.TagName, StringComparison.Ordinal))
-                {
-                    collector.AddError(
-                        "{0} - FAILED :: TagName mismatch for TagHelperBlock :: ACTUAL: {1}",
-                        expected.TagName,
-                        actual.TagName);
-                }
-
-                if (expected.TagMode != actual.TagMode)
-                {
-                    collector.AddError(
-                        $"{expected.TagMode} - FAILED :: {nameof(TagMode)} for {nameof(TagHelperBlock)} " +
-                        $"{actual.TagName} :: ACTUAL: {actual.TagMode}");
-                }
-
-                var expectedAttributes = expected.Attributes.GetEnumerator();
-                var actualAttributes = actual.Attributes.GetEnumerator();
-
-                while (expectedAttributes.MoveNext())
-                {
-                    if (!actualAttributes.MoveNext())
-                    {
-                        collector.AddError("{0} - FAILED :: No more attributes on this node", expectedAttributes.Current);
-                    }
-                    else
-                    {
-                        EvaluateTagHelperAttribute(collector, actualAttributes.Current, expectedAttributes.Current);
-                    }
-                }
-                while (actualAttributes.MoveNext())
-                {
-                    collector.AddError("End of Attributes - FAILED :: Found Attribute: {0}", actualAttributes.Current.Name);
-                }
-            }
-        }
-
-        private static void EvaluateTagHelperAttribute(
-            ErrorCollector collector,
-            TagHelperAttributeNode actual,
-            TagHelperAttributeNode expected)
-        {
-            if (actual.Name != expected.Name)
-            {
-                collector.AddError("{0} - FAILED :: Attribute names do not match", expected.Name);
-            }
-            else
-            {
-                collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Name);
-            }
-
-            if (actual.AttributeStructure != expected.AttributeStructure)
-            {
-                collector.AddError("{0} - FAILED :: Attribute value styles do not match", expected.AttributeStructure.ToString());
-            }
-            else
-            {
-                collector.AddMessage("{0} - PASSED :: Attribute value style match", expected.AttributeStructure);
-            }
-
-            if (actual.AttributeStructure != AttributeStructure.Minimized)
-            {
-                EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
-            }
-        }
-
-        private static void AddPassedMessage(ErrorCollector collector, SyntaxTreeNode expected)
-        {
-            collector.AddMessage("{0} - PASSED", expected);
-        }
-
-        private static void AddMismatchError(ErrorCollector collector, SyntaxTreeNode actual, SyntaxTreeNode expected)
-        {
-            collector.AddError("{0} - FAILED :: Actual: {1}", expected, actual);
-        }
-
-        private static void AddNullActualError(ErrorCollector collector, SyntaxTreeNode actual, SyntaxTreeNode expected)
-        {
-            collector.AddError("{0} - FAILED :: Actual: << Null >>", expected);
-        }
-
-        internal static void EvaluateRazorErrors(IEnumerable<RazorDiagnostic> actualErrors, IList<RazorDiagnostic> expectedErrors)
-        {
-            var realCount = actualErrors.Count();
-
-            // Evaluate the errors
-            if (expectedErrors == null || expectedErrors.Count == 0)
-            {
-                Assert.True(
-                    realCount == 0,
-                    "Expected that no errors would be raised, but the following errors were:" + Environment.NewLine + FormatErrors(actualErrors));
-            }
-            else
-            {
-                Assert.True(
-                    expectedErrors.Count == realCount,
-                    $"Expected that {expectedErrors.Count} errors would be raised, but {realCount} errors were." +
-                    $"{Environment.NewLine}Expected Errors: {Environment.NewLine}{FormatErrors(expectedErrors)}" +
-                    $"{Environment.NewLine}Actual Errors: {Environment.NewLine}{FormatErrors(actualErrors)}");
-                Assert.Equal(expectedErrors, actualErrors);
-            }
-            WriteTraceLine("Expected Errors were raised:" + Environment.NewLine + FormatErrors(expectedErrors));
-        }
-
-        internal static string FormatErrors(IEnumerable<RazorDiagnostic> errors)
-        {
-            if (errors == null)
-            {
-                return "\t<< No Errors >>";
-            }
-
-            var builder = new StringBuilder();
-            foreach (var error in errors)
-            {
-                builder.AppendFormat("\t{0}", error);
-                builder.AppendLine();
-            }
-            return builder.ToString();
-        }
-
-        [Conditional("PARSER_TRACE")]
-        private static void WriteTraceLine(string format, params object[] args)
-        {
-            Trace.WriteLine(string.Format(format, args));
-        }
-
-        private static RazorParserOptions CreateParserOptions(
+        internal static RazorParserOptions CreateParserOptions(
             RazorLanguageVersion version, 
             IEnumerable<DirectiveDescriptor> directives, 
-            bool designTime)
+            bool designTime,
+            RazorParserFeatureFlags featureFlags = null)
         {
-            return new DefaultRazorParserOptions(
+            return new TestRazorParserOptions(
                 directives.ToArray(),
                 designTime,
                 parseLeadingDirectives: false,
-                version: version);
+                version: version,
+                featureFlags: featureFlags);
+        }
+
+        private class TestRazorParserOptions : RazorParserOptions
+        {
+            public TestRazorParserOptions(DirectiveDescriptor[] directives, bool designTime, bool parseLeadingDirectives, RazorLanguageVersion version, RazorParserFeatureFlags featureFlags = null)
+            {
+                if (directives == null)
+                {
+                    throw new ArgumentNullException(nameof(directives));
+                }
+
+                Directives = directives;
+                DesignTime = designTime;
+                ParseLeadingDirectives = parseLeadingDirectives;
+                Version = version;
+                FeatureFlags = featureFlags ?? RazorParserFeatureFlags.Create(Version);
+            }
+
+            public override bool DesignTime { get; }
+
+            public override IReadOnlyCollection<DirectiveDescriptor> Directives { get; }
+
+            public override bool ParseLeadingDirectives { get; }
+
+            public override RazorLanguageVersion Version { get; }
+
+            internal override RazorParserFeatureFlags FeatureFlags { get; }
         }
     }
 }

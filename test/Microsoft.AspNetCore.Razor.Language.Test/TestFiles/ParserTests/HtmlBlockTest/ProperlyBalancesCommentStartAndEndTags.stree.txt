@@ -1,17 +1,17 @@
-Markup block - Gen<None> - 18 - (0:0,0)
-    HtmlComment block - Gen<None> - 18 - (0:0,0)
-        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Bang;[!];
-            SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [<foo></bar>] - SpanEditHandler;Accepts:Whitespace - (4:0,4) - Tokens:7
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[bar];
-            SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:2
-            SyntaxKind.DoubleHyphen;[--];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..18)::18 - [<!--<foo></bar>-->]
+    MarkupCommentBlock - [0..18)::18
+        MarkupTextLiteral - [0..4)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Bang;[!];
+            DoubleHyphen;[--];
+        MarkupTextLiteral - [4..15)::11 - [<foo></bar>] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[bar];
+            CloseAngle;[>];
+        MarkupTextLiteral - [15..18)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
+            DoubleHyphen;[--];
+            CloseAngle;[>];

@@ -1,19 +1,23 @@
-Markup block - Gen<None> - 18 - (0:0,0)
-    Tag block - Gen<None> - 18 - (0:0,0)
-        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[a];
-        Markup block - Gen<Attr:#local, #local='@(2:0,2),'@(14:0,14)> - 13 - (2:0,2)
-            Markup span - Gen<None> - [ #local='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[#local];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.SingleQuote;['];
-            Markup span - Gen<LitAttr:@(11:0,11)> - [Foo] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-                SyntaxKind.Text;[Foo];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..18)::18 - [<a #local='Foo' />]
+    MarkupTagBlock - [0..18)::18 - [<a #local='Foo' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..15)::13 - [ #local='Foo']
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..9)::6 - [#local] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[#local];
+            Equals;[=];
+            MarkupTextLiteral - [10..11)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+            GenericBlock - [11..14)::3
+                MarkupLiteralAttributeValue - [11..14)::3 - [Foo]
+                    MarkupTextLiteral - [11..14)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Foo];
+            MarkupTextLiteral - [14..15)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [15..18)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

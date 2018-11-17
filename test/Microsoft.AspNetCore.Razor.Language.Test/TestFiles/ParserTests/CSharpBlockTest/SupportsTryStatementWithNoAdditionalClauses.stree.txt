@@ -1,19 +1,21 @@
-Statement block - Gen<None> - 25 - (0:0,0)
-    Code span - Gen<Stmt> - [try { var foo = new { } }] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:17
-        SyntaxKind.Keyword;[try];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[new];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..25)::25 - [try { var foo = new { } }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..25)::25 - [try { var foo = new { } }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[try];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Keyword;[new];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        RightBrace;[}];

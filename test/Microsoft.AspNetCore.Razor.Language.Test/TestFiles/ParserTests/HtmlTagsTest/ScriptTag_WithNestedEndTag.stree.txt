@@ -1,17 +1,18 @@
-Markup block - Gen<None> - 21 - (0:0,0)
-    Tag block - Gen<None> - 8 - (0:0,0)
-        Markup span - Gen<Markup> - [<script>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[script];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:4
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.ForwardSlash;[/];
-        SyntaxKind.Text;[p];
-        SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 9 - (12:0,12)
-        Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[script];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..21)::21 - [<script></p></script>]
+    MarkupBlock - [0..21)::21
+        MarkupTagBlock - [0..8)::8 - [<script>]
+            MarkupTextLiteral - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
+        MarkupTextLiteral - [8..12)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[p];
+            CloseAngle;[>];
+        MarkupTagBlock - [12..21)::9 - [</script>]
+            MarkupTextLiteral - [12..21)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

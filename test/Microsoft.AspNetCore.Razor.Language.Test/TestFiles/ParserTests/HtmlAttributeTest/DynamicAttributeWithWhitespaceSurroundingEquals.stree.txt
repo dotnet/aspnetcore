@@ -1,27 +1,35 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Tag block - Gen<None> - 23 - (0:0,0)
-        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[a];
-        Markup block - Gen<Attr:href, href LF= LF'@(2:0,2),'@(19:2,5)> - 18 - (2:0,2)
-            Markup span - Gen<None> - [ href LF= LF'] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:8
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[href];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.NewLine;[LF];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.NewLine;[LF];
-                SyntaxKind.SingleQuote;['];
-            Markup block - Gen<DynAttr:@(15:2,1)> - 4 - (15:2,1)
-                Expression block - Gen<Expr> - 4 - (15:2,1)
-                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:2,1) - Tokens:1
-                        SyntaxKind.Transition;[@];
-                    Code span - Gen<Expr> - [Foo] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (16:2,2) - Tokens:1
-                        SyntaxKind.Identifier;[Foo];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (19:2,5) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (20:2,6) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..23)::23 - [<a href LF= LF'@Foo' />]
+    MarkupTagBlock - [0..23)::23 - [<a href LF= LF'@Foo' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..20)::18 - [ href LF= LF'@Foo']
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..7)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[href];
+            MarkupTextLiteral - [7..10)::3 - [ LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                NewLine;[LF];
+            Equals;[=];
+            MarkupTextLiteral - [11..15)::4 - [ LF'] - Gen<None> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                NewLine;[LF];
+                SingleQuote;['];
+            GenericBlock - [15..19)::4
+                MarkupDynamicAttributeValue - [15..19)::4 - [@Foo]
+                    GenericBlock - [15..19)::4
+                        CSharpCodeBlock - [15..19)::4
+                            CSharpImplicitExpression - [15..19)::4
+                                CSharpTransition - [15..16)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [16..19)::3
+                                    CSharpCodeBlock - [16..19)::3
+                                        CSharpExpressionLiteral - [16..19)::3 - [Foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                            Identifier;[Foo];
+            MarkupTextLiteral - [19..20)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [20..23)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

@@ -1,33 +1,39 @@
-Markup block - Gen<None> - 24 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 24 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 22 - (2:0,2)
-            Tag block - Gen<None> - 6 - (2:0,2)
-                Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (2:0,2) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[text];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 7 - (8:0,8)
-                Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:None - (8:0,8) - Tokens:1
-                    SyntaxKind.OpenAngle;[<];
-                MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:1
-                    SyntaxKind.Bang;[!];
-                Markup span - Gen<Markup> - [text>] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:2
-                    SyntaxKind.Text;[text];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 8 - (15:0,15)
-                Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:2
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:1
-                    SyntaxKind.Bang;[!];
-                Markup span - Gen<Markup> - [text>] - SpanEditHandler;Accepts:None - (18:0,18) - Tokens:2
-                    SyntaxKind.Text;[text];
-                    SyntaxKind.CloseAngle;[>];
-            Markup span - Gen<Markup> - [}] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:1
-                SyntaxKind.Text;[}];
+RazorDocument - [0..24)::24 - [@{<text><!text></!text>}]
+    MarkupBlock - [0..24)::24
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..24)::24
+            CSharpStatement - [0..24)::24
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..24)::23
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..24)::22
+                        MarkupBlock - [2..24)::22
+                            MarkupTagBlock - [2..8)::6 - [<text>]
+                                MarkupTransition - [2..8)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[text];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [8..15)::7 - [<!text>]
+                                MarkupTextLiteral - [8..9)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                RazorMetaCode - [9..10)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Bang;[!];
+                                MarkupTextLiteral - [10..15)::5 - [text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    Text;[text];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [15..23)::8 - [</!text>]
+                                MarkupTextLiteral - [15..17)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                RazorMetaCode - [17..18)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Bang;[!];
+                                MarkupTextLiteral - [18..23)::5 - [text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    Text;[text];
+                                    CloseAngle;[>];
+                            MarkupTextLiteral - [23..24)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[}];
+                    RazorMetaCode - [24..24)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                        RightBrace;[<Missing>];

@@ -1,36 +1,44 @@
-Directive block - Gen<Directive:{functions;CodeBlock;Unrestricted} [RZ1006(10:0,10 [1] )]> - 54 - (0:0,0)
-    MetaCode span - Gen<None> - [functions] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Identifier;[functions];
-    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhitespace - (9:0,9) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (10:0,10) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [ var foo = bar; if(foo != null) { bar(); } ] - CodeBlockEditHandler;Accepts:Any;CodeBlock - (11:0,11) - Tokens:28
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.NotEqual;[!=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[null];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
+CSharpCodeBlock - [0..54)::54 - [functions { var foo = bar; if(foo != null) { bar(); } ]
+    RazorDirective - [0..54)::54 - Directive:{functions;CodeBlock;Unrestricted} [RZ1006(10:0,10 [1] )]
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        RazorDirectiveBody - [0..54)::54
+            RazorMetaCode - [0..9)::9 - Gen<None> - SpanEditHandler;Accepts:None
+                Identifier;[functions];
+            CSharpCodeBlock - [9..54)::45
+                MarkupTextLiteral - [9..10)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                    Whitespace;[ ];
+                RazorMetaCode - [10..11)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd
+                    LeftBrace;[{];
+                CSharpCodeBlock - [11..54)::43
+                    CSharpStatementLiteral - [11..54)::43 - [ var foo = bar; if(foo != null) { bar(); } ] - Gen<Stmt> - CodeBlockEditHandler;Accepts:Any;CodeBlock
+                        Whitespace;[ ];
+                        Identifier;[var];
+                        Whitespace;[ ];
+                        Identifier;[foo];
+                        Whitespace;[ ];
+                        Assign;[=];
+                        Whitespace;[ ];
+                        Identifier;[bar];
+                        Semicolon;[;];
+                        Whitespace;[ ];
+                        Keyword;[if];
+                        LeftParenthesis;[(];
+                        Identifier;[foo];
+                        Whitespace;[ ];
+                        NotEqual;[!=];
+                        Whitespace;[ ];
+                        Keyword;[null];
+                        RightParenthesis;[)];
+                        Whitespace;[ ];
+                        LeftBrace;[{];
+                        Whitespace;[ ];
+                        Identifier;[bar];
+                        LeftParenthesis;[(];
+                        RightParenthesis;[)];
+                        Semicolon;[;];
+                        Whitespace;[ ];
+                        RightBrace;[}];
+                        Whitespace;[ ];
+                RazorMetaCode - [54..54)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                    RightBrace;[<Missing>];

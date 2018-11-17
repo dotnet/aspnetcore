@@ -1,5 +1,6 @@
-Markup block - Gen<None> - 2 - (0:0,0)
-    Tag block - Gen<None> - 2 - (0:0,0)
-        Markup span - Gen<Markup> - [<p] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[p];
+RazorDocument - [0..2)::2 - [<p]
+    MarkupBlock - [0..2)::2
+        MarkupTagBlock - [0..2)::2 - [<p]
+            MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];

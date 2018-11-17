@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
@@ -205,9 +206,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var document = RazorSyntaxTree.Parse(source);
 
             // Assert
-            var directive = document.Root.Children.OfType<Block>().Last();
-            var erroredSpan = (Span)directive.Children.Last();
-            var chunkGenerator = Assert.IsType<TagHelperPrefixDirectiveChunkGenerator>(erroredSpan.ChunkGenerator);
+            var erroredNode = document.Root.DescendantNodes().Last(n => n.GetSpanContext()?.ChunkGenerator is TagHelperPrefixDirectiveChunkGenerator);
+            var chunkGenerator = Assert.IsType<TagHelperPrefixDirectiveChunkGenerator>(erroredNode.GetSpanContext().ChunkGenerator);
             var diagnostic = Assert.Single(chunkGenerator.Diagnostics);
             Assert.Equal(expectedDiagnostic, diagnostic);
         }

@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Test
@@ -18,11 +18,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
         public void CanAcceptChange_ProvisionallyAcceptsNonWhitespaceChanges(int index, int length, string newText)
         {
             // Arrange
-            var factory = new SpanFactory();
             var directiveTokenHandler = new TestDirectiveTokenEditHandler();
-            var target = factory.Span(SpanKindInternal.Code, "SomeNamespace", markup: false)
-                .With(directiveTokenHandler)
-                .Accepts(AcceptedCharactersInternal.NonWhitespace);
+            directiveTokenHandler.AcceptedCharacters = AcceptedCharactersInternal.NonWhitespace;
+
+            var target = GetSyntaxNode(directiveTokenHandler, "SomeNamespace");
+            
             var sourceChange = new SourceChange(index, length, newText);
 
             // Act
@@ -39,11 +39,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
         public void CanAcceptChange_RejectsWhitespaceChanges(int index, int length, string newText)
         {
             // Arrange
-            var factory = new SpanFactory();
             var directiveTokenHandler = new TestDirectiveTokenEditHandler();
-            var target = factory.Span(SpanKindInternal.Code, "Some Namespace", markup: false)
-                .With(directiveTokenHandler)
-                .Accepts(AcceptedCharactersInternal.NonWhitespace);
+            directiveTokenHandler.AcceptedCharacters = AcceptedCharactersInternal.NonWhitespace;
+
+            var target = GetSyntaxNode(directiveTokenHandler, "Some Namespace");
+
             var sourceChange = new SourceChange(index, length, newText);
 
             // Act
@@ -53,14 +53,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             Assert.Equal(PartialParseResultInternal.Rejected, result);
         }
 
+        private static CSharpStatementLiteralSyntax GetSyntaxNode(DirectiveTokenEditHandler editHandler, string content)
+        {
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            var tokens = CSharpLanguageCharacteristics.Instance.TokenizeString(content).ToArray();
+            foreach (var token in tokens)
+            {
+                builder.Add((SyntaxToken)token.CreateRed());
+            }
+            var node = SyntaxFactory.CSharpStatementLiteral(builder.ToList());
+
+            var context = new SpanContext(SpanChunkGenerator.Null, editHandler);
+
+            return node.WithSpanContext(context);
+        }
+
         private class TestDirectiveTokenEditHandler : DirectiveTokenEditHandler
         {
-            public TestDirectiveTokenEditHandler() : base(content => SpanConstructor.TestTokenizer(content))
+            public TestDirectiveTokenEditHandler() : base(content => TestTokenizer(content))
             {
             }
 
-            public new PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
+            public new PartialParseResultInternal CanAcceptChange(SyntaxNode target, SourceChange change)
                 => base.CanAcceptChange(target, change);
+
+            internal static IEnumerable<Syntax.InternalSyntax.SyntaxToken> TestTokenizer(string str)
+            {
+                yield return Syntax.InternalSyntax.SyntaxFactory.Token(SyntaxKind.Marker, str);
+            }
         }
     }
 }

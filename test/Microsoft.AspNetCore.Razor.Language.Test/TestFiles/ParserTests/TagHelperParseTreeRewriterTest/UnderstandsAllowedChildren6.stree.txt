@@ -1,7 +1,22 @@
-Markup block - Gen<None> - 16 - (0:0,0)
-    Tag block - Gen<TagHelper> - 16 - (0:0,0) - p - PTagHelper
-        StartTagAndEndTag - <p> ... </p>
-        Tag block - Gen<TagHelper> - 4 - (3:0,3) - br - BRTagHelper
-            StartTagOnly - <br>
-        SyntaxKind.HtmlTextLiteral - [Hello] - [7..12) - FullWidth: 5 - Slots: 1
-            SyntaxKind.Text;[Hello];
+RazorDocument - [0..16)::16 - [<p><br>Hello</p>]
+    MarkupBlock - [0..16)::16
+        MarkupTagHelperElement - [0..16)::16 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTagHelperElement - [3..7)::4 - br[StartTagOnly] - BRTagHelper
+                MarkupTagHelperStartTag - [3..7)::4
+                    MarkupTextLiteral - [3..7)::4 - [<br>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[br];
+                        CloseAngle;[>];
+            MarkupTextLiteral - [7..12)::5 - [Hello] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Hello];
+            MarkupTagHelperEndTag - [12..16)::4
+                MarkupTextLiteral - [12..16)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

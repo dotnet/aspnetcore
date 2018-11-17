@@ -1,3 +1,8 @@
-Expression block - Gen<Expr> - 9 - (0:0,0)
-    Code span - Gen<Expr> - [NameSpace] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (0:0,0) - Tokens:1
-        SyntaxKind.Identifier;[NameSpace];
+CSharpCodeBlock - [0..9)::9 - [NameSpace]
+    CSharpImplicitExpression - [0..9)::9
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpImplicitExpressionBody - [0..9)::9
+            CSharpCodeBlock - [0..9)::9
+                CSharpExpressionLiteral - [0..9)::9 - [NameSpace] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    Identifier;[NameSpace];

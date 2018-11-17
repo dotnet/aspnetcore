@@ -1,24 +1,29 @@
-Statement block - Gen<None> - 25 - (0:0,0)
-    Code span - Gen<Stmt> - [if(foo) { ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:7
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-    Expression block - Gen<Expr> - 13 - (10:0,10)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-            SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [foo[4].bar()] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14 - (11:0,11) - Tokens:8
-            SyntaxKind.Identifier;[foo];
-            SyntaxKind.LeftBracket;[[];
-            SyntaxKind.IntegerLiteral;[4];
-            SyntaxKind.RightBracket;[]];
-            SyntaxKind.Dot;[.];
-            SyntaxKind.Identifier;[bar];
-            SyntaxKind.LeftParenthesis;[(];
-            SyntaxKind.RightParenthesis;[)];
-    Code span - Gen<Stmt> - [ }] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..25)::25 - [if(foo) { @foo[4].bar() }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..10)::10 - [if(foo) { ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+    CSharpCodeBlock - [10..23)::13
+        CSharpImplicitExpression - [10..23)::13
+            CSharpTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Transition;[@];
+            CSharpImplicitExpressionBody - [11..23)::12
+                CSharpCodeBlock - [11..23)::12
+                    CSharpExpressionLiteral - [11..23)::12 - [foo[4].bar()] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14
+                        Identifier;[foo];
+                        LeftBracket;[[];
+                        IntegerLiteral;[4];
+                        RightBracket;[]];
+                        Dot;[.];
+                        Identifier;[bar];
+                        LeftParenthesis;[(];
+                        RightParenthesis;[)];
+    CSharpStatementLiteral - [23..25)::2 - [ }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Whitespace;[ ];
+        RightBrace;[}];

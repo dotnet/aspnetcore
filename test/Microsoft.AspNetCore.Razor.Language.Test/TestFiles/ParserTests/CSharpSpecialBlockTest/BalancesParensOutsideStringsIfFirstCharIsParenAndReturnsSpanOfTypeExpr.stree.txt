@@ -1,26 +1,31 @@
-Expression block - Gen<Expr> - 52 - (0:0,0)
-    MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftParenthesis;[(];
-    Code span - Gen<Expr> - [foo"b)ar" if(condition) { string.Format("{0}"); } ] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:20
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.StringLiteral;["b)ar"];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[condition];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Format];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.StringLiteral;["{0}"];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-    MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (51:0,51) - Tokens:1
-        SyntaxKind.RightParenthesis;[)];
+CSharpCodeBlock - [0..52)::52 - [(foo"b)ar" if(condition) { string.Format("{0}"); } )]
+    CSharpExplicitExpression - [0..52)::52
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpExplicitExpressionBody - [0..52)::52
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftParenthesis;[(];
+            CSharpCodeBlock - [1..51)::50
+                CSharpExpressionLiteral - [1..51)::50 - [foo"b)ar" if(condition) { string.Format("{0}"); } ] - Gen<Expr> - SpanEditHandler;Accepts:Any
+                    Identifier;[foo];
+                    StringLiteral;["b)ar"];
+                    Whitespace;[ ];
+                    Keyword;[if];
+                    LeftParenthesis;[(];
+                    Identifier;[condition];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    Whitespace;[ ];
+                    Keyword;[string];
+                    Dot;[.];
+                    Identifier;[Format];
+                    LeftParenthesis;[(];
+                    StringLiteral;["{0}"];
+                    RightParenthesis;[)];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+                    RightBrace;[}];
+                    Whitespace;[ ];
+            RazorMetaCode - [51..52)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightParenthesis;[)];

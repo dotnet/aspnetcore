@@ -17,5 +17,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         {
             return new SyntaxToken(kind, content, diagnostics);
         }
+
+        internal static SyntaxToken MissingToken(SyntaxKind kind, params RazorDiagnostic[] diagnostics)
+        {
+            return SyntaxToken.CreateMissing(kind, diagnostics);
+        }
     }
 }

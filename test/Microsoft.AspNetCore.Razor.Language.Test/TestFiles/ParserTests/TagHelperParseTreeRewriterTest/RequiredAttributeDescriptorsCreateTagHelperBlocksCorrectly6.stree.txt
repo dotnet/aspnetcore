@@ -1,13 +1,34 @@
-Markup block - Gen<None> - 27 - (0:0,0)
-    Tag block - Gen<TagHelper> - 27 - (0:0,0) - p - pTagHelper
-        SelfClosing - <p class="@DateTime.Now" />
-        class - DoubleQuotes
-            Markup block - Gen<None> - 13 - (10:0,10)
-                Markup block - Gen<DynAttr:@(10:0,10)> - 13 - (10:0,10)
-                    Expression block - Gen<Expr> - 13 - (10:0,10)
-                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (11:0,11) - Tokens:3
-                            SyntaxKind.Identifier;[DateTime];
-                            SyntaxKind.Dot;[.];
-                            SyntaxKind.Identifier;[Now];
+RazorDocument - [0..27)::27 - [<p class="@DateTime.Now" />]
+    MarkupBlock - [0..27)::27
+        MarkupTagHelperElement - [0..27)::27 - p[SelfClosing] - pTagHelper
+            MarkupTagHelperStartTag - [0..27)::27
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..24)::22 - class - DoubleQuotes - Unbound - [ class="@DateTime.Now"]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [10..23)::13
+                        MarkupDynamicAttributeValue - [10..23)::13 - [@DateTime.Now]
+                            GenericBlock - [10..23)::13
+                                CSharpCodeBlock - [10..23)::13
+                                    CSharpImplicitExpression - [10..23)::13
+                                        CSharpTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                            Transition;[@];
+                                        CSharpImplicitExpressionBody - [11..23)::12
+                                            CSharpCodeBlock - [11..23)::12
+                                                CSharpExpressionLiteral - [11..23)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                    Identifier;[DateTime];
+                                                    Dot;[.];
+                                                    Identifier;[Now];
+                    MarkupTextLiteral - [23..24)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [24..27)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

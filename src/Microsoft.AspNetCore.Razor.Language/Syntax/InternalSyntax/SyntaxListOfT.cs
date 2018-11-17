@@ -1,11 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
-    internal readonly struct SyntaxList<TNode>
+    internal struct SyntaxList<TNode> : IEquatable<SyntaxList<TNode>>
         where TNode : GreenNode
     {
         private readonly GreenNode _node;
@@ -15,13 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             _node = node;
         }
 
-        public GreenNode Node
-        {
-            get
-            {
-                return ((GreenNode)_node);
-            }
-        }
+        internal GreenNode Node => _node;
 
         public int Count
         {
@@ -31,33 +26,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             }
         }
 
-        public TNode Last
-        {
-            get
-            {
-                var node = _node;
-                if (node.IsList)
-                {
-                    return ((TNode)node.GetSlot(node.SlotCount - 1));
-                }
-
-                return ((TNode)node);
-            }
-        }
-
-        /* Not Implemented: Default */
         public TNode this[int index]
         {
             get
             {
-                var node = _node;
-                if (node.IsList)
+                if (_node == null)
                 {
-                    return ((TNode)node.GetSlot(index));
+                    return null;
                 }
+                else if (_node.IsList)
+                {
+                    Debug.Assert(index >= 0);
+                    Debug.Assert(index <= _node.SlotCount);
 
-                Debug.Assert(index == 0);
-                return ((TNode)node);
+                    return ((TNode)_node.GetSlot(index));
+                }
+                else if (index == 0)
+                {
+                    Debug.Assert(index == 0);
+                    return ((TNode)_node);
+                }
+                else
+                {
+                    throw new InvalidOperationException("This program location is thought to be unreachable.");
+                }
             }
         }
 
@@ -106,6 +98,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             }
         }
 
+        public TNode Last
+        {
+            get
+            {
+                var node = _node;
+                if (node.IsList)
+                {
+                    return ((TNode)node.GetSlot(node.SlotCount - 1));
+                }
+
+                return ((TNode)node);
+            }
+        }
+
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator(this);
+        }
+
         public static bool operator ==(SyntaxList<TNode> left, SyntaxList<TNode> right)
         {
             return (left._node == right._node);
@@ -114,6 +125,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         public static bool operator !=(SyntaxList<TNode> left, SyntaxList<TNode> right)
         {
             return !(left._node == right._node);
+        }
+
+        public bool Equals(SyntaxList<TNode> other)
+        {
+            return _node == other._node;
         }
 
         public override bool Equals(object obj)
@@ -134,6 +150,38 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         public static implicit operator SyntaxList<GreenNode>(SyntaxList<TNode> nodes)
         {
             return new SyntaxList<GreenNode>(nodes._node);
+        }
+
+        internal struct Enumerator
+        {
+            private SyntaxList<TNode> _list;
+            private int _index;
+
+            internal Enumerator(SyntaxList<TNode> list)
+            {
+                _list = list;
+                _index = -1;
+            }
+
+            public bool MoveNext()
+            {
+                var newIndex = _index + 1;
+                if (newIndex < _list.Count)
+                {
+                    _index = newIndex;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public TNode Current
+            {
+                get
+                {
+                    return _list[_index];
+                }
+            }
         }
     }
 }

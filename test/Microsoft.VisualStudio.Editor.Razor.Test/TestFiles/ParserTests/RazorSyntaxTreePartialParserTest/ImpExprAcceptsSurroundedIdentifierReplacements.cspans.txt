@@ -1,0 +1,4 @@
+Markup span at (0:0,0 [4] test.cshtml) (Accepts:Any) - Parent: Markup block at (0:0,0 [32] test.cshtml)
+Transition span at (4:0,4 [1] test.cshtml) (Accepts:None) - Parent: Expression block at (4:0,4 [24] test.cshtml)
+Code span at (5:0,5 [23] test.cshtml) (Accepts:NonWhitespace) - Parent: Expression block at (4:0,4 [24] test.cshtml)
+Markup span at (28:0,28 [4] test.cshtml) (Accepts:Any) - Parent: Markup block at (0:0,0 [32] test.cshtml)

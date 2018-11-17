@@ -1,9 +1,11 @@
-Directive block - Gen<None> - 20 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Import: static System;> - [using static System] - SpanEditHandler;Accepts:AnyExceptNewline - (1:0,1) - Tokens:5
-        SyntaxKind.Keyword;[using];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[static];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[System];
+CSharpCodeBlock - [0..20)::20 - [@using static System]
+    RazorDirective - [0..20)::20
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        RazorDirectiveBody - [1..20)::19
+            CSharpStatementLiteral - [1..20)::19 - [using static System] - Gen<Import: static System;> - SpanEditHandler;Accepts:AnyExceptNewline
+                Keyword;[using];
+                Whitespace;[ ];
+                Keyword;[static];
+                Whitespace;[ ];
+                Identifier;[System];

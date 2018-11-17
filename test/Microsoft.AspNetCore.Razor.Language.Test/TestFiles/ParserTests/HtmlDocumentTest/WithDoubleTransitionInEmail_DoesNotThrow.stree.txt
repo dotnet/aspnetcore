@@ -1,39 +1,47 @@
-Markup block - Gen<None> - 44 - (0:0,0)
-    Markup span - Gen<Markup> - [{] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Text;[{];
-    Tag block - Gen<None> - 42 - (1:0,1)
-        Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[span];
-        Markup block - Gen<Attr:foo, foo='@(6:0,6),'@(39:0,39)> - 34 - (6:0,6)
-            Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[foo];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.SingleQuote;['];
-            Markup span - Gen<LitAttr:@(12:0,12)> - [abc@def.com] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-                SyntaxKind.Text;[abc@def.com];
-            Markup span - Gen<LitAttr: @(23:0,23)> - [ abc] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:2
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[abc];
-            Markup block - Gen<None> - 2 - (27:0,27)
-                Markup span - Gen<LitAttr:@(27:0,27)> - [@] - SpanEditHandler;Accepts:None - (27:0,27) - Tokens:1
-                    SyntaxKind.Transition;[@];
-                Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (28:0,28) - Tokens:1
-                    SyntaxKind.Transition;[@];
-            Markup span - Gen<LitAttr:@(29:0,29)> - [def.com] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:1
-                SyntaxKind.Text;[def.com];
-            Markup block - Gen<None> - 3 - (36:0,36)
-                Markup span - Gen<LitAttr: @(36:0,36)> - [ @] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:2
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Transition;[@];
-                Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:1
-                    SyntaxKind.Transition;[@];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:Any - (40:0,40) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [}] - SpanEditHandler;Accepts:Any - (43:0,43) - Tokens:1
-        SyntaxKind.Text;[}];
+RazorDocument - [0..44)::44 - [{<span foo='abc@def.com abc@@def.com @@' />}]
+    MarkupBlock - [0..44)::44
+        MarkupTextLiteral - [0..1)::1 - [{] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[{];
+        MarkupTagBlock - [1..43)::42 - [<span foo='abc@def.com abc@@def.com @@' />]
+            MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[span];
+            MarkupAttributeBlock - [6..40)::34 - [ foo='abc@def.com abc@@def.com @@']
+                MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                MarkupTextLiteral - [7..10)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[foo];
+                Equals;[=];
+                MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+                GenericBlock - [12..39)::27
+                    MarkupLiteralAttributeValue - [12..23)::11 - [abc@def.com]
+                        MarkupTextLiteral - [12..23)::11 - [abc@def.com] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[abc@def.com];
+                    MarkupLiteralAttributeValue - [23..27)::4 - [ abc]
+                        MarkupTextLiteral - [23..24)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        MarkupTextLiteral - [24..27)::3 - [abc] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[abc];
+                    MarkupBlock - [27..29)::2
+                        MarkupTextLiteral - [27..28)::1 - [@] - Gen<LitAttr:@(27:0,27)> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        MarkupEphemeralTextLiteral - [28..29)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                    MarkupLiteralAttributeValue - [29..36)::7 - [def.com]
+                        MarkupTextLiteral - [29..36)::7 - [def.com] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[def.com];
+                    MarkupBlock - [36..39)::3
+                        MarkupTextLiteral - [36..38)::2 - [ @] - Gen<LitAttr: @(36:0,36)> - SpanEditHandler;Accepts:None
+                            Whitespace;[ ];
+                            Transition;[@];
+                        MarkupEphemeralTextLiteral - [38..39)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+            MarkupTextLiteral - [40..43)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                ForwardSlash;[/];
+                CloseAngle;[>];
+        MarkupTextLiteral - [43..44)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[}];

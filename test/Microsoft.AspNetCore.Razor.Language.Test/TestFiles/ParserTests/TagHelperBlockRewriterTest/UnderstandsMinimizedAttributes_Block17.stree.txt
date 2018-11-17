@@ -1,19 +1,42 @@
-Markup block - Gen<None> - 33 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 33 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 30 - (2:0,2)
-            Tag block - Gen<TagHelper> - 30 - (2:0,2) - p - PTagHelper
-                StartTagAndEndTag - <p bound-int bound-string> ... </p>
-                bound-int - Minimized
-                bound-string - Minimized
-        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:1
-            SyntaxKind.Unknown;[];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..33)::33 - [@{<p bound-int bound-string></p>}]
+    MarkupBlock - [0..33)::33
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..33)::33
+            CSharpStatement - [0..33)::33
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..33)::32
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..32)::30
+                        MarkupBlock - [2..32)::30
+                            MarkupTagHelperElement - [2..32)::30 - p[StartTagAndEndTag] - PTagHelper
+                                MarkupTagHelperStartTag - [2..28)::26
+                                    MarkupTextLiteral - [2..4)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        Text;[p];
+                                    MarkupMinimizedTagHelperAttribute - [4..14)::10 - bound-int - Minimized - Bound - [ bound-int]
+                                        MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                        MarkupTextLiteral - [5..14)::9 - [bound-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Text;[bound-int];
+                                    MarkupMinimizedTagHelperAttribute - [14..27)::13 - bound-string - Minimized - Bound - [ bound-string]
+                                        MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                        MarkupTextLiteral - [15..27)::12 - [bound-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Text;[bound-string];
+                                    MarkupTextLiteral - [27..28)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        CloseAngle;[>];
+                                MarkupTagHelperEndTag - [28..32)::4
+                                    MarkupTextLiteral - [28..32)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        OpenAngle;[<];
+                                        ForwardSlash;[/];
+                                        Text;[p];
+                                        CloseAngle;[>];
+                        CSharpStatementLiteral - [32..32)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [32..33)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [33..33)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

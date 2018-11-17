@@ -1,26 +1,27 @@
-Markup block - Gen<None> - 31 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    HtmlComment block - Gen<None> - 20 - (5:0,5)
-        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Bang;[!];
-            SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [ Hello World ] - SpanEditHandler;Accepts:Whitespace - (9:0,9) - Tokens:5
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[Hello];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[World];
-            SyntaxKind.Whitespace;[ ];
-        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:2
-            SyntaxKind.DoubleHyphen;[--];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 6 - (25:0,25)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..31)::31 - [<foo><!-- Hello World --></foo>]
+    MarkupBlock - [0..31)::31
+        MarkupTagBlock - [0..5)::5 - [<foo>]
+            MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[foo];
+                CloseAngle;[>];
+        MarkupCommentBlock - [5..25)::20
+            MarkupTextLiteral - [5..9)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Bang;[!];
+                DoubleHyphen;[--];
+            MarkupTextLiteral - [9..22)::13 - [ Hello World ] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
+                Whitespace;[ ];
+                Text;[Hello];
+                Whitespace;[ ];
+                Text;[World];
+                Whitespace;[ ];
+            MarkupTextLiteral - [22..25)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
+                DoubleHyphen;[--];
+                CloseAngle;[>];
+        MarkupTagBlock - [25..31)::6 - [</foo>]
+            MarkupTextLiteral - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[foo];
+                CloseAngle;[>];

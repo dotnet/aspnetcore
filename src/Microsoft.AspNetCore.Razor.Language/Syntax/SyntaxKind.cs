@@ -6,31 +6,53 @@ namespace Microsoft.AspNetCore.Razor.Language
     internal enum SyntaxKind : byte
     {
         #region Nodes
-        // HTML
-        HtmlTextLiteral,
-        HtmlDocument,
-        HtmlDeclaration,
+        // Common
+        RazorDocument,
+        GenericBlock,
+        RazorComment,
+        RazorMetaCode,
+        RazorDirective,
+        RazorDirectiveBody,
+        UnclassifiedTextLiteral,
+
+        // Markup
+        MarkupBlock,
+        MarkupTransition,
+        MarkupElement,
+        MarkupTagBlock,
+        MarkupTextLiteral,
+        MarkupEphemeralTextLiteral,
+        MarkupCommentBlock,
+        MarkupAttributeBlock,
+        MarkupMinimizedAttributeBlock,
+        MarkupLiteralAttributeValue,
+        MarkupDynamicAttributeValue,
+        MarkupTagHelperElement,
+        MarkupTagHelperStartTag,
+        MarkupTagHelperEndTag,
+        MarkupTagHelperAttribute,
+        MarkupMinimizedTagHelperAttribute,
+        MarkupTagHelperAttributeValue,
 
         // CSharp
-        CSharpBlock,
         CSharpStatement,
         CSharpStatementBody,
-        CSharpExpression,
-        CSharpExpressionBody,
-        CSharpDirective,
-        CSharpDirectiveBody,
+        CSharpExplicitExpression,
+        CSharpExplicitExpressionBody,
+        CSharpImplicitExpression,
+        CSharpImplicitExpressionBody,
         CSharpCodeBlock,
-        CSharpCodeLiteral,
-        CSharpMetaCode,
+        CSharpTemplateBlock,
+        CSharpStatementLiteral,
+        CSharpExpressionLiteral,
+        CSharpEphemeralTextLiteral,
         CSharpTransition,
-
-        // Common
-        RazorComment,
         #endregion
 
         #region Tokens
         // Common
-        Unknown,
+        None,
+        Marker,
         List,
         Whitespace,
         NewLine,

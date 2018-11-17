@@ -1,13 +1,13 @@
-Markup block - Gen<None> - 16 - (0:0,0)
-    Markup span - Gen<Markup> - [<![CDATA[Foo]]>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:9
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.Bang;[!];
-        SyntaxKind.LeftBracket;[[];
-        SyntaxKind.Text;[CDATA];
-        SyntaxKind.LeftBracket;[[];
-        SyntaxKind.Text;[Foo];
-        SyntaxKind.RightBracket;[]];
-        SyntaxKind.RightBracket;[]];
-        SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
+MarkupBlock - [0..16)::16 - [<![CDATA[Foo]]> ]
+    MarkupTextLiteral - [0..15)::15 - [<![CDATA[Foo]]>] - Gen<Markup> - SpanEditHandler;Accepts:None
+        OpenAngle;[<];
+        Bang;[!];
+        LeftBracket;[[];
+        Text;[CDATA];
+        LeftBracket;[[];
+        Text;[Foo];
+        RightBracket;[]];
+        RightBracket;[]];
+        CloseAngle;[>];
+    MarkupTextLiteral - [15..16)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+        Whitespace;[ ];

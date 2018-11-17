@@ -1,28 +1,29 @@
-Markup block - Gen<None> - 68 - (0:0,0)
-    Tag block - Gen<None> - 8 - (0:0,0)
-        Markup span - Gen<Markup> - [<script>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[script];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [foo < bar && quantity.toString() !== orderQty.val()] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:15
-        SyntaxKind.Text;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[bar];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[&&];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[quantity.toString()];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Bang;[!];
-        SyntaxKind.Equals;[=];
-        SyntaxKind.Equals;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[orderQty.val()];
-    Tag block - Gen<None> - 9 - (59:0,59)
-        Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (59:0,59) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[script];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..68)::68 - [<script>foo < bar && quantity.toString() !== orderQty.val()</script>]
+    MarkupBlock - [0..68)::68
+        MarkupTagBlock - [0..8)::8 - [<script>]
+            MarkupTextLiteral - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
+        MarkupTextLiteral - [8..59)::51 - [foo < bar && quantity.toString() !== orderQty.val()] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[foo];
+            Whitespace;[ ];
+            OpenAngle;[<];
+            Whitespace;[ ];
+            Text;[bar];
+            Whitespace;[ ];
+            Text;[&&];
+            Whitespace;[ ];
+            Text;[quantity.toString()];
+            Whitespace;[ ];
+            Bang;[!];
+            Equals;[=];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[orderQty.val()];
+        MarkupTagBlock - [59..68)::9 - [</script>]
+            MarkupTextLiteral - [59..68)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

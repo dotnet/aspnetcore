@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -13,7 +14,6 @@ using Microsoft.VisualStudio.Text.Operations;
 using Moq;
 using Xunit;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
-using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -153,7 +153,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsUnlinkedSpan_NullOwner_ReturnsTrue()
         {
             // Arrange
-            Span owner = null;
+            SyntaxNode owner = null;
 
             // Act
             var result = BraceSmartIndenter.IsUnlinkedSpan(owner);
@@ -533,12 +533,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     options.Directives.Add(FunctionsDirective.Directive);
                     options.Directives.Add(SectionDirective.Directive);
                 }));
-            syntaxTree.Root.LinkNodes();
 
             return syntaxTree;
         }
 
-        private static Span ExtractSpan(int spanLocation, string content)
+        private static SyntaxNode ExtractSpan(int spanLocation, string content)
         {
             var syntaxTree = GetSyntaxTree(content);
             var span = syntaxTree.Root.LocateOwner(new SourceChange(new SourceSpan(spanLocation, 0), string.Empty));

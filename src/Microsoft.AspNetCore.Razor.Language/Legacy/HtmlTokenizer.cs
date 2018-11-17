@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return EndToken(SyntaxKind.DoubleHyphen);
                 default:
                     Debug.Fail("Unexpected token!");
-                    return EndToken(SyntaxKind.Unknown);
+                    return EndToken(SyntaxKind.Marker);
             }
         }
 

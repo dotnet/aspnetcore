@@ -1,179 +1,194 @@
-Statement block - Gen<None> - 351 - (0:0,0)
-    Code span - Gen<Stmt> - [foreach(var c in db.Categories) {LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:15
-        SyntaxKind.Keyword;[foreach];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[c];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[in];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[db];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Categories];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 307 - (35:1,0)
-        Markup span - Gen<Markup> - [            ] - SpanEditHandler;Accepts:Any - (35:1,0) - Tokens:1
-            SyntaxKind.Whitespace;[            ];
-        Tag block - Gen<None> - 5 - (47:1,12)
-            Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:None - (47:1,12) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[div];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF                ] - SpanEditHandler;Accepts:Any - (52:1,17) - Tokens:2
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Whitespace;[                ];
-        Tag block - Gen<None> - 4 - (70:2,16)
-            Markup span - Gen<Markup> - [<h1>] - SpanEditHandler;Accepts:None - (70:2,16) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[h1];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (74:2,20) - Tokens:1
-            SyntaxKind.Unknown;[];
-        Expression block - Gen<Expr> - 7 - (74:2,20)
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (74:2,20) - Tokens:1
-                SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [c.Name] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (75:2,21) - Tokens:3
-                SyntaxKind.Identifier;[c];
-                SyntaxKind.Dot;[.];
-                SyntaxKind.Identifier;[Name];
-        Tag block - Gen<None> - 5 - (81:2,27)
-            Markup span - Gen<Markup> - [</h1>] - SpanEditHandler;Accepts:None - (81:2,27) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[h1];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF                ] - SpanEditHandler;Accepts:Any - (86:2,32) - Tokens:2
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Whitespace;[                ];
-        Tag block - Gen<None> - 4 - (104:3,16)
-            Markup span - Gen<Markup> - [<ul>] - SpanEditHandler;Accepts:None - (104:3,16) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[ul];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (108:3,20) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-        Statement block - Gen<None> - 189 - (110:4,0)
-            Code span - Gen<Stmt> - [                    ] - SpanEditHandler;Accepts:Any - (110:4,0) - Tokens:1
-                SyntaxKind.Whitespace;[                    ];
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (130:4,20) - Tokens:1
-                SyntaxKind.Transition;[@];
-            Code span - Gen<Stmt> - [foreach(var p in c.Products) {LF] - SpanEditHandler;Accepts:Any - (131:4,21) - Tokens:15
-                SyntaxKind.Keyword;[foreach];
-                SyntaxKind.LeftParenthesis;[(];
-                SyntaxKind.Identifier;[var];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Identifier;[p];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Keyword;[in];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Identifier;[c];
-                SyntaxKind.Dot;[.];
-                SyntaxKind.Identifier;[Products];
-                SyntaxKind.RightParenthesis;[)];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.LeftBrace;[{];
-                SyntaxKind.NewLine;[LF];
-            Markup block - Gen<None> - 113 - (163:5,0)
-                Markup span - Gen<Markup> - [                        ] - SpanEditHandler;Accepts:Any - (163:5,0) - Tokens:1
-                    SyntaxKind.Whitespace;[                        ];
-                Tag block - Gen<None> - 4 - (187:5,24)
-                    Markup span - Gen<Markup> - [<li>] - SpanEditHandler;Accepts:None - (187:5,24) - Tokens:3
-                        SyntaxKind.OpenAngle;[<];
-                        SyntaxKind.Text;[li];
-                        SyntaxKind.CloseAngle;[>];
-                Tag block - Gen<None> - 67 - (191:5,28)
-                    Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (191:5,28) - Tokens:2
-                        SyntaxKind.OpenAngle;[<];
-                        SyntaxKind.Text;[a];
-                    Markup block - Gen<Attr:href, href="@(193:5,30),"@(256:5,93)> - 64 - (193:5,30)
-                        Markup span - Gen<None> - [ href="] - SpanEditHandler;Accepts:Any - (193:5,30) - Tokens:4
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Text;[href];
-                            SyntaxKind.Equals;[=];
-                            SyntaxKind.DoubleQuote;["];
-                        Markup block - Gen<DynAttr:@(200:5,37)> - 56 - (200:5,37)
-                            Expression block - Gen<Expr> - 56 - (200:5,37)
-                                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (200:5,37) - Tokens:1
-                                    SyntaxKind.Transition;[@];
-                                Code span - Gen<Expr> - [Html.ActionUrl("Products", "Detail", new { id = p.Id })] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (201:5,38) - Tokens:24
-                                    SyntaxKind.Identifier;[Html];
-                                    SyntaxKind.Dot;[.];
-                                    SyntaxKind.Identifier;[ActionUrl];
-                                    SyntaxKind.LeftParenthesis;[(];
-                                    SyntaxKind.StringLiteral;["Products"];
-                                    SyntaxKind.Comma;[,];
-                                    SyntaxKind.Whitespace;[ ];
-                                    SyntaxKind.StringLiteral;["Detail"];
-                                    SyntaxKind.Comma;[,];
-                                    SyntaxKind.Whitespace;[ ];
-                                    SyntaxKind.Keyword;[new];
-                                    SyntaxKind.Whitespace;[ ];
-                                    SyntaxKind.LeftBrace;[{];
-                                    SyntaxKind.Whitespace;[ ];
-                                    SyntaxKind.Identifier;[id];
-                                    SyntaxKind.Whitespace;[ ];
-                                    SyntaxKind.Assign;[=];
-                                    SyntaxKind.Whitespace;[ ];
-                                    SyntaxKind.Identifier;[p];
-                                    SyntaxKind.Dot;[.];
-                                    SyntaxKind.Identifier;[Id];
-                                    SyntaxKind.Whitespace;[ ];
-                                    SyntaxKind.RightBrace;[}];
-                                    SyntaxKind.RightParenthesis;[)];
-                        Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (256:5,93) - Tokens:1
-                            SyntaxKind.DoubleQuote;["];
-                    Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (257:5,94) - Tokens:1
-                        SyntaxKind.CloseAngle;[>];
-                Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (258:5,95) - Tokens:1
-                    SyntaxKind.Unknown;[];
-                Expression block - Gen<Expr> - 7 - (258:5,95)
-                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (258:5,95) - Tokens:1
-                        SyntaxKind.Transition;[@];
-                    Code span - Gen<Expr> - [p.Name] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (259:5,96) - Tokens:3
-                        SyntaxKind.Identifier;[p];
-                        SyntaxKind.Dot;[.];
-                        SyntaxKind.Identifier;[Name];
-                Tag block - Gen<None> - 4 - (265:5,102)
-                    Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:None - (265:5,102) - Tokens:4
-                        SyntaxKind.OpenAngle;[<];
-                        SyntaxKind.ForwardSlash;[/];
-                        SyntaxKind.Text;[a];
-                        SyntaxKind.CloseAngle;[>];
-                Tag block - Gen<None> - 5 - (269:5,106)
-                    Markup span - Gen<Markup> - [</li>] - SpanEditHandler;Accepts:None - (269:5,106) - Tokens:4
-                        SyntaxKind.OpenAngle;[<];
-                        SyntaxKind.ForwardSlash;[/];
-                        SyntaxKind.Text;[li];
-                        SyntaxKind.CloseAngle;[>];
-                Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (274:5,111) - Tokens:1
-                    SyntaxKind.NewLine;[LF];
-            Code span - Gen<Stmt> - [                    }LF] - SpanEditHandler;Accepts:None - (276:6,0) - Tokens:3
-                SyntaxKind.Whitespace;[                    ];
-                SyntaxKind.RightBrace;[}];
-                SyntaxKind.NewLine;[LF];
-        Markup span - Gen<Markup> - [                ] - SpanEditHandler;Accepts:Any - (299:7,0) - Tokens:1
-            SyntaxKind.Whitespace;[                ];
-        Tag block - Gen<None> - 5 - (315:7,16)
-            Markup span - Gen<Markup> - [</ul>] - SpanEditHandler;Accepts:None - (315:7,16) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[ul];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF            ] - SpanEditHandler;Accepts:Any - (320:7,21) - Tokens:2
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Whitespace;[            ];
-        Tag block - Gen<None> - 6 - (334:8,12)
-            Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:None - (334:8,12) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[div];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (340:8,18) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-    Code span - Gen<Stmt> - [        }] - SpanEditHandler;Accepts:None - (342:9,0) - Tokens:2
-        SyntaxKind.Whitespace;[        ];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..351)::351 - [foreach(var c in db.Categories) {LF            <div>LF                <h1>@c.Name</h1>LF                <ul>LF                    @foreach(var p in c.Products) {LF                        <li><a href="@Html.ActionUrl("Products", "Detail", new { id = p.Id })">@p.Name</a></li>LF                    }LF                </ul>LF            </div>LF        }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..35)::35 - [foreach(var c in db.Categories) {LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[foreach];
+        LeftParenthesis;[(];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[c];
+        Whitespace;[ ];
+        Keyword;[in];
+        Whitespace;[ ];
+        Identifier;[db];
+        Dot;[.];
+        Identifier;[Categories];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        NewLine;[LF];
+    MarkupBlock - [35..342)::307
+        MarkupTextLiteral - [35..47)::12 - [            ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[            ];
+        MarkupTagBlock - [47..52)::5 - [<div>]
+            MarkupTextLiteral - [47..52)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[div];
+                CloseAngle;[>];
+        MarkupTextLiteral - [52..70)::18 - [LF                ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+            Whitespace;[                ];
+        MarkupTagBlock - [70..74)::4 - [<h1>]
+            MarkupTextLiteral - [70..74)::4 - [<h1>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[h1];
+                CloseAngle;[>];
+        MarkupTextLiteral - [74..74)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [74..81)::7
+            CSharpImplicitExpression - [74..81)::7
+                CSharpTransition - [74..75)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [75..81)::6
+                    CSharpCodeBlock - [75..81)::6
+                        CSharpExpressionLiteral - [75..81)::6 - [c.Name] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                            Identifier;[c];
+                            Dot;[.];
+                            Identifier;[Name];
+        MarkupTagBlock - [81..86)::5 - [</h1>]
+            MarkupTextLiteral - [81..86)::5 - [</h1>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[h1];
+                CloseAngle;[>];
+        MarkupTextLiteral - [86..104)::18 - [LF                ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+            Whitespace;[                ];
+        MarkupTagBlock - [104..108)::4 - [<ul>]
+            MarkupTextLiteral - [104..108)::4 - [<ul>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[ul];
+                CloseAngle;[>];
+        MarkupTextLiteral - [108..110)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+        CSharpCodeBlock - [110..299)::189
+            CSharpStatementLiteral - [110..130)::20 - [                    ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                Whitespace;[                    ];
+            CSharpTransition - [130..131)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Transition;[@];
+            CSharpStatementLiteral - [131..163)::32 - [foreach(var p in c.Products) {LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                Keyword;[foreach];
+                LeftParenthesis;[(];
+                Identifier;[var];
+                Whitespace;[ ];
+                Identifier;[p];
+                Whitespace;[ ];
+                Keyword;[in];
+                Whitespace;[ ];
+                Identifier;[c];
+                Dot;[.];
+                Identifier;[Products];
+                RightParenthesis;[)];
+                Whitespace;[ ];
+                LeftBrace;[{];
+                NewLine;[LF];
+            MarkupBlock - [163..276)::113
+                MarkupTextLiteral - [163..187)::24 - [                        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[                        ];
+                MarkupTagBlock - [187..191)::4 - [<li>]
+                    MarkupTextLiteral - [187..191)::4 - [<li>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        OpenAngle;[<];
+                        Text;[li];
+                        CloseAngle;[>];
+                MarkupTagBlock - [191..258)::67 - [<a href="@Html.ActionUrl("Products", "Detail", new { id = p.Id })">]
+                    MarkupTextLiteral - [191..193)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[a];
+                    MarkupAttributeBlock - [193..257)::64 - [ href="@Html.ActionUrl("Products", "Detail", new { id = p.Id })"]
+                        MarkupTextLiteral - [193..194)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        MarkupTextLiteral - [194..198)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[href];
+                        Equals;[=];
+                        MarkupTextLiteral - [199..200)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                        GenericBlock - [200..256)::56
+                            MarkupDynamicAttributeValue - [200..256)::56 - [@Html.ActionUrl("Products", "Detail", new { id = p.Id })]
+                                GenericBlock - [200..256)::56
+                                    CSharpCodeBlock - [200..256)::56
+                                        CSharpImplicitExpression - [200..256)::56
+                                            CSharpTransition - [200..201)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                                Transition;[@];
+                                            CSharpImplicitExpressionBody - [201..256)::55
+                                                CSharpCodeBlock - [201..256)::55
+                                                    CSharpExpressionLiteral - [201..256)::55 - [Html.ActionUrl("Products", "Detail", new { id = p.Id })] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                        Identifier;[Html];
+                                                        Dot;[.];
+                                                        Identifier;[ActionUrl];
+                                                        LeftParenthesis;[(];
+                                                        StringLiteral;["Products"];
+                                                        Comma;[,];
+                                                        Whitespace;[ ];
+                                                        StringLiteral;["Detail"];
+                                                        Comma;[,];
+                                                        Whitespace;[ ];
+                                                        Keyword;[new];
+                                                        Whitespace;[ ];
+                                                        LeftBrace;[{];
+                                                        Whitespace;[ ];
+                                                        Identifier;[id];
+                                                        Whitespace;[ ];
+                                                        Assign;[=];
+                                                        Whitespace;[ ];
+                                                        Identifier;[p];
+                                                        Dot;[.];
+                                                        Identifier;[Id];
+                                                        Whitespace;[ ];
+                                                        RightBrace;[}];
+                                                        RightParenthesis;[)];
+                        MarkupTextLiteral - [256..257)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                    MarkupTextLiteral - [257..258)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        CloseAngle;[>];
+                MarkupTextLiteral - [258..258)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Marker;[];
+                CSharpCodeBlock - [258..265)::7
+                    CSharpImplicitExpression - [258..265)::7
+                        CSharpTransition - [258..259)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        CSharpImplicitExpressionBody - [259..265)::6
+                            CSharpCodeBlock - [259..265)::6
+                                CSharpExpressionLiteral - [259..265)::6 - [p.Name] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                    Identifier;[p];
+                                    Dot;[.];
+                                    Identifier;[Name];
+                MarkupTagBlock - [265..269)::4 - [</a>]
+                    MarkupTextLiteral - [265..269)::4 - [</a>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[a];
+                        CloseAngle;[>];
+                MarkupTagBlock - [269..274)::5 - [</li>]
+                    MarkupTextLiteral - [269..274)::5 - [</li>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[li];
+                        CloseAngle;[>];
+                MarkupTextLiteral - [274..276)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    NewLine;[LF];
+            CSharpStatementLiteral - [276..299)::23 - [                    }LF] - Gen<Stmt> - SpanEditHandler;Accepts:None
+                Whitespace;[                    ];
+                RightBrace;[}];
+                NewLine;[LF];
+        MarkupTextLiteral - [299..315)::16 - [                ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[                ];
+        MarkupTagBlock - [315..320)::5 - [</ul>]
+            MarkupTextLiteral - [315..320)::5 - [</ul>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[ul];
+                CloseAngle;[>];
+        MarkupTextLiteral - [320..334)::14 - [LF            ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+            Whitespace;[            ];
+        MarkupTagBlock - [334..340)::6 - [</div>]
+            MarkupTextLiteral - [334..340)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];
+        MarkupTextLiteral - [340..342)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+            NewLine;[LF];
+    CSharpStatementLiteral - [342..351)::9 - [        }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Whitespace;[        ];
+        RightBrace;[}];

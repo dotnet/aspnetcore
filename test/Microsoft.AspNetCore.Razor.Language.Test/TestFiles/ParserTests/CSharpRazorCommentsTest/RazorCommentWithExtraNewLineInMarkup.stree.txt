@@ -1,43 +1,34 @@
-Markup block - Gen<None> - 45 - (0:0,0)
-    Tag block - Gen<None> - 3 - (0:0,0)
-        Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[p];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LFLF] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.NewLine;[LF];
-    Comment block - Gen<RazorComment> - 13 - (7:2,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (7:2,0) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (8:2,1) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Comment span - Gen<None> - [ content ] - SpanEditHandler;Accepts:Any - (9:2,2) - Tokens:1
-            SyntaxKind.RazorCommentLiteral;[ content ];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (18:2,11) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (19:2,12) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-    Markup span - Gen<None> - [LF] - SpanEditHandler;Accepts:Any - (20:2,13) - Tokens:1
-        SyntaxKind.NewLine;[LF];
-    Comment block - Gen<RazorComment> - 15 - (22:3,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (22:3,0) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (23:3,1) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Comment span - Gen<None> - [LFcontentLF] - SpanEditHandler;Accepts:Any - (24:3,2) - Tokens:1
-            SyntaxKind.RazorCommentLiteral;[LFcontentLF];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (35:5,0) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (36:5,1) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-    Markup span - Gen<None> - [LF] - SpanEditHandler;Accepts:Any - (37:5,2) - Tokens:1
-        SyntaxKind.NewLine;[LF];
-    SyntaxKind.HtmlTextLiteral - [LF] - [39..41) - FullWidth: 2 - Slots: 1
-        SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 4 - (41:7,0)
-        Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (41:7,0) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[p];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..45)::45 - [<p>LFLF@* content *@LF@*LFcontentLF*@LFLF</p>]
+    MarkupBlock - [0..45)::45
+        MarkupTagBlock - [0..3)::3 - [<p>]
+            MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [3..7)::4 - [LFLF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+            NewLine;[LF];
+        RazorComment - [7..20)::13
+            RazorCommentTransition;[@];
+            RazorCommentStar;[*];
+            RazorCommentLiteral;[ content ];
+            RazorCommentStar;[*];
+            RazorCommentTransition;[@];
+        MarkupEphemeralTextLiteral - [20..22)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+        RazorComment - [22..37)::15
+            RazorCommentTransition;[@];
+            RazorCommentStar;[*];
+            RazorCommentLiteral;[LFcontentLF];
+            RazorCommentStar;[*];
+            RazorCommentTransition;[@];
+        MarkupEphemeralTextLiteral - [37..39)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+        MarkupTextLiteral - [39..41)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+        MarkupTagBlock - [41..45)::4 - [</p>]
+            MarkupTextLiteral - [41..45)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];

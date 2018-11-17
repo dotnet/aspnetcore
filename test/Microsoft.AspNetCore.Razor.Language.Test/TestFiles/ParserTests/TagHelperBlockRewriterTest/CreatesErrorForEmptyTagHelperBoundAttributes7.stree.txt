@@ -1,7 +1,31 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Tag block - Gen<TagHelper> - 23 - (0:0,0) - myth - mythTagHelper
-        SelfClosing - <myth bound= name='' />
-        bound - DoubleQuotes
-            Code span - Gen<None> - [] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (12:0,12) - Tokens:0
-        name - SingleQuotes
-            Markup block - Gen<None> - 0 - (0:0,0)
+RazorDocument - [0..23)::23 - [<myth bound= name='' />]
+    MarkupBlock - [0..23)::23
+        MarkupTagHelperElement - [0..23)::23 - myth[SelfClosing] - mythTagHelper
+            MarkupTagHelperStartTag - [0..23)::23
+                MarkupTextLiteral - [0..5)::5 - [<myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[myth];
+                MarkupTagHelperAttribute - [5..12)::7 - bound - DoubleQuotes - Bound - [ bound=]
+                    MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [6..11)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound];
+                    Equals;[=];
+                    MarkupTagHelperAttributeValue - [12..12)::0
+                        CSharpExpressionLiteral - [12..12)::0 - [] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                MarkupTagHelperAttribute - [12..20)::8 - name - SingleQuotes - Bound - [ name='']
+                    MarkupTextLiteral - [12..13)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [13..17)::4 - [name] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[name];
+                    Equals;[=];
+                    MarkupTextLiteral - [18..19)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [19..19)::0
+                        MarkupTextLiteral - [19..19)::0 - []
+                    MarkupTextLiteral - [19..20)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [20..23)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

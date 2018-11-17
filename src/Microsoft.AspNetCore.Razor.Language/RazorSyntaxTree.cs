@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorSyntaxTree
     {
         internal static RazorSyntaxTree Create(
-            Block root,
+            SyntaxNode root,
             RazorSourceDocument source,
             IEnumerable<RazorDiagnostic> diagnostics,
             RazorParserOptions options)
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract RazorParserOptions Options { get; }
 
-        internal abstract Block Root { get; }
+        internal abstract SyntaxNode Root { get; }
 
         public abstract RazorSourceDocument Source { get; }
     }

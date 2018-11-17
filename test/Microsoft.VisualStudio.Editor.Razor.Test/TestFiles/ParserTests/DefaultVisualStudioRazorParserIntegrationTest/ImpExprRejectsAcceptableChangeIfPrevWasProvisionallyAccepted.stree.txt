@@ -1,0 +1,26 @@
+RazorDocument - [0..15)::15 - [foo @foo. @barb]
+    MarkupBlock - [0..15)::15
+        MarkupTextLiteral - [0..4)::4 - [foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[foo];
+            Whitespace;[ ];
+        CSharpCodeBlock - [4..8)::4
+            CSharpImplicitExpression - [4..8)::4
+                CSharpTransition - [4..5)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [5..8)::3
+                    CSharpCodeBlock - [5..8)::3
+                        CSharpExpressionLiteral - [5..8)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K20
+                            Identifier;[foo];
+        MarkupTextLiteral - [8..10)::2 - [. ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[.];
+            Whitespace;[ ];
+        CSharpCodeBlock - [10..15)::5
+            CSharpImplicitExpression - [10..15)::5
+                CSharpTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [11..15)::4
+                    CSharpCodeBlock - [11..15)::4
+                        CSharpExpressionLiteral - [11..15)::4 - [barb] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K20
+                            Identifier;[barb];
+        MarkupTextLiteral - [15..15)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

@@ -1,21 +1,25 @@
-Markup block - Gen<None> - 17 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 5 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Code span - Gen<Stmt> - [LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (2:0,2) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (4:1,0) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [   	] - SpanEditHandler;Accepts:Any - (5:1,1) - Tokens:1
-        SyntaxKind.Whitespace;[   	];
-    Tag block - Gen<None> - 6 - (9:1,5)
-        Markup span - Gen<Markup> - [<html>] - SpanEditHandler;Accepts:Any - (9:1,5) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[html];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (15:1,11) - Tokens:1
-        SyntaxKind.NewLine;[LF];
+RazorDocument - [0..17)::17 - [@{LF}   	<html>LF]
+    MarkupBlock - [0..17)::17
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..5)::5
+            CSharpStatement - [0..5)::5
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..5)::4
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..4)::2
+                        CSharpStatementLiteral - [2..4)::2 - [LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            NewLine;[LF];
+                    RazorMetaCode - [4..5)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [5..9)::4 - [   	] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[   	];
+        MarkupTagBlock - [9..15)::6 - [<html>]
+            MarkupTextLiteral - [9..15)::6 - [<html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[html];
+                CloseAngle;[>];
+        MarkupTextLiteral - [15..17)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];

@@ -1,23 +1,22 @@
-Markup block - Gen<None> - 13 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Expression block - Gen<Expr> - 13 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [foo(LF] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:3
-            SyntaxKind.Identifier;[foo];
-            SyntaxKind.LeftParenthesis;[(];
-            SyntaxKind.NewLine;[LF];
-        Comment block - Gen<RazorComment> - 4 - (7:1,0)
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (7:1,0) - Tokens:1
-                SyntaxKind.RazorCommentTransition;[@];
-            MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (8:1,1) - Tokens:1
-                SyntaxKind.RazorCommentStar;[*];
-            Comment span - Gen<None> - [] - SpanEditHandler;Accepts:Any - (9:1,2) - Tokens:1
-                SyntaxKind.Unknown;[];
-            MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (9:1,2) - Tokens:1
-                SyntaxKind.RazorCommentStar;[*];
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:1,3) - Tokens:1
-                SyntaxKind.RazorCommentTransition;[@];
-        Code span - Gen<Expr> - [LF] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (11:1,4) - Tokens:1
-            SyntaxKind.NewLine;[LF];
+RazorDocument - [0..13)::13 - [@foo(LF@**@LF]
+    MarkupBlock - [0..13)::13
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..13)::13
+            CSharpImplicitExpression - [0..13)::13
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [1..13)::12
+                    CSharpCodeBlock - [1..13)::12
+                        CSharpExpressionLiteral - [1..7)::6 - [foo(LF] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14
+                            Identifier;[foo];
+                            LeftParenthesis;[(];
+                            NewLine;[LF];
+                        RazorComment - [7..11)::4
+                            RazorCommentTransition;[@];
+                            RazorCommentStar;[*];
+                            RazorCommentLiteral;[<Missing>];
+                            RazorCommentStar;[*];
+                            RazorCommentTransition;[@];
+                        CSharpExpressionLiteral - [11..13)::2 - [LF] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14
+                            NewLine;[LF];

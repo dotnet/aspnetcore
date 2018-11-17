@@ -1,6 +1,24 @@
-Markup block - Gen<None> - 21 - (0:0,0)
-    Tag block - Gen<TagHelper> - 21 - (0:0,0) - myth - mythTagHelper
-        SelfClosing - <myth bound='    ' />
-        bound - SingleQuotes
-            Code span - Gen<Expr> - [    ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                SyntaxKind.Whitespace;[    ];
+RazorDocument - [0..21)::21 - [<myth bound='    ' />]
+    MarkupBlock - [0..21)::21
+        MarkupTagHelperElement - [0..21)::21 - myth[SelfClosing] - mythTagHelper
+            MarkupTagHelperStartTag - [0..21)::21
+                MarkupTextLiteral - [0..5)::5 - [<myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[myth];
+                MarkupTagHelperAttribute - [5..18)::13 - bound - SingleQuotes - Bound - [ bound='    ']
+                    MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [6..11)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound];
+                    Equals;[=];
+                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [13..17)::4
+                        CSharpExpressionLiteral - [13..17)::4 - [    ] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                            Whitespace;[    ];
+                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [18..21)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

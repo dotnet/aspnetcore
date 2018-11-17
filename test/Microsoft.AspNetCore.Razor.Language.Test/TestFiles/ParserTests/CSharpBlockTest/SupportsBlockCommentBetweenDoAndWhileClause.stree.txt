@@ -1,26 +1,28 @@
-Statement block - Gen<None> - 54 - (0:0,0)
-    Code span - Gen<Stmt> - [do { var foo = bar; } /* Foo */ /* Bar */ while(true);] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:24
-        SyntaxKind.Keyword;[do];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.CSharpComment;[/* Foo */];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.CSharpComment;[/* Bar */];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[while];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Keyword;[true];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
+CSharpCodeBlock - [0..54)::54 - [do { var foo = bar; } /* Foo */ /* Bar */ while(true);]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..54)::54 - [do { var foo = bar; } /* Foo */ /* Bar */ while(true);] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[do];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Identifier;[bar];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        CSharpComment;[/* Foo */];
+        Whitespace;[ ];
+        CSharpComment;[/* Bar */];
+        Whitespace;[ ];
+        Keyword;[while];
+        LeftParenthesis;[(];
+        Keyword;[true];
+        RightParenthesis;[)];
+        Semicolon;[;];

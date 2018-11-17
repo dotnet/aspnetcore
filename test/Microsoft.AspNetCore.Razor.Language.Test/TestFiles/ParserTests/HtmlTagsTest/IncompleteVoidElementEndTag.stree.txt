@@ -1,279 +1,285 @@
-Markup block - Gen<None> - 344 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 344 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Code span - Gen<Stmt> - [LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL - (2:0,2) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 21 - (4:1,0)
-            Tag block - Gen<None> - 6 - (4:1,0)
-                Markup span - Gen<Markup> - [<area>] - SpanEditHandler;Accepts:None - (4:1,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[area];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 15 - (10:1,6)
-                Markup span - Gen<Markup> - [</areaLF}LF@{LF] - SpanEditHandler;Accepts:Any - (10:1,6) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[area];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 21 - (25:4,0)
-            Tag block - Gen<None> - 6 - (25:4,0)
-                Markup span - Gen<Markup> - [<base>] - SpanEditHandler;Accepts:None - (25:4,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[base];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 15 - (31:4,6)
-                Markup span - Gen<Markup> - [</baseLF}LF@{LF] - SpanEditHandler;Accepts:Any - (31:4,6) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[base];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 17 - (46:7,0)
-            Tag block - Gen<None> - 4 - (46:7,0)
-                Markup span - Gen<Markup> - [<br>] - SpanEditHandler;Accepts:None - (46:7,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[br];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 13 - (50:7,4)
-                Markup span - Gen<Markup> - [</brLF}LF@{LF] - SpanEditHandler;Accepts:Any - (50:7,4) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[br];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 19 - (63:10,0)
-            Tag block - Gen<None> - 5 - (63:10,0)
-                Markup span - Gen<Markup> - [<col>] - SpanEditHandler;Accepts:None - (63:10,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[col];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 14 - (68:10,5)
-                Markup span - Gen<Markup> - [</colLF}LF@{LF] - SpanEditHandler;Accepts:Any - (68:10,5) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[col];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 27 - (82:13,0)
-            Tag block - Gen<None> - 9 - (82:13,0)
-                Markup span - Gen<Markup> - [<command>] - SpanEditHandler;Accepts:None - (82:13,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[command];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 18 - (91:13,9)
-                Markup span - Gen<Markup> - [</commandLF}LF@{LF] - SpanEditHandler;Accepts:Any - (91:13,9) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[command];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 23 - (109:16,0)
-            Tag block - Gen<None> - 7 - (109:16,0)
-                Markup span - Gen<Markup> - [<embed>] - SpanEditHandler;Accepts:None - (109:16,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[embed];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 16 - (116:16,7)
-                Markup span - Gen<Markup> - [</embedLF}LF@{LF] - SpanEditHandler;Accepts:Any - (116:16,7) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[embed];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 17 - (132:19,0)
-            Tag block - Gen<None> - 4 - (132:19,0)
-                Markup span - Gen<Markup> - [<hr>] - SpanEditHandler;Accepts:None - (132:19,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[hr];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 13 - (136:19,4)
-                Markup span - Gen<Markup> - [</hrLF}LF@{LF] - SpanEditHandler;Accepts:Any - (136:19,4) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[hr];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 19 - (149:22,0)
-            Tag block - Gen<None> - 5 - (149:22,0)
-                Markup span - Gen<Markup> - [<img>] - SpanEditHandler;Accepts:None - (149:22,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[img];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 14 - (154:22,5)
-                Markup span - Gen<Markup> - [</imgLF}LF@{LF] - SpanEditHandler;Accepts:Any - (154:22,5) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[img];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 23 - (168:25,0)
-            Tag block - Gen<None> - 7 - (168:25,0)
-                Markup span - Gen<Markup> - [<input>] - SpanEditHandler;Accepts:None - (168:25,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[input];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 16 - (175:25,7)
-                Markup span - Gen<Markup> - [</inputLF}LF@{LF] - SpanEditHandler;Accepts:Any - (175:25,7) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[input];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 25 - (191:28,0)
-            Tag block - Gen<None> - 8 - (191:28,0)
-                Markup span - Gen<Markup> - [<keygen>] - SpanEditHandler;Accepts:None - (191:28,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[keygen];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 17 - (199:28,8)
-                Markup span - Gen<Markup> - [</keygenLF}LF@{LF] - SpanEditHandler;Accepts:Any - (199:28,8) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[keygen];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 21 - (216:31,0)
-            Tag block - Gen<None> - 6 - (216:31,0)
-                Markup span - Gen<Markup> - [<link>] - SpanEditHandler;Accepts:None - (216:31,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[link];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 15 - (222:31,6)
-                Markup span - Gen<Markup> - [</linkLF}LF@{LF] - SpanEditHandler;Accepts:Any - (222:31,6) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[link];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 21 - (237:34,0)
-            Tag block - Gen<None> - 6 - (237:34,0)
-                Markup span - Gen<Markup> - [<meta>] - SpanEditHandler;Accepts:None - (237:34,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[meta];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 15 - (243:34,6)
-                Markup span - Gen<Markup> - [</metaLF}LF@{LF] - SpanEditHandler;Accepts:Any - (243:34,6) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[meta];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 23 - (258:37,0)
-            Tag block - Gen<None> - 7 - (258:37,0)
-                Markup span - Gen<Markup> - [<param>] - SpanEditHandler;Accepts:None - (258:37,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[param];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 16 - (265:37,7)
-                Markup span - Gen<Markup> - [</paramLF}LF@{LF] - SpanEditHandler;Accepts:Any - (265:37,7) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[param];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 25 - (281:40,0)
-            Tag block - Gen<None> - 8 - (281:40,0)
-                Markup span - Gen<Markup> - [<source>] - SpanEditHandler;Accepts:None - (281:40,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[source];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 17 - (289:40,8)
-                Markup span - Gen<Markup> - [</sourceLF}LF@{LF] - SpanEditHandler;Accepts:Any - (289:40,8) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[source];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 23 - (306:43,0)
-            Tag block - Gen<None> - 7 - (306:43,0)
-                Markup span - Gen<Markup> - [<track>] - SpanEditHandler;Accepts:None - (306:43,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[track];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 16 - (313:43,7)
-                Markup span - Gen<Markup> - [</trackLF}LF@{LF] - SpanEditHandler;Accepts:Any - (313:43,7) - Tokens:9
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[track];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Transition;[@];
-                    SyntaxKind.Text;[{];
-                    SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 15 - (329:46,0)
-            Tag block - Gen<None> - 5 - (329:46,0)
-                Markup span - Gen<Markup> - [<wbr>] - SpanEditHandler;Accepts:None - (329:46,0) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[wbr];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 10 - (334:46,5)
-                Markup span - Gen<Markup> - [</wbrLF}LF] - SpanEditHandler;Accepts:Any - (334:46,5) - Tokens:6
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[wbr];
-                    SyntaxKind.NewLine;[LF];
-                    SyntaxKind.Text;[}];
-                    SyntaxKind.NewLine;[LF];
+RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<br></brLF}LF@{LF<col></colLF}LF@{LF<command></commandLF}LF@{LF<embed></embedLF}LF@{LF<hr></hrLF}LF@{LF<img></imgLF}LF@{LF<input></inputLF}LF@{LF<keygen></keygenLF}LF@{LF<link></linkLF}LF@{LF<meta></metaLF}LF@{LF<param></paramLF}LF@{LF<source></sourceLF}LF@{LF<track></trackLF}LF@{LF<wbr></wbrLF}LF]
+    MarkupBlock - [0..344)::344
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..344)::344
+            CSharpStatement - [0..344)::344
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..344)::343
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..344)::342
+                        CSharpStatementLiteral - [2..4)::2 - [LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL
+                            NewLine;[LF];
+                        MarkupBlock - [4..25)::21
+                            MarkupTagBlock - [4..10)::6 - [<area>]
+                                MarkupTextLiteral - [4..10)::6 - [<area>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[area];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [10..25)::15 - [</areaLF}LF@{LF]
+                                MarkupTextLiteral - [10..25)::15 - [</areaLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[area];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [25..46)::21
+                            MarkupTagBlock - [25..31)::6 - [<base>]
+                                MarkupTextLiteral - [25..31)::6 - [<base>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[base];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [31..46)::15 - [</baseLF}LF@{LF]
+                                MarkupTextLiteral - [31..46)::15 - [</baseLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[base];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [46..63)::17
+                            MarkupTagBlock - [46..50)::4 - [<br>]
+                                MarkupTextLiteral - [46..50)::4 - [<br>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[br];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [50..63)::13 - [</brLF}LF@{LF]
+                                MarkupTextLiteral - [50..63)::13 - [</brLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[br];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [63..82)::19
+                            MarkupTagBlock - [63..68)::5 - [<col>]
+                                MarkupTextLiteral - [63..68)::5 - [<col>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[col];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [68..82)::14 - [</colLF}LF@{LF]
+                                MarkupTextLiteral - [68..82)::14 - [</colLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[col];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [82..109)::27
+                            MarkupTagBlock - [82..91)::9 - [<command>]
+                                MarkupTextLiteral - [82..91)::9 - [<command>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[command];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [91..109)::18 - [</commandLF}LF@{LF]
+                                MarkupTextLiteral - [91..109)::18 - [</commandLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[command];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [109..132)::23
+                            MarkupTagBlock - [109..116)::7 - [<embed>]
+                                MarkupTextLiteral - [109..116)::7 - [<embed>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[embed];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [116..132)::16 - [</embedLF}LF@{LF]
+                                MarkupTextLiteral - [116..132)::16 - [</embedLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[embed];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [132..149)::17
+                            MarkupTagBlock - [132..136)::4 - [<hr>]
+                                MarkupTextLiteral - [132..136)::4 - [<hr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[hr];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [136..149)::13 - [</hrLF}LF@{LF]
+                                MarkupTextLiteral - [136..149)::13 - [</hrLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[hr];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [149..168)::19
+                            MarkupTagBlock - [149..154)::5 - [<img>]
+                                MarkupTextLiteral - [149..154)::5 - [<img>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[img];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [154..168)::14 - [</imgLF}LF@{LF]
+                                MarkupTextLiteral - [154..168)::14 - [</imgLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[img];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [168..191)::23
+                            MarkupTagBlock - [168..175)::7 - [<input>]
+                                MarkupTextLiteral - [168..175)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[input];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [175..191)::16 - [</inputLF}LF@{LF]
+                                MarkupTextLiteral - [175..191)::16 - [</inputLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[input];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [191..216)::25
+                            MarkupTagBlock - [191..199)::8 - [<keygen>]
+                                MarkupTextLiteral - [191..199)::8 - [<keygen>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[keygen];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [199..216)::17 - [</keygenLF}LF@{LF]
+                                MarkupTextLiteral - [199..216)::17 - [</keygenLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[keygen];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [216..237)::21
+                            MarkupTagBlock - [216..222)::6 - [<link>]
+                                MarkupTextLiteral - [216..222)::6 - [<link>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[link];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [222..237)::15 - [</linkLF}LF@{LF]
+                                MarkupTextLiteral - [222..237)::15 - [</linkLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[link];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [237..258)::21
+                            MarkupTagBlock - [237..243)::6 - [<meta>]
+                                MarkupTextLiteral - [237..243)::6 - [<meta>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[meta];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [243..258)::15 - [</metaLF}LF@{LF]
+                                MarkupTextLiteral - [243..258)::15 - [</metaLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[meta];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [258..281)::23
+                            MarkupTagBlock - [258..265)::7 - [<param>]
+                                MarkupTextLiteral - [258..265)::7 - [<param>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[param];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [265..281)::16 - [</paramLF}LF@{LF]
+                                MarkupTextLiteral - [265..281)::16 - [</paramLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[param];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [281..306)::25
+                            MarkupTagBlock - [281..289)::8 - [<source>]
+                                MarkupTextLiteral - [281..289)::8 - [<source>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[source];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [289..306)::17 - [</sourceLF}LF@{LF]
+                                MarkupTextLiteral - [289..306)::17 - [</sourceLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[source];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [306..329)::23
+                            MarkupTagBlock - [306..313)::7 - [<track>]
+                                MarkupTextLiteral - [306..313)::7 - [<track>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[track];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [313..329)::16 - [</trackLF}LF@{LF]
+                                MarkupTextLiteral - [313..329)::16 - [</trackLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[track];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                                    Transition;[@];
+                                    Text;[{];
+                                    NewLine;[LF];
+                        MarkupBlock - [329..344)::15
+                            MarkupTagBlock - [329..334)::5 - [<wbr>]
+                                MarkupTextLiteral - [329..334)::5 - [<wbr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Text;[wbr];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [334..344)::10 - [</wbrLF}LF]
+                                MarkupTextLiteral - [334..344)::10 - [</wbrLF}LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[wbr];
+                                    NewLine;[LF];
+                                    Text;[}];
+                                    NewLine;[LF];
+                    RazorMetaCode - [344..344)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                        RightBrace;[<Missing>];

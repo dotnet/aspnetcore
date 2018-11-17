@@ -1,401 +1,387 @@
-Markup block - Gen<None> - 564 - (0:0,0)
-    Markup span - Gen<Markup> - [{LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-        SyntaxKind.Text;[{];
-        SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 6 - (3:1,0)
-        Markup span - Gen<Markup> - [<area>] - SpanEditHandler;Accepts:Any - (3:1,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[area];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (9:1,6)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (9:1,6) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [16..38) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [16..38) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 6 - (38:4,0)
-        Markup span - Gen<Markup> - [<base>] - SpanEditHandler;Accepts:Any - (38:4,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[base];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (44:4,6)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (44:4,6) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [51..73) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [51..73) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 4 - (73:7,0)
-        Markup span - Gen<Markup> - [<br>] - SpanEditHandler;Accepts:Any - (73:7,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[br];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (77:7,4)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (77:7,4) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [84..106) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [84..106) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 5 - (106:10,0)
-        Markup span - Gen<Markup> - [<col>] - SpanEditHandler;Accepts:Any - (106:10,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[col];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (111:10,5)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (111:10,5) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [118..140) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [118..140) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 9 - (140:13,0)
-        Markup span - Gen<Markup> - [<command>] - SpanEditHandler;Accepts:Any - (140:13,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[command];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (149:13,9)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (149:13,9) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [156..178) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [156..178) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 7 - (178:16,0)
-        Markup span - Gen<Markup> - [<embed>] - SpanEditHandler;Accepts:Any - (178:16,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[embed];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (185:16,7)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (185:16,7) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [192..214) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [192..214) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 4 - (214:19,0)
-        Markup span - Gen<Markup> - [<hr>] - SpanEditHandler;Accepts:Any - (214:19,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[hr];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (218:19,4)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (218:19,4) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [225..247) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [225..247) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 5 - (247:22,0)
-        Markup span - Gen<Markup> - [<img>] - SpanEditHandler;Accepts:Any - (247:22,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[img];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (252:22,5)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (252:22,5) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [259..281) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [259..281) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 7 - (281:25,0)
-        Markup span - Gen<Markup> - [<input>] - SpanEditHandler;Accepts:Any - (281:25,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[input];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (288:25,7)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (288:25,7) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [295..317) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [295..317) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 8 - (317:28,0)
-        Markup span - Gen<Markup> - [<keygen>] - SpanEditHandler;Accepts:Any - (317:28,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[keygen];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (325:28,8)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (325:28,8) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [332..354) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [332..354) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 6 - (354:31,0)
-        Markup span - Gen<Markup> - [<link>] - SpanEditHandler;Accepts:Any - (354:31,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[link];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (360:31,6)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (360:31,6) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [367..389) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [367..389) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 6 - (389:34,0)
-        Markup span - Gen<Markup> - [<meta>] - SpanEditHandler;Accepts:Any - (389:34,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[meta];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (395:34,6)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (395:34,6) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [402..424) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [402..424) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 7 - (424:37,0)
-        Markup span - Gen<Markup> - [<param>] - SpanEditHandler;Accepts:Any - (424:37,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[param];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (431:37,7)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (431:37,7) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [438..460) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [438..460) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 8 - (460:40,0)
-        Markup span - Gen<Markup> - [<source>] - SpanEditHandler;Accepts:Any - (460:40,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[source];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (468:40,8)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (468:40,8) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [475..497) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [475..497) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 7 - (497:43,0)
-        Markup span - Gen<Markup> - [<track>] - SpanEditHandler;Accepts:Any - (497:43,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[track];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (504:43,7)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (504:43,7) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ var x = true;LF}LF{LF] - [511..533) - FullWidth: 22 - Slots: 1
-        SyntaxKind.List - [ var x = true;LF}LF{LF] - [511..533) - FullWidth: 22 - Slots: 13
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[var];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[x];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[true;];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[}];
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Text;[{];
-            SyntaxKind.NewLine;[LF];
-    Tag block - Gen<None> - 5 - (533:46,0)
-        Markup span - Gen<Markup> - [<wbr>] - SpanEditHandler;Accepts:Any - (533:46,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[wbr];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (538:46,5)
-        Markup span - Gen<Markup> - [<other>] - SpanEditHandler;Accepts:Any - (538:46,5) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[other];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ var x = true;LF}LF] - SpanEditHandler;Accepts:Any - (545:46,12) - Tokens:11
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[x];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Equals;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[true;];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Text;[}];
-        SyntaxKind.NewLine;[LF];
+RazorDocument - [0..564)::564 - [{LF<area><other> var x = true;LF}LF{LF<base><other> var x = true;LF}LF{LF<br><other> var x = true;LF}LF{LF<col><other> var x = true;LF}LF{LF<command><other> var x = true;LF}LF{LF<embed><other> var x = true;LF}LF{LF<hr><other> var x = true;LF}LF{LF<img><other> var x = true;LF}LF{LF<input><other> var x = true;LF}LF{LF<keygen><other> var x = true;LF}LF{LF<link><other> var x = true;LF}LF{LF<meta><other> var x = true;LF}LF{LF<param><other> var x = true;LF}LF{LF<source><other> var x = true;LF}LF{LF<track><other> var x = true;LF}LF{LF<wbr><other> var x = true;LF}LF]
+    MarkupBlock - [0..564)::564
+        MarkupTextLiteral - [0..3)::3 - [{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [3..9)::6 - [<area>]
+            MarkupTextLiteral - [3..9)::6 - [<area>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[area];
+                CloseAngle;[>];
+        MarkupTagBlock - [9..16)::7 - [<other>]
+            MarkupTextLiteral - [9..16)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [16..38)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [38..44)::6 - [<base>]
+            MarkupTextLiteral - [38..44)::6 - [<base>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[base];
+                CloseAngle;[>];
+        MarkupTagBlock - [44..51)::7 - [<other>]
+            MarkupTextLiteral - [44..51)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [51..73)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [73..77)::4 - [<br>]
+            MarkupTextLiteral - [73..77)::4 - [<br>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[br];
+                CloseAngle;[>];
+        MarkupTagBlock - [77..84)::7 - [<other>]
+            MarkupTextLiteral - [77..84)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [84..106)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [106..111)::5 - [<col>]
+            MarkupTextLiteral - [106..111)::5 - [<col>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[col];
+                CloseAngle;[>];
+        MarkupTagBlock - [111..118)::7 - [<other>]
+            MarkupTextLiteral - [111..118)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [118..140)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [140..149)::9 - [<command>]
+            MarkupTextLiteral - [140..149)::9 - [<command>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[command];
+                CloseAngle;[>];
+        MarkupTagBlock - [149..156)::7 - [<other>]
+            MarkupTextLiteral - [149..156)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [156..178)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [178..185)::7 - [<embed>]
+            MarkupTextLiteral - [178..185)::7 - [<embed>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[embed];
+                CloseAngle;[>];
+        MarkupTagBlock - [185..192)::7 - [<other>]
+            MarkupTextLiteral - [185..192)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [192..214)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [214..218)::4 - [<hr>]
+            MarkupTextLiteral - [214..218)::4 - [<hr>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[hr];
+                CloseAngle;[>];
+        MarkupTagBlock - [218..225)::7 - [<other>]
+            MarkupTextLiteral - [218..225)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [225..247)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [247..252)::5 - [<img>]
+            MarkupTextLiteral - [247..252)::5 - [<img>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[img];
+                CloseAngle;[>];
+        MarkupTagBlock - [252..259)::7 - [<other>]
+            MarkupTextLiteral - [252..259)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [259..281)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [281..288)::7 - [<input>]
+            MarkupTextLiteral - [281..288)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[input];
+                CloseAngle;[>];
+        MarkupTagBlock - [288..295)::7 - [<other>]
+            MarkupTextLiteral - [288..295)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [295..317)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [317..325)::8 - [<keygen>]
+            MarkupTextLiteral - [317..325)::8 - [<keygen>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[keygen];
+                CloseAngle;[>];
+        MarkupTagBlock - [325..332)::7 - [<other>]
+            MarkupTextLiteral - [325..332)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [332..354)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [354..360)::6 - [<link>]
+            MarkupTextLiteral - [354..360)::6 - [<link>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[link];
+                CloseAngle;[>];
+        MarkupTagBlock - [360..367)::7 - [<other>]
+            MarkupTextLiteral - [360..367)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [367..389)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [389..395)::6 - [<meta>]
+            MarkupTextLiteral - [389..395)::6 - [<meta>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[meta];
+                CloseAngle;[>];
+        MarkupTagBlock - [395..402)::7 - [<other>]
+            MarkupTextLiteral - [395..402)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [402..424)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [424..431)::7 - [<param>]
+            MarkupTextLiteral - [424..431)::7 - [<param>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[param];
+                CloseAngle;[>];
+        MarkupTagBlock - [431..438)::7 - [<other>]
+            MarkupTextLiteral - [431..438)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [438..460)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [460..468)::8 - [<source>]
+            MarkupTextLiteral - [460..468)::8 - [<source>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[source];
+                CloseAngle;[>];
+        MarkupTagBlock - [468..475)::7 - [<other>]
+            MarkupTextLiteral - [468..475)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [475..497)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [497..504)::7 - [<track>]
+            MarkupTextLiteral - [497..504)::7 - [<track>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[track];
+                CloseAngle;[>];
+        MarkupTagBlock - [504..511)::7 - [<other>]
+            MarkupTextLiteral - [504..511)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [511..533)::22 - [ var x = true;LF}LF{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];
+            Text;[{];
+            NewLine;[LF];
+        MarkupTagBlock - [533..538)::5 - [<wbr>]
+            MarkupTextLiteral - [533..538)::5 - [<wbr>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[wbr];
+                CloseAngle;[>];
+        MarkupTagBlock - [538..545)::7 - [<other>]
+            MarkupTextLiteral - [538..545)::7 - [<other>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[other];
+                CloseAngle;[>];
+        MarkupTextLiteral - [545..564)::19 - [ var x = true;LF}LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[var];
+            Whitespace;[ ];
+            Text;[x];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[true;];
+            NewLine;[LF];
+            Text;[}];
+            NewLine;[LF];

@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
+using System.Diagnostics;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -11,12 +13,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private static readonly int TypeHashCode = typeof(SpanEditHandler).GetHashCode();
 
-        public SpanEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer)
+        public SpanEditHandler(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer)
             : this(tokenizer, AcceptedCharactersInternal.Any)
         {
         }
 
-        public SpanEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer, AcceptedCharactersInternal accepted)
+        public SpanEditHandler(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer, AcceptedCharactersInternal accepted)
         {
             AcceptedCharacters = accepted;
             Tokenizer = tokenizer;
@@ -24,19 +26,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public AcceptedCharactersInternal AcceptedCharacters { get; set; }
 
-        public Func<string, IEnumerable<SyntaxToken>> Tokenizer { get; set; }
+        public Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> Tokenizer { get; set; }
 
-        public static SpanEditHandler CreateDefault(Func<string, IEnumerable<SyntaxToken>> tokenizer)
+        public static SpanEditHandler CreateDefault()
+        {
+            return CreateDefault(c => Enumerable.Empty<Syntax.InternalSyntax.SyntaxToken>());
+        }
+
+        public static SpanEditHandler CreateDefault(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer)
         {
             return new SpanEditHandler(tokenizer);
         }
 
-        public virtual EditResult ApplyChange(Span target, SourceChange change)
+        public virtual EditResult ApplyChange(SyntaxNode target, SourceChange change)
         {
             return ApplyChange(target, change, force: false);
         }
 
-        public virtual EditResult ApplyChange(Span target, SourceChange change, bool force)
+        public virtual EditResult ApplyChange(SyntaxNode target, SourceChange change, bool force)
         {
             var result = PartialParseResultInternal.Accepted;
             if (!force)
@@ -49,49 +56,81 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 return new EditResult(result, UpdateSpan(target, change));
             }
-            return new EditResult(result, new SpanBuilder(target));
+            return new EditResult(result, target);
         }
 
-        public virtual bool OwnsChange(Span target, SourceChange change)
+        public virtual bool OwnsChange(SyntaxNode target, SourceChange change)
         {
-            var end = target.Start.AbsoluteIndex + target.Length;
+            var end = target.EndPosition;
             var changeOldEnd = change.Span.AbsoluteIndex + change.Span.Length;
-            return change.Span.AbsoluteIndex >= target.Start.AbsoluteIndex &&
+            return change.Span.AbsoluteIndex >= target.Position &&
                    (changeOldEnd < end || (changeOldEnd == end && AcceptedCharacters != AcceptedCharactersInternal.None));
         }
 
-        protected virtual PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
+        protected virtual PartialParseResultInternal CanAcceptChange(SyntaxNode target, SourceChange change)
         {
             return PartialParseResultInternal.Rejected;
         }
 
-        protected virtual SpanBuilder UpdateSpan(Span target, SourceChange change)
+        protected virtual SyntaxNode UpdateSpan(SyntaxNode target, SourceChange change)
         {
             var newContent = change.GetEditedContent(target);
-            var newSpan = new SpanBuilder(target);
-            newSpan.ClearTokens();
+            var builder = Syntax.InternalSyntax.SyntaxListBuilder<Syntax.InternalSyntax.SyntaxToken>.Create();
             foreach (var token in Tokenizer(newContent))
             {
-                newSpan.Accept(token);
+                builder.Add(token);
             }
-            if (target.Next != null)
+
+            SyntaxNode newTarget = null;
+            if (target is RazorMetaCodeSyntax)
             {
-                var newEnd = SourceLocationTracker.CalculateNewLocation(target.Start, newContent);
-                target.Next.ChangeStart(newEnd);
+                newTarget = Syntax.InternalSyntax.SyntaxFactory.RazorMetaCode(builder.ToList()).CreateRed(target.Parent, target.Position);
             }
-            return newSpan;
+            else if (target is MarkupTextLiteralSyntax)
+            {
+                newTarget = Syntax.InternalSyntax.SyntaxFactory.MarkupTextLiteral(builder.ToList()).CreateRed(target.Parent, target.Position);
+            }
+            else if (target is MarkupEphemeralTextLiteralSyntax)
+            {
+                newTarget = Syntax.InternalSyntax.SyntaxFactory.MarkupEphemeralTextLiteral(builder.ToList()).CreateRed(target.Parent, target.Position);
+            }
+            else if (target is CSharpStatementLiteralSyntax)
+            {
+                newTarget = Syntax.InternalSyntax.SyntaxFactory.CSharpStatementLiteral(builder.ToList()).CreateRed(target.Parent, target.Position);
+            }
+            else if (target is CSharpExpressionLiteralSyntax)
+            {
+                newTarget = Syntax.InternalSyntax.SyntaxFactory.CSharpExpressionLiteral(builder.ToList()).CreateRed(target.Parent, target.Position);
+            }
+            else if (target is CSharpEphemeralTextLiteralSyntax)
+            {
+                newTarget = Syntax.InternalSyntax.SyntaxFactory.CSharpEphemeralTextLiteral(builder.ToList()).CreateRed(target.Parent, target.Position);
+            }
+            else if (target is UnclassifiedTextLiteralSyntax)
+            {
+                newTarget = Syntax.InternalSyntax.SyntaxFactory.UnclassifiedTextLiteral(builder.ToList()).CreateRed(target.Parent, target.Position);
+            }
+            else
+            {
+                Debug.Fail($"The type {target?.GetType().Name} is not a supported span node.");
+            }
+
+            var context = target.GetSpanContext();
+            newTarget = context != null ? newTarget?.WithSpanContext(context) : newTarget;
+
+            return newTarget;
         }
 
-        protected internal static bool IsAtEndOfFirstLine(Span target, SourceChange change)
+        protected internal static bool IsAtEndOfFirstLine(SyntaxNode target, SourceChange change)
         {
-            var endOfFirstLine = target.Content.IndexOfAny(new char[] { (char)0x000d, (char)0x000a, (char)0x2028, (char)0x2029 });
-            return (endOfFirstLine == -1 || (change.Span.AbsoluteIndex - target.Start.AbsoluteIndex) <= endOfFirstLine);
+            var endOfFirstLine = target.GetContent().IndexOfAny(new char[] { (char)0x000d, (char)0x000a, (char)0x2028, (char)0x2029 });
+            return (endOfFirstLine == -1 || (change.Span.AbsoluteIndex - target.Position) <= endOfFirstLine);
         }
 
         /// <summary>
         /// Returns true if the specified change is an insertion of text at the end of this span.
         /// </summary>
-        protected internal static bool IsEndDeletion(Span target, SourceChange change)
+        protected internal static bool IsEndDeletion(SyntaxNode target, SourceChange change)
         {
             return change.IsDelete && IsAtEndOfSpan(target, change);
         }
@@ -99,14 +138,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// <summary>
         /// Returns true if the specified change is a replacement of text at the end of this span.
         /// </summary>
-        protected internal static bool IsEndReplace(Span target, SourceChange change)
+        protected internal static bool IsEndReplace(SyntaxNode target, SourceChange change)
         {
             return change.IsReplace && IsAtEndOfSpan(target, change);
         }
 
-        protected internal static bool IsAtEndOfSpan(Span target, SourceChange change)
+        protected internal static bool IsAtEndOfSpan(SyntaxNode target, SourceChange change)
         {
-            return (change.Span.AbsoluteIndex + change.Span.Length) == (target.Start.AbsoluteIndex + target.Length);
+            return (change.Span.AbsoluteIndex + change.Span.Length) == target.EndPosition;
         }
 
         public override string ToString()

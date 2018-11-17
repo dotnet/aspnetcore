@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 {
-    internal class SyntaxToken : GreenNode
+    internal class SyntaxToken : RazorSyntaxNode
     {
+        private readonly GreenNode _leadingTrivia;
+        private readonly GreenNode _trailingTrivia;
+
         internal SyntaxToken(SyntaxKind kind, string content, RazorDiagnostic[] diagnostics)
             : base(kind, content.Length, diagnostics, annotations: null)
         {
@@ -20,9 +21,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             : base(kind, content.Length)
         {
             Content = content;
-            LeadingTrivia = leadingTrivia;
+            _leadingTrivia = leadingTrivia;
             AdjustFlagsAndWidth(leadingTrivia);
-            TrailingTrivia = trailingTrivia;
+            _trailingTrivia = trailingTrivia;
             AdjustFlagsAndWidth(trailingTrivia);
         }
 
@@ -30,17 +31,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             : base(kind, content.Length, diagnostics, annotations)
         {
             Content = content;
-            LeadingTrivia = leadingTrivia;
+            _leadingTrivia = leadingTrivia;
             AdjustFlagsAndWidth(leadingTrivia);
-            TrailingTrivia = trailingTrivia;
+            _trailingTrivia = trailingTrivia;
             AdjustFlagsAndWidth(trailingTrivia);
         }
 
         public string Content { get; }
 
-        public GreenNode LeadingTrivia { get; }
+        public SyntaxList<GreenNode> LeadingTrivia
+        {
+            get { return new SyntaxList<GreenNode>(GetLeadingTrivia()); }
+        }
 
-        public GreenNode TrailingTrivia { get; }
+        public SyntaxList<GreenNode> TrailingTrivia
+        {
+            get { return new SyntaxList<GreenNode>(GetTrailingTrivia()); }
+        }
 
         internal override bool IsToken => true;
 
@@ -76,22 +83,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
         public override sealed GreenNode GetLeadingTrivia()
         {
-            return LeadingTrivia;
+            return _leadingTrivia;
         }
 
         public override int GetLeadingTriviaWidth()
         {
-            return LeadingTrivia == null ? 0 : LeadingTrivia.FullWidth;
+            return _leadingTrivia == null ? 0 : _leadingTrivia.FullWidth;
         }
 
         public override sealed GreenNode GetTrailingTrivia()
         {
-            return TrailingTrivia;
+            return _trailingTrivia;
         }
 
         public override int GetTrailingTriviaWidth()
         {
-            return TrailingTrivia == null ? 0 : TrailingTrivia.FullWidth;
+            return _trailingTrivia == null ? 0 : _trailingTrivia.FullWidth;
         }
 
         public sealed override GreenNode WithLeadingTrivia(GreenNode trivia)
@@ -101,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
         public virtual SyntaxToken TokenWithLeadingTrivia(GreenNode trivia)
         {
-            return new SyntaxToken(Kind, Content, trivia, TrailingTrivia, GetDiagnostics(), GetAnnotations());
+            return new SyntaxToken(Kind, Content, trivia, _trailingTrivia, GetDiagnostics(), GetAnnotations());
         }
 
         public sealed override GreenNode WithTrailingTrivia(GreenNode trivia)
@@ -111,17 +118,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
         public virtual SyntaxToken TokenWithTrailingTrivia(GreenNode trivia)
         {
-            return new SyntaxToken(Kind, Content, LeadingTrivia, trivia, GetDiagnostics(), GetAnnotations());
+            return new SyntaxToken(Kind, Content, _leadingTrivia, trivia, GetDiagnostics(), GetAnnotations());
         }
 
         internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
         {
-            return new SyntaxToken(Kind, Content, LeadingTrivia, TrailingTrivia, diagnostics, GetAnnotations());
+            return new SyntaxToken(Kind, Content, _leadingTrivia, _trailingTrivia, diagnostics, GetAnnotations());
         }
 
         internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
         {
-            return new SyntaxToken(Kind, Content, LeadingTrivia, TrailingTrivia, GetDiagnostics(), annotations);
+            return new SyntaxToken(Kind, Content, _leadingTrivia, _trailingTrivia, GetDiagnostics(), annotations);
         }
 
         protected override sealed int GetSlotCount()
@@ -194,6 +201,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         public override string ToString()
         {
             return Content;
+        }
+
+        internal static SyntaxToken CreateMissing(SyntaxKind kind, params RazorDiagnostic[] diagnostics)
+        {
+            return new MissingToken(kind, diagnostics);
+        }
+
+        private class MissingToken : SyntaxToken
+        {
+            internal MissingToken(SyntaxKind kind, RazorDiagnostic[] diagnostics)
+                : base(kind, string.Empty, diagnostics)
+            {
+                Flags |= NodeFlags.IsMissing;
+            }
+
+            internal MissingToken(SyntaxKind kind, GreenNode leading, GreenNode trailing, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+                : base(kind, string.Empty, leading, trailing, diagnostics, annotations)
+            {
+                Flags |= NodeFlags.IsMissing;
+            }
         }
     }
 }

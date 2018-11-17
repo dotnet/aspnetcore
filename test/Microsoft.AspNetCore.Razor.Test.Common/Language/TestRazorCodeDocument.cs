@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             return new DefaultRazorCodeDocument(source, imports: null);
         }
 
-        public static RazorCodeDocument Create(string content)
+        public static RazorCodeDocument Create(string content, bool normalizeNewLines = false)
         {
-            var source = TestRazorSourceDocument.Create(content);
+            var source = TestRazorSourceDocument.Create(content, normalizeNewLines: normalizeNewLines);
             return new DefaultRazorCodeDocument(source, imports: null);
         }
 

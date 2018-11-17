@@ -1,5 +1,12 @@
-Statement block - Gen<None> - 1 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL - (1:0,1) - Tokens:1
-        SyntaxKind.Unknown;[];
+CSharpCodeBlock - [0..1)::1 - [{]
+    CSharpStatement - [0..1)::1
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..1)::1
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..1)::0
+                CSharpStatementLiteral - [1..1)::0 - [] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL
+                    Marker;[];
+            RazorMetaCode - [1..1)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                RightBrace;[<Missing>];

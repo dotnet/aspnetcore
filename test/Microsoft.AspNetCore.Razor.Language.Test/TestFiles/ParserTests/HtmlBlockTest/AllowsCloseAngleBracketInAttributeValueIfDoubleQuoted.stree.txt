@@ -1,30 +1,34 @@
-Markup block - Gen<None> - 26 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 15 - (5:0,5)
-        Markup span - Gen<Markup> - [<bar] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[bar];
-        Markup block - Gen<Attr:baz, baz="@(9:0,9),"@(16:0,16)> - 8 - (9:0,9)
-            Markup span - Gen<None> - [ baz="] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[baz];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.DoubleQuote;["];
-            Markup span - Gen<LitAttr:@(15:0,15)> - [>] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-                SyntaxKind.CloseAngle;[>];
-            Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
-                SyntaxKind.DoubleQuote;["];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 6 - (20:0,20)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (20:0,20) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..26)::26 - [<foo><bar baz=">" /></foo>]
+    MarkupTagBlock - [0..5)::5 - [<foo>]
+        MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+    MarkupTagBlock - [5..20)::15 - [<bar baz=">" />]
+        MarkupTextLiteral - [5..9)::4 - [<bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[bar];
+        MarkupAttributeBlock - [9..17)::8 - [ baz=">"]
+            MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [10..13)::3 - [baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[baz];
+            Equals;[=];
+            MarkupTextLiteral - [14..15)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                DoubleQuote;["];
+            GenericBlock - [15..16)::1
+                MarkupLiteralAttributeValue - [15..16)::1 - [>]
+                    MarkupTextLiteral - [15..16)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        CloseAngle;[>];
+            MarkupTextLiteral - [16..17)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                DoubleQuote;["];
+        MarkupTextLiteral - [17..20)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];
+    MarkupTagBlock - [20..26)::6 - [</foo>]
+        MarkupTextLiteral - [20..26)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

@@ -1,32 +1,46 @@
-Markup block - Gen<None> - 37 - (0:0,0)
-    Tag block - Gen<TagHelper> - 37 - (0:0,0) - p - PTagHelper
-        StartTagAndEndTag - <p> ... </p>
-        Tag block - Gen<None> - 3 - (3:0,3)
-            Markup span - Gen<Markup> - [<b>] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[b];
-                SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlTextLiteral - [asdf] - [6..10) - FullWidth: 4 - Slots: 1
-            SyntaxKind.Text;[asdf];
-        Tag block - Gen<None> - 4 - (10:0,10)
-            Markup span - Gen<Markup> - [</b>] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[b];
-                SyntaxKind.CloseAngle;[>];
-        HtmlComment block - Gen<None> - 19 - (14:0,14)
-            Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Bang;[!];
-                SyntaxKind.DoubleHyphen;[--];
-            Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:Whitespace - (18:0,18) - Tokens:2
-                SyntaxKind.Text;[Hello];
-                SyntaxKind.Whitespace;[ ];
-            Expression block - Gen<Expr> - 6 - (24:0,24)
-                Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:1
-                    SyntaxKind.Transition;[@];
-                Code span - Gen<Expr> - [World] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (25:0,25) - Tokens:1
-                    SyntaxKind.Identifier;[World];
-            Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (30:0,30) - Tokens:2
-                SyntaxKind.DoubleHyphen;[--];
-                SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..37)::37 - [<p><b>asdf</b><!--Hello @World--></p>]
+    MarkupBlock - [0..37)::37
+        MarkupTagHelperElement - [0..37)::37 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTagBlock - [3..6)::3 - [<b>]
+                MarkupTextLiteral - [3..6)::3 - [<b>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[b];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [6..10)::4 - [asdf] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[asdf];
+            MarkupTagBlock - [10..14)::4 - [</b>]
+                MarkupTextLiteral - [10..14)::4 - [</b>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[b];
+                    CloseAngle;[>];
+            MarkupCommentBlock - [14..33)::19
+                MarkupTextLiteral - [14..18)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    Bang;[!];
+                    DoubleHyphen;[--];
+                MarkupTextLiteral - [18..24)::6 - [Hello ] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
+                    Text;[Hello];
+                    Whitespace;[ ];
+                CSharpCodeBlock - [24..30)::6
+                    CSharpImplicitExpression - [24..30)::6
+                        CSharpTransition - [24..25)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        CSharpImplicitExpressionBody - [25..30)::5
+                            CSharpCodeBlock - [25..30)::5
+                                CSharpExpressionLiteral - [25..30)::5 - [World] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                    Identifier;[World];
+                MarkupTextLiteral - [30..33)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    DoubleHyphen;[--];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [33..37)::4
+                MarkupTextLiteral - [33..37)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

@@ -1,14 +1,20 @@
-Markup block - Gen<None> - 5 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 5 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Code span - Gen<Stmt> - [LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL - (2:0,2) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 1 - (4:1,0)
-            Tag block - Gen<None> - 1 - (4:1,0)
-                Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (4:1,0) - Tokens:1
-                    SyntaxKind.OpenAngle;[<];
+RazorDocument - [0..5)::5 - [@{LF<]
+    MarkupBlock - [0..5)::5
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..5)::5
+            CSharpStatement - [0..5)::5
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..5)::4
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..5)::3
+                        CSharpStatementLiteral - [2..4)::2 - [LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL
+                            NewLine;[LF];
+                        MarkupBlock - [4..5)::1
+                            MarkupTagBlock - [4..5)::1 - [<]
+                                MarkupTextLiteral - [4..5)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                    RazorMetaCode - [5..5)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                        RightBrace;[<Missing>];

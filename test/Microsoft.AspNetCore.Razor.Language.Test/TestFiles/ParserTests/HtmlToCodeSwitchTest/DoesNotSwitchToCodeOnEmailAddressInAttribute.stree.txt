@@ -1,27 +1,31 @@
-Markup block - Gen<None> - 50 - (0:0,0)
-    Tag block - Gen<None> - 38 - (0:0,0)
-        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[a];
-        Markup block - Gen<Attr:href, href="@(2:0,2),"@(36:0,36)> - 35 - (2:0,2)
-            Markup span - Gen<None> - [ href="] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[href];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.DoubleQuote;["];
-            Markup span - Gen<LitAttr:@(9:0,9)> - [mailto:anurse@microsoft.com] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-                SyntaxKind.Text;[mailto:anurse@microsoft.com];
-            Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:1
-                SyntaxKind.DoubleQuote;["];
-        Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (37:0,37) - Tokens:1
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [Email me] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:3
-        SyntaxKind.Text;[Email];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[me];
-    Tag block - Gen<None> - 4 - (46:0,46)
-        Markup span - Gen<Markup> - [</a>] - SpanEditHandler;Accepts:None - (46:0,46) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[a];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..50)::50 - [<a href="mailto:anurse@microsoft.com">Email me</a>]
+    MarkupTagBlock - [0..38)::38 - [<a href="mailto:anurse@microsoft.com">]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..37)::35 - [ href="mailto:anurse@microsoft.com"]
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..7)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[href];
+            Equals;[=];
+            MarkupTextLiteral - [8..9)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                DoubleQuote;["];
+            GenericBlock - [9..36)::27
+                MarkupLiteralAttributeValue - [9..36)::27 - [mailto:anurse@microsoft.com]
+                    MarkupTextLiteral - [9..36)::27 - [mailto:anurse@microsoft.com] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[mailto:anurse@microsoft.com];
+            MarkupTextLiteral - [36..37)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                DoubleQuote;["];
+        MarkupTextLiteral - [37..38)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            CloseAngle;[>];
+    MarkupTextLiteral - [38..46)::8 - [Email me] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        Text;[Email];
+        Whitespace;[ ];
+        Text;[me];
+    MarkupTagBlock - [46..50)::4 - [</a>]
+        MarkupTextLiteral - [46..50)::4 - [</a>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[a];
+            CloseAngle;[>];

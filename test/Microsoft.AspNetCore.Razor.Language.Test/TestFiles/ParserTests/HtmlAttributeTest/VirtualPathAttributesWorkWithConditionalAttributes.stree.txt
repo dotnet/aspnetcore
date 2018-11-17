@@ -1,30 +1,39 @@
-Markup block - Gen<None> - 27 - (0:0,0)
-    Tag block - Gen<None> - 27 - (0:0,0)
-        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[a];
-        Markup block - Gen<Attr:href, href='@(2:0,2),'@(23:0,23)> - 22 - (2:0,2)
-            Markup span - Gen<None> - [ href='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[href];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.SingleQuote;['];
-            Markup block - Gen<DynAttr:@(9:0,9)> - 4 - (9:0,9)
-                Expression block - Gen<Expr> - 4 - (9:0,9)
-                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:1
-                        SyntaxKind.Transition;[@];
-                    Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (10:0,10) - Tokens:1
-                        SyntaxKind.Identifier;[foo];
-            Markup span - Gen<LitAttr: @(13:0,13)> - [ ~/Foo/Bar] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:6
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[~];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[Foo];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[Bar];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..27)::27 - [<a href='@foo ~/Foo/Bar' />]
+    MarkupTagBlock - [0..27)::27 - [<a href='@foo ~/Foo/Bar' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..24)::22 - [ href='@foo ~/Foo/Bar']
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..7)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[href];
+            Equals;[=];
+            MarkupTextLiteral - [8..9)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+            GenericBlock - [9..23)::14
+                MarkupDynamicAttributeValue - [9..13)::4 - [@foo]
+                    GenericBlock - [9..13)::4
+                        CSharpCodeBlock - [9..13)::4
+                            CSharpImplicitExpression - [9..13)::4
+                                CSharpTransition - [9..10)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [10..13)::3
+                                    CSharpCodeBlock - [10..13)::3
+                                        CSharpExpressionLiteral - [10..13)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                            Identifier;[foo];
+                MarkupLiteralAttributeValue - [13..23)::10 - [ ~/Foo/Bar]
+                    MarkupTextLiteral - [13..14)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [14..23)::9 - [~/Foo/Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[~];
+                        ForwardSlash;[/];
+                        Text;[Foo];
+                        ForwardSlash;[/];
+                        Text;[Bar];
+            MarkupTextLiteral - [23..24)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [24..27)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

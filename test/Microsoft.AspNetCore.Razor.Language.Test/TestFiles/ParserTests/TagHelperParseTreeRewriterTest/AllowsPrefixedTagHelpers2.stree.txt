@@ -1,19 +1,19 @@
-Markup block - Gen<None> - 27 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<th:>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[th:];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [words and spaces] - [5..21) - FullWidth: 16 - Slots: 1
-        SyntaxKind.List - [words and spaces] - [5..21) - FullWidth: 16 - Slots: 5
-            SyntaxKind.Text;[words];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[and];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[spaces];
-    Tag block - Gen<None> - 6 - (21:0,21)
-        Markup span - Gen<Markup> - [</th:>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[th:];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..27)::27 - [<th:>words and spaces</th:>]
+    MarkupBlock - [0..27)::27
+        MarkupTagBlock - [0..5)::5 - [<th:>]
+            MarkupTextLiteral - [0..5)::5 - [<th:>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[th:];
+                CloseAngle;[>];
+        MarkupTextLiteral - [5..21)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[words];
+            Whitespace;[ ];
+            Text;[and];
+            Whitespace;[ ];
+            Text;[spaces];
+        MarkupTagBlock - [21..27)::6 - [</th:>]
+            MarkupTextLiteral - [21..27)::6 - [</th:>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[th:];
+                CloseAngle;[>];

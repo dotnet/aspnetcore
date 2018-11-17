@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
+    public class RazorDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
         public void DirectiveDescriptor_FileScopedMultipleOccurring_CanHaveDuplicates()

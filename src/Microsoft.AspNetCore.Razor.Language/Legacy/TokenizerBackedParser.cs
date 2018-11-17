@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal abstract class TokenizerBackedParser<TTokenizer> : ParserBase
         where TTokenizer : Tokenizer
     {
+        private readonly SyntaxListPool _pool = new SyntaxListPool();
         private readonly TokenizerView<TTokenizer> _tokenizer;
+        private SyntaxListBuilder<SyntaxToken>? _tokenBuilder;
 
         protected TokenizerBackedParser(LanguageCharacteristics<TTokenizer> language, ParserContext context)
             : base(context)
@@ -21,14 +23,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var languageTokenizer = Language.CreateTokenizer(Context.Source);
             _tokenizer = new TokenizerView<TTokenizer>(languageTokenizer);
-            Span = new SpanBuilder(CurrentLocation);
+            SpanContext = new SpanContextBuilder();
         }
 
-        protected ParserState ParserState { get; set; }
+        protected SyntaxListPool Pool => _pool;
 
-        protected SpanBuilder Span { get; private set; }
+        protected SyntaxListBuilder<SyntaxToken> TokenBuilder
+        {
+            get
+            {
+                if (_tokenBuilder == null)
+                {
+                    var result = _pool.Allocate<SyntaxToken>();
+                    _tokenBuilder = result.Builder;
+                }
 
-        protected Action<SpanBuilder> SpanConfig { get; set; }
+                return _tokenBuilder.Value;
+            }
+        }
+
+        protected SpanContextBuilder SpanContext { get; private set; }
+
+        protected Action<SpanContextBuilder> SpanContextConfig { get; set; }
 
         protected SyntaxToken CurrentToken
         {
@@ -36,8 +52,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         protected SyntaxToken PreviousToken { get; private set; }
-
-        protected SourceLocation CurrentLocation => _tokenizer.Tokenizer.CurrentLocation;
 
         protected SourceLocation CurrentStart => _tokenizer.Tokenizer.CurrentStart;
 
@@ -47,28 +61,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         protected LanguageCharacteristics<TTokenizer> Language { get; }
-
-        protected virtual void HandleEmbeddedTransition()
-        {
-        }
-
-        protected virtual bool IsAtEmbeddedTransition(bool allowTemplatesAndComments, bool allowTransitions)
-        {
-            return false;
-        }
-
-        public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
-        {
-            foreach (var token in Language.TokenizeString(start, content))
-            {
-                span.Accept(token);
-            }
-        }
-
-        protected void Initialize(SpanBuilder span)
-        {
-            SpanConfig?.Invoke(span);
-        }
 
         protected SyntaxToken Lookahead(int count)
         {
@@ -163,10 +155,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Conditional("DEBUG")]
         internal void Assert(SyntaxKind expectedType)
         {
-            Debug.Assert(!EndOfFile && TokenKindEquals(CurrentToken.Kind, expectedType));
+            Debug.Assert(!EndOfFile && CurrentToken.Kind == expectedType);
         }
-
-        protected abstract bool TokenKindEquals(SyntaxKind x, SyntaxKind y);
 
         protected internal void PutBack(SyntaxToken token)
         {
@@ -203,96 +193,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected internal bool Balance(BalancingModes mode)
-        {
-            var left = CurrentToken.Kind;
-            var right = Language.FlipBracket(left);
-            var start = CurrentStart;
-            AcceptAndMoveNext();
-            if (EndOfFile && ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure))
-            {
-                Context.ErrorSink.OnError(
-                    RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                        new SourceSpan(start, contentLength: 1 /* { OR } */),
-                        Language.GetSample(left),
-                        Language.GetSample(right)));
-            }
-
-            return Balance(mode, left, right, start);
-        }
-
-        protected internal bool Balance(BalancingModes mode, SyntaxKind left, SyntaxKind right, SourceLocation start)
-        {
-            var startPosition = CurrentStart.AbsoluteIndex;
-            var nesting = 1;
-            if (!EndOfFile)
-            {
-                var tokens = new List<SyntaxToken>();
-                do
-                {
-                    if (IsAtEmbeddedTransition(
-                        (mode & BalancingModes.AllowCommentsAndTemplates) == BalancingModes.AllowCommentsAndTemplates,
-                        (mode & BalancingModes.AllowEmbeddedTransitions) == BalancingModes.AllowEmbeddedTransitions))
-                    {
-                        Accept(tokens);
-                        tokens.Clear();
-                        HandleEmbeddedTransition();
-
-                        // Reset backtracking since we've already outputted some spans.
-                        startPosition = CurrentStart.AbsoluteIndex;
-                    }
-                    if (At(left))
-                    {
-                        nesting++;
-                    }
-                    else if (At(right))
-                    {
-                        nesting--;
-                    }
-                    if (nesting > 0)
-                    {
-                        tokens.Add(CurrentToken);
-                    }
-                }
-                while (nesting > 0 && NextToken());
-
-                if (nesting > 0)
-                {
-                    if ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure)
-                    {
-                        Context.ErrorSink.OnError(
-                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
-                                new SourceSpan(start, contentLength: 1 /* { OR } */),
-                                Language.GetSample(left),
-                                Language.GetSample(right)));
-                    }
-                    if ((mode & BalancingModes.BacktrackOnFailure) == BalancingModes.BacktrackOnFailure)
-                    {
-                        Context.Source.Position = startPosition;
-                        NextToken();
-                    }
-                    else
-                    {
-                        Accept(tokens);
-                    }
-                }
-                else
-                {
-                    // Accept all the tokens we saw
-                    Accept(tokens);
-                }
-            }
-            return nesting == 0;
-        }
-
         protected internal bool NextIs(SyntaxKind type)
         {
-            return NextIs(token => token != null && TokenKindEquals(type, token.Kind));
+            return NextIs(token => token != null && type == token.Kind);
         }
 
         protected internal bool NextIs(params SyntaxKind[] types)
         {
-            return NextIs(token => token != null && types.Any(t => TokenKindEquals(t, token.Kind)));
+            return NextIs(token => token != null && types.Any(t => t == token.Kind));
         }
 
         protected internal bool NextIs(Func<SyntaxToken, bool> condition)
@@ -317,173 +225,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected internal bool Was(SyntaxKind type)
         {
-            return PreviousToken != null && TokenKindEquals(PreviousToken.Kind, type);
+            return PreviousToken != null && PreviousToken.Kind == type;
         }
 
         protected internal bool At(SyntaxKind type)
         {
-            return !EndOfFile && CurrentToken != null && TokenKindEquals(CurrentToken.Kind, type);
-        }
-
-        protected internal bool AcceptAndMoveNext()
-        {
-            Accept(CurrentToken);
-            return NextToken();
-        }
-
-        protected SyntaxToken AcceptSingleWhiteSpaceCharacter()
-        {
-            if (Language.IsWhiteSpace(CurrentToken))
-            {
-                var pair = Language.SplitToken(CurrentToken, 1, Language.GetKnownTokenType(KnownTokenType.WhiteSpace));
-                Accept(pair.Item1);
-                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                NextToken();
-                return pair.Item2;
-            }
-            return null;
-        }
-
-        protected internal void Accept(IEnumerable<SyntaxToken> tokens)
-        {
-            foreach (var token in tokens)
-            {
-                Accept(token);
-            }
-        }
-
-        protected internal void Accept(SyntaxToken token)
-        {
-            if (token != null)
-            {
-                foreach (var error in token.GetDiagnostics())
-                {
-                    Context.ErrorSink.OnError(error);
-                }
-
-                Span.Accept(token);
-            }
-        }
-
-        protected internal bool AcceptAll(params SyntaxKind[] kinds)
-        {
-            foreach (var kind in kinds)
-            {
-                if (CurrentToken == null || !TokenKindEquals(CurrentToken.Kind, kind))
-                {
-                    return false;
-                }
-                AcceptAndMoveNext();
-            }
-            return true;
-        }
-
-        protected internal void AddMarkerTokenIfNecessary()
-        {
-            if (Span.Tokens.Count == 0 && Context.Builder.LastAcceptedCharacters != AcceptedCharactersInternal.Any)
-            {
-                Accept(Language.CreateMarkerToken());
-            }
-        }
-
-        protected internal void Output(SpanKindInternal kind, SyntaxKind syntaxKind = SyntaxKind.Unknown)
-        {
-            Configure(kind, null);
-            Output(syntaxKind);
-        }
-
-        protected internal void Output(SpanKindInternal kind, AcceptedCharactersInternal accepts, SyntaxKind syntaxKind = SyntaxKind.Unknown)
-        {
-            Configure(kind, accepts);
-            Output(syntaxKind);
-        }
-
-        protected internal void Output(AcceptedCharactersInternal accepts, SyntaxKind syntaxKind = SyntaxKind.Unknown)
-        {
-            Configure(null, accepts);
-            Output(syntaxKind);
-        }
-
-        private void Output(SyntaxKind syntaxKind)
-        {
-            if (Span.Tokens.Count > 0)
-            {
-                var nextStart = Span.End;
-
-                var builtSpan = Span.Build(syntaxKind);
-                Context.Builder.Add(builtSpan);
-                Initialize(Span);
-
-                // Ensure spans are contiguous.
-                //
-                // Note: Using Span.End here to avoid CurrentLocation. CurrentLocation will
-                // vary depending on what tokens have been read. We often read a token and *then*
-                // make a decision about whether to include it in the current span.
-                Span.Start = nextStart;
-            }
-        }
-
-        protected IDisposable PushSpanConfig()
-        {
-            return PushSpanConfig(newConfig: (Action<SpanBuilder, Action<SpanBuilder>>)null);
-        }
-
-        protected IDisposable PushSpanConfig(Action<SpanBuilder> newConfig)
-        {
-            return PushSpanConfig(newConfig == null ? (Action<SpanBuilder, Action<SpanBuilder>>)null : (span, _) => newConfig(span));
-        }
-
-        protected IDisposable PushSpanConfig(Action<SpanBuilder, Action<SpanBuilder>> newConfig)
-        {
-            var old = SpanConfig;
-            ConfigureSpan(newConfig);
-            return new DisposableAction(() => SpanConfig = old);
-        }
-
-        protected void ConfigureSpan(Action<SpanBuilder> config)
-        {
-            SpanConfig = config;
-            Initialize(Span);
-        }
-
-        protected void ConfigureSpan(Action<SpanBuilder, Action<SpanBuilder>> config)
-        {
-            var prev = SpanConfig;
-            if (config == null)
-            {
-                SpanConfig = null;
-            }
-            else
-            {
-                SpanConfig = span => config(span, prev);
-            }
-            Initialize(Span);
-        }
-
-        protected internal void Expected(KnownTokenType type)
-        {
-            Expected(Language.GetKnownTokenType(type));
-        }
-
-        protected internal void Expected(params SyntaxKind[] types)
-        {
-            Debug.Assert(!EndOfFile && CurrentToken != null && types.Contains(CurrentToken.Kind));
-            AcceptAndMoveNext();
-        }
-
-        protected internal bool Optional(KnownTokenType type)
-        {
-            return Optional(Language.GetKnownTokenType(type));
-        }
-
-        protected internal bool Optional(SyntaxKind type)
-        {
-            if (At(type))
-            {
-                AcceptAndMoveNext();
-                return true;
-            }
-            return false;
+            return !EndOfFile && CurrentToken != null && CurrentToken.Kind == type;
         }
 
         protected bool EnsureCurrent()
@@ -496,83 +243,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return true;
         }
 
-        protected internal void AcceptWhile(SyntaxKind type)
-        {
-            AcceptWhile(token => TokenKindEquals(type, token.Kind));
-        }
-
-        // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
-        protected internal void AcceptWhile(SyntaxKind type1, SyntaxKind type2)
-        {
-            AcceptWhile(token => TokenKindEquals(type1, token.Kind) || TokenKindEquals(type2, token.Kind));
-        }
-
-        protected internal void AcceptWhile(SyntaxKind type1, SyntaxKind type2, SyntaxKind type3)
-        {
-            AcceptWhile(token => TokenKindEquals(type1, token.Kind) || TokenKindEquals(type2, token.Kind) || TokenKindEquals(type3, token.Kind));
-        }
-
-        protected internal void AcceptWhile(params SyntaxKind[] types)
-        {
-            AcceptWhile(token => types.Any(expected => TokenKindEquals(expected, token.Kind)));
-        }
-
-        protected internal void AcceptUntil(SyntaxKind type)
-        {
-            AcceptWhile(token => !TokenKindEquals(type, token.Kind));
-        }
-
-        // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
-        protected internal void AcceptUntil(SyntaxKind type1, SyntaxKind type2)
-        {
-            AcceptWhile(token => !TokenKindEquals(type1, token.Kind) && !TokenKindEquals(type2, token.Kind));
-        }
-
-        protected internal void AcceptUntil(SyntaxKind type1, SyntaxKind type2, SyntaxKind type3)
-        {
-            AcceptWhile(token => !TokenKindEquals(type1, token.Kind) && !TokenKindEquals(type2, token.Kind) && !TokenKindEquals(type3, token.Kind));
-        }
-
-        protected internal void AcceptUntil(params SyntaxKind[] types)
-        {
-            AcceptWhile(token => types.All(expected => !TokenKindEquals(expected, token.Kind)));
-        }
-
-        protected internal void AcceptWhile(Func<SyntaxToken, bool> condition)
-        {
-            Accept(ReadWhileLazy(condition));
-        }
-
         protected internal IEnumerable<SyntaxToken> ReadWhile(Func<SyntaxToken, bool> condition)
         {
             return ReadWhileLazy(condition).ToList();
-        }
-
-        protected SyntaxToken AcceptWhiteSpaceInLines()
-        {
-            SyntaxToken lastWs = null;
-            while (Language.IsWhiteSpace(CurrentToken) || Language.IsNewLine(CurrentToken))
-            {
-                // Capture the previous whitespace node
-                if (lastWs != null)
-                {
-                    Accept(lastWs);
-                }
-
-                if (Language.IsWhiteSpace(CurrentToken))
-                {
-                    lastWs = CurrentToken;
-                }
-                else if (Language.IsNewLine(CurrentToken))
-                {
-                    // Accept newline and reset last whitespace tracker
-                    Accept(CurrentToken);
-                    lastWs = null;
-                }
-
-                _tokenizer.Next();
-            }
-            return lastWs;
         }
 
         protected bool AtIdentifier(bool allowKeywords)
@@ -593,30 +266,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private void Configure(SpanKindInternal? kind, AcceptedCharactersInternal? accepts)
-        {
-            if (kind != null)
-            {
-                Span.Kind = kind.Value;
-            }
-            if (accepts != null)
-            {
-                Span.EditHandler.AcceptedCharacters = accepts.Value;
-            }
-        }
-
-        protected virtual void OutputSpanBeforeRazorComment()
-        {
-            throw new InvalidOperationException(Resources.Language_Does_Not_Support_RazorComment);
-        }
-
-        private void CommentSpanConfig(SpanBuilder span)
-        {
-            span.ChunkGenerator = SpanChunkGenerator.Null;
-            span.EditHandler = SpanEditHandler.CreateDefault(Language.TokenizeString);
-        }
-
-        protected void RazorComment()
+        protected RazorCommentBlockSyntax ParseRazorComment()
         {
             if (!Language.KnowsTokenType(KnownTokenType.CommentStart) ||
                 !Language.KnowsTokenType(KnownTokenType.CommentStar) ||
@@ -624,54 +274,321 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 throw new InvalidOperationException(Resources.Language_Does_Not_Support_RazorComment);
             }
-            OutputSpanBeforeRazorComment();
-            using (PushSpanConfig(CommentSpanConfig))
+
+            RazorCommentBlockSyntax commentBlock;
+            using (PushSpanContextConfig(CommentSpanContextConfig))
             {
-                using (Context.Builder.StartBlock(BlockKindInternal.Comment))
+                EnsureCurrent();
+                var start = CurrentStart;
+                Debug.Assert(At(SyntaxKind.RazorCommentTransition));
+                var startTransition = EatExpectedToken(SyntaxKind.RazorCommentTransition);
+                var startStar = EatExpectedToken(SyntaxKind.RazorCommentStar);
+                var comment = GetOptionalToken(SyntaxKind.RazorCommentLiteral);
+                if (comment == null)
                 {
-                    Context.Builder.CurrentBlock.ChunkGenerator = new RazorCommentChunkGenerator();
-                    var start = CurrentStart;
-
-                    Expected(KnownTokenType.CommentStart);
-                    Output(SpanKindInternal.Transition, AcceptedCharactersInternal.None);
-
-                    Expected(KnownTokenType.CommentStar);
-                    Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
-
-                    Optional(KnownTokenType.CommentBody);
-                    AddMarkerTokenIfNecessary();
-                    Output(SpanKindInternal.Comment);
-
-                    var errorReported = false;
-                    if (!Optional(KnownTokenType.CommentStar))
+                    comment = SyntaxFactory.MissingToken(SyntaxKind.RazorCommentLiteral);
+                }
+                var endStar = GetOptionalToken(SyntaxKind.RazorCommentStar);
+                if (endStar == null)
+                {
+                    var diagnostic = RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
+                        new SourceSpan(start, contentLength: 2 /* @* */));
+                    endStar = SyntaxFactory.MissingToken(SyntaxKind.RazorCommentStar, diagnostic);
+                    Context.ErrorSink.OnError(diagnostic);
+                }
+                var endTransition = GetOptionalToken(SyntaxKind.RazorCommentTransition);
+                if (endTransition == null)
+                {
+                    if (!endStar.IsMissing)
                     {
-                        errorReported = true;
-                        Context.ErrorSink.OnError(
-                            RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
-                                new SourceSpan(start, contentLength: 2 /* @* */)));
-                    }
-                    else
-                    {
-                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
+                        var diagnostic = RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
+                            new SourceSpan(start, contentLength: 2 /* @* */));
+                        Context.ErrorSink.OnError(diagnostic);
+                        endTransition = SyntaxFactory.MissingToken(SyntaxKind.RazorCommentTransition, diagnostic);
                     }
 
-                    if (!Optional(KnownTokenType.CommentStart))
-                    {
-                        if (!errorReported)
-                        {
-                            errorReported = true;
-                            Context.ErrorSink.OnError(
-                            RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
-                                new SourceSpan(start, contentLength: 2 /* @* */)));
-                        }
-                    }
-                    else
-                    {
-                        Output(SpanKindInternal.Transition, AcceptedCharactersInternal.None);
-                    }
+                    endTransition = SyntaxFactory.MissingToken(SyntaxKind.RazorCommentTransition);
+                }
+
+                commentBlock = SyntaxFactory.RazorCommentBlock(startTransition, startStar, comment, endStar, endTransition);
+
+                // Make sure we generate a marker symbol after a comment if necessary.
+                if (!comment.IsMissing || !endStar.IsMissing || !endTransition.IsMissing)
+                {
+                    Context.LastAcceptedCharacters = AcceptedCharactersInternal.None;
                 }
             }
-            Initialize(Span);
+
+            InitializeContext(SpanContext);
+
+            return commentBlock;
+        }
+
+        private void CommentSpanContextConfig(SpanContextBuilder spanContext)
+        {
+            spanContext.ChunkGenerator = SpanChunkGenerator.Null;
+            spanContext.EditHandler = SpanEditHandler.CreateDefault(Language.TokenizeString);
+        }
+
+        protected SyntaxToken EatCurrentToken()
+        {
+            Debug.Assert(!EndOfFile && CurrentToken != null);
+            var token = CurrentToken;
+            NextToken();
+            return token;
+        }
+
+        protected SyntaxToken EatExpectedToken(params SyntaxKind[] kinds)
+        {
+            Debug.Assert(!EndOfFile && CurrentToken != null && kinds.Contains(CurrentToken.Kind));
+            var token = CurrentToken;
+            NextToken();
+            return token;
+        }
+
+        protected SyntaxToken GetOptionalToken(SyntaxKind kind)
+        {
+            if (At(kind))
+            {
+                var token = CurrentToken;
+                NextToken();
+                return token;
+            }
+
+            return null;
+        }
+
+        protected internal void AcceptWhile(SyntaxKind type)
+        {
+            AcceptWhile(token => type == token.Kind);
+        }
+
+        // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
+        protected internal void AcceptWhile(SyntaxKind type1, SyntaxKind type2)
+        {
+            AcceptWhile(token => type1 == token.Kind || type2 == token.Kind);
+        }
+
+        protected internal void AcceptWhile(SyntaxKind type1, SyntaxKind type2, SyntaxKind type3)
+        {
+            AcceptWhile(token => type1 == token.Kind || type2 == token.Kind || type3 == token.Kind);
+        }
+
+        protected internal void AcceptWhile(params SyntaxKind[] types)
+        {
+            AcceptWhile(token => types.Any(expected => expected == token.Kind));
+        }
+
+        protected internal void AcceptUntil(SyntaxKind type)
+        {
+            AcceptWhile(token => type != token.Kind);
+        }
+
+        // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
+        protected internal void AcceptUntil(SyntaxKind type1, SyntaxKind type2)
+        {
+            AcceptWhile(token => type1 != token.Kind && type2 != token.Kind);
+        }
+
+        protected internal void AcceptUntil(SyntaxKind type1, SyntaxKind type2, SyntaxKind type3)
+        {
+            AcceptWhile(token => type1 != token.Kind && type2 != token.Kind && type3 != token.Kind);
+        }
+
+        protected internal void AcceptUntil(params SyntaxKind[] types)
+        {
+            AcceptWhile(token => types.All(expected => expected != token.Kind));
+        }
+
+        protected internal void AcceptWhile(Func<SyntaxToken, bool> condition)
+        {
+            Accept(ReadWhileLazy(condition));
+        }
+
+        protected internal void Accept(IEnumerable<SyntaxToken> tokens)
+        {
+            foreach (var token in tokens)
+            {
+                foreach (var error in token.GetDiagnostics())
+                {
+                    Context.ErrorSink.OnError(error);
+                }
+
+                TokenBuilder.Add(token);
+            }
+        }
+
+        protected internal void Accept(SyntaxToken token)
+        {
+            if (token != null)
+            {
+                foreach (var error in token.GetDiagnostics())
+                {
+                    Context.ErrorSink.OnError(error);
+                }
+
+                TokenBuilder.Add(token);
+            }
+        }
+
+        protected internal bool AcceptAll(params SyntaxKind[] kinds)
+        {
+            foreach (var kind in kinds)
+            {
+                if (CurrentToken == null || CurrentToken.Kind != kind)
+                {
+                    return false;
+                }
+                AcceptAndMoveNext();
+            }
+            return true;
+        }
+
+        protected internal bool AcceptAndMoveNext()
+        {
+            Accept(CurrentToken);
+            return NextToken();
+        }
+
+        protected SyntaxList<SyntaxToken> Output()
+        {
+            var list = TokenBuilder.ToList();
+            TokenBuilder.Clear();
+            return list;
+        }
+
+        protected SyntaxToken AcceptWhitespaceInLines()
+        {
+            SyntaxToken lastWs = null;
+            while (Language.IsWhitespace(CurrentToken) || Language.IsNewLine(CurrentToken))
+            {
+                // Capture the previous whitespace node
+                if (lastWs != null)
+                {
+                    Accept(lastWs);
+                }
+
+                if (Language.IsWhitespace(CurrentToken))
+                {
+                    lastWs = CurrentToken;
+                }
+                else if (Language.IsNewLine(CurrentToken))
+                {
+                    // Accept newline and reset last whitespace tracker
+                    Accept(CurrentToken);
+                    lastWs = null;
+                }
+
+                NextToken();
+            }
+
+            return lastWs;
+        }
+
+        protected internal bool TryAccept(SyntaxKind type)
+        {
+            if (At(type))
+            {
+                AcceptAndMoveNext();
+                return true;
+            }
+            return false;
+        }
+
+        protected internal void AcceptMarkerTokenIfNecessary()
+        {
+            if (TokenBuilder.Count == 0 && Context.LastAcceptedCharacters != AcceptedCharactersInternal.Any)
+            {
+                Accept(Language.CreateMarkerToken());
+            }
+        }
+
+        protected MarkupTextLiteralSyntax OutputAsMarkupLiteral()
+        {
+            var tokens = Output();
+            if (tokens.Count == 0)
+            {
+                return null;
+            }
+
+            return GetNodeWithSpanContext(SyntaxFactory.MarkupTextLiteral(tokens));
+        }
+
+        protected MarkupEphemeralTextLiteralSyntax OutputAsMarkupEphemeralLiteral()
+        {
+            var tokens = Output();
+            if (tokens.Count == 0)
+            {
+                return null;
+            }
+
+            return GetNodeWithSpanContext(SyntaxFactory.MarkupEphemeralTextLiteral(tokens));
+        }
+
+        protected RazorMetaCodeSyntax OutputAsMetaCode(SyntaxList<SyntaxToken> tokens, AcceptedCharactersInternal? accepted = null)
+        {
+            if (tokens.Count == 0)
+            {
+                return null;
+            }
+
+            var metacode = SyntaxFactory.RazorMetaCode(tokens);
+            SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+            SpanContext.EditHandler.AcceptedCharacters = accepted ?? AcceptedCharactersInternal.None;
+
+            return GetNodeWithSpanContext(metacode);
+        }
+
+        protected TNode GetNodeWithSpanContext<TNode>(TNode node) where TNode : Syntax.GreenNode
+        {
+            var spanContext = SpanContext.Build();
+            Context.LastAcceptedCharacters = spanContext.EditHandler.AcceptedCharacters;
+            InitializeContext(SpanContext);
+            var annotation = new Syntax.SyntaxAnnotation(SyntaxConstants.SpanContextKind, spanContext);
+
+            return (TNode)node.SetAnnotations(new[] { annotation });
+        }
+
+        protected IDisposable PushSpanContextConfig()
+        {
+            return PushSpanContextConfig(newConfig: (Action<SpanContextBuilder, Action<SpanContextBuilder>>)null);
+        }
+
+        protected IDisposable PushSpanContextConfig(Action<SpanContextBuilder> newConfig)
+        {
+            return PushSpanContextConfig(newConfig == null ? (Action<SpanContextBuilder, Action<SpanContextBuilder>>)null : (span, _) => newConfig(span));
+        }
+
+        protected IDisposable PushSpanContextConfig(Action<SpanContextBuilder, Action<SpanContextBuilder>> newConfig)
+        {
+            var old = SpanContextConfig;
+            ConfigureSpanContext(newConfig);
+            return new DisposableAction(() => SpanContextConfig = old);
+        }
+
+        protected void ConfigureSpanContext(Action<SpanContextBuilder> config)
+        {
+            SpanContextConfig = config;
+            InitializeContext(SpanContext);
+        }
+
+        protected void ConfigureSpanContext(Action<SpanContextBuilder, Action<SpanContextBuilder>> config)
+        {
+            var prev = SpanContextConfig;
+            if (config == null)
+            {
+                SpanContextConfig = null;
+            }
+            else
+            {
+                SpanContextConfig = span => config(span, prev);
+            }
+            InitializeContext(SpanContext);
+        }
+
+        protected void InitializeContext(SpanContextBuilder spanContext)
+        {
+            SpanContextConfig?.Invoke(spanContext);
         }
     }
 }

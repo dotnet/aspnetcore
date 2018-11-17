@@ -1,5 +1,25 @@
-Markup block - Gen<None> - 33 - (0:0,0)
-    Tag block - Gen<TagHelper> - 33 - (0:0,0) - div - CatchAllTagHelper
-        StartTagAndEndTag - <div bound #localminimized> ... </div>
-        bound - Minimized
-        #localminimized - Minimized
+RazorDocument - [0..33)::33 - [<div bound #localminimized></div>]
+    MarkupBlock - [0..33)::33
+        MarkupTagHelperElement - [0..33)::33 - div[StartTagAndEndTag] - CatchAllTagHelper
+            MarkupTagHelperStartTag - [0..27)::27
+                MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[div];
+                MarkupMinimizedTagHelperAttribute - [4..10)::6 - bound - Minimized - Unbound - [ bound]
+                    MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [5..10)::5 - [bound] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound];
+                MarkupMinimizedTagHelperAttribute - [10..26)::16 - #localminimized - Minimized - Unbound - [ #localminimized]
+                    MarkupTextLiteral - [10..11)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [11..26)::15 - [#localminimized] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[#localminimized];
+                MarkupTextLiteral - [26..27)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [27..33)::6
+                MarkupTextLiteral - [27..33)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[div];
+                    CloseAngle;[>];

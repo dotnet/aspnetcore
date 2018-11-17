@@ -1,6 +1,24 @@
-Markup block - Gen<None> - 19 - (0:0,0)
-    Tag block - Gen<TagHelper> - 19 - (0:0,0) - person - PersonTagHelper
-        SelfClosing - <person age="12" />
-        age - DoubleQuotes
-            Code span - Gen<Expr> - [12] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                SyntaxKind.Text;[12];
+RazorDocument - [0..19)::19 - [<person age="12" />]
+    MarkupBlock - [0..19)::19
+        MarkupTagHelperElement - [0..19)::19 - person[SelfClosing] - PersonTagHelper
+            MarkupTagHelperStartTag - [0..19)::19
+                MarkupTextLiteral - [0..7)::7 - [<person] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[person];
+                MarkupTagHelperAttribute - [7..16)::9 - age - DoubleQuotes - Bound - [ age="12"]
+                    MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [8..11)::3 - [age] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[age];
+                    Equals;[=];
+                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [13..15)::2
+                        CSharpExpressionLiteral - [13..15)::2 - [12] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                            Text;[12];
+                    MarkupTextLiteral - [15..16)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [16..19)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

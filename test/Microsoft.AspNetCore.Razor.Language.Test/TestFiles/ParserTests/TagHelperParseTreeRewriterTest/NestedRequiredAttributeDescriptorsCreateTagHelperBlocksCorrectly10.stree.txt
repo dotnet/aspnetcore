@@ -1,44 +1,89 @@
-Markup block - Gen<None> - 113 - (0:0,0)
-    Tag block - Gen<TagHelper> - 113 - (0:0,0) - strong - catchAllTagHelper
-        StartTagAndEndTag - <strong catchAll="hi"> ... </strong>
-        catchAll - DoubleQuotes
-            Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
-                SyntaxKind.Text;[hi];
-        Tag block - Gen<None> - 8 - (22:0,22)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<None> - 8 - (30:0,30)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<TagHelper> - 48 - (38:0,38) - strong - catchAllTagHelper
-            StartTagAndEndTag - <strong catchAll="hi"> ... </strong>
-            catchAll - DoubleQuotes
-                Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:1
-                    SyntaxKind.Text;[hi];
-            Tag block - Gen<None> - 8 - (60:0,60)
-                Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (60:0,60) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[strong];
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 9 - (68:0,68)
-                Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (68:0,68) - Tokens:4
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[strong];
-                    SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<None> - 9 - (86:0,86)
-            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (86:0,86) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<None> - 9 - (95:0,95)
-            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (95:0,95) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..113)::113 - [<strong catchAll="hi"><strong><strong><strong catchAll="hi"><strong></strong></strong></strong></strong></strong>]
+    MarkupBlock - [0..113)::113
+        MarkupTagHelperElement - [0..113)::113 - strong[StartTagAndEndTag] - catchAllTagHelper
+            MarkupTagHelperStartTag - [0..22)::22
+                MarkupTextLiteral - [0..7)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                MarkupTagHelperAttribute - [7..21)::14 - catchAll - DoubleQuotes - Unbound - [ catchAll="hi"]
+                    MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [8..16)::8 - [catchAll] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[catchAll];
+                    Equals;[=];
+                    MarkupTextLiteral - [17..18)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [18..20)::2
+                        MarkupLiteralAttributeValue - [18..20)::2 - [hi]
+                            MarkupTextLiteral - [18..20)::2 - [hi] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[hi];
+                    MarkupTextLiteral - [20..21)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [21..22)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTagBlock - [22..30)::8 - [<strong>]
+                MarkupTextLiteral - [22..30)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagBlock - [30..38)::8 - [<strong>]
+                MarkupTextLiteral - [30..38)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagHelperElement - [38..86)::48 - strong[StartTagAndEndTag] - catchAllTagHelper
+                MarkupTagHelperStartTag - [38..60)::22
+                    MarkupTextLiteral - [38..45)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                    MarkupTagHelperAttribute - [45..59)::14 - catchAll - DoubleQuotes - Unbound - [ catchAll="hi"]
+                        MarkupTextLiteral - [45..46)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        MarkupTextLiteral - [46..54)::8 - [catchAll] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[catchAll];
+                        Equals;[=];
+                        MarkupTextLiteral - [55..56)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                        MarkupTagHelperAttributeValue - [56..58)::2
+                            MarkupLiteralAttributeValue - [56..58)::2 - [hi]
+                                MarkupTextLiteral - [56..58)::2 - [hi] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[hi];
+                        MarkupTextLiteral - [58..59)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                    MarkupTextLiteral - [59..60)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        CloseAngle;[>];
+                MarkupTagBlock - [60..68)::8 - [<strong>]
+                    MarkupTextLiteral - [60..68)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                        CloseAngle;[>];
+                MarkupTagBlock - [68..77)::9 - [</strong>]
+                    MarkupTextLiteral - [68..77)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[strong];
+                        CloseAngle;[>];
+                MarkupTagHelperEndTag - [77..86)::9
+                    MarkupTextLiteral - [77..86)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[strong];
+                        CloseAngle;[>];
+            MarkupTagBlock - [86..95)::9 - [</strong>]
+                MarkupTextLiteral - [86..95)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagBlock - [95..104)::9 - [</strong>]
+                MarkupTextLiteral - [95..104)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [104..113)::9
+                MarkupTextLiteral - [104..113)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];

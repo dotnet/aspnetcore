@@ -1,0 +1,23 @@
+RazorDocument - [0..14)::14 - [@functions { }]
+    MarkupBlock - [0..14)::14
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..14)::14
+            RazorDirective - [0..14)::14 - Directive:{functions;CodeBlock;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..14)::13
+                    RazorMetaCode - [1..10)::9 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[functions];
+                    CSharpCodeBlock - [10..14)::4
+                        MarkupTextLiteral - [10..11)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                            Whitespace;[ ];
+                        RazorMetaCode - [11..12)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
+                            LeftBrace;[{];
+                        CSharpCodeBlock - [12..13)::1
+                            CSharpStatementLiteral - [12..13)::1 - [ ] - Gen<Stmt> - CodeBlockEditHandler;Accepts:Any;CodeBlock
+                                Whitespace;[ ];
+                        RazorMetaCode - [13..14)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            RightBrace;[}];
+        MarkupTextLiteral - [14..14)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

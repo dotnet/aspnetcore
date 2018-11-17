@@ -1,74 +1,79 @@
-Statement block - Gen<None> - 161 - (0:0,0)
-    Code span - Gen<Stmt> - [if(foo) {LF    var foo = "After this statement there are 10 spaces";          LF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:18
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[    ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.StringLiteral;["After this statement there are 10 spaces"];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[          ];
-        SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 46 - (80:2,0)
-        Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (80:2,0) - Tokens:1
-            SyntaxKind.Whitespace;[    ];
-        Tag block - Gen<None> - 3 - (84:2,4)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (84:2,4) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF        FooLF] - SpanEditHandler;Accepts:Any - (87:2,7) - Tokens:4
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Whitespace;[        ];
-            SyntaxKind.Text;[Foo];
-            SyntaxKind.NewLine;[LF];
-        Expression block - Gen<Expr> - 12 - (102:4,0)
-            Code span - Gen<Stmt> - [        ] - SpanEditHandler;Accepts:Any - (102:4,0) - Tokens:1
-                SyntaxKind.Whitespace;[        ];
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (110:4,8) - Tokens:1
-                SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (111:4,9) - Tokens:1
-                SyntaxKind.Identifier;[bar];
-        Markup span - Gen<Markup> - [LF    ] - SpanEditHandler;Accepts:Any - (114:4,12) - Tokens:2
-            SyntaxKind.NewLine;[LF];
-            SyntaxKind.Whitespace;[    ];
-        Tag block - Gen<None> - 4 - (120:5,4)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (120:5,4) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (124:5,8) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 14 - (126:6,0)
-        Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (126:6,0) - Tokens:1
-            SyntaxKind.Whitespace;[    ];
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (130:6,4) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [:] - SpanEditHandler;Accepts:Any - (131:6,5) - Tokens:1
-            SyntaxKind.Colon;[:];
-        Markup span - Gen<Markup> - [Hello!LF] - SpanEditHandler;Accepts:None - (132:6,6) - Tokens:3
-            SyntaxKind.Text;[Hello];
-            SyntaxKind.Bang;[!];
-            SyntaxKind.NewLine;[LF];
-    Code span - Gen<Stmt> - [    var biz = boz;LF}] - SpanEditHandler;Accepts:Any - (140:7,0) - Tokens:11
-        SyntaxKind.Whitespace;[    ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[biz];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[boz];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..161)::161 - [if(foo) {LF    var foo = "After this statement there are 10 spaces";          LF    <p>LF        FooLF        @barLF    </p>LF    @:Hello!LF    var biz = boz;LF}]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..80)::80 - [if(foo) {LF    var foo = "After this statement there are 10 spaces";          LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        NewLine;[LF];
+        Whitespace;[    ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        StringLiteral;["After this statement there are 10 spaces"];
+        Semicolon;[;];
+        Whitespace;[          ];
+        NewLine;[LF];
+    MarkupBlock - [80..126)::46
+        MarkupTextLiteral - [80..84)::4 - [    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[    ];
+        MarkupTagBlock - [84..87)::3 - [<p>]
+            MarkupTextLiteral - [84..87)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [87..102)::15 - [LF        FooLF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+            Whitespace;[        ];
+            Text;[Foo];
+            NewLine;[LF];
+        CSharpCodeBlock - [102..114)::12
+            CSharpStatementLiteral - [102..110)::8 - [        ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                Whitespace;[        ];
+            CSharpImplicitExpression - [110..114)::4
+                CSharpTransition - [110..111)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [111..114)::3
+                    CSharpCodeBlock - [111..114)::3
+                        CSharpExpressionLiteral - [111..114)::3 - [bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                            Identifier;[bar];
+        MarkupTextLiteral - [114..120)::6 - [LF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+            Whitespace;[    ];
+        MarkupTagBlock - [120..124)::4 - [</p>]
+            MarkupTextLiteral - [120..124)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [124..126)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+            NewLine;[LF];
+    MarkupBlock - [126..140)::14
+        MarkupTextLiteral - [126..130)::4 - [    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[    ];
+        MarkupTransition - [130..131)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        RazorMetaCode - [131..132)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+            Colon;[:];
+        MarkupTextLiteral - [132..140)::8 - [Hello!LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Text;[Hello];
+            Bang;[!];
+            NewLine;[LF];
+    CSharpStatementLiteral - [140..161)::21 - [    var biz = boz;LF}] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Whitespace;[    ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[biz];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Identifier;[boz];
+        Semicolon;[;];
+        NewLine;[LF];
+        RightBrace;[}];

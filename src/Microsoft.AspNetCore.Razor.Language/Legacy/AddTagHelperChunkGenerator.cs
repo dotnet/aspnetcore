@@ -35,11 +35,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public List<RazorDiagnostic> Diagnostics { get; }
 
-        public override void Accept(ParserVisitor visitor, Span span)
-        {
-            visitor.VisitAddTagHelperSpan(this, span);
-        }
-
         /// <inheritdoc />
         public override bool Equals(object obj)
         {

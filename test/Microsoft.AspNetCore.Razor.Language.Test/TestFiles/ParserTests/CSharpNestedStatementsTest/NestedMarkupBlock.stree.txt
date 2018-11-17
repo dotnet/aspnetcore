@@ -1,30 +1,30 @@
-Statement block - Gen<None> - 29 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Stmt> - [while(true) {] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:6
-        SyntaxKind.Keyword;[while];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Keyword;[true];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-    Markup block - Gen<None> - 14 - (14:0,14)
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Tag block - Gen<None> - 3 - (15:0,15)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
-            SyntaxKind.Text;[Hello];
-        Tag block - Gen<None> - 4 - (23:0,23)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (27:0,27) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:None - (28:0,28) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..29)::29 - [@while(true) { <p>Hello</p> }]
+    CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    CSharpStatementLiteral - [1..14)::13 - [while(true) {] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[while];
+        LeftParenthesis;[(];
+        Keyword;[true];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+    MarkupBlock - [14..28)::14
+        MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+        MarkupTagBlock - [15..18)::3 - [<p>]
+            MarkupTextLiteral - [15..18)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [18..23)::5 - [Hello] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Hello];
+        MarkupTagBlock - [23..27)::4 - [</p>]
+            MarkupTextLiteral - [23..27)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [27..28)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+    CSharpStatementLiteral - [28..29)::1 - [}] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        RightBrace;[}];

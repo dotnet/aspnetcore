@@ -1,15 +1,35 @@
-Markup block - Gen<None> - 35 - (0:0,0)
-    Tag block - Gen<TagHelper> - 35 - (0:0,0) - person - PersonTagHelper
-        SelfClosing - <person age="@DateTime.Now.Year" />
-        age - DoubleQuotes
-            Markup block - Gen<None> - 18 - (13:0,13)
-                Markup block - Gen<None> - 18 - (13:0,13)
-                    Expression block - Gen<Expr> - 18 - (13:0,13)
-                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (13:0,13) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now.Year] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (14:0,14) - Tokens:5
-                            SyntaxKind.Identifier;[DateTime];
-                            SyntaxKind.Dot;[.];
-                            SyntaxKind.Identifier;[Now];
-                            SyntaxKind.Dot;[.];
-                            SyntaxKind.Identifier;[Year];
+RazorDocument - [0..35)::35 - [<person age="@DateTime.Now.Year" />]
+    MarkupBlock - [0..35)::35
+        MarkupTagHelperElement - [0..35)::35 - person[SelfClosing] - PersonTagHelper
+            MarkupTagHelperStartTag - [0..35)::35
+                MarkupTextLiteral - [0..7)::7 - [<person] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[person];
+                MarkupTagHelperAttribute - [7..32)::25 - age - DoubleQuotes - Bound - [ age="@DateTime.Now.Year"]
+                    MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [8..11)::3 - [age] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[age];
+                    Equals;[=];
+                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [13..31)::18
+                        MarkupBlock - [13..31)::18
+                            CSharpCodeBlock - [13..31)::18
+                                CSharpImplicitExpression - [13..31)::18
+                                    CSharpTransition - [13..14)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        Transition;[@];
+                                    CSharpImplicitExpressionBody - [14..31)::17
+                                        CSharpCodeBlock - [14..31)::17
+                                            CSharpExpressionLiteral - [14..31)::17 - [DateTime.Now.Year] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                                                Identifier;[DateTime];
+                                                Dot;[.];
+                                                Identifier;[Now];
+                                                Dot;[.];
+                                                Identifier;[Year];
+                    MarkupTextLiteral - [31..32)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [32..35)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

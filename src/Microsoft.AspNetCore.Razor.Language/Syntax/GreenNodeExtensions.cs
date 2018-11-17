@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
@@ -19,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return new InternalSyntax.SyntaxList<T>(node);
         }
 
-        public static TNode WithAnnotationsGreen<TNode>(this TNode node, IEnumerable<SyntaxAnnotation> annotations) where TNode : GreenNode
+        public static TNode WithAnnotationsGreen<TNode>(this TNode node, params SyntaxAnnotation[] annotations) where TNode : GreenNode
         {
             var newAnnotations = new List<SyntaxAnnotation>();
             foreach (var candidate in annotations)
@@ -48,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             }
         }
 
-        public static TNode WithDiagnosticsGreen<TNode>(this TNode node, RazorDiagnostic[] diagnostics) where TNode : GreenNode
+        public static TNode WithDiagnosticsGreen<TNode>(this TNode node, params RazorDiagnostic[] diagnostics) where TNode : GreenNode
         {
             return (TNode)node.SetDiagnostics(diagnostics);
         }

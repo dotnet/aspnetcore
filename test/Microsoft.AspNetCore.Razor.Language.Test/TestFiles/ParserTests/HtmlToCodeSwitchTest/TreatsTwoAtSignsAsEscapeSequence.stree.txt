@@ -1,17 +1,17 @@
-Markup block - Gen<None> - 16 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Markup span - Gen<Markup> - [@bar] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:2
-        SyntaxKind.Transition;[@];
-        SyntaxKind.Text;[bar];
-    Tag block - Gen<None> - 6 - (10:0,10)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..16)::16 - [<foo>@@bar</foo>]
+    MarkupTagBlock - [0..5)::5 - [<foo>]
+        MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+    MarkupEphemeralTextLiteral - [5..6)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:Any
+        Transition;[@];
+    MarkupTextLiteral - [6..10)::4 - [@bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        Transition;[@];
+        Text;[bar];
+    MarkupTagBlock - [10..16)::6 - [</foo>]
+        MarkupTextLiteral - [10..16)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

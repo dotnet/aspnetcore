@@ -1,52 +1,56 @@
-Markup block - Gen<None> - 68 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 68 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Code span - Gen<Stmt> - [LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (2:0,2) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-        Markup block - Gen<None> - 63 - (4:1,0)
-            Markup span - Gen<Markup> - [    ] - SpanEditHandler;Accepts:Any - (4:1,0) - Tokens:1
-                SyntaxKind.Whitespace;[    ];
-            HtmlComment block - Gen<None> - 57 - (8:1,4)
-                Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (8:1,4) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Bang;[!];
-                    SyntaxKind.DoubleHyphen;[--];
-                Markup span - Gen<Markup> - [ Hello, I'm a comment that shouldn't break razor -] - SpanEditHandler;Accepts:Whitespace - (12:1,8) - Tokens:22
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[Hello,];
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[I];
-                    SyntaxKind.SingleQuote;['];
-                    SyntaxKind.Text;[m];
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[a];
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[comment];
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[that];
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[shouldn];
-                    SyntaxKind.SingleQuote;['];
-                    SyntaxKind.Text;[t];
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[break];
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[razor];
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[-];
-                Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (62:1,58) - Tokens:2
-                    SyntaxKind.DoubleHyphen;[--];
-                    SyntaxKind.CloseAngle;[>];
-            Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (65:1,61) - Tokens:1
-                SyntaxKind.NewLine;[LF];
-        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (67:2,0) - Tokens:1
-            SyntaxKind.Unknown;[];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (67:2,0) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (68:2,1) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..68)::68 - [@{LF    <!-- Hello, I'm a comment that shouldn't break razor --->LF}]
+    MarkupBlock - [0..68)::68
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..68)::68
+            CSharpStatement - [0..68)::68
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..68)::67
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..67)::65
+                        CSharpStatementLiteral - [2..4)::2 - [LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            NewLine;[LF];
+                        MarkupBlock - [4..67)::63
+                            MarkupTextLiteral - [4..8)::4 - [    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[    ];
+                            MarkupCommentBlock - [8..65)::57
+                                MarkupTextLiteral - [8..12)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Bang;[!];
+                                    DoubleHyphen;[--];
+                                MarkupTextLiteral - [12..62)::50 - [ Hello, I'm a comment that shouldn't break razor -] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
+                                    Whitespace;[ ];
+                                    Text;[Hello,];
+                                    Whitespace;[ ];
+                                    Text;[I];
+                                    SingleQuote;['];
+                                    Text;[m];
+                                    Whitespace;[ ];
+                                    Text;[a];
+                                    Whitespace;[ ];
+                                    Text;[comment];
+                                    Whitespace;[ ];
+                                    Text;[that];
+                                    Whitespace;[ ];
+                                    Text;[shouldn];
+                                    SingleQuote;['];
+                                    Text;[t];
+                                    Whitespace;[ ];
+                                    Text;[break];
+                                    Whitespace;[ ];
+                                    Text;[razor];
+                                    Whitespace;[ ];
+                                    Text;[-];
+                                MarkupTextLiteral - [62..65)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    DoubleHyphen;[--];
+                                    CloseAngle;[>];
+                            MarkupTextLiteral - [65..67)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                NewLine;[LF];
+                        CSharpStatementLiteral - [67..67)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [67..68)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [68..68)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

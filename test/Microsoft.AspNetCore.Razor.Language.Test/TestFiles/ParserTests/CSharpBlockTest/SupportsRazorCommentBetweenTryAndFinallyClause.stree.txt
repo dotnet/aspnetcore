@@ -1,49 +1,41 @@
-Statement block - Gen<None> - 53 - (0:0,0)
-    Code span - Gen<Stmt> - [try { bar(); } ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:11
-        SyntaxKind.Keyword;[try];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-    Comment block - Gen<RazorComment> - 9 - (15:0,15)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Comment span - Gen<None> - [ Foo ] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
-            SyntaxKind.RazorCommentLiteral;[ Foo ];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-    Code span - Gen<Stmt> - [ ] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Comment block - Gen<RazorComment> - 9 - (25:0,25)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (25:0,25) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (26:0,26) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Comment span - Gen<None> - [ Bar ] - SpanEditHandler;Accepts:Any - (27:0,27) - Tokens:1
-            SyntaxKind.RazorCommentLiteral;[ Bar ];
-        MetaCode span - Gen<None> - [*] - SpanEditHandler;Accepts:None - (32:0,32) - Tokens:1
-            SyntaxKind.RazorCommentStar;[*];
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (33:0,33) - Tokens:1
-            SyntaxKind.RazorCommentTransition;[@];
-    Code span - Gen<Stmt> - [ finally { biz(); }] - SpanEditHandler;Accepts:None - (34:0,34) - Tokens:11
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[finally];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[biz];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..53)::53 - [try { bar(); } @* Foo *@ @* Bar *@ finally { biz(); }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..15)::15 - [try { bar(); } ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[try];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[bar];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+    RazorComment - [15..24)::9
+        RazorCommentTransition;[@];
+        RazorCommentStar;[*];
+        RazorCommentLiteral;[ Foo ];
+        RazorCommentStar;[*];
+        RazorCommentTransition;[@];
+    CSharpStatementLiteral - [24..25)::1 - [ ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Whitespace;[ ];
+    RazorComment - [25..34)::9
+        RazorCommentTransition;[@];
+        RazorCommentStar;[*];
+        RazorCommentLiteral;[ Bar ];
+        RazorCommentStar;[*];
+        RazorCommentTransition;[@];
+    CSharpStatementLiteral - [34..53)::19 - [ finally { biz(); }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Whitespace;[ ];
+        Keyword;[finally];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[biz];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

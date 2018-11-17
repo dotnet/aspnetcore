@@ -1,12 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
-    internal abstract class SyntaxNode
+    [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+    internal abstract partial class SyntaxNode
     {
         public SyntaxNode(GreenNode green, SyntaxNode parent, int position)
         {
@@ -60,6 +64,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public bool IsMissing => Green.IsMissing;
 
+        public bool IsToken => Green.IsToken;
+
+        public bool IsTrivia => Green.IsTrivia;
+
         public bool HasLeadingTrivia
         {
             get
@@ -79,6 +87,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         public bool ContainsDiagnostics => Green.ContainsDiagnostics;
 
         public bool ContainsAnnotations => Green.ContainsAnnotations;
+
+        internal string SerializedValue => SyntaxSerializer.Serialize(this);
 
         public abstract TResult Accept<TResult>(SyntaxVisitor<TResult> visitor);
 
@@ -253,18 +263,102 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
             do
             {
+                SyntaxNode lastChild = null;
                 for (var i = node.SlotCount - 1; i >= 0; i--)
                 {
                     var child = node.GetNodeSlot(i);
-                    if (child != null)
+                    if (child != null && child.FullWidth > 0)
                     {
-                        node = child;
+                        lastChild = child;
                         break;
                     }
                 }
-            } while (node.SlotCount != 0);
+                node = lastChild;
+            } while (node?.SlotCount > 0);
 
-            return node == this ? this : node;
+            return node;
+        }
+
+        /// <summary>
+        /// The list of child nodes of this node, where each element is a SyntaxNode instance.
+        /// </summary>
+        public ChildSyntaxList ChildNodes()
+        {
+            return new ChildSyntaxList(this);
+        }
+
+        /// <summary>
+        /// Gets a list of ancestor nodes
+        /// </summary>
+        public IEnumerable<SyntaxNode> Ancestors()
+        {
+            return Parent?
+                .AncestorsAndSelf() ??
+                Array.Empty<SyntaxNode>();
+        }
+
+        /// <summary>
+        /// Gets a list of ancestor nodes (including this node) 
+        /// </summary>
+        public IEnumerable<SyntaxNode> AncestorsAndSelf()
+        {
+            for (var node = this; node != null; node = node.Parent)
+            {
+                yield return node;
+            }
+        }
+
+        /// <summary>
+        /// Gets the first node of type TNode that matches the predicate.
+        /// </summary>
+        public TNode FirstAncestorOrSelf<TNode>(Func<TNode, bool> predicate = null)
+            where TNode : SyntaxNode
+        {
+            for (var node = this; node != null; node = node.Parent)
+            {
+                if (node is TNode tnode && (predicate == null || predicate(tnode)))
+                {
+                    return tnode;
+                }
+            }
+
+            return default;
+        }
+
+        /// <summary>
+        /// Gets a list of descendant nodes in prefix document order.
+        /// </summary>
+        /// <param name="descendIntoChildren">An optional function that determines if the search descends into the argument node's children.</param>
+        public IEnumerable<SyntaxNode> DescendantNodes(Func<SyntaxNode, bool> descendIntoChildren = null)
+        {
+            return DescendantNodesImpl(FullSpan, descendIntoChildren, includeSelf: false);
+        }
+
+        /// <summary>
+        /// Gets a list of descendant nodes (including this node) in prefix document order.
+        /// </summary>
+        /// <param name="descendIntoChildren">An optional function that determines if the search descends into the argument node's children.</param>
+        public IEnumerable<SyntaxNode> DescendantNodesAndSelf(Func<SyntaxNode, bool> descendIntoChildren = null)
+        {
+            return DescendantNodesImpl(FullSpan, descendIntoChildren, includeSelf: true);
+        }
+
+        protected internal SyntaxNode ReplaceCore<TNode>(
+            IEnumerable<TNode> nodes = null,
+            Func<TNode, TNode, SyntaxNode> computeReplacementNode = null)
+            where TNode : SyntaxNode
+        {
+            return SyntaxReplacer.Replace(this, nodes, computeReplacementNode);
+        }
+
+        protected internal SyntaxNode ReplaceNodeInListCore(SyntaxNode originalNode, IEnumerable<SyntaxNode> replacementNodes)
+        {
+            return SyntaxReplacer.ReplaceNodeInList(this, originalNode, replacementNodes);
+        }
+
+        protected internal SyntaxNode InsertNodesInListCore(SyntaxNode nodeInList, IEnumerable<SyntaxNode> nodesToInsert, bool insertBefore)
+        {
+            return SyntaxReplacer.InsertNodeInList(this, nodeInList, nodesToInsert, insertBefore);
         }
 
         public RazorDiagnostic[] GetDiagnostics()
@@ -294,12 +388,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public override string ToString()
         {
-            return Green.ToString();
+            var builder = new StringBuilder();
+            builder.Append(Green.ToString());
+            builder.AppendFormat(" at {0}::{1}", Position, FullWidth);
+
+            return builder.ToString();
         }
 
         public virtual string ToFullString()
         {
             return Green.ToFullString();
+        }
+
+        protected virtual string GetDebuggerDisplay()
+        {
+            if (IsToken)
+            {
+                return string.Format("{0};[{1}]", Kind, ToFullString());
+            }
+
+            return string.Format("{0} [{1}..{2})", Kind, Position, EndPosition);
         }
     }
 }

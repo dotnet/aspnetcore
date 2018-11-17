@@ -1,25 +1,25 @@
-Markup block - Gen<None> - 36 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [<!DOCTYPE hello="world" >] - [5..30) - FullWidth: 25 - Slots: 1
-        SyntaxKind.List - [<!DOCTYPE hello="world" >] - [5..30) - FullWidth: 25 - Slots: 11
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Bang;[!];
-            SyntaxKind.Text;[DOCTYPE];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[hello];
-            SyntaxKind.Equals;[=];
-            SyntaxKind.DoubleQuote;["];
-            SyntaxKind.Text;[world];
-            SyntaxKind.DoubleQuote;["];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 6 - (30:0,30)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..36)::36 - [<foo><!DOCTYPE hello="world" ></foo>]
+    MarkupBlock - [0..36)::36
+        MarkupTagBlock - [0..5)::5 - [<foo>]
+            MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[foo];
+                CloseAngle;[>];
+        MarkupTextLiteral - [5..30)::25 - [<!DOCTYPE hello="world" >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Bang;[!];
+            Text;[DOCTYPE];
+            Whitespace;[ ];
+            Text;[hello];
+            Equals;[=];
+            DoubleQuote;["];
+            Text;[world];
+            DoubleQuote;["];
+            Whitespace;[ ];
+            CloseAngle;[>];
+        MarkupTagBlock - [30..36)::6 - [</foo>]
+            MarkupTextLiteral - [30..36)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[foo];
+                CloseAngle;[>];

@@ -178,7 +178,7 @@ namespace Microsoft.CodeAnalysis.Razor
         public void IsDirectiveCompletableToken_ReturnsTrueForCSharpMarkerTokens()
         {
             // Arrange
-            var csharpToken = SyntaxFactory.Token(SyntaxKind.Unknown, string.Empty);
+            var csharpToken = SyntaxFactory.Token(SyntaxKind.Marker, string.Empty);
 
             // Act
             var result = DefaultRazorCompletionFactsService.IsDirectiveCompletableToken(csharpToken);

@@ -1,15 +1,19 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1015(17:0,17 [2] )]> - 17 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [         ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
-            SyntaxKind.Whitespace;[         ];
-        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (17:0,17) - Tokens:1
-            SyntaxKind.Unknown;[];
-    Markup span - Gen<Markup> - [LF    ] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:2
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[    ];
+RazorDocument - [0..23)::23 - [@section         LF    ]
+    MarkupBlock - [0..23)::23
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..17)::17
+            RazorDirective - [0..17)::17 - Directive:{section;RazorBlock;Unrestricted} [RZ1015(17:0,17 [2] )]
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..17)::16
+                    RazorMetaCode - [1..8)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[section];
+                    CSharpCodeBlock - [8..17)::9
+                        CSharpStatementLiteral - [8..17)::9 - [         ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[         ];
+                        CSharpStatementLiteral - [17..17)::0 - [] - Gen<DirectiveToken {SectionName;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Marker;[];
+        MarkupTextLiteral - [17..23)::6 - [LF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+            Whitespace;[    ];

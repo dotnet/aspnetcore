@@ -1,12 +1,13 @@
-Markup block - Gen<None> - 17 - (0:0,0)
-    Tag block - Gen<None> - 8 - (0:0,0)
-        Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[strong];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 9 - (8:0,8)
-        Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[strong];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..17)::17 - [<strong></strong>]
+    MarkupBlock - [0..17)::17
+        MarkupTagBlock - [0..8)::8 - [<strong>]
+            MarkupTextLiteral - [0..8)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[strong];
+                CloseAngle;[>];
+        MarkupTagBlock - [8..17)::9 - [</strong>]
+            MarkupTextLiteral - [8..17)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[strong];
+                CloseAngle;[>];

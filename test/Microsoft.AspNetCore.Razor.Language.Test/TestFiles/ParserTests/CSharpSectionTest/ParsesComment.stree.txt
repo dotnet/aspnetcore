@@ -1,33 +1,37 @@
-Markup block - Gen<None> - 21 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 21 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [s] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (9:0,9) - Tokens:1
-            SyntaxKind.Identifier;[s];
-        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhitespace - (10:0,10) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (11:0,11) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 8 - (12:0,12)
-            HtmlComment block - Gen<None> - 8 - (12:0,12)
-                Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (12:0,12) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Bang;[!];
-                    SyntaxKind.DoubleHyphen;[--];
-                Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Whitespace - (16:0,16) - Tokens:1
-                    SyntaxKind.Whitespace;[ ];
-                Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:2
-                    SyntaxKind.DoubleHyphen;[--];
-                    SyntaxKind.CloseAngle;[>];
-            Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:1
-                SyntaxKind.Unknown;[];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (20:0,20) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..21)::21 - [@section s {<!-- -->}]
+    MarkupBlock - [0..21)::21
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..21)::21
+            RazorDirective - [0..21)::21 - Directive:{section;RazorBlock;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..21)::20
+                    RazorMetaCode - [1..8)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[section];
+                    CSharpCodeBlock - [8..21)::13
+                        CSharpStatementLiteral - [8..9)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [9..10)::1 - [s] - Gen<DirectiveToken {SectionName;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[s];
+                        MarkupTextLiteral - [10..11)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                            Whitespace;[ ];
+                        RazorMetaCode - [11..12)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
+                            LeftBrace;[{];
+                        MarkupBlock - [12..20)::8
+                            MarkupCommentBlock - [12..20)::8
+                                MarkupTextLiteral - [12..16)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    Bang;[!];
+                                    DoubleHyphen;[--];
+                                MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
+                                    Whitespace;[ ];
+                                MarkupTextLiteral - [17..20)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    DoubleHyphen;[--];
+                                    CloseAngle;[>];
+                            MarkupTextLiteral - [20..20)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Marker;[];
+                        RazorMetaCode - [20..21)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            RightBrace;[}];
+        MarkupTextLiteral - [21..21)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

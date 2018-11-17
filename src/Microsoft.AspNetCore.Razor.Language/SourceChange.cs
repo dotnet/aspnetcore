@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -51,15 +52,15 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string NewText { get; }
 
-        internal string GetEditedContent(Span span)
+        internal string GetEditedContent(SyntaxNode node)
         {
-            if (span == null)
+            if (node == null)
             {
-                throw new ArgumentNullException(nameof(span));
+                throw new ArgumentNullException(nameof(node));
             }
 
-            var offset = GetOffset(span);
-            return GetEditedContent(span.Content, offset);
+            var offset = GetOffset(node);
+            return GetEditedContent(node.GetContent(), offset);
         }
 
         internal string GetEditedContent(string text, int offset)
@@ -72,41 +73,41 @@ namespace Microsoft.AspNetCore.Razor.Language
             return text.Remove(offset, Span.Length).Insert(offset, NewText);
         }
 
-        internal int GetOffset(Span span)
+        internal int GetOffset(SyntaxNode node)
         {
-            if (span == null)
+            if (node == null)
             {
-                throw new ArgumentNullException(nameof(span));
+                throw new ArgumentNullException(nameof(node));
             }
 
             var start = Span.AbsoluteIndex;
             var end = Span.AbsoluteIndex + Span.Length;
 
-            if (start < span.Start.AbsoluteIndex ||
-                start > span.Start.AbsoluteIndex + span.Length ||
-                end < span.Start.AbsoluteIndex || 
-                end > span.Start.AbsoluteIndex + span.Length)
+            if (start < node.Position ||
+                start > node.EndPosition ||
+                end < node.Position ||
+                end > node.EndPosition)
             {
-                throw new InvalidOperationException(Resources.FormatInvalidOperation_SpanIsNotChangeOwner(span, this));
+                throw new InvalidOperationException(Resources.FormatInvalidOperation_SpanIsNotChangeOwner(node, this));
             }
 
-            return start - span.Start.AbsoluteIndex;
+            return start - node.Position;
         }
 
-        internal string GetOriginalText(Span span)
+        internal string GetOriginalText(SyntaxNode node)
         {
-            if (span == null)
+            if (node == null)
             {
-                throw new ArgumentNullException(nameof(span));
+                throw new ArgumentNullException(nameof(node));
             }
 
-            if (span.Length == 0)
+            if (node.FullWidth == 0)
             {
                 return string.Empty;
             }
 
-            var offset = GetOffset(span);
-            return span.Content.Substring(offset, Span.Length);
+            var offset = GetOffset(node);
+            return node.GetContent().Substring(offset, Span.Length);
         }
 
         public bool Equals(SourceChange other)

@@ -1,8 +1,9 @@
-Markup block - Gen<None> - 7 - (0:0,0)
-    Tag block - Gen<None> - 7 - (0:0,0)
-        Markup span - Gen<Markup> - [<th: />] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:5
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[th:];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..7)::7 - [<th: />]
+    MarkupBlock - [0..7)::7
+        MarkupTagBlock - [0..7)::7 - [<th: />]
+            MarkupTextLiteral - [0..7)::7 - [<th: />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[th:];
+                Whitespace;[ ];
+                ForwardSlash;[/];
+                CloseAngle;[>];

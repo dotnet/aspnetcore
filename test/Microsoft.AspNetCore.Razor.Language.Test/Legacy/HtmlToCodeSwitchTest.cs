@@ -144,7 +144,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseDocumentTreatsPairsOfAtSignsAsEscapeSequence()
         {
-            var factory = new SpanFactory();
             ParseDocumentTest("<foo>@@@@@bar</foo>");
         }
 

@@ -1,25 +1,66 @@
-Markup block - Gen<None> - 77 - (0:0,0)
-    Tag block - Gen<TagHelper> - 77 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p> ... </p>
-        SyntaxKind.HtmlTextLiteral - [Hello ] - [3..9) - FullWidth: 6 - Slots: 1
-            SyntaxKind.List - [Hello ] - [3..9) - FullWidth: 6 - Slots: 2
-                SyntaxKind.Text;[Hello];
-                SyntaxKind.Whitespace;[ ];
-        Tag block - Gen<TagHelper> - 58 - (9:0,9) - script - scripttaghelper
-            StartTagAndEndTag - <script class="@@foo@bar.com" style="color:red;"> ... </script>
-            class - DoubleQuotes
-                Markup block - Gen<None> - 13 - (24:0,24)
-                    Markup block - Gen<None> - 2 - (24:0,24)
-                        Markup span - Gen<Markup> - [@] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (25:0,25) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                    Markup span - Gen<Markup> - [foo@bar.com] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:1
-                        SyntaxKind.Text;[foo@bar.com];
-            style - DoubleQuotes
-                Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (46:0,46) - Tokens:1
-                    SyntaxKind.Text;[color:red;];
-        SyntaxKind.HtmlTextLiteral - [ World] - [67..73) - FullWidth: 6 - Slots: 1
-            SyntaxKind.List - [ World] - [67..73) - FullWidth: 6 - Slots: 2
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[World];
+RazorDocument - [0..77)::77 - [<p>Hello <script class="@@foo@bar.com" style="color:red;"></script> World</p>]
+    MarkupBlock - [0..77)::77
+        MarkupTagHelperElement - [0..77)::77 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [3..9)::6 - [Hello ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Hello];
+                Whitespace;[ ];
+            MarkupTagHelperElement - [9..67)::58 - script[StartTagAndEndTag] - scripttaghelper
+                MarkupTagHelperStartTag - [9..58)::49
+                    MarkupTextLiteral - [9..16)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[script];
+                    MarkupTagHelperAttribute - [16..38)::22 - class - DoubleQuotes - Unbound - [ class="@@foo@bar.com"]
+                        MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        MarkupTextLiteral - [17..22)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[class];
+                        Equals;[=];
+                        MarkupTextLiteral - [23..24)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                        MarkupTagHelperAttributeValue - [24..37)::13
+                            MarkupBlock - [24..26)::2
+                                MarkupTextLiteral - [24..25)::1 - [@] - Gen<LitAttr:@(24:0,24)> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                MarkupEphemeralTextLiteral - [25..26)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                            MarkupLiteralAttributeValue - [26..37)::11 - [foo@bar.com]
+                                MarkupTextLiteral - [26..37)::11 - [foo@bar.com] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[foo@bar.com];
+                        MarkupTextLiteral - [37..38)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                    MarkupTagHelperAttribute - [38..57)::19 - style - DoubleQuotes - Unbound - [ style="color:red;"]
+                        MarkupTextLiteral - [38..39)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                        MarkupTextLiteral - [39..44)::5 - [style] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[style];
+                        Equals;[=];
+                        MarkupTextLiteral - [45..46)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                        MarkupTagHelperAttributeValue - [46..56)::10
+                            MarkupLiteralAttributeValue - [46..56)::10 - [color:red;]
+                                MarkupTextLiteral - [46..56)::10 - [color:red;] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[color:red;];
+                        MarkupTextLiteral - [56..57)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                            DoubleQuote;["];
+                    MarkupTextLiteral - [57..58)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        CloseAngle;[>];
+                MarkupTagHelperEndTag - [58..67)::9
+                    MarkupTextLiteral - [58..67)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[script];
+                        CloseAngle;[>];
+            MarkupTextLiteral - [67..73)::6 - [ World] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                Text;[World];
+            MarkupTagHelperEndTag - [73..77)::4
+                MarkupTextLiteral - [73..77)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

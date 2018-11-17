@@ -1,27 +1,32 @@
-Statement block - Gen<None> - 39 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [ using Foo = Bar.Baz; var foo = bar; ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:21
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[using];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[Foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[Bar];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Baz];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..39)::39 - [{ using Foo = Bar.Baz; var foo = bar; }]
+    CSharpStatement - [0..39)::39
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..39)::39
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..38)::37
+                CSharpStatementLiteral - [1..38)::37 - [ using Foo = Bar.Baz; var foo = bar; ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Whitespace;[ ];
+                    Keyword;[using];
+                    Whitespace;[ ];
+                    Identifier;[Foo];
+                    Whitespace;[ ];
+                    Assign;[=];
+                    Whitespace;[ ];
+                    Identifier;[Bar];
+                    Dot;[.];
+                    Identifier;[Baz];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+                    Identifier;[var];
+                    Whitespace;[ ];
+                    Identifier;[foo];
+                    Whitespace;[ ];
+                    Assign;[=];
+                    Whitespace;[ ];
+                    Identifier;[bar];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+            RazorMetaCode - [38..39)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

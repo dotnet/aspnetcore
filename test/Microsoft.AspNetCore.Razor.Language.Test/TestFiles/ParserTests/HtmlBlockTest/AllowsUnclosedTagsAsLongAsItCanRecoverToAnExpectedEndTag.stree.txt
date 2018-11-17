@@ -1,22 +1,22 @@
-Markup block - Gen<None> - 21 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 5 - (5:0,5)
-        Markup span - Gen<Markup> - [<bar>] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[bar];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 5 - (10:0,10)
-        Markup span - Gen<Markup> - [<baz>] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[baz];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 6 - (15:0,15)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..21)::21 - [<foo><bar><baz></foo>]
+    MarkupTagBlock - [0..5)::5 - [<foo>]
+        MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+    MarkupTagBlock - [5..10)::5 - [<bar>]
+        MarkupTextLiteral - [5..10)::5 - [<bar>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[bar];
+            CloseAngle;[>];
+    MarkupTagBlock - [10..15)::5 - [<baz>]
+        MarkupTextLiteral - [10..15)::5 - [<baz>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[baz];
+            CloseAngle;[>];
+    MarkupTagBlock - [15..21)::6 - [</foo>]
+        MarkupTextLiteral - [15..21)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

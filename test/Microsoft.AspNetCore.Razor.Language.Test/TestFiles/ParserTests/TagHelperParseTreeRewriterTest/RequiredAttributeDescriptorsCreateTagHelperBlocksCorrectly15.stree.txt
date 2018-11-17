@@ -1,23 +1,28 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Tag block - Gen<None> - 17 - (0:0,0)
-        Markup span - Gen<Markup> - [<div] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[div];
-        Markup block - Gen<Attr:class, class="@(4:0,4),"@(15:0,15)> - 12 - (4:0,4)
-            Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[class];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.DoubleQuote;["];
-            Markup span - Gen<LitAttr:@(12:0,12)> - [btn] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:1
-                SyntaxKind.Text;[btn];
-            Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
-                SyntaxKind.DoubleQuote;["];
-        Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 6 - (17:0,17)
-        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[div];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..23)::23 - [<div class="btn"></div>]
+    MarkupBlock - [0..23)::23
+        MarkupTagBlock - [0..17)::17 - [<div class="btn">]
+            MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
+            MarkupAttributeBlock - [4..16)::12 - [ class="btn"]
+                MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                MarkupTextLiteral - [5..10)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[class];
+                Equals;[=];
+                MarkupTextLiteral - [11..12)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    DoubleQuote;["];
+                GenericBlock - [12..15)::3
+                    MarkupLiteralAttributeValue - [12..15)::3 - [btn]
+                        MarkupTextLiteral - [12..15)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[btn];
+                MarkupTextLiteral - [15..16)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                    DoubleQuote;["];
+            MarkupTextLiteral - [16..17)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                CloseAngle;[>];
+        MarkupTagBlock - [17..23)::6 - [</div>]
+            MarkupTextLiteral - [17..23)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];

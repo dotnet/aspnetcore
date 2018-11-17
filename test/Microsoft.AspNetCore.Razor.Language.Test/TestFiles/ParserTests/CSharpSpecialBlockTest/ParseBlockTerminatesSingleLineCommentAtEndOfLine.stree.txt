@@ -1,38 +1,40 @@
-Statement block - Gen<None> - 48 - (0:0,0)
-    Code span - Gen<Stmt> - [if(!false) {LF    // FooLF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:11
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Not;[!];
-        SyntaxKind.Keyword;[false];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Whitespace;[    ];
-        SyntaxKind.CSharpComment;[// Foo];
-        SyntaxKind.NewLine;[LF];
-    Markup block - Gen<None> - 21 - (26:2,0)
-        Markup span - Gen<Markup> - [	] - SpanEditHandler;Accepts:Any - (26:2,0) - Tokens:1
-            SyntaxKind.Whitespace;[	];
-        Tag block - Gen<None> - 3 - (27:2,1)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (27:2,1) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [A real tag!] - SpanEditHandler;Accepts:Any - (30:2,4) - Tokens:6
-            SyntaxKind.Text;[A];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[real];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[tag];
-            SyntaxKind.Bang;[!];
-        Tag block - Gen<None> - 4 - (41:2,15)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (41:2,15) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:None - (45:2,19) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:Any - (47:3,0) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..48)::48 - [if(!false) {LF    // FooLF	<p>A real tag!</p>LF}]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..26)::26 - [if(!false) {LF    // FooLF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Not;[!];
+        Keyword;[false];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        NewLine;[LF];
+        Whitespace;[    ];
+        CSharpComment;[// Foo];
+        NewLine;[LF];
+    MarkupBlock - [26..47)::21
+        MarkupTextLiteral - [26..27)::1 - [	] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[	];
+        MarkupTagBlock - [27..30)::3 - [<p>]
+            MarkupTextLiteral - [27..30)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [30..41)::11 - [A real tag!] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[A];
+            Whitespace;[ ];
+            Text;[real];
+            Whitespace;[ ];
+            Text;[tag];
+            Bang;[!];
+        MarkupTagBlock - [41..45)::4 - [</p>]
+            MarkupTextLiteral - [41..45)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [45..47)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+            NewLine;[LF];
+    CSharpStatementLiteral - [47..48)::1 - [}] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        RightBrace;[}];

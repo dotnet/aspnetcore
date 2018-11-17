@@ -1,23 +1,25 @@
-Directive block - Gen<None> - 79 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Import: StringDictionary = System.Collections.Generic.Dictionary<string, string>;> - [using StringDictionary = System.Collections.Generic.Dictionary<string, string>] - SpanEditHandler;Accepts:AnyExceptNewline - (1:0,1) - Tokens:19
-        SyntaxKind.Keyword;[using];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[StringDictionary];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[System];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Collections];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Generic];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Dictionary];
-        SyntaxKind.LessThan;[<];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.Comma;[,];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[string];
-        SyntaxKind.GreaterThan;[>];
+CSharpCodeBlock - [0..79)::79 - [@using StringDictionary = System.Collections.Generic.Dictionary<string, string>]
+    RazorDirective - [0..79)::79
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        RazorDirectiveBody - [1..79)::78
+            CSharpStatementLiteral - [1..79)::78 - [using StringDictionary = System.Collections.Generic.Dictionary<string, string>] - Gen<Import: StringDictionary = System.Collections.Generic.Dictionary<string, string>;> - SpanEditHandler;Accepts:AnyExceptNewline
+                Keyword;[using];
+                Whitespace;[ ];
+                Identifier;[StringDictionary];
+                Whitespace;[ ];
+                Assign;[=];
+                Whitespace;[ ];
+                Identifier;[System];
+                Dot;[.];
+                Identifier;[Collections];
+                Dot;[.];
+                Identifier;[Generic];
+                Dot;[.];
+                Identifier;[Dictionary];
+                LessThan;[<];
+                Keyword;[string];
+                Comma;[,];
+                Whitespace;[ ];
+                Keyword;[string];
+                GreaterThan;[>];

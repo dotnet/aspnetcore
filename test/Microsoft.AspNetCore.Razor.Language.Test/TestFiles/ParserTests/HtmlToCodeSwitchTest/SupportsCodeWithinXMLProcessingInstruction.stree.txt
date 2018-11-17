@@ -1,29 +1,32 @@
-Markup block - Gen<None> - 31 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [<?xml foo ] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:6
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.Text;[xml];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[foo];
-        SyntaxKind.Whitespace;[ ];
-    Expression block - Gen<Expr> - 4 - (15:0,15)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (15:0,15) - Tokens:1
-            SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [bar] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (16:0,16) - Tokens:1
-            SyntaxKind.Identifier;[bar];
-    Markup span - Gen<Markup> - [ baz?>] - SpanEditHandler;Accepts:None - (19:0,19) - Tokens:4
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[baz];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 6 - (25:0,25)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:None - (25:0,25) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..31)::31 - [<foo><?xml foo @bar baz?></foo>]
+    MarkupTagBlock - [0..5)::5 - [<foo>]
+        MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+    MarkupTextLiteral - [5..15)::10 - [<?xml foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        OpenAngle;[<];
+        QuestionMark;[?];
+        Text;[xml];
+        Whitespace;[ ];
+        Text;[foo];
+        Whitespace;[ ];
+    CSharpCodeBlock - [15..19)::4
+        CSharpImplicitExpression - [15..19)::4
+            CSharpTransition - [15..16)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Transition;[@];
+            CSharpImplicitExpressionBody - [16..19)::3
+                CSharpCodeBlock - [16..19)::3
+                    CSharpExpressionLiteral - [16..19)::3 - [bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                        Identifier;[bar];
+    MarkupTextLiteral - [19..25)::6 - [ baz?>] - Gen<Markup> - SpanEditHandler;Accepts:None
+        Whitespace;[ ];
+        Text;[baz];
+        QuestionMark;[?];
+        CloseAngle;[>];
+    MarkupTagBlock - [25..31)::6 - [</foo>]
+        MarkupTextLiteral - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

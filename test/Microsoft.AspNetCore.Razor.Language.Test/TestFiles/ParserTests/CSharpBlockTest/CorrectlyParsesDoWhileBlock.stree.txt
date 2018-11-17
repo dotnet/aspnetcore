@@ -1,26 +1,28 @@
-Statement block - Gen<None> - 40 - (0:0,0)
-    Code span - Gen<Stmt> - [do { var foo = bar; } while(foo != bar);] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:24
-        SyntaxKind.Keyword;[do];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[while];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.NotEqual;[!=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
+CSharpCodeBlock - [0..40)::40 - [do { var foo = bar; } while(foo != bar);]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..40)::40 - [do { var foo = bar; } while(foo != bar);] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[do];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Identifier;[bar];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[while];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        Whitespace;[ ];
+        NotEqual;[!=];
+        Whitespace;[ ];
+        Identifier;[bar];
+        RightParenthesis;[)];
+        Semicolon;[;];

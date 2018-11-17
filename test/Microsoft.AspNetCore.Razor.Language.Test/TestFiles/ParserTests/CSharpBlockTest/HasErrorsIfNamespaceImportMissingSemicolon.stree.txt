@@ -1,9 +1,13 @@
-Directive block - Gen<None> - 17 - (0:0,0)
-    Code span - Gen<Import: Foo.Bar.Baz;> - [using Foo.Bar.Baz] - SpanEditHandler;Accepts:AnyExceptNewline - (0:0,0) - Tokens:7
-        SyntaxKind.Keyword;[using];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[Foo];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Bar];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Baz];
+CSharpCodeBlock - [0..17)::17 - [using Foo.Bar.Baz]
+    RazorDirective - [0..17)::17
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        RazorDirectiveBody - [0..17)::17
+            CSharpStatementLiteral - [0..17)::17 - [using Foo.Bar.Baz] - Gen<Import: Foo.Bar.Baz;> - SpanEditHandler;Accepts:AnyExceptNewline
+                Keyword;[using];
+                Whitespace;[ ];
+                Identifier;[Foo];
+                Dot;[.];
+                Identifier;[Bar];
+                Dot;[.];
+                Identifier;[Baz];

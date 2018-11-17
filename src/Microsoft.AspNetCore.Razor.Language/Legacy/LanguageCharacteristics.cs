@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        public virtual bool IsWhiteSpace(SyntaxToken token)
+        public virtual bool IsWhitespace(SyntaxToken token)
         {
-            return IsKnownTokenType(token, KnownTokenType.WhiteSpace);
+            return IsKnownTokenType(token, KnownTokenType.Whitespace);
         }
 
         public virtual bool IsNewLine(SyntaxToken token)

@@ -1,17 +1,39 @@
-Markup block - Gen<None> - 36 - (0:0,0)
-    Tag block - Gen<TagHelper> - 36 - (0:0,0) - person - PersonTagHelper
-        SelfClosing - <person age=" @DateTime.Now.Year" />
-        age - DoubleQuotes
-            Markup block - Gen<None> - 19 - (13:0,13)
-                Markup block - Gen<None> - 19 - (13:0,13)
-                    Code span - Gen<Expr> - [ ] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
-                        SyntaxKind.Whitespace;[ ];
-                    Expression block - Gen<Expr> - 18 - (14:0,14)
-                        Code span - Gen<Expr> - [@] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (14:0,14) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Code span - Gen<Expr> - [DateTime.Now.Year] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (15:0,15) - Tokens:5
-                            SyntaxKind.Identifier;[DateTime];
-                            SyntaxKind.Dot;[.];
-                            SyntaxKind.Identifier;[Now];
-                            SyntaxKind.Dot;[.];
-                            SyntaxKind.Identifier;[Year];
+RazorDocument - [0..36)::36 - [<person age=" @DateTime.Now.Year" />]
+    MarkupBlock - [0..36)::36
+        MarkupTagHelperElement - [0..36)::36 - person[SelfClosing] - PersonTagHelper
+            MarkupTagHelperStartTag - [0..36)::36
+                MarkupTextLiteral - [0..7)::7 - [<person] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[person];
+                MarkupTagHelperAttribute - [7..33)::26 - age - DoubleQuotes - Bound - [ age=" @DateTime.Now.Year"]
+                    MarkupTextLiteral - [7..8)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [8..11)::3 - [age] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[age];
+                    Equals;[=];
+                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [13..32)::19
+                        MarkupBlock - [13..32)::19
+                            CSharpExpressionLiteral - [13..14)::1 - [ ] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                                Whitespace;[ ];
+                            CSharpCodeBlock - [14..32)::18
+                                CSharpImplicitExpression - [14..32)::18
+                                    CSharpTransition - [14..14)::0
+                                        Transition;[<Missing>];
+                                    CSharpImplicitExpressionBody - [14..32)::18
+                                        CSharpCodeBlock - [14..32)::18
+                                            CSharpExpressionLiteral - [14..15)::1 - [@] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                                                Transition;[@];
+                                            CSharpExpressionLiteral - [15..32)::17 - [DateTime.Now.Year] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                                                Identifier;[DateTime];
+                                                Dot;[.];
+                                                Identifier;[Now];
+                                                Dot;[.];
+                                                Identifier;[Year];
+                    MarkupTextLiteral - [32..33)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [33..36)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

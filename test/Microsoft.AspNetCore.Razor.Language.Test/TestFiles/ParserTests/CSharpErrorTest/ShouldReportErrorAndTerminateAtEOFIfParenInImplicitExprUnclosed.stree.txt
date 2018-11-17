@@ -1,12 +1,17 @@
-Expression block - Gen<Expr> - 22 - (0:0,0)
-    Code span - Gen<Expr> - [Foo(Bar(Baz)LFBizLFBoz] - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14 - (0:0,0) - Tokens:10
-        SyntaxKind.Identifier;[Foo];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[Bar];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[Baz];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Identifier;[Biz];
-        SyntaxKind.NewLine;[LF];
-        SyntaxKind.Identifier;[Boz];
+CSharpCodeBlock - [0..22)::22 - [Foo(Bar(Baz)LFBizLFBoz]
+    CSharpImplicitExpression - [0..22)::22
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpImplicitExpressionBody - [0..22)::22
+            CSharpCodeBlock - [0..22)::22
+                CSharpExpressionLiteral - [0..22)::22 - [Foo(Bar(Baz)LFBizLFBoz] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14
+                    Identifier;[Foo];
+                    LeftParenthesis;[(];
+                    Identifier;[Bar];
+                    LeftParenthesis;[(];
+                    Identifier;[Baz];
+                    RightParenthesis;[)];
+                    NewLine;[LF];
+                    Identifier;[Biz];
+                    NewLine;[LF];
+                    Identifier;[Boz];

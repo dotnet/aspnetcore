@@ -16,6 +16,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
@@ -462,38 +463,38 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             var syntaxTree = codeDocument.GetSyntaxTree();
             var visitor = new CodeSpanVisitor();
-            visitor.VisitBlock(syntaxTree.Root);
+            visitor.Visit(syntaxTree.Root);
 
             var charBuffer = new char[codeDocument.Source.Length];
             codeDocument.Source.CopyTo(0, charBuffer, 0, codeDocument.Source.Length);
             var sourceContent = new string(charBuffer);
 
             var spans = visitor.CodeSpans;
-            for (var i= 0; i < spans.Count; i++)
+            for (var i = 0; i < spans.Count; i++)
             {
                 var span = spans[i];
-                if (span.Start.FilePath == null || span.Start.FilePath != codeDocument.Source.FilePath)
+                var sourceSpan = span.GetSourceSpan(codeDocument.Source);
+                if (sourceSpan == null)
                 {
                     // Not in the main file, skip.
                     continue;
                 }
 
-                var location = new SourceSpan(span.Start, span.Length);
-                var expectedSpan = sourceContent.Substring(span.Start.AbsoluteIndex, span.Length);
+                var expectedSpan = sourceContent.Substring(sourceSpan.AbsoluteIndex, sourceSpan.Length);
 
                 // See #2593
                 if (string.IsNullOrWhiteSpace(expectedSpan))
                 {
                     // For now we don't verify whitespace inside of a directive. We know that directives cheat
                     // with how they bound whitespace/C#/markup to make completion work.
-                    if (span.Parent is Block block && block.Type == BlockKindInternal.Directive)
+                    if (span.FirstAncestorOrSelf<RazorDirectiveSyntax>() != null)
                     {
                         continue;
                     }
                 }
 
                 // See #2594
-                if (string.Equals("@", expectedSpan) && span.Kind == SpanKindInternal.Code)
+                if (string.Equals("@", expectedSpan))
                 {
                     // For now we don't verify an escaped transition. In some cases one of the @ tokens in @@foo
                     // will be mapped as C# but will not be present in the output buffer because it's not actually C#.
@@ -504,16 +505,16 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 for (var j = 0; j < csharpDocument.SourceMappings.Count; j++)
                 {
                     var mapping = csharpDocument.SourceMappings[j];
-                    if (mapping.OriginalSpan == location)
+                    if (mapping.OriginalSpan == sourceSpan)
                     {
                         var actualSpan = csharpDocument.GeneratedCode.Substring(
-                            mapping.GeneratedSpan.AbsoluteIndex, 
+                            mapping.GeneratedSpan.AbsoluteIndex,
                             mapping.GeneratedSpan.Length);
 
                         if (!string.Equals(expectedSpan, actualSpan, StringComparison.Ordinal))
                         {
                             throw new XunitException(
-                                $"Found the span {location} in the output mappings but it contains " +
+                                $"Found the span {sourceSpan} in the output mappings but it contains " +
                                 $"'{EscapeWhitespace(actualSpan)}' instead of '{EscapeWhitespace(expectedSpan)}'.");
                         }
 
@@ -525,24 +526,34 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 if (!found)
                 {
                     throw new XunitException(
-                        $"Could not find the span {location} - containing '{EscapeWhitespace(expectedSpan)}' " +
+                        $"Could not find the span {sourceSpan} - containing '{EscapeWhitespace(expectedSpan)}' " +
                         $"in the output.");
                 }
             }
         }
 
-        private class CodeSpanVisitor : ParserVisitor
+        private class CodeSpanVisitor : SyntaxRewriter
         {
-            public List<Span> CodeSpans { get; } = new List<Span>();
+            public List<Syntax.SyntaxNode> CodeSpans { get; } = new List<Syntax.SyntaxNode>();
 
-            public override void VisitSpan(Span span)
+            public override Syntax.SyntaxNode VisitCSharpStatementLiteral(CSharpStatementLiteralSyntax node)
             {
-                if (span.Kind == SpanKindInternal.Code)
+                var context = node.GetSpanContext();
+                if (context != null && context.ChunkGenerator != SpanChunkGenerator.Null)
                 {
-                    CodeSpans.Add(span);
+                    CodeSpans.Add(node);
                 }
+                return base.VisitCSharpStatementLiteral(node);
+            }
 
-                base.VisitSpan(span);
+            public override Syntax.SyntaxNode VisitCSharpExpressionLiteral(CSharpExpressionLiteralSyntax node)
+            {
+                var context = node.GetSpanContext();
+                if (context != null && context.ChunkGenerator != SpanChunkGenerator.Null)
+                {
+                    CodeSpans.Add(node);
+                }
+                return base.VisitCSharpExpressionLiteral(node);
             }
         }
 

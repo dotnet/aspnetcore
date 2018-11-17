@@ -1,15 +1,23 @@
-Statement block - Gen<None> - 9 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Expression block - Gen<Expr> - 5 - (1:0,1)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Transition;[@];
-        Code span - Gen<Expr> - [foo.] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14 - (2:0,2) - Tokens:2
-            SyntaxKind.Identifier;[foo];
-            SyntaxKind.Dot;[.];
-    Code span - Gen<Stmt> - [LF] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:1
-        SyntaxKind.NewLine;[LF];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (8:1,0) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..9)::9 - [{@foo.LF}]
+    CSharpStatement - [0..9)::9
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..9)::9
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..8)::7
+                CSharpStatementLiteral - [1..1)::0 - [] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Marker;[];
+                CSharpCodeBlock - [1..6)::5
+                    CSharpImplicitExpression - [1..6)::5
+                        CSharpTransition - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        CSharpImplicitExpressionBody - [2..6)::4
+                            CSharpCodeBlock - [2..6)::4
+                                CSharpExpressionLiteral - [2..6)::4 - [foo.] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14
+                                    Identifier;[foo];
+                                    Dot;[.];
+                CSharpStatementLiteral - [6..8)::2 - [LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    NewLine;[LF];
+            RazorMetaCode - [8..9)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

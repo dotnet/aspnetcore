@@ -1,17 +1,18 @@
-Markup block - Gen<None> - 20 - (0:0,0)
-    Markup span - Gen<Markup> - [Foo ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-        SyntaxKind.Text;[Foo];
-        SyntaxKind.Whitespace;[ ];
-    Tag block - Gen<None> - 6 - (4:0,4)
-        Markup span - Gen<Markup> - [<text>] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[text];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [Foo] - [10..13) - FullWidth: 3 - Slots: 1
-        SyntaxKind.Text;[Foo];
-    Tag block - Gen<None> - 7 - (13:0,13)
-        Markup span - Gen<Markup> - [</text>] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[text];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..20)::20 - [Foo <text>Foo</text>]
+    MarkupBlock - [0..20)::20
+        MarkupTextLiteral - [0..4)::4 - [Foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Foo];
+            Whitespace;[ ];
+        MarkupTagBlock - [4..10)::6 - [<text>]
+            MarkupTextLiteral - [4..10)::6 - [<text>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[text];
+                CloseAngle;[>];
+        MarkupTextLiteral - [10..13)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Foo];
+        MarkupTagBlock - [13..20)::7 - [</text>]
+            MarkupTextLiteral - [13..20)::7 - [</text>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[text];
+                CloseAngle;[>];

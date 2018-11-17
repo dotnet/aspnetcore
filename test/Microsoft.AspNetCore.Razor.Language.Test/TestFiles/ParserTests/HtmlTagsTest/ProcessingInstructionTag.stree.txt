@@ -1,16 +1,16 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Markup span - Gen<Markup> - [<?xml version="1.0" ?>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:12
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.Text;[xml];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[version];
-        SyntaxKind.Equals;[=];
-        SyntaxKind.DoubleQuote;["];
-        SyntaxKind.Text;[1.0];
-        SyntaxKind.DoubleQuote;["];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.QuestionMark;[?];
-        SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (22:0,22) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
+MarkupBlock - [0..23)::23 - [<?xml version="1.0" ?> ]
+    MarkupTextLiteral - [0..22)::22 - [<?xml version="1.0" ?>] - Gen<Markup> - SpanEditHandler;Accepts:None
+        OpenAngle;[<];
+        QuestionMark;[?];
+        Text;[xml];
+        Whitespace;[ ];
+        Text;[version];
+        Equals;[=];
+        DoubleQuote;["];
+        Text;[1.0];
+        DoubleQuote;["];
+        Whitespace;[ ];
+        QuestionMark;[?];
+        CloseAngle;[>];
+    MarkupTextLiteral - [22..23)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+        Whitespace;[ ];

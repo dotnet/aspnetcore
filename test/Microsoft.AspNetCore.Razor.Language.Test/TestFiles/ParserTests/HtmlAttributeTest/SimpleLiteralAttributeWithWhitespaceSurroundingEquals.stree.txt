@@ -1,23 +1,28 @@
-Markup block - Gen<None> - 24 - (0:0,0)
-    Tag block - Gen<None> - 24 - (0:0,0)
-        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[a];
-        Markup block - Gen<Attr:href, href LF= 	LF'@(2:0,2),'@(20:2,4)> - 19 - (2:0,2)
-            Markup span - Gen<None> - [ href LF= 	LF'] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:8
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[href];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.NewLine;[LF];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.Whitespace;[ 	];
-                SyntaxKind.NewLine;[LF];
-                SyntaxKind.SingleQuote;['];
-            Markup span - Gen<LitAttr:@(17:2,1)> - [Foo] - SpanEditHandler;Accepts:Any - (17:2,1) - Tokens:1
-                SyntaxKind.Text;[Foo];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (20:2,4) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (21:2,5) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..24)::24 - [<a href LF= 	LF'Foo' />]
+    MarkupTagBlock - [0..24)::24 - [<a href LF= 	LF'Foo' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..21)::19 - [ href LF= 	LF'Foo']
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..7)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[href];
+            MarkupTextLiteral - [7..11)::4 - [ LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                NewLine;[LF];
+            Equals;[=];
+            MarkupTextLiteral - [12..17)::5 - [ 	LF'] - Gen<None> - SpanEditHandler;Accepts:Any
+                Whitespace;[ 	];
+                NewLine;[LF];
+                SingleQuote;['];
+            GenericBlock - [17..20)::3
+                MarkupLiteralAttributeValue - [17..20)::3 - [Foo]
+                    MarkupTextLiteral - [17..20)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Foo];
+            MarkupTextLiteral - [20..21)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [21..24)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

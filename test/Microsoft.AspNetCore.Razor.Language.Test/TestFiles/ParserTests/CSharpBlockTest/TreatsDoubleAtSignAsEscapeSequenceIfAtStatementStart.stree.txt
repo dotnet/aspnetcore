@@ -1,20 +1,22 @@
-Statement block - Gen<None> - 25 - (0:0,0)
-    Code span - Gen<Stmt> - [if(foo) { ] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:7
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<None> - [@] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Stmt> - [@class.Foo() }] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:8
-        SyntaxKind.Transition;[@];
-        SyntaxKind.Keyword;[class];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Foo];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..25)::25 - [if(foo) { @@class.Foo() }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..10)::10 - [if(foo) { ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+    CSharpEphemeralTextLiteral - [10..11)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:Any
+        Transition;[@];
+    CSharpStatementLiteral - [11..25)::14 - [@class.Foo() }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Transition;[@];
+        Keyword;[class];
+        Dot;[.];
+        Identifier;[Foo];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        RightBrace;[}];

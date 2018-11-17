@@ -1,43 +1,51 @@
-Markup block - Gen<None> - 24 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 24 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 21 - (2:0,2)
-            Tag block - Gen<None> - 16 - (2:0,2)
-                Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-                    SyntaxKind.OpenAngle;[<];
-                MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (3:0,3) - Tokens:1
-                    SyntaxKind.Bang;[!];
-                Markup span - Gen<Markup> - [p] - SpanEditHandler;Accepts:Any - (4:0,4) - Tokens:1
-                    SyntaxKind.Text;[p];
-                Markup block - Gen<Attr:class, class="@(5:0,5),"@(16:0,16)> - 12 - (5:0,5)
-                    Markup span - Gen<None> - [ class="] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:4
-                        SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.Text;[class];
-                        SyntaxKind.Equals;[=];
-                        SyntaxKind.DoubleQuote;["];
-                    Markup span - Gen<LitAttr:@(13:0,13)> - [btn] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-                        SyntaxKind.Text;[btn];
-                    Markup span - Gen<None> - ["] - SpanEditHandler;Accepts:Any - (16:0,16) - Tokens:1
-                        SyntaxKind.DoubleQuote;["];
-                Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:1
-                    SyntaxKind.CloseAngle;[>];
-            Tag block - Gen<None> - 5 - (18:0,18)
-                Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:2
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (20:0,20) - Tokens:1
-                    SyntaxKind.Bang;[!];
-                Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:None - (21:0,21) - Tokens:2
-                    SyntaxKind.Text;[p];
-                    SyntaxKind.CloseAngle;[>];
-        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:1
-            SyntaxKind.Unknown;[];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (24:0,24) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..24)::24 - [@{<!p class="btn"></!p>}]
+    MarkupBlock - [0..24)::24
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..24)::24
+            CSharpStatement - [0..24)::24
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..24)::23
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..23)::21
+                        MarkupBlock - [2..23)::21
+                            MarkupTagBlock - [2..18)::16 - [<!p class="btn">]
+                                MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Bang;[!];
+                                MarkupTextLiteral - [4..5)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[p];
+                                MarkupAttributeBlock - [5..17)::12 - [ class="btn"]
+                                    MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Whitespace;[ ];
+                                    MarkupTextLiteral - [6..11)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Text;[class];
+                                    Equals;[=];
+                                    MarkupTextLiteral - [12..13)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        DoubleQuote;["];
+                                    GenericBlock - [13..16)::3
+                                        MarkupLiteralAttributeValue - [13..16)::3 - [btn]
+                                            MarkupTextLiteral - [13..16)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                                Text;[btn];
+                                    MarkupTextLiteral - [16..17)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        DoubleQuote;["];
+                                MarkupTextLiteral - [17..18)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [18..23)::5 - [</!p>]
+                                MarkupTextLiteral - [18..20)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                RazorMetaCode - [20..21)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Bang;[!];
+                                MarkupTextLiteral - [21..23)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    Text;[p];
+                                    CloseAngle;[>];
+                        CSharpStatementLiteral - [23..23)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [23..24)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [24..24)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

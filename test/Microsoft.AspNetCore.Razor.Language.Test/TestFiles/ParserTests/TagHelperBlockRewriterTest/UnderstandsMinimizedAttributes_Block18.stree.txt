@@ -1,20 +1,43 @@
-Markup block - Gen<None> - 70 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 70 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 67 - (2:0,2)
-            Tag block - Gen<TagHelper> - 67 - (2:0,2) - input - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
-                SelfClosing - <input bound-required-int unbound-required bound-required-string />
-                bound-required-int - Minimized
-                unbound-required - Minimized
-                bound-required-string - Minimized
-        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (69:0,69) - Tokens:1
-            SyntaxKind.Unknown;[];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (69:0,69) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (70:0,70) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..70)::70 - [@{<input bound-required-int unbound-required bound-required-string />}]
+    MarkupBlock - [0..70)::70
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..70)::70
+            CSharpStatement - [0..70)::70
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..70)::69
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..69)::67
+                        MarkupBlock - [2..69)::67
+                            MarkupTagHelperElement - [2..69)::67 - input[SelfClosing] - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
+                                MarkupTagHelperStartTag - [2..69)::67
+                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        Text;[input];
+                                    MarkupMinimizedTagHelperAttribute - [8..27)::19 - bound-required-int - Minimized - Bound - [ bound-required-int]
+                                        MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                        MarkupTextLiteral - [9..27)::18 - [bound-required-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Text;[bound-required-int];
+                                    MarkupMinimizedTagHelperAttribute - [27..44)::17 - unbound-required - Minimized - Unbound - [ unbound-required]
+                                        MarkupTextLiteral - [27..28)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                        MarkupTextLiteral - [28..44)::16 - [unbound-required] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Text;[unbound-required];
+                                    MarkupMinimizedTagHelperAttribute - [44..66)::22 - bound-required-string - Minimized - Bound - [ bound-required-string]
+                                        MarkupTextLiteral - [44..45)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                        MarkupTextLiteral - [45..66)::21 - [bound-required-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Text;[bound-required-string];
+                                    MarkupTextLiteral - [66..69)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        Whitespace;[ ];
+                                        ForwardSlash;[/];
+                                        CloseAngle;[>];
+                        CSharpStatementLiteral - [69..69)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [69..70)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [70..70)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

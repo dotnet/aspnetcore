@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 return handler();
             }
-            return SyntaxKind.Unknown;
+            return SyntaxKind.Marker;
         }
 
         private SyntaxKind LessThanOperator()

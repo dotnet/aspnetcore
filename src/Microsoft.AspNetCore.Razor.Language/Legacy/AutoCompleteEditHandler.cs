@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -12,18 +12,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private static readonly int TypeHashCode = typeof(AutoCompleteEditHandler).GetHashCode();
 
-        public AutoCompleteEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer)
+        public AutoCompleteEditHandler(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer)
             : base(tokenizer)
         {
         }
 
-        public AutoCompleteEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer, bool autoCompleteAtEndOfSpan)
+        public AutoCompleteEditHandler(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer, bool autoCompleteAtEndOfSpan)
             : this(tokenizer)
         {
             AutoCompleteAtEndOfSpan = autoCompleteAtEndOfSpan;
         }
 
-        public AutoCompleteEditHandler(Func<string, IEnumerable<SyntaxToken>> tokenizer, AcceptedCharactersInternal accepted)
+        public AutoCompleteEditHandler(Func<string, IEnumerable<Syntax.InternalSyntax.SyntaxToken>> tokenizer, AcceptedCharactersInternal accepted)
             : base(tokenizer, accepted)
         {
         }
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public string AutoCompleteString { get; set; }
 
-        protected override PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
+        protected override PartialParseResultInternal CanAcceptChange(SyntaxNode target, SourceChange change)
         {
             if (((AutoCompleteAtEndOfSpan && IsAtEndOfSpan(target, change)) || IsAtEndOfFirstLine(target, change)) &&
                 change.IsInsert &&

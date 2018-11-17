@@ -22,11 +22,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(syntaxTree));
             }
 
-            var conditionalAttributeCollapser = new ConditionalAttributeCollapser();
-            var rewritten = conditionalAttributeCollapser.Rewrite(syntaxTree.Root);
-
-            var whitespaceRewriter = new WhiteSpaceRewriter();
-            rewritten = whitespaceRewriter.Rewrite(rewritten);
+            var whitespaceRewriter = new WhitespaceRewriter();
+            var rewritten = whitespaceRewriter.Visit(syntaxTree.Root);
 
             var rewrittenSyntaxTree = RazorSyntaxTree.Create(rewritten, syntaxTree.Source, syntaxTree.Diagnostics, syntaxTree.Options);
             return rewrittenSyntaxTree;

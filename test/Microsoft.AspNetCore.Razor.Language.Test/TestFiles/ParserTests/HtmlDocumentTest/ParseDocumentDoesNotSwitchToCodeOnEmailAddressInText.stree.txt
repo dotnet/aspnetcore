@@ -1,3 +1,4 @@
-Markup block - Gen<None> - 21 - (0:0,0)
-    Markup span - Gen<Markup> - [example@microsoft.com] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Text;[example@microsoft.com];
+RazorDocument - [0..21)::21 - [example@microsoft.com]
+    MarkupBlock - [0..21)::21
+        MarkupTextLiteral - [0..21)::21 - [example@microsoft.com] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[example@microsoft.com];

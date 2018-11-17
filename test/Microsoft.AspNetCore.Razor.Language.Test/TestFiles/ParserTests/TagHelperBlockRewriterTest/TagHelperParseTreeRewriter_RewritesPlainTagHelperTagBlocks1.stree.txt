@@ -1,3 +1,14 @@
-Markup block - Gen<None> - 7 - (0:0,0)
-    Tag block - Gen<TagHelper> - 7 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p> ... </p>
+RazorDocument - [0..7)::7 - [<p></p>]
+    MarkupBlock - [0..7)::7
+        MarkupTagHelperElement - [0..7)::7 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [3..7)::4
+                MarkupTextLiteral - [3..7)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

@@ -1,4 +1,15 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Tag block - Gen<TagHelper> - 23 - (0:0,0) - input - InputTagHelper3
-        SelfClosing - <input string-prefix-/>
-        string-prefix- - Minimized
+RazorDocument - [0..23)::23 - [<input string-prefix-/>]
+    MarkupBlock - [0..23)::23
+        MarkupTagHelperElement - [0..23)::23 - input[SelfClosing] - InputTagHelper3
+            MarkupTagHelperStartTag - [0..23)::23
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupMinimizedTagHelperAttribute - [6..21)::15 - string-prefix- - Minimized - Bound - [ string-prefix-]
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..21)::14 - [string-prefix-] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[string-prefix-];
+                MarkupTextLiteral - [21..23)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

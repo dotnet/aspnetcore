@@ -1,20 +1,26 @@
-Markup block - Gen<None> - 20 - (0:0,0)
-    Tag block - Gen<None> - 20 - (0:0,0)
-        Markup span - Gen<Markup> - [<input] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[input];
-        Markup block - Gen<Attr:value, value=@(6:0,6),@(17:0,17)> - 11 - (6:0,6)
-            Markup span - Gen<None> - [ value=] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:3
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[value];
-                SyntaxKind.Equals;[=];
-            Markup block - Gen<DynAttr:@(13:0,13)> - 4 - (13:0,13)
-                Expression block - Gen<Expr> - 4 - (13:0,13)
-                    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (13:0,13) - Tokens:1
-                        SyntaxKind.Transition;[@];
-                    Code span - Gen<Expr> - [foo] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (14:0,14) - Tokens:1
-                        SyntaxKind.Identifier;[foo];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (17:0,17) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..20)::20 - [<input value=@foo />]
+    MarkupTagBlock - [0..20)::20 - [<input value=@foo />]
+        MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[input];
+        MarkupAttributeBlock - [6..17)::11 - [ value=@foo]
+            MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [7..12)::5 - [value] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[value];
+            Equals;[=];
+            GenericBlock - [13..17)::4
+                MarkupDynamicAttributeValue - [13..17)::4 - [@foo]
+                    GenericBlock - [13..17)::4
+                        CSharpCodeBlock - [13..17)::4
+                            CSharpImplicitExpression - [13..17)::4
+                                CSharpTransition - [13..14)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [14..17)::3
+                                    CSharpCodeBlock - [14..17)::3
+                                        CSharpExpressionLiteral - [14..17)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                            Identifier;[foo];
+        MarkupTextLiteral - [17..20)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

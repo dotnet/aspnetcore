@@ -14,23 +14,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public string Namespace { get; }
 
-        public override void Accept(ParserVisitor visitor, Span span)
-        {
-            visitor.VisitImportSpan(this, span);
-        }
-
-        public override void GenerateChunk(Span target, ChunkGeneratorContext context)
-        {
-            var ns = Namespace;
-
-            if (!string.IsNullOrEmpty(ns) && char.IsWhiteSpace(ns[0]))
-            {
-                ns = ns.Substring(1);
-            }
-
-            //context.ChunkTreeBuilder.AddUsingChunk(ns, target);
-        }
-
         public override string ToString()
         {
             return "Import:" + Namespace + ";";

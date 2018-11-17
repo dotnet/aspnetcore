@@ -1,113 +1,156 @@
-Markup block - Gen<None> - 171 - (0:0,0)
-    Tag block - Gen<TagHelper> - 85 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p class="@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);"> ... </p>
-        class - DoubleQuotes
-            Markup block - Gen<None> - 64 - (10:0,10)
-                Markup block - Gen<DynAttr:@(10:0,10)> - 64 - (10:0,10)
-                    Statement block - Gen<None> - 64 - (10:0,10)
-                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Code span - Gen<Stmt> - [do { var foo = bar; ] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:13
-                            SyntaxKind.Keyword;[do];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.LeftBrace;[{];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Identifier;[var];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Identifier;[foo];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Assign;[=];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Identifier;[bar];
-                            SyntaxKind.Semicolon;[;];
-                            SyntaxKind.Whitespace;[ ];
-                        Markup block - Gen<None> - 16 - (31:0,31)
-                            Tag block - Gen<None> - 6 - (31:0,31)
-                                Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (31:0,31) - Tokens:3
-                                    SyntaxKind.OpenAngle;[<];
-                                    SyntaxKind.Text;[text];
-                                    SyntaxKind.CloseAngle;[>];
-                            Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:None - (37:0,37) - Tokens:1
-                                SyntaxKind.Text;[Foo];
-                            Tag block - Gen<None> - 7 - (40:0,40)
-                                Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:4
-                                    SyntaxKind.OpenAngle;[<];
-                                    SyntaxKind.ForwardSlash;[/];
-                                    SyntaxKind.Text;[text];
-                                    SyntaxKind.CloseAngle;[>];
-                        Code span - Gen<Stmt> - [ foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (47:0,47) - Tokens:16
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Identifier;[foo];
-                            SyntaxKind.Increment;[++];
-                            SyntaxKind.Semicolon;[;];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.RightBrace;[}];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Keyword;[while];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.LeftParenthesis;[(];
-                            SyntaxKind.Identifier;[foo];
-                            SyntaxKind.LessThan;[<];
-                            SyntaxKind.Identifier;[bar];
-                            SyntaxKind.GreaterThan;[>];
-                            SyntaxKind.RightParenthesis;[)];
-                            SyntaxKind.Semicolon;[;];
-        SyntaxKind.HtmlTextLiteral - [Hello] - [76..81) - FullWidth: 5 - Slots: 1
-            SyntaxKind.Text;[Hello];
-    SyntaxKind.HtmlTextLiteral - [ ] - [85..86) - FullWidth: 1 - Slots: 1
-        SyntaxKind.Whitespace;[ ];
-    Tag block - Gen<TagHelper> - 85 - (86:0,86) - p - ptaghelper
-        StartTagAndEndTag - <p style='@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);'> ... </p>
-        style - SingleQuotes
-            Markup block - Gen<None> - 64 - (96:0,96)
-                Markup block - Gen<DynAttr:@(96:0,96)> - 64 - (96:0,96)
-                    Statement block - Gen<None> - 64 - (96:0,96)
-                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (96:0,96) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Code span - Gen<Stmt> - [do { var foo = bar; ] - SpanEditHandler;Accepts:Any - (97:0,97) - Tokens:13
-                            SyntaxKind.Keyword;[do];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.LeftBrace;[{];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Identifier;[var];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Identifier;[foo];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Assign;[=];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Identifier;[bar];
-                            SyntaxKind.Semicolon;[;];
-                            SyntaxKind.Whitespace;[ ];
-                        Markup block - Gen<None> - 16 - (117:0,117)
-                            Tag block - Gen<None> - 6 - (117:0,117)
-                                Transition span - Gen<None> - [<text>] - SpanEditHandler;Accepts:None - (117:0,117) - Tokens:3
-                                    SyntaxKind.OpenAngle;[<];
-                                    SyntaxKind.Text;[text];
-                                    SyntaxKind.CloseAngle;[>];
-                            Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:None - (123:0,123) - Tokens:1
-                                SyntaxKind.Text;[Foo];
-                            Tag block - Gen<None> - 7 - (126:0,126)
-                                Transition span - Gen<None> - [</text>] - SpanEditHandler;Accepts:None - (126:0,126) - Tokens:4
-                                    SyntaxKind.OpenAngle;[<];
-                                    SyntaxKind.ForwardSlash;[/];
-                                    SyntaxKind.Text;[text];
-                                    SyntaxKind.CloseAngle;[>];
-                        Code span - Gen<Stmt> - [ foo++; } while (foo<bar>);] - SpanEditHandler;Accepts:None - (133:0,133) - Tokens:16
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Identifier;[foo];
-                            SyntaxKind.Increment;[++];
-                            SyntaxKind.Semicolon;[;];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.RightBrace;[}];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Keyword;[while];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.LeftParenthesis;[(];
-                            SyntaxKind.Identifier;[foo];
-                            SyntaxKind.LessThan;[<];
-                            SyntaxKind.Identifier;[bar];
-                            SyntaxKind.GreaterThan;[>];
-                            SyntaxKind.RightParenthesis;[)];
-                            SyntaxKind.Semicolon;[;];
-        SyntaxKind.HtmlTextLiteral - [World] - [162..167) - FullWidth: 5 - Slots: 1
-            SyntaxKind.Text;[World];
+RazorDocument - [0..171)::171 - [<p class="@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);">Hello</p> <p style='@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);'>World</p>]
+    MarkupBlock - [0..171)::171
+        MarkupTagHelperElement - [0..85)::85 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..76)::76
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..75)::73 - class - DoubleQuotes - Unbound - [ class="@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);"]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [10..74)::64
+                        MarkupDynamicAttributeValue - [10..74)::64 - [@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);]
+                            GenericBlock - [10..74)::64
+                                CSharpCodeBlock - [10..74)::64
+                                    CSharpTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        Transition;[@];
+                                    CSharpStatementLiteral - [11..31)::20 - [do { var foo = bar; ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                                        Keyword;[do];
+                                        Whitespace;[ ];
+                                        LeftBrace;[{];
+                                        Whitespace;[ ];
+                                        Identifier;[var];
+                                        Whitespace;[ ];
+                                        Identifier;[foo];
+                                        Whitespace;[ ];
+                                        Assign;[=];
+                                        Whitespace;[ ];
+                                        Identifier;[bar];
+                                        Semicolon;[;];
+                                        Whitespace;[ ];
+                                    MarkupBlock - [31..47)::16
+                                        MarkupTagBlock - [31..37)::6 - [<text>]
+                                            MarkupTransition - [31..37)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                                                OpenAngle;[<];
+                                                Text;[text];
+                                                CloseAngle;[>];
+                                        MarkupTextLiteral - [37..40)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                            Text;[Foo];
+                                        MarkupTagBlock - [40..47)::7 - [</text>]
+                                            MarkupTransition - [40..47)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                                                OpenAngle;[<];
+                                                ForwardSlash;[/];
+                                                Text;[text];
+                                                CloseAngle;[>];
+                                    CSharpStatementLiteral - [47..74)::27 - [ foo++; } while (foo<bar>);] - Gen<Stmt> - SpanEditHandler;Accepts:None
+                                        Whitespace;[ ];
+                                        Identifier;[foo];
+                                        Increment;[++];
+                                        Semicolon;[;];
+                                        Whitespace;[ ];
+                                        RightBrace;[}];
+                                        Whitespace;[ ];
+                                        Keyword;[while];
+                                        Whitespace;[ ];
+                                        LeftParenthesis;[(];
+                                        Identifier;[foo];
+                                        LessThan;[<];
+                                        Identifier;[bar];
+                                        GreaterThan;[>];
+                                        RightParenthesis;[)];
+                                        Semicolon;[;];
+                    MarkupTextLiteral - [74..75)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [75..76)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTextLiteral - [76..81)::5 - [Hello] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Hello];
+            MarkupTagHelperEndTag - [81..85)::4
+                MarkupTextLiteral - [81..85)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];
+        MarkupTextLiteral - [85..86)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+        MarkupTagHelperElement - [86..171)::85 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [86..162)::76
+                MarkupTextLiteral - [86..88)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [88..161)::73 - style - SingleQuotes - Unbound - [ style='@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);']
+                    MarkupTextLiteral - [88..89)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [89..94)::5 - [style] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[style];
+                    Equals;[=];
+                    MarkupTextLiteral - [95..96)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [96..160)::64
+                        MarkupDynamicAttributeValue - [96..160)::64 - [@do { var foo = bar; <text>Foo</text> foo++; } while (foo<bar>);]
+                            GenericBlock - [96..160)::64
+                                CSharpCodeBlock - [96..160)::64
+                                    CSharpTransition - [96..97)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        Transition;[@];
+                                    CSharpStatementLiteral - [97..117)::20 - [do { var foo = bar; ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                                        Keyword;[do];
+                                        Whitespace;[ ];
+                                        LeftBrace;[{];
+                                        Whitespace;[ ];
+                                        Identifier;[var];
+                                        Whitespace;[ ];
+                                        Identifier;[foo];
+                                        Whitespace;[ ];
+                                        Assign;[=];
+                                        Whitespace;[ ];
+                                        Identifier;[bar];
+                                        Semicolon;[;];
+                                        Whitespace;[ ];
+                                    MarkupBlock - [117..133)::16
+                                        MarkupTagBlock - [117..123)::6 - [<text>]
+                                            MarkupTransition - [117..123)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                                                OpenAngle;[<];
+                                                Text;[text];
+                                                CloseAngle;[>];
+                                        MarkupTextLiteral - [123..126)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                            Text;[Foo];
+                                        MarkupTagBlock - [126..133)::7 - [</text>]
+                                            MarkupTransition - [126..133)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                                                OpenAngle;[<];
+                                                ForwardSlash;[/];
+                                                Text;[text];
+                                                CloseAngle;[>];
+                                    CSharpStatementLiteral - [133..160)::27 - [ foo++; } while (foo<bar>);] - Gen<Stmt> - SpanEditHandler;Accepts:None
+                                        Whitespace;[ ];
+                                        Identifier;[foo];
+                                        Increment;[++];
+                                        Semicolon;[;];
+                                        Whitespace;[ ];
+                                        RightBrace;[}];
+                                        Whitespace;[ ];
+                                        Keyword;[while];
+                                        Whitespace;[ ];
+                                        LeftParenthesis;[(];
+                                        Identifier;[foo];
+                                        LessThan;[<];
+                                        Identifier;[bar];
+                                        GreaterThan;[>];
+                                        RightParenthesis;[)];
+                                        Semicolon;[;];
+                    MarkupTextLiteral - [160..161)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [161..162)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTextLiteral - [162..167)::5 - [World] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[World];
+            MarkupTagHelperEndTag - [167..171)::4
+                MarkupTextLiteral - [167..171)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

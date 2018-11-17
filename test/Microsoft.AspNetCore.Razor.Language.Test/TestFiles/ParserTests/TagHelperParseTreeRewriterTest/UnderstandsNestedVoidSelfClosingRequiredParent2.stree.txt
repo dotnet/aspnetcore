@@ -1,7 +1,32 @@
-Markup block - Gen<None> - 31 - (0:0,0)
-    Tag block - Gen<TagHelper> - 31 - (0:0,0) - p - PTagHelper
-        StartTagAndEndTag - <p> ... </p>
-        Tag block - Gen<TagHelper> - 7 - (3:0,3) - input - InputTagHelper
-            StartTagOnly - <input>
-        Tag block - Gen<TagHelper> - 17 - (10:0,10) - strong - StrongTagHelper
-            StartTagAndEndTag - <strong> ... </strong>
+RazorDocument - [0..31)::31 - [<p><input><strong></strong></p>]
+    MarkupBlock - [0..31)::31
+        MarkupTagHelperElement - [0..31)::31 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTagHelperElement - [3..10)::7 - input[StartTagOnly] - InputTagHelper
+                MarkupTagHelperStartTag - [3..10)::7
+                    MarkupTextLiteral - [3..10)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[input];
+                        CloseAngle;[>];
+            MarkupTagHelperElement - [10..27)::17 - strong[StartTagAndEndTag] - StrongTagHelper
+                MarkupTagHelperStartTag - [10..18)::8
+                    MarkupTextLiteral - [10..18)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                        CloseAngle;[>];
+                MarkupTagHelperEndTag - [18..27)::9
+                    MarkupTextLiteral - [18..27)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[strong];
+                        CloseAngle;[>];
+            MarkupTagHelperEndTag - [27..31)::4
+                MarkupTextLiteral - [27..31)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

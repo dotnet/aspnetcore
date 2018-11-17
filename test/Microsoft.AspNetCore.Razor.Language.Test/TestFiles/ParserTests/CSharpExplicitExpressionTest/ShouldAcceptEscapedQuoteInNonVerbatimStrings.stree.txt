@@ -1,9 +1,12 @@
-Expression block - Gen<Expr> - 7 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.LeftParenthesis;[(];
-    Code span - Gen<Expr> - ["\""] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:1
-        SyntaxKind.StringLiteral;["\""];
-    MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (6:0,6) - Tokens:1
-        SyntaxKind.RightParenthesis;[)];
+CSharpCodeBlock - [0..7)::7 - [@("\"")]
+    CSharpExplicitExpression - [0..7)::7
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpExplicitExpressionBody - [1..7)::6
+            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftParenthesis;[(];
+            CSharpCodeBlock - [2..6)::4
+                CSharpExpressionLiteral - [2..6)::4 - ["\""] - Gen<Expr> - SpanEditHandler;Accepts:Any
+                    StringLiteral;["\""];
+            RazorMetaCode - [6..7)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightParenthesis;[)];

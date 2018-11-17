@@ -1,81 +1,83 @@
-Statement block - Gen<None> - 70 - (0:0,0)
-    Code span - Gen<Stmt> - [if(foo) {] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:6
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-    Markup block - Gen<None> - 12 - (9:0,9)
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Tag block - Gen<None> - 3 - (10:0,10)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Bar] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-            SyntaxKind.Text;[Bar];
-        Tag block - Gen<None> - 4 - (16:0,16)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (16:0,16) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (20:0,20) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-    Code span - Gen<Stmt> - [} else if(bar) {] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:10
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[else];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-    Markup block - Gen<None> - 12 - (37:0,37)
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (37:0,37) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Tag block - Gen<None> - 3 - (38:0,38)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Baz] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:1
-            SyntaxKind.Text;[Baz];
-        Tag block - Gen<None> - 4 - (44:0,44)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (44:0,44) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (48:0,48) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-    Code span - Gen<Stmt> - [} else {] - SpanEditHandler;Accepts:Any - (49:0,49) - Tokens:5
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[else];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-    Markup block - Gen<None> - 12 - (57:0,57)
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (57:0,57) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Tag block - Gen<None> - 3 - (58:0,58)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (58:0,58) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Boz] - SpanEditHandler;Accepts:Any - (61:0,61) - Tokens:1
-            SyntaxKind.Text;[Boz];
-        Tag block - Gen<None> - 4 - (64:0,64)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (64:0,64) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (68:0,68) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:None - (69:0,69) - Tokens:1
-        SyntaxKind.RightBrace;[}];
+CSharpCodeBlock - [0..70)::70 - [if(foo) { <p>Bar</p> } else if(bar) { <p>Baz</p> } else { <p>Boz</p> }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..9)::9 - [if(foo) {] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+    MarkupBlock - [9..21)::12
+        MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+        MarkupTagBlock - [10..13)::3 - [<p>]
+            MarkupTextLiteral - [10..13)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [13..16)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Bar];
+        MarkupTagBlock - [16..20)::4 - [</p>]
+            MarkupTextLiteral - [16..20)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [20..21)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+    CSharpStatementLiteral - [21..37)::16 - [} else if(bar) {] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[else];
+        Whitespace;[ ];
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[bar];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+    MarkupBlock - [37..49)::12
+        MarkupTextLiteral - [37..38)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+        MarkupTagBlock - [38..41)::3 - [<p>]
+            MarkupTextLiteral - [38..41)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [41..44)::3 - [Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Baz];
+        MarkupTagBlock - [44..48)::4 - [</p>]
+            MarkupTextLiteral - [44..48)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [48..49)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+    CSharpStatementLiteral - [49..57)::8 - [} else {] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[else];
+        Whitespace;[ ];
+        LeftBrace;[{];
+    MarkupBlock - [57..69)::12
+        MarkupTextLiteral - [57..58)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+        MarkupTagBlock - [58..61)::3 - [<p>]
+            MarkupTextLiteral - [58..61)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [61..64)::3 - [Boz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Boz];
+        MarkupTagBlock - [64..68)::4 - [</p>]
+            MarkupTextLiteral - [64..68)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [68..69)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+    CSharpStatementLiteral - [69..70)::1 - [}] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        RightBrace;[}];

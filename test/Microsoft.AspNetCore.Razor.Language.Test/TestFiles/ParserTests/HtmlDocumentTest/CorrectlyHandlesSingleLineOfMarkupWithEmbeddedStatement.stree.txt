@@ -1,30 +1,30 @@
-Markup block - Gen<None> - 31 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<div>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[div];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [Foo ] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:2
-        SyntaxKind.Text;[Foo];
-        SyntaxKind.Whitespace;[ ];
-    Statement block - Gen<None> - 12 - (9:0,9)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:1
-            SyntaxKind.Transition;[@];
-        Code span - Gen<Stmt> - [if(true) {}] - SpanEditHandler;Accepts:Any - (10:0,10) - Tokens:7
-            SyntaxKind.Keyword;[if];
-            SyntaxKind.LeftParenthesis;[(];
-            SyntaxKind.Keyword;[true];
-            SyntaxKind.RightParenthesis;[)];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.LeftBrace;[{];
-            SyntaxKind.RightBrace;[}];
-    SyntaxKind.HtmlTextLiteral - [ Bar] - [21..25) - FullWidth: 4 - Slots: 1
-        SyntaxKind.List - [ Bar] - [21..25) - FullWidth: 4 - Slots: 2
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[Bar];
-    Tag block - Gen<None> - 6 - (25:0,25)
-        Markup span - Gen<Markup> - [</div>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[div];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..31)::31 - [<div>Foo @if(true) {} Bar</div>]
+    MarkupBlock - [0..31)::31
+        MarkupTagBlock - [0..5)::5 - [<div>]
+            MarkupTextLiteral - [0..5)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
+                CloseAngle;[>];
+        MarkupTextLiteral - [5..9)::4 - [Foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Foo];
+            Whitespace;[ ];
+        CSharpCodeBlock - [9..21)::12
+            CSharpTransition - [9..10)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Transition;[@];
+            CSharpStatementLiteral - [10..21)::11 - [if(true) {}] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                Keyword;[if];
+                LeftParenthesis;[(];
+                Keyword;[true];
+                RightParenthesis;[)];
+                Whitespace;[ ];
+                LeftBrace;[{];
+                RightBrace;[}];
+        MarkupTextLiteral - [21..25)::4 - [ Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[Bar];
+        MarkupTagBlock - [25..31)::6 - [</div>]
+            MarkupTextLiteral - [25..31)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];

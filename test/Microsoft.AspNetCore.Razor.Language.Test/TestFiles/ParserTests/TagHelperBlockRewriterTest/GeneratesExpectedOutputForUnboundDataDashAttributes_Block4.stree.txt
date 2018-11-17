@@ -1,29 +1,52 @@
-Markup block - Gen<None> - 49 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Statement block - Gen<None> - 49 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 46 - (2:0,2)
-            Tag block - Gen<TagHelper> - 46 - (2:0,2) - input - inputtaghelper
-                SelfClosing - <input data-required='@DateTime.Now suffix' />
-                data-required - SingleQuotes
-                    Markup block - Gen<None> - 20 - (24:0,24)
-                        Expression block - Gen<Expr> - 13 - (24:0,24)
-                            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (24:0,24) - Tokens:1
-                                SyntaxKind.Transition;[@];
-                            Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (25:0,25) - Tokens:3
-                                SyntaxKind.Identifier;[DateTime];
-                                SyntaxKind.Dot;[.];
-                                SyntaxKind.Identifier;[Now];
-                        Markup span - Gen<Markup> - [ suffix] - SpanEditHandler;Accepts:Any - (37:0,37) - Tokens:2
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Text;[suffix];
-        Code span - Gen<Stmt> - [] - SpanEditHandler;Accepts:Any - (48:0,48) - Tokens:1
-            SyntaxKind.Unknown;[];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (48:0,48) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (49:0,49) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..49)::49 - [@{<input data-required='@DateTime.Now suffix' />}]
+    MarkupBlock - [0..49)::49
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..49)::49
+            CSharpStatement - [0..49)::49
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..49)::48
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..48)::46
+                        MarkupBlock - [2..48)::46
+                            MarkupTagHelperElement - [2..48)::46 - input[SelfClosing] - inputtaghelper
+                                MarkupTagHelperStartTag - [2..48)::46
+                                    MarkupTextLiteral - [2..8)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        OpenAngle;[<];
+                                        Text;[input];
+                                    MarkupTagHelperAttribute - [8..45)::37 - data-required - SingleQuotes - Unbound - [ data-required='@DateTime.Now suffix']
+                                        MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                        MarkupTextLiteral - [9..22)::13 - [data-required] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Text;[data-required];
+                                        Equals;[=];
+                                        MarkupTextLiteral - [23..24)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            SingleQuote;['];
+                                        MarkupTagHelperAttributeValue - [24..44)::20
+                                            CSharpCodeBlock - [24..37)::13
+                                                CSharpImplicitExpression - [24..37)::13
+                                                    CSharpTransition - [24..25)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                                        Transition;[@];
+                                                    CSharpImplicitExpressionBody - [25..37)::12
+                                                        CSharpCodeBlock - [25..37)::12
+                                                            CSharpExpressionLiteral - [25..37)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                                Identifier;[DateTime];
+                                                                Dot;[.];
+                                                                Identifier;[Now];
+                                            MarkupTextLiteral - [37..44)::7 - [ suffix] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                                Whitespace;[ ];
+                                                Text;[suffix];
+                                        MarkupTextLiteral - [44..45)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            SingleQuote;['];
+                                    MarkupTextLiteral - [45..48)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        Whitespace;[ ];
+                                        ForwardSlash;[/];
+                                        CloseAngle;[>];
+                        CSharpStatementLiteral - [48..48)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [48..49)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [49..49)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

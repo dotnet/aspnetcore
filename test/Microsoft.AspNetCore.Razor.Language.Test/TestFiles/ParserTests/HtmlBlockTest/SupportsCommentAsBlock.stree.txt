@@ -1,13 +1,13 @@
-Markup block - Gen<None> - 12 - (0:0,0)
-    HtmlComment block - Gen<None> - 12 - (0:0,0)
-        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Bang;[!];
-            SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [ foo ] - SpanEditHandler;Accepts:Whitespace - (4:0,4) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.Whitespace;[ ];
-        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:2
-            SyntaxKind.DoubleHyphen;[--];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..12)::12 - [<!-- foo -->]
+    MarkupCommentBlock - [0..12)::12
+        MarkupTextLiteral - [0..4)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Bang;[!];
+            DoubleHyphen;[--];
+        MarkupTextLiteral - [4..9)::5 - [ foo ] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
+            Whitespace;[ ];
+            Text;[foo];
+            Whitespace;[ ];
+        MarkupTextLiteral - [9..12)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
+            DoubleHyphen;[--];
+            CloseAngle;[>];

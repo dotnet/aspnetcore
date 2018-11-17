@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -206,17 +209,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
 
             public TestHtmlMarkupParser(ParserContext context) : base(context)
             {
-                this.EnsureCurrent();
+                EnsureCurrent();
             }
 
             public new SyntaxToken AcceptAllButLastDoubleHyphens()
             {
                 return base.AcceptAllButLastDoubleHyphens();
-            }
-
-            public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
-            {
-                base.BuildSpan(span, start, content);
             }
         }
 

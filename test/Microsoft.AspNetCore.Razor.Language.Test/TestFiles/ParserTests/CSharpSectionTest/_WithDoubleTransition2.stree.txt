@@ -1,51 +1,62 @@
-Markup block - Gen<None> - 44 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 44 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [s] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (9:0,9) - Tokens:1
-            SyntaxKind.Identifier;[s];
-        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhitespace - (10:0,10) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (11:0,11) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 31 - (12:0,12)
-            Tag block - Gen<None> - 31 - (12:0,12)
-                Markup span - Gen<Markup> - [<span] - SpanEditHandler;Accepts:Any - (12:0,12) - Tokens:2
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[span];
-                Markup block - Gen<Attr:foo, foo='@(17:0,17),'@(39:0,39)> - 23 - (17:0,17)
-                    Markup span - Gen<None> - [ foo='] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:4
-                        SyntaxKind.Whitespace;[ ];
-                        SyntaxKind.Text;[foo];
-                        SyntaxKind.Equals;[=];
-                        SyntaxKind.SingleQuote;['];
-                    Markup block - Gen<DynAttr:@(23:0,23)> - 13 - (23:0,23)
-                        Expression block - Gen<Expr> - 13 - (23:0,23)
-                            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (23:0,23) - Tokens:1
-                                SyntaxKind.Transition;[@];
-                            Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K15 - (24:0,24) - Tokens:3
-                                SyntaxKind.Identifier;[DateTime];
-                                SyntaxKind.Dot;[.];
-                                SyntaxKind.Identifier;[Now];
-                    Markup block - Gen<None> - 3 - (36:0,36)
-                        Markup span - Gen<LitAttr: @(36:0,36)> - [ @] - SpanEditHandler;Accepts:None - (36:0,36) - Tokens:2
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.Transition;[@];
-                        Markup span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (38:0,38) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                    Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (39:0,39) - Tokens:1
-                        SyntaxKind.SingleQuote;['];
-                Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:Any - (40:0,40) - Tokens:3
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.CloseAngle;[>];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (43:0,43) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (44:0,44) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..44)::44 - [@section s {<span foo='@DateTime.Now @@' />}]
+    MarkupBlock - [0..44)::44
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..44)::44
+            RazorDirective - [0..44)::44 - Directive:{section;RazorBlock;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..44)::43
+                    RazorMetaCode - [1..8)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[section];
+                    CSharpCodeBlock - [8..44)::36
+                        CSharpStatementLiteral - [8..9)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [9..10)::1 - [s] - Gen<DirectiveToken {SectionName;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[s];
+                        MarkupTextLiteral - [10..11)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                            Whitespace;[ ];
+                        RazorMetaCode - [11..12)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
+                            LeftBrace;[{];
+                        MarkupBlock - [12..43)::31
+                            MarkupTagBlock - [12..43)::31 - [<span foo='@DateTime.Now @@' />]
+                                MarkupTextLiteral - [12..17)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    Text;[span];
+                                MarkupAttributeBlock - [17..40)::23 - [ foo='@DateTime.Now @@']
+                                    MarkupTextLiteral - [17..18)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Whitespace;[ ];
+                                    MarkupTextLiteral - [18..21)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Text;[foo];
+                                    Equals;[=];
+                                    MarkupTextLiteral - [22..23)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        SingleQuote;['];
+                                    GenericBlock - [23..39)::16
+                                        MarkupDynamicAttributeValue - [23..36)::13 - [@DateTime.Now]
+                                            GenericBlock - [23..36)::13
+                                                CSharpCodeBlock - [23..36)::13
+                                                    CSharpImplicitExpression - [23..36)::13
+                                                        CSharpTransition - [23..24)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                                            Transition;[@];
+                                                        CSharpImplicitExpressionBody - [24..36)::12
+                                                            CSharpCodeBlock - [24..36)::12
+                                                                CSharpExpressionLiteral - [24..36)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K15
+                                                                    Identifier;[DateTime];
+                                                                    Dot;[.];
+                                                                    Identifier;[Now];
+                                        MarkupBlock - [36..39)::3
+                                            MarkupTextLiteral - [36..38)::2 - [ @] - Gen<LitAttr: @(36:0,36)> - SpanEditHandler;Accepts:None
+                                                Whitespace;[ ];
+                                                Transition;[@];
+                                            MarkupEphemeralTextLiteral - [38..39)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
+                                                Transition;[@];
+                                    MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                        SingleQuote;['];
+                                MarkupTextLiteral - [40..43)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Whitespace;[ ];
+                                    ForwardSlash;[/];
+                                    CloseAngle;[>];
+                        RazorMetaCode - [43..44)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            RightBrace;[}];
+        MarkupTextLiteral - [44..44)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

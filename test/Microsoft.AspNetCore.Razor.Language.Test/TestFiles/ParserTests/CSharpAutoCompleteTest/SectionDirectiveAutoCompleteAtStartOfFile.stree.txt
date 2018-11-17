@@ -1,29 +1,34 @@
-Directive block - Gen<Directive:{section;RazorBlock;Unrestricted} [RZ1006(16:0,16 [1] )]> - 29 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-        SyntaxKind.Identifier;[section];
-    Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [Header] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (9:0,9) - Tokens:1
-        SyntaxKind.Identifier;[Header];
-    Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhitespace - (15:0,15) - Tokens:1
-        SyntaxKind.Whitespace;[ ];
-    MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd - (16:0,16) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Markup block - Gen<None> - 12 - (17:0,17)
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
-            SyntaxKind.NewLine;[LF];
-        Tag block - Gen<None> - 3 - (19:1,0)
-            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:Any - (19:1,0) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
-        SyntaxKind.HtmlTextLiteral - [Foo] - [22..25) - FullWidth: 3 - Slots: 1
-            SyntaxKind.Text;[Foo];
-        Tag block - Gen<None> - 4 - (25:1,6)
-            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (25:1,6) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[p];
-                SyntaxKind.CloseAngle;[>];
+CSharpCodeBlock - [0..29)::29 - [@section Header {LF<p>Foo</p>]
+    RazorDirective - [0..29)::29 - Directive:{section;RazorBlock;Unrestricted} [RZ1006(16:0,16 [1] )]
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        RazorDirectiveBody - [1..29)::28
+            RazorMetaCode - [1..8)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                Identifier;[section];
+            CSharpCodeBlock - [8..29)::21
+                CSharpStatementLiteral - [8..9)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                    Whitespace;[ ];
+                CSharpStatementLiteral - [9..15)::6 - [Header] - Gen<DirectiveToken {SectionName;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                    Identifier;[Header];
+                MarkupTextLiteral - [15..16)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                    Whitespace;[ ];
+                RazorMetaCode - [16..17)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[}];AtEnd
+                    LeftBrace;[{];
+                MarkupBlock - [17..29)::12
+                    MarkupTextLiteral - [17..19)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        NewLine;[LF];
+                    MarkupTagBlock - [19..22)::3 - [<p>]
+                        MarkupTextLiteral - [19..22)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [22..25)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Foo];
+                    MarkupTagBlock - [25..29)::4 - [</p>]
+                        MarkupTextLiteral - [25..29)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
+                RazorMetaCode - [29..29)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                    RightBrace;[<Missing>];

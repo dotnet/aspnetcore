@@ -1,25 +1,26 @@
-Markup block - Gen<None> - 30 - (0:0,0)
-    Markup span - Gen<Markup> - [Foo Baz] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-        SyntaxKind.Text;[Foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[Baz];
-    HtmlComment block - Gen<None> - 10 - (7:0,7)
-        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (7:0,7) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Bang;[!];
-            SyntaxKind.DoubleHyphen;[--];
-        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Whitespace - (11:0,11) - Tokens:1
-            SyntaxKind.Text;[Foo];
-        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (14:0,14) - Tokens:2
-            SyntaxKind.DoubleHyphen;[--];
-            SyntaxKind.CloseAngle;[>];
-    Markup span - Gen<Markup> - [Bar] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
-        SyntaxKind.Text;[Bar];
-    Markup span - Gen<Markup> - [<!--F> Qux] - SpanEditHandler;Accepts:Any - (20:0,20) - Tokens:7
-        SyntaxKind.OpenAngle;[<];
-        SyntaxKind.Bang;[!];
-        SyntaxKind.DoubleHyphen;[--];
-        SyntaxKind.Text;[F];
-        SyntaxKind.CloseAngle;[>];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Text;[Qux];
+RazorDocument - [0..30)::30 - [Foo Baz<!--Foo-->Bar<!--F> Qux]
+    MarkupBlock - [0..30)::30
+        MarkupTextLiteral - [0..7)::7 - [Foo Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Foo];
+            Whitespace;[ ];
+            Text;[Baz];
+        MarkupCommentBlock - [7..17)::10
+            MarkupTextLiteral - [7..11)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Bang;[!];
+                DoubleHyphen;[--];
+            MarkupTextLiteral - [11..14)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Whitespace
+                Text;[Foo];
+            MarkupTextLiteral - [14..17)::3 - [-->] - Gen<Markup> - SpanEditHandler;Accepts:None
+                DoubleHyphen;[--];
+                CloseAngle;[>];
+        MarkupTextLiteral - [17..20)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Bar];
+        MarkupTextLiteral - [20..30)::10 - [<!--F> Qux] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Bang;[!];
+            DoubleHyphen;[--];
+            Text;[F];
+            CloseAngle;[>];
+            Whitespace;[ ];
+            Text;[Qux];

@@ -1,42 +1,58 @@
-Markup block - Gen<None> - 77 - (0:0,0)
-    Tag block - Gen<TagHelper> - 77 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [Hello ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
-            SyntaxKind.Text;[Hello];
-            SyntaxKind.Whitespace;[ ];
-        Expression block - Gen<Expr> - 13 - (9:0,9)
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:1
-                SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (10:0,10) - Tokens:3
-                SyntaxKind.Identifier;[DateTime];
-                SyntaxKind.Dot;[.];
-                SyntaxKind.Identifier;[Now];
-        Tag block - Gen<None> - 8 - (22:0,22)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
-        Markup span - Gen<Markup> - [inside of ] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:4
-            SyntaxKind.Text;[inside];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[of];
-            SyntaxKind.Whitespace;[ ];
-        Expression block - Gen<Expr> - 13 - (40:0,40)
-            Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (40:0,40) - Tokens:1
-                SyntaxKind.Transition;[@];
-            Code span - Gen<Expr> - [DateTime.Now] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (41:0,41) - Tokens:3
-                SyntaxKind.Identifier;[DateTime];
-                SyntaxKind.Dot;[.];
-                SyntaxKind.Identifier;[Now];
-        SyntaxKind.HtmlTextLiteral - [ strong tag] - [53..64) - FullWidth: 11 - Slots: 1
-            SyntaxKind.List - [ strong tag] - [53..64) - FullWidth: 11 - Slots: 4
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[tag];
-        Tag block - Gen<None> - 9 - (64:0,64)
-            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (64:0,64) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..77)::77 - [<p>Hello @DateTime.Now<strong>inside of @DateTime.Now strong tag</strong></p>]
+    MarkupBlock - [0..77)::77
+        MarkupTagHelperElement - [0..77)::77 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [3..9)::6 - [Hello ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Hello];
+                Whitespace;[ ];
+            CSharpCodeBlock - [9..22)::13
+                CSharpImplicitExpression - [9..22)::13
+                    CSharpTransition - [9..10)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    CSharpImplicitExpressionBody - [10..22)::12
+                        CSharpCodeBlock - [10..22)::12
+                            CSharpExpressionLiteral - [10..22)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                Identifier;[DateTime];
+                                Dot;[.];
+                                Identifier;[Now];
+            MarkupTagBlock - [22..30)::8 - [<strong>]
+                MarkupTextLiteral - [22..30)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [30..40)::10 - [inside of ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[inside];
+                Whitespace;[ ];
+                Text;[of];
+                Whitespace;[ ];
+            CSharpCodeBlock - [40..53)::13
+                CSharpImplicitExpression - [40..53)::13
+                    CSharpTransition - [40..41)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    CSharpImplicitExpressionBody - [41..53)::12
+                        CSharpCodeBlock - [41..53)::12
+                            CSharpExpressionLiteral - [41..53)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                Identifier;[DateTime];
+                                Dot;[.];
+                                Identifier;[Now];
+            MarkupTextLiteral - [53..64)::11 - [ strong tag] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                Text;[strong];
+                Whitespace;[ ];
+                Text;[tag];
+            MarkupTagBlock - [64..73)::9 - [</strong>]
+                MarkupTextLiteral - [64..73)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [73..77)::4
+                MarkupTextLiteral - [73..77)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

@@ -1,6 +1,25 @@
-Markup block - Gen<None> - 24 - (0:0,0)
-    Tag block - Gen<TagHelper> - 24 - (0:0,0) - th:myth2 - mythTagHelper2
-        SelfClosing - <th:myth2 class="btn" />
-        class - DoubleQuotes
-            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (17:0,17) - Tokens:1
-                SyntaxKind.Text;[btn];
+RazorDocument - [0..24)::24 - [<th:myth2 class="btn" />]
+    MarkupBlock - [0..24)::24
+        MarkupTagHelperElement - [0..24)::24 - th:myth2[SelfClosing] - mythTagHelper2
+            MarkupTagHelperStartTag - [0..24)::24
+                MarkupTextLiteral - [0..9)::9 - [<th:myth2] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[th:myth2];
+                MarkupTagHelperAttribute - [9..21)::12 - class - DoubleQuotes - Unbound - [ class="btn"]
+                    MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [10..15)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [16..17)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [17..20)::3
+                        MarkupLiteralAttributeValue - [17..20)::3 - [btn]
+                            MarkupTextLiteral - [17..20)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[btn];
+                    MarkupTextLiteral - [20..21)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [21..24)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

@@ -1,8 +1,10 @@
-Statement block - Gen<None> - 15 - (0:0,0)
-    Code span - Gen<Stmt> - [using(foo barLF] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:6
-        SyntaxKind.Keyword;[using];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.NewLine;[LF];
+CSharpCodeBlock - [0..15)::15 - [using(foo barLF]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..15)::15 - [using(foo barLF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[using];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Identifier;[bar];
+        NewLine;[LF];

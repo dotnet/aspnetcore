@@ -1,48 +1,52 @@
-Markup block - Gen<None> - 67 - (0:0,0)
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-        SyntaxKind.Unknown;[];
-    Directive block - Gen<Directive:{section;RazorBlock;Unrestricted}> - 67 - (0:0,0)
-        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-            SyntaxKind.Transition;[@];
-        MetaCode span - Gen<None> - [section] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
-            SyntaxKind.Identifier;[section];
-        Code span - Gen<None> - [ ] - SpanEditHandler;Accepts:Whitespace - (8:0,8) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        Code span - Gen<DirectiveToken {SectionName;Member;Opt:False}> - [foo] - DirectiveTokenEditHandler;Accepts:NonWhitespace - (9:0,9) - Tokens:1
-            SyntaxKind.Identifier;[foo];
-        Markup span - Gen<None> - [ ] - SpanEditHandler;Accepts:AllWhitespace - (12:0,12) - Tokens:1
-            SyntaxKind.Whitespace;[ ];
-        MetaCode span - Gen<None> - [{] - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd - (13:0,13) - Tokens:1
-            SyntaxKind.LeftBrace;[{];
-        Markup block - Gen<None> - 52 - (14:0,14)
-            Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                SyntaxKind.Whitespace;[ ];
-            Tag block - Gen<None> - 8 - (15:0,15)
-                Markup span - Gen<Markup> - [<script>] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:3
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.Text;[script];
-                    SyntaxKind.CloseAngle;[>];
-            Markup span - Gen<Markup> - [(function foo() { return 1; })();] - SpanEditHandler;Accepts:Any - (23:0,23) - Tokens:11
-                SyntaxKind.Text;[(function];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[foo()];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[{];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[return];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[1;];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[})();];
-            Tag block - Gen<None> - 9 - (56:0,56)
-                Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:4
-                    SyntaxKind.OpenAngle;[<];
-                    SyntaxKind.ForwardSlash;[/];
-                    SyntaxKind.Text;[script];
-                    SyntaxKind.CloseAngle;[>];
-            Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (65:0,65) - Tokens:1
-                SyntaxKind.Whitespace;[ ];
-        MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (66:0,66) - Tokens:1
-            SyntaxKind.RightBrace;[}];
-    Markup span - Gen<Markup> - [] - SpanEditHandler;Accepts:Any - (67:0,67) - Tokens:1
-        SyntaxKind.Unknown;[];
+RazorDocument - [0..67)::67 - [@section foo { <script>(function foo() { return 1; })();</script> }]
+    MarkupBlock - [0..67)::67
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..67)::67
+            RazorDirective - [0..67)::67 - Directive:{section;RazorBlock;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..67)::66
+                    RazorMetaCode - [1..8)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[section];
+                    CSharpCodeBlock - [8..67)::59
+                        CSharpStatementLiteral - [8..9)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [9..12)::3 - [foo] - Gen<DirectiveToken {SectionName;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[foo];
+                        MarkupTextLiteral - [12..13)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:AllWhitespace
+                            Whitespace;[ ];
+                        RazorMetaCode - [13..14)::1 - Gen<None> - AutoCompleteEditHandler;Accepts:None,AutoComplete:[<null>];AtEnd
+                            LeftBrace;[{];
+                        MarkupBlock - [14..66)::52
+                            MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                            MarkupTagBlock - [15..23)::8 - [<script>]
+                                MarkupTextLiteral - [15..23)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    Text;[script];
+                                    CloseAngle;[>];
+                            MarkupTextLiteral - [23..56)::33 - [(function foo() { return 1; })();] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[(function];
+                                Whitespace;[ ];
+                                Text;[foo()];
+                                Whitespace;[ ];
+                                Text;[{];
+                                Whitespace;[ ];
+                                Text;[return];
+                                Whitespace;[ ];
+                                Text;[1;];
+                                Whitespace;[ ];
+                                Text;[})();];
+                            MarkupTagBlock - [56..65)::9 - [</script>]
+                                MarkupTextLiteral - [56..65)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[script];
+                                    CloseAngle;[>];
+                            MarkupTextLiteral - [65..66)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                        RazorMetaCode - [66..67)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            RightBrace;[}];
+        MarkupTextLiteral - [67..67)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

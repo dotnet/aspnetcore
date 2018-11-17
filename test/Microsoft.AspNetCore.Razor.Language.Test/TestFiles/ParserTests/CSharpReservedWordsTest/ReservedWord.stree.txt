@@ -1,3 +1,7 @@
-Directive block - Gen<None> - 9 - (0:0,0)
-    MetaCode span - Gen<None> - [namespace] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Keyword;[namespace];
+CSharpCodeBlock - [0..9)::9 - [namespace]
+    RazorDirective - [0..9)::9
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        RazorDirectiveBody - [0..9)::9
+            RazorMetaCode - [0..9)::9 - Gen<None> - SpanEditHandler;Accepts:None
+                Keyword;[namespace];

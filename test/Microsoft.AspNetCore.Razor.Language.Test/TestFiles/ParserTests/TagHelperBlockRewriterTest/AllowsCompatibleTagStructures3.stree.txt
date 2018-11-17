@@ -1,6 +1,23 @@
-Markup block - Gen<None> - 19 - (0:0,0)
-    Tag block - Gen<TagHelper> - 19 - (0:0,0) - input - InputTagHelper1 - InputTagHelper2
-        StartTagOnly - <input type='text'>
-        type - SingleQuotes
-            Markup span - Gen<Markup> - [text] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
-                SyntaxKind.Text;[text];
+RazorDocument - [0..19)::19 - [<input type='text'>]
+    MarkupBlock - [0..19)::19
+        MarkupTagHelperElement - [0..19)::19 - input[StartTagOnly] - InputTagHelper1 - InputTagHelper2
+            MarkupTagHelperStartTag - [0..19)::19
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupTagHelperAttribute - [6..18)::12 - type - SingleQuotes - Unbound - [ type='text']
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..11)::4 - [type] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[type];
+                    Equals;[=];
+                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [13..17)::4
+                        MarkupLiteralAttributeValue - [13..17)::4 - [text]
+                            MarkupTextLiteral - [13..17)::4 - [text] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[text];
+                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [18..19)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];

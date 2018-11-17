@@ -1,7 +1,30 @@
-Markup block - Gen<None> - 40 - (0:0,0)
-    Tag block - Gen<TagHelper> - 40 - (0:0,0) - input - InputTagHelper2 - InputTagHelper3
-        SelfClosing - <input class='btn' bound-required-int />
-        class - SingleQuotes
-            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
-                SyntaxKind.Text;[btn];
-        bound-required-int - Minimized
+RazorDocument - [0..40)::40 - [<input class='btn' bound-required-int />]
+    MarkupBlock - [0..40)::40
+        MarkupTagHelperElement - [0..40)::40 - input[SelfClosing] - InputTagHelper2 - InputTagHelper3
+            MarkupTagHelperStartTag - [0..40)::40
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupTagHelperAttribute - [6..18)::12 - class - SingleQuotes - Unbound - [ class='btn']
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..12)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [14..17)::3
+                        MarkupLiteralAttributeValue - [14..17)::3 - [btn]
+                            MarkupTextLiteral - [14..17)::3 - [btn] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[btn];
+                    MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupMinimizedTagHelperAttribute - [18..37)::19 - bound-required-int - Minimized - Bound - [ bound-required-int]
+                    MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [19..37)::18 - [bound-required-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound-required-int];
+                MarkupTextLiteral - [37..40)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

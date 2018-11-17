@@ -1,24 +1,24 @@
-Markup block - Gen<None> - 31 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [<?xml Hello World ?>] - [5..25) - FullWidth: 20 - Slots: 1
-        SyntaxKind.List - [<?xml Hello World ?>] - [5..25) - FullWidth: 20 - Slots: 10
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.QuestionMark;[?];
-            SyntaxKind.Text;[xml];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[Hello];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[World];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.QuestionMark;[?];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 6 - (25:0,25)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..31)::31 - [<foo><?xml Hello World ?></foo>]
+    MarkupBlock - [0..31)::31
+        MarkupTagBlock - [0..5)::5 - [<foo>]
+            MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[foo];
+                CloseAngle;[>];
+        MarkupTextLiteral - [5..25)::20 - [<?xml Hello World ?>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            QuestionMark;[?];
+            Text;[xml];
+            Whitespace;[ ];
+            Text;[Hello];
+            Whitespace;[ ];
+            Text;[World];
+            Whitespace;[ ];
+            QuestionMark;[?];
+            CloseAngle;[>];
+        MarkupTagBlock - [25..31)::6 - [</foo>]
+            MarkupTextLiteral - [25..31)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[foo];
+                CloseAngle;[>];

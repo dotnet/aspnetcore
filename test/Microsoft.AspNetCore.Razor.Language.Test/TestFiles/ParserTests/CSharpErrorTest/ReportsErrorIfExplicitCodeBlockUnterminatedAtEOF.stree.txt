@@ -1,32 +1,39 @@
-Statement block - Gen<None> - 44 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftBrace;[{];
-    Code span - Gen<Stmt> - [ var foo = bar; if(foo != null) { bar(); } ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL - (1:0,1) - Tokens:28
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[var];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Assign;[=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[if];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[foo];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.NotEqual;[!=];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Keyword;[null];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftBrace;[{];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[bar];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Semicolon;[;];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.RightBrace;[}];
-        SyntaxKind.Whitespace;[ ];
+CSharpCodeBlock - [0..44)::44 - [{ var foo = bar; if(foo != null) { bar(); } ]
+    CSharpStatement - [0..44)::44
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..44)::44
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..44)::43
+                CSharpStatementLiteral - [1..44)::43 - [ var foo = bar; if(foo != null) { bar(); } ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL
+                    Whitespace;[ ];
+                    Identifier;[var];
+                    Whitespace;[ ];
+                    Identifier;[foo];
+                    Whitespace;[ ];
+                    Assign;[=];
+                    Whitespace;[ ];
+                    Identifier;[bar];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+                    Keyword;[if];
+                    LeftParenthesis;[(];
+                    Identifier;[foo];
+                    Whitespace;[ ];
+                    NotEqual;[!=];
+                    Whitespace;[ ];
+                    Keyword;[null];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    Whitespace;[ ];
+                    Identifier;[bar];
+                    LeftParenthesis;[(];
+                    RightParenthesis;[)];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+                    RightBrace;[}];
+                    Whitespace;[ ];
+            RazorMetaCode - [44..44)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                RightBrace;[<Missing>];

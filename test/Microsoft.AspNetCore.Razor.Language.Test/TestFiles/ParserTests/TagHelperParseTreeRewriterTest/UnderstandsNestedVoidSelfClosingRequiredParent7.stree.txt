@@ -1,12 +1,29 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Tag block - Gen<TagHelper> - 23 - (0:0,0) - p - PTagHelper
-        StartTagAndEndTag - <p> ... </p>
-        Tag block - Gen<None> - 6 - (3:0,3)
-            Markup span - Gen<Markup> - [<br />] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:5
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[br];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<TagHelper> - 10 - (9:0,9) - strong - StrongTagHelper
-            SelfClosing - <strong />
+RazorDocument - [0..23)::23 - [<p><br /><strong /></p>]
+    MarkupBlock - [0..23)::23
+        MarkupTagHelperElement - [0..23)::23 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTagBlock - [3..9)::6 - [<br />]
+                MarkupTextLiteral - [3..9)::6 - [<br />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[br];
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];
+            MarkupTagHelperElement - [9..19)::10 - strong[SelfClosing] - StrongTagHelper
+                MarkupTagHelperStartTag - [9..19)::10
+                    MarkupTextLiteral - [9..19)::10 - [<strong />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                        Whitespace;[ ];
+                        ForwardSlash;[/];
+                        CloseAngle;[>];
+            MarkupTagHelperEndTag - [19..23)::4
+                MarkupTextLiteral - [19..23)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

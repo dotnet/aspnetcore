@@ -1,29 +1,37 @@
-Markup block - Gen<None> - 29 - (0:0,0)
-    Tag block - Gen<None> - 29 - (0:0,0)
-        Markup span - Gen<Markup> - [<a] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[a];
-        Markup block - Gen<Attr:href,LFhref='@(2:0,2),'@(13:1,9)> - 12 - (2:0,2)
-            Markup span - Gen<None> - [LFhref='] - SpanEditHandler;Accepts:Any - (2:0,2) - Tokens:4
-                SyntaxKind.NewLine;[LF];
-                SyntaxKind.Text;[href];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.SingleQuote;['];
-            Markup span - Gen<LitAttr:@(10:1,6)> - [Foo] - SpanEditHandler;Accepts:Any - (10:1,6) - Tokens:1
-                SyntaxKind.Text;[Foo];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (13:1,9) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup block - Gen<Attr:abcd,LFabcd='@(14:1,10),'@(25:2,9)> - 12 - (14:1,10)
-            Markup span - Gen<None> - [LFabcd='] - SpanEditHandler;Accepts:Any - (14:1,10) - Tokens:4
-                SyntaxKind.NewLine;[LF];
-                SyntaxKind.Text;[abcd];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.SingleQuote;['];
-            Markup span - Gen<LitAttr:@(22:2,6)> - [Bar] - SpanEditHandler;Accepts:Any - (22:2,6) - Tokens:1
-                SyntaxKind.Text;[Bar];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (25:2,9) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [ />] - SpanEditHandler;Accepts:None - (26:2,10) - Tokens:3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..29)::29 - [<aLFhref='Foo'LFabcd='Bar' />]
+    MarkupTagBlock - [0..29)::29 - [<aLFhref='Foo'LFabcd='Bar' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..14)::12 - [LFhref='Foo']
+            MarkupTextLiteral - [2..4)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+            MarkupTextLiteral - [4..8)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[href];
+            Equals;[=];
+            MarkupTextLiteral - [9..10)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+            GenericBlock - [10..13)::3
+                MarkupLiteralAttributeValue - [10..13)::3 - [Foo]
+                    MarkupTextLiteral - [10..13)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Foo];
+            MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupAttributeBlock - [14..26)::12 - [LFabcd='Bar']
+            MarkupTextLiteral - [14..16)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+            MarkupTextLiteral - [16..20)::4 - [abcd] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[abcd];
+            Equals;[=];
+            MarkupTextLiteral - [21..22)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+            GenericBlock - [22..25)::3
+                MarkupLiteralAttributeValue - [22..25)::3 - [Bar]
+                    MarkupTextLiteral - [22..25)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Bar];
+            MarkupTextLiteral - [25..26)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [26..29)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

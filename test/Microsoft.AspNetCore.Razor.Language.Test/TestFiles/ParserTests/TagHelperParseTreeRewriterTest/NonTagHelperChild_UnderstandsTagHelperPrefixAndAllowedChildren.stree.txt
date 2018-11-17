@@ -1,14 +1,25 @@
-Markup block - Gen<None> - 30 - (0:0,0)
-    Tag block - Gen<TagHelper> - 30 - (0:0,0) - th:p - PTagHelper
-        StartTagAndEndTag - <th:p> ... </th:p>
-        Tag block - Gen<None> - 8 - (6:0,6)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:3
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
-        Tag block - Gen<None> - 9 - (14:0,14)
-            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:4
-                SyntaxKind.OpenAngle;[<];
-                SyntaxKind.ForwardSlash;[/];
-                SyntaxKind.Text;[strong];
-                SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..30)::30 - [<th:p><strong></strong></th:p>]
+    MarkupBlock - [0..30)::30
+        MarkupTagHelperElement - [0..30)::30 - th:p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..6)::6
+                MarkupTextLiteral - [0..6)::6 - [<th:p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[th:p];
+                    CloseAngle;[>];
+            MarkupTagBlock - [6..14)::8 - [<strong>]
+                MarkupTextLiteral - [6..14)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagBlock - [14..23)::9 - [</strong>]
+                MarkupTextLiteral - [14..23)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [23..30)::7
+                MarkupTextLiteral - [23..30)::7 - [</th:p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[th:p];
+                    CloseAngle;[>];

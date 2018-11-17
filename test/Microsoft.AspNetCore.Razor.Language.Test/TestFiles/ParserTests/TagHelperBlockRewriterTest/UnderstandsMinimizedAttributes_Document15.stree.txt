@@ -1,10 +1,27 @@
-Markup block - Gen<None> - 43 - (0:0,0)
-    Tag block - Gen<TagHelper> - 43 - (0:0,0) - input - InputTagHelper3
-        SelfClosing - <input string-prefix-value='some string' />
-        string-prefix-value - SingleQuotes
-            Markup block - Gen<None> - 11 - (28:0,28)
-                Markup span - Gen<Markup> - [some] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:1
-                    SyntaxKind.Text;[some];
-                Markup span - Gen<Markup> - [ string] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:2
-                    SyntaxKind.Whitespace;[ ];
-                    SyntaxKind.Text;[string];
+RazorDocument - [0..43)::43 - [<input string-prefix-value='some string' />]
+    MarkupBlock - [0..43)::43
+        MarkupTagHelperElement - [0..43)::43 - input[SelfClosing] - InputTagHelper3
+            MarkupTagHelperStartTag - [0..43)::43
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupTagHelperAttribute - [6..40)::34 - string-prefix-value - SingleQuotes - Bound - [ string-prefix-value='some string']
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..26)::19 - [string-prefix-value] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[string-prefix-value];
+                    Equals;[=];
+                    MarkupTextLiteral - [27..28)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [28..39)::11
+                        MarkupTextLiteral - [28..32)::4 - [some] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[some];
+                        MarkupTextLiteral - [32..39)::7 - [ string] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                            Text;[string];
+                    MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [40..43)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

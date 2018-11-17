@@ -1,6 +1,13 @@
-Markup block - Gen<None> - 6 - (0:0,0)
-    Tag block - Gen<None> - 1 - (0:0,0)
-        Markup span - Gen<Markup> - [<] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
-            SyntaxKind.OpenAngle;[<];
-    Tag block - Gen<TagHelper> - 5 - (1:0,1) - p - ptaghelper
-        SelfClosing - <p />
+RazorDocument - [0..6)::6 - [<<p />]
+    MarkupBlock - [0..6)::6
+        MarkupTagBlock - [0..1)::1 - [<]
+            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+        MarkupTagHelperElement - [1..6)::5 - p[SelfClosing] - ptaghelper
+            MarkupTagHelperStartTag - [1..6)::5
+                MarkupTextLiteral - [1..6)::5 - [<p />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

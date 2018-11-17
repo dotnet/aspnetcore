@@ -1,43 +1,48 @@
-Markup block - Gen<None> - 39 - (0:0,0)
-    Tag block - Gen<None> - 6 - (0:0,0)
-        Markup span - Gen<Markup> - [<div >] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[div];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 17 - (6:0,6)
-        Markup span - Gen<Markup> - [<p] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:2
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[p];
-        Markup block - Gen<Attr:class, class = '@(8:0,8),'@(21:0,21)> - 14 - (8:0,8)
-            Markup span - Gen<None> - [ class = '] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:6
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Text;[class];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.Equals;[=];
-                SyntaxKind.Whitespace;[ ];
-                SyntaxKind.SingleQuote;['];
-            Markup span - Gen<LitAttr:@(18:0,18)> - [bar] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
-                SyntaxKind.Text;[bar];
-            Markup span - Gen<None> - ['] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
-                SyntaxKind.SingleQuote;['];
-        Markup span - Gen<Markup> - [>] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
-            SyntaxKind.CloseAngle;[>];
-    SyntaxKind.HtmlTextLiteral - [ Foo ] - [23..28) - FullWidth: 5 - Slots: 1
-        SyntaxKind.List - [ Foo ] - [23..28) - FullWidth: 5 - Slots: 3
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[Foo];
-            SyntaxKind.Whitespace;[ ];
-    Tag block - Gen<None> - 4 - (28:0,28)
-        Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:4
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[p];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 7 - (32:0,32)
-        Markup span - Gen<Markup> - [</div >] - SpanEditHandler;Accepts:Any - (32:0,32) - Tokens:5
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Text;[div];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.CloseAngle;[>];
+RazorDocument - [0..39)::39 - [<div ><p class = 'bar'> Foo </p></div >]
+    MarkupBlock - [0..39)::39
+        MarkupTagBlock - [0..6)::6 - [<div >]
+            MarkupTextLiteral - [0..6)::6 - [<div >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
+                Whitespace;[ ];
+                CloseAngle;[>];
+        MarkupTagBlock - [6..23)::17 - [<p class = 'bar'>]
+            MarkupTextLiteral - [6..8)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[p];
+            MarkupAttributeBlock - [8..22)::14 - [ class = 'bar']
+                MarkupTextLiteral - [8..9)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                MarkupTextLiteral - [9..14)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[class];
+                MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                Equals;[=];
+                MarkupTextLiteral - [16..18)::2 - [ '] - Gen<None> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    SingleQuote;['];
+                GenericBlock - [18..21)::3
+                    MarkupLiteralAttributeValue - [18..21)::3 - [bar]
+                        MarkupTextLiteral - [18..21)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[bar];
+                MarkupTextLiteral - [21..22)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+            MarkupTextLiteral - [22..23)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                CloseAngle;[>];
+        MarkupTextLiteral - [23..28)::5 - [ Foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[Foo];
+            Whitespace;[ ];
+        MarkupTagBlock - [28..32)::4 - [</p>]
+            MarkupTextLiteral - [28..32)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTagBlock - [32..39)::7 - [</div >]
+            MarkupTextLiteral - [32..39)::7 - [</div >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                Whitespace;[ ];
+                CloseAngle;[>];

@@ -1,14 +1,26 @@
-Markup block - Gen<None> - 21 - (0:0,0)
-    Tag block - Gen<TagHelper> - 21 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p class="@do {"></p>
-        class - DoubleQuotes
-            Markup block - Gen<None> - 11 - (10:0,10)
-                Markup block - Gen<DynAttr:@(10:0,10)> - 11 - (10:0,10)
-                    Statement block - Gen<None> - 11 - (10:0,10)
-                        Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (10:0,10) - Tokens:1
-                            SyntaxKind.Transition;[@];
-                        Code span - Gen<Stmt> - [do {"></p>] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:4
-                            SyntaxKind.Keyword;[do];
-                            SyntaxKind.Whitespace;[ ];
-                            SyntaxKind.LeftBrace;[{];
-                            SyntaxKind.StringLiteral;["></p>];RZ1000(15:0,15 [1] )
+RazorDocument - [0..21)::21 - [<p class="@do {"></p>]
+    MarkupBlock - [0..21)::21
+        MarkupTagHelperElement - [0..21)::21 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..21)::21
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..21)::19 - class - DoubleQuotes - Unbound - [ class="@do {"></p>]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                    MarkupTagHelperAttributeValue - [10..21)::11
+                        MarkupDynamicAttributeValue - [10..21)::11 - [@do {"></p>]
+                            GenericBlock - [10..21)::11
+                                CSharpCodeBlock - [10..21)::11
+                                    CSharpTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                        Transition;[@];
+                                    CSharpStatementLiteral - [11..21)::10 - [do {"></p>] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                                        Keyword;[do];
+                                        Whitespace;[ ];
+                                        LeftBrace;[{];
+                                        StringLiteral;["></p>];RZ1000(15:0,15 [1] )

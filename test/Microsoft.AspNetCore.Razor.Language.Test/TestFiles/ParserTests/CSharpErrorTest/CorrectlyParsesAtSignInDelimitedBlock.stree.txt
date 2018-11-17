@@ -1,17 +1,22 @@
-Expression block - Gen<Expr> - 46 - (0:0,0)
-    MetaCode span - Gen<None> - [(] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.LeftParenthesis;[(];
-    Code span - Gen<Expr> - [Request["description"] ?? @photo.Description] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:11
-        SyntaxKind.Identifier;[Request];
-        SyntaxKind.LeftBracket;[[];
-        SyntaxKind.StringLiteral;["description"];
-        SyntaxKind.RightBracket;[]];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.NullCoalesce;[??];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Transition;[@];
-        SyntaxKind.Identifier;[photo];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Description];
-    MetaCode span - Gen<None> - [)] - SpanEditHandler;Accepts:None - (45:0,45) - Tokens:1
-        SyntaxKind.RightParenthesis;[)];
+CSharpCodeBlock - [0..46)::46 - [(Request["description"] ?? @photo.Description)]
+    CSharpExplicitExpression - [0..46)::46
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpExplicitExpressionBody - [0..46)::46
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftParenthesis;[(];
+            CSharpCodeBlock - [1..45)::44
+                CSharpExpressionLiteral - [1..45)::44 - [Request["description"] ?? @photo.Description] - Gen<Expr> - SpanEditHandler;Accepts:Any
+                    Identifier;[Request];
+                    LeftBracket;[[];
+                    StringLiteral;["description"];
+                    RightBracket;[]];
+                    Whitespace;[ ];
+                    NullCoalesce;[??];
+                    Whitespace;[ ];
+                    Transition;[@];
+                    Identifier;[photo];
+                    Dot;[.];
+                    Identifier;[Description];
+            RazorMetaCode - [45..46)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightParenthesis;[)];

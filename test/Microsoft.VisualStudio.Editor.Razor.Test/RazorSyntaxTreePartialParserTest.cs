@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
@@ -12,8 +11,10 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    public class RazorSyntaxTreePartialParserTest
+    public class RazorSyntaxTreePartialParserTest : PartialParserTestBase
     {
+        private const string NewLine = "\r\n";
+
         public static TheoryData TagHelperPartialParseRejectData
         {
             get
@@ -62,8 +63,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             get
             {
-                var factory = new SpanFactory();
-
                 // change, (Block)expectedDocument, partialParseResult
                 return new TheoryData<TestEdit, PartialParseResultInternal>
                 {
@@ -131,75 +130,44 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsInnerInsertionsInStatementBlock()
+        public void ImpExprAcceptsInnerInsertionsInStatementBlock()
         {
             // Arrange
-            var factory = new SpanFactory();
-            var changed = new StringTextSnapshot("@{" + Environment.NewLine
-                                                    + "    @DateTime..Now" + Environment.NewLine
+            var changed = new StringTextSnapshot("@{" + NewLine
+                                                    + "    @DateTime..Now" + NewLine
                                                     + "}");
-            var old = new StringTextSnapshot("@{" + Environment.NewLine
-                                                + "    @DateTime.Now" + Environment.NewLine
+            var old = new StringTextSnapshot("@{" + NewLine
+                                                + "    @DateTime.Now" + NewLine
                                                 + "}");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(17, 0, old, 1, changed, "."),
-                new MarkupBlock(
-                    factory.EmptyHtml(),
-                    new StatementBlock(
-                        factory.CodeTransition(),
-                        factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        factory.Code(Environment.NewLine + "    ")
-                            .AsStatement()
-                            .AutoCompleteWith(autoCompleteString: null),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("DateTime..Now")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Code(Environment.NewLine).AsStatement(),
-                        factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    factory.EmptyHtml()));
+            RunPartialParseTest(new TestEdit(17, 0, old, 1, changed, "."));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsInnerInsertions()
+        public void ImpExprAcceptsInnerInsertions()
         {
             // Arrange
-            var factory = new SpanFactory();
             var changed = new StringTextSnapshot("foo @DateTime..Now baz");
             var old = new StringTextSnapshot("foo @DateTime.Now baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(13, 0, old, 1, changed, "."),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("DateTime..Now").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")), additionalFlags: PartialParseResultInternal.Provisional);
+            RunPartialParseTest(new TestEdit(13, 0, old, 1, changed, "."), additionalFlags: PartialParseResultInternal.Provisional);
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsWholeIdentifierReplacement()
+        public void ImpExprAcceptsWholeIdentifierReplacement()
         {
             // Arrange
-            var factory = new SpanFactory();
             var old = new StringTextSnapshot("foo @date baz");
             var changed = new StringTextSnapshot("foo @DateTime baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(5, 4, old, 8, changed, "DateTime"),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")));
+            RunPartialParseTest(new TestEdit(5, 4, old, 8, changed, "DateTime"));
         }
 
         [Fact]
-        public void ImplicitExpressionRejectsWholeIdentifierReplacementToKeyword()
+        public void ImpExprRejectsWholeIdentifierReplacementToKeyword()
         {
             // Arrange
             var old = new StringTextSnapshot("foo @date baz");
@@ -211,7 +179,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
-        public void ImplicitExpressionRejectsWholeIdentifierReplacementToDirective()
+        public void ImpExprRejectsWholeIdentifierReplacementToDirective()
         {
             // Arrange
             var old = new StringTextSnapshot("foo @date baz");
@@ -223,327 +191,162 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsPrefixIdentifierReplacements_SingleSymbol()
+        public void ImpExprAcceptsPrefixIdentifierReplacements_SingleSymbol()
         {
             // Arrange
-            var factory = new SpanFactory();
             var old = new StringTextSnapshot("foo @dTime baz");
             var changed = new StringTextSnapshot("foo @DateTime baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(5, 1, old, 4, changed, "Date"),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")));
+            RunPartialParseTest(new TestEdit(5, 1, old, 4, changed, "Date"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsPrefixIdentifierReplacements_MultipleSymbols()
+        public void ImpExprAcceptsPrefixIdentifierReplacements_MultipleSymbols()
         {
             // Arrange
-            var factory = new SpanFactory();
             var old = new StringTextSnapshot("foo @dTime.Now baz");
             var changed = new StringTextSnapshot("foo @DateTime.Now baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(5, 1, old, 4, changed, "Date"),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("DateTime.Now").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")));
+            RunPartialParseTest(new TestEdit(5, 1, old, 4, changed, "Date"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsSuffixIdentifierReplacements_SingleSymbol()
+        public void ImpExprAcceptsSuffixIdentifierReplacements_SingleSymbol()
         {
             // Arrange
-            var factory = new SpanFactory();
             var old = new StringTextSnapshot("foo @Datet baz");
             var changed = new StringTextSnapshot("foo @DateTime baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(9, 1, old, 4, changed, "Time"),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("DateTime").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")));
+            RunPartialParseTest(new TestEdit(9, 1, old, 4, changed, "Time"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsSuffixIdentifierReplacements_MultipleSymbols()
+        public void ImpExprAcceptsSuffixIdentifierReplacements_MultipleSymbols()
         {
             // Arrange
-            var factory = new SpanFactory();
             var old = new StringTextSnapshot("foo @DateTime.n baz");
             var changed = new StringTextSnapshot("foo @DateTime.Now baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(14, 1, old, 3, changed, "Now"),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("DateTime.Now").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")));
+            RunPartialParseTest(new TestEdit(14, 1, old, 3, changed, "Now"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsSurroundedIdentifierReplacements()
+        public void ImpExprAcceptsSurroundedIdentifierReplacements()
         {
             // Arrange
-            var factory = new SpanFactory();
             var old = new StringTextSnapshot("foo @DateTime.n.ToString() baz");
             var changed = new StringTextSnapshot("foo @DateTime.Now.ToString() baz");
 
             // Act and Assert
-            RunPartialParseTest(new TestEdit(14, 1, old, 3, changed, "Now"),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("DateTime.Now.ToString()").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")));
+            RunPartialParseTest(new TestEdit(14, 1, old, 3, changed, "Now"));
         }
 
         [Fact]
-        public void ImplicitExpressionProvisionallyAcceptsDeleteOfIdentifierPartsIfDotRemains()
+        public void ImpExprProvisionallyAcceptsDeleteOfIdentifierPartsIfDotRemains()
         {
-            var factory = new SpanFactory();
             var changed = new StringTextSnapshot("foo @User. baz");
             var old = new StringTextSnapshot("foo @User.Name baz");
             RunPartialParseTest(new TestEdit(10, 4, old, 0, changed, string.Empty),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("User.").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")),
                 additionalFlags: PartialParseResultInternal.Provisional);
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsDeleteOfIdentifierPartsIfSomeOfIdentifierRemains()
+        public void ImpExprAcceptsDeleteOfIdentifierPartsIfSomeOfIdentifierRemains()
         {
-            var factory = new SpanFactory();
             var changed = new StringTextSnapshot("foo @Us baz");
             var old = new StringTextSnapshot("foo @User baz");
-            RunPartialParseTest(new TestEdit(7, 2, old, 0, changed, string.Empty),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("Us").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")));
+            RunPartialParseTest(new TestEdit(7, 2, old, 0, changed, string.Empty));
         }
 
         [Fact]
-        public void ImplicitExpressionProvisionallyAcceptsMultipleInsertionIfItCausesIdentifierExpansionAndTrailingDot()
+        public void ImpExprProvisionalForMultipleInsertionIfItCausesIdentifierExpansionAndTrailingDot()
         {
-            var factory = new SpanFactory();
+            // ImpExprProvisionallyAcceptsMultipleInsertionIfItCausesIdentifierExpansionAndTrailingDot
             var changed = new StringTextSnapshot("foo @User. baz");
             var old = new StringTextSnapshot("foo @U baz");
             RunPartialParseTest(new TestEdit(6, 0, old, 4, changed, "ser."),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("User.").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")),
                 additionalFlags: PartialParseResultInternal.Provisional);
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsMultipleInsertionIfItOnlyCausesIdentifierExpansion()
+        public void ImpExprAcceptsMultipleInsertionIfItOnlyCausesIdentifierExpansion()
         {
-            var factory = new SpanFactory();
             var changed = new StringTextSnapshot("foo @barbiz baz");
             var old = new StringTextSnapshot("foo @bar baz");
-            RunPartialParseTest(new TestEdit(8, 0, old, 3, changed, "biz"),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("barbiz").AsImplicitExpression(CSharpCodeParser.DefaultKeywords).Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" baz")));
+            RunPartialParseTest(new TestEdit(8, 0, old, 3, changed, "biz"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsIdentifierExpansionAtEndOfNonWhitespaceCharacters()
+        public void ImpExprAcceptsIdentifierExpansionAtEndOfNonWhitespaceCharacters()
         {
-            var factory = new SpanFactory();
-            var changed = new StringTextSnapshot("@{" + Environment.NewLine
-                                                    + "    @food" + Environment.NewLine
+            var changed = new StringTextSnapshot("@{" + NewLine
+                                                    + "    @food" + NewLine
                                                     + "}");
-            var old = new StringTextSnapshot("@{" + Environment.NewLine
-                                                + "    @foo" + Environment.NewLine
+            var old = new StringTextSnapshot("@{" + NewLine
+                                                + "    @foo" + NewLine
                                                 + "}");
-            RunPartialParseTest(new TestEdit(10 + Environment.NewLine.Length, 0, old, 1, changed, "d"),
-                new MarkupBlock(
-                    factory.EmptyHtml(),
-                    new StatementBlock(
-                        factory.CodeTransition(),
-                        factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        factory.Code(Environment.NewLine + "    ")
-                            .AsStatement()
-                            .AutoCompleteWith(autoCompleteString: null),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("food")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Code(Environment.NewLine).AsStatement(),
-                        factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    factory.EmptyHtml()));
+            RunPartialParseTest(new TestEdit(10 + NewLine.Length, 0, old, 1, changed, "d"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsIdentifierAfterDotAtEndOfNonWhitespaceCharacters()
+        public void ImpExprAcceptsIdentifierAfterDotAtEndOfNonWhitespaceCharacters()
         {
-            var factory = new SpanFactory();
-            var changed = new StringTextSnapshot("@{" + Environment.NewLine
-                                                    + "    @foo.d" + Environment.NewLine
+            var changed = new StringTextSnapshot("@{" + NewLine
+                                                    + "    @foo.d" + NewLine
                                                     + "}");
-            var old = new StringTextSnapshot("@{" + Environment.NewLine
-                                                + "    @foo." + Environment.NewLine
+            var old = new StringTextSnapshot("@{" + NewLine
+                                                + "    @foo." + NewLine
                                                 + "}");
-            RunPartialParseTest(new TestEdit(11 + Environment.NewLine.Length, 0, old, 1, changed, "d"),
-                new MarkupBlock(
-                    factory.EmptyHtml(),
-                    new StatementBlock(
-                        factory.CodeTransition(),
-                        factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        factory.Code(Environment.NewLine + "    ")
-                            .AsStatement()
-                            .AutoCompleteWith(autoCompleteString: null),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("foo.d")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Code(Environment.NewLine).AsStatement(),
-                        factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    factory.EmptyHtml()));
+            RunPartialParseTest(new TestEdit(11 + NewLine.Length, 0, old, 1, changed, "d"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsDotAtEndOfNonWhitespaceCharacters()
+        public void ImpExprAcceptsDotAtEndOfNonWhitespaceCharacters()
         {
-            var factory = new SpanFactory();
-            var changed = new StringTextSnapshot("@{" + Environment.NewLine
-                                                    + "    @foo." + Environment.NewLine
+            var changed = new StringTextSnapshot("@{" + NewLine
+                                                    + "    @foo." + NewLine
                                                     + "}");
-            var old = new StringTextSnapshot("@{" + Environment.NewLine
-                                                + "    @foo" + Environment.NewLine
+            var old = new StringTextSnapshot("@{" + NewLine
+                                                + "    @foo" + NewLine
                                                 + "}");
-            RunPartialParseTest(new TestEdit(10 + Environment.NewLine.Length, 0, old, 1, changed, "."),
-                new MarkupBlock(
-                    factory.EmptyHtml(),
-                    new StatementBlock(
-                        factory.CodeTransition(),
-                        factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        factory.Code(Environment.NewLine + "    ")
-                            .AsStatement()
-                            .AutoCompleteWith(autoCompleteString: null),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code(@"foo.")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.Code(Environment.NewLine).AsStatement(),
-                        factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    factory.EmptyHtml()));
+            RunPartialParseTest(new TestEdit(10 + NewLine.Length, 0, old, 1, changed, "."));
         }
 
         [Fact]
-        public void ImplicitExpressionProvisionallyAcceptsDotAfterIdentifierInMarkup()
+        public void ImpExprProvisionallyAcceptsDotAfterIdentifierInMarkup()
         {
-            var factory = new SpanFactory();
             var changed = new StringTextSnapshot("foo @foo. bar");
             var old = new StringTextSnapshot("foo @foo bar");
             RunPartialParseTest(new TestEdit(8, 0, old, 1, changed, "."),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("foo.")
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" bar")),
                 additionalFlags: PartialParseResultInternal.Provisional);
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsAdditionalIdentifierCharactersIfEndOfSpanIsIdentifier()
+        public void ImpExprAcceptsAdditionalIdentifierCharactersIfEndOfSpanIsIdentifier()
         {
-            var factory = new SpanFactory();
             var changed = new StringTextSnapshot("foo @foob bar");
             var old = new StringTextSnapshot("foo @foo bar");
-            RunPartialParseTest(new TestEdit(8, 0, old, 1, changed, "b"),
-                new MarkupBlock(
-                    factory.Markup("foo "),
-                    new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code("foob")
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                    factory.Markup(" bar")));
+            RunPartialParseTest(new TestEdit(8, 0, old, 1, changed, "b"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsAdditionalIdentifierStartCharactersIfEndOfSpanIsDot()
+        public void ImpExprAcceptsAdditionalIdentifierStartCharactersIfEndOfSpanIsDot()
         {
-            var factory = new SpanFactory();
             var changed = new StringTextSnapshot("@{@foo.b}");
             var old = new StringTextSnapshot("@{@foo.}");
-            RunPartialParseTest(new TestEdit(7, 0, old, 1, changed, "b"),
-                new MarkupBlock(
-                    factory.EmptyHtml(),
-                    new StatementBlock(
-                        factory.CodeTransition(),
-                        factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        factory.EmptyCSharp()
-                            .AsStatement()
-                            .AutoCompleteWith(autoCompleteString: null),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("foo.b")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.EmptyCSharp().AsStatement(),
-                        factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    factory.EmptyHtml()));
+            RunPartialParseTest(new TestEdit(7, 0, old, 1, changed, "b"));
         }
 
         [Fact]
-        public void ImplicitExpressionAcceptsDotIfTrailingDotsAreAllowed()
+        public void ImpExprAcceptsDotIfTrailingDotsAreAllowed()
         {
-            var factory = new SpanFactory();
             var changed = new StringTextSnapshot("@{@foo.}");
             var old = new StringTextSnapshot("@{@foo}");
-            RunPartialParseTest(new TestEdit(6, 0, old, 1, changed, "."),
-                new MarkupBlock(
-                    factory.EmptyHtml(),
-                    new StatementBlock(
-                        factory.CodeTransition(),
-                        factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        factory.EmptyCSharp()
-                            .AsStatement()
-                            .AutoCompleteWith(autoCompleteString: null),
-                        new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code("foo.")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: true)
-                                   .Accepts(AcceptedCharactersInternal.NonWhitespace)),
-                        factory.EmptyCSharp().AsStatement(),
-                        factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    factory.EmptyHtml()));
+            RunPartialParseTest(new TestEdit(6, 0, old, 1, changed, "."));
         }
 
         private void RunPartialParseRejectionTest(TestEdit edit, PartialParseResultInternal additionalFlags = 0)
@@ -558,7 +361,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             Assert.Equal(PartialParseResultInternal.Rejected | additionalFlags, result);
         }
 
-        private static void RunPartialParseTest(TestEdit edit, Block expectedTree, PartialParseResultInternal additionalFlags = 0)
+        private void RunPartialParseTest(TestEdit edit, PartialParseResultInternal additionalFlags = 0)
         {
             var templateEngine = CreateProjectEngine();
             var document = TestRazorCodeDocument.Create(edit.OldSnapshot.GetText());
@@ -568,7 +371,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var result = parser.Parse(edit.Change);
             Assert.Equal(PartialParseResultInternal.Accepted | additionalFlags, result);
-            ParserTestBase.EvaluateParseTree(parser.SyntaxTreeRoot, expectedTree);
+
+            var newSource = TestRazorSourceDocument.Create(edit.NewSnapshot.GetText());
+            var newSyntaxTree = RazorSyntaxTree.Create(parser.ModifiedSyntaxTreeRoot, newSource, parser.OriginalSyntaxTree.Diagnostics, parser.OriginalSyntaxTree.Options);
+            BaselineTest(newSyntaxTree);
         }
 
         private static TestEdit CreateInsertionChange(string initialText, int insertionLocation, string insertionText)

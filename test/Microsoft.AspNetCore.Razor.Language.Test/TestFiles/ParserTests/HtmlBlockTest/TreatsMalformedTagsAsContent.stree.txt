@@ -1,17 +1,17 @@
-Markup block - Gen<None> - 18 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.Text;[foo];
-            SyntaxKind.CloseAngle;[>];
-    Tag block - Gen<None> - 13 - (5:0,5)
-        Markup span - Gen<Markup> - [</!-- bar -->] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:9
-            SyntaxKind.OpenAngle;[<];
-            SyntaxKind.ForwardSlash;[/];
-            SyntaxKind.Bang;[!];
-            SyntaxKind.DoubleHyphen;[--];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.Text;[bar];
-            SyntaxKind.Whitespace;[ ];
-            SyntaxKind.DoubleHyphen;[--];
-            SyntaxKind.CloseAngle;[>];
+MarkupBlock - [0..18)::18 - [<foo></!-- bar -->]
+    MarkupTagBlock - [0..5)::5 - [<foo>]
+        MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+    MarkupTagBlock - [5..18)::13 - [</!-- bar -->]
+        MarkupTextLiteral - [5..18)::13 - [</!-- bar -->] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Bang;[!];
+            DoubleHyphen;[--];
+            Whitespace;[ ];
+            Text;[bar];
+            Whitespace;[ ];
+            DoubleHyphen;[--];
+            CloseAngle;[>];

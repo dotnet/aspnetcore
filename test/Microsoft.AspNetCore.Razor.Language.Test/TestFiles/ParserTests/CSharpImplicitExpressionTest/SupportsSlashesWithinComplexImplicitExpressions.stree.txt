@@ -1,39 +1,42 @@
-Expression block - Gen<Expr> - 103 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        SyntaxKind.Transition;[@];
-    Code span - Gen<Expr> - [DataGridColumn.Template("Years of Service", e => (int)Math.Round((DateTime.Now - dt).TotalDays / 365))] - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14 - (1:0,1) - Tokens:35
-        SyntaxKind.Identifier;[DataGridColumn];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Template];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.StringLiteral;["Years of Service"];
-        SyntaxKind.Comma;[,];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[e];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.GreaterThanEqual;[=>];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Keyword;[int];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Identifier;[Math];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Round];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.LeftParenthesis;[(];
-        SyntaxKind.Identifier;[DateTime];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[Now];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Minus;[-];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Identifier;[dt];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.Dot;[.];
-        SyntaxKind.Identifier;[TotalDays];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.Slash;[/];
-        SyntaxKind.Whitespace;[ ];
-        SyntaxKind.IntegerLiteral;[365];
-        SyntaxKind.RightParenthesis;[)];
-        SyntaxKind.RightParenthesis;[)];
+CSharpCodeBlock - [0..103)::103 - [@DataGridColumn.Template("Years of Service", e => (int)Math.Round((DateTime.Now - dt).TotalDays / 365))]
+    CSharpImplicitExpression - [0..103)::103
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpImplicitExpressionBody - [1..103)::102
+            CSharpCodeBlock - [1..103)::102
+                CSharpExpressionLiteral - [1..103)::102 - [DataGridColumn.Template("Years of Service", e => (int)Math.Round((DateTime.Now - dt).TotalDays / 365))] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    Identifier;[DataGridColumn];
+                    Dot;[.];
+                    Identifier;[Template];
+                    LeftParenthesis;[(];
+                    StringLiteral;["Years of Service"];
+                    Comma;[,];
+                    Whitespace;[ ];
+                    Identifier;[e];
+                    Whitespace;[ ];
+                    GreaterThanEqual;[=>];
+                    Whitespace;[ ];
+                    LeftParenthesis;[(];
+                    Keyword;[int];
+                    RightParenthesis;[)];
+                    Identifier;[Math];
+                    Dot;[.];
+                    Identifier;[Round];
+                    LeftParenthesis;[(];
+                    LeftParenthesis;[(];
+                    Identifier;[DateTime];
+                    Dot;[.];
+                    Identifier;[Now];
+                    Whitespace;[ ];
+                    Minus;[-];
+                    Whitespace;[ ];
+                    Identifier;[dt];
+                    RightParenthesis;[)];
+                    Dot;[.];
+                    Identifier;[TotalDays];
+                    Whitespace;[ ];
+                    Slash;[/];
+                    Whitespace;[ ];
+                    IntegerLiteral;[365];
+                    RightParenthesis;[)];
+                    RightParenthesis;[)];
