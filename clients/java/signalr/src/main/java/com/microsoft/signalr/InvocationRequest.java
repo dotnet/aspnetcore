@@ -5,12 +5,12 @@ package com.microsoft.signalr;
 
 import java.util.concurrent.CancellationException;
 
-import io.reactivex.Single;
-import io.reactivex.subjects.SingleSubject;
+import io.reactivex.subjects.ReplaySubject;
+import io.reactivex.subjects.Subject;
 
 class InvocationRequest {
     private final Class<?> returnType;
-    private final SingleSubject<Object> pendingCall = SingleSubject.create();
+    private final Subject<Object> pendingCall = ReplaySubject.create();
     private final String invocationId;
 
     InvocationRequest(Class<?> returnType, String invocationId) {
@@ -19,10 +19,19 @@ class InvocationRequest {
     }
 
     public void complete(CompletionMessage completion) {
-        if (completion.getResult() != null) {
-            pendingCall.onSuccess(completion.getResult());
+        if (completion.getError() == null) {
+            if (completion.getResult() != null) {
+                pendingCall.onNext(completion.getResult());
+            }
+            pendingCall.onComplete();
         } else {
             pendingCall.onError(new HubException(completion.getError()));
+        }
+    }
+
+    public void addItem(StreamItem streamItem) {
+        if (streamItem.getResult() != null) {
+            pendingCall.onNext(streamItem.getResult());
         }
     }
 
@@ -34,7 +43,7 @@ class InvocationRequest {
         pendingCall.onError(new CancellationException("Invocation was canceled."));
     }
 
-    public Single<Object> getPendingCall() {
+    public Subject<Object> getPendingCall() {
         return pendingCall;
     }
 
