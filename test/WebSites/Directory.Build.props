@@ -1,10 +1,4 @@
 <Project>
   <!-- Skip the parent directory so test websites do not get the test package references. -->
   <Import Project="..\..\Directory.Build.props" />
-
-  <PropertyGroup>
-    <DeveloperBuildTestWebsiteTfms>netcoreapp3.0</DeveloperBuildTestWebsiteTfms>
-    <StandardTestWebsiteTfms>$(DeveloperBuildTestWebsiteTfms)</StandardTestWebsiteTfms>
-    <StandardTestWebsiteTfms Condition=" '$(DeveloperBuild)' != 'true' ">$(StandardTestWebsiteTfms)</StandardTestWebsiteTfms>
-  </PropertyGroup>
 </Project>

@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
-    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp3.0' "></PlatformTarget>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,7 +26,7 @@
 
   <Target Name="CopyViews" AfterTargets="Build" Condition="$(TargetFramework) != ''">
     <ItemGroup>
-      <_IdentityUIViewsAssemblies Include="$(MSBuildThisFileDirectory)..\..\src\UI\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
+      <_IdentityUIViewsAssemblies Include="$(MSBuildThisFileDirectory)..\..\src\UI\bin\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_IdentityUIViewsAssemblies)"
