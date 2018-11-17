@@ -23,17 +23,20 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             string rawText,
             IReadOnlyDictionary<string, object> defaults,
             IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> parameterPolicies,
+            IReadOnlyDictionary<string, object> requiredValues,
             IReadOnlyList<RoutePatternParameterPart> parameters,
             IReadOnlyList<RoutePatternPathSegment> pathSegments)
         {
             Debug.Assert(defaults != null);
             Debug.Assert(parameterPolicies != null);
             Debug.Assert(parameters != null);
+            Debug.Assert(requiredValues != null);
             Debug.Assert(pathSegments != null);
 
             RawText = rawText;
             Defaults = defaults;
             ParameterPolicies = parameterPolicies;
+            RequiredValues = requiredValues;
             Parameters = parameters;
             PathSegments = pathSegments;
 
@@ -52,6 +55,29 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// The keys of <see cref="ParameterPolicies"/> are the route parameter names.
         /// </summary>
         public IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> ParameterPolicies { get; }
+
+        /// <summary>
+        /// Gets a collection of route values that must be provided for this route pattern to be considered
+        /// applicable.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <see cref="RequiredValues"/> allows a framework to substitute route values into a parameterized template
+        /// so that the same route template specification can be used to create multiple route patterns.
+        /// <example>
+        /// This example shows how a route template can be used with required values to substitute known
+        /// route values for parameters.
+        /// <code>
+        /// Route Template: "{controller=Home}/{action=Index}/{id?}"
+        /// Route Values: { controller = "Store", action = "Index" }
+        /// </code>
+        /// 
+        /// A route pattern produced in this way will match and generate URL paths like: <c>/Store</c>, 
+        /// <c>/Store/Index</c>, and <c>/Store/Index/17</c>.
+        /// </example>
+        /// </para>
+        /// </remarks>
+        public IReadOnlyDictionary<string, object> RequiredValues { get; }
 
         /// <summary>
         /// Gets the precedence value of the route pattern for URL matching.

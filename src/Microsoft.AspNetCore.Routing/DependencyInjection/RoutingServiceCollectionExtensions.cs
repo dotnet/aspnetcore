@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -85,6 +86,11 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddSingleton<EndpointSelector, DefaultEndpointSelector>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
+
+            //
+            // Misc infrastructure
+            // 
+            services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
 
             return services;
         }

@@ -119,12 +119,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private class OutboundMatchClassifier : IClassifier<OutboundMatch>
         {
-            public OutboundMatchClassifier()
-            {
-                ValueComparer = new RouteValueEqualityComparer();
-            }
-
-            public IEqualityComparer<object> ValueComparer { get; private set; }
+            public IEqualityComparer<object> ValueComparer => RouteValueEqualityComparer.Default;
 
             public IDictionary<string, DecisionCriterionValue> GetCriteria(OutboundMatch item)
             {

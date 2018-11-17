@@ -442,6 +442,89 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         [Fact]
+        public void Parse_WithRequiredValues()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { area = "Admin", };
+            var policies = new { };
+            var requiredValues = new { area = "Admin", controller = "Store", action = "Index", };
+
+            // Act
+            var action = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
+
+            // Assert
+            Assert.Collection(
+                action.RequiredValues.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("action", kvp.Key); Assert.Equal("Index", kvp.Value); },
+                kvp => { Assert.Equal("area", kvp.Key); Assert.Equal("Admin", kvp.Value); },
+                kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
+        }
+
+        [Fact]
+        public void Parse_WithRequiredValues_AllowsNullRequiredValue()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { };
+            var policies = new { };
+            var requiredValues = new { area = (string)null, controller = "Store", action = "Index", };
+
+            // Act
+            var action = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
+
+            // Assert
+            Assert.Collection(
+                action.RequiredValues.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("action", kvp.Key); Assert.Equal("Index", kvp.Value); },
+                kvp => { Assert.Equal("area", kvp.Key); Assert.Null(kvp.Value); },
+                kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
+        }
+
+        [Fact]
+        public void Parse_WithRequiredValues_AllowsEmptyRequiredValue()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { };
+            var policies = new { };
+            var requiredValues = new { area = "", controller = "Store", action = "Index", };
+
+            // Act
+            var action = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
+
+            // Assert
+            Assert.Collection(
+                action.RequiredValues.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("action", kvp.Key); Assert.Equal("Index", kvp.Value); },
+                kvp => { Assert.Equal("area", kvp.Key); Assert.Equal("", kvp.Value); },
+                kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
+        }
+
+        [Fact]
+        public void Parse_WithRequiredValues_ThrowsForNonParameterNonDefault()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { };
+            var policies = new { };
+            var requiredValues = new { area = "Admin", controller = "Store", action = "Index", };
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+            {
+                var action = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
+            });
+
+            // Assert
+            Assert.Equal(
+                "No corresponding parameter or default value could be found for the required value " +
+                "'area=Admin'. A non-null required value must correspond to a route parameter or the " +
+                "route pattern must have a matching default value.", 
+                exception.Message);
+        }
+        
+        [Fact]
         public void ParameterPart_ParameterNameAndDefaultAndParameterKindAndArrayOfParameterPolicies_ShouldMakeCopyOfParameterPolicies()
         {
             // Arrange (going through hoops to get an array of RoutePatternParameterPolicyReference)
