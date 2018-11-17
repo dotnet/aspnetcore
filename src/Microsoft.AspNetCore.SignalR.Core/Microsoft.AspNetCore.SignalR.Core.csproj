@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Real-time communication framework for ASP.NET Core.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
   </PropertyGroup>
 

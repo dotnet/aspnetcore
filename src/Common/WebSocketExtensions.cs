@@ -13,7 +13,7 @@ namespace System.Net.WebSockets
     {
         public static ValueTask SendAsync(this WebSocket webSocket, ReadOnlySequence<byte> buffer, WebSocketMessageType webSocketMessageType, CancellationToken cancellationToken = default)
         {
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
             if (buffer.IsSingleSegment)
             {
                 return webSocket.SendAsync(buffer.First, webSocketMessageType, endOfMessage: true, cancellationToken);
@@ -41,7 +41,7 @@ namespace System.Net.WebSockets
             var position = buffer.Start;
             while (buffer.TryGet(ref position, out var segment))
             {
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
                 await webSocket.SendAsync(segment, webSocketMessageType, endOfMessage: false, cancellationToken);
 #else
                 var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);
@@ -51,7 +51,7 @@ namespace System.Net.WebSockets
             }
 
             // Empty end of message frame
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
             await webSocket.SendAsync(Memory<byte>.Empty, webSocketMessageType, endOfMessage: true, cancellationToken);
 #else
             await webSocket.SendAsync(new ArraySegment<byte>(Array.Empty<byte>()), webSocketMessageType, endOfMessage: true, cancellationToken);
