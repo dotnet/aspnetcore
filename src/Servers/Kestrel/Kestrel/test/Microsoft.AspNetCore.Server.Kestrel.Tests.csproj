@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
-    <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
