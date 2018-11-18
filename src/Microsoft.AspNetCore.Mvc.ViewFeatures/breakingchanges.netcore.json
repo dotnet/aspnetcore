@@ -42,5 +42,9 @@
     "TypeId": "public class Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper<T0> : Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper, Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<T0>",
     "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator htmlGenerator, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.IViewBufferScope bufferScope, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ExpressionTextCache expressionTextCache)",
     "Kind": "Removal"
+  },
+  {
+	"TypeId": "public class Microsoft.AspNetCore.Mvc.RemoteAttribute : System.ComponentModel.DataAnnotations.ValidationAttribute, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator",
+	"Kind": "Removal"
   }
 ]
