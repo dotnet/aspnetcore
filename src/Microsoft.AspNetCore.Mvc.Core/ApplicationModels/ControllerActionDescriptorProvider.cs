@@ -3,44 +3,34 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class ControllerActionDescriptorProvider : IActionDescriptorProvider
     {
         private readonly ApplicationPartManager _partManager;
-        private readonly IApplicationModelProvider[] _applicationModelProviders;
-        private readonly IEnumerable<IApplicationModelConvention> _conventions;
+        private readonly ApplicationModelFactory _applicationModelFactory;
 
         public ControllerActionDescriptorProvider(
             ApplicationPartManager partManager,
-            IEnumerable<IApplicationModelProvider> applicationModelProviders,
-            IOptions<MvcOptions> optionsAccessor)
+            ApplicationModelFactory applicationModelFactory)
         {
             if (partManager == null)
             {
                 throw new ArgumentNullException(nameof(partManager));
             }
 
-            if (applicationModelProviders == null)
+            if (applicationModelFactory == null)
             {
-                throw new ArgumentNullException(nameof(applicationModelProviders));
-            }
-
-            if (optionsAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(optionsAccessor));
+                throw new ArgumentNullException(nameof(applicationModelFactory));
             }
 
             _partManager = partManager;
-            _applicationModelProviders = applicationModelProviders.OrderBy(p => p.Order).ToArray();
-            _conventions = optionsAccessor.Value.Conventions;
+            _applicationModelFactory = applicationModelFactory;
         }
 
         public int Order => -1000;
@@ -96,27 +86,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         internal IEnumerable<ControllerActionDescriptor> GetDescriptors()
         {
-            var applicationModel = BuildModel();
-            ApplicationModelConventions.ApplyConventions(applicationModel, _conventions);
-            return ControllerActionDescriptorBuilder.Build(applicationModel);
-        }
-
-        internal ApplicationModel BuildModel()
-        {
             var controllerTypes = GetControllerTypes();
-            var context = new ApplicationModelProviderContext(controllerTypes);
-
-            for (var i = 0; i < _applicationModelProviders.Length; i++)
-            {
-                _applicationModelProviders[i].OnProvidersExecuting(context);
-            }
-
-            for (var i = _applicationModelProviders.Length - 1; i >= 0; i--)
-            {
-                _applicationModelProviders[i].OnProvidersExecuted(context);
-            }
-
-            return context.Result;
+            var application = _applicationModelFactory.CreateApplicationModel(controllerTypes);
+            return ControllerActionDescriptorBuilder.Build(application);
         }
 
         private IEnumerable<TypeInfo> GetControllerTypes()

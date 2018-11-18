@@ -402,102 +402,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void BuildModel_IncludesGlobalFilters()
-        {
-            // Arrange
-            var filter = new MyFilterAttribute(1);
-            var provider = GetProvider(typeof(PersonController).GetTypeInfo(), new IFilterMetadata[]
-            {
-                filter,
-            });
-
-            // Act
-            var model = provider.BuildModel();
-
-            // Assert
-            var filters = model.Filters;
-            Assert.Same(filter, Assert.Single(filters));
-        }
-
-        [Fact]
-        public void BuildModel_CreatesControllerModels_ForAllControllers()
-        {
-            // Arrange
-            var provider = GetProvider(
-                typeof(ConventionallyRoutedController).GetTypeInfo(),
-                typeof(AttributeRoutedController).GetTypeInfo(),
-                typeof(EmptyController).GetTypeInfo(),
-                typeof(NonActionAttributeController).GetTypeInfo());
-
-            // Act
-            var model = provider.BuildModel();
-
-            // Assert
-            Assert.NotNull(model);
-            Assert.Equal(4, model.Controllers.Count);
-
-            var conventional = Assert.Single(model.Controllers,
-                c => c.ControllerName == "ConventionallyRouted");
-            Assert.Empty(conventional.Selectors.Where(sm => sm.AttributeRouteModel != null));
-            Assert.Single(conventional.Actions);
-
-            var attributeRouted = Assert.Single(model.Controllers,
-                c => c.ControllerName == "AttributeRouted");
-            Assert.Single(attributeRouted.Actions);
-            Assert.Single(attributeRouted.Selectors.Where(sm => sm.AttributeRouteModel != null));
-
-            var empty = Assert.Single(model.Controllers,
-                c => c.ControllerName == "Empty");
-            Assert.Empty(empty.Actions);
-
-            var nonAction = Assert.Single(model.Controllers,
-                c => c.ControllerName == "NonActionAttribute");
-            Assert.Empty(nonAction.Actions);
-        }
-
-        [Fact]
-        public void BuildModel_CreatesControllerActionDescriptors_ForValidActions()
-        {
-            // Arrange
-            var provider = GetProvider(
-                typeof(PersonController).GetTypeInfo());
-
-            // Act
-            var model = provider.BuildModel();
-
-            // Assert
-            var controller = Assert.Single(model.Controllers);
-
-            Assert.Equal(2, controller.Actions.Count);
-
-            var getPerson = Assert.Single(controller.Actions, a => a.ActionName == "GetPerson");
-            Assert.Empty(getPerson.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
-
-            var showPeople = Assert.Single(controller.Actions, a => a.ActionName == "ShowPeople");
-            Assert.Empty(showPeople.Selectors[0].ActionConstraints.OfType<HttpMethodActionConstraint>());
-        }
-
-        [Fact]
-        public void AttributeRouting_TokenReplacement_IsAfterReflectedModel()
-        {
-            // Arrange
-            var provider = GetProvider(typeof(TokenReplacementController).GetTypeInfo());
-
-            // Act
-            var model = provider.BuildModel();
-
-            // Assert
-            var controller = Assert.Single(model.Controllers);
-
-            var selectorModel = Assert.Single(controller.Selectors.Where(sm => sm.AttributeRouteModel != null));
-            Assert.Equal("api/Token/[key]/[controller]", selectorModel.AttributeRouteModel.Template);
-
-            var action = Assert.Single(controller.Actions);
-            var actionSelectorModel = Assert.Single(action.Selectors.Where(sm => sm.AttributeRouteModel != null));
-            Assert.Equal("stub/[action]", actionSelectorModel.AttributeRouteModel.Template);
-        }
-
-        [Fact]
         public void AttributeRouting_TokenReplacement_InActionDescriptor()
         {
             // Arrange
@@ -791,13 +695,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Arrange
             var controllerTypeInfo = typeof(UserController).GetTypeInfo();
             var manager = GetApplicationManager(new[] { controllerTypeInfo });
+
             var options = Options.Create(new MvcOptions());
-            options.Value.Conventions.Add(new TestRoutingConvention());
+
             var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
             var provider = new ControllerActionDescriptorProvider(
                 manager,
-                new[] { modelProvider },
-                options);
+                new ApplicationModelFactory(new[] { modelProvider }, options));
+
             var assemblyName = controllerTypeInfo.Assembly.GetName().Name;
             var expectedMessage =
                 "The following errors occurred with attribute routing information:"
@@ -813,7 +718,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 "HTTP Verbs: ''"
                 + Environment.NewLine
                 + $"Action: '{controllerTypeInfo.FullName}.GetUser ({assemblyName})' " +
-                "- Route Template: 'Microsoft/AspNetCore/Mvc/ApplicationModels/User/GetUser/{id?}' - " +
+                "- Route Template: '!!!' - " +
                 "HTTP Verbs: ''" + Environment.NewLine +
                 Environment.NewLine +
                 "Use 'AcceptVerbsAttribute' to create a single route that allows multiple HTTP verbs and defines a " +
@@ -1289,38 +1194,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void BuildModel_SplitsConstraintsBasedOnRoute()
-        {
-            // Arrange
-            var provider = GetProvider(typeof(MultipleRouteProviderOnActionController).GetTypeInfo());
-
-            // Act
-            var model = provider.BuildModel();
-
-            // Assert
-            var controllerModel = Assert.Single(model.Controllers);
-            var actionModel = Assert.Single(controllerModel.Actions);
-            Assert.Equal(3, actionModel.Attributes.Count);
-            Assert.Equal(2, actionModel.Attributes.OfType<RouteAndConstraintAttribute>().Count());
-            Assert.Single(actionModel.Attributes.OfType<ConstraintAttribute>());
-            Assert.Equal(2, actionModel.Selectors.Count);
-
-            var selectorModel = Assert.Single(
-                actionModel.Selectors.Where(sm => sm.AttributeRouteModel?.Template == "R1"));
-
-            Assert.Equal(2, selectorModel.ActionConstraints.Count);
-            Assert.Single(selectorModel.ActionConstraints.OfType<RouteAndConstraintAttribute>());
-            Assert.Single(selectorModel.ActionConstraints.OfType<ConstraintAttribute>());
-
-            selectorModel = Assert.Single(
-                actionModel.Selectors.Where(sm => sm.AttributeRouteModel?.Template == "R2"));
-
-            Assert.Equal(2, selectorModel.ActionConstraints.Count);
-            Assert.Single(selectorModel.ActionConstraints.OfType<RouteAndConstraintAttribute>());
-            Assert.Single(selectorModel.ActionConstraints.OfType<ConstraintAttribute>());
-        }
-
-        [Fact]
         public void GetDescriptors_SplitsConstraintsBasedOnRoute()
         {
             // Arrange
@@ -1485,8 +1358,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
-                new[] { modelProvider },
-                options);
+                new ApplicationModelFactory(new[] { modelProvider }, options));
 
             return provider;
         }
@@ -1501,8 +1373,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
-                new[] { modelProvider },
-                options);
+                new ApplicationModelFactory(new[] { modelProvider }, options));
 
             return provider;
         }
@@ -1520,8 +1391,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
-                new[] { modelProvider },
-                options);
+                new ApplicationModelFactory(new[] { modelProvider }, options));
 
             return provider;
         }
@@ -2095,31 +1965,23 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private class TestRoutingConvention : IApplicationModelConvention
+        private class MixedRoutingConventionAttribute : Attribute, IActionModelConvention
         {
-            public void Apply(ApplicationModel application)
+            public void Apply(ActionModel action)
             {
-                foreach (var controller in application.Controllers)
+                action.Selectors.Add(new SelectorModel()
                 {
-                    var hasAttributeRouteModels = controller.Selectors
-                        .Any(selector => selector.AttributeRouteModel != null);
-                    if (!hasAttributeRouteModels)
+                    AttributeRouteModel = new AttributeRouteModel()
                     {
-                        var template = controller.ControllerType.Namespace.Replace('.', '/')
-                            + "/[controller]/[action]/{id?}";
-                        var attributeRouteModel = new AttributeRouteModel()
-                        {
-                            Template = template
-                        };
-
-                        controller.Selectors.Add(new SelectorModel { AttributeRouteModel = attributeRouteModel });
+                        Template = "/!!!",
                     }
-                }
+                });
             }
         }
 
         private class UserController : ControllerBase
         {
+            [MixedRoutingConvention]
             public string GetUser(int id)
             {
                 return string.Format("User {0} retrieved successfully", id);

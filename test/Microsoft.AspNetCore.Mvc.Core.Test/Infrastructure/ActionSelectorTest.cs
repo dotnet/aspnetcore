@@ -1009,8 +1009,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
-                new[] { modelProvider },
-                options);
+                new ApplicationModelFactory(new[] { modelProvider }, options));
 
             return provider;
         }

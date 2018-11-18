@@ -22,18 +22,43 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         private readonly TestApplicationModelProvider Provider = new TestApplicationModelProvider();
 
         [Fact]
-        public void CreateControllerModel_DerivedFromControllerClass_HasFilter()
+        public void OnProvidersExecuting_AddsGlobalFilters()
+        {
+            // Arrange
+            var options = new MvcOptions()
+            {
+                Filters =
+                {
+                    new MyFilterAttribute(),
+                },
+            };
+
+            var builder = new TestApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
+            var context = new ApplicationModelProviderContext(Array.Empty<TypeInfo>());
+
+            // Act
+            builder.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Equal(options.Filters.ToArray(), context.Result.Filters);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_IncludesAllControllers()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
-            var typeInfo = typeof(StoreController).GetTypeInfo();
+
+            var context = new ApplicationModelProviderContext(new[] { typeof(ModelBinderController).GetTypeInfo(), typeof(ConventionallyRoutedController).GetTypeInfo() });
 
             // Act
-            var model = builder.CreateControllerModel(typeInfo);
+            builder.OnProvidersExecuting(context);
 
             // Assert
-            var filter = Assert.Single(model.Filters);
-            Assert.IsType<ControllerActionFilter>(filter);
+            Assert.Collection(
+                context.Result.Controllers.OrderBy(c => c.ControllerType.Name),
+                c => Assert.Equal(typeof(ConventionallyRoutedController).GetTypeInfo(), c.ControllerType),
+                c => Assert.Equal(typeof(ModelBinderController).GetTypeInfo(), c.ControllerType));
         }
 
         [Fact]
@@ -311,6 +336,21 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     Assert.Equal("fromQuery", parameter.ParameterName);
                     Assert.Equal(BindingSource.Query, parameter.BindingInfo.BindingSource);
                 });
+        }
+
+        [Fact]
+        public void CreateControllerModel_DerivedFromControllerClass_HasFilter()
+        {
+            // Arrange
+            var builder = new TestApplicationModelProvider();
+            var typeInfo = typeof(StoreController).GetTypeInfo();
+
+            // Act
+            var model = builder.CreateControllerModel(typeInfo);
+
+            // Assert
+            var filter = Assert.Single(model.Filters);
+            Assert.IsType<ControllerActionFilter>(filter);
         }
 
         // This class has a filter attribute, but doesn't implement any filter interfaces,
@@ -1099,6 +1139,38 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
+        public void CreateActionModel_SplitsConstraintsBasedOnRoute()
+        {
+            // Arrange
+            var builder = new TestApplicationModelProvider();
+            var typeInfo = typeof(MultipleRouteProviderOnActionController).GetTypeInfo();
+            var methodInfo = typeInfo.GetMethod(nameof(MultipleRouteProviderOnActionController.Edit));
+
+            // Act
+            var actionModel = builder.CreateActionModel(typeInfo, methodInfo);
+
+            // Assert
+            Assert.Equal(3, actionModel.Attributes.Count);
+            Assert.Equal(2, actionModel.Attributes.OfType<RouteAndConstraintAttribute>().Count());
+            Assert.Single(actionModel.Attributes.OfType<ConstraintAttribute>());
+            Assert.Equal(2, actionModel.Selectors.Count);
+
+            var selectorModel = Assert.Single(
+                actionModel.Selectors.Where(sm => sm.AttributeRouteModel?.Template == "R1"));
+
+            Assert.Equal(2, selectorModel.ActionConstraints.Count);
+            Assert.Single(selectorModel.ActionConstraints.OfType<RouteAndConstraintAttribute>());
+            Assert.Single(selectorModel.ActionConstraints.OfType<ConstraintAttribute>());
+
+            selectorModel = Assert.Single(
+                actionModel.Selectors.Where(sm => sm.AttributeRouteModel?.Template == "R2"));
+
+            Assert.Equal(2, selectorModel.ActionConstraints.Count);
+            Assert.Single(selectorModel.ActionConstraints.OfType<RouteAndConstraintAttribute>());
+            Assert.Single(selectorModel.ActionConstraints.OfType<ConstraintAttribute>());
+        }
+
+        [Fact]
         public void CreateActionModel_InheritedAttributeRoutes()
         {
             // Arrange
@@ -1717,6 +1789,34 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
                 throw new NotImplementedException();
             }
+        }
+
+        [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
+        private class RouteAndConstraintAttribute : Attribute, IActionConstraintMetadata, IRouteTemplateProvider
+        {
+            public RouteAndConstraintAttribute(string template)
+            {
+                Template = template;
+            }
+
+            public string Name { get; set; }
+
+            public int? Order { get; set; }
+
+            public string Template { get; private set; }
+        }
+
+        [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
+        private class ConstraintAttribute : Attribute, IActionConstraintMetadata
+        {
+        }
+
+        private class MultipleRouteProviderOnActionController
+        {
+            [Constraint]
+            [RouteAndConstraint("R1")]
+            [RouteAndConstraint("R2")]
+            public void Edit() { }
         }
 
         private class TestApplicationModelProvider : DefaultApplicationModelProvider

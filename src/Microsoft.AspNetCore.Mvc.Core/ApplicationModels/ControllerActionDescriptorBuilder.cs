@@ -5,178 +5,63 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Creates instances of <see cref="ControllerActionDescriptor"/> from <see cref="ApplicationModel"/>.
+    /// Creates instances of <see cref="ControllerActionDescriptor"/> from application model
+    /// types.
     /// </summary>
     internal static class ControllerActionDescriptorBuilder
     {
-        // This is the default order for attribute routes whose order calculated from
-        // the controller model is null.
-        private const int DefaultAttributeRouteOrder = 0;
-
-        /// <summary>
-        /// Creates instances of <see cref="ControllerActionDescriptor"/> from <see cref="ApplicationModel"/>.
-        /// </summary>
-        /// <param name="application">The <see cref="ApplicationModel"/>.</param>
-        /// <returns>The list of <see cref="ControllerActionDescriptor"/>.</returns>
         public static IList<ControllerActionDescriptor> Build(ApplicationModel application)
         {
-            var actions = new List<ControllerActionDescriptor>();
-
-            var methodInfoMap = new MethodToActionMap();
-
-            var routeTemplateErrors = new List<string>();
-            var attributeRoutingConfigurationErrors = new Dictionary<MethodInfo, string>();
-
-            foreach (var controller in application.Controllers)
-            {
-                // Only add properties which are explicitly marked to bind.
-                // The attribute check is required for ModelBinder attribute.
-                var controllerPropertyDescriptors = controller.ControllerProperties
-                    .Where(p => p.BindingInfo != null)
-                    .Select(CreateParameterDescriptor)
-                    .ToList();
-                foreach (var action in controller.Actions)
-                {
-                    // Controllers with multiple [Route] attributes (or user defined implementation of
-                    // IRouteTemplateProvider) will generate one action descriptor per IRouteTemplateProvider
-                    // instance.
-                    // Actions with multiple [Http*] attributes or other (IRouteTemplateProvider implementations
-                    // have already been identified as different actions during action discovery.
-                    var actionDescriptors = CreateActionDescriptors(application, controller, action);
-
-                    foreach (var actionDescriptor in actionDescriptors)
-                    {
-                        actionDescriptor.ControllerName = controller.ControllerName;
-                        actionDescriptor.ControllerTypeInfo = controller.ControllerType;
-
-                        AddApiExplorerInfo(actionDescriptor, application, controller, action);
-                        AddRouteValues(actionDescriptor, controller, action);
-                        AddProperties(actionDescriptor, action, controller, application);
-
-                        actionDescriptor.BoundProperties = controllerPropertyDescriptors;
-
-                        if (IsAttributeRoutedAction(actionDescriptor))
-                        {
-                            // Replaces tokens like [controller]/[action] in the route template with the actual values
-                            // for this action.
-                            ReplaceAttributeRouteTokens(actionDescriptor, routeTemplateErrors);
-                        }
-                    }
-
-                    methodInfoMap.AddToMethodInfo(action, actionDescriptors);
-                    actions.AddRange(actionDescriptors);
-                }
-            }
-
-            var actionsByRouteName = new Dictionary<string, IList<ActionDescriptor>>(
-                StringComparer.OrdinalIgnoreCase);
-
-            // Keeps track of all the methods that we've validated to avoid visiting each action group
-            // more than once.
-            var validatedMethods = new HashSet<MethodInfo>();
-
-            foreach (var actionDescriptor in actions)
-            {
-                if (!validatedMethods.Contains(actionDescriptor.MethodInfo))
-                {
-                    ValidateActionGroupConfiguration(
-                        methodInfoMap,
-                        actionDescriptor,
-                        attributeRoutingConfigurationErrors);
-
-                    validatedMethods.Add(actionDescriptor.MethodInfo);
-                }
-
-                var attributeRouteInfo = actionDescriptor.AttributeRouteInfo;
-                if (attributeRouteInfo?.Name != null)
-                {
-                    // Build a map of attribute route name to action descriptors to ensure that all
-                    // attribute routes with a given name have the same template.
-                    AddActionToNamedGroup(actionsByRouteName, attributeRouteInfo.Name, actionDescriptor);
-                }
-            }
-
-            if (attributeRoutingConfigurationErrors.Any())
-            {
-                var message = CreateAttributeRoutingAggregateErrorMessage(
-                    attributeRoutingConfigurationErrors.Values);
-
-                throw new InvalidOperationException(message);
-            }
-
-            var namedRoutedErrors = ValidateNamedAttributeRoutedActions(actionsByRouteName);
-            if (namedRoutedErrors.Any())
-            {
-                var message = CreateAttributeRoutingAggregateErrorMessage(namedRoutedErrors);
-                throw new InvalidOperationException(message);
-            }
-
-            if (routeTemplateErrors.Any())
-            {
-                var message = CreateAttributeRoutingAggregateErrorMessage(routeTemplateErrors);
-                throw new InvalidOperationException(message);
-            }
-
-            return actions;
+            return ApplicationModelFactory.Flatten(application, CreateActionDescriptor);
         }
 
-        private static IList<ControllerActionDescriptor> CreateActionDescriptors(
+        private static ControllerActionDescriptor CreateActionDescriptor(
             ApplicationModel application,
             ControllerModel controller,
-            ActionModel action)
+            ActionModel action,
+            SelectorModel selector)
         {
-            var defaultControllerConstraints = Enumerable.Empty<IActionConstraintMetadata>();
-            var defaultControllerEndpointMetadata = Enumerable.Empty<object>();
-            if (controller.Selectors.Count > 0)
+            var actionDescriptor = new ControllerActionDescriptor
             {
-                defaultControllerConstraints = controller.Selectors[0].ActionConstraints
-                    .Where(constraint => !(constraint is IRouteTemplateProvider));
-                defaultControllerEndpointMetadata = controller.Selectors[0].EndpointMetadata;
-            }
+                ActionName = action.ActionName,
+                MethodInfo = action.ActionMethod,
+            };
 
-            var actionDescriptors = new List<ControllerActionDescriptor>();
-            foreach (var result in ActionAttributeRouteModel.GetAttributeRoutes(action))
-            {
-                var actionSelector = result.actionSelector;
-                var controllerSelector = result.controllerSelector;
+            actionDescriptor.ControllerName = controller.ControllerName;
+            actionDescriptor.ControllerTypeInfo = controller.ControllerType;
+            AddControllerPropertyDescriptors(actionDescriptor, controller);
 
-                var actionDescriptor = CreateActionDescriptor(action, result.route);
-                actionDescriptors.Add(actionDescriptor);
-                AddActionFilters(actionDescriptor, action.Filters, controller.Filters, application.Filters);
+            AddActionConstraints(actionDescriptor, selector);
+            AddEndpointMetadata(actionDescriptor, selector);
+            AddAttributeRoute(actionDescriptor, selector);
+            AddParameterDescriptors(actionDescriptor, action);
+            AddActionFilters(actionDescriptor, action.Filters, controller.Filters, application.Filters);
+            AddApiExplorerInfo(actionDescriptor, application, controller, action);
+            AddRouteValues(actionDescriptor, controller, action);
+            AddProperties(actionDescriptor, action, controller, application);
 
-                var controllerConstraints = defaultControllerConstraints;
-
-                if (controllerSelector?.AttributeRouteModel?.Attribute is IActionConstraintMetadata actionConstraint)
-                {
-                    // Use the attribute route as a constraint if the controller selector participated in creating this route.
-                    controllerConstraints = controllerConstraints.Concat(new[] { actionConstraint });
-                }
-
-                AddActionConstraints(actionDescriptor, actionSelector, controllerConstraints);
-
-                // Metadata for the action is more significant so order it before the controller metadata
-                var actionDescriptorMetadata = actionSelector.EndpointMetadata.ToList();
-                actionDescriptorMetadata.AddRange(defaultControllerEndpointMetadata);
-
-                actionDescriptor.EndpointMetadata = actionDescriptorMetadata;
-            }
-
-            return actionDescriptors;
+            return actionDescriptor;
         }
 
-        private static ControllerActionDescriptor CreateActionDescriptor(ActionModel action, AttributeRouteModel routeModel)
+        private static void AddControllerPropertyDescriptors(ActionDescriptor actionDescriptor, ControllerModel controller)
+        {
+            actionDescriptor.BoundProperties = controller.ControllerProperties
+                .Where(p => p.BindingInfo != null)
+                .Select(CreateParameterDescriptor)
+                .ToList();
+        }
+
+        private static void AddParameterDescriptors(ActionDescriptor actionDescriptor, ActionModel action)
         {
             var parameterDescriptors = new List<ParameterDescriptor>();
             foreach (var parameter in action.Parameters)
@@ -185,17 +70,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 parameterDescriptors.Add(parameterDescriptor);
             }
 
-            var actionDescriptor = new ControllerActionDescriptor
-            {
-                ActionName = action.ActionName,
-                MethodInfo = action.ActionMethod,
-                Parameters = parameterDescriptors,
-                AttributeRouteInfo = CreateAttributeRouteInfo(routeModel),
-            };
-
-            return actionDescriptor;
+            actionDescriptor.Parameters = parameterDescriptors;
         }
-
+        
         private static ParameterDescriptor CreateParameterDescriptor(ParameterModel parameterModel)
         {
             var parameterDescriptor = new ControllerParameterDescriptor()
@@ -244,19 +121,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // ApiExplorer for conventional-routed controllers when this happens.
             var isVisibleSetOnApplication = application.ApiExplorer?.IsVisible ?? false;
 
-            if (isVisibleSetOnActionOrController && !IsAttributeRoutedAction(actionDescriptor))
+            if (isVisibleSetOnActionOrController && !IsAttributeRouted(actionDescriptor))
             {
                 // ApiExplorer is only supported on attribute routed actions.
                 throw new InvalidOperationException(Resources.FormatApiExplorer_UnsupportedAction(
                     actionDescriptor.DisplayName));
             }
-            else if (isVisibleSetOnApplication && !IsAttributeRoutedAction(actionDescriptor))
+            else if (isVisibleSetOnApplication && !IsAttributeRouted(actionDescriptor))
             {
                 // This is the case where we're going to be lenient, just ignore it.
             }
             else if (isVisible)
             {
-                Debug.Assert(IsAttributeRoutedAction(actionDescriptor));
+                Debug.Assert(IsAttributeRouted(actionDescriptor));
 
                 var apiExplorerActionData = new ApiDescriptionActionData()
                 {
@@ -303,43 +180,34 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 .ToList();
         }
 
-        private static AttributeRouteInfo CreateAttributeRouteInfo(AttributeRouteModel routeModel)
+        private static void AddActionConstraints(ControllerActionDescriptor actionDescriptor, SelectorModel selectorModel)
         {
-            if (routeModel == null)
+            if (selectorModel.ActionConstraints?.Count > 0)
             {
-                return null;
+                actionDescriptor.ActionConstraints = new List<IActionConstraintMetadata>(selectorModel.ActionConstraints);
             }
-
-            return new AttributeRouteInfo
-            {
-                Template = routeModel.Template,
-                Order = routeModel.Order ?? DefaultAttributeRouteOrder,
-                Name = routeModel.Name,
-                SuppressLinkGeneration = routeModel.SuppressLinkGeneration,
-                SuppressPathMatching = routeModel.SuppressPathMatching,
-            };
         }
 
-        private static void AddActionConstraints(
-            ControllerActionDescriptor actionDescriptor,
-            SelectorModel selectorModel,
-            IEnumerable<IActionConstraintMetadata> controllerConstraints)
+        private static void AddEndpointMetadata(ControllerActionDescriptor actionDescriptor, SelectorModel selectorModel)
         {
-            var constraints = new List<IActionConstraintMetadata>();
-
-            if (selectorModel.ActionConstraints != null)
+            if (selectorModel.EndpointMetadata?.Count > 0)
             {
-                constraints.AddRange(selectorModel.ActionConstraints);
+                actionDescriptor.EndpointMetadata = new List<object>(selectorModel.EndpointMetadata);
             }
+        }
 
-            if (controllerConstraints != null)
+        private static void AddAttributeRoute(ControllerActionDescriptor actionDescriptor, SelectorModel selectorModel)
+        {
+            if (selectorModel.AttributeRouteModel != null)
             {
-                constraints.AddRange(controllerConstraints);
-            }
-
-            if (constraints.Count > 0)
-            {
-                actionDescriptor.ActionConstraints = constraints;
+                actionDescriptor.AttributeRouteInfo = new AttributeRouteInfo
+                {
+                    Template = selectorModel.AttributeRouteModel.Template,
+                    Order = selectorModel.AttributeRouteModel.Order ?? 0,
+                    Name = selectorModel.AttributeRouteModel.Name,
+                    SuppressLinkGeneration = selectorModel.AttributeRouteModel.SuppressLinkGeneration,
+                    SuppressPathMatching = selectorModel.AttributeRouteModel.SuppressPathMatching,
+                };
             }
         }
 
@@ -383,254 +251,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private static void ReplaceAttributeRouteTokens(
-            ControllerActionDescriptor actionDescriptor,
-            IList<string> routeTemplateErrors)
+        private static bool IsAttributeRouted(ActionDescriptor actionDescriptor)
         {
-            try
-            {
-                actionDescriptor.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out var transformer);
-                var routeTokenTransformer = transformer as IOutboundParameterTransformer;
-
-                actionDescriptor.AttributeRouteInfo.Template = AttributeRouteModel.ReplaceTokens(
-                    actionDescriptor.AttributeRouteInfo.Template,
-                    actionDescriptor.RouteValues,
-                    routeTokenTransformer);
-
-                if (actionDescriptor.AttributeRouteInfo.Name != null)
-                {
-                    actionDescriptor.AttributeRouteInfo.Name = AttributeRouteModel.ReplaceTokens(
-                        actionDescriptor.AttributeRouteInfo.Name,
-                        actionDescriptor.RouteValues,
-                        routeTokenTransformer);
-                }
-            }
-            catch (InvalidOperationException ex)
-            {
-                // Routing will throw an InvalidOperationException here if we can't parse/replace tokens
-                // in the template.
-                var message = Resources.FormatAttributeRoute_IndividualErrorMessage(
-                    actionDescriptor.DisplayName,
-                    Environment.NewLine,
-                    ex.Message);
-
-                routeTemplateErrors.Add(message);
-            }
-        }
-
-        private static void AddActionToNamedGroup(
-            IDictionary<string, IList<ActionDescriptor>> actionsByRouteName,
-            string routeName,
-            ControllerActionDescriptor actionDescriptor)
-        {
-            if (actionsByRouteName.TryGetValue(routeName, out var namedActionGroup))
-            {
-                namedActionGroup.Add(actionDescriptor);
-            }
-            else
-            {
-                namedActionGroup = new List<ActionDescriptor>();
-                namedActionGroup.Add(actionDescriptor);
-                actionsByRouteName.Add(routeName, namedActionGroup);
-            }
-        }
-
-        private static bool IsAttributeRoutedAction(ControllerActionDescriptor actionDescriptor)
-        {
-            return actionDescriptor.AttributeRouteInfo?.Template != null;
-        }
-
-        private static IList<string> AddErrorNumbers(
-            IEnumerable<string> namedRoutedErrors)
-        {
-            return namedRoutedErrors
-                .Select((error, i) =>
-                    Resources.FormatAttributeRoute_AggregateErrorMessage_ErrorNumber(
-                        i + 1,
-                        Environment.NewLine,
-                        error))
-                .ToList();
-        }
-
-        private static IList<string> ValidateNamedAttributeRoutedActions(
-            IDictionary<string,
-            IList<ActionDescriptor>> actionsGroupedByRouteName)
-        {
-            var namedRouteErrors = new List<string>();
-
-            foreach (var kvp in actionsGroupedByRouteName)
-            {
-                // We are looking for attribute routed actions that have the same name but
-                // different route templates. We pick the first template of the group and
-                // we compare it against the rest of the templates that have that same name
-                // associated.
-                // The moment we find one that is different we report the whole group to the
-                // user in the error message so that he can see the different actions and the
-                // different templates for a given named attribute route.
-                var firstActionDescriptor = kvp.Value[0];
-                var firstTemplate = firstActionDescriptor.AttributeRouteInfo.Template;
-
-                for (var i = 1; i < kvp.Value.Count; i++)
-                {
-                    var otherActionDescriptor = kvp.Value[i];
-                    var otherActionTemplate = otherActionDescriptor.AttributeRouteInfo.Template;
-
-                    if (!firstTemplate.Equals(otherActionTemplate, StringComparison.OrdinalIgnoreCase))
-                    {
-                        var descriptions = kvp.Value.Select(ad =>
-                            Resources.FormatAttributeRoute_DuplicateNames_Item(
-                                ad.DisplayName,
-                                ad.AttributeRouteInfo.Template));
-
-                        var errorDescription = string.Join(Environment.NewLine, descriptions);
-                        var message = Resources.FormatAttributeRoute_DuplicateNames(
-                            kvp.Key,
-                            Environment.NewLine,
-                            errorDescription);
-
-                        namedRouteErrors.Add(message);
-                        break;
-                    }
-                }
-            }
-
-            return namedRouteErrors;
-        }
-
-        private static void ValidateActionGroupConfiguration(
-            IDictionary<MethodInfo, IDictionary<ActionModel, IList<ControllerActionDescriptor>>> methodMap,
-            ControllerActionDescriptor actionDescriptor,
-            IDictionary<MethodInfo, string> routingConfigurationErrors)
-        {
-            var hasAttributeRoutedActions = false;
-            var hasConventionallyRoutedActions = false;
-
-            var actionsForMethod = methodMap[actionDescriptor.MethodInfo];
-            foreach (var reflectedAction in actionsForMethod)
-            {
-                foreach (var action in reflectedAction.Value)
-                {
-                    if (IsAttributeRoutedAction(action))
-                    {
-                        hasAttributeRoutedActions = true;
-                    }
-                    else
-                    {
-                        hasConventionallyRoutedActions = true;
-                    }
-                }
-            }
-
-            // Validate that no method result in attribute and non attribute actions at the same time.
-            // By design, mixing attribute and conventionally actions in the same method is not allowed.
-            //
-            // This for example:
-            //
-            // [HttpGet]
-            // [HttpPost("Foo")]
-            // public void Foo() { }
-            if (hasAttributeRoutedActions && hasConventionallyRoutedActions)
-            {
-                var message = CreateMixedRoutedActionDescriptorsErrorMessage(
-                    actionDescriptor,
-                    actionsForMethod);
-
-                routingConfigurationErrors.Add(actionDescriptor.MethodInfo, message);
-            }
-        }
-
-        private static string CreateMixedRoutedActionDescriptorsErrorMessage(
-            ControllerActionDescriptor actionDescriptor,
-            IDictionary<ActionModel, IList<ControllerActionDescriptor>> actionsForMethod)
-        {
-            // Text to show as the attribute route template for conventionally routed actions.
-            var nullTemplate = Resources.AttributeRoute_NullTemplateRepresentation;
-
-            var actionDescriptions = new List<string>();
-            foreach (var action in actionsForMethod.SelectMany(kvp => kvp.Value))
-            {
-                var routeTemplate = action.AttributeRouteInfo?.Template ?? nullTemplate;
-
-                var verbs = action.ActionConstraints?.OfType<HttpMethodActionConstraint>()
-                    .FirstOrDefault()?.HttpMethods;
-
-                var formattedVerbs = string.Empty;
-                if (verbs != null)
-                {
-                    formattedVerbs = string.Join(", ", verbs.OrderBy(v => v, StringComparer.OrdinalIgnoreCase));
-                }
-
-                var description =
-                    Resources.FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod_Item(
-                        action.DisplayName,
-                        routeTemplate,
-                        formattedVerbs);
-
-                actionDescriptions.Add(description);
-            }
-
-            // Sample error message:
-            //
-            // A method 'MyApplication.CustomerController.Index' must not define attributed actions and
-            // non attributed actions at the same time:
-            // Action: 'MyApplication.CustomerController.Index' - Route Template: 'Products' - HTTP Verbs: 'PUT'
-            // Action: 'MyApplication.CustomerController.Index' - Route Template: '(none)' - HTTP Verbs: 'POST'
-            //
-            // Use 'AcceptVerbsAttribute' to create a single route that allows multiple HTTP verbs and defines a route,
-            // or set a route template in all attributes that constrain HTTP verbs.
-            return
-                Resources.FormatAttributeRoute_MixedAttributeAndConventionallyRoutedActions_ForMethod(
-                    actionDescriptor.DisplayName,
-                    Environment.NewLine,
-                    string.Join(Environment.NewLine, actionDescriptions));
-        }
-
-        private static string CreateAttributeRoutingAggregateErrorMessage(
-            IEnumerable<string> individualErrors)
-        {
-            var errorMessages = AddErrorNumbers(individualErrors);
-
-            var message = Resources.FormatAttributeRoute_AggregateErrorMessage(
-                Environment.NewLine,
-                string.Join(Environment.NewLine + Environment.NewLine, errorMessages));
-            return message;
-        }
-
-        // We need to build a map of methods to reflected actions and reflected actions to
-        // action descriptors so that we can validate later that no method produced attribute
-        // and non attributed actions at the same time, and that no method that produced attribute
-        // routed actions has no attributes that implement IActionHttpMethodProvider and do not
-        // implement IRouteTemplateProvider. For example:
-        //
-        // public class ProductsController
-        // {
-        //    [HttpGet("Products")]
-        //    [HttpPost]
-        //    public ActionResult Items(){ ... }
-        //
-        //    [HttpGet("Products")]
-        //    [CustomHttpMethods("POST, PUT")]
-        //    public ActionResult List(){ ... }
-        // }
-        private class MethodToActionMap :
-            Dictionary<MethodInfo, IDictionary<ActionModel, IList<ControllerActionDescriptor>>>
-        {
-            public void AddToMethodInfo(
-                ActionModel action,
-                IList<ControllerActionDescriptor> actionDescriptors)
-            {
-                if (TryGetValue(action.ActionMethod, out var actionsForMethod))
-                {
-                    actionsForMethod.Add(action, actionDescriptors);
-                }
-                else
-                {
-                    var reflectedActionMap =
-                        new Dictionary<ActionModel, IList<ControllerActionDescriptor>>();
-                    reflectedActionMap.Add(action, actionDescriptors);
-                    Add(action.ActionMethod, reflectedActionMap);
-                }
-            }
+            return actionDescriptor.AttributeRouteInfo != null;
         }
     }
 }

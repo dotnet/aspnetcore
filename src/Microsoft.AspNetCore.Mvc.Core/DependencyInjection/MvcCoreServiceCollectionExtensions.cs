@@ -158,7 +158,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action Discovery
             //
             // These are consumed only when creating action descriptors, then they can be deallocated
-
+            services.TryAddSingleton<ApplicationModelFactory>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
             services.TryAddEnumerable(
