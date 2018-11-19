@@ -2,7 +2,7 @@
   <PropertyGroup>
     <VersionPrefix>3.0.0</VersionPrefix>
     <VersionSuffix>alpha1</VersionSuffix>
-    <JavaVersionPrefix>1.0.0</JavaVersionPrefix>
+    <JavaVersionPrefix>3.0.0</JavaVersionPrefix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
