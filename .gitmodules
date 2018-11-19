@@ -6,10 +6,6 @@
 	path = modules/Antiforgery
 	url = https://github.com/aspnet/Antiforgery.git
 	branch = release/2.1
-[submodule "modules/AzureIntegration"]
-	path = modules/AzureIntegration
-	url = https://github.com/aspnet/AzureIntegration.git
-	branch = release/2.1
 [submodule "modules/BasicMiddleware"]
 	path = modules/BasicMiddleware
 	url = https://github.com/aspnet/BasicMiddleware.git

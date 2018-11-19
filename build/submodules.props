@@ -50,7 +50,7 @@
   <ItemGroup>
     <ShippedRepository Include="AADIntegration" />
     <ShippedRepository Include="Antiforgery" />
-    <ShippedRepository Include="AzureIntegration" />
+    <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="BasicMiddleware" />
     <ShippedRepository Include="BrowserLink" />
     <ShippedRepository Include="CORS" />
