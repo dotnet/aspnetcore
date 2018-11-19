@@ -1,0 +1,34 @@
+{
+    "issuer": "https://sts.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/",
+    "authorization_endpoint": "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/authorize",
+    "token_endpoint": "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/token",
+    "token_endpoint_auth_methods_supported": [
+        "client_secret_post",
+        "private_key_jwt"
+    ],
+    "jwks_uri": "https://login.windows.net/common/discovery/keys",
+    "response_types_supported": [
+        "code",
+        "id_token",
+        "code id_token",
+        "token"
+    ],
+    "response_modes_supported": [
+        "query",
+        "fragment",
+        "form_post"
+    ],
+    "subject_types_supported": [
+        "pairwise"
+    ],
+    "scopes_supported": [
+        "openid"
+    ],
+    "id_token_signing_alg_values_supported": [
+        "RS256"
+    ],
+    "microsoft_multi_refresh_token": true,
+    "check_session_iframe": "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/checksession",
+    "end_session_endpoint": "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
+    "userinfo_endpoint": "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/openid/userinfo"
+}

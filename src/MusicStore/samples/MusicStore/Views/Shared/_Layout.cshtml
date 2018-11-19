@@ -1,0 +1,75 @@
+@inject IOptions<AppSettings> AppSettings
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title – @AppSettings.Value.SiteTitle</title>
+
+    <environment names="Development,NtlmAuthentication,OpenIdConnect,SocialTesting">
+        <link rel="stylesheet" href="~/Content/bootstrap.css" />
+        <link rel="stylesheet" href="~/Content/Site.css" />
+        <script src="~/Scripts/jquery-2.0.3.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="//ajax.aspnetcdn.com/ajax/bootstrap/3.0.0/css/bootstrap.min.css"
+              asp-fallback-href="~/Content/bootstrap.min.css"
+              asp-fallback-test-class="hidden"
+              asp-fallback-test-property="visibility" asp-fallback-test-value="hidden" />
+        <link rel="stylesheet" href="~/Content/Site.css" />
+        <script src="~/Scripts/jquery-2.0.3.min.js"></script>
+    </environment>
+
+    <script type="text/javascript" src="~/Scripts/modernizr-2.6.2.js"></script>
+    <script src="~/Scripts/jquery-2.0.3.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.0.1.min.js"></script>
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">@AppSettings.Value.SiteTitle</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                    @await Component.InvokeAsync("GenreMenu")
+                    @await Component.InvokeAsync("CartSummary")
+                </ul>
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer class="navbar navbar-fixed-bottom navbar-default text-center">
+            <p><a href="https://www.github.com/aspnet/MusicStore">www.github.com/aspnet/MusicStore</a></p>
+            <small>@Html.ActionLink("admin", "Index", "StoreManager", new { area = "Admin" })</small>
+            <small>This view served from @GetType().Assembly.FullName</small>
+        </footer>
+    </div>
+
+    <environment names="Development,NtlmAuthentication,OpenIdConnect,SocialTesting">
+        <script src="~/Scripts/bootstrap.js"></script>
+        <script src="~/Scripts/respond.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="//ajax.aspnetcdn.com/ajax/bootstrap/3.0.0/bootstrap.min.js"
+                asp-fallback-src="~/Scripts/bootstrap.min.js"
+                asp-fallback-test="window.jQuery">
+        </script>
+        <script src="//ajax.aspnetcdn.com/ajax/respond/1.2.0/respond.js"
+                asp-fallback-src="~/Scripts/respond.js"
+                asp-fallback-test="window.respond">
+        </script>
+    </environment>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>
