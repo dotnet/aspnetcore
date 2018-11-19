@@ -1,8 +1,7 @@
 <Project>
 
-
-  <ItemGroup>
-    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.Web.Xdt.Extensions\*.csproj" />
-  </ItemGroup>
-
+  <PropertyGroup>
+    <!-- Disable KoreBuild restrictions while we re-work dependency management. -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
 </Project>

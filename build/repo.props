@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SamplesProject Include="$(RepositoryRoot)src\samples\**\*.csproj;"/>
+    <SamplesProject Include="$(RepositoryRoot)src\**\samples\**\*.csproj;"/>
 
     <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
 
