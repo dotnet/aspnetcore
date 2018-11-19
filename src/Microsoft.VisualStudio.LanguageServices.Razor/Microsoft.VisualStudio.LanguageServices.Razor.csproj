@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net46</TargetFrameworks>
+    <TargetFrameworks>net472</TargetFrameworks>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor design-time infrastructure for Visual Studio.</Description>
     <EnableApiCheck>false</EnableApiCheck>
     <RulesDirectory>..\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\</RulesDirectory>
@@ -39,6 +39,10 @@
     <!-- We need to use this version of Json.Net to maintain consistency with Visual Studio. -->
     <PackageReference Include="Newtonsoft.Json" Version="$(VisualStudio_NewtonsoftJsonPackageVersion)" />
     <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssemblies)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

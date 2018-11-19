@@ -21,6 +21,7 @@
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-alpha1-10717</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp30PackageVersion>3.0.0-preview1-26907-05</MicrosoftNETCoreApp30PackageVersion>
+    <MicrosoftNETFrameworkReferenceAssemblies>1.0.0-alpha-004</MicrosoftNETFrameworkReferenceAssemblies>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>15.8.525</MicrosoftVisualStudioComponentModelHostPackageVersion>
     <MicrosoftVisualStudioImageCatalogPackageVersion>15.8.28010</MicrosoftVisualStudioImageCatalogPackageVersion>

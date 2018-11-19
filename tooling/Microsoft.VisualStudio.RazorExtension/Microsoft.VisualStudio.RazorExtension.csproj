@@ -41,7 +41,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.VisualStudio.RazorExtension</RootNamespace>
     <AssemblyName>Microsoft.VisualStudio.RazorExtension</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
@@ -272,15 +272,15 @@
     </VSIXSourceItem>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <VSIXSourceItem Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Remote.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Remote.Razor.dll" />
     <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
     <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.AspNetCore.Razor.Language.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Razor.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.VisualStudio.Editor.Razor.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.VisualStudio.LanguageServices.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.AspNetCore.Razor.Language.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.VisualStudio.Editor.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.VisualStudio.LanguageServices.Razor.dll" />
     <Content Include="@(VSIXSourceItem)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
