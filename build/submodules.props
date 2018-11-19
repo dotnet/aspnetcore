@@ -39,10 +39,10 @@
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
-    <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\Templating\" />
 
     <!-- Test-only repos -->
-    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\AuthSamples\" />
     <Repository Include="MusicStore" RootPath="$(RepositoryRoot)src\MusicStore\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
@@ -50,7 +50,7 @@
   <ItemGroup>
     <ShippedRepository Include="AADIntegration" />
     <ShippedRepository Include="Antiforgery" />
-    <ShippedRepository Include="AzureIntegration" />
+    <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="BasicMiddleware" />
     <ShippedRepository Include="BrowserLink" />
     <ShippedRepository Include="CORS" />

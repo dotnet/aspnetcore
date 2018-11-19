@@ -1,0 +1,11 @@
+<Project>
+  <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
+      <ItemGroup>
+        <_PackageFiles Include="$(ProjectDepsFilePath)">
+          <PackagePath>lib\$(TargetFramework)</PackagePath>
+          <Visible>false</Visible>
+          <BuildAction>Content</BuildAction>
+        </_PackageFiles>
+      </ItemGroup>
+  </Target>
+</Project>

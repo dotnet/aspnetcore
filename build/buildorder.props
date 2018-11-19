@@ -32,10 +32,10 @@
     <RepositoryBuildOrder Include="JavaScriptServices" Order="15" />
     <RepositoryBuildOrder Include="MvcPrecompilation" Order="15" />
     <RepositoryBuildOrder Include="Scaffolding" Order="15" />
-    <RepositoryBuildOrder Include="AzureIntegration" Order="15" />
+    <RepositoryBuildOrder Include="AzureIntegration" Order="15" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <RepositoryBuildOrder Include="MusicStore" Order="16" RootPath="$(RepositoryRoot)src\MusicStore\" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />
-    <RepositoryBuildOrder Include="AuthSamples" Order="16" />
-    <RepositoryBuildOrder Include="Templating" Order="17" />
+    <RepositoryBuildOrder Include="AuthSamples" Order="16" RootPath="$(RepositoryRoot)src\AuthSamples\" />
+    <RepositoryBuildOrder Include="Templating" Order="17" RootPath="$(RepositoryRoot)src\Templating\" />
   </ItemGroup>
 </Project>
