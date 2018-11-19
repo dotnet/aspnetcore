@@ -58,6 +58,7 @@
     <ExtensionsDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)"  AllMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
@@ -184,8 +185,6 @@
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
     <ExternalDependency Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" />
     <ExternalDependency Include="Oracle.ManagedDataAccess" Version="$(OracleManagedDataAccessPackageVersion)" />
-    <ExternalDependency Include="Polly.Extensions.Http" Version="$(PollyExtensionsHttpPackageVersion)" />
-    <ExternalDependency Include="Polly" Version="$(PollyPackageVersion)" />
     <ExternalDependency Include="Remotion.Linq" Version="$(RemotionLinqPackageVersion)" />
     <ExternalDependency Include="Selenium.Firefox.WebDriver" Version="$(SeleniumFirefoxWebDriverPackageVersion)" />
     <ExternalDependency Include="Selenium.Support" Version="$(SeleniumSupportPackageVersion)" />
