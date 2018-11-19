@@ -61,10 +61,6 @@ namespace FunctionalTests
         private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory)
         {
             var solutionPath = TestPathUtilities.GetSolutionRootDirectory("CORS");
-
-            var runtimeFlavor = GetRuntimeFlavor();
-            var applicationType = runtimeFlavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable;
-
             var configuration =
 #if RELEASE
                 "Release";
@@ -74,11 +70,12 @@ namespace FunctionalTests
 
             var destinationParameters = new DeploymentParameters
             {
-                RuntimeFlavor = runtimeFlavor,
+                TargetFramework = "netcoreapp3.0",
+                RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
                 ApplicationPath = Path.Combine(solutionPath, "samples", "SampleDestination"),
                 PublishApplicationBeforeDeployment = false,
-                ApplicationType = applicationType,
+                ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
             };
 
@@ -87,11 +84,12 @@ namespace FunctionalTests
 
             var originParameters = new DeploymentParameters
             {
-                RuntimeFlavor = runtimeFlavor,
+                TargetFramework = "netcoreapp3.0",
+                RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
                 ApplicationPath = Path.Combine(solutionPath, "samples", "SampleOrigin"),
                 PublishApplicationBeforeDeployment = false,
-                ApplicationType = applicationType,
+                ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
             };
 
@@ -99,17 +97,6 @@ namespace FunctionalTests
             var originDeployment = await originFactory.DeployAsync();
 
             return new SamplesDeploymentResult(originFactory, originDeployment, destinationFactory, destinationDeployment);
-        }
-
-        private static RuntimeFlavor GetRuntimeFlavor()
-        {
-#if NET461
-                return RuntimeFlavor.Clr;
-#elif NETCOREAPP2_2
-            return RuntimeFlavor.CoreClr;
-#else
-#error Target frameworks need to be updated
-#endif
         }
 
         private readonly struct SamplesDeploymentResult : IDisposable
