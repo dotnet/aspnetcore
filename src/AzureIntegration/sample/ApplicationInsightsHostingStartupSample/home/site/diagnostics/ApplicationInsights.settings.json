@@ -1,0 +1,11 @@
+﻿{
+  "Logging": {
+    "Microsoft.ApplicationInsights.AspNetCore.Logging.ApplicationInsightsLoggerProvider": {
+      "LogLevel": {
+        "Microsoft": "Information",
+        "Specific": "Trace",
+        "Application": "Trace"
+      }
+    }
+  }
+}
