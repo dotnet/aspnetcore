@@ -294,6 +294,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             // Set the initial access token provider back to the original one from options
             _accessTokenProvider = _httpConnectionOptions.AccessTokenProvider;
 
+            var transportExceptions = new List<Exception>();
+
             if (_httpConnectionOptions.SkipNegotiation)
             {
                 if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
@@ -349,12 +351,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     if (!Enum.TryParse<HttpTransportType>(transport.Transport, out var transportType))
                     {
                         Log.TransportNotSupported(_logger, transport.Transport);
+                        transportExceptions.Add(new TransportFailedException(transport.Transport, "The transport is not supported by the client."));
                         continue;
                     }
 
                     if (transportType == HttpTransportType.WebSockets && !IsWebSocketsSupported())
                     {
                         Log.WebSocketsNotSupportedByOperatingSystem(_logger);
+                        transportExceptions.Add(new TransportFailedException("WebSockets", "The transport is not supported on this operating system."));
                         continue;
                     }
 
@@ -363,10 +367,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         if ((transportType & _httpConnectionOptions.Transports) == 0)
                         {
                             Log.TransportDisabledByClient(_logger, transportType);
+                            transportExceptions.Add(new TransportFailedException(transportType.ToString(), "The transport is disabled by the client."));
                         }
                         else if (!transport.TransferFormats.Contains(transferFormatString, StringComparer.Ordinal))
                         {
                             Log.TransportDoesNotSupportTransferFormat(_logger, transportType, transferFormat);
+                            transportExceptions.Add(new TransportFailedException(transportType.ToString(), $"The transport does not support the '{transferFormat}' transfer format."));
                         }
                         else
                         {
@@ -385,6 +391,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     catch (Exception ex)
                     {
                         Log.TransportFailed(_logger, transportType, ex);
+
+                        transportExceptions.Add(new TransportFailedException(transportType.ToString(), ex.Message, ex));
+
                         // Try the next transport
                         // Clear the negotiation response so we know to re-negotiate.
                         negotiationResponse = null;
@@ -394,7 +403,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
             if (_transport == null)
             {
-                throw new InvalidOperationException("Unable to connect to the server with any of the available transports.");
+                if (transportExceptions.Count > 0)
+                {
+                    throw new AggregateException("Unable to connect to the server with any of the available transports.", transportExceptions);
+                }
+                else
+                {
+                    throw new InvalidOperationException("No transports are supported by the server.");
+                }
             }
         }
 
