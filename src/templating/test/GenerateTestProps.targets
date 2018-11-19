@@ -1,0 +1,18 @@
+<Project>
+  <Target Name="GenerateTestProps" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <PropsProperties>
+        RestoreSources=$([MSBuild]::Escape($(RestoreSources)));
+        RuntimeFrameworkVersion=$(RuntimeFrameworkVersion);
+        MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
+        BundledAspNetCoreAppTargetFrameworkVersion=$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[0]).$(MicrosoftAspNetCoreAppPackageVersion.Split('.')[1]);
+        BundledAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion)
+      </PropsProperties>
+    </PropertyGroup>
+
+    <Sdk_GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)TemplateTests.props.in"
+      Properties="$(PropsProperties)"
+      OutputPath="$(OutputPath)TemplateTests.props" />
+  </Target>
+</Project>
