@@ -10,10 +10,6 @@
 	path = modules/BasicMiddleware
 	url = https://github.com/aspnet/BasicMiddleware.git
 	branch = release/2.1
-[submodule "modules/BrowserLink"]
-	path = modules/BrowserLink
-	url = https://github.com/aspnet/BrowserLink.git
-	branch = release/2.1
 [submodule "modules/CORS"]
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git
