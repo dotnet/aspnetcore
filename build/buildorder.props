@@ -36,7 +36,7 @@
     <RepositoryBuildOrder Include="AzureIntegration" Order="15" />
     <RepositoryBuildOrder Include="MusicStore" Order="16" RootPath="$(RepositoryRoot)src\MusicStore\" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />
-    <RepositoryBuildOrder Include="AuthSamples" Order="16" />
+    <RepositoryBuildOrder Include="AuthSamples" Order="16" RootPath="$(RepositoryRoot)src\AuthSamples\" />
     <RepositoryBuildOrder Include="Templating" Order="17" RootPath="$(RepositoryRoot)src\Templating\" />
   </ItemGroup>
 </Project>

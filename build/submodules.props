@@ -42,7 +42,7 @@
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\Templating\" />
 
     <!-- Test-only repos -->
-    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\AuthSamples\" />
     <Repository Include="MusicStore" RootPath="$(RepositoryRoot)src\MusicStore\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
