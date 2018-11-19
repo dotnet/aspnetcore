@@ -58,7 +58,6 @@
     <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="Hosting" />
     <ShippedRepository Include="HttpAbstractions" />
-    <ShippedRepository Include="HttpClientFactory" />
     <ShippedRepository Include="HttpSysServer" />
     <ShippedRepository Include="Identity" />
     <ShippedRepository Include="JavaScriptServices" />
