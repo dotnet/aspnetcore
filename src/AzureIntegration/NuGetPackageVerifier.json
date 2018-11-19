@@ -1,0 +1,16 @@
+{
+    "adx": { // Packages written by the ADX team and that ship on NuGet.org
+        "rules": [
+            "AdxVerificationCompositeRule"
+        ],
+        "packages": {
+          "Microsoft.AspNetCore.AzureAppServicesIntegration": { },
+          "Microsoft.Extensions.ApplicationModelDetection": { }
+        }
+    },
+    "Default": { // Rules to run for packages not listed in any other set.
+        "rules": [
+            "DefaultCompositeRule"
+        ]
+    }
+}

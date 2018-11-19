@@ -1,0 +1,35 @@
+<Project>
+  <Import Project="dependencies.props" />
+
+  <PropertyGroup>
+    <FunctionalTestsProject>$(RepositoryRoot)test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\Microsoft.AspNetCore.AzureAppServices.FunctionalTests.csproj</FunctionalTestsProject>
+
+    <!-- These properties are use by the automation that updates dependencies.props -->
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" PackageName="AspNetCoreRuntime.3.0.x64" BuildProperties="RuntimeArch=x64;" />
+    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" PackageName="AspNetCoreRuntime.3.0.x86" BuildProperties="RuntimeArch=x86;" />
+    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" PackageName="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ExcludeFromTest
+      Condition="'$(AntaresTests)' != ''"
+      Include="$(RepositoryRoot)test\*\*.csproj"
+      Exclude="$(FunctionalTestsProject)" />
+
+    <ExcludeFromTest
+      Condition="'$(AntaresTests)' == ''"
+      Include="$(FunctionalTestsProject)" />
+
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Web.Xdt.Extensions.Tests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+   </ItemGroup>
+
+   <ItemGroup>
+     <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
+   </ItemGroup>
+</Project>
