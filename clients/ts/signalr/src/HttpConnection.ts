@@ -39,10 +39,11 @@ const MAX_REDIRECTS = 100;
 let WebSocketModule: any = null;
 let EventSourceModule: any = null;
 if (typeof window === "undefined" && typeof require !== "undefined") {
-    // tslint:disable-next-line:no-var-requires
-    WebSocketModule = require("ws");
-    // tslint:disable-next-line:no-var-requires
-    EventSourceModule = require("eventsource");
+    // In order to ignore the dynamic require in webpack builds we need to do this magic
+    // @ts-ignore: TS doesn't know about these names
+    const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+    WebSocketModule = requireFunc("ws");
+    EventSourceModule = requireFunc("eventsource");
 }
 
 /** @private */
