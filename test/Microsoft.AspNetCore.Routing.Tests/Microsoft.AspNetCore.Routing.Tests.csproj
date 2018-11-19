@@ -1,21 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Routing</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- 
-      RefEmit is supported in netcoreapp. We test on .NET Framework, but we don't support RefEmit in the product
-      on .NET Framework.
-    -->
-    <ILEmit Condition="'$(TargetFramework)'=='netcoreapp2.2'">true</ILEmit>
-    <DefineConstants Condition="'$(ILEmit)'=='true'">IL_EMIT;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup>
   </PropertyGroup>
 
   <ItemGroup>
