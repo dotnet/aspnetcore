@@ -6,19 +6,19 @@ package com.microsoft.signalr;
 final class StreamItem extends HubMessage {
     private final int type = HubMessageType.STREAM_ITEM.value;
     private final String invocationId;
-    private final Object result;
+    private final Object item;
 
-    public StreamItem(String invocationId, Object result) {
+    public StreamItem(String invocationId, Object item) {
         this.invocationId = invocationId;
-        this.result = result;
+        this.item = item;
     }
 
     public String getInvocationId() {
         return invocationId;
     }
 
-    public Object getResult() {
-        return result;
+    public Object getItem() {
+        return item;
     }
 
     @Override

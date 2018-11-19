@@ -73,14 +73,12 @@ class JsonHubProtocol implements HubProtocol {
                             error = reader.nextString();
                             break;
                         case "result":
+                        case "item":
                             if (invocationId == null || binder.getReturnType(invocationId) == null) {
                                 resultToken = jsonParser.parse(reader);
                             } else {
                                 result = gson.fromJson(reader, binder.getReturnType(invocationId));
                             }
-                            break;
-                        case "item":
-                            reader.skipValue();
                             break;
                         case "arguments":
                             if (target != null) {

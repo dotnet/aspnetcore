@@ -388,7 +388,7 @@ class HubConnectionTest {
         assertFalse(completed.get());
         assertFalse(onNextCalled.get());
 
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"First\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
         assertTrue(onNextCalled.get());
 
@@ -416,7 +416,7 @@ class HubConnectionTest {
         assertFalse(completed.get());
         assertFalse(onNextCalled.get());
 
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"First\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
         assertTrue(onNextCalled.get());
 
@@ -446,7 +446,7 @@ class HubConnectionTest {
         assertFalse(onErrorCalled.get());
         assertFalse(onNextCalled.get());
 
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"First\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
         assertTrue(onNextCalled.get());
 
@@ -474,8 +474,8 @@ class HubConnectionTest {
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertFalse(completed.get());
 
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"First\"}" + RECORD_SEPARATOR);
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"Second\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Second\"}" + RECORD_SEPARATOR);
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"null\"}" + RECORD_SEPARATOR);
 
         Iterator<String> resultIterator = result.timeout(1000, TimeUnit.MILLISECONDS).blockingIterable().iterator();
@@ -545,10 +545,10 @@ class HubConnectionTest {
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
 
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"First\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
         subscription.dispose();
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"Second\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Second\"}" + RECORD_SEPARATOR);
 
         assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
     }
@@ -573,10 +573,10 @@ class HubConnectionTest {
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, mockTransport.getSentMessages()[1]);
         assertFalse(completed.get());
 
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"First\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
         subscription.dispose();
-        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"result\":\"Second\"}" + RECORD_SEPARATOR);
+        mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Second\"}" + RECORD_SEPARATOR);
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\"}" + RECORD_SEPARATOR);
         assertTrue(completed.get());

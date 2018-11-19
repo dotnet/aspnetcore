@@ -30,8 +30,8 @@ class InvocationRequest {
     }
 
     public void addItem(StreamItem streamItem) {
-        if (streamItem.getResult() != null) {
-            pendingCall.onNext(streamItem.getResult());
+        if (streamItem.getItem() != null) {
+            pendingCall.onNext(streamItem.getItem());
         }
     }
 
