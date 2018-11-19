@@ -3,8 +3,10 @@
 
   <ItemGroup>
     <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.Web.Xdt.Extensions\*.csproj" />
-
-    <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
   </ItemGroup>
+
+  <PropertyGroup>
+    <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
+  </PropertyGroup>
 
 </Project>
