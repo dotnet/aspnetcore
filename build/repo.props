@@ -1,9 +1,6 @@
 <Project>
   <Import Project="dependencies.props" />
 
-  <ItemGroup>
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Owin.Security.Interop.Test\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
-  </ItemGroup>
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
@@ -11,8 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>
