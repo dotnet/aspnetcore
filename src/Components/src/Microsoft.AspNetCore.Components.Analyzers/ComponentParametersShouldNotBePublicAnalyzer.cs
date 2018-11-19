@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components.Shared;
@@ -61,6 +61,16 @@ namespace Microsoft.AspNetCore.Components.Analyzers
         }
 
         private static bool IsPublic(PropertyDeclarationSyntax declaration)
-            => declaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword));
+        {
+            // If the property explicitly specifies a non-public setter, then it's valid
+            var setter = declaration.AccessorList?.Accessors.SingleOrDefault(x => x.Keyword.IsKind(SyntaxKind.SetKeyword));
+            if (setter != null && setter.Modifiers.Any(x => !x.IsKind(SyntaxKind.PublicKeyword)))
+            {
+                return false;
+            }
+
+            // Otherwise fallback to the property declaration modifiers
+            return declaration.Modifiers.Any(x => x.IsKind(SyntaxKind.PublicKeyword));
+        }
     }
 }

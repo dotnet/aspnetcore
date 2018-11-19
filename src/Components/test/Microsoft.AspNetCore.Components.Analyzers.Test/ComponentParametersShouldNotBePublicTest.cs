@@ -106,6 +106,24 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
     }" + BlazorParameterSource);
         }
 
+        [Fact]
+        public void IgnoresPublicPropertiesWithNonPublicSetterWithParameterAttribute()
+        {
+            var test = @"
+    namespace ConsoleApplication1
+    {
+        using " + typeof(ParameterAttribute).Namespace + @";
+
+        class TypeName
+        {
+            [Parameter] public string BadProperty1 { get; private set; }
+            [Parameter] public object BadProperty2 { get; protected set; }
+        }
+    }" + BlazorParameterSource;
+
+            VerifyCSharpDiagnostic(test);
+        }
+
         protected override CodeFixProvider GetCSharpCodeFixProvider()
         {
             return new ComponentParametersShouldNotBePublicCodeFixProvider();
