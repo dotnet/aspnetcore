@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="..\Directory.Build.targets" />
+  <Import Project="GenerateTestProps.targets" />
+</Project>

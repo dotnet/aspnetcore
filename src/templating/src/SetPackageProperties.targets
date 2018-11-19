@@ -1,0 +1,21 @@
+<Project>
+  <Target Name="SetPackageProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>
+        $(NuspecProperties);
+        id=$(PackageId);
+        version=$(PackageVersion);
+        licenseUrl=$(PackageLicenseUrl);
+        iconUrl=$(PackageIconUrl);
+        description=$(Description);
+        author=$(Authors);
+        copyright=$(Copyright);
+        tags=$(PackageTags.Replace(';', ' '));
+        projectUrl=$(PackageProjectUrl);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryType=$(RepositoryType);
+        repositoryCommit=$(RepositoryCommit);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

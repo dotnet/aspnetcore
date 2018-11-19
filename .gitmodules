@@ -6,14 +6,6 @@
 	path = modules/Antiforgery
 	url = https://github.com/aspnet/Antiforgery.git
 	branch = release/2.1
-[submodule "modules/AuthSamples"]
-	path = modules/AuthSamples
-	url = https://github.com/aspnet/AuthSamples.git
-	branch = release/2.1
-[submodule "modules/AzureIntegration"]
-	path = modules/AzureIntegration
-	url = https://github.com/aspnet/AzureIntegration.git
-	branch = release/2.1
 [submodule "modules/BasicMiddleware"]
 	path = modules/BasicMiddleware
 	url = https://github.com/aspnet/BasicMiddleware.git
@@ -109,8 +101,4 @@
 [submodule "modules/StaticFiles"]
 	path = modules/StaticFiles
 	url = https://github.com/aspnet/StaticFiles.git
-	branch = release/2.1
-[submodule "modules/Templating"]
-	path = modules/Templating
-	url = https://github.com/aspnet/Templating.git
 	branch = release/2.1
