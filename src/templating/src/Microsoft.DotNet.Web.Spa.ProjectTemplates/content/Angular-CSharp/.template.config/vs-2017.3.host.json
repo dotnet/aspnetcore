@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json.schemastore.org/vs-2017.3.host",
+  "name": {
+    "text": "Angular",
+    "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
+    "id": "1100"
+  },
+  "description": {
+    "text": "A project template for creating an ASP.NET Core application with Angular",
+    "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
+    "id": "1101"
+  },
+  "order": 310,
+  "icon": "icon.png",
+  "learnMoreLink": "https://github.com/aspnet/JavaScriptServices",
+  "uiFilters": [
+    "oneaspnet"
+  ],
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    }
+  ],
+  "ports": [
+    {
+      "name": "HttpPort",
+      "useHttps": false
+    },
+    {
+      "name": "HttpsPort",
+      "useHttps": true
+    }
+  ],
+  "excludeLaunchSettings": false,
+  "minFullFrameworkVersion": "4.6.1",
+  "disableHttpsSymbol": "NoHttps"
+}
