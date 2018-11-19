@@ -38,7 +38,7 @@
   <ItemGroup>
     <Repository Include="AADIntegration" />
     <Repository Include="Antiforgery" />
-    <Repository Include="AzureIntegration" />
+    <Repository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <Repository Include="BasicMiddleware" />
     <Repository Include="CORS" />
     <Repository Include="Diagnostics" />
@@ -59,10 +59,10 @@
     <Repository Include="Session" />
     <Repository Include="SignalR" />
     <Repository Include="StaticFiles" />
-    <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
     <!-- Test-only repos -->
-    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="AuthSamples" RootPath="$(RepositoryRoot)src\AuthSamples\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="MusicStore" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
