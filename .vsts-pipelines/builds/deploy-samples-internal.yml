@@ -1,0 +1,46 @@
+trigger:
+- master
+- release/*
+
+phases:
+  - phase: "Build"
+    queue:
+      name: Hosted VS2017
+    steps:
+    - task: NodeTool@0
+      displayName: Use Node >=9.11.1
+      inputs:
+        versionSpec: '>=9.11.1'
+        checkLatest: true
+
+    - task: BatchScript@1
+      displayName: Build
+      inputs:
+        filename: './build.cmd'
+        arguments: '/p:SkipTests=true'
+        modifyEnvironment: false
+
+    - task: PowerShell@1
+      displayName: Publish Samples
+      inputs:
+        scriptName: './build/publish-apps.ps1'
+        arguments: '-RootDirectory $(Build.SourcesDirectory) -CommitHash $(Build.SourceVersion) -BranchName $(Build.SourceBranch) -BuildNumber $(Build.BuildNumber)'
+
+    - task: AzureRmWebAppDeployment@3
+      displayName: Deploy FunctionalTests
+      inputs:
+        azureSubscription: SignalR Functional Testing Azure Connection
+        WebAppName: '$(Parameters.FunctionalTestAppName)'
+        Package: '$(Build.SourcesDirectory)/artifacts/apps/FunctionalTests'
+        TakeAppOfflineFlag: true
+      continueOnError: true
+
+    - task: AzureRmWebAppDeployment@3
+      displayName: Deploy SignalRSamples
+      inputs:
+        azureSubscription: SignalR Functional Testing Azure Connection
+        WebAppName: '$(Parameters.SamplesAppName)'
+        Package: '$(Build.SourcesDirectory)/artifacts/apps/SignalRSamples'
+        TakeAppOfflineFlag: true
+      continueOnError: true
+

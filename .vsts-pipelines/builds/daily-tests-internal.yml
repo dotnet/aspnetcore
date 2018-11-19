@@ -1,0 +1,29 @@
+# Uses Scheduled Triggers, which aren't supported in YAML yet.
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=vsts&tabs=yaml#scheduled
+
+resources:
+  repositories:
+  - repository: buildtools
+    type: git
+    name: aspnet-BuildTools
+    ref: refs/heads/master
+
+# The only Daily Tests we have run in Sauce Labs and only need to run on one machine (because they just trigger SauceLabs)
+# Hence we use the 'default-build.yml' template because it represents a single phase
+phases:
+- template: .azure/templates/jobs/default-build.yml@buildtools
+  parameters:
+    agentOs: Windows
+    buildArgs: "/p:DailyTests=true /p:SauceUser='$(asplab-sauce-labs-username)' /p:SauceKey='$(asplab-sauce-labs-access-key)'"
+    beforeBuild:
+    - task: NodeTool@0
+      displayName: Use Node 8.x
+      inputs:
+        versionSpec: 8.x
+    afterBuild:
+    - task: PublishTestResults@2
+      displayName: Publish junit test results
+      condition: always()
+      inputs:
+        testRunner: junit
+        testResultsFiles: 'artifacts/logs/**/*.junit.xml'
