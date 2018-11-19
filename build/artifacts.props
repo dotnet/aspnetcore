@@ -25,7 +25,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="runtime.$(SharedFxRid).Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" />
