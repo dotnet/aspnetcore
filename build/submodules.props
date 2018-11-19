@@ -63,7 +63,7 @@
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="MusicStore" PatchPolicy="AlwaysUpdateAndCascadeVersions"  RootPath="$(RepositoryRoot)src\MusicStore"/>
+    <Repository Include="MusicStore" PatchPolicy="AlwaysUpdateAndCascadeVersions"  RootPath="$(RepositoryRoot)src\MusicStore\"/>
     <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
 </Project>
