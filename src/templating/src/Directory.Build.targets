@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <IncludeSource>false</IncludeSource>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <Import Project="..\Directory.Build.targets" />
+  <Import Project="GenerateContent.targets" />
+  <Import Project="SetPackageProperties.targets" />
+</Project>
