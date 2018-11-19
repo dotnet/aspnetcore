@@ -1,0 +1,10 @@
+﻿{
+  "NanoServer": {
+    "ServerName": "",
+    "AccountName": "",
+    "AccountPassword": "",
+    "FileSharePath": "",
+    "DotnetRuntimeFolderPath": "",
+    "DotnetRuntimeZipFilePath": ""
+  }
+}

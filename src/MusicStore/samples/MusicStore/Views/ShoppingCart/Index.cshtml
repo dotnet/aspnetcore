@@ -1,0 +1,106 @@
+@model MusicStore.ViewModels.ShoppingCartViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@{
+    ViewBag.Title = "Shopping Cart";
+}
+
+@functions
+{
+    public string GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(Context).RequestToken;
+    }
+}
+
+@section Scripts {
+    <script type="text/javascript">
+        $(function () {
+            // Document.ready -> link up remove event handler
+            $(".RemoveLink").click(function () {
+                // Get the id from the link
+                var recordToDelete = $(this).attr("data-id");
+                var PostToUrl = $(this).attr("data-url");
+                if (recordToDelete != '') {
+
+                    // Perform the ajax post
+                    $.ajax(PostToUrl, {
+                        type: "post",
+                        data: {
+                            "id": recordToDelete
+                        },
+                        dataType: "json",
+                        headers: {
+                            "RequestVerificationToken": '@GetAntiXsrfRequestToken()'
+                        }
+                    }).done(function (data) {
+                        // Successful requests get here
+                        // Update the page elements
+                        if (data.itemCount == 0) {
+                            $('#row-' + data.deleteId).fadeOut('slow');
+                        } else {
+                            $('#item-count-' + data.deleteId).text(data.itemCount);
+                        }
+
+                        $('#cart-total').text(data.cartTotal);
+                        $('#update-message').text(data.message);
+                        $('#cart-status').text(data.cartCount);
+                    });
+                }
+            });
+
+        });
+    </script>
+}
+
+<h3>
+    <em>Review</em> your cart:
+</h3>
+<p class="button">
+    <a asp-controller="Checkout" asp-action="AddressAndPayment">Checkout >></a>
+</p>
+<div id="update-message">
+</div>
+<table id="cart-summary" class="table table-bordered table-responsive table-hover table-striped">
+    <tr>
+        <th>
+            Album Name
+        </th>
+        <th>
+            Price (each)
+        </th>
+        <th>
+            Quantity
+        </th>
+        <th></th>
+    </tr>
+    @foreach (var item in Model.CartItems)
+    {
+        <tr id="row-@item.CartItemId">
+            <td>
+                <a asp-controller="Store" asp-action="Details" asp-route-id="@item.AlbumId">@item.Album.Title</a>
+            </td>
+            <td>
+                @item.Album.Price
+            </td>
+            <td id="item-count-@item.CartItemId">
+                @item.Count
+            </td>
+            <td>
+                <a href="#" class="RemoveLink" data-id="@item.CartItemId"
+                   data-url='@Url.Content("~/ShoppingCart/RemoveFromCart")'>
+                    Remove from cart
+                </a>
+            </td>
+        </tr>
+    }
+    <tr>
+        <td>
+            Total
+        </td>
+        <td></td>
+        <td></td>
+        <td id="cart-total">
+            @Model.CartTotal
+        </td>
+    </tr>
+</table>

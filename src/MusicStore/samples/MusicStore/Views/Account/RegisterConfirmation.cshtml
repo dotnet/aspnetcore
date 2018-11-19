@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Register Confirmation";
+}
+
+<hgroup class="title">
+    <h1>@ViewBag.Title.</h1>
+</hgroup>
+<div>
+    <p>
+        Please check your email to activate your account.
+    </p>
+    <p>
+        Demo/testing purposes only: The sample displays the code and user id in the page: <a asp-action="ConfirmEmail" asp-route-code="@ViewBag.Code" asp-route-userId="@ViewBag.UserId">Click here to confirm your email: </a>
+    </p>
+</div>
