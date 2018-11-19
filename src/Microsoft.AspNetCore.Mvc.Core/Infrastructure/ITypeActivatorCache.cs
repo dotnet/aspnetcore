@@ -6,10 +6,10 @@ using System;
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
-    /// Caches <see cref="Microsoft.Extensions.DependencyInjection.ObjectFactory"/> instances produced by
-    /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type, Type[])"/>.
+    /// Caches <see cref="Extensions.DependencyInjection.ObjectFactory"/> instances produced by
+    /// <see cref="Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type, Type[])"/>.
     /// </summary>
-    public interface ITypeActivatorCache
+    internal interface ITypeActivatorCache
     {
         /// <summary>
         /// Creates an instance of <typeparamref name="TInstance"/>.

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     /// <summary>
     /// Default implementation for <see cref="IControllerFactory"/>.
     /// </summary>
-    public class DefaultControllerFactory : IControllerFactory
+    internal class DefaultControllerFactory : IControllerFactory
     {
         private readonly IControllerActivator _controllerActivator;
         private readonly IControllerPropertyActivator[] _propertyActivators;
@@ -44,13 +44,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             _propertyActivators = propertyActivators.ToArray();
         }
 
-        /// <summary>
-        /// The <see cref="IControllerActivator"/> used to create a controller.
-        /// </summary>
-        protected IControllerActivator ControllerActivator => _controllerActivator;
-
         /// <inheritdoc />
-        public virtual object CreateController(ControllerContext context)
+        public object CreateController(ControllerContext context)
         {
             if (context == null)
             {
@@ -74,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         /// <inheritdoc />
-        public virtual void ReleaseController(ControllerContext context, object controller)
+        public void ReleaseController(ControllerContext context, object controller)
         {
             if (context == null)
             {

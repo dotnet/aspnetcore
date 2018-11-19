@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         }
 
         /// <inheritdoc />
-        public PagedBufferedTextWriter CreateWriter(TextWriter writer)
+        public TextWriter CreateWriter(TextWriter writer)
         {
             if (writer == null)
             {

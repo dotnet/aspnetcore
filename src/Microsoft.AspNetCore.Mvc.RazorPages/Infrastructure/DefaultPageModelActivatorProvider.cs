@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     /// <summary>
     /// <see cref="IPageActivatorProvider"/> that uses type activation to create Razor Page instances.
     /// </summary>
-    public class DefaultPageModelActivatorProvider : IPageModelActivatorProvider
+    internal class DefaultPageModelActivatorProvider : IPageModelActivatorProvider
     {
         private readonly Action<PageContext, object> _disposer = Dispose;
 

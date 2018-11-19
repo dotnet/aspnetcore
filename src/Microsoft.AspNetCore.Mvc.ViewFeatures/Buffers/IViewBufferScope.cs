@@ -29,6 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/>.</param>
         /// <returns>A <see cref="PagedBufferedTextWriter"/>.</returns>
-        PagedBufferedTextWriter CreateWriter(TextWriter writer);
+        TextWriter CreateWriter(TextWriter writer);
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
-    public class ViewComponentInvokerCache
+    internal class ViewComponentInvokerCache
     {
         private readonly IViewComponentDescriptorCollectionProvider _collectionProvider;
 

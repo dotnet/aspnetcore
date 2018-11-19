@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// </summary>
     public class ValidationVisitor
     {
+        private readonly ValidationStack _currentPath;
         private int? _maxValidationDepth;
 
         /// <summary>
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             ValidationState = validationState;
 
             ModelState = actionContext.ModelState;
-            CurrentPath = new ValidationStack();
+            _currentPath = new ValidationStack();
         }
 
         protected IModelValidatorProvider ValidatorProvider { get; }
@@ -65,7 +66,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         protected ActionContext Context { get; }
         protected ModelStateDictionary ModelState { get; }
         protected ValidationStateDictionary ValidationState { get; }
-        protected ValidationStack CurrentPath { get; }
 
         protected object Container { get; set; }
         protected string Key { get; set; }
@@ -214,18 +214,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         {
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
-            if (model != null && !CurrentPath.Push(model))
+            if (model != null && !_currentPath.Push(model))
             {
                 // This is a cycle, bail.
                 return true;
             }
 
-            if (MaxValidationDepth != null && CurrentPath.Count > MaxValidationDepth)
+            if (MaxValidationDepth != null && _currentPath.Count > MaxValidationDepth)
             {
                 // Non cyclic but too deep an object graph.
 
                 // Pop the current model to make ValidationStack.Dispose happy
-                CurrentPath.Pop(model);
+                _currentPath.Pop(model);
 
                 string message;
                 switch (metadata.MetadataKind)
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             {
                 // Use the key on the entry, because we might not have entries in model state.
                 SuppressValidation(entry.Key);
-                CurrentPath.Pop(model);
+                _currentPath.Pop(model);
                 return true;
             }
             // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                     }
                 }
 
-                CurrentPath.Pop(model);
+                _currentPath.Pop(model);
                 return true;
             }
 
@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 _visitor.Model = _model;
                 _visitor.Strategy = _strategy;
 
-                _visitor.CurrentPath.Pop(_newModel);
+                _visitor._currentPath.Pop(_newModel);
             }
         }
     }

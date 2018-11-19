@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
     /// Caches <see cref="ObjectFactory"/> instances produced by
-    /// <see cref="Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateFactory(Type, Type[])"/>.
+    /// <see cref="ActivatorUtilities.CreateFactory(Type, Type[])"/>.
     /// </summary>
     internal class TypeActivatorCache : ITypeActivatorCache
     {

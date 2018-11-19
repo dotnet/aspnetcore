@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
-    public class ValidationStack
+    internal class ValidationStack
     {
         public int Count => HashSet?.Count ?? List.Count;
 

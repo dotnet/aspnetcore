@@ -9,16 +9,11 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
+    internal class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
     {
         private const string Handler = "handler";
 
         private readonly IOptions<RazorPagesOptions> _options;
-
-        [Obsolete("This constructor will be removed in a future release. Use the other constructor.")]
-        public DefaultPageHandlerMethodSelector()
-        {
-        }
 
         public DefaultPageHandlerMethodSelector(IOptions<RazorPagesOptions> options)
         {

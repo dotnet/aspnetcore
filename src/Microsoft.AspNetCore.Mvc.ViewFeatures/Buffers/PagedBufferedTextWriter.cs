@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
 {
-    public class PagedBufferedTextWriter : TextWriter
+    internal class PagedBufferedTextWriter : TextWriter
     {
         private readonly TextWriter _inner;
         private readonly PagedCharBuffer _charBuffer;

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
             ReturnedBuffers.Add(segment);
         }
 
-        public PagedBufferedTextWriter CreateWriter(TextWriter writer)
+        public TextWriter CreateWriter(TextWriter writer)
         {
             return new PagedBufferedTextWriter(ArrayPool<char>.Shared, writer);
         }

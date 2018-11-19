@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
-    public interface IControllerPropertyActivator
+    internal interface IControllerPropertyActivator
     {
         void Activate(ControllerContext context, object controller);
 

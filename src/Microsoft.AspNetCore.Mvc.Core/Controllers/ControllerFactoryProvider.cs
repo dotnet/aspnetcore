@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
-    public class ControllerFactoryProvider : IControllerFactoryProvider
+    internal class ControllerFactoryProvider : IControllerFactoryProvider
     {
         private readonly IControllerActivatorProvider _activatorProvider;
         private readonly Func<ControllerContext, object> _factoryCreateController;

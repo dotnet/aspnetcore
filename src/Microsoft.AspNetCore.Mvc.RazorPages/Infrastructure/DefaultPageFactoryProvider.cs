@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class DefaultPageFactoryProvider : IPageFactoryProvider
+    internal class DefaultPageFactoryProvider : IPageFactoryProvider
     {
         private readonly IPageActivatorProvider _pageActivator;
         private readonly IModelMetadataProvider _modelMetadataProvider;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
         }
 
-        public virtual Func<PageContext, ViewContext, object> CreatePageFactory(CompiledPageActionDescriptor actionDescriptor)
+        public Func<PageContext, ViewContext, object> CreatePageFactory(CompiledPageActionDescriptor actionDescriptor)
         {
             if (!typeof(PageBase).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
             {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             };
         }
 
-        public virtual Action<PageContext, ViewContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor)
+        public Action<PageContext, ViewContext, object> CreatePageDisposer(CompiledPageActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

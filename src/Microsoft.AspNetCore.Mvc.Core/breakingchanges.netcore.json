@@ -8,6 +8,18 @@
     "Kind": "Removal"
   },
   {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider : Microsoft.AspNetCore.Mvc.Controllers.IControllerFactoryProvider",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Controllers.DefaultControllerActivator : Microsoft.AspNetCore.Mvc.Controllers.IControllerActivator",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Controllers.DefaultControllerFactory : Microsoft.AspNetCore.Mvc.Controllers.IControllerFactory",
+    "Kind": "Removal"
+  },
+  {
     "TypeId": "public class Microsoft.AspNetCore.Mvc.Formatters.FormatFilter : Microsoft.AspNetCore.Mvc.Formatters.Internal.IFormatFilter, Microsoft.AspNetCore.Mvc.Filters.IResourceFilter, Microsoft.AspNetCore.Mvc.Filters.IResultFilter",
     "Kind": "Removal"
   },
@@ -44,21 +56,6 @@
   {
     "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor",
     "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.Internal.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState)",
-    "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.Controllers.DefaultControllerFactory : Microsoft.AspNetCore.Mvc.Controllers.IControllerFactory",
-    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Controllers.IControllerActivator controllerActivator, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Internal.IControllerPropertyActivator> propertyActivators)",
-    "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider : Microsoft.AspNetCore.Mvc.Controllers.IControllerFactoryProvider",
-    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Controllers.IControllerActivatorProvider activatorProvider, Microsoft.AspNetCore.Mvc.Controllers.IControllerFactory controllerFactory, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Internal.IControllerPropertyActivator> propertyActivators)",
-    "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.Controllers.DefaultControllerActivator : Microsoft.AspNetCore.Mvc.Controllers.IControllerActivator",
-    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Internal.ITypeActivatorCache typeActivatorCache)",
     "Kind": "Removal"
   },
   {
