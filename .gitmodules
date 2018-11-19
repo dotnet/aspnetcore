@@ -110,7 +110,3 @@
 	path = modules/StaticFiles
 	url = https://github.com/aspnet/StaticFiles.git
 	branch = release/2.1
-[submodule "modules/Templating"]
-	path = modules/Templating
-	url = https://github.com/aspnet/Templating.git
-	branch = release/2.1
