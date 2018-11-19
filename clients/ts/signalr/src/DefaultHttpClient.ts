@@ -8,8 +8,10 @@ import { XhrHttpClient } from "./XhrHttpClient";
 
 let nodeHttpClientModule: any;
 if (typeof XMLHttpRequest === "undefined") {
-    // tslint:disable-next-line:no-var-requires
-    nodeHttpClientModule = require("./NodeHttpClient");
+    // In order to ignore the dynamic require in webpack builds we need to do this magic
+    // @ts-ignore: TS doesn't know about these names
+    const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+    nodeHttpClientModule = requireFunc("./NodeHttpClient");
 }
 
 /** Default implementation of {@link @aspnet/signalr.HttpClient}. */
