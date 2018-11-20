@@ -89,6 +89,7 @@
     <ExtensionsDependency Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
 
     <ExtensionsDependency Include="Microsoft.Extensions.Buffers.Testing.Sources" Version="$(MicrosoftExtensionsBuffersTestingSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources" Version="$(MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion)" />
   </ItemGroup>
 
    <ItemGroup>

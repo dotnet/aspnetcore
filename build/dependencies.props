@@ -89,6 +89,7 @@
     <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.1</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
 
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.1.1</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
+    <MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion>2.1.1</MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion>
 
     <!-- External and partner dependencies -->
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
