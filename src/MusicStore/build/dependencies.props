@@ -45,5 +45,6 @@
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions: Pinned" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\build\dependencies.props" />
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
