@@ -106,7 +106,7 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
             }
             return S_OK;
         }
-        catch (ConfigurationLoadException &ex)
+        catch (const ConfigurationLoadException &ex)
         {
             EventLog::Error(
                 ASPNETCORE_CONFIGURATION_LOAD_ERROR,
