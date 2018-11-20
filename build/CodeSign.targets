@@ -1,6 +1,8 @@
 <Project>
 
   <PropertyGroup>
+    <!-- _ProjectsOnly is for local builds and shouldn't be used on CI. -->
+    <DisableCodeSigning Condition=" '$(_ProjectsOnly)' == 'true' ">true</DisableCodeSigning>
     <CodeSignDependsOn>$(CodeSignDependsOn);CollectFileSignInfo</CodeSignDependsOn>
   </PropertyGroup>
 
