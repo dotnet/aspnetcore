@@ -617,7 +617,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
+        public void ParseList_WithSomeInvalidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -640,7 +640,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseStrictList_WithSomeInvlaidValues_Throws()
+        public void ParseStrictList_WithSomeInvalidValues_Throws()
         {
             var inputs = new[]
             {
@@ -651,7 +651,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
+        public void TryParseList_WithSomeInvalidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -676,7 +676,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void TryParseStrictList_WithSomeInvlaidValues_ReturnsFalse()
+        public void TryParseStrictList_WithSomeInvalidValues_ReturnsFalse()
         {
             var inputs = new[]
             {
@@ -750,6 +750,8 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("application/entity+json", "application/entity+json")]
         [InlineData("application/*+json", "application/entity+json")]
         [InlineData("application/*+json", "application/*+json")]
+        [InlineData("application/json", "application/problem+json")]
+        [InlineData("application/json", "application/vnd.restful+json")]
         [InlineData("application/*", "application/*+JSON")]
         [InlineData("application/vnd.github+json", "application/vnd.github+json")]
         [InlineData("application/*", "application/entity+JSON")]
@@ -774,6 +776,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("application/*+*", "application/json")]
         [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
         [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/entity+json", "application/entity")]
         public void IsSubSetOfWithSuffixes_NegativeCases(string set, string subset)
         {
             // Arrange

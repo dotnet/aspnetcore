@@ -4,6 +4,24 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <AspNetCoreBaselineVersion>2.2.0</AspNetCoreBaselineVersion>
   </PropertyGroup>
+  <!-- Package: Microsoft.AspNetCore.Authentication.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Abstractions' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Authentication.Core-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Core' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Connections.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -98,48 +116,48 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Hosting.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.Abstractions' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Hosting.Server.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.Server.Abstractions' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.Server.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Hosting.WindowsServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Hosting-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
     <BaselinePackageReference Include="System.Reflection.Metadata" Version="[1.6.0, )" />
   </ItemGroup>
@@ -152,39 +170,39 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Abstractions' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Extensions' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.Buffers" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Features-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
@@ -196,10 +214,10 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Owin-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' ">
@@ -291,11 +309,11 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.TestHost-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebSockets-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' ">
@@ -309,18 +327,18 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebUtilities-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebUtilities' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebUtilities' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Net.Http.Headers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.Buffers" Version="[4.5.0, )" />
   </ItemGroup>
 </Project>
