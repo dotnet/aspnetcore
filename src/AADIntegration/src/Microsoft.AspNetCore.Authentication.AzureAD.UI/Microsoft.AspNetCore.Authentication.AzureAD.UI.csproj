@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core Azure Active Directory Integration provides components for easily integrating Azure Active Directory authentication within your ASP.NET Core application.</Description>
+    <RazorAssemblyDescription>Precompiled views assembly for the ASP.NET Core Azure Active Directory Integration package.</RazorAssemblyDescription>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageTags>aspnetcore;authentication;AzureAD</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+    <ItemGroup>
+     <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+       <_Parameter1>BuildNumber</_Parameter1>
+       <_Parameter2>$(BuildNumber)</_Parameter2>
+     </RazorAssemblyAttribute>
+
+     <RazorTargetAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+       <_Parameter1>BuildNumber</_Parameter1>
+       <_Parameter2>$(BuildNumber)</_Parameter2>
+     </RazorTargetAssemblyAttribute>
+   </ItemGroup>
+ 
+   <ItemGroup>
+     <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
+     <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
+   </ItemGroup>
+  
+</Project>
