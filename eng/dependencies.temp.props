@@ -1,5 +1,5 @@
 <!--
-This file is temporary until aspnet/Hosting, Diagnostics, StaticFiles, and HttpAbstractions are merged into this repo.
+This file is temporary until aspnet/Diagnostics and StaticFiles are merged into this repo.
 This is required to provide dependencies for samples and tests.
  -->
 <Project>
@@ -7,9 +7,5 @@ This is required to provide dependencies for samples and tests.
     <LatestPackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.1.1" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.1.1" />
     <LatestPackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.1.1" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.1.1" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Http" Version="2.1.1" />
   </ItemGroup>
 </Project>

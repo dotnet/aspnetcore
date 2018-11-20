@@ -22,14 +22,6 @@
 	path = modules/EntityFrameworkCore
 	url = https://github.com/aspnet/EntityFrameworkCore.git
 	branch = release/2.1
-[submodule "modules/Hosting"]
-	path = modules/Hosting
-	url = https://github.com/aspnet/Hosting.git
-	branch = release/2.1
-[submodule "modules/HttpAbstractions"]
-	path = modules/HttpAbstractions
-	url = https://github.com/aspnet/HttpAbstractions.git
-	branch = release/2.1
 [submodule "modules/HttpSysServer"]
 	path = modules/HttpSysServer
 	url = https://github.com/aspnet/HttpSysServer.git
