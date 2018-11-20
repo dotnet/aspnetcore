@@ -20,9 +20,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             configure.Configure(options);
 
             // Assert
-            Assert.Equal("/Identity/Account/Login", options.UserInteraction.LoginUrl);
-            Assert.Equal("/Identity/Account/Logout", options.UserInteraction.LogoutUrl);
-            Assert.Equal("/Identity/Error", options.UserInteraction.ErrorUrl);
             Assert.Equal(IdentityConstants.ApplicationScheme, options.Authentication.CookieAuthenticationScheme);
         }
 

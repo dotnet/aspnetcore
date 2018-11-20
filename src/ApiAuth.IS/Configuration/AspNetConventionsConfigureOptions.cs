@@ -16,9 +16,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             options.Events.RaiseFailureEvents = true;
             options.Events.RaiseSuccessEvents = true;
             options.Authentication.CookieAuthenticationScheme = IdentityConstants.ApplicationScheme;
-            options.UserInteraction.LoginUrl = "/Identity/Account/Login";
-            options.UserInteraction.LogoutUrl = "/Identity/Account/Logout";
-            options.UserInteraction.ErrorUrl = "/Identity/Error";
         }
     }
 }

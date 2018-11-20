@@ -35,9 +35,14 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="PersistedGrant"/>.
+        /// Gets or sets the <see cref="DbSet{PersistedGrant}"/>.
         /// </summary>
         public DbSet<PersistedGrant> PersistedGrants { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="DbSet{DeviceFlowCodes}"/>.
+        /// </summary>
+        public DbSet<DeviceFlowCodes> DeviceFlowCodes { get; set; }
 
         Task<int> IPersistedGrantDbContext.SaveChangesAsync() => base.SaveChangesAsync();
 
