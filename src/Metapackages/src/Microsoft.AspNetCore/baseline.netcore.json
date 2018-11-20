@@ -1,0 +1,136 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.WebHost",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Start",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHost",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Start",
+          "Parameters": [
+            {
+              "Name": "url",
+              "Type": "System.String"
+            },
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHost",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Start",
+          "Parameters": [
+            {
+              "Name": "routeBuilder",
+              "Type": "System.Action<Microsoft.AspNetCore.Routing.IRouteBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHost",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Start",
+          "Parameters": [
+            {
+              "Name": "url",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeBuilder",
+              "Type": "System.Action<Microsoft.AspNetCore.Routing.IRouteBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHost",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartWith",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHost",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartWith",
+          "Parameters": [
+            {
+              "Name": "url",
+              "Type": "System.String"
+            },
+            {
+              "Name": "app",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHost",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateDefaultBuilder",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateDefaultBuilder",
+          "Parameters": [
+            {
+              "Name": "args",
+              "Type": "System.String[]"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
