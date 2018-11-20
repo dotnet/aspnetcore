@@ -73,6 +73,7 @@
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsHostingPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsHostingPackageVersion>
+    <MicrosoftExtensionsHttpPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsHttpPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
     <MicrosoftExtensionsLoggingConfigurationPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsLoggingConfigurationPackageVersion>
