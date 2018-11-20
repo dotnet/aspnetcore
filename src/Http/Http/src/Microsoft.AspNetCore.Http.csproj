@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core default HTTP feature implementations.</Description>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.2</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.ObjectPool" />
+    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
+    <Reference Include="System.IO.Pipelines" />
+  </ItemGroup>
+
+</Project>
