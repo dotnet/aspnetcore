@@ -52,7 +52,6 @@
     <ShippedRepository Include="Antiforgery" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="BasicMiddleware" />
-    <ShippedRepository Include="BrowserLink" />
     <ShippedRepository Include="CORS" />
     <ShippedRepository Include="Diagnostics" />
     <ShippedRepository Include="EntityFrameworkCore" />

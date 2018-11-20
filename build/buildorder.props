@@ -10,7 +10,6 @@
     <RepositoryBuildOrder Include="Razor" Order="6" />
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" />
-    <RepositoryBuildOrder Include="BrowserLink" Order="8" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="9" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
