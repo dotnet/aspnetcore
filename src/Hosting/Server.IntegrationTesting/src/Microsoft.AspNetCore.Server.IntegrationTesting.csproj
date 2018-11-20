@@ -11,8 +11,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;testing</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
-    <UseLatestPackageReferences>true</UseLatestPackageReferences>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
