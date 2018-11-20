@@ -40,7 +40,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7E80C58E
 		build\applicationhost.config = build\applicationhost.config
 		build\applicationhost.iis.config = build\applicationhost.iis.config
 		build\dependencies.props = build\dependencies.props
-		build\Key.snk = build\Key.snk
 		build\native.targets = build\native.targets
 		build\repo.props = build\repo.props
 		build\testsite.props = build\testsite.props
