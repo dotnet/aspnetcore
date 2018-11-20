@@ -114,6 +114,7 @@
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview.18569.2</MicrosoftEntityFrameworkCorePackageVersion>
   </PropertyGroup>
 
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
   <Import Project="dependencies.folderbuilds.props" Condition=" '$(IsUniverseBuild)' != 'true' AND '$(DotNetPackageVersionPropsPath)' == ''" />
 
   <PropertyGroup>
