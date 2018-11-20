@@ -272,6 +272,63 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.IsType<InvalidOperationException>(ex.GetBaseException());
         }
 
+        [Fact]
+        public Task ExceptionFromOnStartingFirstWriteIsReported()
+        {
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            {
+                context.Response.OnStarting(() =>
+                {
+                    throw new InvalidOperationException(new string('a', 1024 * 32));
+                });
+                return context.Response.WriteAsync("Hello World");
+            }));
+            var httpClient = new HttpClient(handler);
+            return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
+                HttpCompletionOption.ResponseHeadersRead));
+        }
+
+        [Fact]
+        public Task ExceptionFromOnStartingWithNoWriteIsReported()
+        {
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            {
+                context.Response.OnStarting(() =>
+                {
+                    throw new InvalidOperationException(new string('a', 1024 * 32));
+                });
+                return Task.CompletedTask;
+            }));
+            var httpClient = new HttpClient(handler);
+            return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
+                HttpCompletionOption.ResponseHeadersRead));
+        }
+
+        [Fact]
+        public Task ExceptionFromOnStartingWithErrorHandlerIsReported()
+        {
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
+            {
+                context.Response.OnStarting(() =>
+                {
+                    throw new InvalidOperationException(new string('a', 1024 * 32));
+                });
+                try
+                {
+                    await context.Response.WriteAsync("Hello World");
+                }
+                catch (Exception ex)
+                {
+                    // This is no longer the first write, so it doesn't trigger OnStarting again.
+                    // The exception is large enough that it fills the pipe and stalls.
+                    await context.Response.WriteAsync(ex.ToString());
+                }
+            }));
+            var httpClient = new HttpClient(handler);
+            return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
+                HttpCompletionOption.ResponseHeadersRead));
+        }
+
         private class DummyApplication : IHttpApplication<Context>
         {
             RequestDelegate _application;

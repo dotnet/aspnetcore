@@ -7,6 +7,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.DiagnosticAdapter" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
 </Project>

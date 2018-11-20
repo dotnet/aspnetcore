@@ -109,7 +109,16 @@ namespace Microsoft.AspNetCore.TestHost
             if (!_responseFeature.HasStarted)
             {
                 // Sets HasStarted
-                await _responseFeature.FireOnSendingHeadersAsync();
+                try
+                {
+                    await _responseFeature.FireOnSendingHeadersAsync();
+                }
+                catch (Exception ex)
+                {
+                    Abort(ex);
+                    return;
+                }
+
                 // Copy the feature collection so we're not multi-threading on the same collection.
                 var newFeatures = new FeatureCollection();
                 foreach (var pair in _httpContext.Features)

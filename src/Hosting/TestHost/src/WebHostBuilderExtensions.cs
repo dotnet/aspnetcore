@@ -6,12 +6,21 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.TestHost
 {
     public static class WebHostBuilderExtensions
     {
+        public static IWebHostBuilder UseTestServer(this IWebHostBuilder builder)
+        {
+            return builder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IServer, TestServer>();
+            });
+        }
+
         public static IWebHostBuilder ConfigureTestServices(this IWebHostBuilder webHostBuilder, Action<IServiceCollection> servicesConfiguration)
         {
             if (webHostBuilder == null)
