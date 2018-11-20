@@ -42,7 +42,7 @@
     <HarvestDirectory Include="$(HarvestSource)">
       <SuppressRootDirectory>true</SuppressRootDirectory>
       <ComponentGroupName>CG_AspNetCoreSharedFramework</ComponentGroupName>
-      <DirectoryRefId>DotNetFolder</DirectoryRefId>
+      <DirectoryRefId>DOTNETHOME</DirectoryRefId>
       <PreprocessorVariable>var.AspNetCoreSharedFrameworkSource</PreprocessorVariable>
     </HarvestDirectory>
   </ItemGroup>
