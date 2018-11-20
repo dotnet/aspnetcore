@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core web server for writing and running tests.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;hosting;testing</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\Internal.WebHostBuilderFactory.Sources\FactoryResolutionResult.cs" />
+    <Compile Include="..\..\shared\Internal.WebHostBuilderFactory.Sources\FactoryResolutionResultKind.cs" />
+    <Compile Include="..\..\shared\Internal.WebHostBuilderFactory.Sources\WebHostFactoryResolver.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="System.IO.Pipelines" />
+  </ItemGroup>
+
+</Project>
