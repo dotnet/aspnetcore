@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "target": "ES2015",
+        "esModuleInterop": true
+    },
+    "preset": "ts-test"
+}

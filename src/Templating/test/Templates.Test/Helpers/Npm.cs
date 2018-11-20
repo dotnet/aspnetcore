@@ -6,7 +6,7 @@ namespace Templates.Test.Helpers
 {
     public static class Npm
     {
-        private static object NpmInstallLock = new object();
+        private static readonly object NpmInstallLock = new object();
 
         public static void RestoreWithRetry(ITestOutputHelper output, string workingDirectory)
         {

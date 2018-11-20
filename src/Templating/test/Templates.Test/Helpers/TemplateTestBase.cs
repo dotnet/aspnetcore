@@ -7,17 +7,18 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging.Testing;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class TemplateTestBase : IDisposable
+    public class TemplateTestBase : LoggedTest, IDisposable
     {
         private static readonly AsyncLocal<ITestOutputHelper> _output = new AsyncLocal<ITestOutputHelper>();
 
-        private static object DotNetNewLock = new object();
+        private static readonly object DotNetNewLock = new object();
 
         protected string ProjectName { get; set; }
         protected string ProjectGuid { get; set; }
@@ -38,7 +39,7 @@ namespace Templates.Test
             var assemblyUri = new Uri(assemblyPath, UriKind.Absolute);
             var basePath = Path.GetDirectoryName(assemblyUri.LocalPath);
             TemplateOutputDir = Path.Combine(basePath, "TestTemplates", ProjectName);
-            Directory.CreateDirectory(TemplateOutputDir);
+            var info = Directory.CreateDirectory(TemplateOutputDir);
 
             // We don't want any of the host repo's build config interfering with
             // how the test project is built, so disconnect it from the
@@ -50,27 +51,24 @@ $@"<Project>
     <Import Project=""Directory.Build.After.props"" Condition=""Exists('Directory.Build.After.props')"" />
 </Project>";
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), directoryBuildPropsContent);
-
-            // TODO: remove this once we get a newer version of the SDK which supports an implicit FrameworkReference
-            // cref https://github.com/aspnet/websdk/issues/424
             var directoryBuildTargetsContent =
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
-
-    <ItemGroup>
-       <FrameworkReference Remove=""Microsoft.AspNetCore.App"" />
-       <PackageReference Include=""Microsoft.AspNetCore.App"" Version=""$(BundledAspNetCoreAppPackageVersion)"" IsImplicitlyDefined=""true"" />
-    </ItemGroup>
 </Project>";
 
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
         }
 
-        protected void RunDotNetNew(string templateName, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
+        protected void RunDotNetNew(string templateName, string targetFrameworkOverride, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
         {
             SetAfterDirectoryBuildPropsContents();
 
             var args = $"new {templateName} --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
+
+            if (!string.IsNullOrEmpty(targetFrameworkOverride))
+            {
+                args += $" --target-framework-override {targetFrameworkOverride}";
+            }
 
             if (!string.IsNullOrEmpty(auth))
             {
@@ -142,7 +140,7 @@ $@"<Project>
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value;
 
-            var args = $"\"{dotNetEfFullPath}\" --verbose migrations add {migrationName}";
+            var args = $"\"{dotNetEfFullPath}\" migrations add {migrationName}";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63
@@ -216,14 +214,15 @@ $@"<Project>
             return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
         }
 
-        protected AspNetProcess StartAspNetProcess(bool publish = false)
+        protected AspNetProcess StartAspNetProcess(string targetFrameworkOverride, bool publish, int httpPort, int httpsPort)
         {
-            return new AspNetProcess(Output, TemplateOutputDir, ProjectName, publish);
+            return new AspNetProcess(Output, TemplateOutputDir, ProjectName, targetFrameworkOverride, publish, httpPort, httpsPort);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             DeleteOutputDirectory();
+            base.Dispose();
         }
 
         private void DeleteOutputDirectory()

@@ -1,21 +1,23 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Templates.Test.Infrastructure;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-[assembly: AssemblyFixture(typeof(SeleniumServerFixture))]
 namespace Templates.Test.SpaTemplateTest
 {
     public class ReactReduxTemplateTest : SpaTemplateTestBase
     {
-        public ReactReduxTemplateTest(BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
+        private int _httpPort = 6030;
+        private int _httpsPort = 6031;
+
+        public ReactReduxTemplateTest(ITestOutputHelper output) : base(output)
         {
         }
 
         [Fact]
-        public void ReactReduxTemplate_Works_NetCore()
-            => SpaTemplateImpl("reactredux");
+        public async Task ReactReduxTemplate_Works_NetCore()
+            => await SpaTemplateImpl(targetFrameworkOverride: null, "reactredux", _httpPort, _httpsPort);
     }
 }
