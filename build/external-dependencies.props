@@ -58,6 +58,8 @@
     <ExtensionsDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
+    <ExtensionsDependency Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExtensionsDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)"  AllMetapackage="true" />

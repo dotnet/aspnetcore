@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <RepositoryBuildOrder Include="Razor" Order="6" />
-    <RepositoryBuildOrder Include="Hosting" Order="7" />
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" />
     <RepositoryBuildOrder Include="BrowserLink" Order="8" />
