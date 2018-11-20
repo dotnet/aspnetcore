@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             string commandLineCommands,
             out int result)
         {
-#if !NET46
+#if !NETFRAMEWORK
             if (!SuppressCurrentUserOnlyPipeOptions && !Enum.IsDefined(typeof(PipeOptions), PipeOptionCurrentUserOnly))
             {
                 // For security reasons, we don't want to spin up a server that doesn't

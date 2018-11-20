@@ -7,12 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-#if NET46
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Messaging;
-#else
 using System.Threading;
-#endif
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -28,9 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     [IntializeTestFile]
     public abstract class IntegrationTestBase
     {
-#if !NET46
         private static readonly AsyncLocal<string> _fileName = new AsyncLocal<string>();
-#endif
 
         private static readonly CSharpCompilation DefaultBaseCompilation;
 
@@ -114,22 +107,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         // Used by the test framework to set the 'base' name for test files.
         public static string FileName
         {
-#if NETFRAMEWORK
-            get
-            {
-                var handle = (ObjectHandle)CallContext.LogicalGetData("IntegrationTestBase_FileName");
-                return (string)handle.Unwrap();
-            }
-            set
-            {
-                CallContext.LogicalSetData("IntegrationTestBase_FileName", new ObjectHandle(value));
-            }
-#elif NETCOREAPP
             get { return _fileName.Value; }
             set { _fileName.Value = value; }
-#else
-#error Target frameworks need to be updated            
-#endif
         }
 
         public string FileExtension { get; set; } = ".cshtml";

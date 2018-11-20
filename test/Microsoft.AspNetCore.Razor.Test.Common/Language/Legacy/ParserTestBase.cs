@@ -8,12 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-#if NET46
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Messaging;
-#else
 using System.Threading;
-#endif
 using System.Text;
 using Xunit;
 using Xunit.Sdk;
@@ -24,10 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     [IntializeTestFile]
     public abstract class ParserTestBase
     {
-#if !NET46
         private static readonly AsyncLocal<string> _fileName = new AsyncLocal<string>();
         private static readonly AsyncLocal<bool> _isTheory = new AsyncLocal<bool>();
-#endif
 
         internal ParserTestBase()
         {
@@ -51,40 +44,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         // Used by the test framework to set the 'base' name for test files.
         public static string FileName
         {
-#if NETFRAMEWORK
-            get
-            {
-                var handle = (ObjectHandle)CallContext.LogicalGetData("ParserTestBase_FileName");
-                return (string)handle.Unwrap();
-            }
-            set
-            {
-                CallContext.LogicalSetData("ParserTestBase_FileName", new ObjectHandle(value));
-            }
-#elif NETCOREAPP
             get { return _fileName.Value; }
             set { _fileName.Value = value; }
-#else
-#error Target frameworks need to be updated.
-#endif
         }
 
         public static bool IsTheory
         {
-#if NETFRAMEWORK
-            get
-            {
-                var handle = (ObjectHandle)CallContext.LogicalGetData("ParserTestBase_IsTheory");
-                return (bool)handle.Unwrap();
-            }
-            set
-            {
-                CallContext.LogicalSetData("ParserTestBase_IsTheory", new ObjectHandle(value));
-            }
-#elif NETCOREAPP
             get { return _isTheory.Value; }
             set { _isTheory.Value = value; }
-#endif
         }
 
         protected int BaselineTestCount { get; set; }

@@ -20,6 +20,9 @@
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
 
     <NETStandardImplicitPackageVersion>$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+
+    <!-- Working around an issue in XDT transforms -->
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
   <!-- Don't use the server when building in place. This locks up rzc.dll -->

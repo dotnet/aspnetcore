@@ -7,9 +7,9 @@
     <MPackArtifactCategory>shipoob</MPackArtifactCategory>
 
     <MPackIntermediateOutputPath>$(IntermediateDir)mpack\</MPackIntermediateOutputPath>
-    <AddinOutputPath>$(AddinDirectory)bin\$(Configuration)\net461\</AddinOutputPath>
+    <AddinOutputPath>$(AddinDirectory)bin\$(Configuration)\net472\</AddinOutputPath>
     <LanguageServiceName>Microsoft.VisualStudio.Mac.LanguageServices.Razor</LanguageServiceName>
-    <LanguageServiceOutputPath>$(RepositoryRoot)src\$(LanguageServiceName)\bin\$(Configuration)\net461\</LanguageServiceOutputPath>
+    <LanguageServiceOutputPath>$(RepositoryRoot)src\$(LanguageServiceName)\bin\$(Configuration)\net472\</LanguageServiceOutputPath>
     <MPackName>$(AddinName)_$(AddinVersion)</MPackName>
     <MPackFileName>$(MPackName).mpack</MPackFileName>
     <MPackOutputPath>$(BuildDir)$(MPackFileName)</MPackOutputPath>
@@ -72,9 +72,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
-      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
-      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
       <LanguageServiceAssembly Include="$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)" Condition="Exists('$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)')" />
       <LanguageServiceAssembly Include="%(LanguageServiceExtensionAssembly.Identity)" />
       <LanguageServicePDB Include="%(LanguageServiceAssembly.RootDir)%(Directory)%(FileName).pdb" Condition="Exists('%(LanguageServiceAssembly.RootDir)%(Directory)%(FileName).pdb')" />
