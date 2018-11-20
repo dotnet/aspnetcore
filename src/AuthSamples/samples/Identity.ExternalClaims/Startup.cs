@@ -40,7 +40,7 @@ namespace Identity.ExternalClaims
                 // Configure your auth keys, usually stored in Config or User Secrets
                 o.ClientId = "<yourid>";
                 o.ClientSecret = "<yoursecret>";
-                o.Scope.Add("https://www.googleapis.com/auth/plus.me");
+                o.Scope.Add("https://www.googleapis.com/auth/plus.login");
                 o.ClaimActions.MapJsonKey(ClaimTypes.Gender, "gender");
                 o.SaveTokens = true;
                 o.Events.OnCreatingTicket = ctx =>
