@@ -1,0 +1,4110 @@
+{
+  "AssemblyIdentity": "Microsoft.Net.Http.Headers, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Net.Http.Headers.CacheControlHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_NoCache",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NoCache",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NoCacheHeaders",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NoStore",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NoStore",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxAge",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxAge",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SharedMaxAge",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SharedMaxAge",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxStale",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxStale",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxStaleLimit",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxStaleLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MinFresh",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MinFresh",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_NoTransform",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_NoTransform",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OnlyIfCached",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OnlyIfCached",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Public",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Public",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Private",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Private",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PrivateHeaders",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MustRevalidate",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MustRevalidate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ProxyRevalidate",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ProxyRevalidate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Extensions",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.CacheControlHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.CacheControlHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "PublicString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "PrivateString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MaxAgeString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "SharedMaxAgeString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoCacheString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoStoreString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MaxStaleString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MinFreshString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoTransformString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "OnlyIfCachedString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MustRevalidateString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ProxyRevalidateString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_DispositionType",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_DispositionType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Parameters",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FileName",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FileName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FileNameStar",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FileNameStar",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CreationDate",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CreationDate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ModificationDate",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ModificationDate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ReadDate",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ReadDate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Size",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Size",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetHttpFileName",
+          "Parameters": [
+            {
+              "Name": "fileName",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetMimeFileName",
+          "Parameters": [
+            {
+              "Name": "fileName",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "dispositionType",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValueIdentityExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "IsFileDisposition",
+          "Parameters": [
+            {
+              "Name": "header",
+              "Type": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsFormDisposition",
+          "Parameters": [
+            {
+              "Name": "header",
+              "Type": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.ContentRangeHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Unit",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Unit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_From",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_To",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Length",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HasLength",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HasRange",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.ContentRangeHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.ContentRangeHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Int64"
+            },
+            {
+              "Name": "to",
+              "Type": "System.Int64"
+            },
+            {
+              "Name": "length",
+              "Type": "System.Int64"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "length",
+              "Type": "System.Int64"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Int64"
+            },
+            {
+              "Name": "to",
+              "Type": "System.Int64"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.CookieHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Value",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.CookieHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.CookieHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseStrictList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseStrictList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.CookieHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Any",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Tag",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsWeak",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Compare",
+          "Parameters": [
+            {
+              "Name": "other",
+              "Type": "Microsoft.Net.Http.Headers.EntityTagHeaderValue"
+            },
+            {
+              "Name": "useStrongComparison",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseStrictList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseStrictList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.EntityTagHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "tag",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "tag",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "isWeak",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.HeaderNames",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Accept",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Accept\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AcceptCharset",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Accept-Charset\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AcceptEncoding",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Accept-Encoding\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AcceptLanguage",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Accept-Language\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AcceptRanges",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Accept-Ranges\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlAllowCredentials",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Allow-Credentials\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlAllowHeaders",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Allow-Headers\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlAllowMethods",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Allow-Methods\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlAllowOrigin",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Allow-Origin\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlExposeHeaders",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Expose-Headers\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlMaxAge",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Max-Age\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlRequestHeaders",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Request-Headers\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "AccessControlRequestMethod",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Access-Control-Request-Method\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Age",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Age\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Allow",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Allow\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Authority",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":authority\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Authorization",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Authorization\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "CacheControl",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Cache-Control\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Connection",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Connection\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentDisposition",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Disposition\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentEncoding",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Encoding\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentLanguage",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Language\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentLength",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Length\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentLocation",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Location\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentMD5",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-MD5\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentRange",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Range\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentSecurityPolicy",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Security-Policy\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentSecurityPolicyReportOnly",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Security-Policy-Report-Only\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ContentType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Content-Type\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Cookie",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Cookie\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Date",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Date\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ETag",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"ETag\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Expires",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Expires\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Expect",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Expect\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "From",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"From\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Host",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Host\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "IfMatch",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"If-Match\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "IfModifiedSince",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"If-Modified-Since\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "IfNoneMatch",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"If-None-Match\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "IfRange",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"If-Range\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "IfUnmodifiedSince",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"If-Unmodified-Since\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "LastModified",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Last-Modified\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Location",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Location\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "MaxForwards",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Max-Forwards\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Method",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":method\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Origin",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Origin\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Path",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":path\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Pragma",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Pragma\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ProxyAuthenticate",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Proxy-Authenticate\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "ProxyAuthorization",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Proxy-Authorization\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Range",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Range\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Referer",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Referer\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "RetryAfter",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Retry-After\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Scheme",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":scheme\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Server",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Server\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "SetCookie",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Set-Cookie\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\":status\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "StrictTransportSecurity",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Strict-Transport-Security\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "TE",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"TE\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Trailer",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Trailer\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "TransferEncoding",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Transfer-Encoding\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Upgrade",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Upgrade\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "UserAgent",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"User-Agent\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Vary",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Vary\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Via",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Via\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "Warning",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Warning\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "WebSocketSubProtocols",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"Sec-WebSocket-Protocol\""
+        },
+        {
+          "Kind": "Field",
+          "Name": "WWWAuthenticate",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"WWW-Authenticate\""
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.HeaderQuality",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "Match",
+          "Parameters": [],
+          "ReturnType": "System.Double",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoMatch",
+          "Parameters": [],
+          "ReturnType": "System.Double",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "0"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.HeaderUtilities",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "TryParseSeconds",
+          "Parameters": [
+            {
+              "Name": "headerValues",
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
+            },
+            {
+              "Name": "targetValue",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ContainsCacheDirective",
+          "Parameters": [
+            {
+              "Name": "cacheControlDirectives",
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
+            },
+            {
+              "Name": "targetDirectives",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseNonNegativeInt32",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "result",
+              "Type": "System.Int32",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseNonNegativeInt64",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "result",
+              "Type": "System.Int64",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FormatNonNegativeInt64",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseDate",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "result",
+              "Type": "System.DateTimeOffset",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FormatDate",
+          "Parameters": [
+            {
+              "Name": "dateTime",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "FormatDate",
+          "Parameters": [
+            {
+              "Name": "dateTime",
+              "Type": "System.DateTimeOffset"
+            },
+            {
+              "Name": "quoted",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoveQuotes",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsQuoted",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UnescapeAsQuotedString",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EscapeAsQuotedString",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Charset",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Charset",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Encoding",
+          "Parameters": [],
+          "ReturnType": "System.Text.Encoding",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Encoding",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Text.Encoding"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Boundary",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Boundary",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Parameters",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Quality",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Double>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Quality",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Double>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MediaType",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MediaType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Type",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SubType",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SubTypeWithoutSuffix",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Suffix",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Facets",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Primitives.StringSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MatchesAllTypes",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MatchesAllSubTypes",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MatchesAllSubTypesWithoutSuffix",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsReadOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsSubsetOf",
+          "Parameters": [
+            {
+              "Name": "otherMediaType",
+              "Type": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CopyAsReadOnly",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseStrictList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseStrictList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "mediaType",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "mediaType",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "quality",
+              "Type": "System.Double"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.MediaTypeHeaderValueComparer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IComparer<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_QualityComparer",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.MediaTypeHeaderValueComparer",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Compare",
+          "Parameters": [
+            {
+              "Name": "mediaType1",
+              "Type": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue"
+            },
+            {
+              "Name": "mediaType2",
+              "Type": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IComparer<Microsoft.Net.Http.Headers.MediaTypeHeaderValue>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.NameValueHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Value",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsReadOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Copy",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.NameValueHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CopyAsReadOnly",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.NameValueHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetUnescapedValue",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetAndEscapeValue",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.NameValueHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.NameValueHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseList",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseStrictList",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseList",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseStrictList",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Find",
+          "Parameters": [
+            {
+              "Name": "values",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue>"
+            },
+            {
+              "Name": "name",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.NameValueHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.RangeConditionHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_LastModified",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EntityTag",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.RangeConditionHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.RangeConditionHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "lastModified",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "entityTag",
+              "Type": "Microsoft.Net.Http.Headers.EntityTagHeaderValue"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "entityTag",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.RangeHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Unit",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Unit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Ranges",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.Net.Http.Headers.RangeItemHeaderValue>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.RangeHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.RangeHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Nullable<System.Int64>"
+            },
+            {
+              "Name": "to",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.RangeItemHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_From",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_To",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "from",
+              "Type": "System.Nullable<System.Int64>"
+            },
+            {
+              "Name": "to",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.SameSiteMode",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Lax",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Strict",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Value",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Expires",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.DateTimeOffset>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Expires",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.DateTimeOffset>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxAge",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxAge",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Domain",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Domain",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Path",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Path",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Secure",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Secure",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SameSite",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.SameSiteMode",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SameSite",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Net.Http.Headers.SameSiteMode"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HttpOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HttpOnly",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AppendToStringBuilder",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "System.Text.StringBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseStrictList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseStrictList",
+          "Parameters": [
+            {
+              "Name": "inputs",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.SetCookieHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Value",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Quality",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Double>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Parse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "ReturnType": "Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParse",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "parsedValue",
+              "Type": "Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseList",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseStrictList",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseList",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseStrictList",
+          "Parameters": [
+            {
+              "Name": "input",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            },
+            {
+              "Name": "parsedValues",
+              "Type": "System.Collections.Generic.IList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "quality",
+              "Type": "System.Double"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IComparer<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_QualityComparer",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.StringWithQualityHeaderValueComparer",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Compare",
+          "Parameters": [
+            {
+              "Name": "stringWithQuality1",
+              "Type": "Microsoft.Net.Http.Headers.StringWithQualityHeaderValue"
+            },
+            {
+              "Name": "stringWithQuality2",
+              "Type": "Microsoft.Net.Http.Headers.StringWithQualityHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IComparer<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

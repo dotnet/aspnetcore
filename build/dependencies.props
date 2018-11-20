@@ -63,6 +63,8 @@
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>2.2.0</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>2.2.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsHostingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsHostingAbstractionsPackageVersion>
+    <MicrosoftExtensionsHostingPackageVersion>2.2.0</MicrosoftExtensionsHostingPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>2.2.0</MicrosoftExtensionsHttpPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>2.2.0</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
@@ -91,8 +93,11 @@
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.2.0</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.2.0</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
+
+    <!-- These dependencies are temporary while we refactor package refs into project refs. -->
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.2.0</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>2.2.0</MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-rtm-final</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
 
     <!-- 3rd party dependencies -->
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
