@@ -38,21 +38,6 @@ The path to the configuration file that stores values. Defaults to korebuild.jso
 .PARAMETER CI
 Sets up CI specific settings and variables.
 
-.PARAMETER PackageVersionPropsUrl
-(optional) the url of the package versions props path containing dependency versions.
-
-.PARAMETER AssetRootUrl
-(optional) the base url for acquiring build assets from an orchestrated build
-
-.PARAMETER AccessTokenSuffix
-(optional) the query string to append to any blob store access for PackageVersionPropsUrl, if any.
-
-.PARAMETER RestoreSources
-(optional) Semi-colon delimited list of additional NuGet feeds to use as part of restore.
-
-.PARAMETER ProductBuildId
-(optional) The product build ID for correlation with orchestrated builds.
-
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
@@ -90,11 +75,6 @@ param(
     [switch]$Reinstall,
     [string]$ConfigFile = $null,
     [switch]$CI,
-    [string]$PackageVersionPropsUrl = $null,
-    [string]$AccessTokenSuffix = $null,
-    [string]$RestoreSources = $null,
-    [string]$AssetRootUrl = $null,
-    [string]$ProductBuildId = $null,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
 )
@@ -212,30 +192,6 @@ if (!$DotNetHome) {
 if (!$LockFile) { $LockFile = Join-Path $Path 'korebuild-lock.txt' }
 if (!$Channel) { $Channel = 'master' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
-
-if ($PackageVersionPropsUrl) {
-    $IntermediateDir = Join-Path $PSScriptRoot 'obj'
-    $PropsFilePath = Join-Path $IntermediateDir 'external-dependencies.props'
-    New-Item -ItemType Directory $IntermediateDir -ErrorAction Ignore | Out-Null
-    Get-RemoteFile "${PackageVersionPropsUrl}${AccessTokenSuffix}" $PropsFilePath
-    $MSBuildArguments += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
-}
-
-if ($RestoreSources) {
-    $MSBuildArguments += "-p:DotNetAdditionalRestoreSources=$RestoreSources"
-}
-
-if ($AssetRootUrl) {
-    $MSBuildArguments += "-p:DotNetAssetRootUrl=$AssetRootUrl"
-}
-
-if ($AccessTokenSuffix) {
-    $MSBuildArguments += "-p:DotNetAssetRootAccessTokenSuffix=$AccessTokenSuffix"
-}
-
-if ($ProductBuildId) {
-    $MSBuildArguments += "-p:DotNetProductBuildId=$ProductBuildId"
-}
 
 # Execute
 

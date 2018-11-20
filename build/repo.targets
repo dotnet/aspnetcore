@@ -22,7 +22,6 @@
     <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
     <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
     <PackageDependsOn Condition=" '$(_ProjectsOnly)' == 'true'">$(PackageDependsOn);PackProjects</PackageDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);CheckExpectedPackagesExist</PackageDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CodeSign</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
     <TestDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(TestDependsOn);_TestRepositories</TestDependsOn>
@@ -303,24 +302,12 @@
   </Target>
 
   <Target Name="VerifyExternalDependencyConfig">
-    <RepoTasks.CheckVersionOverrides DotNetPackageVersionPropsPath="$(DotNetPackageVersionPropsPath)"
-      DependenciesFile="$(MSBuildThisFileDirectory)dependencies.props"
-      Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
-
     <Error Text="Missing Version metadata for the following external dependencies: %0A - @(ExternalDependency->WithMetadataValue('Version', ''), '%0A - '). "
            Condition=" @(ExternalDependency->WithMetadataValue('Version', '')->Count()) != 0 " />
   </Target>
 
   <Target Name="FastCheck"
     DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig;VerifyAllReposHaveNuGetPackageVerifier" />
-
-  <Target Name="CheckExpectedPackagesExist">
-    <ItemGroup>
-      <PackageArtifactFile Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
-    </ItemGroup>
-
-    <RepoTasks.CheckExpectedPackagesExist Packages="@(PackageArtifact)" Files="@(PackageArtifactFile)" />
-  </Target>
 
   <Target Name="VerifyAllReposHaveNuGetPackageVerifier" DependsOnTargets="_PrepareRepositories">
     <Error Condition="'%(Repository.Identity)' != '' AND !Exists('%(Repository.RootPath)NuGetPackageVerifier.json')"

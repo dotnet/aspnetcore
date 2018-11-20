@@ -85,9 +85,6 @@
     <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>
     <!-- azure = non-orchestrated builds -->
     <PublishToAzureFeed Condition="$(PublishType.Contains('azure'))">true</PublishToAzureFeed>
-
-    <!-- blob = orchestrated builds -->
-    <PublishToTransportFeed Condition="$(PublishType.Contains('blob'))">true</PublishToTransportFeed>
   </PropertyGroup>
 
   <Import Project="runtimes.props" />

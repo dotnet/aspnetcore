@@ -1,10 +1,10 @@
 <Project>
-  <!-- These package versions may be overridden or updated by automation. -->
-  <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
+  <PropertyGroup Label="Package Versions: .NET Core dependencies">
 
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview-27117-01</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27117-01</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreApp30PackageVersion>$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp30PackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>3.0.0-preview-27117-01</MicrosoftNETCoreDotNetAppHostPackageVersion>
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>3.0.0-preview-27117-01</MicrosoftDotNetPlatformAbstractionsPackageVersion>
 
@@ -114,15 +114,9 @@
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview.18569.2</MicrosoftEntityFrameworkCorePackageVersion>
   </PropertyGroup>
 
-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
   <Import Project="dependencies.folderbuilds.props" Condition=" '$(IsUniverseBuild)' != 'true' AND '$(DotNetPackageVersionPropsPath)' == ''" />
 
   <PropertyGroup>
-    <!-- Assign this variable last because it may be updated from DotNetPackageVersionPropsPath as MicrosoftNETCoreAppPackageVersion. -->
-    <MicrosoftNETCoreApp30PackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' != ''">$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp30PackageVersion>
-     <!-- Assign this variable to ensure they are consistent. -->
-    <MicrosoftNETCoreAppPackageVersion>$(MicrosoftNETCoreApp30PackageVersion)</MicrosoftNETCoreAppPackageVersion>
-
     <!-- Determined by build tools -->
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
     <InternalAspNetCoreSiteExtensionSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSiteExtensionSdkPackageVersion>
@@ -148,7 +142,6 @@
     <BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>2.1.1</BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>
 
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
-    <DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>2.2.0-preview1-03124-01</DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>
     <DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>
     <DevDependency_WindowsAzureStoragePackageVersion>8.7.0</DevDependency_WindowsAzureStoragePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
