@@ -159,20 +159,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     routeValues.TryAdd(kvp.Key, kvp.Value);
                 }
 
-                action.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out var obj);
-                var transformer = obj as IOutboundParameterTransformer;
-
                 selector.AttributeRouteModel.Template = AttributeRouteModel.ReplaceTokens(
                     selector.AttributeRouteModel.Template,
                     routeValues,
-                    transformer);
+                    action.RouteParameterTransformer);
 
                 if (selector.AttributeRouteModel.Name != null)
                 {
                     selector.AttributeRouteModel.Name = AttributeRouteModel.ReplaceTokens(
                         selector.AttributeRouteModel.Name,
                         routeValues,
-                        transformer);
+                        action.RouteParameterTransformer);
                 }
             }
             catch (InvalidOperationException ex)

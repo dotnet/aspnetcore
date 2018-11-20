@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             ActionMethod = other.ActionMethod;
             ActionName = other.ActionName;
+            RouteParameterTransformer = other.RouteParameterTransformer;
 
             // Not making a deep copy of the controller, this action still belongs to the same controller.
             Controller = other.Controller;
@@ -92,6 +93,18 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IList<IFilterMetadata> Filters { get; }
 
         public IList<ParameterModel> Parameters { get; }
+
+        /// <summary>
+        /// Gets or sets an <see cref="IOutboundParameterTransformer"/> that will be used to transform 
+        /// built-in route parameters such as <c>action</c>, <c>controller</c>, and <c>area</c> as well as
+        /// additional parameters specified by <see cref="RouteValues"/> into static segments in the route template.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This feature only applies when using endpoint routing.
+        /// </para>
+        /// </remarks>
+        public IOutboundParameterTransformer RouteParameterTransformer { get; set; }
 
         /// <summary>
         /// Gets a collection of route values that must be present in the 

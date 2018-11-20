@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             if (ShouldApply(model))
             {
-                model.Properties[typeof(IOutboundParameterTransformer)] = _parameterTransformer;
+                model.RouteParameterTransformer = _parameterTransformer;
             }
         }
 

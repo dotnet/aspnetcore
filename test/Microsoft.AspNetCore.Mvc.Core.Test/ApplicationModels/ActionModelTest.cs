@@ -7,6 +7,8 @@ using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -75,6 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 (typeof(TestController).GetTypeInfo(),
                 new List<object>());
             action.Filters.Add(new MyFilterAttribute());
+            action.RouteParameterTransformer = Mock.Of<IOutboundParameterTransformer>();
             action.RouteValues.Add("key", "value");
             action.Properties.Add(new KeyValuePair<object, object>("test key", "test value"));
 

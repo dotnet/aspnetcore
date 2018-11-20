@@ -113,11 +113,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private static string TransformPageRoute(PageRouteModel model, SelectorModel selectorModel)
         {
-            model.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out var transformer);
-            var pageRouteTransformer = transformer as IOutboundParameterTransformer;
-
             // Transformer not set on page route
-            if (pageRouteTransformer == null)
+            if (model.RouteParameterTransformer == null)
             {
                 return selectorModel.AttributeRouteModel.Template;
             }
@@ -134,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var segments = pageRouteMetadata.PageRoute.Split('/');
             for (var i = 0; i < segments.Length; i++)
             {
-                segments[i] = pageRouteTransformer.TransformOutbound(segments[i]);
+                segments[i] = model.RouteParameterTransformer.TransformOutbound(segments[i]);
             }
 
             var transformedPageRoute = string.Join("/", segments);
