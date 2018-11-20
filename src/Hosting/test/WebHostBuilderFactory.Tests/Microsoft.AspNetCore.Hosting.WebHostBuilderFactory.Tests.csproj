@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Hosting.WebHostBuilderFactory\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\BuildWebHostPatternTestSite\BuildWebHostPatternTestSite.csproj" />
+    <ProjectReference Include="..\testassets\IStartupInjectionAssemblyName\IStartupInjectionAssemblyName.csproj" />
+    <ProjectReference Include="..\testassets\CreateWebHostBuilderInvalidSignature\CreateWebHostBuilderInvalidSignature.csproj" />
+    <ProjectReference Include="..\testassets\BuildWebHostInvalidSignature\BuildWebHostInvalidSignature.csproj" />
+  </ItemGroup>
+
+</Project>
