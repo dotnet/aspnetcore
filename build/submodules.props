@@ -37,7 +37,7 @@
 
   <ItemGroup>
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" RootPath="$(RepositoryRoot)src\Metapackages\" />
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\Templating\" />
 
@@ -48,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ShippedRepository Include="AADIntegration" />
+    <ShippedRepository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <ShippedRepository Include="Antiforgery" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="BasicMiddleware" />
@@ -60,7 +60,7 @@
     <ShippedRepository Include="HttpAbstractions" />
     <ShippedRepository Include="HttpSysServer" />
     <ShippedRepository Include="Identity" />
-    <ShippedRepository Include="JavaScriptServices" />
+    <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavascriptServices\" />
     <ShippedRepository Include="JsonPatch" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="Mvc" />
