@@ -9,8 +9,11 @@
     "add": [
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
         "Microsoft.VisualStudio.Component.Windows81SDK",
+        "Microsoft.Net.Component.4.7.2.TargetingPack",
+        "Microsoft.Net.Component.4.7.2.SDK",
+        "Microsoft.Net.Component.4.7.1.TargetingPack",
+        "Microsoft.Net.Component.4.7.TargetingPack",
         "Microsoft.Net.Component.4.6.2.TargetingPack",
-        "Microsoft.Net.Component.4.6.2.SDK",
         "Microsoft.Net.Component.4.6.1.TargetingPack",
         "Microsoft.Net.Component.4.6.TargetingPack",
         "Microsoft.Net.Component.4.5.2.TargetingPack",
