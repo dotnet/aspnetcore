@@ -151,9 +151,9 @@ namespace Microsoft.Net.Http.Headers
 
             if (HasRange)
             {
-                sb.Append(_from.Value.ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(_from.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
                 sb.Append('-');
-                sb.Append(_to.Value.ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(_to.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
             }
             else
             {
@@ -163,7 +163,7 @@ namespace Microsoft.Net.Http.Headers
             sb.Append('/');
             if (HasLength)
             {
-                sb.Append(_length.Value.ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(_length.GetValueOrDefault().ToString(NumberFormatInfo.InvariantInfo));
             }
             else
             {

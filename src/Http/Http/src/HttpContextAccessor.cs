@@ -7,21 +7,35 @@ namespace Microsoft.AspNetCore.Http
 {
     public class HttpContextAccessor : IHttpContextAccessor
     {
-        private static AsyncLocal<(string traceIdentifier, HttpContext context)> _httpContextCurrent = new AsyncLocal<(string traceIdentifier, HttpContext context)>();
+        private static AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
 
         public HttpContext HttpContext
         {
             get
             {
-                var value = _httpContextCurrent.Value;
-                // Only return the context if the stored request id matches the stored trace identifier
-                // context.TraceIdentifier is cleared by HttpContextFactory.Dispose.
-                return value.traceIdentifier == value.context?.TraceIdentifier ? value.context : null;
+                return  _httpContextCurrent.Value?.Context;
             }
             set
             {
-                _httpContextCurrent.Value = (value?.TraceIdentifier, value);
+                var holder = _httpContextCurrent.Value;
+                if (holder != null)
+                {
+                    // Clear current HttpContext trapped in the AsyncLocals, as its done.
+                    holder.Context = null;
+                }
+
+                if (value != null)
+                {
+                    // Use an object indirection to hold the HttpContext in the AsyncLocal,
+                    // so it can be cleared in all ExecutionContexts when its cleared.
+                    _httpContextCurrent.Value = new HttpContextHolder { Context = value };
+                }
             }
+        }
+
+        private class HttpContextHolder
+        {
+            public HttpContext Context;
         }
     }
 }

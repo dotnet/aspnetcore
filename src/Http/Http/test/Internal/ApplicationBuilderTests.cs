@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Builder.Internal
@@ -18,6 +20,59 @@ namespace Microsoft.AspNetCore.Builder.Internal
 
             app.Invoke(httpContext);
             Assert.Equal(404, httpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public void BuildImplicitlyCallsMatchedEndpointAsLastStep()
+        {
+            var builder = new ApplicationBuilder(null);
+            var app = builder.Build();
+
+            var endpointCalled = false;
+            var endpoint = new Endpoint(
+                context =>
+                {
+                    endpointCalled = true;
+                    return Task.CompletedTask;
+                },
+                EndpointMetadataCollection.Empty,
+                "Test endpoint");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(endpoint);
+
+            app.Invoke(httpContext);
+
+            Assert.True(endpointCalled);
+        }
+
+        [Fact]
+        public void BuildDoesNotCallMatchedEndpointWhenTerminated()
+        {
+            var builder = new ApplicationBuilder(null);
+            builder.Use((context, next) =>
+            {
+                // Do not call next
+                return Task.CompletedTask;
+            });
+            var app = builder.Build();
+
+            var endpointCalled = false;
+            var endpoint = new Endpoint(
+                context =>
+                {
+                    endpointCalled = true;
+                    return Task.CompletedTask;
+                },
+                EndpointMetadataCollection.Empty,
+                "Test endpoint");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(endpoint);
+
+            app.Invoke(httpContext);
+
+            Assert.False(endpointCalled);
         }
 
         [Fact]

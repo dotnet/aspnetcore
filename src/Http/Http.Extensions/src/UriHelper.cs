@@ -195,17 +195,18 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// <returns></returns>
         public static string GetDisplayUrl(this HttpRequest request)
         {
-            var host = request.Host.Value;
-            var pathBase = request.PathBase.Value;
-            var path = request.Path.Value;
-            var queryString = request.QueryString.Value;
+            var scheme = request.Scheme ?? string.Empty;            
+            var host = request.Host.Value ?? string.Empty;
+            var pathBase = request.PathBase.Value ?? string.Empty;
+            var path = request.Path.Value ?? string.Empty;
+            var queryString = request.QueryString.Value ?? string.Empty;
 
             // PERF: Calculate string length to allocate correct buffer size for StringBuilder.
-            var length = request.Scheme.Length + SchemeDelimiter.Length + host.Length
+            var length = scheme.Length + SchemeDelimiter.Length + host.Length
                 + pathBase.Length + path.Length + queryString.Length;
 
             return new StringBuilder(length)
-                .Append(request.Scheme)
+                .Append(scheme)
                 .Append(SchemeDelimiter)
                 .Append(host)
                 .Append(pathBase)

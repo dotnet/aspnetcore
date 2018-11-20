@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Http.Features
                             if (section.BaseStreamOffset.HasValue)
                             {
                                 // Relative reference to buffered request body
-                                file = new FormFile(_request.Body, section.BaseStreamOffset.Value, section.Body.Length, name, fileName);
+                                file = new FormFile(_request.Body, section.BaseStreamOffset.GetValueOrDefault(), section.Body.Length, name, fileName);
                             }
                             else
                             {

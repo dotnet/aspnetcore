@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Http
                 Domain = Domain,
                 IsEssential = IsEssential,
                 Secure = SecurePolicy == CookieSecurePolicy.Always || (SecurePolicy == CookieSecurePolicy.SameAsRequest && context.Request.IsHttps),
-                Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.Value) : default(DateTimeOffset?)
+                Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.GetValueOrDefault()) : default(DateTimeOffset?)
             };
         }
     }

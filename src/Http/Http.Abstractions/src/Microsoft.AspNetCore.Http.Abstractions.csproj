@@ -17,6 +17,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" />
     <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
