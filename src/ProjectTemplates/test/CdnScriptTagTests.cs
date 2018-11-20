@@ -31,6 +31,7 @@ namespace Templates.Test
         static CdnScriptTagTests()
         {
             var packages = MondoHelpers.GetNupkgFiles();
+            Assert.NotEmpty(packages);
 
             _scriptTags = new List<ScriptTag>();
             _linkTags = new List<LinkTag>();

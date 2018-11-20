@@ -17,7 +17,7 @@ namespace Templates.Test.Helpers
             var configuration = "Release";
 #endif
 
-            return Directory.GetFiles(Path.Combine(mondoRoot, "artifacts", "packages", configuration), "*.nupkg", SearchOption.AllDirectories);
+            return Directory.GetFiles(Path.Combine(mondoRoot, "artifacts", configuration, "packages"), "*.nupkg", SearchOption.AllDirectories);
         }
 
         private static string GetMondoRepoRoot()

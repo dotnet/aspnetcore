@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Xunit.Abstractions;
 
@@ -6,7 +6,7 @@ namespace Templates.Test.Helpers
 {
     public static class Npm
     {
-        private static object NpmInstallLock = new object();
+        private static readonly object NpmInstallLock = new object();
 
         public static void RestoreWithRetry(ITestOutputHelper output, string workingDirectory)
         {
@@ -56,8 +56,11 @@ namespace Templates.Test.Helpers
             // https://github.com/npm/npm/issues/2500
             lock (NpmInstallLock)
             {
-                output.WriteLine($"Restoring NPM packages in '{workingDirectory}' using npm...");
-                ProcessEx.RunViaShell(output, workingDirectory, "npm install");
+                if (!Directory.Exists(Path.Join(workingDirectory, "node_modules")))
+                {
+                    output.WriteLine($"Restoring NPM packages in '{workingDirectory}' using npm...");
+                    ProcessEx.RunViaShell(output, workingDirectory, "npm install");
+                }
             }
         }
 

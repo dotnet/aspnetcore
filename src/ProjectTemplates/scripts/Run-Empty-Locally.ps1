@@ -6,4 +6,4 @@ param()
 
 . $PSScriptRoot\Test-Template.ps1
 
-Test-Template "webapp" "webapp -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.3.0.3.0.0-preview-0.nupkg" $false
+Test-Template "web" "web" "Microsoft.DotNet.Web.ProjectTemplates.3.0.3.0.0-preview-t000.nupkg" $false
