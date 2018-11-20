@@ -45,6 +45,7 @@
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.FileSystemGlobbing"  Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)" />
@@ -204,8 +205,6 @@
     <ExternalDependency Include="Newtonsoft.Json" Version="$(VisualStudio_NewtonsoftJsonPackageVersion)" VariableName="VisualStudio_NewtonsoftJsonPackageVersion" />
 
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
-    <ExternalDependency Include="Polly.Extensions.Http" Version="$(PollyExtensionsHttpPackageVersion)" />
-    <ExternalDependency Include="Polly" Version="$(PollyPackageVersion)" />
     <ExternalDependency Include="Selenium.Firefox.WebDriver" Version="$(SeleniumFirefoxWebDriverPackageVersion)" />
     <ExternalDependency Include="Selenium.Support" Version="$(SeleniumSupportPackageVersion)" />
     <ExternalDependency Include="Selenium.WebDriver.MicrosoftDriver" Version="$(SeleniumWebDriverMicrosoftDriverPackageVersion)" />

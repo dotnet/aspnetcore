@@ -31,6 +31,7 @@
       <FilesToSign Include="Microsoft.Extensions.FileProviders.Embedded.dll"                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileProviders.Physical.dll"                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileSystemGlobbing.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Http.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Logging.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Logging.Configuration.dll"                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Logging.Console.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />

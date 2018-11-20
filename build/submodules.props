@@ -44,7 +44,6 @@
     <Repository Include="Diagnostics" />
     <Repository Include="Hosting" />
     <Repository Include="HttpAbstractions" />
-    <Repository Include="HttpClientFactory" />
     <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
@@ -59,7 +58,7 @@
     <Repository Include="Session" />
     <Repository Include="SignalR" />
     <Repository Include="StaticFiles" />
-    <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="Templating" RootPath="$(RepositoryRoot)src\templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" RootPath="$(RepositoryRoot)src\AuthSamples\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />

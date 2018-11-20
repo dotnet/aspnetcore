@@ -26,10 +26,6 @@
 	path = modules/HttpAbstractions
 	url = https://github.com/aspnet/HttpAbstractions.git
 	branch = master
-[submodule "modules/HttpClientFactory"]
-	path = modules/HttpClientFactory
-	url = https://github.com/aspnet/HttpClientFactory.git
-	branch = master
 [submodule "modules/HttpSysServer"]
 	path = modules/HttpSysServer
 	url = https://github.com/aspnet/HttpSysServer.git

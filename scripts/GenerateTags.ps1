@@ -43,10 +43,10 @@ function New-GitTag {
                 Invoke-Block { & git tag -m "v$Tag" $Tag HEAD }
                 Write-Host -f Magenta "${Repo}: added tag '$Tag'"
             }
-        }
 
-        if ($Push -and $PSCmdlet.ShouldProcess($Repo, "Push tag $Tag to origin")) {
-            Invoke-Block { & git push origin refs/tags/$Tag }
+            if ($Push -and $PSCmdlet.ShouldProcess($Repo, "Push tag $Tag to origin")) {
+                Invoke-Block { & git push origin refs/tags/$Tag }
+            }
         }
     }
     finally {

@@ -3,5 +3,7 @@
   <PropertyGroup>
     <!-- Disable KoreBuild restrictions while we re-work dependency management. -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
   </PropertyGroup>
+
 </Project>

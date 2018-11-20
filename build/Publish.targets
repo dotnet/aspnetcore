@@ -58,7 +58,7 @@
       Value="$(PackageVersion)" />
   </Target>
 
-  <Target Name="GetFilesToPublish" DependsOnTargets="GetAllRidPackages;GetArtifactInfo;GeneratePublishFiles">
+  <Target Name="GetFilesToPublish" DependsOnTargets="GetArtifactInfo;GeneratePublishFiles">
     <PropertyGroup>
       <BlobBasePath>aspnetcore/Runtime/$(PackageVersion)/</BlobBasePath>
       <NpmBlobBasePath>aspnetcore/npm/</NpmBlobBasePath>

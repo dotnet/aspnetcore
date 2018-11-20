@@ -166,8 +166,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship"  />
     <PackageArtifact Include="Microsoft.Extensions.Hosting.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Hosting" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Http.Polly" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Http" Category="ship"  />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />
