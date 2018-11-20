@@ -50,10 +50,6 @@
 	path = modules/MetaPackages
 	url = https://github.com/aspnet/MetaPackages.git
 	branch = master
-[submodule "modules/MusicStore"]
-	path = modules/MusicStore
-	url = https://github.com/aspnet/MusicStore.git
-	branch = master
 [submodule "modules/Mvc"]
 	path = modules/Mvc
 	url = https://github.com/aspnet/Mvc.git

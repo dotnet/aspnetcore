@@ -1,0 +1,39 @@
+<Project>
+
+  <ItemGroup>
+    <Solutions Update="$(RepositoryRoot)MusicStore.sln" Condition="'$(RUN_RUNTIME_STORE_TESTS)' == 'true'">
+      <AdditionalProperties>Configuration=RuntimeStore</AdditionalProperties>
+    </Solutions>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <MusicStoreE2ETestProject>$(RepositoryRoot)test\MusicStore.E2ETests\MusicStore.E2ETests.csproj</MusicStoreE2ETestProject>
+  </PropertyGroup>
+
+  <Target Name="_FilterTestProjects" BeforeTargets="TestProjects"
+    Condition="'$(RUN_TESTS_ON_NANO)'=='true' Or '$(RUN_RUNTIME_STORE_TESTS)'=='true'">
+
+    <Warning Text="Updated test projects to run only the project '$(MusicStoreE2ETestProject)' as the variable 'RUN_TESTS_ON_NANO' is set to '$(RUN_TESTS_ON_NANO)'" Condition="'$(RUN_TESTS_ON_NANO)'=='true'" />
+
+    <Warning Text="Updated test projects to run only the project '$(MusicStoreE2ETestProject)' as the variable 'RUN_RUNTIME_STORE_TESTS' is set to '$(RUN_RUNTIME_STORE_TESTS)'" Condition="'$(RUN_RUNTIME_STORE_TESTS)'=='true'" />
+
+    <ItemGroup>
+      <ProjectsToTest Remove="@(ProjectsToTest)" />
+      <ProjectsToTest Include="$(MusicStoreE2ETestProject)" />
+    </ItemGroup>
+
+    <Error Text="Could not find test projects to run" Condition="@(ProjectsToTest->Count()) == 0" />
+
+    <ItemGroup Condition="'$(RUN_TESTS_ON_NANO)'=='true'">
+      <ProjectsToTest Update="$(MusicStoreE2ETestProject)">
+        <AdditionalProperties>VSTestTestCaseFilter=E2ETests=NanoServer</AdditionalProperties>
+      </ProjectsToTest>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(RUN_RUNTIME_STORE_TESTS)'=='true'">
+      <ProjectsToTest Update="$(MusicStoreE2ETestProject)">
+        <AdditionalProperties>VSTestTestCaseFilter=smoketests=usestore</AdditionalProperties>
+      </ProjectsToTest>
+    </ItemGroup>
+  </Target>
+</Project>
