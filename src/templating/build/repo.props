@@ -1,0 +1,20 @@
+<Project>
+  <Import Project="dependencies.props" />
+
+  <PropertyGroup>
+    <!-- These properties are use by the automation that updates dependencies.props -->
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageVersion>2.2.0-*</LineupPackageVersion>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+
+    <!-- SkipAspNetCoreRuntimeInstall must be set when building templates before the shared framework is available -->
+    <AspNetCoreRuntime Include="$(MicrosoftAspNetCoreAppPackageVersion)"
+      Condition=" '$(SkipAspNetCoreRuntimeInstall)' != 'true' " />
+  </ItemGroup>
+
+</Project>

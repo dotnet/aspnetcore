@@ -1,0 +1,9 @@
+﻿<?xml version="1.0"?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+
+  <xdt:Import path="Microsoft.Web.Xdt.Extensions.dll"
+              namespace="Microsoft.Web.Xdt.Extensions" />
+
+  <add name="KeyName1" value="InsertValue1" xdt:Locator="Match(name)" xdt:Transform="InsertOrAppendAttribute(Attribute='value')" />
+  <add name="KeyName2" value="InsertValue2" xdt:Locator="Match(name)" xdt:Transform="InsertOrAppendAttribute(Attribute='value')" />
+</configuration>

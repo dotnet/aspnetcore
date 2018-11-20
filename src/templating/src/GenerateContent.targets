@@ -1,0 +1,29 @@
+<Project>
+  <!--
+    Generates content using MSBuild variables.
+  -->
+
+  <Target Name="_PrepareGeneratedContentFilesOutput">
+    <Error Text="You must set OutputPath on GenerateContent items." Condition="@(GeneratedContent->WithMetadataValue('OutputPath','')->Count()) != 0" />
+    <ItemGroup>
+      <GenerateContentInputs Include="$(MSBuildAllProjects);$(MSBuildProjectFullPath)" />
+      <GeneratedContentOutputs Include="%(GeneratedContent.OutputPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateContent"
+          DependsOnTargets="_PrepareGeneratedContentFilesOutput"
+          BeforeTargets="CoreCompile"
+          Inputs="@(GeneratedContent);@(GenerateContentInputs)"
+          Outputs="@(GeneratedContentOutputs)">
+
+    <Sdk_GenerateFileFromTemplate
+      TemplateFile="%(GeneratedContent.Identity)"
+      Properties="%(GeneratedContent.Properties)"
+      OutputPath="%(GeneratedContent.OutputPath)">
+
+      <Output TaskParameter="OutputPath" ItemName="FileWrites" />
+      <Output TaskParameter="OutputPath" ItemName="Content" />
+    </Sdk_GenerateFileFromTemplate>
+  </Target>
+</Project>
