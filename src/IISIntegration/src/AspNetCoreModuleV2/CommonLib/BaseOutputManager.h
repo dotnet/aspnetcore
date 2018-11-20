@@ -55,7 +55,7 @@ protected:
         {
             func();
         }
-        catch (std::runtime_error& exception)
+        catch (const std::runtime_error& exception)
         {
             EventLog::Warn(ASPNETCORE_EVENT_GENERAL_WARNING, exceptionMessage.c_str(), GetModuleName().c_str(), to_wide_string(exception.what(), GetConsoleOutputCP()).c_str());
         }
