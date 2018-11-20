@@ -34,6 +34,6 @@
     <RepositoryBuildOrder Include="MusicStore" Order="16" RootPath="$(RepositoryRoot)src\MusicStore\" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" RootPath="$(RepositoryRoot)src\AuthSamples\" />
-    <RepositoryBuildOrder Include="templating" Order="17" RootPath="$(RepositoryRoot)src\templating\" />
+    <RepositoryBuildOrder Include="Templating" Order="17" RootPath="$(RepositoryRoot)src\Templating\" />
   </ItemGroup>
 </Project>
