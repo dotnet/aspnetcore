@@ -38,4 +38,3 @@ node_modules
 global.json
 .idea/
 *.binlog
-launchSettings.json
