@@ -47,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ShippedRepository Include="AADIntegration" />
+    <ShippedRepository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <ShippedRepository Include="Antiforgery" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="BasicMiddleware" />
@@ -57,9 +57,9 @@
     <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="HttpSysServer" />
     <ShippedRepository Include="Identity" />
-    <ShippedRepository Include="JavaScriptServices" />
+    <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <ShippedRepository Include="Localization" />
-    <ShippedRepository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="Mvc" />
     <ShippedRepository Include="MvcPrecompilation" />
     <ShippedRepository Include="Razor" />

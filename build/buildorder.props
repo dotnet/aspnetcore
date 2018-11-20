@@ -23,11 +23,11 @@
     <RepositoryBuildOrder Include="Diagnostics" Order="12" />
     <RepositoryBuildOrder Include="Localization" Order="13" />
     <RepositoryBuildOrder Include="Security" Order="13" />
-    <RepositoryBuildOrder Include="MetaPackages" Order="13" />
+    <RepositoryBuildOrder Include="MetaPackages" Order="13" RootPath="$(RepositoryRoot)src\MetaPackages\" />
     <RepositoryBuildOrder Include="Mvc" Order="14" />
-    <RepositoryBuildOrder Include="AADIntegration" Order="15" />
+    <RepositoryBuildOrder Include="AADIntegration" Order="15" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <RepositoryBuildOrder Include="Identity" Order="15" />
-    <RepositoryBuildOrder Include="JavaScriptServices" Order="15" />
+    <RepositoryBuildOrder Include="JavaScriptServices" Order="15" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <RepositoryBuildOrder Include="MvcPrecompilation" Order="15" />
     <RepositoryBuildOrder Include="Scaffolding" Order="15" />
     <RepositoryBuildOrder Include="AzureIntegration" Order="15" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
