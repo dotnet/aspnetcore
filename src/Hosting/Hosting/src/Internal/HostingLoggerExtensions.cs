@@ -94,7 +94,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private class HostingLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
-            private readonly HttpContext _httpContext;
+            private readonly string _path;
+            private readonly string _traceIdentifier;
             private readonly string _correlationId;
 
             private string _cachedToString;
@@ -113,11 +114,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     if (index == 0)
                     {
-                        return new KeyValuePair<string, object>("RequestId", _httpContext.TraceIdentifier);
+                        return new KeyValuePair<string, object>("RequestId", _traceIdentifier);
                     }
                     else if (index == 1)
                     {
-                        return new KeyValuePair<string, object>("RequestPath", _httpContext.Request.Path.ToString());
+                        return new KeyValuePair<string, object>("RequestPath", _path);
                     }
                     else if (index == 2)
                     {
@@ -130,7 +131,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             public HostingLogScope(HttpContext httpContext, string correlationId)
             {
-                _httpContext = httpContext;
+                _traceIdentifier = httpContext.TraceIdentifier;
+                _path = httpContext.Request.Path.ToString();
                 _correlationId = correlationId;
             }
 
@@ -141,8 +143,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     _cachedToString = string.Format(
                         CultureInfo.InvariantCulture,
                         "RequestId:{0} RequestPath:{1}",
-                        _httpContext.TraceIdentifier,
-                        _httpContext.Request.Path);
+                        _traceIdentifier,
+                        _path);
                 }
 
                 return _cachedToString;

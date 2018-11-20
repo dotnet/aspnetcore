@@ -79,7 +79,7 @@
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
     <ExternalDependency Include="Microsoft.Extensions.Buffers.Testing.Sources" Version="$(MicrosoftExtensionsBuffersTestingSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Version="$(MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources" Version="$(MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion)" />
+    <ExternalDependency Include="Internal.WebHostBuilderFactory.Sources" Version="$(InternalWebHostBuilderFactorySourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
   </ItemGroup>
 

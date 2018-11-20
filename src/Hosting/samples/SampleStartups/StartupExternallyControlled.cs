@@ -38,8 +38,10 @@ namespace SampleStartups
 
         public async Task StopAsync()
         {
-            await _host.StopAsync(TimeSpan.FromSeconds(5));
-            _host.Dispose();
+            using (_host)
+            {
+                await _host.StopAsync(TimeSpan.FromSeconds(5));
+            }
         }
 
         public void AddUrl(string url)

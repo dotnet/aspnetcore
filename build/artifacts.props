@@ -20,7 +20,6 @@
     <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
     <PackageArtifact Include="dotnet-watch" Category="ship" />
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" />
-    <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
@@ -134,7 +133,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Https" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Category="ship" />

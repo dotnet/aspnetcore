@@ -17,17 +17,12 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
     {
         public WebHostBuilderTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact]
-        public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly_CoreClr()
-            => await InjectedStartup_DefaultApplicationNameIsEntryAssembly(RuntimeFlavor.CoreClr);
+        public static TestMatrix TestVariants => TestMatrix.ForServers(ServerType.Kestrel)
+                .WithTfms(Tfm.Net461, Tfm.NetCoreApp22);
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly_Clr()
-            => await InjectedStartup_DefaultApplicationNameIsEntryAssembly(RuntimeFlavor.Clr);
-
-        private async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(RuntimeFlavor runtimeFlavor)
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(TestVariant variant)
         {
             using (StartLog(out var loggerFactory))
             {
@@ -35,14 +30,9 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "TestAssets", "IStartupInjectionAssemblyName");
 
-                var deploymentParameters = new DeploymentParameters(
-                    applicationPath,
-                    ServerType.Kestrel,
-                    runtimeFlavor,
-                    RuntimeArchitecture.x64)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
-                    ApplicationType = ApplicationType.Portable,
+                    ApplicationPath = applicationPath,
                     StatusMessagesEnabled = false
                 };
 
