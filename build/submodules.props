@@ -38,7 +38,7 @@
   <ItemGroup>
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="Templating" RootPath="$(RepositoryRoot)src\templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" RootPath="$(RepositoryRoot)src\AuthSamples\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
@@ -57,7 +57,6 @@
     <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="Hosting" />
     <ShippedRepository Include="HttpAbstractions" />
-    <ShippedRepository Include="HttpClientFactory" />
     <ShippedRepository Include="HttpSysServer" />
     <ShippedRepository Include="Identity" />
     <ShippedRepository Include="JavaScriptServices" />
