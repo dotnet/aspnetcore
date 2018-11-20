@@ -67,7 +67,7 @@ try {
             -clp:Summary `
             "-p:SharedFrameworkHarvestRootPath=$repoRoot/obj/sfx/" `
             "-p:Configuration=$Configuration" `
-            "-p:BuildNumber=$BuildNumber" `
+            "-p:BuildNumberSuffix=$BuildNumber" `
             "-p:SignType=$SignType" `
             "-p:IsFinalBuild=$IsFinalBuild" `
             "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `

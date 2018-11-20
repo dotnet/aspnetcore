@@ -1,17 +1,8 @@
 ﻿<Project>
+  <Import Project="..\..\version.props" />
   <PropertyGroup>
-    <DotNetMajorVersion>3</DotNetMajorVersion>
-    <DotNetMinorVersion>0</DotNetMinorVersion>
-    <DotNetPatchVersion>0</DotNetPatchVersion>
-    <PreReleaseLabel>alpha1</PreReleaseLabel>
-    <BuildNumber Condition="'$(BuildNumber)' == ''">$([System.DateTime]::Now.ToString('yyMMdd'))-99</BuildNumber>
-    <VersionPrefix>$(DotNetMajorVersion).$(DotNetMinorVersion).$(DotNetPatchVersion)</VersionPrefix>
-    <AspNetCoreModuleVersionMajor>13</AspNetCoreModuleVersionMajor>
-    <AspNetCoreModuleVersionMinor>$(DotNetMinorVersion)</AspNetCoreModuleVersionMinor>
-    <AspNetCoreModuleVersionRevision>$(DotNetPatchVersion)</AspNetCoreModuleVersionRevision>
-    <PackageVersion>$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition="'$(IncludePreReleaseLabelInPackageVersion)' != 'false' ">$(VersionPrefix)-$(PreReleaseLabel)-$(BuildNumber)</PackageVersion>
-    <Version>$(PackageVersion)</Version>
+
+
     <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
   </PropertyGroup>
 </Project>

@@ -31,7 +31,7 @@
     <!-- PackageVersion does not match the ASP.NET Core runtime verison. -->
     <PackageVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</PackageVersion>
     <!-- Deb installers are versioned as M.N.P~PreReleaseLabel-Build following the core-setup convention -->
-    <PackageVersion Condition="'$(IncludePreReleaseLabelInPackageVersion)' == 'true'">$(PackageVersion)~$(PreReleaseLabel)-$(BuildNumber)</PackageVersion>
+    <PackageVersion Condition="'$(IncludePreReleaseLabelInPackageVersion)' == 'true'">$(PackageVersion)~$(PreReleaseLabel)-$(BuildNumberSuffix)</PackageVersion>
     <PackageRevision>1</PackageRevision>
 
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseLabel-Build to the installer version M.N.P~PreReleaseLabel-Build, The conditional handles stabilized builds -->

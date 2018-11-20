@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <GuidInputs>$(Version);$(Platform)</GuidInputs>
-    <GuidInputs Condition="'$(IsFinalBuild)' != 'true'">$(GuidInputs);$(BuildNumber)</GuidInputs>
+    <GuidInputs Condition="'$(IsFinalBuild)' != 'true'">$(GuidInputs);$(BuildNumberSuffix)</GuidInputs>
   </PropertyGroup>
 
   <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GenerateGuid" />
