@@ -26,3 +26,4 @@ scripts/tmp/
 .tools/
 src/**/global.json
 launchSettings.json
+BenchmarkDotNet.Artifacts/
