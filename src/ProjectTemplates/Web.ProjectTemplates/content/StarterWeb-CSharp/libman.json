@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "provider": "cdnjs",
+      "library": "jquery@3.3.1",
+      "destination": "wwwroot/lib/jquery/",
+      "files": [
+        "jquery.js",
+        "jquery.min.js",
+        "jquery.min.map"
+      ]
+    },
+    {
+      "provider": "cdnjs",
+      "library": "twitter-bootstrap@4.1.3",
+      "destination": "wwwroot/lib/bootstrap/",
+      "files": [
+        "js/bootstrap.js",
+        "js/bootstrap.js.map",
+        "js/bootstrap.min.js",
+        "js/bootstrap.min.js.map",
+        "js/bootstrap.bundle.js",
+        "js/bootstrap.bundle.js.map",
+        "js/bootstrap.bundle.min.js",
+        "js/bootstrap.bundle.min.js.map",
+        "css/bootstrap.css",
+        "css/bootstrap.css.map",
+        "css/bootstrap.min.css",
+        "css/bootstrap.min.css.map"
+      ]
+    },
+    {
+      "provider": "cdnjs",
+      "library": "jquery-validate@1.17.0",
+      "destination": "wwwroot/lib/jquery-validate/",
+      "files": [
+        "jquery.validate.js",
+        "jquery.validate.min.js",
+        "additional-methods.min.js"
+      ]
+    },
+    {
+      "provider": "cdnjs",
+      "library": "jquery-validation-unobtrusive@3.2.10",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive/",
+      "files": [
+        "jquery.validate.unobtrusive.js",
+        "jquery.validate.unobtrusive.min.js"
+      ]
+    }
+  ]
+}

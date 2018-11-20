@@ -254,6 +254,11 @@ namespace Templates.Test.Helpers
             }
         }
 
+        public IEnumerable<string> GetFiles()
+        {
+            return Directory.GetFiles(TemplateOutputDir, "*", new EnumerationOptions { RecurseSubdirectories = true });
+        }
+
         private async Task<ProcessEx> RestoreAsync(ITestOutputHelper output, string workingDirectory)
         {
             // It's not safe to run multiple NPM installs in parallel

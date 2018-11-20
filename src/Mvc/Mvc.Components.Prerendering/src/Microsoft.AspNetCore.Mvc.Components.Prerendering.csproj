@@ -7,7 +7,8 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsAspNetCoreApp>false</IsAspNetCoreApp>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
