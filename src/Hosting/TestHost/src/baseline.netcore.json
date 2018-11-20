@@ -1,0 +1,316 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.TestHost, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.TestHost.ClientHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Net.Http.HttpMessageHandler",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pathBase",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            },
+            {
+              "Name": "application",
+              "Type": "Microsoft.AspNetCore.Hosting.Server.IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication+Context>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.TestHost.RequestBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "And",
+          "Parameters": [
+            {
+              "Name": "configure",
+              "Type": "System.Action<System.Net.Http.HttpRequestMessage>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.TestHost.RequestBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddHeader",
+          "Parameters": [
+            {
+              "Name": "name",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.TestHost.RequestBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "PostAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "server",
+              "Type": "Microsoft.AspNetCore.TestHost.TestServer"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.TestHost.TestServer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Hosting.Server.IServer"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BaseAddress",
+          "Parameters": [],
+          "ReturnType": "System.Uri",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BaseAddress",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Uri"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Host",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHost",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Features",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.IServer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateHandler",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpMessageHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateClient",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpClient",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateWebSocketClient",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.TestHost.WebSocketClient",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateRequest",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.TestHost.RequestBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "featureCollection",
+              "Type": "Microsoft.AspNetCore.Http.Features.IFeatureCollection"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.TestHost.WebSocketClient",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_SubProtocols",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConfigureRequest",
+          "Parameters": [],
+          "ReturnType": "System.Action<Microsoft.AspNetCore.Http.HttpRequest>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConfigureRequest",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.HttpRequest>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConnectAsync",
+          "Parameters": [
+            {
+              "Name": "uri",
+              "Type": "System.Uri"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.WebSockets.WebSocket>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

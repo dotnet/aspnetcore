@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>500 Internal Server Error</title>
+    <style type="text/css">
+        body {
+            background-color: white;
+            color: #111111;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 2em 4em;
+        }
+
+        footer a {
+            color: darkblue;
+            text-decoration: none;
+            font-weight: bolder;
+        }
+
+        #header {
+            margin-bottom: 2.5em;
+        }
+
+        .stacktrace pre {
+            display: inline;
+        }
+
+        .faded {
+            color: #999999;
+            font-weight: normal;
+        }
+
+        div.message {
+            margin-top: 2.5em;
+            padding: 0.3em 1em;
+            border-left: 0.25em solid red;
+        }
+
+        .light {
+            font-size: 1.3em;
+            font-weight: lighter;
+        }
+
+        .heavy {
+            font-size: 1.5em;
+        }
+
+        .exception {
+            color: red;
+        }
+
+        .stacktrace {
+            padding-top: 0.3em;
+            padding-left: 2em;
+            display: block;
+            font-weight: bold;
+        }
+
+        .codeSnippet {
+            margin-left: 2em;
+            margin-top: 1em;
+            margin-bottom: 1em;
+            display: inline-block;
+            border-top: 0.2em solid #cccccc;
+            border-bottom: 0.2em solid #cccccc;
+            color: black;
+        }
+
+        .codeSnippet div:nth-of-type(2n) {
+            background-color: #f0f0f0;
+        }
+
+        .codeSnippet div:nth-of-type(2n + 1) {
+            background-color: #f6f6f6;
+        }
+
+        .codeSnippet div.filename {
+            font-weight: bold;
+            background-color: white;
+            margin: 0.6em;
+        }
+
+        .codeSnippet div.line {
+            padding: 0.2em;
+            line-height: 1em;
+        }
+
+        .codeSnippet div.line .line-number {
+            color: #999999;
+            text-align: right;
+            margin-right: 0.5em;
+        }
+
+        .codeSnippet div.error {
+            color: red;
+            font-weight: bolder;
+            background-color: #ffeda7;
+        }
+
+        .codeSnippet code {
+            white-space: pre;
+        }
+
+        .rawExceptionBlock {
+            margin-top: 1em;
+            margin-left: 1em;
+        }
+
+        #rawException {
+            display: none;
+        }
+
+        footer {
+            margin-top: 2em;
+            font-size: smaller;
+            font-weight: lighter;
+        }
+    </style>
+    <script type="text/javascript">
+        function showRawException() {
+            var div = document.getElementById('rawException');
+            div.style.display = 'inline-block';
+            div.scrollIntoView(true);
+        }
+    </script>
+</head>
+<body>
+
+    <div id="header">
+        <div style="font-size: 6em; display: inline-block;">
+            :(
+        </div>
+        <div style="display: inline-block; padding-left: 3em;">
+            <span style="font-size: 2em;">Oops.</span><br />
+            <span style="font-size: 1.65em; font-weight: lighter;">500 Internal Server Error</span>
+        </div>
+    </div>
+
+    [[[0]]]
+
+    [[[1]]]
+
+    [[[2]]]
+</body>
+</html>

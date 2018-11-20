@@ -1,0 +1,122 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Hosting.WindowsServices, Version=2.0.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.WindowsServices.WebHostService",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.ServiceProcess.ServiceBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnStart",
+          "Parameters": [
+            {
+              "Name": "args",
+              "Type": "System.String[]"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnStop",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnStarting",
+          "Parameters": [
+            {
+              "Name": "args",
+              "Type": "System.String[]"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnStarted",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnStopping",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnStopped",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "host",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHost"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.WindowsServices.WebHostWindowsServiceExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "RunAsService",
+          "Parameters": [
+            {
+              "Name": "host",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHost"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

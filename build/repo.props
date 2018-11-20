@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SamplesProject Include="$(RepositoryRoot)src\samples\**\*.csproj;"/>
+    <SamplesProject Include="$(RepositoryRoot)src\**\samples\**\*.csproj;"/>
 
     <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
 
@@ -55,6 +55,8 @@
     <ProjectToBuild Include="
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                       $(RepositoryRoot)src\DataProtection\**\*.*proj;
+                      $(RepositoryRoot)src\Hosting\**\*.*proj;
+                      $(RepositoryRoot)src\Http\**\*.*proj;
                       $(RepositoryRoot)src\Html\**\*.*proj;
                       $(RepositoryRoot)src\Servers\**\*.*proj;
                       $(RepositoryRoot)src\Tools\**\*.*proj;

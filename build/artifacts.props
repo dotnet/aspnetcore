@@ -74,7 +74,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.HostFiltering" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.WindowsServices" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Html.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -134,7 +133,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Routing" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Core" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Https" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -183,8 +181,6 @@
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Hosting.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Hosting" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
