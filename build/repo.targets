@@ -22,12 +22,16 @@
     <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
     <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
     <PackageDependsOn Condition=" '$(_ProjectsOnly)' == 'true'">$(PackageDependsOn);PackProjects</PackageDependsOn>
+    <PackageDependsOn Condition=" '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</PackageDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CodeSign</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
     <TestDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(TestDependsOn);_TestRepositories</TestDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetProjectArtifactInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveSharedSourcesPackageInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn  Condition="'$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
+
+    <!-- Package modification must happen before code signing. -->
+    <CodeSignDependsOn>$(CodeSignDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</CodeSignDependsOn>
   </PropertyGroup>
 
   <Target Name="PrepareOutputPaths">
@@ -299,6 +303,28 @@
   <Target Name="VerifyPackageArtifactConfig">
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). PackageArtifact must have the 'Category' metadata."
            Condition="'%(PackageArtifact.Category)' == '' " />
+
+    <ItemGroup>
+      <ExternalDependencyInSharedFx Include="@(Dependency)" Exclude="@(PackageArtifact)" />
+      <SharedFrameworkShippingPackage Include="@(SharedFrameworkOnlyPackage)" Exclude="@(SharedFrameworkAndPackage);@(ExternalDependencyInSharedFx);@(PackageArtifact->WithMetadataValue('Category','noship'))" />
+    </ItemGroup>
+
+    <Error Text="Assemblies which ship in the shared framework should not also ship as NuGet packages, unless explicitly allowed. Please update the following to 'noship': %0A - @(SharedFrameworkShippingPackage, '%0A - '). "
+           Condition=" @(SharedFrameworkShippingPackage->Count()) != 0 " />
+  </Target>
+
+  <!-- This is temporary until we can use FrameworkReference to build our own packages. -->
+  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec">
+    <ItemGroup>
+      <_BuildOutput Include="$(BuildDir)%(PackageArtifact.Identity).*.nupkg"
+                    Condition=" '%(PackageArtifact.Category)' == 'ship' " />
+
+      <SharedFxPackageRefToHide Include="@(SharedFrameworkOnlyPackage)" Exclude="@(ExternalDependency)" />
+    </ItemGroup>
+
+    <RepoTasks.RemoveSharedFrameworkDependencies Condition="@(_BuildOutput->Count()) != 0"
+      Files="@(_BuildOutput)"
+      FrameworkOnlyPackages="@(SharedFxPackageRefToHide)" />
   </Target>
 
   <Target Name="VerifyExternalDependencyConfig">

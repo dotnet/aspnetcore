@@ -10,4 +10,5 @@
   <UsingTask TaskName="RepoTasks.OrderBy" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.GenerateSharedFrameworkMetadataFiles" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.PublishToAzureBlob" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.RemoveSharedFrameworkDependencies" AssemblyFile="$(_RepoTaskAssembly)" />
 </Project>

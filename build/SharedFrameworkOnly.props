@@ -1,0 +1,33 @@
+<!--
+  This lists all assemblies which are part of the Microsoft.AspNetCore.App shared framework
+  and should not ship as NuGet packages.
+-->
+<Project>
+
+  <Import Project="..\src\Framework\Microsoft.AspNetCore.App.props" />
+
+  <ItemGroup>
+    <!-- Packages to be removed from the shared framework but not done yet. -->
+    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.JsonPatch" />
+
+    <!-- Packages for Razor runtime compilation -->
+    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Razor.Language" />
+    <SharedFrameworkAndPackage Include="Microsoft.CodeAnalysis.Razor" />
+
+    <!-- Assemblies required by the SignalR client. -->
+    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Http.Features" />
+    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
+    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+
+    <!-- Assemblies produced by this repo that will move to aspnet/Extensions after repo refactoring is tone -->
+    <SharedFrameworkAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
+    <SharedFrameworkAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <SharedFrameworkAndPackage Include="Microsoft.Extensions.Identity.Core" />
+    <SharedFrameworkAndPackage Include="Microsoft.Extensions.Identity.Stores" />
+    <SharedFrameworkAndPackage Include="Microsoft.Extensions.Localization.Abstractions" />
+    <SharedFrameworkAndPackage Include="Microsoft.Extensions.Localization" />
+
+    <SharedFrameworkOnlyPackage Include="@(Dependency)" Exclude="@(SharedFrameworkAndPackage)" />
+  </ItemGroup>
+
+</Project>
