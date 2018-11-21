@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.NodeServices.HostingModels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
@@ -58,9 +58,7 @@ namespace Microsoft.AspNetCore.NodeServices
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             NodeInstanceOutputLogger = loggerFactory != null
                 ? loggerFactory.CreateLogger(LogCategoryName)
-#pragma warning disable CS0618 // Type or member is obsolete
-                : new ConsoleLogger(LogCategoryName, null, false);
-#pragma warning restore CS0618
+                : NullLogger.Instance;
             // By default, we use this package's built-in out-of-process-via-HTTP hosting/transport
             this.UseHttpHosting();
         }

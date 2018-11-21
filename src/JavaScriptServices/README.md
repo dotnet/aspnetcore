@@ -17,11 +17,11 @@ Read [Building Single Page Applications on ASP.NET Core with JavaScriptServices]
 This repo contains:
 
  * A set of NuGet/NPM packages that implement functionality for:
-   * Invoking arbitrary NPM packages at runtime from .NET code ([docs](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.NodeServices#simple-usage-example))
-   * Server-side prerendering of SPA components ([docs](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#server-side-prerendering))
-   * Webpack dev middleware ([docs](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#webpack-dev-middleware))
-   * Hot module replacement (HMR) ([docs](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#webpack-hot-module-replacement))
-   * Server-side and client-side routing integration ([docs](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#routing-helper-mapspafallbackroute))
+   * Invoking arbitrary NPM packages at runtime from .NET code ([docs](/src/Microsoft.AspNetCore.NodeServices#simple-usage-example))
+   * Server-side prerendering of SPA components ([docs](/src/Microsoft.AspNetCore.SpaServices#server-side-prerendering))
+   * Webpack dev middleware ([docs](/src/Microsoft.AspNetCore.SpaServices#webpack-dev-middleware))
+   * Hot module replacement (HMR) ([docs](/src/Microsoft.AspNetCore.SpaServices#webpack-hot-module-replacement))
+   * Server-side and client-side routing integration ([docs](/src/Microsoft.AspNetCore.SpaServices#routing-helper-mapspafallbackroute))
    * Server-side and client-side validation integration
    * "Lazy loading" for Knockout apps
  * Samples and docs
@@ -44,7 +44,7 @@ In an empty directory, run (for example) `dotnet new angular`. Other supported S
 Once the generator has run and restored all the dependencies, you can start up your new ASP.NET Core SPA:
 
     npm install
-    dotnet run 
+    dotnet run
 
 ### Option 2: Creating Angular/React/Redux applications using Visual Studio 2017 Update 3 or later (Windows only)
 
@@ -63,10 +63,10 @@ If you have an existing ASP.NET Core application, or if you just want to use the
  * `Microsoft.AspNetCore.NodeServices`
    * This provides a fast and robust way for .NET code to run JavaScript on the server inside a Node.js environment. You can use this to consume arbitrary functionality from NPM packages at runtime in your ASP.NET Core app.
    * Most applications developers don't need to use this directly, but you can do so if you want to implement your own functionality that involves calling Node.js code from .NET at runtime.
-   * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.NodeServices#microsoftaspnetcorenodeservices).
+   * Find [documentation and usage examples here](/src/Microsoft.AspNetCore.NodeServices#microsoftaspnetcorenodeservices).
  * `Microsoft.AspNetCore.SpaServices`
    * This provides infrastructure that's generally useful when building Single Page Applications (SPAs) with technologies such as Angular or React (for example, server-side prerendering and webpack middleware). Internally, it uses the `NodeServices` package to implement its features.
-   * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#microsoftaspnetcorespaservices)
+   * Find [documentation and usage examples here](/src/Microsoft.AspNetCore.SpaServices#microsoftaspnetcorespaservices)
 
 There were previously other packages called  `Microsoft.AspNetCore.AngularServices` and `Microsoft.AspNetCore.ReactServices` but these are not currently needed - all applicable functionality is in `Microsoft.AspNetCore.SpaServices`, because it's sufficiently general.
 
@@ -74,7 +74,7 @@ If you want to build a helper library for some other SPA framework, you can do s
 
 ## Samples
 
-The [`samples` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/samples) contains examples of:
+The [`samples` directory](/samples) contains examples of:
 
 - Using the JavaScript services family of packages with Angular and React.
 - A standalone `NodeServices` usage for runtime code transpilation and image processing.

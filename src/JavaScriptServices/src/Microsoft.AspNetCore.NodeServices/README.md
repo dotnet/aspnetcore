@@ -9,8 +9,7 @@ This NuGet package provides a fast and robust way to invoke Node.js code from a 
 
 It is the underlying mechanism supporting the following packages:
 
- * [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices) - builds on NodeServices, adding functionality commonly used in Single Page Applications, such as server-side prerendering, webpack middleware, and integration between server-side and client-side routing.
- * [`Microsoft.AspNetCore.AngularServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.AngularServices) and [`Microsoft.AspNetCore.ReactServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.ReactServices) - these build on `SpaServices`, adding helpers specific to Angular and React, such as cache priming and integrating server-side and client-side validation
+ * [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices) - builds on NodeServices, adding functionality commonly used in Single Page Applications, such as server-side prerendering, webpack middleware, and integration between server-side and client-side routing.
 
 ### Requirements
 
@@ -37,7 +36,7 @@ For .NET Framework apps:
 In that case, you don't need to use NodeServices directly (or install it manually). You can either:
 
 * **Recommended:** Use the `aspnetcore-spa` Yeoman generator to get a ready-to-go starting point using your choice of client-side framework. [Instructions here.](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/)
-* Or set up your ASP.NET Core and client-side Angular/React/KO/etc. app manually, and then use the [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices) package to add features like server-side prerendering or Webpack middleware. But really, at least try using the `aspnetcore-spa` generator first.
+* Or set up your ASP.NET Core and client-side Angular/React/KO/etc. app manually, and then use the [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/master/src/Microsoft.AspNetCore.SpaServices) package to add features like server-side prerendering or Webpack middleware. But really, at least try using the `aspnetcore-spa` generator first.
 
 # Simple usage example
 
@@ -256,7 +255,7 @@ module.exports = function(result, physicalPath, maxWidth, maxHeight) {
 }
 ```
 
-There's a working image resizing example following this approach [here](https://github.com/aspnet/JavaScriptServices/tree/dev/samples/misc/NodeServicesExamples) - see the [C# code](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/misc/NodeServicesExamples/Controllers/ResizeImage.cs) and the [JavaScript code](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/misc/NodeServicesExamples/Node/resizeImage.js).
+There's a working image resizing example following this approach [here](../../samples/misc/NodeServicesExamples) - see the [C# code](../../samples/misc/NodeServicesExamples/Controllers/ResizeImage.cs) and the [JavaScript code](../../samples/misc/NodeServicesExamples/Node/resizeImage.js).
 
 **Parameters**
 

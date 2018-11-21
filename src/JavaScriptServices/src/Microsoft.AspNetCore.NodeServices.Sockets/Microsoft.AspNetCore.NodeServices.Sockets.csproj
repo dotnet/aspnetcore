@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Socket-based RPC for Microsoft.AspNetCore.NodeServices.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

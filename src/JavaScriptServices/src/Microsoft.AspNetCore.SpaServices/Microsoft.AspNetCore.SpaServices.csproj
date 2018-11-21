@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Helpers for building single-page applications on ASP.NET MVC Core.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
