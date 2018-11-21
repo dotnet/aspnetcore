@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <DisableArcadeProjectLayout>true</DisableArcadeProjectLayout>
+  </PropertyGroup>
+  <Import Project="..\Directory.Build.props" />
+</Project>

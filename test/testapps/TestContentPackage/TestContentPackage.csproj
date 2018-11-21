@@ -19,10 +19,10 @@
 
   <ItemGroup>
     <!-- In real content packages, use a <PackageReference> to Microsoft.AspNetCore.Blazor.Browser instead. -->
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Blazor.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj" />
   </ItemGroup>
 
   <!-- In real content packages, use a <PackageReference> to Microsoft.AspNetCore.Blazor.Build instead. -->
-  <Import Project="..\..\..\src\Microsoft.AspNetCore.Blazor.Build\ReferenceFromSource.props" />
+  <Import Project="..\..\..\src\Microsoft.AspNetCore.Components.Build\ReferenceFromSource.props" />
 
 </Project>

@@ -1,0 +1,14 @@
+# HttpClientHandler brings in about 500KB and will never be used under WebAssembly anyway
+# (we have a separate browser-compatible handler).
+#
+# To avoid causing issues for Flurl.Http (https://github.com/aspnet/Blazor/issues/1484),
+# we only wipe the minimal set of methods that pull in the large dependency graph and
+# don't do anything useful under WebAssembly anyway. It would be preferable if Flurl.Http
+# didn't use HttpClientHandler in the case where a custom handler has been configured,
+# but at the time of writing it does.
+
+# SendAsync contains the bulk of the outbound references to HttpWebRequest etc.
+System.Net.Http.HttpClientHandler::SendAsync
+
+# Dispose references ServicePointManager which is huge
+System.Net.Http.HttpClientHandler::Dispose

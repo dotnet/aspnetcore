@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- When editing any version prefix here, remember also to update
-         tooling\Microsoft.VisualStudio.BlazorExtension\Properties\AssemblyInfo.cs
+         blazor\tooling\Microsoft.VisualStudio.BlazorExtension\Properties\AssemblyInfo.cs
          to include the new version in its upper bounds -->
     <IsFinalBuild>false</IsFinalBuild>
     <VersionPrefix>0.8.0</VersionPrefix>

@@ -29,12 +29,18 @@
     <ProjectsToPack Include="$(RepositoryRoot)modules\*\src\*\*.csproj" />
   </ItemGroup>
 
+  <!-- blazor subfolder -->
+  <ItemGroup>
+    <ProjectsToTest Include="$(RepositoryRoot)blazor\test\*\*.csproj" />
+    <ProjectsToPack Include="$(RepositoryRoot)blazor\src\*\*.csproj" />
+  </ItemGroup>
+
   <!--
     By default, this excludes the end-to-end tests from the repo-level build command.
     The CI will script these directly by passing BlazorAllTests=true
   -->
   <ItemGroup Condition="'$(BlazorAllTests)'!='true'">
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Blazor.E2ETest\Microsoft.AspNetCore.Blazor.E2ETest.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Components.E2ETest\Microsoft.AspNetCore.Blazor.E2ETest.csproj" />
   </ItemGroup>
 
   <ItemGroup>
