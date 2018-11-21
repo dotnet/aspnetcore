@@ -4,6 +4,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions: Pinned">
+    <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
   <!-- The AspNetCoreModule package versions are pinned to an older version for forwards and backwards compatibility tests. -->
     <MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>2.2.0-preview3-35497</MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>2.2.0-preview3-35497</MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>

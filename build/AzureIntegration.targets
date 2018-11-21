@@ -10,7 +10,8 @@
         RepositoryRoot=$(AzureIntegrationProjectRoot);
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
-        BuildNumber=$(BuildNumber);
+        VersionSuffix=$(VersionSuffix);
+        BuildNumberSuffix=$(BuildNumberSuffix);
         Configuration=$(Configuration);
         IsFinalBuild=$(IsFinalBuild);
       </AzureIntegrationProjProperties>

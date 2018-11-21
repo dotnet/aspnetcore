@@ -87,14 +87,14 @@
 
     <MSBuild Projects="@(_RepositoryProject)"
              Targets="GetArtifactInfo"
-             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true;"
+             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);DesignTimeBuild=true;"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
     <MSBuild Projects="@(ProjectToBuild)"
              Targets="GetArtifactInfo"
-             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
+             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);DesignTimeBuild=true"
              SkipNonexistentTargets="true"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
@@ -102,7 +102,7 @@
 
     <MSBuild Projects="@(_RepositoryProject)"
              Targets="ResolveSolutions"
-             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix)"
              ContinueOnError="WarnAndContinue"
              BuildInParallel="true"
              Condition="@(_RepositoryProject->Count()) != 0">
@@ -116,14 +116,14 @@
     -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
-             Properties="$(DesignTimeBuildProps);RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true;DesignTimeBuild=true"
+             Properties="$(DesignTimeBuildProps);RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);IsFinalBuild=true;DesignTimeBuild=true"
              ContinueOnError="WarnAndContinue"
              Condition="'%(ShippedRepository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="ShippedArtifactInfo" />
     </MSBuild>
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
-             Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix)"
              ContinueOnError="WarnAndContinue"
              Condition="'%(ShippedRepository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="_ShippedSolution" />

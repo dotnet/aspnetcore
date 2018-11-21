@@ -3,13 +3,44 @@
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseLabel>alpha1</PreReleaseLabel>
-    <PreReleaseBrandingLabel>Alpha 1</PreReleaseBrandingLabel>
-    <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">$([System.DateTime]::Now.ToString('yyMMdd'))-99</BuildNumber>
-    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
+    <PreReleaseLabel>preview</PreReleaseLabel>
+    <PreReleaseBrandingLabel>Preview</PreReleaseBrandingLabel>
     <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
-    <VersionSuffix>$(PreReleaseLabel)-$(BuildNumber)</VersionSuffix>
-    <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumber)</BrandingVersionSuffix>
+    <!-- ANCM versioning is intentionally 10 + AspNetCoreMajorVersion because earlier versions of ANCM shipped as 8.x. -->
+    <AspNetCoreModuleVersionMajor>1$(AspNetCoreMajorVersion)</AspNetCoreModuleVersionMajor>
+
+    <OfficialBuildId Condition="'$(OfficialBuildId)' == ''">$(BUILD_BUILDNUMBER)</OfficialBuildId>
+    <OfficialBuildId Condition="'$(OfficialBuildId)' == '' AND '$(TEAMCITY_VERSION)' != ''">$([System.DateTime]::Now.ToString('yyyyMMdd')).$(BUILD_NUMBER)</OfficialBuildId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(OfficialBuildId)' != '' AND '$(BuildNumberSuffix)' == '' ">
+    <!-- This *mostly*  implements core versioning. Spec: https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Versioning.md -->
+    <_BuildNumber>$(OfficialBuildId)</_BuildNumber>
+
+    <!-- _BuildNumber from CI is assumed to have format "yyyyMMdd.r". -->
+    <_BuildNumberYY>$(_BuildNumber.Substring(2, 2))</_BuildNumberYY>
+    <_BuildNumberMM>$(_BuildNumber.Substring(4, 2))</_BuildNumberMM>
+    <_BuildNumberDD>$(_BuildNumber.Substring(6, 2))</_BuildNumberDD>
+    <_BuildNumberR>$(_BuildNumber.Substring(9))</_BuildNumberR>
+
+    <!-- yy * 1000 + mm * 50 + dd -->
+    <_BuildNumberShortDate>$([MSBuild]::Add($([MSBuild]::Add($([MSBuild]::Multiply($(_BuildNumberYY), 1000)), $([MSBuild]::Multiply($(_BuildNumberMM), 50)))), $(_BuildNumberDD)))</_BuildNumberShortDate>
+
+    <VersionSuffixBuildOfTheDay>$([System.Convert]::ToInt32($(_BuildNumberR)))</VersionSuffixBuildOfTheDay>
+
+    <!-- This is where we currently differ from the core versioning spec. This can be removed when we get official builds running in Azure Pipelines. -->
+    <VersionSuffixBuildOfTheDayPadded Condition=" '$(TEAMCITY_VERSION)' == '' ">$(VersionSuffixBuildOfTheDay.PadLeft(2, '0'))</VersionSuffixBuildOfTheDayPadded>
+    <VersionSuffixBuildOfTheDayPadded Condition=" '$(TEAMCITY_VERSION)' != '' ">$(VersionSuffixBuildOfTheDay.PadLeft(4, '0'))</VersionSuffixBuildOfTheDayPadded>
+
+    <!-- TODO: consider using semver 2.0 instead, when/if https://github.com/dotnet/core-setup/issues/4795 is resolved -->
+    <BuildNumberSuffix>$(_BuildNumberShortDate)-$(VersionSuffixBuildOfTheDayPadded)</BuildNumberSuffix>
+  </PropertyGroup>
+
+   <PropertyGroup>
+    <BuildNumberSuffix Condition=" '$(BuildNumberSuffix)' == '' ">0</BuildNumberSuffix>
+    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
+    <VersionSuffix>$(PreReleaseLabel)-$(BuildNumberSuffix)</VersionSuffix>
+    <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumberSuffix)</BrandingVersionSuffix>
 
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseLabel)' == 'servicing' ">true</IsServicingBuild>

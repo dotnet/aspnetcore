@@ -31,7 +31,7 @@
       BuildInParallel="true"
       StopOnFirstFailure="true"
       Targets="_BuildRepository"
-      Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration)" />
+      Properties="BuildGroup=%(BatchedRepository.BuildGroup);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration)" />
 
     <PropertyGroup>
       <_ReposWereBuilt>true</_ReposWereBuilt>
@@ -54,7 +54,7 @@
       BuildInParallel="$(TestProjectsInParallel)"
       StopOnFirstFailure="false"
       Targets="_TestRepository"
-      Properties="BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration);_NoBuildRepos=$(_NoBuildRepos)"
+      Properties="VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration);_NoBuildRepos=$(_NoBuildRepos)"
       ContinueOnError="true">
       <Output TaskParameter="TargetOutputs" ItemName="_RepoTestResults" />
     </MSBuild>
@@ -83,7 +83,8 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
       <!-- Unset 'SignType' because we collect all outputs from repo builds and sign them at the end. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:SignType=</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:VersionSuffix=$(VersionSuffix)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumberSuffix=$(BuildNumberSuffix)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetAssetRootAccessTokenSuffix=$(DotNetAssetRootAccessTokenSuffix)'</RepositoryBuildArguments>
