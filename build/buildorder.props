@@ -13,12 +13,12 @@
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="10" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <RepositoryBuildOrder Include="StaticFiles" Order="11" />
-    <RepositoryBuildOrder Include="ResponseCaching" Order="11" />
-    <RepositoryBuildOrder Include="Session" Order="11" />
-    <RepositoryBuildOrder Include="ServerTests" Order="11" />
     <RepositoryBuildOrder Include="CORS" Order="12" />
+    <RepositoryBuildOrder Include="StaticFiles" Order="11" RootPath="$(RepositoryRoot)src\StaticFiles\" />
     <RepositoryBuildOrder Include="Routing" Order="12" />
+    <RepositoryBuildOrder Include="ResponseCaching" Order="11" />
+    <RepositoryBuildOrder Include="Session" Order="11" RootPath="$(RepositoryRoot)src\Session\" />
+    <RepositoryBuildOrder Include="ServerTests" Order="11" RootPath="$(RepositoryRoot)src\ServerTests\" />
     <RepositoryBuildOrder Include="Diagnostics" Order="12" />
     <RepositoryBuildOrder Include="Localization" Order="13" />
     <RepositoryBuildOrder Include="Security" Order="13" />

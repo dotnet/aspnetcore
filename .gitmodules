@@ -62,21 +62,9 @@
 	path = modules/Security
 	url = https://github.com/aspnet/Security.git
 	branch = release/2.2
-[submodule "modules/ServerTests"]
-	path = modules/ServerTests
-	url = https://github.com/aspnet/ServerTests.git
-	branch = release/2.2
-[submodule "modules/Session"]
-	path = modules/Session
-	url = https://github.com/aspnet/Session.git
-	branch = release/2.2
 [submodule "modules/SignalR"]
 	path = modules/SignalR
 	url = https://github.com/aspnet/SignalR.git
-	branch = release/2.2
-[submodule "modules/StaticFiles"]
-	path = modules/StaticFiles
-	url = https://github.com/aspnet/StaticFiles.git
 	branch = release/2.2
 [submodule "src/IISIntegration/test/gtest/googletest"]
 	path = src/IISIntegration/test/gtest/googletest
