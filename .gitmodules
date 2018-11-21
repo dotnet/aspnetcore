@@ -1,22 +1,10 @@
-[submodule "modules/Antiforgery"]
-	path = modules/Antiforgery
-	url = https://github.com/aspnet/Antiforgery.git
-	branch = release/2.1
 [submodule "modules/BasicMiddleware"]
 	path = modules/BasicMiddleware
 	url = https://github.com/aspnet/BasicMiddleware.git
 	branch = release/2.1
-[submodule "modules/CORS"]
-	path = modules/CORS
-	url = https://github.com/aspnet/CORS.git
-	branch = release/2.1
 [submodule "modules/EntityFrameworkCore"]
 	path = modules/EntityFrameworkCore
 	url = https://github.com/aspnet/EntityFrameworkCore.git
-	branch = release/2.1
-[submodule "modules/HttpSysServer"]
-	path = modules/HttpSysServer
-	url = https://github.com/aspnet/HttpSysServer.git
 	branch = release/2.1
 [submodule "modules/Identity"]
 	path = modules/Identity
@@ -38,21 +26,9 @@
 	path = modules/Razor
 	url = https://github.com/aspnet/Razor.git
 	branch = release/2.1
-[submodule "modules/ResponseCaching"]
-	path = modules/ResponseCaching
-	url = https://github.com/aspnet/ResponseCaching.git
-	branch = release/2.1
-[submodule "modules/Routing"]
-	path = modules/Routing
-	url = https://github.com/aspnet/Routing.git
-	branch = release/2.1
 [submodule "modules/Scaffolding"]
 	path = modules/Scaffolding
 	url = https://github.com/aspnet/Scaffolding.git
-	branch = release/2.1
-[submodule "modules/Security"]
-	path = modules/Security
-	url = https://github.com/aspnet/Security.git
 	branch = release/2.1
 [submodule "modules/SignalR"]
 	path = modules/SignalR
