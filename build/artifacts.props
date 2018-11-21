@@ -178,6 +178,7 @@
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="noship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Editor.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.VisualStudio.LiveShare.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.Mac.LanguageServices.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
