@@ -21,7 +21,7 @@
           The actual handler folder version is dependent on the ANCMMsiVersion -->
     <ANCMOutOfProcessNugetPackageHandlerVersion>2.0.0</ANCMOutOfProcessNugetPackageHandlerVersion>
 
-    <!-- Location of main folders--> 
+    <!-- Location of main folders-->
     <AspNetCoreSetupRoot>$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
     <IIS-Setup>$(AspNetCoreSetupRoot)IIS-Setup\</IIS-Setup>
     <IIS-Common>$(IIS-Setup)IIS-Common\</IIS-Common>
@@ -29,7 +29,7 @@
 
     <!-- Variables used by ANCM wxs projects. -->
     <CustomActionVariable>CustomAction=$(AspNetCoreSetupRoot)CustomAction\bin\$(Configuration)\$(Platform)\aspnetcoreca.dll</CustomActionVariable>
-    <PreBuiltANCMSchema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModule\$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)\</PreBuiltANCMSchema>
+    <PreBuiltANCMSchema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModuleV1\$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)\</PreBuiltANCMSchema>
     <PreBuiltANCMV2Schema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModuleV2\$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)\</PreBuiltANCMV2Schema>
     <PreBuiltANCMRoot>$(PreBuiltANCMSchema)contentFiles\any\any\</PreBuiltANCMRoot>
     <PreBuiltANCMV2Root>$(PreBuiltANCMV2Schema)contentFiles\any\any\</PreBuiltANCMV2Root>
