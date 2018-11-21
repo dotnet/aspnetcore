@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Abstractions for defining health checks in .NET applications
+
+Commonly Used Types
+Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck
+    </Description>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>diagnostics;healthchecks</PackageTags>
+  </PropertyGroup>
+
+</Project>
