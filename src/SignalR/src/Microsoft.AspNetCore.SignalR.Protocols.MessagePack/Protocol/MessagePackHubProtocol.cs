@@ -132,6 +132,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     return CreateInvocationMessage(input, ref startOffset, binder, resolver);
                 case HubProtocolConstants.StreamInvocationMessageType:
                     return CreateStreamInvocationMessage(input, ref startOffset, binder, resolver);
+                case HubProtocolConstants.StreamDataMessageType:
+                    return CreateStreamDataMessage(input, ref startOffset, binder, resolver);
                 case HubProtocolConstants.StreamItemMessageType:
                     return CreateStreamItemMessage(input, ref startOffset, binder, resolver);
                 case HubProtocolConstants.CompletionMessageType:
@@ -192,6 +194,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 return new InvocationBindingFailureMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
+        }
+
+        private static StreamDataMessage CreateStreamDataMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
+        {
+            var streamId = ReadString(input, ref offset, "streamId");
+            var itemType = binder.GetStreamItemType(streamId);
+            var value = DeserializeObject(input, ref offset, itemType, "item", resolver);
+            return new StreamDataMessage(streamId, value);
         }
 
         private static StreamItemMessage CreateStreamItemMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
@@ -374,6 +384,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 case StreamInvocationMessage streamInvocationMessage:
                     WriteStreamInvocationMessage(streamInvocationMessage, packer);
                     break;
+                case StreamDataMessage streamDataMessage:
+                    WriteStreamDataMessage(streamDataMessage, packer);
+                    break;
                 case StreamItemMessage streamItemMessage:
                     WriteStreamingItemMessage(streamItemMessage, packer);
                     break;
@@ -431,6 +444,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 WriteArgument(arg, packer);
             }
+        }
+
+        private void WriteStreamDataMessage(StreamDataMessage message, Stream packer)
+        {
+            MessagePackBinary.WriteArrayHeader(packer, 3);
+            MessagePackBinary.WriteInt16(packer, HubProtocolConstants.StreamDataMessageType);
+            MessagePackBinary.WriteString(packer, message.StreamId);
+            WriteArgument(message.Item, packer);
         }
 
         private void WriteStreamingItemMessage(StreamItemMessage message, Stream packer)

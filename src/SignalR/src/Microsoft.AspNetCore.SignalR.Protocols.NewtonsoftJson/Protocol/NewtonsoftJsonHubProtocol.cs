@@ -221,13 +221,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                             break;
                                         }
 
-                                        Type itemType = binder.GetStreamItemType(id);
-
                                         try
                                         {
+                                            var itemType = binder.GetStreamItemType(id);
                                             item = PayloadSerializer.Deserialize(reader, itemType);
                                         }
-                                        catch (JsonSerializationException ex)
+                                        catch (Exception ex)
                                         {
                                             return new StreamBindingFailureMessage(id, ExceptionDispatchInfo.Capture(ex));
                                         }
@@ -338,14 +337,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.StreamDataMessageType:
                         if (itemToken != null)
                         {
-                            var itemType = binder.GetStreamItemType(streamId);
                             try
                             {
+                                var itemType = binder.GetStreamItemType(streamId);
                                 item = itemToken.ToObject(itemType, PayloadSerializer);
                             }
-                            catch (JsonSerializationException ex)
+                            catch (Exception ex)
                             {
-                                return new StreamBindingFailureMessage(streamId, ExceptionDispatchInfo.Capture(ex));
+                                message = new StreamBindingFailureMessage(streamId, ExceptionDispatchInfo.Capture(ex));
+                                break;
                             }
                         }
                         message = BindParamStreamMessage(streamId, item, hasItem, binder);
@@ -353,14 +353,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.StreamItemMessageType:
                         if (itemToken != null)
                         {
-                            var returnType = binder.GetStreamItemType(invocationId);
+                            var returnType = binder.GetReturnType(invocationId);
                             try
                             {
                                 item = itemToken.ToObject(returnType, PayloadSerializer);
                             }
                             catch (JsonSerializationException ex)
                             {
-                                return new StreamBindingFailureMessage(invocationId, ExceptionDispatchInfo.Capture(ex));
+                                message =  new StreamBindingFailureMessage(invocationId, ExceptionDispatchInfo.Capture(ex));
+                                break;
                             };
                         }
 
