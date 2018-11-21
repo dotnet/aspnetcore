@@ -33,6 +33,7 @@
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>2.2.0</MicrosoftEntityFrameworkCorePackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>

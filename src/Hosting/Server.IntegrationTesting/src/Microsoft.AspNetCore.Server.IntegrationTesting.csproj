@@ -12,6 +12,7 @@
     <PackageTags>aspnetcore;testing</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <UseProjectReferences>true</UseProjectReferences>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
