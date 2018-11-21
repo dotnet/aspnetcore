@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="AADIntegration" />
+    <Repository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <Repository Include="Antiforgery" />
     <Repository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <Repository Include="BasicMiddleware" />
