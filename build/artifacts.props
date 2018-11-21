@@ -65,7 +65,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" Category="ship" />
@@ -184,9 +183,7 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship"  />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />

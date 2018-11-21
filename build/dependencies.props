@@ -33,6 +33,7 @@
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>2.2.0</MicrosoftEntityFrameworkCorePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.2.0</MicrosoftExtensionsCachingMemoryPackageVersion>
@@ -57,6 +58,8 @@
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>2.2.0</MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>2.2.0</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>2.2.0</MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>2.2.0</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>2.2.0</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
