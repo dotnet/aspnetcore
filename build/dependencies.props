@@ -92,6 +92,8 @@
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.1.1</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion>2.1.1</MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.1</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.1.4</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.4</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
 
     <!-- External and partner dependencies -->
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>

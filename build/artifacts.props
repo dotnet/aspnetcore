@@ -67,9 +67,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.HostFiltering" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -179,8 +177,6 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />

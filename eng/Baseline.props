@@ -126,6 +126,34 @@
     <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[4.5.0, )" />
     <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Diagnostics.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.Abstractions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Diagnostics-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Reflection.Metadata" Version="[1.6.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Hosting.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.Abstractions' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
@@ -223,6 +251,15 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.5.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.MiddlewareAnalysis-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Owin-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' ">

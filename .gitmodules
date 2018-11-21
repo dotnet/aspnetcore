@@ -10,10 +10,6 @@
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git
 	branch = release/2.1
-[submodule "modules/Diagnostics"]
-	path = modules/Diagnostics
-	url = https://github.com/aspnet/Diagnostics.git
-	branch = release/2.1
 [submodule "modules/EntityFrameworkCore"]
 	path = modules/EntityFrameworkCore
 	url = https://github.com/aspnet/EntityFrameworkCore.git

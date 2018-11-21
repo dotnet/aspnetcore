@@ -1,0 +1,116 @@
+﻿@using System
+@using System.Globalization
+@using System.Linq
+@using System.Net
+@using Microsoft.AspNetCore.Diagnostics
+@using Microsoft.AspNetCore.Diagnostics.RazorViews
+@functions
+{
+    public CompilationErrorPageModel Model { get; set; }
+}
+@{
+    Response.StatusCode = 500;
+    Response.ContentType = "text/html; charset=utf-8";
+    Response.ContentLength = null; // Clear any prior Content-Length
+}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>@Resources.ErrorPageHtml_Title</title>
+        <style>
+            <%$ include: ErrorPage.css %>
+        </style>
+    </head>
+    <body>
+        <h1>@Resources.ErrorPageHtml_CompilationException</h1>
+        @{
+            var exceptionDetailId = "";
+        }
+        @for (var i = 0; i < Model.ErrorDetails.Count; i++)
+        {
+            var errorDetail = Model.ErrorDetails[i];
+            exceptionDetailId = "exceptionDetail" + i;
+
+            <div id="stackpage" class="page">
+                @{
+                    var stackFrameCount = 0;
+                    var frameId = "";
+                    var fileName = errorDetail.StackFrames.FirstOrDefault()?.File;
+                    if (!string.IsNullOrEmpty(fileName))
+                    {
+                        <div class="titleerror">@fileName</div>
+                    }
+                }
+                @if (!string.IsNullOrEmpty(errorDetail.ErrorMessage))
+                {
+                    <div class="details">@errorDetail.ErrorMessage</div>
+                }
+                <br />
+                <ul>
+                @foreach (var frame in errorDetail.StackFrames)
+                {
+                    stackFrameCount++;
+                    frameId = "frame" + stackFrameCount;
+
+                    <li class="frame" id="@frameId">
+                        @if (!string.IsNullOrEmpty(frame.ErrorDetails))
+                        {
+                            <h3>@frame.ErrorDetails</h3>
+                        }
+
+                        @if (frame.Line != 0 && frame.ContextCode.Any())
+                        {
+                            <button class="expandCollapseButton" data-frameId="@frameId">+</button>
+                            <div class="source">
+                                @if (frame.PreContextCode.Any())
+                                {
+                                    <ol start="@frame.PreContextLine" class="collapsible">
+                                        @foreach (var line in frame.PreContextCode)
+                                        {
+                                            <li><span>@line</span></li>
+                                        }
+                                    </ol>
+                                }
+                                <ol start="@frame.Line" class="highlight">
+                                    @foreach (var line in frame.ContextCode)
+                                    {
+                                        <li><span>@line</span></li>
+                                    }
+                                </ol>
+                                @if (frame.PostContextCode.Any())
+                                {
+                                    <ol start='@(frame.Line + 1)' class="collapsible">
+                                        @foreach (var line in frame.PostContextCode)
+                                        {
+                                            <li><span>@line</span></li>
+                                        }
+                                    </ol>
+                                }
+                            </div>
+                        }
+                    </li>
+                }
+                </ul>
+                <br />
+            </div>
+            @if (!string.IsNullOrEmpty(Model.CompiledContent[i]))
+            {
+                <div class="rawExceptionBlock">
+                    <div class="showRawExceptionContainer">
+                        <button class="showRawException" data-exceptionDetailId="@exceptionDetailId">Show compilation source</button>
+                    </div>
+                    <div id="@exceptionDetailId" class="rawExceptionDetails">
+                        <pre class="rawExceptionStackTrace">@Model.CompiledContent[i]</pre>
+                    </div>
+                </div>
+            }
+        }
+
+        <script>
+            //<!--
+            <%$ include: ErrorPage.js %>
+            //-->
+        </script>
+    </body>
+</html>
