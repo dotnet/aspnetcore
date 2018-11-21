@@ -13,166 +13,169 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="AspNetCoreRuntime.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86' " />
+    <!-- Packages that go to nuget.org -->
     <PackageArtifact Include="dotnet-dev-certs" Category="ship" />
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
     <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
     <PackageArtifact Include="dotnet-watch" Category="ship" />
-    <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
-    <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="runtime.$(SharedFxRid).Microsoft.AspNetCore.App" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
-    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Facebook" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Google" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.JwtBearer" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OAuth" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Twitter" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.WsFederation" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Buffering" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.CookiePolicy" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Cors" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Cryptography.Internal" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.HostFiltering" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.WindowsServices" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Hosting" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Html.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Http.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Client" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Http.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Features" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Http" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.HttpOverrides" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.HttpsPolicy" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.HttpSys.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.UI" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.JsonPatch" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Localization.Routing" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Localization" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.MiddlewareAnalysis" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Core" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Cors" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Localization" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.RazorPages" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.TagHelpers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Testing" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Owin" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.RangeHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Language" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Razor.Runtime" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Razor" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ResponseCaching" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ResponseCompression" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Rewrite" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Routing" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Core" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Https" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Session" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Common" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Specification.Tests" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.StaticFiles" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.TestHost" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor" Category="ship" />
-    <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship"  />
-    <PackageArtifact Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization" Category="ship" />
-    <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="ship" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />
     <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="ship" />
+
+    <!-- Packages for internal use only. -->
+    <PackageArtifact Include="AspNetCoreRuntime.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86' " />
+    <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" />
+    <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
+    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Core" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.JwtBearer" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OAuth" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Buffering" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.CookiePolicy" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Cors" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Cryptography.Internal" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Extensions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.DataProtection" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.HostFiltering" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Hosting" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Html.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Extensions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Http" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.HttpOverrides" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.HttpsPolicy" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.HttpSys.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Localization.Routing" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Localization" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Core" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Cors" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Localization" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.RazorPages" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.TagHelpers" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.RangeHelper.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Razor.Runtime" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Razor" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ResponseCaching" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ResponseCompression" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Rewrite" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Routing" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Core" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Https" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Session" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Core" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.StaticFiles" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore" Category="noship" />
+    <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="noship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Editor.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.Mac.LanguageServices.Razor" Category="shipoob" />

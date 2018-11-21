@@ -1,5 +1,6 @@
 <Project>
   <Import Project="..\eng\targets\RuntimeIdentifiers.props" />
+  <Import Project="SharedFrameworkOnly.props" />
 
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
