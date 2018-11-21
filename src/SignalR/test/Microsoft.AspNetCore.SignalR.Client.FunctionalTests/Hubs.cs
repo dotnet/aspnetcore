@@ -9,7 +9,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -36,6 +35,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             await Clients.Client(Context.ConnectionId).SendAsync("NoClientHandler");
         }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
 
         public string GetUserIdentifier()
         {
@@ -108,6 +109,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             await Clients.Client(Context.ConnectionId).NoClientHandler();
         }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
     }
 
     public class TestHubT : Hub<ITestHub>
@@ -132,22 +135,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             await Clients.Client(Context.ConnectionId).NoClientHandler();
         }
 
-        public ChannelReader<int> IncrementEach(ChannelReader<int> source)
-        {
-            var output = Channel.CreateUnbounded<int>();
-            _ = Task.Run(async () => {
-                while (await source.WaitToReadAsync())
-                {
-                    while (source.TryRead(out var item))
-                    {
-                        await output.Writer.WriteAsync(item + 1);
-                    }
-                }
-                output.Writer.TryComplete();
-            });
-
-            return output.Reader;
-        }
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
     }
 
     internal static class TestHubMethodsImpl
@@ -186,6 +174,23 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         public static ChannelReader<string> StreamBroken() => null;
+
+        public static ChannelReader<string> StreamEcho(ChannelReader<string> source)
+        {
+            var output = Channel.CreateUnbounded<string>();
+            _ = Task.Run(async () => {
+                while (await source.WaitToReadAsync())
+                {
+                    while (source.TryRead(out var item))
+                    {
+                        await output.Writer.WriteAsync(item);
+                    }
+                }
+                output.Writer.TryComplete();
+            });
+
+            return output.Reader;
+        }
     }
 
     public interface ITestHub

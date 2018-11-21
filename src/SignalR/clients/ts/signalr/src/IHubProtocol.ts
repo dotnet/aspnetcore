@@ -33,14 +33,16 @@ export interface MessageHeaders {
 }
 
 /** Union type of all known Hub messages. */
-export type HubMessage = InvocationMessage
-    | StreamInvocationMessage
-    | StreamItemMessage
-    | CompletionMessage
-    | CancelInvocationMessage
-    | PingMessage
-    | CloseMessage
-    | StreamDataMessage;
+export type HubMessage =
+    InvocationMessage |
+    StreamInvocationMessage |
+    StreamItemMessage |
+    CompletionMessage |
+    CancelInvocationMessage |
+    PingMessage |
+    CloseMessage |
+    StreamCompleteMessage |
+    StreamDataMessage;
 
 /** Defines properties common to all Hub messages. */
 export interface HubMessageBase {
@@ -100,10 +102,10 @@ export interface StreamDataMessage extends HubMessageBase {
     /** @inheritDoc */
     readonly type: MessageType.StreamData;
 
-    /** The streamId */
+    /** The streamId. */
     readonly streamId: string;
 
-    /** The item produced by the client */
+    /** The item produced by the client. */
     readonly item?: any;
 }
 
@@ -153,13 +155,13 @@ export interface CancelInvocationMessage extends HubInvocationMessage {
     readonly invocationId: string;
 }
 
-/** A hub message send to indicate the end of stream items for a streaming parameter. */
+/** A hub message sent to indicate the end of stream items for a streaming parameter. */
 export interface StreamCompleteMessage extends HubMessageBase {
     /** @inheritDoc */
     readonly type: MessageType.StreamComplete;
     /** The stream ID of the stream to be completed. */
     readonly streamId: string;
-    /** The error that trigger completion, if any. */
+    /** The error that triggered completion, if any. */
     readonly error?: string;
 }
 

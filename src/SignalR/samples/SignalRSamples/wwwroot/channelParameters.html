@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
 <head>
@@ -87,32 +87,25 @@
             });
 
             async function run(method) {
-
-                //let id = invocationCounter;
-                //invocationCounter += 1;
-
-                //alert("invoking " + method);
-
                 if (method == "Echo") {
                     var promise = connection.invoke(method, "hello?");
                     promise.then(function (result) {
-                        alert("received response -- " + result);
+                        addLine('resultsList', "received " + result);
                     });
                 }
                 else if (method == "Sum") {
-                    // var data = new Blob(['D', 'R', 'E', 'A', 'M'], { type: 'plain/text', endings: 'native' });
-                    var stream = connection.newUploadStream();
-                    var promise = connection.invoke("UploadWord", stream);
+                    var subject = new signalR.Subject();
+                    var promise = connection.invoke("UploadWord", subject);
 
-                    await stream.write("Z");
-                    await stream.write("O");
-                    await stream.write("O");
-                    await stream.write("P");
-                    await stream.write("!");
-                    await stream.complete();
+                    subject.next("Z");
+                    subject.next("o");
+                    subject.next("o");
+                    subject.next("p");
+                    subject.next("!");
+                    subject.complete();
 
                     promise.then(function (result) {
-                       alert("received response -- " + result);
+                        addLine('resultsList', "received " + result);
                     });
                 }
                 else {

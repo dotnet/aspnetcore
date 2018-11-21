@@ -30,6 +30,7 @@
     "karma-sauce-launcher": "^1.2.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-summary-reporter": "^1.5.0",
+    "rxjs": "^6.3.3",
     "ts-node": "^4.1.0",
     "typescript": "^3.0.1",
     "ws": " ^6.0.0"
