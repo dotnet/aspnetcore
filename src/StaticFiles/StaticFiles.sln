@@ -31,6 +31,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.AspNetCore.RangeH
 		shared\Microsoft.AspNetCore.RangeHelper.Sources\RangeHelper.cs = shared\Microsoft.AspNetCore.RangeHelper.Sources\RangeHelper.cs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DE015849-E126-4DFA-A754-E1AC3B1E7925}"
+	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
+		.travis.yml = .travis.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{D3F67455-9FB9-4354-93EC-B05D755114E9}"
+	ProjectSection(SolutionItems) = preProject
+		build\dependencies.props = build\dependencies.props
+		build\repo.props = build\repo.props
+		build\sources.props = build\sources.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,5 +119,9 @@ Global
 		{FDF0539C-1F62-4B78-91B1-C687886931CA} = {EF02AFE8-7C15-4DDB-8B2C-58A676112A98}
 		{D3D752C4-4CDF-4F18-AC7F-48CB980A69DA} = {EF02AFE8-7C15-4DDB-8B2C-58A676112A98}
 		{DB6A1D14-B8A2-488F-9C4B-422FD45C8853} = {360DC2F8-EEB4-4C69-9784-C686EAD78279}
+		{D3F67455-9FB9-4354-93EC-B05D755114E9} = {DE015849-E126-4DFA-A754-E1AC3B1E7925}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF7F03BE-0DB2-48EF-8185-7698995658A6}
 	EndGlobalSection
 EndGlobal
