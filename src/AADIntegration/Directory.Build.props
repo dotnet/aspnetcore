@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core AAD Integration</Product>
-    <RepositoryUrl>https://github.com/aspnet/AADIntegration</RepositoryUrl>
+    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
