@@ -19,7 +19,7 @@
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
 
-    <!-- Assemblies produced by this repo that will move to aspnet/Extensions after repo refactoring is tone -->
+    <!-- Assemblies produced by this repo that will move to aspnet/Extensions after repo refactoring is done -->
     <SharedFrameworkAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <SharedFrameworkAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <SharedFrameworkAndPackage Include="Microsoft.Extensions.Identity.Core" />
