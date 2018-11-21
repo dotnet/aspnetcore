@@ -26,7 +26,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllAncmVersions()
                 .WithAllHostingModels();
 
@@ -53,7 +53,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix SelfhostTestVariants
             => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22);
+                .WithTfms(Tfm.NetCoreApp30);
 
         // Connection Close tests do not work through reverse proxies
         [ConditionalTheory]
@@ -80,7 +80,9 @@ namespace ServerComparison.FunctionalTests
         private async Task ResponseFormats(TestVariant variant, Func<HttpClient, ILogger, Task> scenario, [CallerMemberName] string testName = null)
         {
             testName = $"{testName}_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
-            using (StartLog(out var loggerFactory, testName))
+            using (StartLog(out var loggerFactory,
+                variant.Server == ServerType.Nginx ? LogLevel.Trace : LogLevel.Debug, // https://github.com/aspnet/ServerTests/issues/144
+                testName))
             {
                 var logger = loggerFactory.CreateLogger("ResponseFormats");
 

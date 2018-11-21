@@ -33,7 +33,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix NoCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllAncmVersions()
                 .WithAllHostingModels();
 
@@ -46,7 +46,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix HostCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Nginx)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllAncmVersions()
                 .WithAllHostingModels();
 
@@ -59,7 +59,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix AppCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys) // No pass-through compression for nginx
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllAncmVersions()
                 .WithAllHostingModels();
 
@@ -72,7 +72,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix HostAndAppCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllAncmVersions()
                 .WithAllHostingModels();
 
@@ -89,7 +89,9 @@ namespace ServerComparison.FunctionalTests
             [CallerMemberName] string testName = null)
         {
             testName = $"{testName}_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
-            using (StartLog(out var loggerFactory, testName))
+            using (StartLog(out var loggerFactory,
+                variant.Server == ServerType.Nginx ? LogLevel.Trace : LogLevel.Debug, // https://github.com/aspnet/ServerTests/issues/144
+                testName))
             {
                 var logger = loggerFactory.CreateLogger("ResponseCompression");
 

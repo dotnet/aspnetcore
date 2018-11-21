@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks Condition="">$(StandardTestTfms)</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <RuntimeIdentifiers>win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
