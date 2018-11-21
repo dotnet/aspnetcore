@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(MicrosoftNETCoreApp20PackageVersion)</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">$(MicrosoftNETCoreApp21PackageVersion)</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">$(MicrosoftNETCoreApp22PackageVersion)</RuntimeFrameworkVersion>
+    <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+  </PropertyGroup>
+</Project>

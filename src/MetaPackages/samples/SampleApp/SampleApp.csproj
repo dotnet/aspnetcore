@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <UserSecretsId>aspnetcore-MetaPackagesSampleApp-20170406180413</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore\Microsoft.AspNetCore.csproj" />
+  </ItemGroup>
+</Project>

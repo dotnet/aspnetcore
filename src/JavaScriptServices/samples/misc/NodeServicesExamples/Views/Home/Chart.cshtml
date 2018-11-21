@@ -1,0 +1,12 @@
+<h1>Server-rendered chart</h1>
+
+<p>
+    This sample demonstrates how arbitrary NPM modules can be invoked from .NET code.
+</p>
+<p>
+    In this case, we use <code>node-chartist</code> to render the following chart on the server. The output is
+    identical to what you'd get if you used <a href='https://gionkunz.github.io/chartist-js/'>chartist.js</a>
+    on the client, except that in this example, we're not executing any client-side code at all.
+</p>
+
+@Html.Raw(ViewData["ChartMarkup"])

@@ -1,0 +1,31 @@
+﻿<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+  <PropertyGroup Label="Package Versions">
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview2-20181004.6</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcTagHelpersPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreMvcTagHelpersPackageVersion>
+    <MicrosoftAspNetCoreMvcViewFeaturesPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreMvcViewFeaturesPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreWebSocketsPackageVersion>2.2.0-preview3-35425</MicrosoftAspNetCoreWebSocketsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview3-27001-02</MicrosoftNETCoreApp22PackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>2.2.0-preview3-35425</MicrosoftNETSdkRazorPackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
+    <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
+    <SystemThreadingTasksDataflowPackageVersion>4.9.0</SystemThreadingTasksDataflowPackageVersion>
+  </PropertyGroup>
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
+  <PropertyGroup Label="Package Versions: Pinned" />
+</Project>
