@@ -286,7 +286,7 @@
     <WriteLinesToFile File="$(RepositoryRoot)artifacts\packages.csv" Lines="PackageId,Version;@(ArtifactInfo->WithMetadataValue('ArtifactType', 'NuGetPackage')->'%(PackageId),%(Version)')" Overwrite="true" />
   </Target>
 
-  <Target Name="ComputeGraph" DependsOnTargets="GetProjectArtifactInfo;GetFxProjectArtifactInfo;ResolveRepoInfo;GeneratePropsFiles">
+  <Target Name="ComputeGraph" DependsOnTargets="ResolveSharedSourcesPackageInfo;GetProjectArtifactInfo;GetFxProjectArtifactInfo;ResolveRepoInfo;GeneratePropsFiles">
     <ItemGroup>
       <_UndeclaredPackageArtifact Include="%(ArtifactInfo.PackageId)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
       <_UndeclaredPackageArtifact Remove="@(PackageArtifact)" />
