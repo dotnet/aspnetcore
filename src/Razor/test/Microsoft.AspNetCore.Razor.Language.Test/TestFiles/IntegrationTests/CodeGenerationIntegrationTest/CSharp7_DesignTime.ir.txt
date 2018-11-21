@@ -34,8 +34,10 @@ Document -
                     IntermediateToken - (804:26,9 [10] CSharp7.cshtml) - Html - \n        
                 CSharpExpression - (816:27,10 [34] CSharp7.cshtml)
                     IntermediateToken - (816:27,10 [34] CSharp7.cshtml) - CSharp - (First: "John", Last: "Doe").First
-                HtmlContent - (872:28,0 [18] CSharp7.cshtml)
-                    IntermediateToken - (872:28,0 [4] CSharp7.cshtml) - Html -     
+                HtmlContent - (851:27,45 [1] CSharp7.cshtml)
+                    IntermediateToken - (851:27,45 [1] CSharp7.cshtml) - Html -  
+                HtmlContent - (870:27,64 [20] CSharp7.cshtml)
+                    IntermediateToken - (870:27,64 [6] CSharp7.cshtml) - Html - \n    
                     IntermediateToken - (876:28,4 [6] CSharp7.cshtml) - Html - </div>
                     IntermediateToken - (882:28,10 [8] CSharp7.cshtml) - Html - \n\n    
                 CSharpCode - (891:30,5 [291] CSharp7.cshtml)

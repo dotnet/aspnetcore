@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var sut = CreateTestParserForContent("---->");
 
             // Act & Assert
-            Assert.True(sut.IsHtmlCommentAhead());
+            Assert.True(sut.LegacyIsHtmlCommentAhead());
         }
 
         [Fact]
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var sut = CreateTestParserForContent("-- Some comment content in here -->");
 
             // Act & Assert
-            Assert.True(sut.IsHtmlCommentAhead());
+            Assert.True(sut.LegacyIsHtmlCommentAhead());
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var sut = CreateTestParserForContent("-- Some comment content in here ----->");
 
             // Act & Assert
-            Assert.True(sut.IsHtmlCommentAhead());
+            Assert.True(sut.LegacyIsHtmlCommentAhead());
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var sut = CreateTestParserForContent("-- Some comment content in here <!--->");
 
             // Act & Assert
-            Assert.False(sut.IsHtmlCommentAhead());
+            Assert.False(sut.LegacyIsHtmlCommentAhead());
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var sut = CreateTestParserForContent("-- comment --> the first part is a valid comment without the Open angle and bang tokens");
 
             // Act & Assert
-            Assert.True(sut.IsHtmlCommentAhead());
+            Assert.True(sut.LegacyIsHtmlCommentAhead());
         }
 
         [Fact]
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var sut = CreateTestParserForContent("-- not closed comment");
 
             // Act & Assert
-            Assert.False(sut.IsHtmlCommentAhead());
+            Assert.False(sut.LegacyIsHtmlCommentAhead());
         }
 
         [Fact]
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var sut = CreateTestParserForContent("-- not closed comment--");
 
             // Act & Assert
-            Assert.False(sut.IsHtmlCommentAhead());
+            Assert.False(sut.LegacyIsHtmlCommentAhead());
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var sut = CreateTestParserForContent("-- not closed @DateTime.Now comment-->");
 
             // Act & Assert
-            Assert.True(sut.IsHtmlCommentAhead());
+            Assert.True(sut.LegacyIsHtmlCommentAhead());
         }
 
         [Fact]
@@ -202,9 +202,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
                 get => base.PreviousToken;
             }
 
-            public new bool IsHtmlCommentAhead()
+            public new bool LegacyIsHtmlCommentAhead()
             {
-                return base.IsHtmlCommentAhead();
+                return base.LegacyIsHtmlCommentAhead();
             }
 
             public TestHtmlMarkupParser(ParserContext context) : base(context)
