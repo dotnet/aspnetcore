@@ -9,7 +9,7 @@ namespace ServerComparison.FunctionalTests
 {
     public class Helpers
     {
-        public static string GetApplicationPath(ApplicationType applicationType)
+        public static string GetApplicationPath()
         {
             var applicationBasePath = AppContext.BaseDirectory;
 
@@ -29,41 +29,11 @@ namespace ServerComparison.FunctionalTests
             throw new Exception($"Solution root could not be found using {applicationBasePath}");
         }
 
-        public static string GetConfigContent(ServerType serverType, string iisConfig, string nginxConfig)
+        public static string GetNginxConfigContent(string nginxConfig)
         {
             var applicationBasePath = AppContext.BaseDirectory;
-
-            string content = null;
-            if (serverType == ServerType.IISExpress)
-            {
-                content = File.ReadAllText(Path.Combine(applicationBasePath, iisConfig));
-            }
-            else if (serverType == ServerType.Nginx)
-            {
-                content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
-            }
-
+            var content = File.ReadAllText(Path.Combine(applicationBasePath, nginxConfig));
             return content;
-        }
-
-        public static string GetTargetFramework(RuntimeFlavor runtimeFlavor)
-        {
-            if (runtimeFlavor == RuntimeFlavor.Clr)
-            {
-                return "net461";
-            }
-            else if (runtimeFlavor == RuntimeFlavor.CoreClr)
-            {
-#if NETCOREAPP2_0
-                return "netcoreapp2.0";
-#elif NETCOREAPP2_1 || NET461
-                return "netcoreapp2.1";
-#else
-#error Target frameworks need to be updated.
-#endif
-            }
-
-            throw new ArgumentException($"Unknown RuntimeFlavor '{runtimeFlavor}'");
         }
     }
 }

@@ -53,8 +53,9 @@ namespace ServerComparison.TestSites
                 // Check that we are not using IIS inproc before we add Kestrel.
                 builder.UseKestrel();
             }
-            
+
             builder.UseIISIntegration();
+            builder.UseIIS();
 
             var host = builder.Build();
 

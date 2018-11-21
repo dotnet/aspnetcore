@@ -4,6 +4,8 @@ VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{49AB8AAA-8160-48DF-A18B-78F51E54E02A}"
 	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
+		.travis.yml = .travis.yml
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		NuGet.config = NuGet.config
@@ -20,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{55694E45
 	ProjectSection(SolutionItems) = preProject
 		build\dependencies.props = build\dependencies.props
 		build\repo.props = build\repo.props
+		build\sources.props = build\sources.props
 	EndProjectSection
 EndProject
 Global
