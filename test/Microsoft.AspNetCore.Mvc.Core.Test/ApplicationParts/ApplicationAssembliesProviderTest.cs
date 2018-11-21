@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             // Arrange
             var runtimeLibraries = new[]
             {
-                GetRuntimeLibrary("MyApp", "Microsoft.AspNetCore.All"),
-                GetRuntimeLibrary("Microsoft.AspNetCore.All", "Microsoft.NETCore.App"),
+                GetRuntimeLibrary("MyApp", "Microsoft.AspNetCore.App"),
+                GetRuntimeLibrary("Microsoft.AspNetCore.App", "Microsoft.NETCore.App"),
                 GetRuntimeLibrary("Microsoft.NETCore.App"),
                 GetRuntimeLibrary("ClassLibrary"),
             };
@@ -257,22 +257,22 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void GetCandidateLibraries_ReturnsRuntimeLibraries_IfCompileLibraryDependencyToMvcIsPresent()
         {
             // Arrange
-            // When an app is running against Microsoft.AspNetCore.All shared runtime or if the DependencyContext is queried
+            // When an app is running against Microsoft.AspNetCore.App shared runtime or if the DependencyContext is queried
             // from an app that's running on Microsoft.NETCore.App (e.g. in a unit testing scenario), the
             // runtime library does not state that the app references Mvc whereas the compile library does. This test validates
             // that we correctly recognize this scenario.
-            var expected = GetRuntimeLibrary("MyApp", "Microsoft.AspNetCore.All");
+            var expected = GetRuntimeLibrary("MyApp", "Microsoft.AspNetCore.App");
             var runtimeLibraries = new[]
             {
                 expected,
-                GetRuntimeLibrary("Microsoft.AspNetCore.All", "Microsoft.NETCore.App"),
+                GetRuntimeLibrary("Microsoft.AspNetCore.App", "Microsoft.NETCore.App"),
                 GetRuntimeLibrary("Microsoft.NETCore.App"),
             };
 
             var compileLibraries = new[]
             {
-                GetCompileLibrary("MyApp", "Microsoft.AspNetCore.All"),
-                GetCompileLibrary("Microsoft.AspNetCore.All", "Microsoft.AspNetCore.Mvc", "Microsoft.NETCore.App"),
+                GetCompileLibrary("MyApp", "Microsoft.AspNetCore.App"),
+                GetCompileLibrary("Microsoft.AspNetCore.App", "Microsoft.AspNetCore.Mvc", "Microsoft.NETCore.App"),
                 GetCompileLibrary("Microsoft.AspNetCore.Mvc"),
                 GetCompileLibrary("Microsoft.NETCore.App"),
             };
