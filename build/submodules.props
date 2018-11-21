@@ -43,8 +43,8 @@
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\AuthSamples\" />
-    <Repository Include="MusicStore" RootPath="$(RepositoryRoot)src\MusicStore\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="MusicStore" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\MusicStore\" />
+    <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\ServerTests\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,8 +66,8 @@
     <ShippedRepository Include="ResponseCaching" />
     <ShippedRepository Include="Routing" />
     <ShippedRepository Include="Security" />
-    <ShippedRepository Include="Session" />
+    <ShippedRepository Include="Session" RootPath="$(RepositoryRoot)src\Session\" />
     <ShippedRepository Include="SignalR" />
-    <ShippedRepository Include="StaticFiles" />
+    <ShippedRepository Include="StaticFiles" RootPath="$(RepositoryRoot)src\StaticFiles\" />
   </ItemGroup>
 </Project>
