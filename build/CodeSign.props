@@ -79,6 +79,7 @@
       <FilesToSign Include="Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll"   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="Microsoft.Rest.ClientRuntime.Azure.dll"                         Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="Microsoft.Rest.ClientRuntime.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.VisualStudio.Web.BrowserLink.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="Microsoft.WindowsAzure.Storage.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="System.Spatial.dll"                                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="System.Spatial.resources.dll"                                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
