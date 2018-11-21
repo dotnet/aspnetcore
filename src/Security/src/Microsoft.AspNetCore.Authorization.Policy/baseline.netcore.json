@@ -1,0 +1,211 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authorization.Policy, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.Policy.IPolicyEvaluator",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AuthenticateAsync",
+          "Parameters": [
+            {
+              "Name": "policy",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationPolicy"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AuthorizeAsync",
+          "Parameters": [
+            {
+              "Name": "policy",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationPolicy"
+            },
+            {
+              "Name": "authenticationResult",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticateResult"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "resource",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult>",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Challenged",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Forbidden",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Succeeded",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Challenge",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Forbid",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Success",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.Policy.PolicyEvaluator",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authorization.Policy.IPolicyEvaluator"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AuthenticateAsync",
+          "Parameters": [
+            {
+              "Name": "policy",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationPolicy"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authorization.Policy.IPolicyEvaluator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AuthorizeAsync",
+          "Parameters": [
+            {
+              "Name": "policy",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationPolicy"
+            },
+            {
+              "Name": "authenticationResult",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticateResult"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "resource",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authorization.Policy.IPolicyEvaluator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "authorization",
+              "Type": "Microsoft.AspNetCore.Authorization.IAuthorizationService"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.PolicyServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddAuthorizationPolicyEvaluator",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
