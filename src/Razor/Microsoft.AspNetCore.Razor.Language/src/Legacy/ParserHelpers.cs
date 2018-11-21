@@ -100,5 +100,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             return CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.DecimalDigitNumber;
         }
+
+        // From http://dev.w3.org/html5/spec/Overview.html#elements-0
+        public static readonly HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "area",
+            "base",
+            "br",
+            "col",
+            "command",
+            "embed",
+            "hr",
+            "img",
+            "input",
+            "keygen",
+            "link",
+            "meta",
+            "param",
+            "source",
+            "track",
+            "wbr"
+        };
     }
 }

@@ -11,27 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
     internal static class SyntaxNodeExtensions
     {
-        // From http://dev.w3.org/html5/spec/Overview.html#elements-0
-        private static readonly HashSet<string> VoidElements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "area",
-            "base",
-            "br",
-            "col",
-            "command",
-            "embed",
-            "hr",
-            "img",
-            "input",
-            "keygen",
-            "link",
-            "meta",
-            "param",
-            "source",
-            "track",
-            "wbr"
-        };
-
         public static TNode WithAnnotations<TNode>(this TNode node, params SyntaxAnnotation[] annotations) where TNode : SyntaxNode
         {
             if (node == null)
@@ -333,7 +312,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 throw new ArgumentNullException(nameof(tagBlock));
             }
 
-            return VoidElements.Contains(tagBlock.GetTagName());
+            return ParserHelpers.VoidElements.Contains(tagBlock.GetTagName());
         }
     }
 }

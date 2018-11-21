@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal class DirectiveHtmlTokenizer : HtmlTokenizer
     {
         private bool _visitedFirstTokenStart = false;
+        private SourceLocation _firstTokenVisitLocation = SourceLocation.Undefined;
 
         public DirectiveHtmlTokenizer(ITextDocument source) : base(source)
         {
@@ -16,10 +17,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected override StateResult Dispatch()
         {
+            var location = CurrentLocation;
             var result = base.Dispatch();
             if (result.Result != null && IsValidTokenType(result.Result.Kind))
             {
                 _visitedFirstTokenStart = true;
+                _firstTokenVisitLocation = location;
             }
 
             return result;
@@ -31,8 +34,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Debug.Assert(Buffer.Length == 0);
             StartToken();
 
-            if (EndOfFile || _visitedFirstTokenStart)
+            if (EndOfFile || (_visitedFirstTokenStart && _firstTokenVisitLocation != CurrentLocation))
             {
+                // We also need to make sure we are currently past the position where we found the first token.
+                // If the position is equal, that means the parser put the token back for later parsing.
                 return null;
             }
 
