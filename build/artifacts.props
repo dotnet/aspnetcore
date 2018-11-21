@@ -182,7 +182,7 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="ship" />
+    <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
