@@ -12,24 +12,24 @@
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="10" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <RepositoryBuildOrder Include="StaticFiles" Order="11" />
-    <RepositoryBuildOrder Include="ResponseCaching" Order="11" />
-    <RepositoryBuildOrder Include="Session" Order="11" />
-    <RepositoryBuildOrder Include="ServerTests" Order="11" />
     <RepositoryBuildOrder Include="CORS" Order="12" />
+    <RepositoryBuildOrder Include="StaticFiles" Order="11" RootPath="$(RepositoryRoot)src\StaticFiles\" />
     <RepositoryBuildOrder Include="Routing" Order="12" />
+    <RepositoryBuildOrder Include="ResponseCaching" Order="11" />
+    <RepositoryBuildOrder Include="Session" Order="11" RootPath="$(RepositoryRoot)src\Session\" />
+    <RepositoryBuildOrder Include="ServerTests" Order="11" RootPath="$(RepositoryRoot)src\ServerTests\" />
     <RepositoryBuildOrder Include="Diagnostics" Order="12" />
     <RepositoryBuildOrder Include="Localization" Order="13" />
     <RepositoryBuildOrder Include="Security" Order="13" />
-    <RepositoryBuildOrder Include="MetaPackages" Order="13" />
+    <RepositoryBuildOrder Include="MetaPackages" Order="13" RootPath="$(RepositoryRoot)src\MetaPackages\" />
     <RepositoryBuildOrder Include="Mvc" Order="14" />
-    <RepositoryBuildOrder Include="AADIntegration" Order="15" />
+    <RepositoryBuildOrder Include="AADIntegration" Order="15" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <RepositoryBuildOrder Include="Identity" Order="15" />
-    <RepositoryBuildOrder Include="JavaScriptServices" Order="15" />
+    <RepositoryBuildOrder Include="JavaScriptServices" Order="15" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <RepositoryBuildOrder Include="AzureIntegration" Order="15" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <RepositoryBuildOrder Include="MusicStore" Order="16" RootPath="$(RepositoryRoot)src\MusicStore\" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" RootPath="$(RepositoryRoot)src\AuthSamples\" />
-    <RepositoryBuildOrder Include="templating" Order="17" RootPath="$(RepositoryRoot)src\templating\" />
+    <RepositoryBuildOrder Include="Templating" Order="17" RootPath="$(RepositoryRoot)src\Templating\" />
   </ItemGroup>
 </Project>

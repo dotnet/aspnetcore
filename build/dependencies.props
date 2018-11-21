@@ -210,6 +210,7 @@
     <MicrosoftVisualStudioTextUIPackageVersion>16.0.142-g25b7188c54</MicrosoftVisualStudioTextUIPackageVersion>
     <MicrosoftVisualStudioThreadingPackageVersion>15.8.168</MicrosoftVisualStudioThreadingPackageVersion>
     <MicrosoftWebAdministrationPackageVersion>11.1.0</MicrosoftWebAdministrationPackageVersion>
+    <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.2.0</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
     <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
     <MonoAddinsPackageVersion>1.3.8</MonoAddinsPackageVersion>
     <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>
