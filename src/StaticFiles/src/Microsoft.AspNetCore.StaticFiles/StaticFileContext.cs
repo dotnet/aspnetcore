@@ -282,11 +282,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // it is not returned for 304, 412, and 416
                 _response.ContentLength = _length;
             }
-            _options.OnPrepareResponse(new StaticFileResponseContext
-            {
-                Context = _context,
-                File = _fileInfo,
-            });
+
+            _options.OnPrepareResponse(new StaticFileResponseContext(_context, _fileInfo));
         }
 
         public PreconditionState GetPreconditionState()

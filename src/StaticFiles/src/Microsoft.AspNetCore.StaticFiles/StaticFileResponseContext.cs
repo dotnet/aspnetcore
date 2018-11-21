@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 
@@ -11,14 +12,33 @@ namespace Microsoft.AspNetCore.StaticFiles
     /// </summary>
     public class StaticFileResponseContext
     {
+        [Obsolete("Use the constructor that passes in the HttpContext and IFileInfo parameters: StaticFileResponseContext(HttpContext context, IFileInfo file)", false)]
+        public StaticFileResponseContext()
+        {
+        }
+
+        public StaticFileResponseContext(HttpContext context, IFileInfo file)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+            Context = context;
+            File = file;
+        }
+
         /// <summary>
         /// The request and response information.
         /// </summary>
-        public HttpContext Context { get; internal set; }
+        public HttpContext Context { get; }
 
         /// <summary>
         /// The file to be served.
         /// </summary>
-        public IFileInfo File { get; internal set; }
+        public IFileInfo File { get; }
     }
 }
