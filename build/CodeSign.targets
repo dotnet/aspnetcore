@@ -36,14 +36,14 @@
     <MSBuild Projects="@(_RepositoryProject)"
              Condition="@(_RepositoryProject->Count()) != 0"
              Targets="_GetFileSignInfo"
-             Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);DesignTimeBuild=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
+             Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);DesignTimeBuild=true;Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="_RepoFileSignInfo" />
     </MSBuild>
     <MSBuild Projects="@(_ShippedRepositoryProject)"
              Condition="@(_ShippedRepositoryProject->Count()) != 0"
              Targets="_GetFileSignInfo"
-             Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);IsFinalBuild=true;DesignTimeBuild=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
+             Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);IsFinalBuild=true;DesignTimeBuild=true;Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="_ShippedRepoFileSignInfo" />
     </MSBuild>

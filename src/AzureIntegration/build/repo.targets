@@ -49,11 +49,11 @@
   <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;PrepareSiteExtensionSdks">
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Restore"
-      Properties="BuildNumber=$(BuildNumber)" />
+      Properties="VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix)" />
 
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Pack"
-      Properties="%(SiteExtensions.BuildProperties);DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber);PackageOutputPath=$(SiteExtensionOutputDirectory)" />
+      Properties="%(SiteExtensions.BuildProperties);DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);PackageOutputPath=$(SiteExtensionOutputDirectory)" />
   </Target>
 
   <Target Name="PushSiteExtension" DependsOnTargets="BuildSiteExtension">
