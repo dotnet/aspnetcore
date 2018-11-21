@@ -1,9 +1,8 @@
-Server Tests
-============
+Server Tests [Archived]
+=======================
 
-[![Travis build status](https://img.shields.io/travis/aspnet/ServerTests.svg?label=travis-ci&branch=dev&style=flat-square)](https://travis-ci.org/aspnet/ServerTests/branches)
-[![AppVeyor build status](https://img.shields.io/appveyor/ci/aspnetci/ServerTests/dev.svg?label=appveyor&style=flat-square)](https://ci.appveyor.com/project/aspnetci/ServerTests/branch/dev)
+**This GitHub project has been archived.** Ongoing development on this project can be found in <https://github.com/aspnet/AspNetCore>.
 
 This repo hosts [HttpSysServer](https://github.com/aspnet/HttpSysServer) and [Kestrel](https://github.com/aspnet/KestrelHttpServer) tests.
 
-This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [AspNetCore](https://github.com/aspnet/AspNetCore) repo.
