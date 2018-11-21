@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="AADIntegration" />
+    <Repository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <Repository Include="Antiforgery" />
     <Repository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <Repository Include="BasicMiddleware" />
@@ -45,9 +45,9 @@
     <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <Repository Include="JavaScriptServices" />
+    <Repository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <Repository Include="Localization" />
-    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <Repository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
     <Repository Include="Mvc" />
     <Repository Include="Razor" />
     <Repository Include="ResponseCaching" />
