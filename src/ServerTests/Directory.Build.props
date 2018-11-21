@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
-    <RepositoryUrl>https://github.com/aspnet/servertests</RepositoryUrl>
+    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
