@@ -45,7 +45,7 @@
     <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <Repository Include="JavaScriptServices" />
+    <Repository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <Repository Include="Localization" />
     <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <Repository Include="Mvc" />

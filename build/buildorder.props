@@ -25,7 +25,7 @@
     <RepositoryBuildOrder Include="Mvc" Order="14" />
     <RepositoryBuildOrder Include="AADIntegration" Order="15" />
     <RepositoryBuildOrder Include="Identity" Order="15" />
-    <RepositoryBuildOrder Include="JavaScriptServices" Order="15" />
+    <RepositoryBuildOrder Include="JavaScriptServices" Order="15" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <RepositoryBuildOrder Include="AzureIntegration" Order="15" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <RepositoryBuildOrder Include="MusicStore" Order="16" RootPath="$(RepositoryRoot)src\MusicStore\" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />
