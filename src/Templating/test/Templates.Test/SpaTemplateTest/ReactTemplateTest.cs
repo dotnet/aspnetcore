@@ -8,14 +8,14 @@ using Xunit.Abstractions;
 [assembly: AssemblyFixture(typeof(SeleniumServerFixture))]
 namespace Templates.Test.SpaTemplateTest
 {
-    public class ReactReduxTemplateTest : SpaTemplateTestBase
+    public class ReactTemplateTest : SpaTemplateTestBase
     {
-        public ReactReduxTemplateTest(BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
+        public ReactTemplateTest(BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
         {
         }
 
         [Fact]
-        public void ReactReduxTemplate_Works_NetCore()
-            => SpaTemplateImpl(null, "reactredux");
+        public void ReactTemplate_Works_NetCore()
+            => SpaTemplateImpl(null, "react");
     }
 }
