@@ -3,4 +3,3 @@ content/*.js;Microsoft.DotNet.Web.Spa.ProjectTemplates.*.nupkg; Exclude JavaScri
 content/*.js;Microsoft.DotNet.Web.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
 Templates/*.js;Microsoft.VisualStudio.Web.CodeGenerators.Mvc.*.nupkg; Exclude JavaScript files from codesigning in code generators
 *.js;signalr-*-javadoc.jar; Exclude JavaScript files in the generated javadocs
-39d497240d18b355fa777f74fa5fb768.dll;aspnetcore-runtime-*-win-x86.zip; Temporary workaround for https://github.com/dotnet/core-setup/issues/4797
