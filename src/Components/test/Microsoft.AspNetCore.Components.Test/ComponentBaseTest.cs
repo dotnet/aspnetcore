@@ -3,14 +3,14 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Test
+namespace Microsoft.AspNetCore.Components.Test
 {
-    public class BlazorComponentTest
+    public class ComponentBaseTest
     {
         [Fact]
         public void RunsOnInitWhenRendered()
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal(3, renderer.Batches.Count);
         }
 
-        private class TestComponent : BlazorComponent
+        private class TestComponent : ComponentBase
         {
             private readonly TestService _service;
 
