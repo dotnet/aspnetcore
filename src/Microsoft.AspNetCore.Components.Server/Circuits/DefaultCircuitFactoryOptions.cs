@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Blazor.Builder;
+using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Blazor.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class DefaultCircuitFactoryOptions
     {

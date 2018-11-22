@@ -3,7 +3,7 @@ Source Location: (42:1,12 [44] x:\dir\subdir\Test\TestComponent.cshtml)
     void OnClick(UIEventArgs e) {
     }
 |
-Generated Location: (973:23,12 [44] )
+Generated Location: (918:22,12 [44] )
 |
     void OnClick(UIEventArgs e) {
     }

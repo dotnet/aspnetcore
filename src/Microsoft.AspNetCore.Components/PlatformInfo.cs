@@ -3,7 +3,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Blazor
+namespace Microsoft.AspNetCore.Components
 {
     internal static class PlatformInfo
     {

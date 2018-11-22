@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Blazor
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Extension methods for working with JSON APIs.

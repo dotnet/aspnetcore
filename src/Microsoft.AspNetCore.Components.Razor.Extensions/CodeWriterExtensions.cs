@@ -12,7 +12,7 @@ using System.Linq;
 // Copied directly from https://github.com/aspnet/Razor/blob/ff40124594b58b17988d50841175430a4b73d1a9/src/Microsoft.AspNetCore.Razor.Language/CodeGeneration/CodeWriterExtensions.cs
 // (other than the namespace change) because it's internal
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal static class CodeWriterExtensions
     {

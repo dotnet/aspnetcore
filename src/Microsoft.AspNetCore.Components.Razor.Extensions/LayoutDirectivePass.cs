@@ -3,11 +3,11 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class LayoutDirectivePass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
     {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             attributeNode.Children.Add(new IntermediateToken()
             {
                 Kind = TokenKind.CSharp,
-                Content = $"[{BlazorApi.LayoutAttribute.FullTypeName}(typeof({token.Content}))]" + Environment.NewLine,
+                Content = $"[{ComponentsApi.LayoutAttribute.FullTypeName}(typeof({token.Content}))]" + Environment.NewLine,
             });
             
             // Insert the new attribute on top of the class

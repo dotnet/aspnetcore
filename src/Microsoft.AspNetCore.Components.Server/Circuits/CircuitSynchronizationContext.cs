@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Blazor.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     [DebuggerDisplay("{_state,nq}")]
     internal class CircuitSynchronizationContext : SynchronizationContext

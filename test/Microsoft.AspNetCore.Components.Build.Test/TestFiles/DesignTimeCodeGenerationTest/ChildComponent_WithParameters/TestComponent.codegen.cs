@@ -7,9 +7,8 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -23,17 +22,17 @@ global::System.Object __typeHelper = "*, TestAssembly";
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
-            __o = Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<System.Int32>(
+            __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.Int32>(
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                  123
 
 #line default
 #line hidden
             );
-            __o = Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<System.Boolean>(
+            __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.Boolean>(
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
                   true
 
@@ -41,14 +40,14 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line hidden
             );
             __o = "";
-            __o = Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<Test.SomeType>(
+            __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<Test.SomeType>(
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
                     new SomeType()
 
 #line default
 #line hidden
             );
-            builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment)((builder2) => {
+            builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
             }
             ));
         }

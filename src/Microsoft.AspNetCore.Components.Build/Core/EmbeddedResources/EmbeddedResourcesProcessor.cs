@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Blazor.Build
+namespace Microsoft.AspNetCore.Components.Build
 {
     internal class EmbeddedResourcesProcessor
     {

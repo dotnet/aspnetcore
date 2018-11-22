@@ -9,11 +9,11 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Razor;
-using Microsoft.AspNetCore.Blazor.Rendering;
-using Microsoft.AspNetCore.Blazor.RenderTree;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using Microsoft.AspNetCore.Components.Razor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.CodeAnalysis;
@@ -22,7 +22,7 @@ using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class RazorIntegrationTestBase
     {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var referenceAssemblyRoots = new[]
             {
                 typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly, // System.Runtime
-                typeof(BlazorComponent).Assembly,
+                typeof(ComponentBase).Assembly,
                 typeof(RazorIntegrationTestBase).Assembly, // Reference this assembly, so that we can refer to test component types
             };
 

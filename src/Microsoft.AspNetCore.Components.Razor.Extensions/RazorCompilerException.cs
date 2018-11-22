@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Razor.Language;
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     /// <summary>
     /// Represents a fatal error during the transformation of a Blazor component from

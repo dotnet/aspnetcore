@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Components.Rendering;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Blazor.Rendering
+namespace Microsoft.AspNetCore.Components.Rendering
 {
     // Provides mechanisms for locating <see cref="Renderer"/> instances
     // by ID. This is used when receiving incoming events. It also implicitly

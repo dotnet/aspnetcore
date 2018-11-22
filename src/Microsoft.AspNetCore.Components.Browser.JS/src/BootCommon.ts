@@ -28,7 +28,7 @@ function loadResourceFromElement(element: HTMLElement) {
   });
 }
 
-// Keep in sync with BootJsonData in Microsoft.AspNetCore.Blazor.Build
+// Keep in sync with BootJsonData in Microsoft.AspNetCore.Components.Build
 interface BootJsonData {
   main: string;
   entryPoint: string;

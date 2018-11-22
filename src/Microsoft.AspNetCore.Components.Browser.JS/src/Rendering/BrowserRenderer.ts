@@ -368,7 +368,7 @@ function raiseEvent(event: Event, browserRendererId: number, componentId: number
   };
 
   return DotNet.invokeMethodAsync(
-    'Microsoft.AspNetCore.Blazor.Browser',
+    'Microsoft.AspNetCore.Components.Browser',
     'DispatchEvent',
     eventDescriptor,
     JSON.stringify(eventArgs.data));

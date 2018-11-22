@@ -3,12 +3,12 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class ComponentDiscoveryRazorIntegrationTest : RazorIntegrationTestBase
     {
@@ -19,11 +19,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
     }
 }
@@ -42,11 +42,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test.AnotherNamespace
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
     }
 }
@@ -79,11 +79,11 @@ namespace Test.AnotherNamespace
             // Arrange
 
             // Act
-            var result = CompileToCSharp("@addTagHelper *, Microsoft.AspNetCore.Blazor");
+            var result = CompileToCSharp("@addTagHelper *, Microsoft.AspNetCore.Components");
 
             // Assert
             var bindings = result.CodeDocument.GetTagHelperContext();
-            Assert.Single(bindings.TagHelpers, t => t.Name == "Microsoft.AspNetCore.Blazor.Routing.NavLink");
+            Assert.Single(bindings.TagHelpers, t => t.Name == "Microsoft.AspNetCore.Components.Routing.NavLink");
         }
 
         [Fact]

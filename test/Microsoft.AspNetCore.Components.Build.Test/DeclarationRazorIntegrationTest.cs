@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Reflection;
 using System.Text;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Razor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Razor;
 using Microsoft.AspNetCore.Razor.Language;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class DeclarationRazorIntegrationTest : RazorIntegrationTestBase
     {
@@ -125,12 +125,11 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
         }
         #pragma warning restore 1998
@@ -158,7 +157,7 @@ namespace Test
             Assert.Equal(1, position.StartLinePosition.Line);
         }
 
-        public class BaseClass : BlazorComponent
+        public class BaseClass : ComponentBase
         {
         }
 

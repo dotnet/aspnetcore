@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Blazor.Routing
+namespace Microsoft.AspNetCore.Components.Routing
 {
     internal abstract class RouteConstraint
     {

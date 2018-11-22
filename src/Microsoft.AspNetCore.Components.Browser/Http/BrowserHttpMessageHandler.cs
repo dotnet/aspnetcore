@@ -11,7 +11,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Blazor.Browser.Http
+namespace Microsoft.AspNetCore.Components.Browser.Http
 {
     /// <summary>
     /// A browser-compatible implementation of <see cref="HttpMessageHandler"/>

@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Blazor.Performance;
+using Microsoft.AspNetCore.Components.Performance;
 
 namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner
 {

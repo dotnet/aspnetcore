@@ -1,29 +1,28 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Razor;
-using Microsoft.AspNetCore.Blazor.RenderTree;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using Microsoft.AspNetCore.Components.Razor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class GenericComponentRazorIntegrationTest : RazorIntegrationTestBase
     {
         private readonly CSharpSyntaxTree GenericContextComponent = Parse(@"
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 namespace Test
 {
-    public class GenericContext<TItem> : BlazorComponent
+    public class GenericContext<TItem> : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -57,12 +56,11 @@ namespace Test
 ");
 
         private readonly CSharpSyntaxTree MultipleGenericParameterComponent = Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 namespace Test
 {
-    public class MultipleGenericParameter<TItem1, TItem2, TItem3> : BlazorComponent
+    public class MultipleGenericParameter<TItem1, TItem2, TItem3> : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {

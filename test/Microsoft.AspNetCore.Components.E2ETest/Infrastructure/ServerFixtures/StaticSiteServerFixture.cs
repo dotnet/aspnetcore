@@ -6,7 +6,7 @@ using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures
+namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
     // Although this is not used for anything meaningful related to Blazor yet, it
     // will be used later when there's a mechanism for publishing standalone Blazor

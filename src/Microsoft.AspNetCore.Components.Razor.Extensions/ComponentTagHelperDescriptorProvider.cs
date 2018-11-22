@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class ComponentTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
     {
@@ -305,9 +305,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var properties = new Dictionary<string, (IPropertySymbol, PropertyKind)>(StringComparer.Ordinal);
             do
             {
-                if (type == symbols.BlazorComponent)
+                if (type == symbols.ComponentBase)
                 {
-                    // The BlazorComponent base class doesn't have any [Parameter].
+                    // The ComponentBase base class doesn't have any [Parameter].
                     // Bail out now to avoid walking through its many members, plus the members
                     // of the System.Object base class.
                     break;
@@ -400,34 +400,34 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public static BlazorSymbols Create(Compilation compilation)
             {
                 var symbols = new BlazorSymbols();
-                symbols.BlazorComponent = compilation.GetTypeByMetadataName(BlazorApi.BlazorComponent.MetadataName);
-                if (symbols.BlazorComponent == null)
+                symbols.ComponentBase = compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName);
+                if (symbols.ComponentBase == null)
                 {
-                    // No definition for BlazorComponent, nothing to do.
+                    // No definition for ComponentBase, nothing to do.
                     return null;
                 }
 
-                symbols.IComponent = compilation.GetTypeByMetadataName(BlazorApi.IComponent.MetadataName);
+                symbols.IComponent = compilation.GetTypeByMetadataName(ComponentsApi.IComponent.MetadataName);
                 if (symbols.IComponent == null)
                 {
                     // No definition for IComponent, nothing to do.
                     return null;
                 }
 
-                symbols.ParameterAttribute = compilation.GetTypeByMetadataName(BlazorApi.ParameterAttribute.MetadataName);
+                symbols.ParameterAttribute = compilation.GetTypeByMetadataName(ComponentsApi.ParameterAttribute.MetadataName);
                 if (symbols.ParameterAttribute == null)
                 {
                     // No definition for [Parameter], nothing to do.
                     return null;
                 }
 
-                symbols.RenderFragment = compilation.GetTypeByMetadataName(BlazorApi.RenderFragment.MetadataName);
+                symbols.RenderFragment = compilation.GetTypeByMetadataName(ComponentsApi.RenderFragment.MetadataName);
                 if (symbols.RenderFragment == null)
                 {
                     // No definition for RenderFragment, nothing to do.
                 }
 
-                symbols.RenderFragmentOfT = compilation.GetTypeByMetadataName(BlazorApi.RenderFragmentOfT.MetadataName);
+                symbols.RenderFragmentOfT = compilation.GetTypeByMetadataName(ComponentsApi.RenderFragmentOfT.MetadataName);
                 if (symbols.RenderFragmentOfT == null)
                 {
                     // No definition for RenderFragment, nothing to do.
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
             }
 
-            public INamedTypeSymbol BlazorComponent { get; private set; }
+            public INamedTypeSymbol ComponentBase { get; private set; }
 
             public INamedTypeSymbol IComponent { get; private set; }
 

@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Blazor.Server.AutoRebuild
+namespace Microsoft.AspNetCore.Components.Server.AutoRebuild
 {
     /// <summary>
     /// Represents a mechanism for rebuilding a .NET project. For example, it

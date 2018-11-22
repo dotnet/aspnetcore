@@ -3,12 +3,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class EventHandlerLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 new IntermediateToken()
                 {
-                    Content = $"{BlazorApi.BindMethods.GetEventHandlerValue}<{eventArgsType}>(",
+                    Content = $"{ComponentsApi.BindMethods.GetEventHandlerValue}<{eventArgsType}>(",
                     Kind = TokenKind.CSharp
                 },
                 new IntermediateToken()

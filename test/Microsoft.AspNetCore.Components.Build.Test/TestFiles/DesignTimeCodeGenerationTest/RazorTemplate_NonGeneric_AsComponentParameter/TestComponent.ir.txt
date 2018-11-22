@@ -4,11 +4,10 @@ Document -
         UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
         UsingDirective - (53:3,1 [17] ) - System.Linq
         UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
-        UsingDirective - (104:5,1 [33] ) - Microsoft.AspNetCore.Blazor
-        UsingDirective - (140:6,1 [44] ) - Microsoft.AspNetCore.Blazor.Components
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Blazor.Components.BlazorComponent - 
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
-                DirectiveToken - (14:0,14 [32] ) - "*, Microsoft.AspNetCore.Blazor"
+                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
                 DirectiveToken - (14:0,14 [9] ) - "*, Test"
                 DirectiveToken - (14:0,14 [17] x:\dir\subdir\Test\TestComponent.cshtml) - "*, TestAssembly"
             CSharpCode - 

@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class RefExtensionNode : ExtensionIntermediateNode
     {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public string ComponentCaptureTypeName { get; set; }
 
-        public string TypeName => $"global::System.Action<{(IsComponentCapture ? ComponentCaptureTypeName : "global::" + BlazorApi.ElementRef.FullTypeName)}>";
+        public string TypeName => $"global::System.Action<{(IsComponentCapture ? ComponentCaptureTypeName : "global::" + ComponentsApi.ElementRef.FullTypeName)}>";
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

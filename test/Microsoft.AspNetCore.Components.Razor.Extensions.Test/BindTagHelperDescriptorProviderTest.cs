@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     public class BindTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -131,7 +131,7 @@ namespace Test
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -172,7 +172,7 @@ namespace Test
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -305,7 +305,7 @@ namespace Test
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -359,7 +359,7 @@ namespace Test
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -414,7 +414,7 @@ namespace Test
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -481,7 +481,7 @@ namespace Test
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -587,10 +587,10 @@ namespace Test
                 bind.Documentation);
 
             // These are all trivially derived from the assembly/namespace/type name
-            Assert.Equal("Microsoft.AspNetCore.Blazor", bind.AssemblyName);
+            Assert.Equal("Microsoft.AspNetCore.Components", bind.AssemblyName);
             Assert.Equal("Bind", bind.Name);
-            Assert.Equal("Microsoft.AspNetCore.Blazor.Components.Bind", bind.DisplayName);
-            Assert.Equal("Microsoft.AspNetCore.Blazor.Components.Bind", bind.GetTypeName());
+            Assert.Equal("Microsoft.AspNetCore.Components.Bind", bind.DisplayName);
+            Assert.Equal("Microsoft.AspNetCore.Components.Bind", bind.GetTypeName());
 
             // The tag matching rule for a bind-Component is always the component name + the attribute name
             var rule = Assert.Single(bind.TagMatchingRules);
@@ -632,7 +632,7 @@ namespace Test
             Assert.Equal("bind-...", attribute.Name);
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal(
-                "System.Collections.Generic.Dictionary<string, object> Microsoft.AspNetCore.Blazor.Components.Bind.Bind",
+                "System.Collections.Generic.Dictionary<string, object> Microsoft.AspNetCore.Components.Bind.Bind",
                 attribute.DisplayName);
 
             // Defined from the property type
@@ -664,7 +664,7 @@ namespace Test
             Assert.Equal("format-...", attribute.Name);
             Assert.Equal("Format", attribute.GetPropertyName());
             Assert.Equal(
-                "System.Collections.Generic.Dictionary<string, string> Microsoft.AspNetCore.Blazor.Components.Bind.Format",
+                "System.Collections.Generic.Dictionary<string, string> Microsoft.AspNetCore.Components.Bind.Format",
                 attribute.DisplayName);
 
             // Defined from the property type

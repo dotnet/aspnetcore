@@ -2,23 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Razor;
-using Microsoft.AspNetCore.Blazor.RenderTree;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using Microsoft.AspNetCore.Components.Razor;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class ChildContentRazorIntegrationTest : RazorIntegrationTestBase
     {
         private readonly CSharpSyntaxTree RenderChildContentComponent = Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 namespace Test
 {
-    public class RenderChildContent : BlazorComponent
+    public class RenderChildContent : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -32,12 +32,11 @@ namespace Test
 ");
 
         private readonly CSharpSyntaxTree RenderChildContentStringComponent = Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 namespace Test
 {
-    public class RenderChildContentString : BlazorComponent
+    public class RenderChildContentString : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -54,12 +53,11 @@ namespace Test
 ");
 
         private readonly CSharpSyntaxTree RenderMultipleChildContent = Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 namespace Test
 {
-    public class RenderMultipleChildContent : BlazorComponent
+    public class RenderMultipleChildContent : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {

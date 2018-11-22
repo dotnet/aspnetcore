@@ -1,16 +1,16 @@
 Source Location: (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 |myElem|
-Generated Location: (931:22,36 [6] )
+Generated Location: (879:21,36 [6] )
 |myElem|
 
-Source Location: (95:2,12 [118] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (95:2,12 [122] x:\dir\subdir\Test\TestComponent.cshtml)
 |
-    private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    private Microsoft.AspNetCore.Components.ElementRef myElem;
     public void Foo() { System.GC.KeepAlive(myElem); }
 |
-Generated Location: (1206:33,12 [118] )
+Generated Location: (1154:32,12 [122] )
 |
-    private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    private Microsoft.AspNetCore.Components.ElementRef myElem;
     public void Foo() { System.GC.KeepAlive(myElem); }
 |
 

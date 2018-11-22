@@ -7,9 +7,9 @@ using Microsoft.VisualStudio.Shell;
 // up in the Load context, which means that we can use ServiceHub and other nice things.
 //
 // The versions here need to match what the build is producing. If you change the version numbers
-// for the Blazor assemblies, this needs to change as well.
+// for the referenced assemblies, this needs to change as well.
 [assembly: ProvideBindingRedirection(
-    AssemblyName = "Microsoft.AspNetCore.Blazor.Razor.Extensions",
+    AssemblyName = "Microsoft.AspNetCore.Components.Razor.Extensions",
     GenerateCodeBase = true,
     PublicKeyToken = "",
     OldVersionLowerBound = "0.0.0.0",

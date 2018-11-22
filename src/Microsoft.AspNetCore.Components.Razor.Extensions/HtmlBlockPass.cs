@@ -9,7 +9,7 @@ using AngleSharp.Html;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     // Rewrites contiguous subtrees of HTML into a special node type to reduce the
     // size of the Render tree.

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using System.Collections.Generic;
 using DevHostServerProgram = Microsoft.AspNetCore.Blazor.Cli.Server.Program;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures
+namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
     public class DevHostServerFixture<TProgram> : WebHostServerFixture
     {

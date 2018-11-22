@@ -1,18 +1,18 @@
 Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
 |*, TestAssembly|
-Generated Location: (559:16,38 [15] )
+Generated Location: (503:15,38 [15] )
 |*, TestAssembly|
 
 Source Location: (66:1,35 [11] x:\dir\subdir\Test\TestComponent.cshtml)
 |ParentValue|
-Generated Location: (1230:30,35 [11] )
+Generated Location: (1164:29,35 [11] )
 |ParentValue|
 
 Source Location: (95:2,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public int ParentValue { get; set; } = 42;
 |
-Generated Location: (1650:43,12 [50] )
+Generated Location: (1588:42,12 [50] )
 |
     public int ParentValue { get; set; } = 42;
 |

@@ -7,12 +7,11 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -24,7 +23,7 @@ namespace Test
             (builder2) => {
                 builder2.OpenElement(0, "div");
                 builder2.OpenComponent<Test.MyComponent>(1);
-                builder2.AddAttribute(2, "Name", Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<System.String>(person.Name));
+                builder2.AddAttribute(2, "Name", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(person.Name));
                 builder2.CloseComponent();
                 builder2.CloseElement();
             }

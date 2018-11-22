@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class ComponentChildContentIntermediateNode : ExtensionIntermediateNode
     {
-        public string AttributeName => BoundAttribute?.Name ?? BlazorApi.RenderTreeBuilder.ChildContent;
+        public string AttributeName => BoundAttribute?.Name ?? ComponentsApi.RenderTreeBuilder.ChildContent;
 
         public BoundAttributeDescriptor BoundAttribute { get; set; }
 

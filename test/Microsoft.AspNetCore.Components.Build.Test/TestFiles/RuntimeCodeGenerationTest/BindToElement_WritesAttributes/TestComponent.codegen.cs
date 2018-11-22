@@ -7,17 +7,16 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "myvalue", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(ParentValue));
-            builder.AddAttribute(2, "myevent", Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue));
+            builder.AddAttribute(1, "myvalue", Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue));
+            builder.AddAttribute(2, "myevent", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => ParentValue = __value, ParentValue));
             builder.CloseElement();
         }
         #pragma warning restore 1998

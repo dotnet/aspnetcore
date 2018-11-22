@@ -6,7 +6,7 @@ using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
+namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 {
     [CaptureSeleniumLogs]
     public class BrowserTestBase : IClassFixture<BrowserFixture>

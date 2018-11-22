@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class EventHandlerTagHelperDescriptorProvider : ITagHelperDescriptorProvider
     {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 return;
             }
 
-            var bindMethods = compilation.GetTypeByMetadataName(BlazorApi.BindMethods.FullTypeName);
+            var bindMethods = compilation.GetTypeByMetadataName(ComponentsApi.BindMethods.FullTypeName);
             if (bindMethods == null)
             {
                 // If we can't find BindMethods, then just bail. We won't be able to compile the
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private List<EventHandlerData> GetEventHandlerData(Compilation compilation)
         {
-            var eventHandlerAttribute = compilation.GetTypeByMetadataName(BlazorApi.EventHandlerAttribute.FullTypeName);
+            var eventHandlerAttribute = compilation.GetTypeByMetadataName(ComponentsApi.EventHandlerAttribute.FullTypeName);
             if (eventHandlerAttribute == null)
             {
                 // This won't likely happen, but just in case.

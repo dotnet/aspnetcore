@@ -3,7 +3,7 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Razor;
+using Microsoft.AspNetCore.Components.Razor;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 

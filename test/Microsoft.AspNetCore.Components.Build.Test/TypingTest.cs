@@ -6,7 +6,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     // Similar to design time code generation tests, but goes a character at a time.
     // Don't add many of these since they are slow - instead add features to existing
@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter] int Value { get; set; }
         [Parameter] Action<int> ValueChanged { get; set; }

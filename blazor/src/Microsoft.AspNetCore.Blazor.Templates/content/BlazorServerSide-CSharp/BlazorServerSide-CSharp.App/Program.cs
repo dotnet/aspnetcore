@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Blazor.Hosting;
+﻿using Microsoft.AspNetCore.Components.Hosting;
 
 namespace BlazorServerSide_CSharp.App
 {

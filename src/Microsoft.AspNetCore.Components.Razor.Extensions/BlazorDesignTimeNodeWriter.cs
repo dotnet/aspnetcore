@@ -4,13 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     // Based on the DesignTimeNodeWriter from Razor repo.
     internal class BlazorDesignTimeNodeWriter : BlazorNodeWriter
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             codeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddAttribute)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(ComponentsApi.RenderTreeBuilder.AddAttribute)}")
                 .Write("-1")
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key)
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     // for any code that the user types.
                     context.RenderNode(new ComponentChildContentIntermediateNode()
                     {
-                        TypeName = BlazorApi.RenderFragment.FullTypeName,
+                        TypeName = ComponentsApi.RenderFragment.FullTypeName,
                     });
                 }
 
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     // If we have a parameter type, then add a type check.
                     if (canTypeCheck && NeedsTypeCheck(node))
                     {
-                        context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
+                        context.CodeWriter.Write(ComponentsApi.RuntimeHelpers.TypeCheck);
                         context.CodeWriter.Write("<");
                         context.CodeWriter.Write(node.TypeName);
                         context.CodeWriter.Write(">");
@@ -709,7 +709,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // errors will be equivalent
                 var captureTypeName = node.IsComponentCapture
                     ? node.ComponentCaptureTypeName
-                    : BlazorApi.ElementRef.FullTypeName;
+                    : ComponentsApi.ElementRef.FullTypeName;
                 WriteCSharpCode(context, new CSharpCodeIntermediateNode
                 {
                     Source = node.Source,

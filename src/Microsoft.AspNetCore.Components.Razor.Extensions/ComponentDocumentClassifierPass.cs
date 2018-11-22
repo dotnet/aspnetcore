@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     /// <summary>
     /// A <see cref="DocumentClassifierPassBase"/> that recognizes Blazor components.
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             @namespace.Content = computedNamespace;
 
-            @class.BaseType = BlazorApi.BlazorComponent.FullTypeName;
+            @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
             @class.ClassName = computedClass;
             @class.Modifiers.Clear();
             @class.Modifiers.Add("public");
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             method.ReturnType = "void";
-            method.MethodName = BlazorApi.BlazorComponent.BuildRenderTree;
+            method.MethodName = ComponentsApi.ComponentBase.BuildRenderTree;
             method.Modifiers.Clear();
             method.Modifiers.Add("protected");
             method.Modifiers.Add("override");
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             method.Parameters.Add(new MethodParameter()
             {
                 ParameterName = "builder",
-                TypeName = BlazorApi.RenderTreeBuilder.FullTypeName,
+                TypeName = ComponentsApi.RenderTreeBuilder.FullTypeName,
             });
 
             // We need to call the 'base' method as the first statement.
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             callBase.Children.Add(new IntermediateToken
             {
                 Kind = TokenKind.CSharp,
-                Content = $"base.{BlazorApi.BlazorComponent.BuildRenderTree}(builder);"
+                Content = $"base.{ComponentsApi.ComponentBase.BuildRenderTree}(builder);"
             });
             method.Children.Insert(0, callBase);
         }

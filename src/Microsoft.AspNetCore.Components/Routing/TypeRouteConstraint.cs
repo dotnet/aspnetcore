@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Blazor.Routing
+namespace Microsoft.AspNetCore.Components.Routing
 {
     /// <summary>
     /// A route constraint that requires the value to be parseable as a specified type.

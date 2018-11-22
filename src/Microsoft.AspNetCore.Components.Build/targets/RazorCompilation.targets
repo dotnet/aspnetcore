@@ -9,7 +9,7 @@
   <PropertyGroup>
     <!-- Passed to Razor tasks and loaded as a plugin -->
     <_AngleSharpAssemblyPath>$(BlazorToolsDir)AngleSharp.dll</_AngleSharpAssemblyPath>
-    <_BlazorExtensionAssemblyPath>$(BlazorToolsDir)Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</_BlazorExtensionAssemblyPath>
+    <_BlazorExtensionAssemblyPath>$(BlazorToolsDir)Microsoft.AspNetCore.Components.Razor.Extensions.dll</_BlazorExtensionAssemblyPath>
 
     <!-- Deactivates the Razor SDK's build-time compilation. We do our own -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
@@ -50,7 +50,7 @@
       <AssemblyFilePath>$(_AngleSharpAssemblyPath)</AssemblyFilePath>
     </RazorExtension>
     <RazorExtension Include="Blazor-$(BlazorLanguageVersion)">
-      <AssemblyName>Microsoft.AspNetCore.Blazor.Razor.Extensions</AssemblyName>
+      <AssemblyName>Microsoft.AspNetCore.Components.Razor.Extensions</AssemblyName>
       <AssemblyFilePath>$(_BlazorExtensionAssemblyPath)</AssemblyFilePath>
     </RazorExtension>
 

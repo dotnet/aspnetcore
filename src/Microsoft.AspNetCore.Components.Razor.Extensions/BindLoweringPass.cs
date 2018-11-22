@@ -3,12 +3,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class BindLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var valueExpressionTokens = new List<IntermediateToken>();
             valueExpressionTokens.Add(new IntermediateToken()
             {
-                Content = $"{BlazorApi.BindMethods.GetValue}(",
+                Content = $"{ComponentsApi.BindMethods.GetValue}(",
                 Kind = TokenKind.CSharp
             });
             valueExpressionTokens.Add(original);
@@ -245,11 +245,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             string changeExpressionContent = null;
             if (changeAttribute == null && format == null)
             {
-                changeExpressionContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content})";
+                changeExpressionContent = $"{ComponentsApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content})";
             }
             else if (changeAttribute == null && format != null)
             {
-                changeExpressionContent = $"{BlazorApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content}, {format.Content})";
+                changeExpressionContent = $"{ComponentsApi.BindMethods.SetValueHandler}(__value => {original.Content} = __value, {original.Content}, {format.Content})";
             }
             else
             {

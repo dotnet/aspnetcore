@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class BindRazorIntegrationTest : RazorIntegrationTestBase
     {
@@ -18,11 +18,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         int Value { get; set; }
@@ -56,11 +56,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent, IComponent
+    public class MyComponent : ComponentBase, IComponent
     {
         void IComponent.SetParameters(ParameterCollection parameters)
         {
@@ -92,11 +92,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         int Value { get; set; }
@@ -130,11 +130,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent, IComponent
+    public class MyComponent : ComponentBase, IComponent
     {
         void IComponent.SetParameters(ParameterCollection parameters)
         {
@@ -166,7 +166,7 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -200,7 +200,7 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -234,7 +234,7 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {

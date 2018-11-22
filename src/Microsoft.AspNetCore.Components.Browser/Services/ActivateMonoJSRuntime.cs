@@ -4,7 +4,7 @@
 using Microsoft.JSInterop;
 using Mono.WebAssembly.Interop;
 
-namespace Microsoft.AspNetCore.Blazor.Browser.Services
+namespace Microsoft.AspNetCore.Components.Browser.Services
 {
     /// <summary>
     /// Temporary mechanism for registering the Mono JS runtime. Developers do not need to

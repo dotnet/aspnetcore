@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Blazor.Rendering
+namespace Microsoft.AspNetCore.Components.Rendering
 {
     /// <summary>
     /// Collects the data produced by the rendering system during the course

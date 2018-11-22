@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Blazor.Server.AutoRebuild
+namespace Microsoft.AspNetCore.Components.Server.AutoRebuild
 {
     internal static class ProcessUtils
     {

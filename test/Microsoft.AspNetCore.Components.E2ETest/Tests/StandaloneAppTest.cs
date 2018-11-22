@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
-using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
@@ -10,7 +10,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class StandaloneAppTest
         : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>, IDisposable

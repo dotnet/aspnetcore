@@ -4,7 +4,7 @@
 using System;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Blazor.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     /// <summary>
     /// Represents an active connection between a Blazor server and a client.

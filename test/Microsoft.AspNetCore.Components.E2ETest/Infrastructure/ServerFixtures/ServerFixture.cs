@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures
+namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
     public abstract class ServerFixture : IDisposable
     {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures
         protected static string FindSolutionDir()
         {
             return FindClosestDirectoryContaining(
-                "Blazor.sln",
+                "Components.sln",
                 Path.GetDirectoryName(typeof(ServerFixture).Assembly.Location));
         }
 

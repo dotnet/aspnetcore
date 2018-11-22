@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Layouts;
-using Microsoft.AspNetCore.Blazor.RenderTree;
-using Microsoft.AspNetCore.Blazor.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Layouts;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Services;
 
-namespace Microsoft.AspNetCore.Blazor.Routing
+namespace Microsoft.AspNetCore.Components.Routing
 {
     /// <summary>
     /// A component that displays whichever other component corresponds to the

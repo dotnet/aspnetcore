@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Blazor.Server.Circuits;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Server
+namespace Microsoft.AspNetCore.Components.Server
 {
     public class CircuitSynchronizationContextTest
     {

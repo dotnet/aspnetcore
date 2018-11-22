@@ -7,7 +7,7 @@ using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Blazor.Server.AutoRebuild
+namespace Microsoft.AspNetCore.Components.Server.AutoRebuild
 {
     /// <summary>
     /// Finds the VS process that launched this app process (if any), and uses

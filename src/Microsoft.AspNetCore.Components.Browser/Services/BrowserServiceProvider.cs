@@ -3,11 +3,11 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.AspNetCore.Blazor.Browser.Http;
-using Microsoft.AspNetCore.Blazor.Services;
+using Microsoft.AspNetCore.Components.Browser.Http;
+using Microsoft.AspNetCore.Components.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Blazor.Browser.Services
+namespace Microsoft.AspNetCore.Components.Browser.Services
 {
     /// <summary>
     /// An implementation of <see cref="IServiceProvider"/> configured with

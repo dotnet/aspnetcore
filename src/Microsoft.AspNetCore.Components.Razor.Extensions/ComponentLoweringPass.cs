@@ -3,11 +3,11 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class ComponentLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 {
                     // This node has implicit child content. It may or may not have an attribute that matches.
                     var attribute = _component.Component.BoundAttributes
-                        .Where(a => string.Equals(a.Name, BlazorApi.RenderTreeBuilder.ChildContent, StringComparison.Ordinal))
+                        .Where(a => string.Equals(a.Name, ComponentsApi.RenderTreeBuilder.ChildContent, StringComparison.Ordinal))
                         .FirstOrDefault();
                     _children.Add(RewriteChildContent(attribute, node.Source, node.Children));
                     return;
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 {
                     BoundAttribute = attribute,
                     Source = source,
-                    TypeName = attribute?.TypeName ?? BlazorApi.RenderFragment.FullTypeName,
+                    TypeName = attribute?.TypeName ?? ComponentsApi.RenderFragment.FullTypeName,
                 };
 
                 // There are two cases here:

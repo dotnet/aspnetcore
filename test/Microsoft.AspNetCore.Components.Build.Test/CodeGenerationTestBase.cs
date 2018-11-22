@@ -4,7 +4,7 @@
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public abstract class CodeGenerationTestBase : RazorBaselineIntegrationTestBase
     {
@@ -22,11 +22,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
     }
 }
@@ -48,7 +48,7 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -56,7 +56,7 @@ namespace Test
     {
     }
 
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter] int IntProperty { get; set; }
         [Parameter] bool BoolProperty { get; set; }
@@ -88,7 +88,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-@using Microsoft.AspNetCore.Blazor;
+@using Microsoft.AspNetCore.Components;
 @typeparam TItem1
 @typeparam TItem2
 
@@ -116,11 +116,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         string StringProperty { get; set; }
@@ -144,11 +144,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
     }
 }
@@ -170,11 +170,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class CoolnessMeter : BlazorComponent
+    public class CoolnessMeter : ComponentBase
     {
         [Parameter] private int Coolness { get; set; }
     }
@@ -208,11 +208,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         int Value { get; set; }
@@ -242,11 +242,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         int Value { get; set; }
@@ -282,11 +282,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent, IComponent
+    public class MyComponent : ComponentBase, IComponent
     {
         void IComponent.SetParameters(ParameterCollection parameters)
         {
@@ -314,11 +314,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         int Value { get; set; }
@@ -347,11 +347,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent, IComponent
+    public class MyComponent : ComponentBase, IComponent
     {
         void IComponent.SetParameters(ParameterCollection parameters)
         {
@@ -378,7 +378,7 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -408,7 +408,7 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -575,12 +575,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         string MyAttr { get; set; }
@@ -607,12 +606,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         string MyAttr { get; set; }
@@ -640,12 +638,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         string MyAttr { get; set; }
@@ -676,12 +673,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         string MyAttr { get; set; }
@@ -712,12 +708,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         RenderFragment ChildContent { get; set; }
@@ -741,12 +736,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         RenderFragment ChildContent { get; set; }
@@ -770,12 +764,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         RenderFragment<string> ChildContent { get; set; }
@@ -799,12 +792,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         RenderFragment Header { get; set; }
@@ -834,12 +826,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         RenderFragment<string> Header { get; set; }
@@ -871,12 +862,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         RenderFragment<string> Header { get; set; }
@@ -914,11 +904,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
     }
 }
@@ -947,12 +937,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         Action<UIEventArgs> OnClick { get; set; }
@@ -986,12 +975,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class DynamicElement : BlazorComponent
+    public class DynamicElement : ComponentBase
     {
     }
 }
@@ -1018,12 +1006,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter]
         Action<UIEventArgs> OnClick { get; set; }
@@ -1272,11 +1259,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
     }
@@ -1299,11 +1286,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
     }
@@ -1326,11 +1313,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
     }
@@ -1355,11 +1342,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
     }
@@ -1382,11 +1369,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
     }
@@ -1410,11 +1397,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter]
         TItem Item { get; set; }
@@ -1445,11 +1432,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter]
         TItem Item { get; set; }
@@ -1480,11 +1467,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
     }
 }
@@ -1510,11 +1497,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Value { get; set; }
     }
@@ -1540,12 +1527,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
 
@@ -1572,12 +1558,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
 
@@ -1604,12 +1589,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem1, TItem2> : BlazorComponent
+    public class MyComponent<TItem1, TItem2> : ComponentBase
     {
         [Parameter] TItem1 Item { get; set; }
 
@@ -1647,12 +1631,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem1, TItem2> : BlazorComponent
+    public class MyComponent<TItem1, TItem2> : ComponentBase
     {
         [Parameter] TItem1 Item { get; set; }
 
@@ -1691,12 +1674,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
     }
@@ -1725,12 +1707,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent<TItem> : BlazorComponent
+    public class MyComponent<TItem> : ComponentBase
     {
         [Parameter] TItem Item { get; set; }
     }
@@ -1766,7 +1747,7 @@ namespace Test
 <elem attributebefore=""before"" ref=""myElem"" attributeafter=""after"">Hello</elem>
 
 @functions {
-    private Microsoft.AspNetCore.Blazor.ElementRef myElem;
+    private Microsoft.AspNetCore.Components.ElementRef myElem;
     public void Foo() { System.GC.KeepAlive(myElem); }
 }
 ");
@@ -1782,11 +1763,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
     }
 }
@@ -1814,11 +1795,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
     }
 }
@@ -1939,11 +1920,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter] string Name { get; set; }
     }
@@ -1975,11 +1956,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter] string Name { get; set; }
     }
@@ -2014,12 +1995,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter] RenderFragment Template { get; set; }
     }
@@ -2044,12 +2024,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter] RenderFragment<Person> PersonTemplate { get; set; }
     }
@@ -2079,12 +2058,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class MyComponent : BlazorComponent
+    public class MyComponent : ComponentBase
     {
         [Parameter] RenderFragment<Context> Template { get; set; }
     }
@@ -2151,11 +2129,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class SomeOtherComponent : BlazorComponent
+    public class SomeOtherComponent : ComponentBase
     {
     }
 }
@@ -2214,11 +2192,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class SomeOtherComponent : BlazorComponent
+    public class SomeOtherComponent : ComponentBase
     {
     }
 }
@@ -2284,11 +2262,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class Counter : BlazorComponent
+    public class Counter : ComponentBase
     {
         public int Count { get; set; }
     }
@@ -2316,11 +2294,11 @@ namespace Test
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class User : BlazorComponent
+    public class User : ComponentBase
     {
         public string Name { get; set; }
         public Action<string> NameChanged { get; set; }
@@ -2352,11 +2330,11 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class SurveyPrompt : BlazorComponent
+    public class SurveyPrompt : ComponentBase
     {
         [Parameter] private string Title { get; set; }
     }
@@ -2391,11 +2369,11 @@ Welcome to your new app.
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
-    public class SurveyPrompt : BlazorComponent
+    public class SurveyPrompt : ComponentBase
     {
         [Parameter] private string Title { get; set; }
     }

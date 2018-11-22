@@ -1,15 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Rendering;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Test
+namespace Microsoft.AspNetCore.Components.Test
 {
     public class CascadingParameterStateTest
     {

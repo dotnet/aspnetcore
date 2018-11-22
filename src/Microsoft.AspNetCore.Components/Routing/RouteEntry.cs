@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Blazor.Routing
+namespace Microsoft.AspNetCore.Components.Routing
 {
     internal class RouteEntry
     {

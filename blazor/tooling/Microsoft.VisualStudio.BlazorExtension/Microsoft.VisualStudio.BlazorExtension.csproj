@@ -130,16 +130,16 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj">
-      <Name>Microsoft.AspNetCore.Blazor.Razor.Extensions</Name>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Razor.Extensions\Microsoft.AspNetCore.Components.Razor.Extensions.csproj">
+      <Name>Microsoft.AspNetCore.Components.Razor.Extensions</Name>
       <Private>False</Private>
       <IncludeOutputGroupsInVSIX>
       </IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <Content Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Blazor.Razor.Extensions\net461\Microsoft.AspNetCore.Blazor.Razor.Extensions.dll">
-      <Link>Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</Link>
+    <Content Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Razor.Extensions\net461\Microsoft.AspNetCore.Components.Razor.Extensions.dll">
+      <Link>Microsoft.AspNetCore.Components.Razor.Extensions.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>

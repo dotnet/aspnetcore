@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Blazor.RenderTree
+namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
     /// Implements a list that uses an array of objects to store the elements.

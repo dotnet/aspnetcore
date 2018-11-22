@@ -1,7 +1,7 @@
 ﻿<Project>
   <Import Project="VSIX.targets" />
   <ItemGroup>
-    <Solutions Update="$(RepositoryRoot)Blazor.sln">
+    <Solutions Update="$(RepositoryRoot)Components.sln">
       <!-- the 'DebugNoVSIX' and 'ReleaseNoVSIX' configurations exclude the VSIX project, which doesn't build with Microsoft.NET.Sdk yet. -->
       <AdditionalProperties>Configuration=$(Configuration)NoVSIX</AdditionalProperties>
     </Solutions>

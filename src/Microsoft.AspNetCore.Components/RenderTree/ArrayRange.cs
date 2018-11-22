@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Blazor.RenderTree
+namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
     /// Represents a range of elements in an array that are in use.

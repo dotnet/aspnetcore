@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Blazor.Routing
+namespace Microsoft.AspNetCore.Components.Routing
 {
     internal class TemplateSegment
     {

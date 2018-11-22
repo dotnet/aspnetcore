@@ -2,7 +2,7 @@
 
   <!--
   Importing this file is equivalent to having:
-    <PackageDependency Include="Microsoft.AspNetCore.Blazor.Build" />
+    <PackageDependency Include="Microsoft.AspNetCore.Components.Build" />
   ... except it's much more convenient when working in this repo, because it consumes the
   Blazor.Build targets/exe directly without needing this project to be packed into a .nupkg.
 
@@ -27,7 +27,7 @@
 
   <!-- This is used as a P2P when building the repo. Normal Blazor projects will get this as a reference through the Blazor.Build package -->
   <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.AspNetCore.Components.TagHelperWorkaround\Microsoft.AspNetCore.Blazor.TagHelperWorkaround.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.AspNetCore.Components.TagHelperWorkaround\Microsoft.AspNetCore.Components.TagHelperWorkaround.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <Target
@@ -38,7 +38,7 @@
          given that the packed version of this project wouldn't add a .dll reference) -->
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\..\blazor\src\Microsoft.AspNetCore.Blazor.BuildTools\Microsoft.AspNetCore.Blazor.BuildTools.csproj" Targets="Build" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\..\blazor\src\mono\mono.csproj" Targets="Build" />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" Targets="Build" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Components.Build.csproj" Targets="Build" />
   </Target>
 
   <PropertyGroup>

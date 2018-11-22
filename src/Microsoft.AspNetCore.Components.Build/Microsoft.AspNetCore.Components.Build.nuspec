@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNetCore.Components.Build</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <description>Build mechanism for Blazor applications.</description>
+    <licenseUrl>https://raw.githubusercontent.com/aspnet/Home/2.0.0/LICENSE.txt</licenseUrl>
+    <projectUrl>https://asp.net/</projectUrl>
+    <repository type="git" url="https://github.com/aspnet/Blazor" />
+    <dependencies>
+      <dependency id="Microsoft.AspNetCore.Razor.Design" version="$razorversion$" include="all" />
+      <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$version$" include="all" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="$publishdir$netcoreapp2.1\Microsoft.AspNetCore.Components.TagHelperWorkaround.dll" target="lib/netstandard1.0/" />
+    <file src="build\**" target="build" />
+    <file src="targets\**" target="targets" />
+    <file src="$publishdir$netcoreapp2.1\**\*" target="tools/" />
+    <file src="..\..\blazor\src\mono\dist\**\*" target="tools\mono"  />
+    <file src="..\..\blazor\src\mono\tools\binaries\illink\**\*.*" target="tools\illink" />
+    <file src="..\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.*.js" target="tools\blazor" />
+  </files>
+</package>

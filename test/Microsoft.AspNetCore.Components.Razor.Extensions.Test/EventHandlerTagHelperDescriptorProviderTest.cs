@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     public class EventHandlerTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
@@ -17,8 +17,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
-using Microsoft.AspNetCore.Blazor;
-using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
@@ -59,7 +58,7 @@ namespace Test
 
             Assert.Equal(
                 "Sets the 'onclick' attribute to the provided string or delegate value. " +
-                "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>'.",
+                "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>'.",
                 item.Documentation);
 
             // These are all trivially derived from the assembly/namespace/type name
@@ -104,7 +103,7 @@ namespace Test
 
             Assert.Equal(
                 "Sets the 'onclick' attribute to the provided string or delegate value. " +
-                "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>'.",
+                "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>'.",
                 attribute.Documentation);
 
             Assert.Equal("onclick", attribute.Name);

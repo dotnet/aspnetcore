@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Blazor.RenderTree;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     // Integration tests for the end-to-end of successful Razor compilation of component definitions
     // Includes running the component code to verify the output.
@@ -307,7 +308,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 @functions {
                     public bool HandlerWasCalled { get; set; } = false;
 
-                    void MyHandleEvent(Microsoft.AspNetCore.Blazor.UIEventArgs eventArgs)
+                    void MyHandleEvent(Microsoft.AspNetCore.Components.UIEventArgs eventArgs)
                     {
                         HandlerWasCalled = true;
                     }

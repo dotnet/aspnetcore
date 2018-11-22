@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     /// <summary>
     /// Generates the C# code corresponding to Razor source document contents.
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // Since we're not in the middle of writing an element, this must evaluate as some
             // text to display
             context.CodeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddContent)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(ComponentsApi.RenderTreeBuilder.AddContent)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator();
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             context.CodeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddMarkupContent)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(ComponentsApi.RenderTreeBuilder.AddMarkupContent)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
                 .WriteStringLiteral(node.Content)
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             context.CodeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenElement)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(ComponentsApi.RenderTreeBuilder.OpenElement)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
                 .WriteStringLiteral(node.TagName)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
 
             context.CodeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{BlazorApi.RenderTreeBuilder.CloseElement}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.CloseElement}")
                 .WriteEndMethodInvocation();
         }
 
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // Text node
             var content = GetHtmlContent(node);
             context.CodeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddContent)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(ComponentsApi.RenderTreeBuilder.AddContent)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
                 .WriteStringLiteral(content)
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // builder.OpenComponent<TComponent>(42);
                 context.CodeWriter.Write(_scopeStack.BuilderVarName);
                 context.CodeWriter.Write(".");
-                context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.OpenComponent);
+                context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.OpenComponent);
                 context.CodeWriter.Write("<");
                 context.CodeWriter.Write(node.TypeName);
                 context.CodeWriter.Write(">(");
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // builder.CloseComponent();
                 context.CodeWriter.Write(_scopeStack.BuilderVarName);
                 context.CodeWriter.Write(".");
-                context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.CloseComponent);
+                context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.CloseComponent);
                 context.CodeWriter.Write("();");
                 context.CodeWriter.WriteLine();
             }
@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // builder.AddAttribute(1, "Foo", 42);
             context.CodeWriter.Write(_scopeStack.BuilderVarName);
             context.CodeWriter.Write(".");
-            context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.AddAttribute);
+            context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.AddAttribute);
             context.CodeWriter.Write("(");
             context.CodeWriter.Write((_sourceSequence++).ToString());
             context.CodeWriter.Write(", ");
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 {
                     if (canTypeCheck && NeedsTypeCheck(node))
                     {
-                        context.CodeWriter.Write(BlazorApi.RuntimeHelpers.TypeCheck);
+                        context.CodeWriter.Write(ComponentsApi.RuntimeHelpers.TypeCheck);
                         context.CodeWriter.Write("<");
                         context.CodeWriter.Write(node.TypeName);
                         context.CodeWriter.Write(">");
@@ -605,8 +605,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var codeWriter = context.CodeWriter;
 
             var methodName = node.IsComponentCapture
-                ? nameof(BlazorApi.RenderTreeBuilder.AddComponentReferenceCapture)
-                : nameof(BlazorApi.RenderTreeBuilder.AddElementReferenceCapture);
+                ? nameof(ComponentsApi.RenderTreeBuilder.AddComponentReferenceCapture)
+                : nameof(ComponentsApi.RenderTreeBuilder.AddElementReferenceCapture);
             codeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{methodName}")
                 .Write((_sourceSequence++).ToString())
@@ -654,7 +654,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public override void BeginWriteAttribute(CodeWriter codeWriter, string key)
         {
             codeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddAttribute)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(ComponentsApi.RenderTreeBuilder.AddAttribute)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key)

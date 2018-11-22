@@ -7,23 +7,22 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
             builder.OpenComponent<Test.MyComponent<string, int>>(0);
-            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Blazor.Components.RuntimeHelpers.TypeCheck<string>("hi"));
-            builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment<string>)((context) => (builder2) => {
+            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<string>("hi"));
+            builder.AddAttribute(2, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<string>)((context) => (builder2) => {
                 builder2.OpenElement(3, "div");
                 builder2.AddContent(4, context.ToLower());
                 builder2.CloseElement();
             }
             ));
-            builder.AddAttribute(5, "AnotherChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment<Test.MyComponent<string, int>.Context>)((item) => (builder2) => {
+            builder.AddAttribute(5, "AnotherChildContent", (Microsoft.AspNetCore.Components.RenderFragment<Test.MyComponent<string, int>.Context>)((item) => (builder2) => {
                 builder2.AddContent(6, "\n  ");
                 builder2.AddContent(7, System.Math.Max(0, item.Item));
                 builder2.AddContent(8, ";\n");

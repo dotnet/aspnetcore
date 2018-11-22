@@ -7,7 +7,7 @@ using OpenQA.Selenium.Remote;
 using System;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
+namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 {
     public class BrowserFixture : IDisposable
     {

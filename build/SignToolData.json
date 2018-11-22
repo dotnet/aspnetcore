@@ -3,16 +3,16 @@
     {
       "certificate": "Microsoft400",
       "values": [
-        "bin/Microsoft.AspNetCore.Blazor.Analyzers/netstandard1.3/Microsoft.AspNetCore.Blazor.Analyzers.dll",
-        "bin/Microsoft.AspNetCore.Blazor.Browser.JS/netcoreapp2.1/Microsoft.AspNetCore.Blazor.Browser.JS.dll",
-        "bin/Microsoft.AspNetCore.Blazor.Browser/netstandard2.0/Microsoft.AspNetCore.Blazor.Browser.dll",
-        "bin/Microsoft.AspNetCore.Blazor.Server/netstandard2.0/Microsoft.AspNetCore.Blazor.Server.dll",
-        "bin/Microsoft.AspNetCore.Blazor.TagHelperWorkaround/netstandard1.0/Microsoft.AspNetCore.Blazor.TagHelperWorkaround.dll",
-        "bin/Microsoft.AspNetCore.Blazor.Build/netcoreapp2.1/Microsoft.AspNetCore.Blazor.Build.dll",
+        "bin/Microsoft.AspNetCore.Components.Analyzers/netstandard1.3/Microsoft.AspNetCore.Components.Analyzers.dll",
+        "bin/Microsoft.AspNetCore.Components.Browser.JS/netcoreapp2.1/Microsoft.AspNetCore.Components.Browser.JS.dll",
+        "bin/Microsoft.AspNetCore.Components.Browser/netstandard2.0/Microsoft.AspNetCore.Components.Browser.dll",
+        "bin/Microsoft.AspNetCore.Components.Server/netstandard2.0/Microsoft.AspNetCore.Components.Server.dll",
+        "bin/Microsoft.AspNetCore.Components.TagHelperWorkaround/netstandard1.0/Microsoft.AspNetCore.Components.TagHelperWorkaround.dll",
+        "bin/Microsoft.AspNetCore.Components.Build/netcoreapp2.1/Microsoft.AspNetCore.Components.Build.dll",
         "bin/Microsoft.AspNetCore.Blazor.Cli/netcoreapp2.1/dotnet-blazor.dll",
-        "bin/Microsoft.AspNetCore.Blazor.Razor.Extensions/net461/Microsoft.AspNetCore.Blazor.Razor.Extensions.dll",
-        "bin/Microsoft.AspNetCore.Blazor.Razor.Extensions/netstandard2.0/Microsoft.AspNetCore.Blazor.Razor.Extensions.dll",
-        "bin/Microsoft.AspNetCore.Blazor/netstandard2.0/Microsoft.AspNetCore.Blazor.dll",
+        "bin/Microsoft.AspNetCore.Components.Razor.Extensions/net461/Microsoft.AspNetCore.Components.Razor.Extensions.dll",
+        "bin/Microsoft.AspNetCore.Components.Razor.Extensions/netstandard2.0/Microsoft.AspNetCore.Components.Razor.Extensions.dll",
+        "bin/Microsoft.AspNetCore.Components/netstandard2.0/Microsoft.AspNetCore.Components.dll",
         "bin/Microsoft.JSInterop/netstandard2.0/Microsoft.JSInterop.dll",
         "bin/Microsoft.VisualStudio.BlazorExtension/Microsoft.VisualStudio.BlazorExtension.dll",
         "bin/Microsoft.VisualStudio.LanguageServices.Blazor/net461/Microsoft.VisualStudio.LanguageServices.Blazor.dll",
@@ -22,7 +22,7 @@
     {
       "certificate": "3PartySHA2",
       "values": [
-        "bin/Microsoft.AspNetCore.Blazor.Build/netcoreapp2.1/AngleSharp.dll",
+        "bin/Microsoft.AspNetCore.Components.Build/netcoreapp2.1/AngleSharp.dll",
         "bin/Microsoft.VisualStudio.BlazorExtension/AngleSharp.dll"
       ]
     },

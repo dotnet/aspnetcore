@@ -7,9 +7,8 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -23,7 +22,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, -1, -1, 
@@ -32,13 +31,13 @@ global::System.Object __typeHelper = "*, TestAssembly";
 
 #line default
 #line hidden
-            , -1, Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(
+            , -1, Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                        Value
 
 #line default
 #line hidden
-            ), -1, Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => Value = __value, Value));
+            ), -1, Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => Value = __value, Value));
         }
         #pragma warning restore 1998
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -54,7 +53,7 @@ namespace __Blazor.Test.TestComponent
     #line hidden
     internal static class TypeInference
     {
-        public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0, int __seq1, System.Object __arg1, int __seq2, System.Object __arg2)
+        public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0, int __seq1, System.Object __arg1, int __seq2, System.Object __arg2)
         {
         builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
         builder.AddAttribute(__seq0, "Value", __arg0);

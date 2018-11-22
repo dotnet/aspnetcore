@@ -6,13 +6,12 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Rendering;
-using Microsoft.AspNetCore.Blazor.Server.Circuits;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
+namespace Microsoft.AspNetCore.Components.Browser.Rendering
 {
     internal class RemoteRenderer : Renderer
     {

@@ -1,5 +1,5 @@
 Source Location: (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 |() => { }|
-Generated Location: (1005:24,136 [9] )
+Generated Location: (950:23,133 [9] )
 |() => { }|
 

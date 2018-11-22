@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.Rendering
+namespace Microsoft.AspNetCore.Components.Rendering
 {
     internal readonly struct RenderQueueEntry
     {

@@ -7,16 +7,15 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
             builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, "ChildContent", (Microsoft.AspNetCore.Blazor.RenderFragment<System.String>)((context) => (builder2) => {
+            builder.AddAttribute(1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<System.String>)((context) => (builder2) => {
                 builder2.AddContent(2, context);
             }
             ));

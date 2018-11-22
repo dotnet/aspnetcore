@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Test.Helpers
+namespace Microsoft.AspNetCore.Components.Test.Helpers
 {
     internal static class AssertFrame
     {

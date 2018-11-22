@@ -1,15 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Layouts;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Layouts;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     // Integration tests for Blazor's directives
     public class DirectiveRazorIntegrationTest : RazorIntegrationTestBase
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         public interface ITestInterface2 { }
 
-        public class TestBaseClass : BlazorComponent { }
+        public class TestBaseClass : ComponentBase { }
 
         public interface IMyService1 { }
         public interface IMyService2 { }

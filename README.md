@@ -74,7 +74,7 @@ Before attempting to open the Blazor repo in Visual Studio, restore Git submodul
 
     git submodule update --init --recursive
 
-If you have problems using Visual Studio with `Blazor.sln` please refer to the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source).
+If you have problems using Visual Studio with `Components.sln` please refer to the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source).
 
 ## Developing the Blazor VS Tooling
 
@@ -112,8 +112,8 @@ You can browse https://dotnet.myget.org/gallery/blazor-dev to find the current v
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.3.0-preview1-10220" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.3.0-preview1-10220" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="0.3.0-preview1-10220" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Build" Version="0.3.0-preview1-10220" PrivateAssets="all" />
     <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.3.0-preview1-10220" />
 </ItemGroup>
 ```

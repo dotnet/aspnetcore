@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class RuntimeDependenciesResolverTest
     {
@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "referenceHints.txt"));
             var references = new[]
             {
-                "Microsoft.AspNetCore.Blazor.Browser.dll",
-                "Microsoft.AspNetCore.Blazor.dll",
+                "Microsoft.AspNetCore.Components.Browser.dll",
+                "Microsoft.AspNetCore.Components.dll",
                 "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
                 "Microsoft.Extensions.DependencyInjection.dll",
                 "Microsoft.JSInterop.dll",
@@ -57,10 +57,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                  fewer assemblies from the server, and during publishing, illink would remove all the
                  uncalled implementation code from mscorlib.dll anyway.
                  */
-                "Microsoft.AspNetCore.Blazor.Browser.dll",
-                "Microsoft.AspNetCore.Blazor.Browser.pdb",
-                "Microsoft.AspNetCore.Blazor.dll",
-                "Microsoft.AspNetCore.Blazor.pdb",
+                "Microsoft.AspNetCore.Components.Browser.dll",
+                "Microsoft.AspNetCore.Components.Browser.pdb",
+                "Microsoft.AspNetCore.Components.dll",
+                "Microsoft.AspNetCore.Components.pdb",
                 "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
                 "Microsoft.Extensions.DependencyInjection.dll",
                 "Microsoft.JSInterop.dll",

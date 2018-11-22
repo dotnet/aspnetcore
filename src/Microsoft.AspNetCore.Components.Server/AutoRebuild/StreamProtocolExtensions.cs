@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Blazor.Server.AutoRebuild
+namespace Microsoft.AspNetCore.Components.Server.AutoRebuild
 {
     internal static class StreamProtocolExtensions
     {

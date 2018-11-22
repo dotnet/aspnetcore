@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Blazor.RenderTree
+namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
     /// Describes the type of a render tree edit operation.

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Blazor.Reflection
+namespace Microsoft.AspNetCore.Components.Reflection
 {
     internal class MemberAssignment
     {

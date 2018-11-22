@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.Services
+namespace Microsoft.AspNetCore.Components.Services
 {
     /// <summary>
     /// A base class for <see cref="IUriHelper"/> implementations.

@@ -5,7 +5,7 @@ using MessagePack;
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Blazor.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     /// <summary>
     /// Provides Stream APIs for writing to a MessagePack-supplied expandable buffer.

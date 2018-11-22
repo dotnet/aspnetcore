@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal abstract class BlazorNodeWriter : IntermediateNodeWriter
     {
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             writer.Write("(");
             writer.Write("global::");
-            writer.Write(BlazorApi.RenderTreeBuilder.FullTypeName);
+            writer.Write(ComponentsApi.RenderTreeBuilder.FullTypeName);
             writer.Write(" builder");
             writer.Write(", ");
             writer.Write("int seq");
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // builder.OpenComponent<TComponent>(42);
             context.CodeWriter.Write("builder");
             context.CodeWriter.Write(".");
-            context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.OpenComponent);
+            context.CodeWriter.Write(ComponentsApi.RenderTreeBuilder.OpenComponent);
             context.CodeWriter.Write("<");
             context.CodeWriter.Write(node.Component.TypeName);
             context.CodeWriter.Write(">(");
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var index = 0;
             foreach (var attribute in node.Component.Attributes)
             {
-                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", BlazorApi.RenderTreeBuilder.AddAttribute);
+                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.AddAttribute);
                 context.CodeWriter.Write(parameters[index].seqName);
                 context.CodeWriter.Write(", ");
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             foreach (var childContent in node.Component.ChildContents)
             {
-                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", BlazorApi.RenderTreeBuilder.AddAttribute);
+                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.AddAttribute);
                 context.CodeWriter.Write(parameters[index].seqName);
                 context.CodeWriter.Write(", ");
 
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             foreach (var capture in node.Component.Captures)
             {
-                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", capture.IsComponentCapture ? BlazorApi.RenderTreeBuilder.AddComponentReferenceCapture : BlazorApi.RenderTreeBuilder.AddElementReferenceCapture);
+                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", capture.IsComponentCapture ? ComponentsApi.RenderTreeBuilder.AddComponentReferenceCapture : ComponentsApi.RenderTreeBuilder.AddElementReferenceCapture);
                 context.CodeWriter.Write(parameters[index].seqName);
                 context.CodeWriter.Write(", ");
 
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 index++;
             }
 
-            context.CodeWriter.WriteInstanceMethodInvocation("builder", BlazorApi.RenderTreeBuilder.CloseComponent);
+            context.CodeWriter.WriteInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.CloseComponent);
 
             writer.WriteLine("}");
 

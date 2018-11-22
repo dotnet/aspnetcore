@@ -7,19 +7,18 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
             builder.OpenComponent<Test.User>(0);
-            builder.AddAttribute(1, "Name", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(UserName));
-            builder.AddAttribute(2, "NameChanged", Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => UserName = __value, UserName));
-            builder.AddAttribute(3, "IsActive", Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue(UserIsActive));
-            builder.AddAttribute(4, "IsActiveChanged", Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValueHandler(__value => UserIsActive = __value, UserIsActive));
+            builder.AddAttribute(1, "Name", Microsoft.AspNetCore.Components.BindMethods.GetValue(UserName));
+            builder.AddAttribute(2, "NameChanged", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserName = __value, UserName));
+            builder.AddAttribute(3, "IsActive", Microsoft.AspNetCore.Components.BindMethods.GetValue(UserIsActive));
+            builder.AddAttribute(4, "IsActiveChanged", Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserIsActive = __value, UserIsActive));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

@@ -1,15 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Browser.Services;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Rendering;
+using Microsoft.AspNetCore.Components.Browser.Services;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 using Mono.WebAssembly.Interop;
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
+namespace Microsoft.AspNetCore.Components.Browser.Rendering
 {
     /// <summary>
     /// Provides mechanisms for rendering <see cref="IComponent"/> instances in a

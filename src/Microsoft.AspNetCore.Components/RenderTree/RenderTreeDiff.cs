@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.RenderTree
+namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
     /// Describes changes to a component's render tree between successive renders.

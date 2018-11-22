@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.Reflection
+namespace Microsoft.AspNetCore.Components.Reflection
 {
     internal interface IPropertySetter
     {

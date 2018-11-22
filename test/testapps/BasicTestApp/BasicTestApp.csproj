@@ -8,11 +8,11 @@
     <RunArguments>run --project ../../../blazor/src/Microsoft.AspNetCore.Blazor.Cli serve --pathbase /subdir</RunArguments>
   </PropertyGroup>
 
-  <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" /> -->
+  <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Components.Build" /> -->
   <Import Project="..\..\..\src\Microsoft.AspNetCore.Components.Build\ReferenceFromSource.props" />
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj" />
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
   </ItemGroup>
   

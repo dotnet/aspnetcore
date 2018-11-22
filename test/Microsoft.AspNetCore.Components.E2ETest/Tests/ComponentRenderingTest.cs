@@ -9,14 +9,14 @@ using System.Numerics;
 using System.Threading.Tasks;
 using BasicTestApp;
 using BasicTestApp.HierarchicalImportsTest.Subdir;
-using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
-using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class ComponentRenderingTest : BasicTestAppTestBase
     {

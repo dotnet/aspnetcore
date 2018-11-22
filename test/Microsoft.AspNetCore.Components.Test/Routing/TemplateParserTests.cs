@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Routing
+namespace Microsoft.AspNetCore.Components.Routing
 {
     public class TemplateParserTests
     {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Blazor.Routing
             var ex = Assert.Throws<InvalidOperationException>(
                 () => TemplateParser.ParseTemplate("{p1}/literal/{p1}"));
 
-            var expectedMessage = "Invalid template '{p1}/literal/{p1}'. The parameter 'Microsoft.AspNetCore.Blazor.Routing.TemplateSegment' appears multiple times.";
+            var expectedMessage = "Invalid template '{p1}/literal/{p1}'. The parameter 'Microsoft.AspNetCore.Components.Routing.TemplateSegment' appears multiple times.";
 
             Assert.Equal(expectedMessage, ex.Message);
         }

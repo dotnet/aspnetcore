@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Hosting
+namespace Microsoft.AspNetCore.Components.Hosting
 {
     public class WebAssemblyHostBuilderTest
     {

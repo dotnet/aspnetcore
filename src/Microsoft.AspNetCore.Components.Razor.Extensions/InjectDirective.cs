@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -8,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     // Much of the following is equivalent to Microsoft.AspNetCore.Mvc.Razor.Extensions's InjectDirective,
     // but this one outputs properties annotated for Blazor's property injector, plus it doesn't need to
@@ -16,8 +17,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
     internal class InjectDirective
     {
-        const string InjectAttributeTypeName = "Microsoft.AspNetCore.Blazor.Components.InjectAttribute";
-
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "inject",
             DirectiveKind.SingleLine,
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 private static readonly IList<string> _injectedPropertyModifiers = new[]
                 {
-                    $"[global::{InjectAttributeTypeName}]",
+                    $"[global::{ComponentsApi.InjectAttribute.FullTypeName}]",
                     "private" // Encapsulation is the default
                 };
 

@@ -8,12 +8,11 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Components;
 
 #line default
 #line hidden
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent<TItem1, TItem2> : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    public class TestComponent<TItem1, TItem2> : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -31,7 +30,7 @@ global::System.Object TItem2 = null;
         private static System.Object __o = null;
         #pragma warning restore 0414
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
 #line 6 "x:\dir\subdir\Test\TestComponent.cshtml"

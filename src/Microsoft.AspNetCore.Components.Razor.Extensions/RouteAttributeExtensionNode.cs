@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class RouteAttributeExtensionNode : ExtensionIntermediateNode
     {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public override void WriteNode(CodeTarget target, CodeRenderingContext context)
         {
             context.CodeWriter.Write("[");
-            context.CodeWriter.Write(BlazorApi.RouteAttribute.FullTypeName);
+            context.CodeWriter.Write(ComponentsApi.RouteAttribute.FullTypeName);
             context.CodeWriter.Write("(\"");
             context.CodeWriter.Write(Template);
             context.CodeWriter.Write("\")");

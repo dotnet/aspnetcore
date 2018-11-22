@@ -7,12 +7,11 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Blazor;
-    using Microsoft.AspNetCore.Blazor.Components;
-    public class TestComponent : Microsoft.AspNetCore.Blazor.Components.BlazorComponent
+    using Microsoft.AspNetCore.Components;
+    public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Blazor.RenderTree.RenderTreeBuilder builder)
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -31,7 +30,7 @@ namespace Test
 #line default
 #line hidden
             builder.OpenComponent<Test.MyComponent>(2);
-            builder.AddAttribute(3, "PersonTemplate", new Microsoft.AspNetCore.Blazor.RenderFragment<Test.Person>(template));
+            builder.AddAttribute(3, "PersonTemplate", new Microsoft.AspNetCore.Components.RenderFragment<Test.Person>(template));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

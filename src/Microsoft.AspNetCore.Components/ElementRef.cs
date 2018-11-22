@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Blazor
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Represents a reference to a rendered element.

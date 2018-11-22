@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Blazor.Analyzers
+namespace Microsoft.AspNetCore.Components.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ComponentParametersShouldNotBePublicAnalyzer : DiagnosticAnalyzer
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Blazor.Analyzers
 
             var parameterAttribute = declaration.AttributeLists
                 .SelectMany(list => list.Attributes)
-                .Where(attr => semanticModel.GetTypeInfo(attr).Type?.ToDisplayString() == BlazorApi.ParameterAttribute.FullTypeName)
+                .Where(attr => semanticModel.GetTypeInfo(attr).Type?.ToDisplayString() == ComponentsApi.ParameterAttribute.FullTypeName)
                 .FirstOrDefault();
 
             if (parameterAttribute != null && IsPublic(declaration))

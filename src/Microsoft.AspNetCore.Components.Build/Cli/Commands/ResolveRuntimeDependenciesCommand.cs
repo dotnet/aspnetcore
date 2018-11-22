@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
+namespace Microsoft.AspNetCore.Components.Build.Cli.Commands
 {
     class ResolveRuntimeDependenciesCommand
     {

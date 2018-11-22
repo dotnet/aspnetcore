@@ -4,7 +4,7 @@
 using Microsoft.JSInterop;
 using System;
 
-namespace Microsoft.AspNetCore.Blazor
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Provides mechanisms for converting between .NET objects and JSON strings.

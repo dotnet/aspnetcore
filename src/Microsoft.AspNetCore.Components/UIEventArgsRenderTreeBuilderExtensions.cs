@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Blazor
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Extensions methods on <see cref="RenderTreeBuilder"/> for event handlers.

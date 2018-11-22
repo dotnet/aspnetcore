@@ -5,7 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     // Integration tests focused on file path handling for class/namespace names
     public class WorkingDirectoryRazorIntegrationTest : RazorIntegrationTestBase

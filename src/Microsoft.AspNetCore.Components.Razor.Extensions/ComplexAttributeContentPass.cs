@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     // We don't support 'complex' content for components (mixed C# and markup) right now.
     // It's not clear yet if Blazor will have a good scenario to use these constructs.

@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Blazor.Rendering
+namespace Microsoft.AspNetCore.Components.Rendering
 {
     /// <summary>
     /// Tracks the rendering state associated with an <see cref="IComponent"/> instance

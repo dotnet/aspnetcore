@@ -4,11 +4,10 @@ Document -
         UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
         UsingDirective - (53:3,1 [17] ) - System.Linq
         UsingDirective - (1:0,1 [28] x:\dir\subdir\Test\TestComponent.cshtml) - System.Threading.Tasks
-        UsingDirective - (104:5,1 [33] ) - Microsoft.AspNetCore.Blazor
-        UsingDirective - (140:6,1 [44] ) - Microsoft.AspNetCore.Blazor.Components
-        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Blazor.Components.BlazorComponent - 
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
-                DirectiveToken - (14:0,14 [32] ) - "*, Microsoft.AspNetCore.Blazor"
+                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
                 DirectiveToken - (14:0,14 [9] ) - "*, Test"
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
@@ -24,7 +23,7 @@ Document -
                 HtmlElement - (31:1,0 [53] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute - (47:1,16 [33] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
-                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Blazor.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Blazor.UIMouseEventArgs>(
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetEventHandlerValue<Microsoft.AspNetCore.Components.UIMouseEventArgs>(
                             IntermediateToken -  - CSharp - "async (e) => await Task.Delay(10)"
                             IntermediateToken -  - CSharp - )
                 HtmlContent - (84:1,53 [2] x:\dir\subdir\Test\TestComponent.cshtml)

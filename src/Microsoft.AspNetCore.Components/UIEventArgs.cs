@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Blazor
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Supplies information about an event that is being raised.
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Blazor
 
         /// <summary>
         /// The data that underlies a drag-and-drop operation, known as the drag data store.
-        /// See <see cref="Blazor.DataTransfer"/>.
+        /// See <see cref="DataTransfer"/>.
         /// </summary>
         public DataTransfer DataTransfer { get; set; }
 

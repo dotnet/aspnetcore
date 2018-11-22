@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Blazor.Hosting
+namespace Microsoft.AspNetCore.Components.Hosting
 {
     /// <summary>
     /// Context containing the common services on the <see cref="IWebAssemblyHost" />. Some properties may be null until set by the <see cref="IWebAssemblyHost" />.

@@ -5,7 +5,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
+namespace Microsoft.AspNetCore.Components.Build.Cli.Commands
 {
     internal class WriteBootJsonCommand
     {

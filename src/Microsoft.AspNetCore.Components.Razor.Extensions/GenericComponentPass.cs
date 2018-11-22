@@ -3,13 +3,13 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     // This pass:
     // 1. Adds diagnostics for missing generic type arguments
@@ -222,12 +222,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     else if (childContent.IsParameterized)
                     {
                         // This is a weakly typed parameterized child content, treat it as RenderFragment<object>
-                        childContent.TypeName = BlazorApi.RenderFragment.FullTypeName + "<System.Object>";
+                        childContent.TypeName = ComponentsApi.RenderFragment.FullTypeName + "<System.Object>";
                     }
                     else
                     {
                         // This is a weakly typed child content, treat it as RenderFragment
-                        childContent.TypeName = BlazorApi.RenderFragment.FullTypeName;
+                        childContent.TypeName = ComponentsApi.RenderFragment.FullTypeName;
                     }
                 }
             }

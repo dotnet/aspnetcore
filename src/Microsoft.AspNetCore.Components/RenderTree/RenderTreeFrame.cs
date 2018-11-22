@@ -3,10 +3,10 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Rendering;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Blazor.RenderTree
+namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
     /// Represents an entry in a tree of user interface (UI) items.

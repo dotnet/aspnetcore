@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.Services
+namespace Microsoft.AspNetCore.Components.Services
 {
     /// <summary>
     /// Helpers for working with URIs and navigation state.

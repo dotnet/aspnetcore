@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
 
-namespace Microsoft.AspNetCore.Blazor.Layouts
+namespace Microsoft.AspNetCore.Components.Layouts
 {
     /// <summary>
     /// Displays the specified page component, rendering it inside its layout
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Blazor.Layouts
             builder.OpenComponent(0, componentType);
             if (bodyParam != null)
             {
-                builder.AddAttribute(1, BlazorLayoutComponent.BodyPropertyName, bodyParam);
+                builder.AddAttribute(1, LayoutComponentBase.BodyPropertyName, bodyParam);
             }
             else
             {

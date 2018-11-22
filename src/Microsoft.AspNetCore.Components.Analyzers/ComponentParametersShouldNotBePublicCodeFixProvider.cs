@@ -11,7 +11,7 @@ using System.Composition;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Blazor.Analyzers
+namespace Microsoft.AspNetCore.Components.Analyzers
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ComponentParametersShouldNotBePublicCodeFixProvider)), Shared]
     public class ComponentParametersShouldNotBePublicCodeFixProvider : CodeFixProvider

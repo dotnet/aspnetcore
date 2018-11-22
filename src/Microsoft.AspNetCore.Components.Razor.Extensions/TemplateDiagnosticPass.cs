@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class TemplateDiagnosticPass : IntermediateNodePassBase, IRazorOptimizationPass
     {

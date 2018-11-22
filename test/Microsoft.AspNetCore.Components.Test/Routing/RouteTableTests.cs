@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Blazor.Routing;
+using Microsoft.AspNetCore.Components.Routing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Test.Routing
+namespace Microsoft.AspNetCore.Components.Test.Routing
 {
     public class RouteTableTests
     {

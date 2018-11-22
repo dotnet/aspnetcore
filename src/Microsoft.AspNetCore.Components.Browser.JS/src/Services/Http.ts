@@ -1,6 +1,6 @@
 import { platform } from '../Environment';
 import { MethodHandle, System_String, System_Array } from '../Platform/Platform';
-const httpClientAssembly = 'Microsoft.AspNetCore.Blazor.Browser';
+const httpClientAssembly = 'Microsoft.AspNetCore.Components.Browser';
 const httpClientNamespace = `${httpClientAssembly}.Http`;
 const httpClientTypeName = 'BrowserHttpMessageHandler';
 const httpClientFullTypeName = `${httpClientNamespace}.${httpClientTypeName}`;

@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj"/>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
   </ItemGroup>
 
   <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" /> -->

@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using System;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
+namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 {
     public abstract class ServerTestBase<TServerFixture>
         : BrowserTestBase, IClassFixture<TServerFixture>

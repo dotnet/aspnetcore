@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.Rendering;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Blazor.Test.Helpers
+namespace Microsoft.AspNetCore.Components.Test.Helpers
 {
     public class TestRenderer : Renderer
     {

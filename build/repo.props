@@ -40,7 +40,7 @@
     The CI will script these directly by passing BlazorAllTests=true
   -->
   <ItemGroup Condition="'$(BlazorAllTests)'!='true'">
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Components.E2ETest\Microsoft.AspNetCore.Blazor.E2ETest.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Components.E2ETest\Microsoft.AspNetCore.Components.E2ETest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

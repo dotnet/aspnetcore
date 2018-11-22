@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Blazor.Shared;
+using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     internal class BlazorImportProjectFeature : IImportProjectFeature
     {
@@ -24,8 +24,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             "@using System.Collections.Generic\r\n" +
             "@using System.Linq\r\n" +
             "@using System.Threading.Tasks\r\n" +
-            "@using " + BlazorApi.RenderFragment.Namespace + "\r\n" + // Microsoft.AspNetCore.Blazor
-            "@using " + BlazorApi.BlazorComponent.Namespace + "\r\n"; // Microsoft.AspNetCore.Blazor.Components
+            "@using " + ComponentsApi.RenderFragment.Namespace + "\r\n"; // Microsoft.AspNetCore.Components
 
         public RazorProjectEngine ProjectEngine { get; set; }
 
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var imports = new List<RazorProjectItem>()
             {
                  new VirtualProjectItem(DefaultUsingImportContent),
-                 new VirtualProjectItem(@"@addTagHelper ""*, Microsoft.AspNetCore.Blazor"""),
+                 new VirtualProjectItem(@"@addTagHelper ""*, Microsoft.AspNetCore.Components"""),
             };
 
             // Try and infer a namespace from the project directory. We don't yet have the ability to pass

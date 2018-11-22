@@ -9,7 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Blazor.Razor
+namespace Microsoft.AspNetCore.Components.Razor
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     internal class HtmlElementIntermediateNode : ExtensionIntermediateNode

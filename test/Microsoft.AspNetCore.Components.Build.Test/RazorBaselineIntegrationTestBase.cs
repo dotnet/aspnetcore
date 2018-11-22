@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Test
+namespace Microsoft.AspNetCore.Components.Build.Test
 {
     [InitializeTestFile]
     public abstract class RazorBaselineIntegrationTestBase : RazorIntegrationTestBase
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 #else
         protected bool GenerateBaselines { get; } = false;
 #endif
-
+        
         protected string TestProjectRoot { get; }
 
         // For consistent line endings because the character counts are going to be recorded in files.
