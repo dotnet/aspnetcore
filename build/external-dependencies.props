@@ -39,6 +39,8 @@
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="$(MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />

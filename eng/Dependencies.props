@@ -14,6 +14,8 @@
     <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />

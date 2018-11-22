@@ -10,10 +10,6 @@
 	path = modules/CORS
 	url = https://github.com/aspnet/CORS.git
 	branch = master
-[submodule "modules/Diagnostics"]
-	path = modules/Diagnostics
-	url = https://github.com/aspnet/Diagnostics.git
-	branch = master
 [submodule "modules/HttpSysServer"]
 	path = modules/HttpSysServer
 	url = https://github.com/aspnet/HttpSysServer.git

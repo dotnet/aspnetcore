@@ -65,6 +65,8 @@
     <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>3.0.0-alpha1-10773</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>3.0.0-alpha1-10773</MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
@@ -99,8 +101,8 @@
     <MicrosoftExtensionsStackTraceSourcesPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsStackTraceSourcesPackageVersion>
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsWebEncodersPackageVersion>
+    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>3.0.0-preview.18569.14</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
 
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <MicrosoftEntityFrameworkCoreAbstractionsPackageVersion>3.0.0-preview.18569.2</MicrosoftEntityFrameworkCoreAbstractionsPackageVersion>

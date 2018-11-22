@@ -41,7 +41,6 @@
     <Repository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <Repository Include="BasicMiddleware" />
     <Repository Include="CORS" />
-    <Repository Include="Diagnostics" />
     <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
