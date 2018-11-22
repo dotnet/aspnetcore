@@ -20,8 +20,6 @@
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
 
     <!-- Assemblies produced by this repo that will move to aspnet/Extensions after repo refactoring is done -->
-    <SharedFrameworkAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
-    <SharedFrameworkAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <SharedFrameworkAndPackage Include="Microsoft.Extensions.Identity.Core" />
     <SharedFrameworkAndPackage Include="Microsoft.Extensions.Identity.Stores" />
     <SharedFrameworkAndPackage Include="Microsoft.Extensions.Localization.Abstractions" />

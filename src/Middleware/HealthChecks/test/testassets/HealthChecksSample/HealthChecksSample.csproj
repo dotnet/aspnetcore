@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <!-- Used in our tests -->
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp2.2;net461</TargetFrameworks>
-    <TargetFrameworks Condition="'$(TargetFrameworks)'==''">netcoreapp2.2</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

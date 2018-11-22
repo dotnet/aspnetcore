@@ -4,6 +4,7 @@ This is required to provide dependencies for samples and tests.
  -->
 <Project>
   <ItemGroup>
-    <LatestPackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="3.0.0-alpha1-10727" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="3.0.0-preview-18571-0010" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="3.0.0-preview-18571-0010" />
   </ItemGroup>
 </Project>
