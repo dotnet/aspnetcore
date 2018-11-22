@@ -15,59 +15,21 @@ namespace Templates.Test
         {
         }
 
-        [Fact]
-        public async Task MvcTemplate_NoAuth_NoHttps_Works_NetCore_ForDefaultTemplate()
-            => await MvcTemplateBase(targetFrameworkOverride: null, languageOverride: default, noHttps: true);
+        [Theory]
+        [InlineData(null)]
+        [InlineData("F#", Skip = "https://github.com/aspnet/Templating/issues/673")]
+        private async Task MvcTemplate_NoAuthImpl(string languageOverride)
+            => await MvcTemplateBase(targetFrameworkOverride: null, languageOverride: languageOverride);
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task MvcTemplate_NoAuth_Works_NetFramework_ForDefaultTemplate()
-            => await MvcTemplateBase("net461", languageOverride: default);
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task MvcTemplate_NoAuth_Works_NetFramework_ForFSharpTemplate()
-            => await MvcTemplateBase("net461", languageOverride: "F#");
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task MvcTemplate_NoAuth_NoHttps_Works_NetFramework_ForDefaultTemplate()
-            => await MvcTemplateBase("net461", languageOverride: default, noHttps: true);
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task MvcTemplate_NoAuth_NoHttps_Works_NetFramework_ForFSharpTemplate()
-            => await MvcTemplateBase("net461", languageOverride: "F#", noHttps: true);
-
-        [Fact]
-        public async Task MvcTemplate_NoAuth_Works_NetCore_ForDefaultTemplate()
-            => await MvcTemplateBase(null, languageOverride: default);
-
-        [Fact]
-        public async Task MvcTemplate_NoAuth_Works_NetCore_ForFSharpTemplate()
-            => await MvcTemplateBase(null, languageOverride: "F#");
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task MvcTemplate_IndividualAuth_Works_NetFramework()
-            => await MvcTemplateBase("net461", auth: IndividualAuth);
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task MvcTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
-            => await MvcTemplateBase("net461", auth: IndividualAuth, useLocalDb: false, noHttps: true);
-
-        [Fact]
-        public async Task MvcTemplate_IndividualAuth_Works_NetCore()
-            => await MvcTemplateBase(targetFrameworkOverride: null, auth: IndividualAuth);
-
-        [Fact]
-        public async Task MvcTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
-            => await MvcTemplateBase(targetFrameworkOverride: null, auth: IndividualAuth, useLocalDb: true);
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task MvcTemplate_IndividualAuth(bool useLocalDb)
+            => await MvcTemplateBase(targetFrameworkOverride: null, auth: IndividualAuth, useLocalDb: useLocalDb);
 
         private async Task MvcTemplateBase(
             string targetFrameworkOverride,
-            string languageOverride = default,
+            string languageOverride = null,
             string auth = null,
             bool noHttps = false,
             bool useLocalDb = false)

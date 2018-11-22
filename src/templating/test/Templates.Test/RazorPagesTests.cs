@@ -14,41 +14,19 @@ namespace Templates.Test
         {
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task RazorPagesTemplate_NoAuth_Works_NetFramework()
-            => await RazorPagesBase("net461");
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task RazorPagesTemplate_NoAuth_NoHttps_Works_NetFramework()
-            => await RazorPagesBase("net461", noHttps: true);
-
         [Fact]
-        public async Task RazorPagesTemplate_NoAuth_Works_NetCore()
+        public async Task RazorPagesTemplate_NoAuth()
             => await RazorPagesBase(targetFrameworkOverride: null);
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task RazorPagesTemplate_IndividualAuth_Works_NetFramework()
-            => await RazorPagesBase("net461", auth: IndividualAuth);
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        public async Task RazorPagesTemplate_WithIndividualAuth_NoHttpsSetToTrue_UsesHttps_NetFramework()
-            => await RazorPagesBase("net461", auth: IndividualAuth, useLocalDb: false, noHttps: true);
-
-        [Fact]
-        public async Task RazorPagesTemplate_IndividualAuth_Works_NetCore()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void RazorPagesTemplate_IndividualAuthImpl(bool useLocalDB)
             => await RazorPagesBase(targetFrameworkOverride: null, auth: IndividualAuth);
-
-        [Fact]
-        public async Task RazorPagesTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
-            => await RazorPagesBase(targetFrameworkOverride: null, auth: IndividualAuth, useLocalDb: true);
 
         private async Task RazorPagesBase(
             string targetFrameworkOverride,
-            string languageOverride = default,
+            string languageOverride = null,
             string auth = null,
             bool noHttps = false,
             bool useLocalDb = false)
