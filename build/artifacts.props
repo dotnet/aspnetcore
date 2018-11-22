@@ -64,9 +64,7 @@
     <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship"  />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />
@@ -105,7 +103,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.HostFiltering" Category="noship" />

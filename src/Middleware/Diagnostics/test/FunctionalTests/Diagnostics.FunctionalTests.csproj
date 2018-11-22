@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyName>Diagnostics.FunctionalTests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj" />
+    <ProjectReference Include="..\testassets\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj" />
+    <ProjectReference Include="..\testassets\ExceptionHandlerSample\ExceptionHandlerSample.csproj" />
+    <ProjectReference Include="..\testassets\StatusCodePagesSample\StatusCodePagesSample.csproj" />
+    <ProjectReference Include="..\testassets\WelcomePageSample\WelcomePageSample.csproj" />
+    <ProjectReference Include="..\..\..\MiddlewareAnalysis\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+  </ItemGroup>
+
+</Project>

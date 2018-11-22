@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DatabaseErrorPageMiddleware_ContextNotRegistered" xml:space="preserve">
+    <value>The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;&gt;() inside the UseServices(...) call in your application startup code. Skipping display of the database error page.</value>
+  </data>
+  <data name="DatabaseErrorPageMiddleware_Exception" xml:space="preserve">
+    <value>An exception occurred while calculating the database error page content. Skipping display of the database error page.</value>
+  </data>
+  <data name="DatabaseErrorPage_AddMigrationCommandCLI" xml:space="preserve">
+    <value>&gt; dotnet ef migrations add [migration name]</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsButton" xml:space="preserve">
+    <value>Apply Migrations</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsButtonDone" xml:space="preserve">
+    <value>Migrations Applied</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsButtonRunning" xml:space="preserve">
+    <value>Applying Migrations...</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsFailed" xml:space="preserve">
+    <value>An error occurred applying migrations, try applying them from the command line</value>
+  </data>
+  <data name="DatabaseErrorPage_HowToApplyFromPMC" xml:space="preserve">
+    <value>In Visual Studio, you can use the Package Manager Console to apply pending migrations to the database:</value>
+  </data>
+  <data name="DatabaseErrorPage_MigrationsAppliedRefresh" xml:space="preserve">
+    <value>Try refreshing the page</value>
+  </data>
+  <data name="DatabaseErrorPage_NoDbOrMigrationsInfoPMC" xml:space="preserve">
+    <value>In Visual Studio, use the Package Manager Console to scaffold a new migration and apply it to the database:</value>
+  </data>
+  <data name="DatabaseErrorPage_NoDbOrMigrationsTitle" xml:space="preserve">
+    <value>Use migrations to create the database for {0}</value>
+  </data>
+  <data name="DatabaseErrorPage_PendingChangesInfoPMC" xml:space="preserve">
+    <value>In Visual Studio, use the Package Manager Console to scaffold a new migration for these changes and apply them to the database:</value>
+  </data>
+  <data name="DatabaseErrorPage_PendingChangesTitle" xml:space="preserve">
+    <value>There are pending model changes for {0}</value>
+  </data>
+  <data name="DatabaseErrorPage_PendingMigrationsInfo" xml:space="preserve">
+    <value>There are migrations for {0} that have not been applied to the database</value>
+  </data>
+  <data name="DatabaseErrorPage_PendingMigrationsTitle" xml:space="preserve">
+    <value>Applying existing migrations for {0} may resolve this issue</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsCommandCLI" xml:space="preserve">
+    <value>&gt; dotnet ef database update</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_ContextNotRegistered" xml:space="preserve">
+    <value>The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_Exception" xml:space="preserve">
+    <value>An error occurred while applying the migrations for '{0}'. See InnerException for details.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_InvalidContextType" xml:space="preserve">
+    <value>The context type '{0}' could not be loaded. Ensure this is the correct type name for the context you are trying to apply migrations for.</value>
+  </data>
+  <data name="MigrationsEndPointMiddleware_NoContextType" xml:space="preserve">
+    <value>No context type was specified. Ensure the form data from the request includes a 'context' value, specifying the context type name to apply migrations for.</value>
+  </data>
+  <data name="DatabaseErrorPage_Title" xml:space="preserve">
+    <value>A database operation failed while processing the request.</value>
+  </data>
+  <data name="DatabaseErrorPage_NoRecordedException" xml:space="preserve">
+    <value>Entity Framework did not record any exceptions due to failed database operations. This means the current exception is not a failed Entity Framework database operation, or the current exception occurred from a DbContext that was not obtained from request services.</value>
+  </data>
+  <data name="DatabaseErrorPage_AddMigrationCommandPMC" xml:space="preserve">
+    <value>PM&gt; Add-Migration [migration name]</value>
+  </data>
+  <data name="DatabaseErrorPage_ApplyMigrationsCommandPMC" xml:space="preserve">
+    <value>PM&gt; Update-Database</value>
+  </data>
+  <data name="DatabaseErrorPage_NoDbOrMigrationsInfoCLI" xml:space="preserve">
+    <value>Alternatively, you can scaffold a new migration and apply it from a command prompt at your project directory:</value>
+  </data>
+  <data name="DatabaseErrorPage_PendingChangesInfoCLI" xml:space="preserve">
+    <value>Alternatively, you can scaffold a new migration and apply it from a command prompt at your project directory:</value>
+  </data>
+  <data name="DatabaseErrorPage_HowToApplyFromCLI" xml:space="preserve">
+    <value>Alternatively, you can apply pending migrations from a command prompt at your project directory:</value>
+  </data>
+</root>

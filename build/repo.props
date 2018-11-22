@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
+    <SharedSourceDirectories Remove="$(RepositoryRoot)src\Shared\Diagnostics\" />
   </ItemGroup>
 
   <ItemGroup>
