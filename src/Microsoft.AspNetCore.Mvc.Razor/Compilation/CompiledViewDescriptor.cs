@@ -51,7 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             // later.
             ExpirationTokens = Array.Empty<IChangeToken>();
             RelativePath = ViewPath.NormalizePath(item?.Identifier ?? attribute.Path);
-            IsPrecompiled = true;
         }
 
         /// <summary>
@@ -71,11 +70,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// <see cref="IChangeToken"/> instances that indicate when this result has expired.
         /// </summary>
         public IList<IChangeToken> ExpirationTokens { get; set; }
-
-        /// <summary>
-        /// Gets a value that determines if the view is precompiled.
-        /// </summary>
-        public bool IsPrecompiled { get; set; }
 
         /// <summary>
         /// Gets the <see cref="RazorCompiledItem"/> descriptor for this view.

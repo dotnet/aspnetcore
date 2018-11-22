@@ -9,12 +9,10 @@ using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Hosting;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
-using static Microsoft.AspNetCore.Razor.Hosting.TestRazorCompiledItem;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
@@ -123,88 +121,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                             Assert.Equal("/Home", kvp.Value);
                         });
                 });
-        }
-
-        [Fact]
-        public void OnProvidersExecuting_ValidatesChecksum_RejectsPageWhenContentDoesntMatch()
-        {
-            // Arrange
-            var descriptors = new[]
-            {
-                CreateVersion_2_1_Descriptor("/Pages/About.cshtml", metadata: new object[]
-                {
-                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Pages/About.cshtml"),
-                }),
-            };
-
-            var fileSystem = new VirtualRazorProjectFileSystem();
-            fileSystem.Add(new TestRazorProjectItem("/Pages/About.cshtml", "some other content"));
-
-            var provider = CreateProvider(descriptors: descriptors, fileSystem: fileSystem);
-            var context = new PageRouteModelProviderContext();
-
-            // Act
-            provider.OnProvidersExecuting(context);
-
-            // Assert
-            Assert.Empty(context.RouteModels);
-        }
-
-        [Fact]
-        public void OnProvidersExecuting_ValidatesChecksum_AcceptsPageWhenContentMatches()
-        {
-            // Arrange
-            var descriptors = new[]
-            {
-                CreateVersion_2_1_Descriptor("/Pages/About.cshtml", metadata: new object[]
-                {
-                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Pages/About.cshtml"),
-                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some import"), "/Pages/_ViewImports.cshtml"),
-                }),
-            };
-
-            var fileSystem = new VirtualRazorProjectFileSystem();
-            fileSystem.Add(new TestRazorProjectItem("/Pages/About.cshtml", "some content"));
-            fileSystem.Add(new TestRazorProjectItem("/Pages/_ViewImports.cshtml", "some import"));
-
-            var provider = CreateProvider(descriptors: descriptors, fileSystem: fileSystem);
-            var context = new PageRouteModelProviderContext();
-
-            // Act
-            provider.OnProvidersExecuting(context);
-
-            // Assert
-            Assert.Collection(
-                context.RouteModels,
-                result => Assert.Equal("/Pages/About.cshtml", result.RelativePath));
-        }
-
-        [Fact]
-        public void OnProvidersExecuting_ValidatesChecksum_SkipsValidationWhenMainSourceMissing()
-        {
-            // Arrange
-            var descriptors = new[]
-            {
-                CreateVersion_2_1_Descriptor("/Pages/About.cshtml", metadata: new object[]
-                {
-                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Pages/About.cshtml"),
-                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some import"), "/Pages/_ViewImports.cshtml"),
-                }),
-            };
-
-            var fileSystem = new VirtualRazorProjectFileSystem();
-            fileSystem.Add(new TestRazorProjectItem("/Pages/_ViewImports.cshtml", "some other import"));
-
-            var provider = CreateProvider(descriptors: descriptors, fileSystem: fileSystem);
-            var context = new PageRouteModelProviderContext();
-
-            // Act
-            provider.OnProvidersExecuting(context);
-
-            // Assert
-            Assert.Collection(
-                context.RouteModels,
-                result => Assert.Equal("/Pages/About.cshtml", result.RelativePath));
         }
 
         [Fact]
@@ -526,19 +442,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var descriptors = new[]
             {
                 // Page coming from the app
-                CreateVersion_2_1_Descriptor("/Pages/About.cshtml", metadata: new object[]
-                {
-                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Pages/About.cshtml"),
-                }),
-                CreateVersion_2_1_Descriptor("/Pages/Home.cshtml", metadata: new object[]
-                {
-                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Pages/Index.cshtml"),
-                }),
+                CreateVersion_2_1_Descriptor("/Pages/About.cshtml"),
+                CreateVersion_2_1_Descriptor("/Pages/Home.cshtml"),
                 // Page coming from the app
-                CreateVersion_2_1_Descriptor("/Pages/About.cshtml", metadata: new object[]
-                {
-                    new RazorSourceChecksumAttribute("SHA1", GetChecksum("some content"), "/Pages/About.cshtml"),
-                }),
+                CreateVersion_2_1_Descriptor("/Pages/About.cshtml"),
             };
 
             var provider = CreateProvider(descriptors: descriptors);
@@ -672,17 +579,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private TestCompiledPageRouteModelProvider CreateProvider(
            RazorPagesOptions options = null,
-           IList<CompiledViewDescriptor> descriptors = null,
-           VirtualRazorProjectFileSystem fileSystem = null)
+           IList<CompiledViewDescriptor> descriptors = null)
         {
             options = options ?? new RazorPagesOptions();
-            fileSystem = fileSystem ?? new VirtualRazorProjectFileSystem();
-            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem);
 
             var provider = new TestCompiledPageRouteModelProvider(
                 new ApplicationPartManager(),
                 Options.Create(options),
-                projectEngine,
                 NullLogger<CompiledPageRouteModelProvider>.Instance);
 
             provider.Descriptors.AddRange(descriptors ?? Array.Empty<CompiledViewDescriptor>());
@@ -694,7 +597,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             return new CompiledViewDescriptor
             {
-                IsPrecompiled = true,
                 RelativePath = path,
                 ViewAttribute = new RazorPageAttribute(path, typeof(object), routeTemplate),
             };
@@ -706,7 +608,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             return new CompiledViewDescriptor
             {
-                IsPrecompiled = true,
                 RelativePath = path,
                 Item = new TestRazorCompiledItem(typeof(object), "mvc.1.0.razor-page", path, metadata ?? Array.Empty<object>()),
             };
@@ -717,9 +618,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             public TestCompiledPageRouteModelProvider(
                 ApplicationPartManager partManager,
                 IOptions<RazorPagesOptions> options,
-                RazorProjectEngine projectEngine,
                 ILogger<CompiledPageRouteModelProvider> logger)
-                : base(partManager, options, projectEngine, logger)
+                : base(partManager, options, logger)
             {
             }
 

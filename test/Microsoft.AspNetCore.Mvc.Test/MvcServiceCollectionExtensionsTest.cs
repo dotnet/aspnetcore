@@ -210,9 +210,6 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Collection(manager.FeatureProviders,
                 feature => Assert.IsType<ControllerFeatureProvider>(feature),
                 feature => Assert.IsType<ViewComponentFeatureProvider>(feature),
-#pragma warning disable CS0618 // Type or member is obsolete
-                feature => Assert.IsType<MetadataReferenceFeatureProvider>(feature),
-#pragma warning restore CS0618 // Type or member is obsolete
                 feature => Assert.IsType<TagHelperFeatureProvider>(feature),
                 feature => Assert.IsType<RazorCompiledItemFeatureProvider>(feature),
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -462,7 +459,6 @@ namespace Microsoft.AspNetCore.Mvc
                         new[]
                         {
                             typeof(CompiledPageRouteModelProvider),
-                            typeof(RazorProjectPageRouteModelProvider),
                         }
                     },
                     {

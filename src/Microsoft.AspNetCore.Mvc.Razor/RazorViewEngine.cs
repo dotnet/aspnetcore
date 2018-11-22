@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,7 +28,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public class RazorViewEngine : IRazorViewEngine
     {
         public static readonly string ViewExtension = ".cshtml";
-        private const string ViewStartFileName = "_ViewStart.cshtml";
 
         private const string AreaKey = "area";
         private const string ControllerKey = "controller";
@@ -42,19 +40,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly HtmlEncoder _htmlEncoder;
         private readonly ILogger _logger;
         private readonly RazorViewEngineOptions _options;
-        private readonly RazorProject _razorFileSystem;
         private readonly DiagnosticListener _diagnosticListener;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RazorViewEngine" />.
         /// </summary>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public RazorViewEngine(
             IRazorPageFactoryProvider pageFactory,
             IRazorPageActivator pageActivator,
             HtmlEncoder htmlEncoder,
             IOptions<RazorViewEngineOptions> optionsAccessor,
-            RazorProject razorProject,
             ILoggerFactory loggerFactory,
             DiagnosticListener diagnosticListener)
         {
@@ -78,26 +73,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _pageActivator = pageActivator;
             _htmlEncoder = htmlEncoder;
             _logger = loggerFactory.CreateLogger<RazorViewEngine>();
-            _razorFileSystem = razorProject;
             _diagnosticListener = diagnosticListener;
             ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the RazorViewEngine
-        /// </summary>
-        public RazorViewEngine(
-            IRazorPageFactoryProvider pageFactory,
-            IRazorPageActivator pageActivator,
-            HtmlEncoder htmlEncoder,
-            IOptions<RazorViewEngineOptions> optionsAccessor,
-            RazorProjectFileSystem razorFileSystem,
-            ILoggerFactory loggerFactory,
-            DiagnosticListener diagnosticListener)
-#pragma warning disable CS0618 // Type or member is obsolete
-            : this (pageFactory, pageActivator, htmlEncoder, optionsAccessor, (RazorProject)razorFileSystem, loggerFactory, diagnosticListener)
-#pragma warning restore CS0618 // Type or member is obsolete
-        {
         }
 
         /// <summary>
@@ -439,10 +416,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 var viewStartPages = isMainPage ?
                     GetViewStartPages(viewDescriptor.RelativePath, expirationTokens) :
                     Array.Empty<ViewLocationCacheItem>();
-                if (viewDescriptor.IsPrecompiled)
-                {
-                    _logger.PrecompiledViewFound(relativePath);
-                }
 
                 return new ViewLocationCacheResult(
                     new ViewLocationCacheItem(factoryResult.RazorPageFactory, relativePath),
@@ -458,9 +431,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             var viewStartPages = new List<ViewLocationCacheItem>();
 
-            foreach (var viewStartProjectItem in _razorFileSystem.FindHierarchicalItems(path, ViewStartFileName))
+            foreach (var filePath in RazorFileHierarchy.GetViewStartPaths(path))
             {
-                var result = _pageFactory.CreateFactory(viewStartProjectItem.FilePath);
+                var result = _pageFactory.CreateFactory(filePath);
                 var viewDescriptor = result.ViewDescriptor;
                 if (viewDescriptor?.ExpirationTokens != null)
                 {
@@ -475,7 +448,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     // Populate the viewStartPages list so that _ViewStarts appear in the order the need to be
                     // executed (closest last, furthest first). This is the reverse order in which
                     // ViewHierarchyUtility.GetViewStartLocations returns _ViewStarts.
-                    viewStartPages.Insert(0, new ViewLocationCacheItem(result.RazorPageFactory, viewStartProjectItem.FilePath));
+                    viewStartPages.Insert(0, new ViewLocationCacheItem(result.RazorPageFactory, filePath));
                 }
             }
 

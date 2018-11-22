@@ -88,9 +88,6 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action description and invocation
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
-            services.TryAddSingleton<IActionDescriptorChangeProvider, PageActionDescriptorChangeProvider>();
-            services.TryAddEnumerable(
-                ServiceDescriptor.Singleton<IPageRouteModelProvider, RazorProjectPageRouteModelProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageRouteModelProvider, CompiledPageRouteModelProvider>());
 

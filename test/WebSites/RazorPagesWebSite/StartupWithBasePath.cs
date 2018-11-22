@@ -35,14 +35,6 @@ namespace RazorPagesWebSite
                     options.Conventions.Add(new CustomModelTypeConvention());
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
-
-            // Ensure we don't have code paths that call IFileProvider.Watch in the default code path.
-            // Comment this code block if you happen to run this site in Development.
-            builder.AddRazorOptions(options =>
-            {
-                options.FileProviders.Clear();
-                options.FileProviders.Add(new NonWatchingPhysicalFileProvider(_hostingEnvironment.ContentRootPath));
-            });
         }
 
         public void Configure(IApplicationBuilder app)

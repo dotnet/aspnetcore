@@ -16,7 +16,6 @@
     <dependencies>
       <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.AspNetCore.Mvc.ViewFeatures" version="$version$" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.AspNetCore.Mvc.Razor.Extensions" version="$MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.AspNetCore.Razor.Runtime" version="$MicrosoftAspNetCoreRazorRuntimePackageVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.CodeAnalysis.CSharp" version="$MicrosoftCodeAnalysisCSharpPackageVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.CodeAnalysis.Razor" version="$MicrosoftCodeAnalysisRazorPackageVersion$" exclude="Build,Analyzers" />
@@ -25,7 +24,6 @@
       </group>
       <group targetFramework=".NETFramework4.6.1">
         <dependency id="Microsoft.AspNetCore.Mvc.ViewFeatures" version="$version$" exclude="Build,Analyzers" />
-        <dependency id="Microsoft.AspNetCore.Mvc.Razor.Extensions" version="$MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.AspNetCore.Razor.Runtime" version="$MicrosoftAspNetCoreRazorRuntimePackageVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.CodeAnalysis.CSharp" version="$MicrosoftCodeAnalysisCSharpPackageVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.CodeAnalysis.Razor" version="$MicrosoftCodeAnalysisRazorPackageVersion$" exclude="Build,Analyzers" />

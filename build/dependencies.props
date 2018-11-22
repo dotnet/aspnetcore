@@ -40,9 +40,7 @@
     <MicrosoftAspNetCoreJsonPatchPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreJsonPatchPackageVersion>
     <MicrosoftAspNetCoreLocalizationPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreLocalizationPackageVersion>
     <MicrosoftAspNetCoreLocalizationRoutingPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreLocalizationRoutingPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRangeHelperSourcesPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreRangeHelperSourcesPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreRazorLanguagePackageVersion>
     <MicrosoftAspNetCoreRazorRuntimePackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreRazorRuntimePackageVersion>
     <MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion>
     <MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion>

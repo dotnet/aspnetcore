@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             "Microsoft.AspNetCore.Mvc.Formatters.Xml",
             "Microsoft.AspNetCore.Mvc.Localization",
             "Microsoft.AspNetCore.Mvc.Razor",
-            "Microsoft.AspNetCore.Mvc.Razor.Extensions",
             "Microsoft.AspNetCore.Mvc.RazorPages",
             "Microsoft.AspNetCore.Mvc.TagHelpers",
             "Microsoft.AspNetCore.Mvc.ViewFeatures",

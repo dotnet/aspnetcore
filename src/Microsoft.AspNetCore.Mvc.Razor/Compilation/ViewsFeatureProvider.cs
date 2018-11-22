@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                         ExpirationTokens = Array.Empty<IChangeToken>(),
                         RelativePath = relativePath,
                         ViewAttribute = attribute,
-                        IsPrecompiled = true,
                     };
 
                     feature.ViewDescriptors.Add(viewDescriptor);

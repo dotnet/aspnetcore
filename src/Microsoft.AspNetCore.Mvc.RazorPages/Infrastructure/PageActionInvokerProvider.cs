@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -36,7 +35,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private readonly MvcOptions _mvcOptions;
         private readonly HtmlHelperOptions _htmlHelperOptions;
         private readonly IPageHandlerMethodSelector _selector;
-        private readonly RazorProjectFileSystem _razorFileSystem;
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger<PageActionInvoker> _logger;
         private readonly IActionResultTypeMapper _mapper;
@@ -56,7 +54,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IOptions<MvcOptions> mvcOptions,
             IOptions<HtmlHelperOptions> htmlHelperOptions,
             IPageHandlerMethodSelector selector,
-            RazorProjectFileSystem razorFileSystem,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
             IActionResultTypeMapper mapper)
@@ -75,7 +72,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _mvcOptions = mvcOptions.Value;
             _htmlHelperOptions = htmlHelperOptions.Value;
             _selector = selector;
-            _razorFileSystem = razorFileSystem;
             _diagnosticListener = diagnosticListener;
             _logger = loggerFactory.CreateLogger<PageActionInvoker>();
             _mapper = mapper;
@@ -215,12 +211,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             var viewStartFactories = new List<Func<IRazorPage>>();
             // Always pick up all _ViewStarts, including the ones outside the Pages root.
-            var viewStartItems = _razorFileSystem.FindHierarchicalItems(
-                descriptor.RelativePath,
-                ViewStartFileName);
-            foreach (var item in viewStartItems)
+            foreach (var filePath in RazorFileHierarchy.GetViewStartPaths(descriptor.RelativePath))
             {
-                var factoryResult = _razorPageFactoryProvider.CreateFactory(item.FilePath);
+                var factoryResult = _razorPageFactoryProvider.CreateFactory(filePath);
                 if (factoryResult.Success)
                 {
                     viewStartFactories.Insert(0, factoryResult.RazorPageFactory);

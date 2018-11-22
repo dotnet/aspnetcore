@@ -53,7 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Null(mvcOptions.MaxValidationDepth);
             Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
-            Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.False(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
@@ -92,7 +91,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Null(mvcOptions.MaxValidationDepth);
             Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
-            Assert.True(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.False(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
@@ -131,7 +129,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(32, mvcOptions.MaxValidationDepth);
             Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
-            Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.True(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
@@ -170,7 +167,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             Assert.Equal(32, mvcOptions.MaxValidationDepth);
             Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
             Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
-            Assert.False(razorViewEngineOptions.AllowRecompilingViewsOnFileChange);
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.True(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);

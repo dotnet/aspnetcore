@@ -13,10 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="$(MicrosoftAspNetCoreRazorRuntimePackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
   </ItemGroup>
@@ -44,7 +41,6 @@
         repositoryUrl=$(RepositoryUrl);
         repositoryCommit=$(RepositoryCommit);
         targetframework=$(TargetFramework);
-        MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion=$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion);
         MicrosoftAspNetCoreRazorRuntimePackageVersion=$(MicrosoftAspNetCoreRazorRuntimePackageVersion);
         MicrosoftCodeAnalysisRazorPackageVersion=$(MicrosoftCodeAnalysisRazorPackageVersion);
         MicrosoftCodeAnalysisCSharpPackageVersion=$(MicrosoftCodeAnalysisCSharpPackageVersion);

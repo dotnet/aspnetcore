@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -28,15 +27,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class PageInvokerProviderTest
     {
-        private readonly IHostingEnvironment _hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath");
-
         [Fact]
         public void OnProvidersExecuting_WithEmptyModel_PopulatesCacheEntry()
         {
             // Arrange
             var descriptor = new PageActionDescriptor
             {
-                RelativePath = "Path1",
+                RelativePath = "/Path1",
                 FilterDescriptors = new FilterDescriptor[0],
             };
 
@@ -89,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Arrange
             var descriptor = new PageActionDescriptor
             {
-                RelativePath = "Path1",
+                RelativePath = "/Path1",
                 FilterDescriptors = new FilterDescriptor[0]
             };
 
@@ -190,15 +187,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 .Setup(f => f.CreateFactory("/_ViewStart.cshtml"))
                 .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), factory2));
 
-            var fileSystem = new VirtualRazorProjectFileSystem();
-            fileSystem.Add(new TestRazorProjectItem("/Home/Path1/_ViewStart.cshtml", "content1"));
-            fileSystem.Add(new TestRazorProjectItem("/_ViewStart.cshtml", "content2"));
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/Home/Path1/_ViewStart.cshtml", "content1");
+            fileProvider.AddFile("/_ViewStart.cshtml", "content2");
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
-                razorPageFactoryProvider: razorPageFactoryProvider.Object,
-                fileSystem: fileSystem);
+                razorPageFactoryProvider: razorPageFactoryProvider.Object);
 
             var context = new ActionInvokerProviderContext(new ActionContext()
             {
@@ -223,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Arrange
             var descriptor = new PageActionDescriptor
             {
-                RelativePath = "Path1",
+                RelativePath = "/Path1",
                 FilterDescriptors = new FilterDescriptor[0],
             };
 
@@ -273,7 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Arrange
             var descriptor = new PageActionDescriptor
             {
-                RelativePath = "Path1",
+                RelativePath = "/Path1",
                 FilterDescriptors = new FilterDescriptor[0],
             };
 
@@ -342,15 +338,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
                 .Returns(compiledPageDescriptor);
 
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile("/_ViewStart.cshtml", "page content");
-            fileProvider.AddFile("/Pages/_ViewStart.cshtml", "page content");
-            fileProvider.AddFile("/Pages/Level1/_ViewStart.cshtml", "page content");
-            fileProvider.AddFile("/Pages/Level1/Level2/_ViewStart.cshtml", "page content");
-            fileProvider.AddFile("/Pages/Level1/Level3/_ViewStart.cshtml", "page content");
-
-            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
-
             var mock = new Mock<IRazorPageFactoryProvider>(MockBehavior.Strict);
             mock
                 .Setup(p => p.CreateFactory("/Pages/Level1/Level2/_ViewStart.cshtml"))
@@ -374,8 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
-                razorPageFactoryProvider: razorPageFactoryProvider,
-                fileSystem: fileSystem);
+                razorPageFactoryProvider: razorPageFactoryProvider);
 
             // Act
             var factories = invokerProvider.GetViewStartFactories(compiledPageDescriptor);
@@ -415,15 +401,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // No files
             var fileProvider = new TestFileProvider();
-            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
                 pageProvider: null,
                 modelProvider: null,
-                razorPageFactoryProvider: pageFactory.Object,
-                fileSystem: fileSystem);
+                razorPageFactoryProvider: pageFactory.Object);
 
             var compiledDescriptor = CreateCompiledPageActionDescriptor(descriptor);
 
@@ -468,18 +452,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IActionDescriptorCollectionProvider actionDescriptorProvider,
             IPageFactoryProvider pageProvider = null,
             IPageModelFactoryProvider modelProvider = null,
-            IRazorPageFactoryProvider razorPageFactoryProvider = null,
-            RazorProjectFileSystem fileSystem = null)
+            IRazorPageFactoryProvider razorPageFactoryProvider = null)
         {
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
             tempDataFactory
                 .Setup(t => t.GetTempData(It.IsAny<HttpContext>()))
                 .Returns((HttpContext context) => new TempDataDictionary(context, Mock.Of<ITempDataProvider>()));
-
-            if (fileSystem == null)
-            {
-                fileSystem = Mock.Of<RazorProjectFileSystem>();
-            }
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
@@ -509,7 +487,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 Options.Create(new MvcOptions()),
                 Options.Create(new HtmlHelperOptions()),
                 Mock.Of<IPageHandlerMethodSelector>(),
-                fileSystem,
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance,
                 new ActionResultTypeMapper());

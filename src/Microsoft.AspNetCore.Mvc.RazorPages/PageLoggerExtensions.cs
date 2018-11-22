@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
@@ -149,20 +147,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             IFilterMetadata filter)
         {
             _pageFilterShortCircuit(logger, filter, null);
-        }
-
-        public static void MalformedPageDirective(this ILogger logger, string filePath, IList<RazorDiagnostic> diagnostics)
-        {
-            if (logger.IsEnabled(LogLevel.Warning))
-            {
-                var messages = new string[diagnostics.Count];
-                for (var i = 0; i < diagnostics.Count; i++)
-                {
-                    messages[i] = diagnostics[i].GetMessage();
-                }
-
-                _malformedPageDirective(logger, filePath, messages, null);
-            }
         }
 
         public static void NotMostEffectiveFilter(this ILogger logger, Type policyType)

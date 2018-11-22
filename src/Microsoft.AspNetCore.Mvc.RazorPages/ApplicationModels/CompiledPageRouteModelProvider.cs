@@ -6,11 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Hosting;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -18,23 +16,20 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class CompiledPageRouteModelProvider : IPageRouteModelProvider
     {
+        private static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
+        private static readonly string RouteTemplateKey = "RouteTemplate";
         private readonly ApplicationPartManager _applicationManager;
         private readonly RazorPagesOptions _pagesOptions;
-        private readonly RazorProjectEngine _razorProjectEngine;
-        private readonly ILogger<CompiledPageRouteModelProvider> _logger;
         private readonly PageRouteModelFactory _routeModelFactory;
 
         public CompiledPageRouteModelProvider(
             ApplicationPartManager applicationManager,
             IOptions<RazorPagesOptions> pagesOptionsAccessor,
-            RazorProjectEngine razorProjectEngine,
             ILogger<CompiledPageRouteModelProvider> logger)
         {
             _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
             _pagesOptions = pagesOptionsAccessor?.Value ?? throw new ArgumentNullException(nameof(pagesOptionsAccessor));
-            _razorProjectEngine = razorProjectEngine ?? throw new ArgumentNullException(nameof(razorProjectEngine));
-            _logger = logger ?? throw new ArgumentNullException(nameof(razorProjectEngine));
-            _routeModelFactory = new PageRouteModelFactory(_pagesOptions, _logger);
+            _routeModelFactory = new PageRouteModelFactory(_pagesOptions, logger);
         }
 
         public int Order => -1000;
@@ -75,11 +70,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     continue;
                 }
 
-                if (!viewDescriptor.IsPrecompiled)
-                {
-                    continue;
-                }
-
                 if (IsRazorPage(viewDescriptor))
                 {
                     yield return viewDescriptor;
@@ -90,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
                 if (viewDescriptor.Item != null)
                 {
-                    return viewDescriptor.Item.Kind == RazorPageDocumentClassifierPass.RazorPageDocumentKind;
+                    return viewDescriptor.Item.Kind == RazorPageDocumentKind;
                 }
                 else if (viewDescriptor.ViewAttribute != null)
                 {
@@ -119,12 +109,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var areaRootDirectory = "/Areas/";
             foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
             {
-                if (viewDescriptor.Item != null && !ChecksumValidator.IsItemValid(_razorProjectEngine.FileSystem, viewDescriptor.Item))
-                {
-                    // If we get here, this compiled Page has different local content, so ignore it.
-                    continue;
-                }
-
                 var relativePath = viewDescriptor.RelativePath;
                 var routeTemplate = GetRouteTemplate(viewDescriptor);
                 PageRouteModel routeModel = null;
@@ -158,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             {
                 return viewDescriptor.Item.Metadata
                     .OfType<RazorCompiledItemMetadataAttribute>()
-                    .FirstOrDefault(f => f.Key == RazorPageDocumentClassifierPass.RouteTemplateKey)
+                    .FirstOrDefault(f => f.Key == RouteTemplateKey)
                     ?.Value;
             }
 
