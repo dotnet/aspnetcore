@@ -1,10 +1,8 @@
-ASP.NET Routing
-===
+ASP.NET Routing  [Archived]
+===========================
 
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/fe4o5h1s9ve86nyv/branch/master?svg=true)](https://ci.appveyor.com/project/aspnetci/Routing/branch/master)
-
-Travis:   [![Travis](https://travis-ci.org/aspnet/Routing.svg?branch=master)](https://travis-ci.org/aspnet/Routing)
+**This GitHub project has been archived.** Ongoing development on this project can be found in <https://github.com/aspnet/AspNetCore>.
 
 Contains routing middleware for routing requests to application logic.
 
-This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [AspNetCore](https://github.com/aspnet/AspNetCore) repo.
