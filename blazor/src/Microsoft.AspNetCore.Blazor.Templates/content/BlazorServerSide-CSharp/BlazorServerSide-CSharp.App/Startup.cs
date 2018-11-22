@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Blazor.Builder;
+using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using BlazorServerSide_CSharp.App.Services;
 
