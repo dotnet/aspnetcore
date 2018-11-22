@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
     /// A marker class used to determine if all the routing services were added
     /// to the <see cref="IServiceCollection"/> before routing is configured.
     /// </summary>
-    public class RoutingMarkerService
+    internal class RoutingMarkerService
     {
     }
 }

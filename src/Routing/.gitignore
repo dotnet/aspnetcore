@@ -8,6 +8,7 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
+.vscode/
 .build/
 .testPublish/
 bower_components/
@@ -39,3 +40,5 @@ node_modules
 *launchSettings.json
 global.json
 BenchmarkDotNet.Artifacts/
+*.etl.zip
+*.etl

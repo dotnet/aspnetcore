@@ -201,4 +201,34 @@
   <data name="TemplateRoute_Exception" xml:space="preserve">
     <value>An error occurred while creating the route with name '{0}' and template '{1}'.</value>
   </data>
+  <data name="AmbiguousEndpoints" xml:space="preserve">
+    <value>The request matched multiple endpoints. Matches: {0}{0}{1}</value>
+  </data>
+  <data name="Argument_NullOrEmpty" xml:space="preserve">
+    <value>Value cannot be null or empty.</value>
+  </data>
+  <data name="RoutePatternBuilder_CollectionCannotBeEmpty" xml:space="preserve">
+    <value>The collection cannot be empty.</value>
+  </data>
+  <data name="ConstraintMustBeStringOrConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' must have a string value or be of a type which implements '{2}'.</value>
+  </data>
+  <data name="RoutePattern_InvalidConstraintReference" xml:space="preserve">
+    <value>Invalid constraint '{0}'. A constraint must be of type 'string' or '{1}'.</value>
+  </data>
+  <data name="RoutePattern_InvalidParameterConstraintReference" xml:space="preserve">
+    <value>Invalid constraint '{0}' for parameter '{1}'. A constraint must be of type 'string', '{2}', or '{3}'.</value>
+  </data>
+  <data name="RoutePattern_ConstraintReferenceNotFound" xml:space="preserve">
+    <value>The constraint reference '{0}' could not be resolved to a type. Register the constraint type with '{1}.{2}'.</value>
+  </data>
+  <data name="RoutePattern_InvalidStringConstraintReference" xml:space="preserve">
+    <value>Invalid constraint type '{0}' registered as '{1}'. A constraint  type must either implement '{2}', or inherit from '{3}'.</value>
+  </data>
+  <data name="DuplicateEndpointNameEntry" xml:space="preserve">
+    <value>Endpoints with endpoint name '{0}':</value>
+  </data>
+  <data name="DuplicateEndpointNameHeader" xml:space="preserve">
+    <value>The following endpoints with a duplicate endpoint name were found.</value>
+  </data>
 </root>

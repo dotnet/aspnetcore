@@ -5,7 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -708,7 +711,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void TemplateBinder_KeepsExplicitlySuppliedRouteValues_OnFailedRouetMatch()
+        public void TemplateBinder_KeepsExplicitlySuppliedRouteValues_OnFailedRouteMatch()
         {
             // Arrange
             var template = "{area?}/{controller=Home}/{action=Index}/{id?}";
@@ -1211,6 +1214,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
         [Theory]
         [InlineData(null, null, true)]
+        [InlineData("", null, true)]
+        [InlineData(null, "", true)]
         [InlineData("blog", null, false)]
         [InlineData(null, "store", false)]
         [InlineData("Cool", "cool", true)]
@@ -1228,12 +1233,96 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             }
         }
 
+        [Fact]
+        public void GetValues_SuccessfullyMatchesRouteValues_ForExplicitEmptyStringValue_AndNullDefault()
+        {
+            // Arrange
+            var expected = "/Home/Index";
+            var template = "Home/Index";
+            var defaults = new RouteValueDictionary(new { controller = "Home", action = "Index", area = (string)null });
+            var ambientValues = new RouteValueDictionary(new { controller = "Rail", action = "Schedule", area = "Travel" });
+            var explicitValues = new RouteValueDictionary(new { controller = "Home", action = "Index", area = "" });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                TemplateParser.Parse(template),
+                defaults);
+
+            // Act1
+            var result = binder.GetValues(ambientValues, explicitValues);
+
+            // Assert1
+            Assert.NotNull(result);
+
+            // Act2
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert2
+            Assert.NotNull(boundTemplate);
+            Assert.Equal(expected, boundTemplate);
+        }
+
+        [Fact]
+        public void GetValues_SuccessfullyMatchesRouteValues_ForExplicitNullValue_AndEmptyStringDefault()
+        {
+            // Arrange
+            var expected = "/Home/Index";
+            var template = "Home/Index";
+            var defaults = new RouteValueDictionary(new { controller = "Home", action = "Index", area = "" });
+            var ambientValues = new RouteValueDictionary(new { controller = "Rail", action = "Schedule", area = "Travel" });
+            var explicitValues = new RouteValueDictionary(new { controller = "Home", action = "Index", area = (string)null });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                TemplateParser.Parse(template),
+                defaults);
+
+            // Act1
+            var result = binder.GetValues(ambientValues, explicitValues);
+
+            // Assert1
+            Assert.NotNull(result);
+
+            // Act2
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert2
+            Assert.NotNull(boundTemplate);
+            Assert.Equal(expected, boundTemplate);
+        }
+
+        [Fact]
+        public void BindValues_ParameterTransformer()
+        {
+            // Arrange
+            var expected = "/ConventionalTransformerRoute/conventional-transformer/Param/my-value";
+
+            var template = "ConventionalTransformerRoute/conventional-transformer/Param/{param:length(500):slugify?}";
+            var defaults = new RouteValueDictionary(new { controller = "ConventionalTransformer", action = "Param" });
+            var ambientValues = new RouteValueDictionary(new { controller = "ConventionalTransformer", action = "Param" });
+            var explicitValues = new RouteValueDictionary(new { controller = "ConventionalTransformer", action = "Param", param = "MyValue" });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                RoutePatternFactory.Parse(template),
+                defaults,
+                requiredKeys: defaults.Keys,
+                parameterPolicies: new (string, IParameterPolicy)[] { ("param", new LengthRouteConstraint(500)), ("param", new SlugifyParameterTransformer()), });
+
+            // Act
+            var result = binder.GetValues(ambientValues, explicitValues);
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert
+            Assert.Equal(expected, boundTemplate);
+        }
+
         private static IInlineConstraintResolver GetInlineConstraintResolver()
         {
             var services = new ServiceCollection().AddOptions();
             var serviceProvider = services.BuildServiceProvider();
             var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor);
+            return new DefaultInlineConstraintResolver(accessor, serviceProvider);
         }
 
         private class PathAndQuery

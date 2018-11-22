@@ -3,14 +3,23 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Routing.DecisionTree;
 using Microsoft.AspNetCore.Routing.Tree;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
     // A decision tree that matches link generation entries based on route data.
+    [DebuggerDisplay("{DebuggerDisplayString,nq}")]
     public class LinkGenerationDecisionTree
     {
+        // Fallback value for cases where the ambient values weren't provided.
+        //
+        // This is safe because we don't mutate the route values in here.
+        private static readonly RouteValueDictionary EmptyAmbientValues = new RouteValueDictionary();
+
         private readonly DecisionTreeNode<OutboundMatch> _root;
 
         public LinkGenerationDecisionTree(IReadOnlyList<OutboundMatch> entries)
@@ -20,18 +29,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 new OutboundMatchClassifier());
         }
 
-        public IList<OutboundMatchResult> GetMatches(VirtualPathContext context)
+        public IList<OutboundMatchResult> GetMatches(RouteValueDictionary values, RouteValueDictionary ambientValues)
         {
             // Perf: Avoid allocation for List if there aren't any Matches or Criteria
             if (_root.Matches.Count > 0 || _root.Criteria.Count > 0)
             {
                 var results = new List<OutboundMatchResult>();
-                Walk(results, context, _root, isFallbackPath: false);
+                Walk(results, values, ambientValues ?? EmptyAmbientValues, _root, isFallbackPath: false);
                 results.Sort(OutboundMatchResultComparer.Instance);
                 return results;
             }
 
-            return null;            
+            return null;
         }
 
         // We need to recursively walk the decision tree based on the provided route data
@@ -61,7 +70,8 @@ namespace Microsoft.AspNetCore.Routing.Internal
         // The decision tree uses a tree data structure to execute these rules across all candidates at once.
         private void Walk(
             List<OutboundMatchResult> results,
-            VirtualPathContext context,
+            RouteValueDictionary values,
+            RouteValueDictionary ambientValues,
             DecisionTreeNode<OutboundMatch> node,
             bool isFallbackPath)
         {
@@ -77,13 +87,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var criterion = node.Criteria[i];
                 var key = criterion.Key;
 
-                object value;
-                if (context.Values.TryGetValue(key, out value))
+                if (values.TryGetValue(key, out var value))
                 {
-                    DecisionTreeNode<OutboundMatch> branch;
-                    if (criterion.Branches.TryGetValue(value ?? string.Empty, out branch))
+                    if (criterion.Branches.TryGetValue(value ?? string.Empty, out var branch))
                     {
-                        Walk(results, context, branch, isFallbackPath);
+                        Walk(results, values, ambientValues, branch, isFallbackPath);
                     }
                 }
                 else
@@ -92,18 +100,18 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     // if an ambient value was supplied. The path explored with the empty value is considered
                     // the fallback path.
                     DecisionTreeNode<OutboundMatch> branch;
-                    if (context.AmbientValues.TryGetValue(key, out value) &&
+                    if (ambientValues.TryGetValue(key, out value) &&
                         !criterion.Branches.Comparer.Equals(value, string.Empty))
                     {
                         if (criterion.Branches.TryGetValue(value, out branch))
                         {
-                            Walk(results, context, branch, isFallbackPath);
+                            Walk(results, values, ambientValues, branch, isFallbackPath);
                         }
                     }
 
                     if (criterion.Branches.TryGetValue(string.Empty, out branch))
                     {
-                        Walk(results, context, branch, isFallbackPath: true);
+                        Walk(results, values, ambientValues, branch, isFallbackPath: true);
                     }
                 }
             }
@@ -154,9 +162,56 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     return x.IsFallbackMatch.CompareTo(y.IsFallbackMatch);
                 }
 
-                return StringComparer.Ordinal.Compare(
-                    x.Match.Entry.RouteTemplate.TemplateText, 
-                    y.Match.Entry.RouteTemplate.TemplateText);
+                return string.Compare(
+                    x.Match.Entry.RouteTemplate.TemplateText,
+                    y.Match.Entry.RouteTemplate.TemplateText,
+                    StringComparison.Ordinal);
+            }
+        }
+
+        // Example output:
+        //
+        // => action: Buy => controller: Store => version: V1(Matches: Store/Buy/V1)
+        // => action: Buy => controller: Store => version: V2(Matches: Store/Buy/V2)
+        // => action: Buy => controller: Store => area: Admin(Matches: Admin/Store/Buy)
+        // => action: Buy => controller: Products(Matches: Products/Buy)
+        // => action: Cart => controller: Store(Matches: Store/Cart)
+        internal string DebuggerDisplayString
+        {
+            get
+            {
+                var sb = new StringBuilder();
+                var branchStack = new Stack<string>();
+                branchStack.Push(string.Empty);
+                FlattenTree(branchStack, sb, _root);
+                return sb.ToString();
+            }
+        }
+
+        private void FlattenTree(Stack<string> branchStack, StringBuilder sb, DecisionTreeNode<OutboundMatch> node)
+        {
+            // leaf node
+            if (node.Criteria.Count == 0)
+            {
+                var matchesSb = new StringBuilder();
+                foreach (var branch in branchStack)
+                {
+                    matchesSb.Insert(0, branch);
+                }
+                sb.Append(matchesSb.ToString());
+                sb.Append(" (Matches: ");
+                sb.Append(string.Join(", ", node.Matches.Select(m => m.Entry.RouteTemplate.TemplateText)));
+                sb.AppendLine(")");
+            }
+
+            foreach (var criterion in node.Criteria)
+            {
+                foreach (var branch in criterion.Branches)
+                {
+                    branchStack.Push($" => {criterion.Key}: {branch.Key}");
+                    FlattenTree(branchStack, sb, branch.Value);
+                    branchStack.Pop();
+                }
             }
         }
     }

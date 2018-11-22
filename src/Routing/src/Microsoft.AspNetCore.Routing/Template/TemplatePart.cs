@@ -5,12 +5,47 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TemplatePart
     {
+        public TemplatePart()
+        {
+        }
+
+        public TemplatePart(RoutePatternPart other)
+        {
+            IsLiteral = other.IsLiteral || other.IsSeparator;
+            IsParameter = other.IsParameter;
+
+            if (other.IsLiteral && other is RoutePatternLiteralPart literal)
+            {
+                Text = literal.Content;
+            }
+            else if (other.IsParameter && other is RoutePatternParameterPart parameter)
+            {
+                // Text is unused by TemplatePart and assumed to be null when the part is a parameter.
+                Name = parameter.Name;
+                IsCatchAll = parameter.IsCatchAll;
+                IsOptional = parameter.IsOptional;
+                DefaultValue = parameter.Default;
+                InlineConstraints = parameter.ParameterPolicies?.Select(p => new InlineConstraint(p));
+            }
+            else if (other.IsSeparator && other is RoutePatternSeparatorPart separator)
+            {
+                Text = separator.Content;
+                IsOptionalSeperator = true;
+            }
+            else
+            {
+                // Unreachable
+                throw new NotSupportedException();
+            }
+        }
+
         public static TemplatePart CreateLiteral(string text)
         {
             return new TemplatePart()
@@ -20,11 +55,12 @@ namespace Microsoft.AspNetCore.Routing.Template
             };
         }
 
-        public static TemplatePart CreateParameter(string name,
-                                                   bool isCatchAll,
-                                                   bool isOptional,
-                                                   object defaultValue,
-                                                   IEnumerable<InlineConstraint> inlineConstraints)
+        public static TemplatePart CreateParameter(
+            string name,
+            bool isCatchAll,
+            bool isOptional,
+            object defaultValue,
+            IEnumerable<InlineConstraint> inlineConstraints)
         {
             if (name == null)
             {
@@ -61,6 +97,29 @@ namespace Microsoft.AspNetCore.Routing.Template
             else
             {
                 return Text;
+            }
+        }
+
+        public RoutePatternPart ToRoutePatternPart()
+        {
+            if (IsLiteral && IsOptionalSeperator)
+            {
+                return RoutePatternFactory.SeparatorPart(Text);
+            }
+            else if (IsLiteral)
+            {
+                return RoutePatternFactory.LiteralPart(Text);
+            }
+            else
+            {
+                var kind = IsCatchAll ?
+                    RoutePatternParameterKind.CatchAll :
+                    IsOptional ?
+                        RoutePatternParameterKind.Optional :
+                        RoutePatternParameterKind.Standard;
+
+                var constraints = InlineConstraints.Select(c => new RoutePatternParameterPolicyReference(c.Constraint));
+                return RoutePatternFactory.ParameterPart(Name, DefaultValue, kind, constraints);
             }
         }
     }
