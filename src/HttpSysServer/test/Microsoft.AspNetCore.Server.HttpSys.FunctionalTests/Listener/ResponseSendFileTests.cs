@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,187 +27,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        public async Task ResponseSendFile_MissingFile_Throws()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await Assert.ThrowsAsync<FileNotFoundException>(() =>
-                    context.Response.SendFileAsync("Missing.txt", 0, null, CancellationToken.None));
-                context.Dispose();
-
-                var response = await responseTask;
-                response.EnsureSuccessStatusCode();
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal(FileLength, (await response.Content.ReadAsByteArrayAsync()).Length);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_RelativeFile_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await context.Response.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal(FileLength, (await response.Content.ReadAsByteArrayAsync()).Length);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_Unspecified_Chunked()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> contentLength;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value);
-                Assert.Equal(FileLength, (await response.Content.ReadAsByteArrayAsync()).Length);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_MultipleWrites_Chunked()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> contentLength;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value);
-                Assert.Equal(FileLength * 2, (await response.Content.ReadAsByteArrayAsync()).Length);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_HalfOfFile_Chunked()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> contentLength;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value);
-                Assert.Equal(FileLength / 2, (await response.Content.ReadAsByteArrayAsync()).Length);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_OffsetOutOfRange_Throws()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                    () => context.Response.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None));
-                context.Dispose();
-
-                var response = await responseTask;
-                response.EnsureSuccessStatusCode();
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_CountOutOfRange_Throws()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await Assert.ThrowsAsync<ArgumentOutOfRangeException>(
-                    () => context.Response.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None));
-                context.Dispose();
-
-                var response = await responseTask;
-                response.EnsureSuccessStatusCode();
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_Count0_Chunked()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> contentLength;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value);
-                Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
-            }
-        }
-
-        [ConditionalFact]
         public async Task ResponseSendFile_EmptyFileCountUnspecified_SetsChunkedAndFlushesHeaders()
         {
             var emptyFilePath = Path.Combine(Directory.GetCurrentDirectory(), "zz_" + Guid.NewGuid().ToString() + "EmptyTestFile.txt");
@@ -219,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 await context.Response.SendFileAsync(emptyFilePath, 0, null, CancellationToken.None);
                 Assert.True(context.Response.HasStarted);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, CancellationToken.None);
@@ -236,74 +55,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        public async Task ResponseSendFile_ContentLength_PassedThrough()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = FileLength.ToString();
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> contentLength;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.Equal(FileLength.ToString(), contentLength.First());
-                Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Equal(FileLength, (await response.Content.ReadAsByteArrayAsync()).Length);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_ContentLengthSpecific_PassedThrough()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = "10";
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> contentLength;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.Equal("10", contentLength.First());
-                Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Equal(10, (await response.Content.ReadAsByteArrayAsync()).Length);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseSendFile_ContentLength0_PassedThrough()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = "0";
-                await context.Response.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                IEnumerable<string> contentLength;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.Equal("0", contentLength.First());
-                Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
-            }
-        }
-
-        [ConditionalFact]
         public async Task ResponseSendFile_WithActiveCancellationToken_Success()
         {
             string address;
@@ -311,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
@@ -332,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(TimeSpan.FromSeconds(10));
                 // First write sends headers
@@ -355,23 +106,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
                 var writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET461
+#if NET472
                 // .NET HttpClient automatically retries a request if it does not get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
                 writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_2
 #else
 #error Target framework needs to be updated
 #endif
@@ -387,23 +138,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
                 var writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET461
+#if NET472
                 // .NET HttpClient automatically retries a request if it does not get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
                 writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_2
 #else
 #error Target framework needs to be updated
 #endif
@@ -420,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
@@ -441,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
@@ -464,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
                 // First write sends headers
                 cts.Cancel();
@@ -496,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -522,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     var sendFileTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 
@@ -559,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     var sendFileTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 

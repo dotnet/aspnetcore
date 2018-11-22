@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
                 Assert.True(context.AllowSynchronousIO);
 
@@ -52,30 +52,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        public async Task ResponseBody_WriteNoHeaders_DefaultsToChunked()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Body.Write(new byte[10], 0, 10);
-                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version);
-                IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
-            }
-        }
-
-        [ConditionalFact]
         public async Task ResponseBody_FlushThenWrite_DefaultsToChunkedAndTerminates()
         {
             string address;
@@ -84,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.AllowSynchronousIO = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Body.Write(new byte[10], 0, 10);
                 context.Response.Body.Flush();
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -100,144 +76,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        public async Task ResponseBody_WriteChunked_ManuallyChunked()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["transfeR-Encoding"] = "CHunked";
-                Stream stream = context.Response.Body;
-                var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
-                await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version);
-                IEnumerable<string> ignored;
-                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
-                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal("Manually Chunked", await response.Content.ReadAsStringAsync());
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseBody_WriteContentLength_PassedThrough()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = " 30 ";
-                var stream = context.Response.Body;
-                stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
-                stream.Write(new byte[10], 0, 10);
-                await stream.WriteAsync(new byte[10], 0, 10);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version);
-                IEnumerable<string> contentLength;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.Equal("30", contentLength.First());
-                Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Equal(new byte[30], await response.Content.ReadAsByteArrayAsync());
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseBody_WriteContentLengthNoneWritten_Aborts()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = " 20 ";
-                context.Dispose();
-#if NET461
-                // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = " 20 ";
-                context.Dispose();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
-#else
-#error Target framework needs to be updated
-#endif
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseBody_WriteContentLengthNotEnoughWritten_Aborts()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = " 20 ";
-                context.Response.Body.Write(new byte[5], 0, 5);
-                context.Dispose();
-
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseBody_WriteContentLengthTooMuchWritten_Throws()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = " 10 ";
-                context.Response.Body.Write(new byte[5], 0, 5);
-                Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
-                context.Dispose();
-
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task ResponseBody_WriteContentLengthExtraWritten_Throws()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.Headers["Content-lenGth"] = " 10 ";
-                context.Response.Body.Write(new byte[10], 0, 10);
-                Assert.Throws<ObjectDisposedException>(() => context.Response.Body.Write(new byte[6], 0, 6));
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(200, (int)response.StatusCode);
-                Assert.Equal(new Version(1, 1), response.Version);
-                IEnumerable<string> contentLength;
-                Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
-                Assert.Equal("10", contentLength.First());
-                Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
-            }
-        }
-
-        [ConditionalFact]
         public async Task ResponseBody_WriteZeroCount_StartsChunkedResponse()
         {
             string address;
@@ -246,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address);
 
                 server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Response.Body.Write(new byte[10], 0, 0);
                 Assert.True(context.Response.HasStarted);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 0);
@@ -270,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
@@ -291,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.CancelAfter(TimeSpan.FromSeconds(10));
                 // First write sends headers
@@ -314,23 +152,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET461
+#if NET472
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
                 writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_2
 #else
 #error Target framework needs to be updated
 #endif
@@ -346,23 +184,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET461
+#if NET472
                 // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 cts = new CancellationTokenSource();
                 cts.Cancel();
                 // First write sends headers
                 writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_2
 #else
 #error Target framework needs to be updated
 #endif
@@ -379,16 +217,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.ThrowWriteExceptions = true;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                var response = await responseTask;
                 cts.Cancel();
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
 
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
+                await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.LoadIntoBufferAsync());
             }
         }
 
@@ -400,16 +239,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var cts = new CancellationTokenSource();
                 // First write sends headers
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
+                var response = await responseTask;
                 cts.Cancel();
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
 
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
+                await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.LoadIntoBufferAsync());
             }
         }
 
@@ -424,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -454,7 +294,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
                 // First write sends headers
                 cts.Cancel();
@@ -486,7 +326,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address, cts.Token);
 
                 server.Options.AllowSynchronousIO = true;
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -509,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 // First write sends headers
                 cts.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -535,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     context.Response.Body.Write(new byte[10], 0, 10);
 
@@ -569,7 +409,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
@@ -603,7 +443,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     context.Response.Body.Write(new byte[10], 0, 10);
 
@@ -633,7 +473,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead);
 
-                    context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
@@ -654,9 +494,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri, CancellationToken cancellationToken = new CancellationToken())
         {
-            using (HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout })
             {
-                return await client.GetAsync(uri, cancellationToken);
+                return await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             }
         }
     }

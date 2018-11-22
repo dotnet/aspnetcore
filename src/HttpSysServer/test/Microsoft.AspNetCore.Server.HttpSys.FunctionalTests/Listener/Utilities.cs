@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
@@ -27,14 +26,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         {
             var win8Version = new Version(6, 2);
             IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
-        }
-
-        internal static HttpSysListener CreateHttpAuthServer(AuthenticationSchemes authScheme, bool allowAnonymos, out string baseAddress)
-        {
-            var listener = CreateHttpServer(out baseAddress);
-            listener.Options.Authentication.Schemes = authScheme;
-            listener.Options.Authentication.AllowAnonymous = allowAnonymos;
-            return listener;
         }
 
         internal static HttpSysListener CreateHttpServer(out string baseAddress)
@@ -106,6 +97,22 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 server.Dispose();
                 throw new TimeoutException("AcceptAsync has timed out.");
+            }
+        }
+
+        // Fail if the given response task completes before the given accept task.
+        internal static async Task<RequestContext> Before<T>(this Task<RequestContext> acceptTask, Task<T> responseTask)
+        {
+            var completedTask = await Task.WhenAny(acceptTask, responseTask);
+
+            if (completedTask == acceptTask)
+            {
+                return await acceptTask;
+            }
+            else
+            {
+                var response = await responseTask;
+                throw new InvalidOperationException("The response completed prematurely: " + response.ToString());
             }
         }
     }

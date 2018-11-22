@@ -17,93 +17,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     public class ServerTests
     {
         [ConditionalFact]
-        public async Task Server_200OK_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(string.Empty, response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task Server_SendHelloWorld_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                Task<string> responseTask = SendRequestAsync(address);
-                
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Response.ContentLength = 11;
-                var writer = new StreamWriter(context.Response.Body);
-                await writer.WriteAsync("Hello World");
-                await writer.FlushAsync();
-
-                string response = await responseTask;
-                Assert.Equal("Hello World", response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task Server_EchoHelloWorld_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address, "Hello World");
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                var input = await new StreamReader(context.Request.Body).ReadToEndAsync();
-                Assert.Equal("Hello World", input);
-                context.Response.ContentLength = 11;
-                var writer = new StreamWriter(context.Response.Body);
-                await writer.WriteAsync("Hello World");
-                await writer.FlushAsync();
-
-                var response = await responseTask;
-                Assert.Equal("Hello World", response);
-            }
-        }
-
-        [ConditionalFact]
-        public async Task Server_ClientDisconnects_CallCanceled()
-        {
-            var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
-
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                using (var client = new HttpClient())
-                {
-                    var responseTask = client.GetAsync(address);
-
-                    var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                    var ct = context.DisconnectToken;
-                    Assert.True(ct.CanBeCanceled, "CanBeCanceled");
-                    Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-                    ct.Register(() => canceled.Set());
-
-                    client.CancelPendingRequests();
-
-                    Assert.True(canceled.WaitOne(interval), "canceled");
-                    Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
-                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
-
-                    context.Dispose();
-                }
-            }
-        }
-
-        [ConditionalFact]
         public async Task Server_TokenRegisteredAfterClientDisconnects_CallCanceled()
         {
             var interval = TimeSpan.FromSeconds(1);
@@ -116,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address);
 
-                    var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
                     client.CancelPendingRequests();
                     await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask);
@@ -147,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 {
                     var responseTask = client.GetAsync(address);
 
-                    var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                    var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     context.Dispose();
 
                     var response = await responseTask;
@@ -166,37 +79,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        public async Task Server_Abort_CallCanceled()
-        {
-            var interval = TimeSpan.FromSeconds(1);
-            var canceled = new ManualResetEvent(false);
-
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                var ct = context.DisconnectToken;
-                Assert.True(ct.CanBeCanceled, "CanBeCanceled");
-                Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
-                ct.Register(() => canceled.Set());
-                context.Abort();
-                Assert.True(canceled.WaitOne(interval), "Aborted");
-                Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-#if NET461
-                // HttpClient re-tries the request because it doesn't know if the request was received.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Abort();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
-#else
-#error Target framework needs to be updated
-#endif
-                await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
-            }
-        }
-
-        [ConditionalFact]
         public async Task Server_ConnectionCloseHeader_CancellationTokenFires()
         {
             var interval = TimeSpan.FromSeconds(1);
@@ -207,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 var ct = context.DisconnectToken;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
@@ -229,23 +111,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
-        public async Task Server_SetQueueLimit_Success()
-        {
-            string address;
-            using (var server = Utilities.CreateHttpServer(out address))
-            {
-                server.Options.RequestQueueLimit = 1001;
-                var responseTask = SendRequestAsync(address);
-
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                context.Dispose();
-
-                var response = await responseTask;
-                Assert.Equal(string.Empty, response);
-            }
-        }
-
-        [ConditionalFact]
         public async Task Server_SetRejectionVerbosityLevel_Success()
         {
             using (var server = Utilities.CreateHttpServer(out string address))
@@ -253,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.Http503Verbosity = Http503VerbosityLevel.Limited;
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -269,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Equal(string.Empty, context.Request.PathBase);
                 Assert.Equal("/", context.Request.Path);
                 context.Dispose();
@@ -282,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Equal("/pathbase", context.Request.PathBase);
                 Assert.Equal("/", context.Request.Path);
                 context.Dispose();
@@ -302,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 server.Options.UrlPrefixes.Add(address);
                 var responseTask = SendRequestAsync(address);
 
-                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Equal("/pathbase", context.Request.PathBase);
                 Assert.Equal("/", context.Request.Path);
                 context.Dispose();
@@ -314,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 responseTask = SendRequestAsync(address);
 
-                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                 Assert.Equal(string.Empty, context.Request.PathBase);
                 Assert.Equal("/pathbase/", context.Request.Path);
                 context.Dispose();
@@ -329,16 +194,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             using (HttpClient client = new HttpClient())
             {
                 return await client.GetStringAsync(uri);
-            }
-        }
-
-        private async Task<string> SendRequestAsync(string uri, string upload)
-        {
-            using (HttpClient client = new HttpClient())
-            {
-                HttpResponseMessage response = await client.PostAsync(uri, new StringContent(upload));
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStringAsync();
             }
         }
     }

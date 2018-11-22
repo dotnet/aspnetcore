@@ -43,6 +43,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{85914BA9
 	ProjectSection(SolutionItems) = preProject
 		build\dependencies.props = build\dependencies.props
 		build\Key.snk = build\Key.snk
+		build\repo.props = build\repo.props
+		build\sources.props = build\sources.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{AB6964C9-A7AF-4FAC-BEA1-C8A538EC989E}"

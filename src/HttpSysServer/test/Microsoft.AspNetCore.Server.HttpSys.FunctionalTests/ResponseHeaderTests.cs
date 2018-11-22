@@ -81,9 +81,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(0, response.ContentLength);
                 Assert.NotNull(response.Headers["Date"]);
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
-#if NETCOREAPP2_0 || NETCOREAPP2_1 // WebHeaderCollection.GetValues() not available in CoreCLR.
+#if NETCOREAPP2_2 // WebHeaderCollection.GetValues() not available in CoreCLR.
                 Assert.Equal("custom1, and custom2, custom3", response.Headers["WWW-Authenticate"]);
-#elif NET461
+#elif NET472
                 Assert.Equal(new string[] { "custom1, and custom2", "custom3" }, response.Headers.GetValues("WWW-Authenticate"));
 #else
 #error Target framework needs to be updated
@@ -111,9 +111,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(0, response.ContentLength);
                 Assert.NotNull(response.Headers["Date"]);
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers["Server"]);
-#if NETCOREAPP2_0 || NETCOREAPP2_1 // WebHeaderCollection.GetValues() not available in CoreCLR.
+#if NETCOREAPP2_2 // WebHeaderCollection.GetValues() not available in CoreCLR.
                 Assert.Equal("custom1, and custom2, custom3", response.Headers["Custom-Header1"]);
-#elif NET461
+#elif NET472
                 Assert.Equal(new string[] { "custom1, and custom2", "custom3" }, response.Headers.GetValues("Custom-Header1"));
 #else
 #error Target framework needs to be updated
