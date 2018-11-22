@@ -59,13 +59,11 @@
     <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Json"                     Version="$(MicrosoftAspNetCoreMvcFormattersJsonPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Xml"                      Version="$(MicrosoftAspNetCoreMvcFormattersXmlPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Localization"                        Version="$(MicrosoftAspNetCoreMvcLocalizationPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"                    Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Razor"                               Version="$(MicrosoftAspNetCoreMvcRazorPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.RazorPages"                          Version="$(MicrosoftAspNetCoreMvcRazorPagesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.TagHelpers"                          Version="$(MicrosoftAspNetCoreMvcTagHelpersPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.ViewFeatures"                        Version="$(MicrosoftAspNetCoreMvcViewFeaturesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc"                                     Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Razor.Language"                          Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Razor.Runtime"                           Version="$(MicrosoftAspNetCoreRazorRuntimePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Razor"                                   Version="$(MicrosoftAspNetCoreRazorPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.ResponseCaching.Abstractions"            Version="$(MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion)" />
@@ -91,10 +89,6 @@
     <Dependency Include="Microsoft.AspNetCore.WebSockets"                              Version="$(MicrosoftAspNetCoreWebSocketsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.WebUtilities"                            Version="$(MicrosoftAspNetCoreWebUtilitiesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore"                                         Version="$(MicrosoftAspNetCorePackageVersion)" />
-    <Dependency Include="Microsoft.CodeAnalysis.CSharp"                                Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <Dependency Include="Microsoft.CodeAnalysis.Razor"                                 Version="$(MicrosoftCodeAnalysisRazorPackageVersion)" />
-    <Dependency Include="Microsoft.CodeAnalysis.Common"                                Version="$(MicrosoftCodeAnalysisCommonPackageVersion)"
-           AssemblyName="Microsoft.CodeAnalysis" />
     <Dependency Include="Microsoft.DotNet.PlatformAbstractions"                        Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
@@ -155,7 +149,6 @@
     <Dependency Include="System.Security.Cryptography.Pkcs"                            Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <Dependency Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <Dependency Include="System.Security.Permissions"                                  Version="$(SystemSecurityPermissionsPackageVersion)" />
-    <Dependency Include="System.Text.Encoding.CodePages"                               Version="$(SystemTextEncodingCodePagesPackageVersion)" />
     <Dependency Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
     <Dependency Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
   </ItemGroup>

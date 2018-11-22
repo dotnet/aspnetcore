@@ -5,13 +5,10 @@
       <!-- Microsoft.AspNetCore.App -->
       <FilesToSign Include="Newtonsoft.Json.dll"                                           Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Newtonsoft.Json.Bson.dll"                                      Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Remotion.Linq.dll"                                             Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Interactive.Async.dll"                                  Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
 
     <!-- These files came from the aspnet/Extensions build, but have to be re-signed because we crossgen them. -->
       <FilesToSign Include="Microsoft.Extensions.Caching.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Caching.Memory.dll"                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Caching.SqlServer.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Configuration.Abstractions.dll"            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Configuration.Binder.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Configuration.CommandLine.dll"             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
@@ -49,30 +46,17 @@
       <FilesToSign Include="Microsoft.Extensions.Options.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Primitives.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.WebEncoders.dll"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-    <!-- These files came from the aspnet/EntityFrameworkCore build, but have to be re-signed because we crossgen them. -->
-      <FilesToSign Include="Microsoft.EntityFrameworkCore.Abstractions.dll"                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.EntityFrameworkCore.Design.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.EntityFrameworkCore.InMemory.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.EntityFrameworkCore.Relational.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.EntityFrameworkCore.SqlServer.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.EntityFrameworkCore.dll"                              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
 
     <!-- These files came from partner teams. They have to be re-signed because we crossgen them and redistributable them in our installers. -->
 
       <!-- Microsoft.AspNetCore.App -->
-      <FilesToSign Include="Microsoft.CodeAnalysis.CSharp.dll"                              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.CodeAnalysis.dll"                                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.DotNet.PlatformAbstractions.dll"                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.DependencyModel.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.IdentityModel.JsonWebTokens.dll"                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.IdentityModel.Logging.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.IdentityModel.Protocols.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.IdentityModel.Protocols.OpenIdConnect.dll"            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.IdentityModel.Protocols.WsFederation.dll"             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.IdentityModel.Tokens.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.IdentityModel.Tokens.Saml.dll"                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.IdentityModel.Xml.dll"                                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Data.SqlClient.dll"                                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.IdentityModel.Tokens.Jwt.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.IO.Pipelines.dll"                                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Net.Http.Formatting.dll"                                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
@@ -81,7 +65,6 @@
       <FilesToSign Include="System.Security.Cryptography.Pkcs.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Security.Cryptography.Xml.dll"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Security.Permissions.dll"                                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Text.Encoding.CodePages.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Text.Encodings.Web.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Threading.Channels.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
   </ItemGroup>
