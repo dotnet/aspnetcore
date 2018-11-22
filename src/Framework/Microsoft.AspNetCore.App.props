@@ -149,7 +149,6 @@
     <Dependency Include="System.Security.Cryptography.Pkcs"                            Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <Dependency Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <Dependency Include="System.Security.Permissions"                                  Version="$(SystemSecurityPermissionsPackageVersion)" />
-    <Dependency Include="System.Text.Encoding.CodePages"                               Version="$(SystemTextEncodingCodePagesPackageVersion)" />
     <Dependency Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
     <Dependency Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
   </ItemGroup>
