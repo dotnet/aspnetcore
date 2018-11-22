@@ -44,6 +44,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.MiddlewareAnalysis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Testing" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Owin" Category="ship" />
@@ -131,7 +132,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Localization" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.RazorPages" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.TagHelpers" Category="noship" />
