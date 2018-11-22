@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\**" Exclude="$(DefaultItemExcludes)" />
     <Content Include="TestFiles\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-    
+
   <ItemGroup>
     <ProjectReference Include="..\testassets\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
