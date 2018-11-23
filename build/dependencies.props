@@ -13,7 +13,7 @@
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <SignalRPackageVersion>1.0.0</SignalRPackageVersion>
-    <TemplateBlazorPackageVersion>0.8.0-preview1-20181122.2</TemplateBlazorPackageVersion>
+    <TemplateBlazorPackageVersion>0.8.0-preview1-20181122.3</TemplateBlazorPackageVersion>
     <TemplateRazorDesignPackageVersion>2.1.2</TemplateRazorDesignPackageVersion>
     <RazorPackageVersion>2.1.0</RazorPackageVersion>
   </PropertyGroup>
