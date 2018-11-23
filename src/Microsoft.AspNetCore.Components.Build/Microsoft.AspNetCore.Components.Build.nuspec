@@ -12,6 +12,7 @@
     <dependencies>
       <dependency id="Microsoft.AspNetCore.Razor.Design" version="$razorversion$" include="all" />
       <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$version$" include="all" />
+      <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$version$" include="all" />
     </dependencies>
   </metadata>
   <files>
@@ -19,8 +20,6 @@
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
     <file src="$publishdir$netcoreapp2.1\**\*" target="tools/" />
-    <file src="..\..\blazor\src\mono\dist\**\*" target="tools\mono"  />
-    <file src="..\..\blazor\src\mono\tools\binaries\illink\**\*.*" target="tools\illink" />
     <file src="..\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.*.js" target="tools\blazor" />
   </files>
 </package>

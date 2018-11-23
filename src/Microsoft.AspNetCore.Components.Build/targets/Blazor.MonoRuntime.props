@@ -1,11 +1,7 @@
 <Project>
-  <PropertyGroup Condition="$(BlazorBuildReferenceFromSource) == ''" Label="Blazor build Inputs">
-    <BlazorMonoRuntimeBasePath>$(MSBuildThisFileDirectory)../</BlazorMonoRuntimeBasePath>
-    <MonoLinkerPath>$(BlazorMonoRuntimeBasePath)tools/illink/illink.dll</MonoLinkerPath>
-    <MonoBaseClassLibraryPath>$(BlazorMonoRuntimeBasePath)tools/mono/bcl/</MonoBaseClassLibraryPath>
-    <MonoBaseClassLibraryFacadesPath>$(BlazorMonoRuntimeBasePath)tools/mono/bcl/Facades/</MonoBaseClassLibraryFacadesPath>
-    <MonoWasmRuntimePath>$(BlazorMonoRuntimeBasePath)tools/mono/wasm/</MonoWasmRuntimePath>
-    <BlazorJsPath>$(BlazorMonoRuntimeBasePath)tools/blazor/blazor.*.js</BlazorJsPath>
+
+  <PropertyGroup Condition="'$(BlazorBuildReferenceFromSource)'==''">
+    <BlazorJsPath>$(MSBuildThisFileDirectory)../tools/blazor/blazor.*.js</BlazorJsPath>
   </PropertyGroup>
 
   <PropertyGroup Label="Blazor build outputs">

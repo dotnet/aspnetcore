@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Components.Build.Test
             var basePath = Path.GetDirectoryName(typeof(RuntimeDependenciesResolverTest).Assembly.Location);
             var bclLocations = new []
             {
-                Path.Combine(basePath, "../../../../../blazor/src/mono/dist/bcl/"),
-                Path.Combine(basePath, "../../../../../blazor/src/mono/dist/bcl/Facades/"),
+                Path.Combine(basePath, "../../../../../blazor/src/Microsoft.AspNetCore.Blazor.Mono/dist/bcl/"),
+                Path.Combine(basePath, "../../../../../blazor/src/Microsoft.AspNetCore.Blazor.Mono/dist/bcl/Facades/"),
             };
 
             var expectedContents = new[]
