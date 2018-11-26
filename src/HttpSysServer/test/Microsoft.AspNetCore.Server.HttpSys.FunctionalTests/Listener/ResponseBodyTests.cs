@@ -159,19 +159,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET472
-                // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-                cts = new CancellationTokenSource();
-                cts.Cancel();
-                // First write sends headers
-                writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
-                Assert.True(writeTask.IsCanceled);
-                context.Dispose();
-#elif NETCOREAPP2_2
-#else
-#error Target framework needs to be updated
-#endif
+
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -191,19 +179,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#if NET472
-                // HttpClient retries the request because it didn't get a response.
-                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
-                cts = new CancellationTokenSource();
-                cts.Cancel();
-                // First write sends headers
-                writeTask = context.Response.Body.WriteAsync(new byte[10], 0, 10, cts.Token);
-                Assert.True(writeTask.IsCanceled);
-                context.Dispose();
-#elif NETCOREAPP2_2
-#else
-#error Target framework needs to be updated
-#endif
+
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
