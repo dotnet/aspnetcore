@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesCachedContent_IfAvailable(string method)
+        public async Task ServesCachedContent_IfAvailable(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_IfNotAvailable(string method)
+        public async Task ServesFreshContent_IfNotAvailable(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_Post()
+        public async Task ServesFreshContent_Post()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_Head_Get()
+        public async Task ServesFreshContent_Head_Get()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_Get_Head()
+        public async Task ServesFreshContent_Get_Head()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_If_CacheControlNoCache(string method)
+        public async Task ServesFreshContent_If_CacheControlNoCache(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_If_PragmaNoCache(string method)
+        public async Task ServesFreshContent_If_PragmaNoCache(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesCachedContent_If_PathCasingDiffers(string method)
+        public async Task ServesCachedContent_If_PathCasingDiffers(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_If_ResponseExpired(string method)
+        public async Task ServesFreshContent_If_ResponseExpired(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
-        public async void ServesFreshContent_If_Authorization_HeaderExists(string method)
+        public async Task ServesFreshContent_If_Authorization_HeaderExists(string method)
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryHeader_Matches()
+        public async Task ServesCachedContent_IfVaryHeader_Matches()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
 
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryHeader_Mismatches()
+        public async Task ServesFreshContent_IfVaryHeader_Mismatches()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
 
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeys_Matches()
+        public async Task ServesCachedContent_IfVaryQueryKeys_Matches()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "query" });
 
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeysExplicit_Matches_QueryKeyCaseInsensitive()
+        public async Task ServesCachedContent_IfVaryQueryKeysExplicit_Matches_QueryKeyCaseInsensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryA", "queryb" });
 
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeyStar_Matches_QueryKeyCaseInsensitive()
+        public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_QueryKeyCaseInsensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
 
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeyExplicit_Matches_OrderInsensitive()
+        public async Task ServesCachedContent_IfVaryQueryKeyExplicit_Matches_OrderInsensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryB", "QueryA" });
 
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfVaryQueryKeyStar_Matches_OrderInsensitive()
+        public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_OrderInsensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
 
@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryQueryKey_Mismatches()
+        public async Task ServesFreshContent_IfVaryQueryKey_Mismatches()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "query" });
 
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryQueryKeyExplicit_Mismatch_QueryKeyCaseSensitive()
+        public async Task ServesFreshContent_IfVaryQueryKeyExplicit_Mismatch_QueryKeyCaseSensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryA", "QueryB" });
 
@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfVaryQueryKeyStar_Mismatch_QueryKeyValueCaseSensitive()
+        public async Task ServesFreshContent_IfVaryQueryKeyStar_Mismatch_QueryKeyValueCaseSensitive()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
 
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfRequestRequirements_NotMet()
+        public async Task ServesFreshContent_IfRequestRequirements_NotMet()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void Serves504_IfOnlyIfCachedHeader_IsSpecified()
+        public async Task Serves504_IfOnlyIfCachedHeader_IsSpecified()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfSetCookie_IsSpecified()
+        public async Task ServesFreshContent_IfSetCookie_IsSpecified()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.SetCookie] = "cookieName=cookieValue");
 
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfIHttpSendFileFeature_NotUsed()
+        public async Task ServesCachedContent_IfIHttpSendFileFeature_NotUsed()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(app =>
             {
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfIHttpSendFileFeature_Used()
+        public async Task ServesFreshContent_IfIHttpSendFileFeature_Used()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(
                 app =>
@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfSubsequentRequestContainsNoStore()
+        public async Task ServesCachedContent_IfSubsequentRequestContainsNoStore()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfInitialRequestContainsNoStore()
+        public async Task ServesFreshContent_IfInitialRequestContainsNoStore()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -572,7 +572,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfInitialResponseContainsNoStore()
+        public async Task ServesFreshContent_IfInitialResponseContainsNoStore()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.CacheControl] = CacheControlHeaderValue.NoStoreString);
 
@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void Serves304_IfIfModifiedSince_Satisfied()
+        public async Task Serves304_IfIfModifiedSince_Satisfied()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -610,7 +610,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfIfModifiedSince_NotSatisfied()
+        public async Task ServesCachedContent_IfIfModifiedSince_NotSatisfied()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching();
 
@@ -629,7 +629,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void Serves304_IfIfNoneMatch_Satisfied()
+        public async Task Serves304_IfIfNoneMatch_Satisfied()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\""));
 
@@ -649,7 +649,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfIfNoneMatch_NotSatisfied()
+        public async Task ServesCachedContent_IfIfNoneMatch_NotSatisfied()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\""));
 
@@ -668,7 +668,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfBodySize_IsCacheable()
+        public async Task ServesCachedContent_IfBodySize_IsCacheable()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
             {
@@ -689,7 +689,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfBodySize_IsNotCacheable()
+        public async Task ServesFreshContent_IfBodySize_IsNotCacheable()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
             {
@@ -710,7 +710,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_CaseSensitivePaths_IsNotCacheable()
+        public async Task ServesFreshContent_CaseSensitivePaths_IsNotCacheable()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
             {
@@ -731,7 +731,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
+        public async Task ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = HeaderNames.From);
 
@@ -753,7 +753,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesFreshContent_IfCachedVaryByUpdated_OnCacheMiss()
+        public async Task ServesFreshContent_IfCachedVaryByUpdated_OnCacheMiss()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = context.Request.Headers[HeaderNames.Pragma]);
 
@@ -784,7 +784,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
         }
 
         [Fact]
-        public async void ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
+        public async Task ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
         {
             var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers[HeaderNames.Vary] = context.Request.Headers[HeaderNames.Pragma]);
 
