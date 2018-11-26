@@ -1,0 +1,13 @@
+{
+  "adx-nonshipping": {
+    "rules": [],
+    "packages": {
+      "Microsoft.AspNetCore.ChunkingCookieManager.Sources": {}
+    }
+  },
+  "Default": {
+    "rules": [
+      "DefaultCompositeRule"
+    ]
+  }
+}

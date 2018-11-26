@@ -38,38 +38,34 @@
   <ItemGroup>
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <Repository Include="Templating" RootPath="$(RepositoryRoot)src\templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" RootPath="$(RepositoryRoot)src\AuthSamples\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="MusicStore" RootPath="$(RepositoryRoot)src\MusicStore\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="ServerTests" RootPath="$(RepositoryRoot)src\ServerTests\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
 
   <ItemGroup>
-    <ShippedRepository Include="AADIntegration" />
-    <ShippedRepository Include="Antiforgery" />
+    <ShippedRepository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
+    <ShippedRepository Include="Antiforgery" RootPath="$(RepositoryRoot)src\Antiforgery\" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="BasicMiddleware" />
-    <ShippedRepository Include="BrowserLink" />
-    <ShippedRepository Include="CORS" />
-    <ShippedRepository Include="Diagnostics" />
+    <ShippedRepository Include="CORS" RootPath="$(RepositoryRoot)src\CORS\" />
     <ShippedRepository Include="EntityFrameworkCore" />
-    <ShippedRepository Include="Hosting" />
-    <ShippedRepository Include="HttpAbstractions" />
-    <ShippedRepository Include="HttpSysServer" />
+    <ShippedRepository Include="HttpSysServer" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
     <ShippedRepository Include="Identity" />
-    <ShippedRepository Include="JavaScriptServices" />
+    <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <ShippedRepository Include="Localization" />
-    <ShippedRepository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="Mvc" />
     <ShippedRepository Include="MvcPrecompilation" />
     <ShippedRepository Include="Razor" />
-    <ShippedRepository Include="ResponseCaching" />
-    <ShippedRepository Include="Routing" />
-    <ShippedRepository Include="Security" />
-    <ShippedRepository Include="Session" />
+    <ShippedRepository Include="ResponseCaching" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
+    <ShippedRepository Include="Routing" RootPath="$(RepositoryRoot)src\Routing\" />
+    <ShippedRepository Include="Security" RootPath="$(RepositoryRoot)src\Security\" />
+    <ShippedRepository Include="Session" RootPath="$(RepositoryRoot)src\Session\" />
     <ShippedRepository Include="SignalR" />
-    <ShippedRepository Include="StaticFiles" />
+    <ShippedRepository Include="StaticFiles" RootPath="$(RepositoryRoot)src\StaticFiles\" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="OpenIdConnect\wellknownconfig.json" />
+    <None Remove="OpenIdConnect\wellknownkeys.json" />
+    <None Remove="WsFederation\federationmetadata.xml" />
+    <None Remove="WsFederation\InvalidToken.xml" />
+    <None Remove="WsFederation\ValidToken.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="WsFederation\federationmetadata.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="WsFederation\InvalidToken.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="WsFederation\ValidToken.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="OpenIdConnect\wellknownconfig.json" />
+    <EmbeddedResource Include="OpenIdConnect\wellknownkeys.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.Cookies\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.Facebook\Microsoft.AspNetCore.Authentication.Facebook.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.Google\Microsoft.AspNetCore.Authentication.Google.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.JwtBearer\Microsoft.AspNetCore.Authentication.JwtBearer.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.MicrosoftAccount\Microsoft.AspNetCore.Authentication.MicrosoftAccount.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.OpenIdConnect\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.Twitter\Microsoft.AspNetCore.Authentication.Twitter.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.WsFederation\Microsoft.AspNetCore.Authentication.WsFederation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
+  </ItemGroup>
+
+</Project>

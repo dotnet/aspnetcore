@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "target": "es5",
+    "declaration": true,
+    "outDir": ".",
+    "lib": ["es2015", "dom"]
+  },
+  "files": [
+    "src/index.ts",
+    "src/domain-context.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

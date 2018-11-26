@@ -1,0 +1,23 @@
+{
+    "Default": {
+        "rules": [
+            "DefaultCompositeRule"
+        ],
+        "packages": {
+            "Microsoft.AspNetCore.Authentication.AzureADB2C.UI": {
+                "Exclusions": {
+                    "DOC_MISSING": {
+                        "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Views.dll": "This library contains precompiled views."
+                    }
+                }
+            },
+            "Microsoft.AspNetCore.Authentication.AzureAD.UI": {
+                "Exclusions": {
+                    "DOC_MISSING": {
+                        "lib/netstandard2.0/Microsoft.AspNetCore.Authentication.AzureAD.UI.Views.dll": "This library contains precompiled views."
+                    }
+                }
+            }
+        }
+    }
+}

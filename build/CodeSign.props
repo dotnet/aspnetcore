@@ -39,11 +39,15 @@
       <FilesToSign Include="Microsoft.Extensions.DependencyInjection.Abstractions.dll"      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.DependencyInjection.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.DiagnosticAdapter.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll" Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Diagnostics.HealthChecks.dll"              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileProviders.Abstractions.dll"            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileProviders.Composite.dll"               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileProviders.Embedded.dll"                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileProviders.Physical.dll"                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.FileSystemGlobbing.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Hosting.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Hosting.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Http.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Logging.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Logging.Configuration.dll"                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
@@ -77,6 +81,7 @@
       <FilesToSign Include="Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll"   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="Microsoft.Rest.ClientRuntime.Azure.dll"                         Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="Microsoft.Rest.ClientRuntime.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
+      <FilesToSign Include="Microsoft.VisualStudio.Web.BrowserLink.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="Microsoft.WindowsAzure.Storage.dll"                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="System.Spatial.dll"                                             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
       <FilesToSign Include="System.Spatial.resources.dll"                                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.All" />
