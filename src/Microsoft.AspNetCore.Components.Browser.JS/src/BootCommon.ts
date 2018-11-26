@@ -24,7 +24,7 @@ function loadResourceFromElement(element: HTMLElement) {
   return new Promise((resolve, reject) => {
     element.onload = resolve;
     element.onerror = reject;
-    document.head.appendChild(element);
+    document.head!.appendChild(element);
   });
 }
 

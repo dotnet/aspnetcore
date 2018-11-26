@@ -21,7 +21,8 @@
       <NuspecProperties>
       version=$(PackageVersion);
       publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
-      razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);</NuspecProperties>
+      razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
+      blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFrameworks)" />

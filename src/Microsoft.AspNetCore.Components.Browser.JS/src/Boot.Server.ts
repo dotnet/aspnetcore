@@ -1,6 +1,5 @@
-import '../../../modules/jsinterop/src/Microsoft.JSInterop.JS/src/Microsoft.JSInterop';
+import '@dotnet/jsinterop';
 import './GlobalExports';
-import * as Environment from './Environment';
 import * as signalR from '@aspnet/signalr';
 import { MessagePackHubProtocol } from '@aspnet/signalr-protocol-msgpack';
 import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRenderBatch';

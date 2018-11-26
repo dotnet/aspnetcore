@@ -1,10 +1,9 @@
-import '../../../modules/jsinterop/src/Microsoft.JSInterop.JS/src/Microsoft.JSInterop';
+import '@dotnet/jsinterop';
 import './GlobalExports';
 import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';
 import { getAssemblyNameFromUrl } from './Platform/Url';
 import { renderBatch } from './Rendering/Renderer';
-import { RenderBatch } from './Rendering/RenderBatch/RenderBatch';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { Pointer } from './Platform/Platform';
 import { fetchBootConfigAsync, loadEmbeddedResourcesAsync } from './BootCommon';

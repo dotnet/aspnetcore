@@ -28,6 +28,7 @@
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,7 +42,13 @@
 
   <!-- A bit of msbuild magic to support reference resolver tests -->
   <Target Name="CreateReferenceHintPathsList" AfterTargets="Build">
+    <ItemGroup>
+      <_BclDirectory Include="$(MonoBaseClassLibraryPath)" />
+      <_BclDirectory Include="$(MonoBaseClassLibraryFacadesPath)" />
+    </ItemGroup>
+
     <WriteLinesToFile Lines="@(ReferencePath)" File="$(TargetDir)referenceHints.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
+    <WriteLinesToFile Lines="@(_BclDirectory)" File="$(TargetDir)bclLocations.txt" WriteOnlyWhenDifferent="true" Overwrite="true" />
   </Target>
 
 </Project>

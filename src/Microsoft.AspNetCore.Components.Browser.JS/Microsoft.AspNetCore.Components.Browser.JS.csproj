@@ -12,16 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\blazor\src\Microsoft.AspNetCore.Blazor.BuildTools\Microsoft.AspNetCore.Blazor.BuildTools.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(AspNetCorePackageVersion)" />
     <WebpackInputs Include="**\*.ts" Exclude="node_modules\**" />
-    <WebpackInputs Include="..\..\modules\jsinterop\src\Microsoft.JSInterop.JS\src\**" />
   </ItemGroup>
 
-  <Import Project="..\..\blazor\src\Microsoft.AspNetCore.Blazor.BuildTools\BuildToolsExe.props" />
-
   <Target Name="EnsureNpmRestored" Condition="!Exists('node_modules')">
-    <Exec Command="$(BlazorBuildToolsExe) checknodejs -v 8.3.0" />
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec Command="npm install" />
   </Target>

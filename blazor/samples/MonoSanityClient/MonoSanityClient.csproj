@@ -13,9 +13,4 @@
   <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" /> -->
   <Import Project="..\..\..\src\Microsoft.AspNetCore.Components.Build\ReferenceFromSource.props" />
 
-  <ItemGroup>
-    <!-- Share the InternalCalls.cs source here so we get access to the same interop externs -->
-    <Compile Include="..\..\..\modules\jsinterop\src\Mono.WebAssembly.Interop\InternalCalls.cs" />
-  </ItemGroup>
-
 </Project>

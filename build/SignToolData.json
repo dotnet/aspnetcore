@@ -53,6 +53,7 @@
     "Microsoft.Extensions.FileProviders.Physical.dll",
     "Microsoft.Extensions.FileSystemGlobbing.dll",
     "Microsoft.Extensions.Primitives.dll",
+    "Microsoft.JSInterop.dll",
     "Mono.Cecil.dll",
     "Mono.Cecil.Mdb.dll",
     "Mono.Cecil.Pdb.dll",

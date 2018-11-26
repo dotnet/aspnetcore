@@ -16,6 +16,10 @@
     <TemplateBlazorPackageVersion>0.8.0-preview1-20181122.3</TemplateBlazorPackageVersion>
     <TemplateRazorDesignPackageVersion>2.1.2</TemplateRazorDesignPackageVersion>
     <RazorPackageVersion>2.1.0</RazorPackageVersion>
+    <MicrosoftAspNetCoreBlazorMonoPackageVersion>0.8.0-preview1-20181126.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
+
+    <!-- When updating this, ensure you also update Browser.JS/package.json to reference the corresponding version of @dotnet/jsinterop -->
+    <JSInteropPackageVersion>0.8.0-preview1-20181126.1</JSInteropPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />

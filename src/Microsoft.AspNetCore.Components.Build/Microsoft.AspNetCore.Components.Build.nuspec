@@ -12,7 +12,7 @@
     <dependencies>
       <dependency id="Microsoft.AspNetCore.Razor.Design" version="$razorversion$" include="all" />
       <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$version$" include="all" />
-      <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$version$" include="all" />
+      <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$blazormonoversion$" include="all" />
     </dependencies>
   </metadata>
   <files>
