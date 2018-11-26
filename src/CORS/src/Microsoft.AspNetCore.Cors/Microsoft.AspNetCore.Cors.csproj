@@ -5,7 +5,7 @@
 Commonly used types:
 Microsoft.AspNetCore.Cors.DisableCorsAttribute
 Microsoft.AspNetCore.Cors.EnableCorsAttribute</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;cors</PackageTags>

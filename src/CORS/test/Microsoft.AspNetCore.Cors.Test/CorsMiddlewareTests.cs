@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -336,7 +336,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var middleware = new CorsMiddleware(
                 Mock.Of<RequestDelegate>(),
                 corsService,
-                mockProvider.Object,
                 loggerFactory,
                 policyName: null);
 
@@ -344,7 +343,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
 
             // Act
-            await middleware.Invoke(httpContext);
+            await middleware.Invoke(httpContext, mockProvider.Object);
 
             // Assert
             mockProvider.Verify(
@@ -366,7 +365,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var middleware = new CorsMiddleware(
                 Mock.Of<RequestDelegate>(),
                 corsService,
-                mockProvider.Object,
                 loggerFactory,
                 policyName: null);
 
@@ -374,7 +372,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
 
             // Act
-            await middleware.Invoke(httpContext);
+            await middleware.Invoke(httpContext, mockProvider.Object);
 
             // Assert
             Assert.Equal(200, httpContext.Response.StatusCode);
