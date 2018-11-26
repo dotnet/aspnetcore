@@ -1,447 +1,34 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.Tests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
-    public class OAuthTests
+    public class OAuthTests : RemoteAuthenticationTests<OAuthOptions>
     {
-        [Fact]
-        public async Task CanForwardDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
+        protected override string DefaultScheme => OAuthDefaults.DisplayName;
+        protected override Type HandlerType => typeof(OAuthHandler<OAuthOptions>);
+        protected override bool SupportsSignIn { get => false; }
+        protected override bool SupportsSignOut { get => false; }
 
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.AddScheme<TestHandler>("auth1", "auth1");
-            })
-            .AddOAuth("default", o =>
+        protected override void RegisterAuth(AuthenticationBuilder services, Action<OAuthOptions> configure)
+        {
+            services.AddOAuth(DefaultScheme, o =>
             {
                 ConfigureDefaults(o);
-                o.SignInScheme = "auth1";
-                o.ForwardDefault = "auth1";
+                configure.Invoke(o);
             });
-
-            var forwardDefault = new TestHandler();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, forwardDefault.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, forwardDefault.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, forwardDefault.ChallengeCount);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-        }
-
-        [Fact]
-        public async Task ForwardSignInThrows()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddOAuth("default", o =>
-            {
-                ConfigureDefaults(o);
-                o.SignInScheme = "auth1";
-                o.ForwardDefault = "auth1";
-                o.ForwardSignOut = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-        }
-
-        [Fact]
-        public async Task ForwardSignOutThrows()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddOAuth("default", o =>
-            {
-                ConfigureDefaults(o);
-                o.SignInScheme = "auth1";
-                o.ForwardDefault = "auth1";
-                o.ForwardSignOut = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-        }
-
-        [Fact]
-        public async Task ForwardForbidWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.DefaultSignInScheme = "auth1";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddOAuth("default", o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardForbid = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.ForbidAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(1, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardAuthenticateWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.DefaultSignInScheme = "auth1";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddOAuth("default", o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardAuthenticate = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(1, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardChallengeWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.DefaultSignInScheme = "auth1";
-                o.AddScheme<TestHandler>("specific", "specific");
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-            })
-            .AddOAuth("default", o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardChallenge = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.ChallengeAsync();
-            Assert.Equal(0, specific.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(1, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-        }
-
-        [Fact]
-        public async Task ForwardSelectorWinsOverDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddOAuth("default", o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => "selector";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, selector.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, selector.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, selector.ChallengeCount);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-            Assert.Equal(0, specific.SignOutCount);
-        }
-
-        [Fact]
-        public async Task NullForwardSelectorUsesDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddOAuth("default", o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => null;
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, forwardDefault.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, forwardDefault.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, forwardDefault.ChallengeCount);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-
-            Assert.Equal(0, selector.AuthenticateCount);
-            Assert.Equal(0, selector.ForbidCount);
-            Assert.Equal(0, selector.ChallengeCount);
-            Assert.Equal(0, selector.SignInCount);
-            Assert.Equal(0, selector.SignOutCount);
-            Assert.Equal(0, specific.AuthenticateCount);
-            Assert.Equal(0, specific.ForbidCount);
-            Assert.Equal(0, specific.ChallengeCount);
-            Assert.Equal(0, specific.SignInCount);
-            Assert.Equal(0, specific.SignOutCount);
-        }
-
-        [Fact]
-        public async Task SpecificForwardWinsOverSelectorAndDefault()
-        {
-            var services = new ServiceCollection().AddLogging();
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = "default";
-                o.AddScheme<TestHandler2>("auth1", "auth1");
-                o.AddScheme<TestHandler3>("selector", "selector");
-                o.AddScheme<TestHandler>("specific", "specific");
-            })
-            .AddOAuth("default", o =>
-            {
-                ConfigureDefaults(o);
-                o.ForwardDefault = "auth1";
-                o.ForwardDefaultSelector = _ => "selector";
-                o.ForwardAuthenticate = "specific";
-                o.ForwardChallenge = "specific";
-                o.ForwardSignIn = "specific";
-                o.ForwardSignOut = "specific";
-                o.ForwardForbid = "specific";
-            });
-
-            var specific = new TestHandler();
-            services.AddSingleton(specific);
-            var forwardDefault = new TestHandler2();
-            services.AddSingleton(forwardDefault);
-            var selector = new TestHandler3();
-            services.AddSingleton(selector);
-
-            var sp = services.BuildServiceProvider();
-            var context = new DefaultHttpContext();
-            context.RequestServices = sp;
-
-            await context.AuthenticateAsync();
-            Assert.Equal(1, specific.AuthenticateCount);
-
-            await context.ForbidAsync();
-            Assert.Equal(1, specific.ForbidCount);
-
-            await context.ChallengeAsync();
-            Assert.Equal(1, specific.ChallengeCount);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-
-            Assert.Equal(0, forwardDefault.AuthenticateCount);
-            Assert.Equal(0, forwardDefault.ForbidCount);
-            Assert.Equal(0, forwardDefault.ChallengeCount);
-            Assert.Equal(0, forwardDefault.SignInCount);
-            Assert.Equal(0, forwardDefault.SignOutCount);
-            Assert.Equal(0, selector.AuthenticateCount);
-            Assert.Equal(0, selector.ForbidCount);
-            Assert.Equal(0, selector.ChallengeCount);
-            Assert.Equal(0, selector.SignInCount);
-            Assert.Equal(0, selector.SignOutCount);
-        }
-
-
-        [Fact]
-        public async Task VerifySignInSchemeCannotBeSetToSelf()
-        {
-            var server = CreateServer(
-                services => services.AddAuthentication().AddOAuth("weeblie", o =>
-                {
-                    o.SignInScheme = "weeblie";
-                    o.ClientId = "whatever";
-                    o.ClientSecret = "whatever";
-                    o.CallbackPath = "/whatever";
-                    o.AuthorizationEndpoint = "/whatever";
-                    o.TokenEndpoint = "/whatever";
-                }));
-            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/"));
-            Assert.Contains("cannot be set to itself", error.Message);
-        }
-
-        [Fact]
-        public async Task VerifySchemeDefaults()
-        {
-            var services = new ServiceCollection();
-            services.AddAuthentication().AddOAuth("oauth", o => { });
-            var sp = services.BuildServiceProvider();
-            var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
-            var scheme = await schemeProvider.GetSchemeAsync("oauth");
-            Assert.NotNull(scheme);
-            Assert.Equal("OAuthHandler`1", scheme.HandlerType.Name);
-            Assert.Equal(OAuthDefaults.DisplayName, scheme.DisplayName);
         }
 
         [Fact]
@@ -654,7 +241,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Contains("scope=baz%20qux", res.Headers.Location.Query);
         }
 
-        private void ConfigureDefaults(OAuthOptions o)
+        protected override void ConfigureDefaults(OAuthOptions o)
         {
             o.ClientId = "Test Id";
             o.ClientSecret = "secret";
@@ -662,6 +249,101 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             o.AuthorizationEndpoint = "https://example.com/provider/login";
             o.TokenEndpoint = "https://example.com/provider/token";
             o.CallbackPath = "/oauth-callback";
+        }
+
+        [Fact]
+        public async Task HandleRequestAsync_RedirectsToAccessDeniedPathWhenExplicitlySet()
+        {
+            var server = CreateServer(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        opt.ClientId = "Test Id";
+                        opt.ClientSecret = "secret";
+                        opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        opt.AuthorizationEndpoint = "https://example.com/provider/login";
+                        opt.TokenEndpoint = "https://example.com/provider/token";
+                        opt.CallbackPath = "/oauth-callback";
+                        opt.AccessDeniedPath = "/access-denied";
+                        opt.StateDataFormat = new TestStateDataFormat();
+                        opt.Events.OnRemoteFailure = context => throw new InvalidOperationException("This event should not be called.");
+                    }));
+
+            var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
+                ".AspNetCore.Correlation.Weblie.correlationId=N");
+
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            Assert.Equal("/access-denied?ReturnUrl=http%3A%2F%2Ftesthost%2Fredirect", transaction.Response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task HandleRequestAsync_InvokesAccessDeniedEvent()
+        {
+            var server = CreateServer(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        opt.ClientId = "Test Id";
+                        opt.ClientSecret = "secret";
+                        opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        opt.AuthorizationEndpoint = "https://example.com/provider/login";
+                        opt.TokenEndpoint = "https://example.com/provider/token";
+                        opt.CallbackPath = "/oauth-callback";
+                        opt.StateDataFormat = new TestStateDataFormat();
+                        opt.Events = new OAuthEvents()
+                        {
+                            OnAccessDenied = context =>
+                            {
+                                Assert.Equal("testvalue", context.Properties.Items["testkey"]);
+                                context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+                                context.HandleResponse();
+                                return Task.CompletedTask;
+                            }
+                        };
+                    }));
+
+            var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
+                ".AspNetCore.Correlation.Weblie.correlationId=N");
+
+            Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
+            Assert.Null(transaction.Response.Headers.Location);
+        }
+
+        [Fact]
+        public async Task HandleRequestAsync_InvokesRemoteFailureEventWhenAccessDeniedPathIsNotExplicitlySet()
+        {
+            var server = CreateServer(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        opt.ClientId = "Test Id";
+                        opt.ClientSecret = "secret";
+                        opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        opt.AuthorizationEndpoint = "https://example.com/provider/login";
+                        opt.TokenEndpoint = "https://example.com/provider/token";
+                        opt.CallbackPath = "/oauth-callback";
+                        opt.StateDataFormat = new TestStateDataFormat();
+                        opt.Events = new OAuthEvents()
+                        {
+                            OnRemoteFailure = context =>
+                            {
+                                Assert.Equal("Access was denied by the resource owner or by the remote server.", context.Failure.Message);
+                                Assert.Equal("testvalue", context.Properties.Items["testkey"]);
+                                context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+                                context.HandleResponse();
+                                return Task.CompletedTask;
+                            }
+                        };
+                    }));
+
+            var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
+                ".AspNetCore.Correlation.Weblie.correlationId=N");
+
+            Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
+            Assert.Null(transaction.Response.Headers.Location);
         }
 
         [Fact]
@@ -683,7 +365,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         {
                             OnRemoteFailure = context =>
                             {
-                                Assert.Contains("declined", context.Failure.Message);
+                                Assert.Contains("custom_error", context.Failure.Message);
                                 Assert.Equal("testvalue", context.Properties.Items["testkey"]);
                                 context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                                 context.HandleResponse();
@@ -692,8 +374,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         };
                     }));
 
-            var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=declined&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.corrilationId=N");
+            var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=custom_error&state=protected_state",
+                ".AspNetCore.Correlation.Weblie.correlationId=N");
 
             Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
             Assert.Null(transaction.Response.Headers.Location);
@@ -736,7 +418,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 Assert.Equal("protected_state", protectedText);
                 var properties = new AuthenticationProperties(new Dictionary<string, string>()
                 {
-                    { ".xsrf", "corrilationId" },
+                    { ".xsrf", "correlationId" },
                     { "testkey", "testvalue" }
                 });
                 properties.RedirectUri = "http://testhost/redirect";

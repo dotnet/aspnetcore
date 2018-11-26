@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
+    <!-- Temporarily disables tests for this project. They need to be refactored now that aspnetcore only supports netcoreapp3.0. -->
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.Cookies\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Owin.Security.Interop\Microsoft.Owin.Security.Interop.csproj" />
   </ItemGroup>
 

@@ -1,9 +1,7 @@
-ASP.NET Security
-========
+ASP.NET Security [Archived]
+===========================
 
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/fujhh8n956v5ohfd/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Security/branch/dev)
-
-Travis:   [![Travis](https://travis-ci.org/aspnet/Security.svg?branch=dev)](https://travis-ci.org/aspnet/Security)
+**This GitHub project has been archived.** Ongoing development on this project can be found in <https://github.com/aspnet/AspNetCore>.
 
 Contains the security and authorization middlewares for ASP.NET Core.
 
@@ -14,4 +12,4 @@ A list of community projects related to authentication and security for ASP.NET 
 ASP.NET Security will not include Basic Authentication middleware due to its potential insecurity and performance problems. If you host under IIS you can enable it via IIS configuration.
 
 
-This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
+This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [AspNetCore](https://github.com/aspnet/AspNetCore) repo.

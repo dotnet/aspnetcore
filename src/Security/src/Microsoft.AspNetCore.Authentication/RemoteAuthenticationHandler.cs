@@ -5,6 +5,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -240,6 +241,49 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             return true;
+        }
+
+        protected virtual async Task<HandleRequestResult> HandleAccessDeniedErrorAsync(AuthenticationProperties properties)
+        {
+            Logger.AccessDeniedError();
+            var context = new AccessDeniedContext(Context, Scheme, Options)
+            {
+                AccessDeniedPath = Options.AccessDeniedPath,
+                Properties = properties,
+                ReturnUrl = properties?.RedirectUri,
+                ReturnUrlParameter = Options.ReturnUrlParameter
+            };
+            await Events.AccessDenied(context);
+
+            if (context.Result != null)
+            {
+                if (context.Result.Handled)
+                {
+                    Logger.AccessDeniedContextHandled();
+                }
+                else if (context.Result.Skipped)
+                {
+                    Logger.AccessDeniedContextSkipped();
+                }
+
+                return context.Result;
+            }
+
+            // If an access denied endpoint was specified, redirect the user agent.
+            // Otherwise, invoke the RemoteFailure event for further processing.
+            if (context.AccessDeniedPath.HasValue)
+            {
+                string uri = context.AccessDeniedPath;
+                if (!string.IsNullOrEmpty(context.ReturnUrlParameter) && !string.IsNullOrEmpty(context.ReturnUrl))
+                {
+                    uri = QueryHelpers.AddQueryString(uri, context.ReturnUrlParameter, context.ReturnUrl);
+                }
+                Response.Redirect(uri);
+
+                return HandleRequestResult.Handle();
+            }
+
+            return HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
         }
     }
 }

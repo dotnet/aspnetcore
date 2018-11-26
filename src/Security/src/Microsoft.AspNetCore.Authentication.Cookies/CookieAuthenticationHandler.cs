@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var returnUrl = properties.RedirectUri;
             if (string.IsNullOrEmpty(returnUrl))
             {
-                returnUrl = OriginalPathBase + Request.Path + Request.QueryString;
+                returnUrl = OriginalPathBase + OriginalPath + Request.QueryString;
             }
             var accessDeniedUri = Options.AccessDeniedPath + QueryString.Create(Options.ReturnUrlParameter, returnUrl);
             var redirectContext = new RedirectContext<CookieAuthenticationOptions>(Context, Scheme, Options, properties, BuildRedirectUri(accessDeniedUri));
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var redirectUri = properties.RedirectUri;
             if (string.IsNullOrEmpty(redirectUri))
             {
-                redirectUri = OriginalPathBase + Request.Path + Request.QueryString;
+                redirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
             }
 
             var loginUri = Options.LoginPath + QueryString.Create(Options.ReturnUrlParameter, redirectUri);

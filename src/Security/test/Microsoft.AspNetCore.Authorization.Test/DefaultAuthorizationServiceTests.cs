@@ -1025,6 +1025,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
                 return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
             }
 
+            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+            {
+                return Task.FromResult<AuthorizationPolicy>(null);
+            }
+
             public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
             {
                 return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
@@ -1057,6 +1062,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
             public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
             {
                 return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+            }
+
+            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+            {
+                return Task.FromResult<AuthorizationPolicy>(null);
             }
 
             public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)

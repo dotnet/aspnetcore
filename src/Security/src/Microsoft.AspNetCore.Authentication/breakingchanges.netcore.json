@@ -1,0 +1,22 @@
+  [
+    {
+      "TypeId": "public static class Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions",
+      "MemberId": "public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddRemoteScheme<T0, T1>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.String authenticationScheme, System.String displayName, System.Action<T0> configureOptions) where T0 : Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions, new() where T1 : Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<T0>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions",
+      "MemberId": "public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddScheme<T0, T1>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.String authenticationScheme, System.Action<T0> configureOptions) where T0 : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, new() where T1 : Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions",
+      "MemberId": "public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddScheme<T0, T1>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.String authenticationScheme, System.String displayName, System.Action<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder> configureScheme, System.Action<T0> configureOptions) where T0 : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, new() where T1 : Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions",
+      "MemberId": "public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddScheme<T0, T1>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.String authenticationScheme, System.String displayName, System.Action<T0> configureOptions) where T0 : Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, new() where T1 : Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>",
+      "Kind": "Removal"
+    }
+  ]

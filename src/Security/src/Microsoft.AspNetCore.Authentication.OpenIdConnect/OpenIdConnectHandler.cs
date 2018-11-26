@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 properties.RedirectUri = BuildRedirectUriIfRelative(Options.SignedOutRedirectUri);
                 if (string.IsNullOrWhiteSpace(properties.RedirectUri))
                 {
-                    properties.RedirectUri = CurrentUri;
+                    properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
                 }
             }
             Logger.PostSignOutRedirect(properties.RedirectUri);
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // 2. CurrentUri if RedirectUri is not set)
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                properties.RedirectUri = CurrentUri;
+                properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
             }
             Logger.PostAuthenticationLocalRedirect(properties.RedirectUri);
 
@@ -520,6 +520,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // if any of the error fields are set, throw error null
                 if (!string.IsNullOrEmpty(authorizationResponse.Error))
                 {
+                    // Note: access_denied errors are special protocol errors indicating the user didn't
+                    // approve the authorization demand requested by the remote authorization server.
+                    // Since it's a frequent scenario (that is not caused by incorrect configuration),
+                    // denied errors are handled differently using HandleAccessDeniedErrorAsync().
+                    // Visit https://tools.ietf.org/html/rfc6749#section-4.1.2.1 for more information.
+                    if (string.Equals(authorizationResponse.Error, "access_denied", StringComparison.Ordinal))
+                    {
+                        return await HandleAccessDeniedErrorAsync(properties);
+                    }
+
                     return HandleRequestResult.Fail(CreateOpenIdConnectProtocolException(authorizationResponse, response: null), properties);
                 }
 
