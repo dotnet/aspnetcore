@@ -1,0 +1,33 @@
+{
+  "name": "aspnet-angular",
+  "version": "0.1.1",
+  "description": "Helpers for using Angular in ASP.NET Core projects",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "rimraf *.d.ts && ngc && echo 'Finished building NPM package \"aspnet-angular\"'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aspnet/JavaScriptServices.git"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/aspnet/JavaScriptServices/issues"
+  },
+  "devDependencies": {
+    "@angular/common": "^4.3.2",
+    "@angular/compiler": "^4.3.2",
+    "@angular/compiler-cli": "^4.3.2",
+    "@angular/core": "^4.3.2",
+    "@angular/http": "^4.3.2",
+    "@angular/platform-browser": "^4.3.2",
+    "rimraf": "^2.6.1",
+    "rxjs": "^5.4.2",
+    "zone.js": "^0.8.16"
+  },
+  "peerDependencies": {
+    "@angular/core": "^4.2.5 || ^5.0.0-beta"
+  }
+}
