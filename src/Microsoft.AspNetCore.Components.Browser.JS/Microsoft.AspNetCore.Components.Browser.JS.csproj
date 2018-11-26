@@ -18,7 +18,7 @@
 
   <Target Name="EnsureNpmRestored" Condition="!Exists('node_modules')">
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
-    <Exec Command="npm install" />
+    <Exec Command="npm ci" />
   </Target>
 
   <Target Name="RunWebpack" AfterTargets="ResolveReferences" Inputs="@(WebpackInputs)" Outputs="dist\blazor.webassembly.js;dist\blazor.server.js" DependsOnTargets="EnsureNpmRestored">

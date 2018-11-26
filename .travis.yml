@@ -26,8 +26,8 @@ before_install:
   /usr/local/lib/; fi
 install:
   - . $HOME/.nvm/nvm.sh
-  - nvm install 8.9.4
-  - nvm use 8.9.4
+  - nvm install 10.13.0
+  - nvm use 10.13.0
   - npm install -g selenium-standalone
   - selenium-standalone install
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export TEST_CHROME_BINARY=`which google-chrome-stable`; fi
