@@ -8,18 +8,18 @@
 
   <ItemGroup>
     <RepositoryBuildOrder Include="Razor" Order="6" />
-    <RepositoryBuildOrder Include="HttpSysServer" Order="8" />
+    <RepositoryBuildOrder Include="HttpSysServer" Order="8" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
-    <RepositoryBuildOrder Include="Antiforgery" Order="10" />
+    <RepositoryBuildOrder Include="Antiforgery" Order="9" RootPath="$(RepositoryRoot)src\Antiforgery\" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <RepositoryBuildOrder Include="StaticFiles" Order="11" RootPath="$(RepositoryRoot)src\StaticFiles\" />
-    <RepositoryBuildOrder Include="ResponseCaching" Order="11" />
+    <RepositoryBuildOrder Include="ResponseCaching" Order="11" Order="11" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
     <RepositoryBuildOrder Include="Session" Order="11" RootPath="$(RepositoryRoot)src\Session\" />
     <RepositoryBuildOrder Include="ServerTests" Order="11" RootPath="$(RepositoryRoot)src\ServerTests\" />
-    <RepositoryBuildOrder Include="CORS" Order="12" />
-    <RepositoryBuildOrder Include="Routing" Order="12" />
+    <RepositoryBuildOrder Include="CORS" Order="12"  RootPath="$(RepositoryRoot)src\CORS\" />
+    <RepositoryBuildOrder Include="Routing" Order="12" RootPath="$(RepositoryRoot)src\Routing\" />
     <RepositoryBuildOrder Include="Localization" Order="13" />
-    <RepositoryBuildOrder Include="Security" Order="13" />
+    <RepositoryBuildOrder Include="Security" Order="13" RootPath="$(RepositoryRoot)src\Security\" />
     <RepositoryBuildOrder Include="MetaPackages" Order="13" RootPath="$(RepositoryRoot)src\MetaPackages\" />
     <RepositoryBuildOrder Include="Mvc" Order="14" />
     <RepositoryBuildOrder Include="AADIntegration" Order="15" RootPath="$(RepositoryRoot)src\AADIntegration\" />

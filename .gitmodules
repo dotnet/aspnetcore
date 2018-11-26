@@ -1,18 +1,6 @@
-[submodule "modules/Antiforgery"]
-	path = modules/Antiforgery
-	url = https://github.com/aspnet/Antiforgery.git
-	branch = master
 [submodule "modules/BasicMiddleware"]
 	path = modules/BasicMiddleware
 	url = https://github.com/aspnet/BasicMiddleware.git
-	branch = master
-[submodule "modules/CORS"]
-	path = modules/CORS
-	url = https://github.com/aspnet/CORS.git
-	branch = master
-[submodule "modules/HttpSysServer"]
-	path = modules/HttpSysServer
-	url = https://github.com/aspnet/HttpSysServer.git
 	branch = master
 [submodule "modules/Identity"]
 	path = modules/Identity
@@ -29,18 +17,6 @@
 [submodule "modules/Razor"]
 	path = modules/Razor
 	url = https://github.com/aspnet/Razor.git
-	branch = master
-[submodule "modules/ResponseCaching"]
-	path = modules/ResponseCaching
-	url = https://github.com/aspnet/ResponseCaching.git
-	branch = master
-[submodule "modules/Routing"]
-	path = modules/Routing
-	url = https://github.com/aspnet/Routing.git
-	branch = master
-[submodule "modules/Security"]
-	path = modules/Security
-	url = https://github.com/aspnet/Security.git
 	branch = master
 [submodule "modules/SignalR"]
 	path = modules/SignalR

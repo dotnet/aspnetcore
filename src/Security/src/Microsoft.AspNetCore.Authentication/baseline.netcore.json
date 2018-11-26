@@ -1,0 +1,3330 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Services",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddScheme<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "displayName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "New": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+              ]
+            },
+            {
+              "ParameterName": "THandler",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddScheme<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "New": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+              ]
+            },
+            {
+              "ParameterName": "THandler",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRemoteScheme<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "displayName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "New": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions"
+              ]
+            },
+            {
+              "ParameterName": "THandler",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<T0>"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddPolicyScheme",
+          "Parameters": [
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "displayName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Authentication.PolicySchemeOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authentication.IAuthenticationHandler"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Scheme",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationScheme",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Options",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Context",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Request",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpRequest",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Response",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpResponse",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OriginalPath",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.PathString",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OriginalPathBase",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.PathString",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Logger",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Logging.ILogger",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UrlEncoder",
+          "Parameters": [],
+          "ReturnType": "System.Text.Encodings.Web.UrlEncoder",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Clock",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.ISystemClock",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OptionsMonitor",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Options.IOptionsMonitor<T0>",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Events",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Events",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClaimsIssuer",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CurrentUri",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InitializeAsync",
+          "Parameters": [
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InitializeEventsAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateEventsAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Object>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InitializeHandlerAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "BuildRedirectUri",
+          "Parameters": [
+            {
+              "Name": "targetPath",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ResolveTarget",
+          "Parameters": [
+            {
+              "Name": "scheme",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AuthenticateAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleAuthenticateOnceAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult>",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleAuthenticateOnceSafeAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult>",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleAuthenticateAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult>",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleForbiddenAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleChallengeAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ChallengeAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ForbidAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<T0>"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.UrlEncoder"
+            },
+            {
+              "Name": "clock",
+              "Type": "Microsoft.AspNetCore.Authentication.ISystemClock"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "New": true,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.AuthenticationMiddleware",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Schemes",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Schemes",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "next",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            },
+            {
+              "Name": "schemes",
+              "Type": "Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Validate",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Validate",
+          "Parameters": [
+            {
+              "Name": "scheme",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClaimsIssuer",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ClaimsIssuer",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Events",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Events",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EventsType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EventsType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardDefault",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardDefault",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardAuthenticate",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardAuthenticate",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardChallenge",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardChallenge",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardForbid",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardForbid",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardSignIn",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardSignIn",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardSignOut",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardSignOut",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardDefaultSelector",
+          "Parameters": [],
+          "ReturnType": "System.Func<Microsoft.AspNetCore.Http.HttpContext, System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardDefaultSelector",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<Microsoft.AspNetCore.Http.HttpContext, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.IDataSerializer<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Serialize",
+          "Parameters": [
+            {
+              "Name": "model",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Deserialize",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.Byte[]"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TModel",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.ISecureDataFormat<T0>",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "T0"
+            },
+            {
+              "Name": "purpose",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "protectedText",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "protectedText",
+              "Type": "System.String"
+            },
+            {
+              "Name": "purpose",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TData",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.PropertiesDataFormat",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.SecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationProperties>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtector"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.PropertiesSerializer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.AuthenticationProperties>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Default",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.PropertiesSerializer",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Serialize",
+          "Parameters": [
+            {
+              "Name": "model",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.AuthenticationProperties>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Deserialize",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.Byte[]"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationProperties",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.AuthenticationProperties>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Write",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.BinaryWriter"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Read",
+          "Parameters": [
+            {
+              "Name": "reader",
+              "Type": "System.IO.BinaryReader"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationProperties",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.SecureDataFormat<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authentication.ISecureDataFormat<T0>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.ISecureDataFormat<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Protect",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "T0"
+            },
+            {
+              "Name": "purpose",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.ISecureDataFormat<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "protectedText",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.ISecureDataFormat<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Unprotect",
+          "Parameters": [
+            {
+              "Name": "protectedText",
+              "Type": "System.String"
+            },
+            {
+              "Name": "purpose",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "T0",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.ISecureDataFormat<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "serializer",
+              "Type": "Microsoft.AspNetCore.Authentication.IDataSerializer<T0>"
+            },
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtector"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TData",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.Base64UrlTextEncoder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Encode",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.Byte[]"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Decode",
+          "Parameters": [
+            {
+              "Name": "text",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.TicketDataFormat",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.SecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationTicket>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "protector",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtector"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.TicketSerializer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.AuthenticationTicket>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Default",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.TicketSerializer",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Serialize",
+          "Parameters": [
+            {
+              "Name": "ticket",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationTicket"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.AuthenticationTicket>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Deserialize",
+          "Parameters": [
+            {
+              "Name": "data",
+              "Type": "System.Byte[]"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationTicket",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IDataSerializer<Microsoft.AspNetCore.Authentication.AuthenticationTicket>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Write",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.BinaryWriter"
+            },
+            {
+              "Name": "ticket",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationTicket"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteIdentity",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.BinaryWriter"
+            },
+            {
+              "Name": "identity",
+              "Type": "System.Security.Claims.ClaimsIdentity"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteClaim",
+          "Parameters": [
+            {
+              "Name": "writer",
+              "Type": "System.IO.BinaryWriter"
+            },
+            {
+              "Name": "claim",
+              "Type": "System.Security.Claims.Claim"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Read",
+          "Parameters": [
+            {
+              "Name": "reader",
+              "Type": "System.IO.BinaryReader"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationTicket",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ReadIdentity",
+          "Parameters": [
+            {
+              "Name": "reader",
+              "Type": "System.IO.BinaryReader"
+            }
+          ],
+          "ReturnType": "System.Security.Claims.ClaimsIdentity",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ReadClaim",
+          "Parameters": [
+            {
+              "Name": "reader",
+              "Type": "System.IO.BinaryReader"
+            },
+            {
+              "Name": "identity",
+              "Type": "System.Security.Claims.ClaimsIdentity"
+            }
+          ],
+          "ReturnType": "System.Security.Claims.Claim",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.BaseContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Scheme",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationScheme",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Options",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HttpContext",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Request",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpRequest",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Response",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpResponse",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "T0"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.HandleRequestContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.BaseContext<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Result",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Result",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.HandleRequestResult"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleResponse",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SkipHandler",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "T0"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.PrincipalContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Authentication.PropertiesContext<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Principal",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Principal",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "T0"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.PropertiesContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Authentication.BaseContext<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Properties",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationProperties",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Properties",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "T0"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.RedirectContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.PropertiesContext<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_RedirectUri",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RedirectUri",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "T0"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            },
+            {
+              "Name": "redirectUri",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Authentication.HandleRequestContext<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Principal",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Principal",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Properties",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationProperties",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Properties",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Success",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Fail",
+          "Parameters": [
+            {
+              "Name": "failure",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Fail",
+          "Parameters": [
+            {
+              "Name": "failureMessage",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "T0"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_OnRemoteFailure",
+          "Parameters": [],
+          "ReturnType": "System.Func<Microsoft.AspNetCore.Authentication.RemoteFailureContext, System.Threading.Tasks.Task>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OnRemoteFailure",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<Microsoft.AspNetCore.Authentication.RemoteFailureContext, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OnTicketReceived",
+          "Parameters": [],
+          "ReturnType": "System.Func<Microsoft.AspNetCore.Authentication.TicketReceivedContext, System.Threading.Tasks.Task>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OnTicketReceived",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<Microsoft.AspNetCore.Authentication.TicketReceivedContext, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RemoteFailure",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authentication.RemoteFailureContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TicketReceived",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authentication.TicketReceivedContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.RemoteFailureContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.HandleRequestContext<Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Failure",
+          "Parameters": [],
+          "ReturnType": "System.Exception",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Failure",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Properties",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationProperties",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Properties",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions"
+            },
+            {
+              "Name": "failure",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.ResultContext<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Authentication.BaseContext<T0>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Principal",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Principal",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Properties",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationProperties",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Properties",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Result",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticateResult",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Success",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "NoResult",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Fail",
+          "Parameters": [
+            {
+              "Name": "failure",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Fail",
+          "Parameters": [
+            {
+              "Name": "failureMessage",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "T0"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.TicketReceivedContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationContext<Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ReturnUri",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ReturnUri",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "scheme",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationScheme"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions"
+            },
+            {
+              "Name": "ticket",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationTicket"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.AuthenticateResult",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Handled",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Skipped",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Success",
+          "Parameters": [
+            {
+              "Name": "ticket",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationTicket"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Fail",
+          "Parameters": [
+            {
+              "Name": "failure",
+              "Type": "System.Exception"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Fail",
+          "Parameters": [
+            {
+              "Name": "failure",
+              "Type": "System.Exception"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Fail",
+          "Parameters": [
+            {
+              "Name": "failureMessage",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Fail",
+          "Parameters": [
+            {
+              "Name": "failureMessage",
+              "Type": "System.String"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Handle",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SkipHandler",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.HandleRequestResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.ISystemClock",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_UtcNow",
+          "Parameters": [],
+          "ReturnType": "System.DateTimeOffset",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.PolicySchemeHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<Microsoft.AspNetCore.Authentication.PolicySchemeOptions>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "HandleChallengeAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleForbiddenAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleSignInAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleSignOutAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleAuthenticateAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.PolicySchemeOptions>"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.UrlEncoder"
+            },
+            {
+              "Name": "clock",
+              "Type": "Microsoft.AspNetCore.Authentication.ISystemClock"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.PolicySchemeOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_SignInScheme",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Events",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Events",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateEventsAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Object>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ShouldHandleRequestAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleRequestAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleRemoteAuthenticateAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.HandleRequestResult>",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleAuthenticateAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleForbiddenAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GenerateCorrelationId",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ValidateCorrelationId",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<T0>"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.UrlEncoder"
+            },
+            {
+              "Name": "clock",
+              "Type": "Microsoft.AspNetCore.Authentication.ISystemClock"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "New": true,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Validate",
+          "Parameters": [
+            {
+              "Name": "scheme",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Validate",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BackchannelTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BackchannelTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_BackchannelHttpHandler",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpMessageHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BackchannelHttpHandler",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.HttpMessageHandler"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Backchannel",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpClient",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Backchannel",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Net.Http.HttpClient"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_DataProtectionProvider",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_DataProtectionProvider",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CallbackPath",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.PathString",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CallbackPath",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SignInScheme",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SignInScheme",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RemoteAuthenticationTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RemoteAuthenticationTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Events",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Events",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Authentication.RemoteAuthenticationEvents"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SaveTokens",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SaveTokens",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CorrelationCookie",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CorrelationCookie",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.CookieBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<T0>",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authentication.IAuthenticationSignInHandler"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SignInAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationSignInHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleSignInAsync",
+          "Parameters": [
+            {
+              "Name": "user",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            },
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<T0>"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.UrlEncoder"
+            },
+            {
+              "Name": "clock",
+              "Type": "Microsoft.AspNetCore.Authentication.ISystemClock"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "New": true,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authentication.IAuthenticationSignOutHandler"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "SignOutAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.IAuthenticationSignOutHandler",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HandleSignOutAsync",
+          "Parameters": [
+            {
+              "Name": "properties",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationProperties"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptionsMonitor<T0>"
+            },
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "encoder",
+              "Type": "System.Text.Encodings.Web.UrlEncoder"
+            },
+            {
+              "Name": "clock",
+              "Type": "Microsoft.AspNetCore.Authentication.ISystemClock"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TOptions",
+          "ParameterPosition": 0,
+          "New": true,
+          "BaseTypeOrInterfaces": [
+            "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authentication.SystemClock",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authentication.ISystemClock"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_UtcNow",
+          "Parameters": [],
+          "ReturnType": "System.DateTimeOffset",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authentication.ISystemClock",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.AuthAppBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseAuthentication",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddAuthentication",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAuthentication",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "defaultScheme",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAuthentication",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Authentication.AuthenticationOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddScheme<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "displayName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureScheme",
+              "Type": "System.Action<Microsoft.AspNetCore.Authentication.AuthenticationSchemeBuilder>"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "New": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+              ]
+            },
+            {
+              "ParameterName": "THandler",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddScheme<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "New": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+              ]
+            },
+            {
+              "ParameterName": "THandler",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddScheme<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "displayName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "New": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions"
+              ]
+            },
+            {
+              "ParameterName": "THandler",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.AuthenticationHandler<T0>"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddRemoteScheme<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "displayName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TOptions",
+              "ParameterPosition": 0,
+              "New": true,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.RemoteAuthenticationOptions"
+              ]
+            },
+            {
+              "ParameterName": "THandler",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<T0>"
+              ]
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}
