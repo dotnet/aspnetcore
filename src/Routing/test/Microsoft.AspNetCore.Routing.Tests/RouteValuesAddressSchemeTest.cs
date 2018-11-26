@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GetsNamedMatchesFor_EndpointsHaving_IRouteNameMetadata()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
 
             // Act
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GroupsMultipleEndpoints_WithSameName()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
             var endpoint3 = CreateEndpoint("/b", routeName: "named");
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GroupsMultipleEndpoints_WithSameName_IgnoringCase()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
             var endpoint3 = CreateEndpoint("/b", routeName: "NaMed");
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing
         public void EndpointDataSource_ChangeCallback_Refreshes_OutboundMatches()
         {
             // Arrange 1
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", metadataRequiredValues: new { });
             var dynamicDataSource = new DynamicEndpointDataSource(new[] { endpoint1 });
 
             // Act 1
@@ -93,21 +93,21 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Same(endpoint1, actual);
 
             // Arrange 2
-            var endpoint2 = CreateEndpoint("/b");
+            var endpoint2 = CreateEndpoint("/b", metadataRequiredValues: new { });
 
             // Act 2
             // Trigger change
             dynamicDataSource.AddEndpoint(endpoint2);
 
             // Arrange 2
-            var endpoint3 = CreateEndpoint("/c");
+            var endpoint3 = CreateEndpoint("/c", metadataRequiredValues: new { });
 
             // Act 2
             // Trigger change
             dynamicDataSource.AddEndpoint(endpoint3);
 
             // Arrange 3
-            var endpoint4 = CreateEndpoint("/d");
+            var endpoint4 = CreateEndpoint("/d", metadataRequiredValues: new { });
 
             // Act 3
             // Trigger change
@@ -146,13 +146,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
+                metadataRequiredValues: new { id = 7 });
             var endpoint2 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { id = 12 },
-                requiredValues: new { zipCode = 3510 },
-                routeName: "OrdersApi");
+                metadataRequiredValues: new { zipCode = 3510 });
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
 
             // Act
@@ -174,45 +172,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
+                metadataRequiredValues: new { id = 7 });
             var endpoint2 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
+                defaults: new { id = 12 });
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
-
-            // Act
-            var foundEndpoints = addressScheme.FindEndpoints(
-                new RouteValuesAddress
-                {
-                    ExplicitValues = new RouteValueDictionary(new { id = 13 }),
-                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
-                });
-
-            // Assert
-            var actual = Assert.Single(foundEndpoints);
-            Assert.Same(endpoint2, actual);
-        }
-
-        [Fact]
-        public void FindEndpoints_LookedUpByCriteria_MultipleMatches()
-        {
-            // Arrange
-            var endpoint1 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
-            var endpoint2 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
-            var endpoint3 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
-            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
 
             // Act
             var foundEndpoints = addressScheme.FindEndpoints(
@@ -223,7 +187,64 @@ namespace Microsoft.AspNetCore.Routing
                 });
 
             // Assert
-            Assert.Contains(endpoint1, foundEndpoints);
+            var actual = Assert.Single(foundEndpoints);
+            Assert.Same(endpoint1, actual);
+        }
+
+        [Fact]
+        public void FindEndpoints_LookedUpByCriteria_MultipleMatches()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                metadataRequiredValues: new { id = 7 });
+            var endpoint2 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent}/{zipCode}",
+                defaults: new { id = 12 },
+                metadataRequiredValues: new { id = 12 });
+            var endpoint3 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { id = 12 },
+                metadataRequiredValues: new { id = 12 });
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 12 }),
+                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
+                });
+
+            // Assert
+            Assert.Collection(foundEndpoints,
+                e => Assert.Equal(endpoint3, e),
+                e => Assert.Equal(endpoint2, e));
+        }
+
+        [Fact]
+        public void FindEndpoints_LookedUpByCriteria_ExcludeEndpointWithoutRouteValuesAddressMetadata()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                metadataRequiredValues: new { id = 7 });
+            var endpoint2 = CreateEndpoint("test");
+
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 7 }),
+                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
+                }).ToList();
+
+            // Assert
+            Assert.DoesNotContain(endpoint2, foundEndpoints);
             Assert.Contains(endpoint1, foundEndpoints);
         }
 
@@ -234,7 +255,7 @@ namespace Microsoft.AspNetCore.Routing
             var expected = CreateEndpoint(
                 "api/orders/{id}",
                 defaults: new { controller = "Orders", action = "GetById" },
-                requiredValues: new { controller = "Orders", action = "GetById" },
+                metadataRequiredValues: new { controller = "Orders", action = "GetById" },
                 routeName: "OrdersApi");
             var addressScheme = CreateAddressScheme(expected);
 
@@ -253,6 +274,29 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void FindEndpoints_ReturnsEndpoint_UsingRoutePatternRequiredValues()
+        {
+            // Arrange
+            var expected = CreateEndpoint(
+                "api/orders/{id}",
+                defaults: new { controller = "Orders", action = "GetById" },
+                routePatternRequiredValues: new { controller = "Orders", action = "GetById" });
+            var addressScheme = CreateAddressScheme(expected);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 10 }),
+                    AmbientValues = new RouteValueDictionary(new { controller = "Orders", action = "GetById" }),
+                });
+
+            // Assert
+            var actual = Assert.Single(foundEndpoints);
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
         public void FindEndpoints_AlwaysReturnsEndpointsByRouteName_IgnoringMissingRequiredParameterValues()
         {
             // Here 'id' is the required value. The endpoint addressScheme would always return an endpoint by looking up
@@ -263,7 +307,7 @@ namespace Microsoft.AspNetCore.Routing
             var expected = CreateEndpoint(
                 "api/orders/{id}",
                 defaults: new { controller = "Orders", action = "GetById" },
-                requiredValues: new { controller = "Orders", action = "GetById" },
+                metadataRequiredValues: new { controller = "Orders", action = "GetById" },
                 routeName: "OrdersApi");
             var addressScheme = CreateAddressScheme(expected);
 
@@ -302,7 +346,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "/a",
-                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), });
+                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), new RouteValuesAddressMetadata(string.Empty), });
 
             // Act
             var addressScheme = CreateAddressScheme(endpoint);
@@ -324,7 +368,8 @@ namespace Microsoft.AspNetCore.Routing
         private RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
-            object requiredValues = null,
+            object metadataRequiredValues = null,
+            object routePatternRequiredValues = null,
             int order = 0,
             string routeName = null,
             EndpointMetadataCollection metadataCollection = null)
@@ -332,16 +377,16 @@ namespace Microsoft.AspNetCore.Routing
             if (metadataCollection == null)
             {
                 var metadata = new List<object>();
-                if (!string.IsNullOrEmpty(routeName) || requiredValues != null)
+                if (!string.IsNullOrEmpty(routeName) || metadataRequiredValues != null)
                 {
-                    metadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
+                    metadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(metadataRequiredValues)));
                 }
                 metadataCollection = new EndpointMetadataCollection(metadata);
             }
 
             return new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null, requiredValues: routePatternRequiredValues),
                 order,
                 metadataCollection,
                 null);

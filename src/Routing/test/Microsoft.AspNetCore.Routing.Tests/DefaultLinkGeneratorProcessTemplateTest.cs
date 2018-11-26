@@ -1,11 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.TestObjects;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -259,7 +261,12 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true }, endpoints: new[] { endpoint, });
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o => o.LowercaseUrls = true);
+            };
+
+            var linkGenerator = CreateLinkGenerator(configure, endpoints: new[] { endpoint, });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 
             // Act
@@ -283,7 +290,12 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("Foo/{bar=BAR}/{id?}");
-            var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true }, endpoints: new[] { endpoint, });
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o => o.LowercaseUrls = true);
+            };
+
+            var linkGenerator = CreateLinkGenerator(configure, endpoints: new[] { endpoint, });
             var httpContext = CreateHttpContext();
 
             // Act
@@ -334,7 +346,12 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true }, endpoints: new[] { endpoint, });
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o => o.LowercaseUrls = true);
+            };
+
+            var linkGenerator = CreateLinkGenerator(configure, endpoints: new[] { endpoint, });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 
             // Act
@@ -362,8 +379,17 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o =>
+                {
+                    o.LowercaseUrls = true;
+                    o.LowercaseQueryStrings = true;
+                });
+            };
+
             var linkGenerator = CreateLinkGenerator(
-                new RouteOptions() { LowercaseUrls = true, LowercaseQueryStrings = true }, 
+                configure, 
                 endpoints: new[] { endpoint, });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 
@@ -387,8 +413,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o => o.AppendTrailingSlash = true);
+            };
+
             var linkGenerator = CreateLinkGenerator(
-                new RouteOptions() { AppendTrailingSlash = true },
+                configure,
                 endpoints: new[] { endpoint });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 
@@ -412,8 +443,18 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o =>
+                {
+                    o.LowercaseUrls = true;
+                    o.LowercaseQueryStrings = true;
+                    o.AppendTrailingSlash = true;
+                });
+            };
+
             var linkGenerator = CreateLinkGenerator(
-                new RouteOptions() { LowercaseUrls = true, LowercaseQueryStrings = true, AppendTrailingSlash = true },
+                configure,
                 endpoints: new[] { endpoint });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 
@@ -437,8 +478,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o => o.LowercaseUrls = true);
+            };
+
             var linkGenerator = CreateLinkGenerator(
-                new RouteOptions() { LowercaseUrls = true },
+                configure,
                 endpoints: new[] { endpoint });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "HoMe" });
 
@@ -466,8 +512,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o => o.LowercaseUrls = false);
+            };
+
             var linkGenerator = CreateLinkGenerator(
-                new RouteOptions() { LowercaseUrls = false },
+                configure,
                 endpoints: new[] { endpoint });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "HoMe" });
 
@@ -494,8 +545,17 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o =>
+                {
+                    o.LowercaseUrls = true;
+                    o.LowercaseQueryStrings = true;
+                });
+            };
+
             var linkGenerator = CreateLinkGenerator(
-                new RouteOptions() { LowercaseUrls = true, LowercaseQueryStrings = true },
+                configure,
                 endpoints: new[] { endpoint });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 
@@ -523,8 +583,17 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o =>
+                {
+                    o.LowercaseUrls = false;
+                    o.LowercaseQueryStrings = false;
+                });
+            };
+
             var linkGenerator = CreateLinkGenerator(
-                new RouteOptions() { LowercaseUrls = false, LowercaseQueryStrings = false },
+                configure,
                 endpoints: new[] { endpoint });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 
@@ -552,8 +621,13 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
+            Action<IServiceCollection> configure = (s) =>
+            {
+                s.Configure<RouteOptions>(o => o.AppendTrailingSlash = false);
+            };
+
             var linkGenerator = CreateLinkGenerator(
-                new RouteOptions() { AppendTrailingSlash = false },
+                configure,
                 endpoints: new[] { endpoint });
             var httpContext = CreateHttpContext(ambientValues: new { controller = "Home" });
 

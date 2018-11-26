@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public DefaultLinkGenerator(
             ParameterPolicyFactory parameterPolicyFactory,
-            CompositeEndpointDataSource dataSource,
+            EndpointDataSource dataSource,
             ObjectPool<UriBuildingContext> uriBuildingContextPool,
             IOptions<RouteOptions> routeOptions,
             ILogger<DefaultLinkGenerator> logger,

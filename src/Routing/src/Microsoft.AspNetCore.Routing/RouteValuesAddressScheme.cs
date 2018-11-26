@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal class RouteValuesAddressScheme : IEndpointAddressScheme<RouteValuesAddress>
     {
-        private readonly CompositeEndpointDataSource _dataSource;
+        private readonly EndpointDataSource _dataSource;
         private LinkGenerationDecisionTree _allMatchesLinkGenerationTree;
         private Dictionary<string, List<OutboundMatchResult>> _namedMatchResults;
 
-        public RouteValuesAddressScheme(CompositeEndpointDataSource dataSource)
+        public RouteValuesAddressScheme(EndpointDataSource dataSource)
         {
             _dataSource = dataSource;
 
@@ -125,12 +125,21 @@ namespace Microsoft.AspNetCore.Routing
                     continue;
                 }
 
+                var metadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+                if (metadata == null && routeEndpoint.RoutePattern.RequiredValues.Count == 0)
+                {
+                    continue;
+                }
+
                 if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
                 {
                     continue;
                 }
 
-                var entry = CreateOutboundRouteEntry(routeEndpoint);
+                var entry = CreateOutboundRouteEntry(
+                    routeEndpoint, 
+                    metadata?.RequiredValues ?? routeEndpoint.RoutePattern.RequiredValues, 
+                    metadata?.RouteName);
 
                 var outboundMatch = new OutboundMatch() { Entry = entry };
                 allOutboundMatches.Add(outboundMatch);
@@ -151,18 +160,20 @@ namespace Microsoft.AspNetCore.Routing
             return (allOutboundMatches, namedOutboundMatchResults);
         }
 
-        private OutboundRouteEntry CreateOutboundRouteEntry(RouteEndpoint endpoint)
+        private OutboundRouteEntry CreateOutboundRouteEntry(
+            RouteEndpoint endpoint, 
+            IReadOnlyDictionary<string, object> requiredValues,
+            string routeName)
         {
-            var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
             var entry = new OutboundRouteEntry()
             {
                 Handler = NullRouter.Instance,
                 Order = endpoint.Order,
                 Precedence = RoutePrecedence.ComputeOutbound(endpoint.RoutePattern),
-                RequiredLinkValues = new RouteValueDictionary(routeValuesAddressMetadata?.RequiredValues),
+                RequiredLinkValues = new RouteValueDictionary(requiredValues),
                 RouteTemplate = new RouteTemplate(endpoint.RoutePattern),
                 Data = endpoint,
-                RouteName = routeValuesAddressMetadata?.RouteName,
+                RouteName = routeName,
             };
             entry.Defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
             return entry;

@@ -2,20 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public class EndpointRoutingBuilderExtensionsTest
+    public class EndpointRoutingApplicationBuilderExtensionsTest
     {
         [Fact]
         public void UseEndpointRouting_ServicesNotRegistered_Throws()
@@ -24,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder
             var app = new ApplicationBuilder(Mock.Of<IServiceProvider>());
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => app.UseEndpointRouting());
+            var ex = Assert.Throws<InvalidOperationException>(() => app.UseEndpointRouting(builder => { }));
 
             // Assert
             Assert.Equal(
@@ -59,7 +62,7 @@ namespace Microsoft.AspNetCore.Builder
 
             var app = new ApplicationBuilder(services);
 
-            app.UseEndpointRouting();
+            app.UseEndpointRouting(builder => { });
 
             var appFunc = app.Build();
             var httpContext = new DefaultHttpContext();
@@ -76,17 +79,20 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Arrange
             var endpoint = new RouteEndpoint(
-                TestConstants.EmptyRequestDelegate,
-                RoutePatternFactory.Parse("{*p}"),
-                0,
-                EndpointMetadataCollection.Empty,
-                "Test");
+               TestConstants.EmptyRequestDelegate,
+               RoutePatternFactory.Parse("{*p}"),
+               0,
+               EndpointMetadataCollection.Empty,
+               "Test");
 
-            var services = CreateServices(endpoint);
+            var services = CreateServices();
 
             var app = new ApplicationBuilder(services);
 
-            app.UseEndpointRouting();
+            app.UseEndpointRouting(builder =>
+            {
+                builder.DataSources.Add(new DefaultEndpointDataSource(endpoint));
+            });
 
             var appFunc = app.Build();
             var httpContext = new DefaultHttpContext();
@@ -127,7 +133,7 @@ namespace Microsoft.AspNetCore.Builder
 
             var app = new ApplicationBuilder(services);
 
-            app.UseEndpointRouting();
+            app.UseEndpointRouting(builder => { });
             app.UseEndpoint();
 
             var appFunc = app.Build();
@@ -140,17 +146,84 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Null(httpContext.Features.Get<IEndpointFeature>());
         }
 
-        private IServiceProvider CreateServices(params Endpoint[] endpoints)
+        [Fact]
+        public void UseEndpointRouting_CallWithBuilder_SetsEndpointDataSource()
+        {
+            // Arrange
+            var matcherEndpointDataSources = new List<EndpointDataSource>();
+            var matcherFactoryMock = new Mock<MatcherFactory>();
+            matcherFactoryMock
+                .Setup(m => m.CreateMatcher(It.IsAny<EndpointDataSource>()))
+                .Callback((EndpointDataSource arg) =>
+                {
+                    matcherEndpointDataSources.Add(arg);
+                })
+                .Returns(new TestMatcher(false));
+
+            var services = CreateServices(matcherFactoryMock.Object);
+
+            var app = new ApplicationBuilder(services);
+
+            // Act
+            app.UseEndpointRouting(builder =>
+            {
+                builder.Map("/1", "Test endpoint 1", d => null);
+                builder.Map("/2", "Test endpoint 2", d => null);
+            });
+
+            app.UseEndpointRouting(builder =>
+            {
+                builder.Map("/3", "Test endpoint 3", d => null);
+                builder.Map("/4", "Test endpoint 4", d => null);
+            });
+
+            // This triggers the middleware to be created and the matcher factory to be called
+            // with the datasource we want to test
+            var requestDelegate = app.Build();
+            requestDelegate(new DefaultHttpContext());
+
+            // Assert
+            Assert.Equal(2, matcherEndpointDataSources.Count);
+
+            // Each middleware has its own endpoints
+            Assert.Collection(matcherEndpointDataSources[0].Endpoints,
+                e => Assert.Equal("Test endpoint 1", e.DisplayName),
+                e => Assert.Equal("Test endpoint 2", e.DisplayName));
+            Assert.Collection(matcherEndpointDataSources[1].Endpoints,
+                e => Assert.Equal("Test endpoint 3", e.DisplayName),
+                e => Assert.Equal("Test endpoint 4", e.DisplayName));
+
+            var compositeEndpointBuilder = services.GetRequiredService<EndpointDataSource>();
+
+            // Global middleware has all endpoints
+            Assert.Collection(compositeEndpointBuilder.Endpoints,
+                e => Assert.Equal("Test endpoint 1", e.DisplayName),
+                e => Assert.Equal("Test endpoint 2", e.DisplayName),
+                e => Assert.Equal("Test endpoint 3", e.DisplayName),
+                e => Assert.Equal("Test endpoint 4", e.DisplayName));
+        }
+
+        private IServiceProvider CreateServices()
+        {
+            return CreateServices(matcherFactory: null);
+        }
+
+        private IServiceProvider CreateServices(MatcherFactory matcherFactory)
         {
             var services = new ServiceCollection();
+
+            if (matcherFactory != null)
+            {
+                services.AddSingleton<MatcherFactory>(matcherFactory);
+            }
 
             services.AddLogging();
             services.AddOptions();
             services.AddRouting();
 
-            services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource(endpoints));
+            var serviceProvder = services.BuildServiceProvider();
 
-            return services.BuildServiceProvider();
+            return serviceProvder;
         }
     }
 }

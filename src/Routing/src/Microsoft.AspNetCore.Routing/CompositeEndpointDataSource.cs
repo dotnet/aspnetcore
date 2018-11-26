@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -18,23 +20,48 @@ namespace Microsoft.AspNetCore.Routing
     [DebuggerDisplay("{DebuggerDisplayString,nq}")]
     public sealed class CompositeEndpointDataSource : EndpointDataSource
     {
-        private readonly EndpointDataSource[] _dataSources;
         private readonly object _lock;
+        private readonly ICollection<EndpointDataSource> _dataSources;
         private IReadOnlyList<Endpoint> _endpoints;
         private IChangeToken _consumerChangeToken;
         private CancellationTokenSource _cts;
 
-        internal CompositeEndpointDataSource(IEnumerable<EndpointDataSource> dataSources)
+        private CompositeEndpointDataSource()
         {
-            if (dataSources == null)
-            {
-                throw new ArgumentNullException(nameof(dataSources));
-            }
-
             CreateChangeToken();
-            _dataSources = dataSources.ToArray();
             _lock = new object();
         }
+
+        internal CompositeEndpointDataSource(ObservableCollection<EndpointDataSource> dataSources) : this()
+        {
+            dataSources.CollectionChanged += OnDataSourcesChanged;
+
+            _dataSources = dataSources;
+        }
+
+        public CompositeEndpointDataSource(IEnumerable<EndpointDataSource> endpointDataSources) : this()
+        {
+            _dataSources = new List<EndpointDataSource>();
+
+            foreach (var dataSource in endpointDataSources)
+            {
+                _dataSources.Add(dataSource);
+            }
+        }
+
+        private void OnDataSourcesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            lock (_lock)
+            {
+                // Only trigger changes if composite data source has already initialized endpoints
+                if (_endpoints != null)
+                {
+                    HandleChange();
+                }
+            }
+        }
+
+        public IEnumerable<EndpointDataSource> DataSources => _dataSources;
 
         /// <summary>
         /// Gets a <see cref="IChangeToken"/> used to signal invalidation of cached <see cref="Endpoint"/>

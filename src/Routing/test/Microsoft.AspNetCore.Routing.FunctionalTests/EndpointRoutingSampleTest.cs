@@ -24,15 +24,47 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             _client.BaseAddress = new Uri("http://localhost");
         }
 
+        [Theory]
+        [InlineData("Branch1")]
+        [InlineData("Branch2")]
+        public async Task Routing_CanRouteRequest_ToBranchRouter(string branch)
+        {
+            // Arrange
+            var message = new HttpRequestMessage(HttpMethod.Get, $"{branch}/api/get/5");
+
+            // Act
+            var response = await _client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal($"{branch} - API Get 5", await response.Content.ReadAsStringAsync());
+        }
+
         [Fact]
         public async Task MatchesRootPath_AndReturnsPlaintext()
         {
             // Arrange
             var expectedContentType = "text/plain";
-            var expectedContent = "Endpoint Routing sample endpoints:" + Environment.NewLine + "/plaintext";
 
             // Act
             var response = await _client.GetAsync("/");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Fact]
+        public async Task MatchesStaticRouteTemplate_AndReturnsPlaintext()
+        {
+            // Arrange
+            var expectedContentType = "text/plain";
+            var expectedContent = "Plain text!";
+
+            // Act
+            var response = await _client.GetAsync("/plaintext");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -44,14 +76,14 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         }
 
         [Fact]
-        public async Task MatchesStaticRouteTemplate_AndReturnsPlaintext()
+        public async Task MatchesHelloMiddleware_AndReturnsPlaintext()
         {
             // Arrange
             var expectedContentType = "text/plain";
-            var expectedContent = "Hello, World!";
+            var expectedContent = "Hello World";
 
             // Act
-            var response = await _client.GetAsync("/plaintext");
+            var response = await _client.GetAsync("/helloworld");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

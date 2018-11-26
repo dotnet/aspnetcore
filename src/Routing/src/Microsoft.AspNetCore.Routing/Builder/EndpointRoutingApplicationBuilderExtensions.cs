@@ -2,25 +2,48 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Internal
+namespace Microsoft.AspNetCore.Builder
 {
     public static class EndpointRoutingApplicationBuilderExtensions
     {
         // Property key is used by MVC package to check that routing is registered
         private const string EndpointRoutingRegisteredKey = "__EndpointRoutingMiddlewareRegistered";
 
-        public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder, Action<IEndpointRouteBuilder> configure)
         {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             VerifyRoutingIsRegistered(builder);
+
+            var routeOptions = builder.ApplicationServices.GetRequiredService<IOptions<RouteOptions>>();
+            EndpointDataSource middlewareEndpointDataSource;
+
+            var endpointRouteBuilder = builder.ApplicationServices.GetRequiredService<IEndpointRouteBuilder>();
+            if (endpointRouteBuilder is DefaultEndpointRouteBuilder defaultEndpointRouteBuilder)
+            {
+                defaultEndpointRouteBuilder.ApplicationBuilder = builder;
+            }
+            configure(endpointRouteBuilder);
+
+            foreach (var dataSource in endpointRouteBuilder.DataSources)
+            {
+                routeOptions.Value.EndpointDataSources.Add(dataSource);
+            }
+
+            // Create endpoint data source for data sources registered in configure
+            middlewareEndpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
 
             builder.Properties[EndpointRoutingRegisteredKey] = true;
 
-            return builder.UseMiddleware<EndpointRoutingMiddleware>();
+            return builder.UseMiddleware<EndpointRoutingMiddleware>(middlewareEndpointDataSource);
         }
 
         public static IApplicationBuilder UseEndpoint(this IApplicationBuilder builder)

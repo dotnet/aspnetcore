@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\benchmarkapps\Benchmarks\Benchmarks.csproj" Condition="'$(TargetFramework)'=='netcoreapp2.2'" />
+    <ProjectReference Include="..\..\benchmarkapps\Benchmarks\Benchmarks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
