@@ -9,19 +9,37 @@ import { IStreamResult } from "./Stream";
 import { Arg, Subject } from "./Utils";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
+const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
+
+/** Describes the current state of the {@link HubConnection} to the server. */
+export enum HubConnectionState {
+    /** The hub connection is disconnected. */
+    Disconnected,
+    /** The hub connection is connected. */
+    Connected,
+}
 
 /** Represents a connection to a SignalR Hub. */
 export class HubConnection {
+    private readonly cachedPingMessage: string | ArrayBuffer;
     private readonly connection: IConnection;
     private readonly logger: ILogger;
     private protocol: IHubProtocol;
     private handshakeProtocol: HandshakeProtocol;
-    private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => void };
+    private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
     private methods: { [name: string]: Array<(...args: any[]) => void> };
     private id: number;
     private closedCallbacks: Array<(error?: Error) => void>;
-    private timeoutHandle?: any;
     private receivedHandshakeResponse: boolean;
+    private handshakeResolver!: (value?: PromiseLike<{}>) => void;
+    private handshakeRejecter!: (reason?: any) => void;
+    private connectionState: HubConnectionState;
+
+    // The type of these a) doesn't matter and b) varies when building in browser and node contexts
+    // Since we're building the WebPack bundle directly from the TypeScript, this matters (previously
+    // we built the bundle from the compiled JavaScript).
+    private timeoutHandle?: any;
+    private pingServerHandle?: any;
 
     /** The server timeout in milliseconds.
      *
@@ -29,6 +47,13 @@ export class HubConnection {
      * The default timeout value is 30,000 milliseconds (30 seconds).
      */
     public serverTimeoutInMilliseconds: number;
+
+    /** Default interval at which to ping the server.
+     *
+     * The default value is 15,000 milliseconds (15 seconds).
+     * Allows the server to detect hard disconnects (like when a client unplugs their computer).
+     */
+    public keepAliveIntervalInMilliseconds: number;
 
     /** @internal */
     // Using a public static factory method means we can have a private constructor and an _internal_
@@ -45,6 +70,7 @@ export class HubConnection {
         Arg.isRequired(protocol, "protocol");
 
         this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
+        this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
 
         this.logger = logger;
         this.protocol = protocol;
@@ -58,6 +84,15 @@ export class HubConnection {
         this.methods = {};
         this.closedCallbacks = [];
         this.id = 0;
+        this.receivedHandshakeResponse = false;
+        this.connectionState = HubConnectionState.Disconnected;
+
+        this.cachedPingMessage = this.protocol.writeMessage({ type: MessageType.Ping });
+    }
+
+    /** Indicates the state of the {@link HubConnection} to the server. */
+    get state(): HubConnectionState {
+        return this.connectionState;
     }
 
     /** Starts the connection.
@@ -73,18 +108,28 @@ export class HubConnection {
         this.logger.log(LogLevel.Debug, "Starting HubConnection.");
 
         this.receivedHandshakeResponse = false;
+        // Set up the promise before any connection is started otherwise it could race with received messages
+        const handshakePromise = new Promise((resolve, reject) => {
+            this.handshakeResolver = resolve;
+            this.handshakeRejecter = reject;
+        });
 
         await this.connection.start(this.protocol.transferFormat);
 
         this.logger.log(LogLevel.Debug, "Sending handshake request.");
 
-        await this.connection.send(this.handshakeProtocol.writeHandshakeRequest(handshakeRequest));
+        await this.sendMessage(this.handshakeProtocol.writeHandshakeRequest(handshakeRequest));
 
         this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
 
         // defensively cleanup timeout in case we receive a message from the server before we finish start
         this.cleanupTimeout();
-        this.configureTimeout();
+        this.resetTimeoutPeriod();
+        this.resetKeepAliveInterval();
+
+        // Wait for the handshake to complete before marking connection as connected
+        await handshakePromise;
+        this.connectionState = HubConnectionState.Connected;
     }
 
     /** Stops the connection.
@@ -95,6 +140,7 @@ export class HubConnection {
         this.logger.log(LogLevel.Debug, "Stopping HubConnection.");
 
         this.cleanupTimeout();
+        this.cleanupPingTimer();
         return this.connection.stop();
     }
 
@@ -114,35 +160,41 @@ export class HubConnection {
 
             delete this.callbacks[invocationDescriptor.invocationId];
 
-            return this.connection.send(cancelMessage);
+            return this.sendMessage(cancelMessage);
         });
 
-        this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage, error?: Error) => {
+        this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage | null, error?: Error) => {
             if (error) {
                 subject.error(error);
                 return;
-            }
-
-            if (invocationEvent.type === MessageType.Completion) {
-                if (invocationEvent.error) {
-                    subject.error(new Error(invocationEvent.error));
+            } else if (invocationEvent) {
+                // invocationEvent will not be null when an error is not passed to the callback
+                if (invocationEvent.type === MessageType.Completion) {
+                    if (invocationEvent.error) {
+                        subject.error(new Error(invocationEvent.error));
+                    } else {
+                        subject.complete();
+                    }
                 } else {
-                    subject.complete();
+                    subject.next((invocationEvent.item) as T);
                 }
-            } else {
-                subject.next((invocationEvent.item) as T);
             }
         };
 
         const message = this.protocol.writeMessage(invocationDescriptor);
 
-        this.connection.send(message)
+        this.sendMessage(message)
             .catch((e) => {
                 subject.error(e);
                 delete this.callbacks[invocationDescriptor.invocationId];
             });
 
         return subject;
+    }
+
+    private sendMessage(message: any) {
+        this.resetKeepAliveInterval();
+        return this.connection.send(message);
     }
 
     /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
@@ -159,7 +211,7 @@ export class HubConnection {
 
         const message = this.protocol.writeMessage(invocationDescriptor);
 
-        return this.connection.send(message);
+        return this.sendMessage(message);
     }
 
     /** Invokes a hub method on the server using the specified name and arguments.
@@ -177,29 +229,32 @@ export class HubConnection {
         const invocationDescriptor = this.createInvocation(methodName, args, false);
 
         const p = new Promise<any>((resolve, reject) => {
-            this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => {
+            // invocationId will always have a value for a non-blocking invocation
+            this.callbacks[invocationDescriptor.invocationId!] = (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => {
                 if (error) {
                     reject(error);
                     return;
-                }
-                if (invocationEvent.type === MessageType.Completion) {
-                    const completionMessage = invocationEvent as CompletionMessage;
-                    if (completionMessage.error) {
-                        reject(new Error(completionMessage.error));
+                } else if (invocationEvent) {
+                    // invocationEvent will not be null when an error is not passed to the callback
+                    if (invocationEvent.type === MessageType.Completion) {
+                        if (invocationEvent.error) {
+                            reject(new Error(invocationEvent.error));
+                        } else {
+                            resolve(invocationEvent.result);
+                        }
                     } else {
-                        resolve(completionMessage.result);
+                        reject(new Error(`Unexpected message type: ${invocationEvent.type}`));
                     }
-                } else {
-                    reject(new Error(`Unexpected message type: ${invocationEvent.type}`));
                 }
             };
 
             const message = this.protocol.writeMessage(invocationDescriptor);
 
-            this.connection.send(message)
+            this.sendMessage(message)
                 .catch((e) => {
                     reject(e);
-                    delete this.callbacks[invocationDescriptor.invocationId];
+                    // invocationId will always have a value for a non-blocking invocation
+                    delete this.callbacks[invocationDescriptor.invocationId!];
                 });
         });
 
@@ -314,16 +369,17 @@ export class HubConnection {
 
                         // We don't want to wait on the stop itself.
                         // tslint:disable-next-line:no-floating-promises
-                        this.connection.stop(message.error ? new Error("Server returned an error on close: " + message.error) : null);
+                        this.connection.stop(message.error ? new Error("Server returned an error on close: " + message.error) : undefined);
+
                         break;
                     default:
-                        this.logger.log(LogLevel.Warning, "Invalid message type: " + message.type);
+                        this.logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
                         break;
                 }
             }
         }
 
-        this.configureTimeout();
+        this.resetTimeoutPeriod();
     }
 
     private processHandshakeResponse(data: any): any {
@@ -341,23 +397,42 @@ export class HubConnection {
             // We don't want to wait on the stop itself.
             // tslint:disable-next-line:no-floating-promises
             this.connection.stop(error);
+            this.handshakeRejecter(error);
             throw error;
         }
         if (responseMessage.error) {
             const message = "Server returned handshake error: " + responseMessage.error;
             this.logger.log(LogLevel.Error, message);
 
+            this.handshakeRejecter(message);
             // We don't want to wait on the stop itself.
             // tslint:disable-next-line:no-floating-promises
             this.connection.stop(new Error(message));
+            throw new Error(message);
         } else {
             this.logger.log(LogLevel.Debug, "Server handshake complete.");
         }
 
+        this.handshakeResolver();
         return remainingData;
     }
 
-    private configureTimeout() {
+    private resetKeepAliveInterval() {
+        this.cleanupPingTimer();
+        this.pingServerHandle = setTimeout(async () => {
+            if (this.connectionState === HubConnectionState.Connected) {
+                try {
+                    await this.sendMessage(this.cachedPingMessage);
+                } catch {
+                    // We don't care about the error. It should be seen elsewhere in the client.
+                    // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
+                    this.cleanupPingTimer();
+                }
+            }
+        }, this.keepAliveIntervalInMilliseconds);
+    }
+
+    private resetTimeoutPeriod() {
         if (!this.connection.features || !this.connection.features.inherentKeepAlive) {
             // Set the timeout timer
             this.timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
@@ -393,15 +468,30 @@ export class HubConnection {
         const callbacks = this.callbacks;
         this.callbacks = {};
 
+        this.connectionState = HubConnectionState.Disconnected;
+
+        // if handshake is in progress start will be waiting for the handshake promise, so we complete it
+        // if it has already completed this should just noop
+        if (this.handshakeRejecter) {
+            this.handshakeRejecter(error);
+        }
+
         Object.keys(callbacks)
             .forEach((key) => {
                 const callback = callbacks[key];
-                callback(undefined, error ? error : new Error("Invocation canceled due to connection being closed."));
+                callback(null, error ? error : new Error("Invocation canceled due to connection being closed."));
             });
 
         this.cleanupTimeout();
+        this.cleanupPingTimer();
 
         this.closedCallbacks.forEach((c) => c.apply(this, [error]));
+    }
+
+    private cleanupPingTimer(): void {
+        if (this.pingServerHandle) {
+            clearTimeout(this.pingServerHandle);
+        }
     }
 
     private cleanupTimeout(): void {

@@ -3,13 +3,16 @@
     "Client": "SignalR",
     "Source": {
       "Repository": "https://github.com/aspnet/SignalR.git",
-      "BranchOrCommit": "dev",
+      "BranchOrCommit": "release/2.2",
       "Project": "benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
     },
     "Connections": 10,
     "Duration": 20,
     "Warmup": 2,
-    "Path": "/echo"
+    "Path": "/echo",
+    "ClientProperties": {
+      "CollectLatency": "true"
+    }
   },
   "SignalRBroadcast": {
     "ClientProperties": { "Scenario": "broadcast" }
@@ -18,6 +21,13 @@
     "ClientProperties": { "Scenario": "echo" }
   },
   "SignalREchoAll": {
-    "ClientProperties": { "Scenario": "echoAll" }
+    "ClientProperties": { "Scenario": "echoAll" },
+    "Warmup": 0
+  },
+  "SignalREchoIdle": {
+    "ClientProperties": {
+      "Scenario": "echoIdle",
+      "CollectLatency": "false"
+    }
   }
 }

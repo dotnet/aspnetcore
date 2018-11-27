@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
@@ -166,6 +166,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 Log.EstablishedConnection(_logger);
 
+                // Allow the reads to be cancelled
+                connection.Cancellation = new CancellationTokenSource();
+
                 var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
 
                 await DoPersistentConnection(connectionDelegate, ws, context, connection);
@@ -296,7 +299,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // If the status code is a 204 it means the connection is done
                         if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                         {
-                            // Cancel current request to release any waiting poll and let dispose aquire the lock
+                            // Cancel current request to release any waiting poll and let dispose acquire the lock
                             currentRequestTcs.TrySetCanceled();
 
                             // We should be able to safely dispose because there's no more data being written
@@ -306,6 +309,16 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                             // Don't poll again if we've removed the connection completely
                             pollAgain = false;
                         }
+                    }
+                    else if (resultTask.IsFaulted)
+                    {
+                        // Cancel current request to release any waiting poll and let dispose acquire the lock
+                        currentRequestTcs.TrySetCanceled();
+
+                        // transport task was faulted, we should remove the connection
+                        await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
+
+                        pollAgain = false;
                     }
                     else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
                     {
@@ -513,6 +526,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         context.Response.ContentType = "text/plain";
                         return;
                     }
+                    catch (IOException ex)
+                    {
+                        // Can occur when the HTTP request is canceled by the client
+                        Log.FailedToReadHttpRequestBody(_logger, connection.ConnectionId, ex);
+
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        context.Response.ContentType = "text/plain";
+                        return;
+                    }
 
                     Log.ReceivedBytes(_logger, connection.ApplicationStream.Length);
                 }
@@ -586,9 +608,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return false;
             }
 
-            // Setup the connection state from the http context
-            connection.User = context.User;
-
             // Configure transport-specific features.
             if (transportType == HttpTransportType.LongPolling)
             {
@@ -608,7 +627,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     // Set the request trace identifier to the current http request handling the poll
                     existing.TraceIdentifier = context.TraceIdentifier;
-                    existing.User = context.User;
+
+                    // Don't copy the identity if it's a windows identity
+                    // We specifically clone the identity on first poll if it's a windows identity
+                    // If we swapped the new User here we'd have to dispose the old identities which could race with the application
+                    // trying to access the identity.
+                    if (context.User.Identity is WindowsIdentity)
+                    {
+                        existing.User = context.User;
+                    }
                 }
             }
             else
@@ -616,11 +643,31 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 connection.HttpContext = context;
             }
 
+            // Setup the connection state from the http context
+            connection.User = connection.HttpContext.User;
+
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
             logScope.ConnectionId = connection.ConnectionId;
 
             return true;
+        }
+
+        private static void CloneUser(HttpContext newContext, HttpContext oldContext)
+        {
+            if (oldContext.User.Identity is WindowsIdentity)
+            {
+                newContext.User = new ClaimsPrincipal();
+
+                foreach (var identity in oldContext.User.Identities)
+                {
+                    newContext.User.AddIdentity(identity.Clone());
+                }
+            }
+            else
+            {
+                newContext.User = oldContext.User;
+            }
         }
 
         private static HttpContext CloneHttpContext(HttpContext context)
@@ -670,7 +717,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             var newHttpContext = new DefaultHttpContext(features);
             newHttpContext.TraceIdentifier = context.TraceIdentifier;
-            newHttpContext.User = context.User;
+
+            CloneUser(newHttpContext, context);
 
             // Making request services function property could be tricky and expensive as it would require
             // DI scope per connection. It would also mean that services resolved in middleware leading up to here

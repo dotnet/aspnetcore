@@ -10,17 +10,9 @@ import { ILogger, LogLevel } from "../src/ILogger";
 import { HttpTransportType, TransferFormat } from "../src/ITransport";
 import { NullLogger } from "../src/Loggers";
 
+import { VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
-import { PromiseSource } from "./Utils";
-
-const allTransportsNegotiateResponse = {
-    availableTransports: [
-        { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
-        { transport: "ServerSentEvents", transferFormats: ["Text"] },
-        { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
-    ],
-    connectionId: "abc123",
-};
+import { PromiseSource, registerUnhandledRejectionHandler } from "./Utils";
 
 const longPollingNegotiateResponse = {
     availableTransports: [
@@ -33,94 +25,105 @@ const commonHttpOptions: IHttpConnectionOptions = {
     logMessageContent: true,
 };
 
+registerUnhandledRejectionHandler();
+
 describe("HubConnectionBuilder", () => {
     eachMissingValue((val, name) => {
         it(`configureLogging throws if logger is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.configureLogging(val)).toThrow("The 'logging' argument is required.");
+            expect(() => builder.configureLogging(val!)).toThrow("The 'logging' argument is required.");
         });
 
         it(`withUrl throws if url is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withUrl(val)).toThrow("The 'url' argument is required.");
+            expect(() => builder.withUrl(val!)).toThrow("The 'url' argument is required.");
         });
 
         it(`withHubProtocol throws if protocol is ${name}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withHubProtocol(val)).toThrow("The 'protocol' argument is required.");
+            expect(() => builder.withHubProtocol(val!)).toThrow("The 'protocol' argument is required.");
         });
     });
 
     it("builds HubConnection with HttpConnection using provided URL", async () => {
-        const pollSent = new PromiseSource<HttpRequest>();
-        const pollCompleted = new PromiseSource<HttpResponse>();
-        const testClient = createTestClient(pollSent, pollCompleted.promise)
-            .on("POST", "http://example.com?id=abc123", (req) => {
-                // Respond from the poll with the handshake response
-                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
-                return new HttpResponse(202);
-            });
-        const connection = createConnectionBuilder()
-            .withUrl("http://example.com", {
-                ...commonHttpOptions,
-                httpClient: testClient,
-            })
-            .build();
+        await VerifyLogger.run(async (logger) => {
+            const pollSent = new PromiseSource<HttpRequest>();
+            const pollCompleted = new PromiseSource<HttpResponse>();
+            const testClient = createTestClient(pollSent, pollCompleted.promise)
+                .on("POST", "http://example.com?id=abc123", (req) => {
+                    // Respond from the poll with the handshake response
+                    pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                    return new HttpResponse(202);
+                });
+            const connection = createConnectionBuilder()
+                .withUrl("http://example.com", {
+                    ...commonHttpOptions,
+                    httpClient: testClient,
+                    logger,
+                })
+                .build();
 
-        // Start the connection
-        const closed = makeClosedPromise(connection);
-        await connection.start();
+            // Start the connection
+            const closed = makeClosedPromise(connection);
 
-        const pollRequest = await pollSent.promise;
-        expect(pollRequest.url).toMatch(/http:\/\/example.com\?id=abc123.*/);
+            const startPromise = connection.start();
 
-        await closed;
+            const pollRequest = await pollSent.promise;
+            expect(pollRequest.url).toMatch(/http:\/\/example.com\?id=abc123.*/);
+
+            await closed;
+            try {
+                await startPromise;
+            } catch { }
+        });
     });
 
     it("can configure transport type", async () => {
         const protocol = new TestProtocol();
 
-        const pollSent = new PromiseSource<HttpRequest>();
-        const pollCompleted = new PromiseSource<HttpResponse>();
-        const negotiateReceived = new PromiseSource<HttpRequest>();
-        const testClient = createTestClient(pollSent, pollCompleted.promise, allTransportsNegotiateResponse);
-
         const builder = createConnectionBuilder()
             .withUrl("http://example.com", HttpTransportType.WebSockets)
             .withHubProtocol(protocol);
-        expect(builder.httpConnectionOptions.transport).toBe(HttpTransportType.WebSockets);
+        expect(builder.httpConnectionOptions!.transport).toBe(HttpTransportType.WebSockets);
     });
 
     it("can configure hub protocol", async () => {
-        const protocol = new TestProtocol();
+        await VerifyLogger.run(async (logger) => {
+            const protocol = new TestProtocol();
 
-        const pollSent = new PromiseSource<HttpRequest>();
-        const pollCompleted = new PromiseSource<HttpResponse>();
-        const negotiateReceived = new PromiseSource<HttpRequest>();
-        const testClient = createTestClient(pollSent, pollCompleted.promise)
-            .on("POST", "http://example.com?id=abc123", (req) => {
-                // Respond from the poll with the handshake response
-                negotiateReceived.resolve(req);
-                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
-                return new HttpResponse(202);
-            });
+            const pollSent = new PromiseSource<HttpRequest>();
+            const pollCompleted = new PromiseSource<HttpResponse>();
+            const negotiateReceived = new PromiseSource<HttpRequest>();
+            const testClient = createTestClient(pollSent, pollCompleted.promise)
+                .on("POST", "http://example.com?id=abc123", (req) => {
+                    // Respond from the poll with the handshake response
+                    negotiateReceived.resolve(req);
+                    pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                    return new HttpResponse(202);
+                });
 
-        const connection = createConnectionBuilder()
-            .withUrl("http://example.com", {
-                ...commonHttpOptions,
-                httpClient: testClient,
-            })
-            .withHubProtocol(protocol)
-            .build();
+            const connection = createConnectionBuilder()
+                .withUrl("http://example.com", {
+                    ...commonHttpOptions,
+                    httpClient: testClient,
+                    logger,
+                })
+                .withHubProtocol(protocol)
+                .build();
 
-        // Start the connection
-        const closed = makeClosedPromise(connection);
-        await connection.start();
+            // Start the connection
+            const closed = makeClosedPromise(connection);
 
-        const negotiateRequest = await negotiateReceived.promise;
-        expect(negotiateRequest.content).toBe(`{"protocol":"${protocol.name}","version":1}\x1E`);
+            const startPromise = connection.start();
 
-        await closed;
+            const negotiateRequest = await negotiateReceived.promise;
+            expect(negotiateRequest.content).toBe(`{"protocol":"${protocol.name}","version":1}\x1E`);
+
+            await closed;
+            try {
+                await startPromise;
+            } catch { }
+        });
     });
 
     it("allows logger to be replaced", async () => {
@@ -130,8 +133,19 @@ describe("HubConnectionBuilder", () => {
                 loggedMessages += 1;
             },
         };
+        const pollSent = new PromiseSource<HttpRequest>();
+        const pollCompleted = new PromiseSource<HttpResponse>();
+        const testClient = createTestClient(pollSent, pollCompleted.promise)
+            .on("POST", "http://example.com?id=abc123", (req) => {
+                // Respond from the poll with the handshake response
+                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                return new HttpResponse(202);
+            });
         const connection = createConnectionBuilder(logger)
-            .withUrl("http://example.com")
+            .withUrl("http://example.com", {
+                ...commonHttpOptions,
+                httpClient: testClient,
+            })
             .build();
 
         try {
@@ -144,9 +158,20 @@ describe("HubConnectionBuilder", () => {
     });
 
     it("uses logger for both HttpConnection and HubConnection", async () => {
+        const pollSent = new PromiseSource<HttpRequest>();
+        const pollCompleted = new PromiseSource<HttpResponse>();
+        const testClient = createTestClient(pollSent, pollCompleted.promise)
+            .on("POST", "http://example.com?id=abc123", (req) => {
+                // Respond from the poll with the handshake response
+                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                return new HttpResponse(202);
+            });
         const logger = new CaptureLogger();
         const connection = createConnectionBuilder(logger)
-            .withUrl("http://example.com")
+            .withUrl("http://example.com", {
+                ...commonHttpOptions,
+                httpClient: testClient,
+            })
             .build();
 
         try {
@@ -163,10 +188,21 @@ describe("HubConnectionBuilder", () => {
     });
 
     it("does not replace HttpConnectionOptions logger if provided", async () => {
+        const pollSent = new PromiseSource<HttpRequest>();
+        const pollCompleted = new PromiseSource<HttpResponse>();
+        const testClient = createTestClient(pollSent, pollCompleted.promise)
+            .on("POST", "http://example.com?id=abc123", (req) => {
+                // Respond from the poll with the handshake response
+                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                return new HttpResponse(202);
+            });
         const hubConnectionLogger = new CaptureLogger();
         const httpConnectionLogger = new CaptureLogger();
         const connection = createConnectionBuilder(hubConnectionLogger)
-            .withUrl("http://example.com", { logger: httpConnectionLogger })
+            .withUrl("http://example.com", {
+                httpClient: testClient,
+                logger: httpConnectionLogger,
+            })
             .build();
 
         try {
@@ -201,7 +237,8 @@ class TestProtocol implements IHubProtocol {
         throw new Error("Method not implemented.");
     }
     public writeMessage(message: HubMessage): string | ArrayBuffer {
-        throw new Error("Method not implemented.");
+        // builds ping message in the `hubConnection` constructor
+        return "";
     }
 }
 

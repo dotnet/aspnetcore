@@ -44,18 +44,8 @@ export class TestLogger implements ILogger {
         TestLogger.consoleLogger.log(logLevel, message);
     }
 
-    public static saveLogsAndReset(testName: string): TestLog {
+    public static saveLogsAndReset(): TestLog {
         const currentLog = TestLogger.instance.currentLog;
-
-        // Stash the messages in a global to help people review them
-        if (window) {
-            const win = window as any;
-            if (!win.TestLogMessages) {
-                win.TestLogMessages = {};
-            }
-            win.TestLogMessages[testName] = currentLog;
-        }
-
         TestLogger.instance.currentLog = new TestLog();
         return currentLog;
     }

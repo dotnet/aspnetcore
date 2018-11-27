@@ -14,13 +14,13 @@ import { Arg, ConsoleLogger } from "./Utils";
 /** A builder for configuring {@link @aspnet/signalr.HubConnection} instances. */
 export class HubConnectionBuilder {
     /** @internal */
-    public protocol: IHubProtocol;
+    public protocol?: IHubProtocol;
     /** @internal */
-    public httpConnectionOptions: IHttpConnectionOptions;
+    public httpConnectionOptions?: IHttpConnectionOptions;
     /** @internal */
-    public url: string;
+    public url?: string;
     /** @internal */
-    public logger: ILogger;
+    public logger?: ILogger;
 
     /** Configures console logging for the {@link @aspnet/signalr.HubConnection}.
      *
@@ -35,6 +35,12 @@ export class HubConnectionBuilder {
      * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public configureLogging(logger: ILogger): HubConnectionBuilder;
+    /** Configures custom logging for the {@link @aspnet/signalr.HubConnection}.
+     *
+     * @param {LogLevel | ILogger} logging An object implementing the {@link @aspnet/signalr.ILogger} interface or {@link @aspnet/signalr.LogLevel}.
+     * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
+     */
+    public configureLogging(logging: LogLevel | ILogger): HubConnectionBuilder;
     public configureLogging(logging: LogLevel | ILogger): HubConnectionBuilder {
         Arg.isRequired(logging, "logging");
 

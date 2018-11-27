@@ -15,6 +15,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Client\Microsoft.AspNetCore.SignalR.Client.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Specification.Tests\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

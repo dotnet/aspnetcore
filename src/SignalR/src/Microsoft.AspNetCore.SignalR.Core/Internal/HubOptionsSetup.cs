@@ -14,26 +14,23 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         internal static TimeSpan DefaultKeepAliveInterval => TimeSpan.FromSeconds(15);
 
-        private readonly List<string> _protocols = new List<string>();
+        internal static TimeSpan DefaultClientTimeoutInterval => TimeSpan.FromSeconds(30);
+
+        private readonly List<string> _defaultProtocols = new List<string>();
 
         public HubOptionsSetup(IEnumerable<IHubProtocol> protocols)
         {
             foreach (var hubProtocol in protocols)
             {
-                _protocols.Add(hubProtocol.Name);
+                _defaultProtocols.Add(hubProtocol.Name);
             }
         }
 
         public void Configure(HubOptions options)
         {
-            if (options.SupportedProtocols == null)
-            {
-                options.SupportedProtocols = new List<string>();
-            }
-
             if (options.KeepAliveInterval == null)
             {
-                // The default keep - alive interval.This is set to exactly half of the default client timeout window,
+                // The default keep - alive interval. This is set to exactly half of the default client timeout window,
                 // to ensure a ping can arrive in time to satisfy the client timeout.
                 options.KeepAliveInterval = DefaultKeepAliveInterval;
             }
@@ -43,7 +40,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 options.HandshakeTimeout = DefaultHandshakeTimeout;
             }
 
-            foreach (var protocol in _protocols)
+            if (options.SupportedProtocols == null)
+            {
+                options.SupportedProtocols = new List<string>();
+            }
+
+            foreach (var protocol in _defaultProtocols)
             {
                 options.SupportedProtocols.Add(protocol);
             }

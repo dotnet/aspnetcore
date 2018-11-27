@@ -19,7 +19,7 @@
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PlatformToolset>v141</PlatformToolset>
@@ -30,7 +30,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\gtest-1.8.0\include;..\..\..\..\include\signalrclient;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\gtest\googletest\googletest\include;..\..\..\..\include\signalrclient;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
@@ -57,8 +57,8 @@
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\gtest-1.8.0\msvc\gtest.vcxproj">
-      <Project>{2af210a9-5bdc-45e8-95dd-07b5a2616493}</Project>
+    <ProjectReference Include="..\..\..\gtest\gtest.vcxproj">
+      <Project>{cac1267b-8778-4257-aac6-caf481723b01}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

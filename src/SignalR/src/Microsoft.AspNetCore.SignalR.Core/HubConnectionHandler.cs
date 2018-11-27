@@ -46,7 +46,10 @@ namespace Microsoft.AspNetCore.SignalR
                                     IOptions<HubOptions<THub>> hubOptions,
                                     ILoggerFactory loggerFactory,
                                     IUserIdProvider userIdProvider,
-                                    HubDispatcher<THub> dispatcher)
+#pragma warning disable PUB0001 // Pubternal type in public API
+                                    HubDispatcher<THub> dispatcher
+#pragma warning restore PUB0001
+                                    )
         {
             _protocolResolver = protocolResolver;
             _lifetimeManager = lifetimeManager;
@@ -66,6 +69,7 @@ namespace Microsoft.AspNetCore.SignalR
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
             // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.
             var keepAlive = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval;
+            var clientTimeout = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval; 
             var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
             var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
 
@@ -76,13 +80,15 @@ namespace Microsoft.AspNetCore.SignalR
 
             Log.ConnectedStarting(_logger);
 
-            var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory);
+            var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory, clientTimeout);
 
             var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
             if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))
             {
                 return;
             }
+
+            // -- the connectionContext has been set up --
 
             try
             {
@@ -116,6 +122,11 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 await DispatchMessagesAsync(connection);
             }
+            catch (OperationCanceledException)
+            {
+                // Don't treat OperationCanceledException as an error, it's basically a "control flow"
+                // exception to stop things from running
+            }
             catch (Exception ex)
             {
                 Log.ErrorProcessingRequest(_logger, ex);
@@ -137,15 +148,8 @@ namespace Microsoft.AspNetCore.SignalR
             // We wait on abort to complete, this is so that we can guarantee that all callbacks have fired
             // before OnDisconnectedAsync
 
-            try
-            {
-                // Ensure the connection is aborted before firing disconnect
-                await connection.AbortAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.AbortFailed(_logger, ex);
-            }
+            // Ensure the connection is aborted before firing disconnect
+            await connection.AbortAsync();
 
             try
             {
@@ -180,49 +184,46 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task DispatchMessagesAsync(HubConnectionContext connection)
         {
-            try
+            var input = connection.Input;
+            var protocol = connection.Protocol;
+            while (true)
             {
-                var input = connection.Input;
-                var protocol = connection.Protocol;
-                while (true)
-                {
-                    var result = await input.ReadAsync(connection.ConnectionAborted);
-                    var buffer = result.Buffer;
+                var result = await input.ReadAsync();
+                var buffer = result.Buffer;
 
-                    try
+                try
+                {
+                    if (result.IsCanceled)
+                    {
+                        break;
+                    }
+
+                    if (!buffer.IsEmpty)
+                    {
+                        connection.ResetClientTimeout();
+
+                        while (protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
+                        {
+                            await _dispatcher.DispatchMessageAsync(connection, message);
+                        }
+                    }
+
+                    if (result.IsCompleted)
                     {
                         if (!buffer.IsEmpty)
                         {
-                            while (protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
-                            {
-                                // Messages are dispatched sequentially and will block other messages from being processed until they complete.
-                                // Streaming methods will run sequentially until they start streaming, then they will fire-and-forget allowing other messages to run.
-                                await _dispatcher.DispatchMessageAsync(connection, message);
-                            }
+                            throw new InvalidDataException("Connection terminated while reading a message.");
                         }
-
-                        if (result.IsCompleted)
-                        {
-                            if (!buffer.IsEmpty)
-                            {
-                                throw new InvalidDataException("Connection terminated while reading a message.");
-                            }
-                            break;
-                        }
-                    }
-                    finally
-                    {
-                        // The buffer was sliced up to where it was consumed, so we can just advance to the start.
-                        // We mark examined as buffer.End so that if we didn't receive a full frame, we'll wait for more data
-                        // before yielding the read again.
-                        input.AdvanceTo(buffer.Start, buffer.End);
+                        break;
                     }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                // If there's an exception, bubble it to the caller
-                connection.AbortException?.Throw();
+                finally
+                {
+                    // The buffer was sliced up to where it was consumed, so we can just advance to the start.
+                    // We mark examined as buffer.End so that if we didn't receive a full frame, we'll wait for more data
+                    // before yielding the read again.
+                    input.AdvanceTo(buffer.Start, buffer.End);
+                }
             }
         }
 

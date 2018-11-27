@@ -7,7 +7,12 @@ using System.Runtime.CompilerServices;
 
 namespace System.Threading.Tasks
 {
-    public static class TaskExtensions
+#if TESTUTILS
+    public
+#else
+    internal
+#endif
+    static class TaskExtensions
     {
         private const int DefaultTimeout = 5000;
 

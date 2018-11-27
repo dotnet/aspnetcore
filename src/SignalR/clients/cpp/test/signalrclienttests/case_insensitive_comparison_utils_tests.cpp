@@ -22,7 +22,7 @@ TEST(case_insensitive_hash_functor, basic_hash_tests)
 {
     case_insensitive_hash case_insensitive_hasher;
 
-    ASSERT_EQ(0, case_insensitive_hasher(_XPLATSTR("")));
+    ASSERT_EQ(0U, case_insensitive_hasher(_XPLATSTR("")));
 
     ASSERT_EQ(case_insensitive_hasher(_XPLATSTR("abc")), case_insensitive_hasher(_XPLATSTR("ABC")));
     ASSERT_EQ(case_insensitive_hasher(_XPLATSTR("abc123!@")), case_insensitive_hasher(_XPLATSTR("ABC123!@")));

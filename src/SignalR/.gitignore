@@ -55,3 +55,4 @@ ipch/
 *.aps
 *.opendb
 *.db
+coverage/

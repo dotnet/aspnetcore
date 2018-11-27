@@ -1,2 +1,0 @@
-@Library('dotnet-ci') _
-

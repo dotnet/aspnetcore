@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -23,10 +22,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         public class Transport : VerifiableLoggedTest
         {
-            public Transport(ITestOutputHelper output) : base(output)
-            {
-            }
-
             [Theory]
             [InlineData(HttpTransportType.LongPolling)]
             [InlineData(HttpTransportType.ServerSentEvents)]
@@ -81,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [InlineData(HttpTransportType.ServerSentEvents, false)]
             public async Task HttpConnectionSetsInherentKeepAliveFeature(HttpTransportType transportType, bool expectedValue)
             {
-                using (StartVerifiableLog(out var loggerFactory, testName: $"HttpConnectionSetsInherentKeepAliveFeature_{transportType}_{expectedValue}"))
+                using (StartVerifiableLog())
                 {
                     var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
 
@@ -90,7 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     testHttpHandler.OnRequest((request, next, token) => Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent)));
 
                     await WithConnectionAsync(
-                        CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: loggerFactory),
+                        CreateConnection(testHttpHandler, transportType: transportType, loggerFactory: LoggerFactory),
                         async (connection) =>
                         {
                             await connection.StartAsync(TransferFormat.Text).OrTimeout();

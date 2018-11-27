@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.2</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\Common\AwaitableThreadPool.cs" Link="AwaitableThreadPool.cs" />
     <Compile Include="..\Common\MemoryBufferWriter.cs" Link="MemoryBufferWriter.cs" />
     <Compile Include="..\Common\PipeWriterStream.cs" Link="PipeWriterStream.cs" />
+    <Compile Include="..\Common\TimerAwaitable.cs" Link="Internal\TimerAwaitable.cs" />
     <Compile Include="..\Common\WebSocketExtensions.cs" Link="WebSocketExtensions.cs" />
     <Compile Include="..\Common\StreamExtensions.cs" Link="StreamExtensions.cs" />
     <Compile Include="..\Common\DuplexPipe.cs" Link="DuplexPipe.cs" />
@@ -28,6 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.WebEncoders.Sources" Version="$(MicrosoftExtensionsWebEncodersSourcesPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
   </ItemGroup>
 
 </Project>

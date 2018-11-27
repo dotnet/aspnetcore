@@ -4,14 +4,16 @@
 // This code uses a lot of `.then` instead of `await` and TSLint doesn't like it.
 // tslint:disable:no-floating-promises
 
-import { DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol } from "@aspnet/signalr";
+import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, HttpTransportType, HubConnectionBuilder, IHttpConnectionOptions, JsonHubProtocol, NullLogger } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
-import { eachTransport, eachTransportAndProtocol } from "./Common";
+import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_HTTPS_URL, ENDPOINT_BASE_URL } from "./Common";
+import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
 
-const TESTHUBENDPOINT_URL = "/testhub";
-const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = "/testhub-nowebsockets";
+const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
+const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL + "/testhub";
+const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub-nowebsockets";
 
 // On slower CI machines, these tests sometimes take longer than 5s
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
@@ -60,6 +62,35 @@ describe("hubConnection", () => {
                     done();
                 });
             });
+
+            // Run test in Node or Chrome, but not on macOS
+            if ((process && process.platform !== "darwin") && (typeof navigator === "undefined" || navigator.userAgent.search("Chrome") !== -1)) {
+                it("using https, can invoke server method and receive result", (done) => {
+                    const message = "你好，世界！";
+
+                    const hubConnection = getConnectionBuilder(transportType, TESTHUBENDPOINT_HTTPS_URL)
+                        .withHubProtocol(protocol)
+                        .build();
+
+                    hubConnection.onclose((error) => {
+                        expect(error).toBeUndefined();
+                        done();
+                    });
+
+                    hubConnection.start().then(() => {
+                        hubConnection.invoke("Echo", message).then((result) => {
+                            expect(result).toBe(message);
+                        }).catch((e) => {
+                            fail(e);
+                        }).then(() => {
+                            hubConnection.stop();
+                        });
+                    }).catch((e) => {
+                        fail(e);
+                        done();
+                    });
+                });
+            }
 
             it("can invoke server method non-blocking and not receive result", (done) => {
                 const message = "你好，世界！";
@@ -348,12 +379,12 @@ describe("hubConnection", () => {
             });
 
             it("closed with error if hub cannot be created", (done) => {
-                const hubConnection = getConnectionBuilder(transportType, "http://" + document.location.host + "/uncreatable")
+                const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/uncreatable")
                     .withHubProtocol(protocol)
                     .build();
 
                 hubConnection.onclose((error) => {
-                    expect(error.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
+                    expect(error!.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
                     done();
                 });
                 hubConnection.start();
@@ -499,9 +530,9 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 try {
-                    const jwtToken = await getJwtToken("http://" + document.location.host + "/generateJwtToken");
+                    const jwtToken = await getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken");
 
-                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub", {
                         accessTokenFactory: () => jwtToken,
                     }).build();
 
@@ -527,34 +558,8 @@ describe("hubConnection", () => {
                 const message = "你好，世界！";
 
                 try {
-                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
-                        accessTokenFactory: () => getJwtToken("http://" + document.location.host + "/generateJwtToken"),
-                    }).build();
-
-                    hubConnection.onclose((error) => {
-                        expect(error).toBe(undefined);
-                        done();
-                    });
-                    await hubConnection.start();
-                    const response = await hubConnection.invoke("Echo", message);
-
-                    expect(response).toEqual(message);
-
-                    await hubConnection.stop();
-
-                    done();
-                } catch (err) {
-                    fail(err);
-                    done();
-                }
-            });
-
-            it("can connect to hub with authorization using async token factory", async (done) => {
-                const message = "你好，世界！";
-
-                try {
-                    const hubConnection = getConnectionBuilder(transportType, "/authorizedhub", {
-                        accessTokenFactory: () => getJwtToken("http://" + document.location.host + "/generateJwtToken"),
+                    const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/authorizedhub", {
+                        accessTokenFactory: () => getJwtToken(ENDPOINT_BASE_URL + "/generateJwtToken"),
                     }).build();
 
                     hubConnection.onclose((error) => {
@@ -588,6 +593,26 @@ describe("hubConnection", () => {
                     });
                 });
             }
+
+            it("preserves cookies between requests", async (done) => {
+                const hubConnection = getConnectionBuilder(transportType).build();
+                await hubConnection.start();
+                const cookieValue = await hubConnection.invoke<string>("GetCookie", "testCookie");
+                const cookieValue2 = await hubConnection.invoke<string>("GetCookie", "testCookie2");
+                expect(cookieValue).toEqual("testValue");
+                expect(cookieValue2).toEqual("testValue2");
+                await hubConnection.stop();
+                done();
+            });
+
+            it("expired cookies are not preserved", async (done) => {
+                const hubConnection = getConnectionBuilder(transportType).build();
+                await hubConnection.start();
+                const cookieValue = await hubConnection.invoke<string>("GetCookie", "expiredCookie");
+                expect(cookieValue).toBeNull();
+                await hubConnection.stop();
+                done();
+            });
         });
     });
 
@@ -602,6 +627,8 @@ describe("hubConnection", () => {
 
                 // Check what transport was used by asking the server to tell us.
                 expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("ServerSentEvents");
+
+                await hubConnection.stop();
                 done();
             } catch (e) {
                 fail(e);
@@ -619,6 +646,8 @@ describe("hubConnection", () => {
 
             // Check what transport was used by asking the server to tell us.
             expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
+
+            await hubConnection.stop();
             done();
         } catch (e) {
             fail(e);
@@ -626,6 +655,12 @@ describe("hubConnection", () => {
     });
 
     it("transport falls back from WebSockets to SSE or LongPolling", async (done) => {
+        // Skip test on Node as there will always be a WebSockets implementation on Node
+        if (typeof window === "undefined") {
+            done();
+            return;
+        }
+
         // Replace Websockets with a function that just
         // throws to force fallback.
         const oldWebSocket = (window as any).WebSocket;
@@ -643,6 +678,7 @@ describe("hubConnection", () => {
             // Make sure that we connect with SSE or LongPolling after Websockets fail
             const transportName = await hubConnection.invoke("GetActiveTransportName");
             expect(transportName === "ServerSentEvents" || transportName === "LongPolling").toBe(true);
+            await hubConnection.stop();
         } catch (e) {
             fail(e);
         } finally {
@@ -656,7 +692,12 @@ describe("hubConnection", () => {
         const defaultClient = new DefaultHttpClient(TestLogger.instance);
 
         class TestClient extends HttpClient {
-            public pollPromise: Promise<HttpResponse>;
+            public pollPromise: Promise<HttpResponse> | null;
+
+            constructor() {
+                super();
+                this.pollPromise = null;
+            }
 
             public send(request: HttpRequest): Promise<HttpResponse> {
                 if (request.method === "GET") {
@@ -680,7 +721,16 @@ describe("hubConnection", () => {
             // Stop the connection and await the poll terminating
             const stopPromise = hubConnection.stop();
 
-            await testClient.pollPromise;
+            try {
+                await testClient.pollPromise;
+            } catch (e) {
+                if (e instanceof AbortError) {
+                    // Poll request may have been aborted
+                } else {
+                    throw e;
+                }
+            }
+
             await stopPromise;
         } catch (e) {
             fail(e);
@@ -690,6 +740,11 @@ describe("hubConnection", () => {
     });
 
     it("populates the Content-Type header when sending XMLHttpRequest", async (done) => {
+        // Skip test on Node as this header isn't set (it was added for React-Native)
+        if (typeof window === "undefined") {
+            done();
+            return;
+        }
         const hubConnection = getConnectionBuilder(HttpTransportType.LongPolling, TESTHUB_NOWEBSOCKETS_ENDPOINT_URL)
             .withHubProtocol(new JsonHubProtocol())
             .build();
@@ -701,6 +756,8 @@ describe("hubConnection", () => {
             expect(await hubConnection.invoke("GetActiveTransportName")).toEqual("LongPolling");
             // Check to see that the Content-Type header is set the expected value
             expect(await hubConnection.invoke("GetContentTypeHeader")).toEqual("text/plain;charset=UTF-8");
+
+            await hubConnection.stop();
             done();
         } catch (e) {
             fail(e);
@@ -709,22 +766,14 @@ describe("hubConnection", () => {
 
     function getJwtToken(url: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-
-            xhr.open("GET", url, true);
-            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-            xhr.send();
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(xhr.response || xhr.responseText);
+            const httpClient = new DefaultHttpClient(NullLogger.instance);
+            httpClient.get(url).then((response) => {
+                if (response.statusCode >= 200 && response.statusCode < 300) {
+                    resolve(response.content as string);
                 } else {
-                    reject(new Error(xhr.statusText));
+                    reject(new Error(response.statusText));
                 }
-            };
-
-            xhr.onerror = () => {
-                reject(new Error(xhr.statusText));
-            };
+            });
         });
     }
 });

@@ -31,13 +31,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(6, "Unsubscribe"), "Unsubscribing from channel: {Channel}.");
 
         private static readonly Action<ILogger, Exception> _notConnected =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(7, "Connected"), "Not connected to Redis.");
+            LoggerMessage.Define(LogLevel.Error, new EventId(7, "Connected"), "Not connected to Redis.");
 
         private static readonly Action<ILogger, Exception> _connectionRestored =
             LoggerMessage.Define(LogLevel.Information, new EventId(8, "ConnectionRestored"), "Connection to Redis restored.");
 
         private static readonly Action<ILogger, Exception> _connectionFailed =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(9, "ConnectionFailed"), "Connection to Redis failed.");
+            LoggerMessage.Define(LogLevel.Error, new EventId(9, "ConnectionFailed"), "Connection to Redis failed.");
 
         private static readonly Action<ILogger, Exception> _failedWritingMessage =
             LoggerMessage.Define(LogLevel.Warning, new EventId(10, "FailedWritingMessage"), "Failed writing message.");

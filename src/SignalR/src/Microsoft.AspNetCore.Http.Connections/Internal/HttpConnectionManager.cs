@@ -10,9 +10,9 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -35,9 +35,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
+            _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
+
+            // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
-            _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
         }
 
         public void Start()
@@ -130,11 +132,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public async Task ScanAsync()
         {
-            // Time the scan so we know if it gets slower than 1sec
-            var timer = ValueStopwatch.StartNew();
-            HttpConnectionsEventSource.Log.ScanningConnections();
-            Log.ScanningConnections(_logger);
-
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
@@ -174,10 +171,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     connection.TickHeartbeat();
                 }
             }
-
-            var elapsed = timer.GetElapsedTime();
-            HttpConnectionsEventSource.Log.ScannedConnections(elapsed);
-            Log.ScannedConnections(_logger, elapsed);
         }
 
         public void CloseConnections()
