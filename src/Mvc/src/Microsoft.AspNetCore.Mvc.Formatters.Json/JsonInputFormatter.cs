@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -262,31 +261,47 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     {
                         successful = false;
 
-                        // Handle path combinations such as "" + "Property", "Parent" + "Property", or "Parent" + "[12]".
-                        var key = eventArgs.ErrorContext.Path;
-                        if (!string.IsNullOrEmpty(context.ModelName))
+                        // When ErrorContext.Path does not include ErrorContext.Member, add Member to form full path.
+                        var path = eventArgs.ErrorContext.Path;
+                        var member = eventArgs.ErrorContext.Member?.ToString();
+                        var addMember = !string.IsNullOrEmpty(member);
+                        if (addMember)
                         {
-                            if (string.IsNullOrEmpty(eventArgs.ErrorContext.Path))
+                            // Path.Member case (path.Length < member.Length) needs no further checks.
+                            if (path.Length == member.Length)
                             {
-                                key = context.ModelName;
+                                // Add Member in Path.Memb case but not for Path.Path.
+                                addMember = !string.Equals(path, member, StringComparison.Ordinal);
                             }
-                            else if (eventArgs.ErrorContext.Path[0] == '[')
+                            else if (path.Length > member.Length)
                             {
-                                key = context.ModelName + eventArgs.ErrorContext.Path;
-                            }
-                            else
-                            {
-                                key = context.ModelName + "." + eventArgs.ErrorContext.Path;
+                                // Finally, check whether Path already ends with Member.
+                                if (member[0] == '[')
+                                {
+                                    addMember = !path.EndsWith(member, StringComparison.Ordinal);
+                                }
+                                else
+                                {
+                                    addMember = !path.EndsWith("." + member, StringComparison.Ordinal);
+                                }
                             }
                         }
 
-                        var metadata = GetPathMetadata(context.Metadata, eventArgs.ErrorContext.Path);
-                        var modelStateException = WrapExceptionForModelState(eventArgs.ErrorContext.Error);
-                        context.ModelState.TryAddModelError(key, modelStateException, metadata);
+                        if (addMember)
+                        {
+                            path = ModelNames.CreatePropertyModelName(path, member);
+                        }
 
-                        _logger.JsonInputException(eventArgs.ErrorContext.Error);
+                        // Handle path combinations such as ""+"Property", "Parent"+"Property", or "Parent"+"[12]".
+                        var key = ModelNames.CreatePropertyModelName(context.ModelName, path);
 
                         exception = eventArgs.ErrorContext.Error;
+
+                        var metadata = GetPathMetadata(context.Metadata, path);
+                        var modelStateException = WrapExceptionForModelState(exception);
+                        context.ModelState.TryAddModelError(key, modelStateException, metadata);
+
+                        _logger.JsonInputException(exception);
 
                         // Error must always be marked as handled
                         // Failure to do so can cause the exception to be rethrown at every recursive level and

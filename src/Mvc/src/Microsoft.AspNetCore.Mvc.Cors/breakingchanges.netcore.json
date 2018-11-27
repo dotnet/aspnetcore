@@ -1,0 +1,6 @@
+﻿[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter : Microsoft.AspNetCore.Mvc.Cors.Internal.ICorsAuthorizationFilter",
+    "Kind": "Removal"
+  }
+]

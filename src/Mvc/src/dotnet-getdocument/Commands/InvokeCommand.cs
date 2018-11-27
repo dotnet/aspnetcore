@@ -186,8 +186,22 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             {
                 if (cleanupExecutable && !string.IsNullOrEmpty(executable))
                 {
-                    File.Delete(executable);
-                    File.Delete(executable + ".config");
+                    // Ignore errors about in-use files. Should still be marked for delete after process cleanup.
+                    try
+                    {
+                        File.Delete(executable);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                    }
+
+                    try
+                    {
+                        File.Delete(executable + ".config");
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                    }
                 }
             }
         }

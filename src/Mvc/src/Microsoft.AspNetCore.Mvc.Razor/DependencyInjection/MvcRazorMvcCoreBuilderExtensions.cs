@@ -2,27 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using CompilationTagHelperFeature = Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature;
-using DefaultTagHelperDescriptorProvider = Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -67,13 +59,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void AddRazorViewEngineFeatureProviders(IMvcCoreBuilder builder)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (!builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>().Any())
-            {
-                builder.PartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-
             if (!builder.PartManager.FeatureProviders.OfType<TagHelperFeatureProvider>().Any())
             {
                 builder.PartManager.FeatureProviders.Add(new TagHelperFeatureProvider());
@@ -149,73 +134,18 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for testing.
         internal static void AddRazorViewEngineServices(IServiceCollection services)
         {
-            services.TryAddSingleton<CSharpCompiler>();
-#pragma warning disable CS0618 // Type or member is obsolete
-            services.TryAddSingleton<RazorReferenceManager, DefaultRazorReferenceManager>();
-#pragma warning restore CS0618 // Type or member is obsolete
-
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcRazorMvcViewOptionsSetup>());
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IPostConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
-
-            services.TryAddSingleton<
-                IRazorViewEngineFileProviderAccessor,
-                DefaultRazorViewEngineFileProviderAccessor>();
-
-            services.TryAddSingleton<IRazorViewEngine>(s =>
-            {
-                var pageFactory = s.GetRequiredService<IRazorPageFactoryProvider>();
-                var pageActivator = s.GetRequiredService<IRazorPageActivator>();
-                var htmlEncoder = s.GetRequiredService<HtmlEncoder>();
-                var optionsAccessor = s.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-                var razorFileSystem = s.GetRequiredService<RazorProjectFileSystem>();
-                var loggerFactory = s.GetRequiredService<ILoggerFactory>();
-                var diagnosticSource = s.GetRequiredService<DiagnosticSource>();
-
-                var viewEngine = new RazorViewEngine(pageFactory, pageActivator, htmlEncoder, optionsAccessor, razorFileSystem, loggerFactory, diagnosticSource);
-                return viewEngine;
-            });
+            services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
             services.TryAddSingleton<IViewCompilerProvider, RazorViewCompilerProvider>();
-            services.TryAddSingleton<IViewCompilationMemoryCacheProvider, RazorViewCompilationMemoryCacheProvider>();
 
             // In the default scenario the following services are singleton by virtue of being initialized as part of
             // creating the singleton RazorViewEngine instance.
             services.TryAddTransient<IRazorPageFactoryProvider, DefaultRazorPageFactoryProvider>();
-
-            //
-            // Razor compilation infrastructure
-            //
-            services.TryAddSingleton<LazyMetadataReferenceFeature>();
-            services.TryAddSingleton<RazorProjectFileSystem, FileProviderRazorProjectFileSystem>();
-            services.TryAddSingleton(s =>
-            {
-                var fileSystem = s.GetRequiredService<RazorProjectFileSystem>();
-                var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
-                {
-                    RazorExtensions.Register(builder);
-
-                    // Roslyn + TagHelpers infrastructure
-                    var metadataReferenceFeature = s.GetRequiredService<LazyMetadataReferenceFeature>();
-                    builder.Features.Add(metadataReferenceFeature);
-                    builder.Features.Add(new CompilationTagHelperFeature());
-
-                    // TagHelperDescriptorProviders (actually do tag helper discovery)
-                    builder.Features.Add(new DefaultTagHelperDescriptorProvider());
-                    builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
-                });
-
-                return projectEngine;
-            });
-
-            // Legacy Razor compilation services
-            services.TryAddSingleton<RazorProject>(s => s.GetRequiredService<RazorProjectEngine>().FileSystem);
-            services.TryAddSingleton<RazorTemplateEngine, MvcRazorTemplateEngine>();
-            services.TryAddSingleton(s => s.GetRequiredService<RazorProjectEngine>().Engine);
 
             // This caches Razor page activation details that are valid for the lifetime of the application.
             services.TryAddSingleton<IRazorPageActivator, RazorPageActivator>();

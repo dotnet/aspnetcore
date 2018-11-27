@@ -7,9 +7,10 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore"));
+            services.AddSingleton<DiagnosticListener>(new DiagnosticListener("Microsoft.AspNetCore"));
             services.AddLogging();
             services.AddMvcCore(o => o.EnableEndpointRouting = false);
             var serviceProvider = services.BuildServiceProvider();
@@ -56,12 +57,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            var mvcEndpointDataSource = appBuilder.ApplicationServices
-                .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                .OfType<MvcEndpointDataSource>()
-                .First();
+            var routeOptions = appBuilder.ApplicationServices
+                .GetRequiredService<IOptions<RouteOptions>>();
 
-            Assert.Empty(mvcEndpointDataSource.ConventionalEndpointInfos);
+            Assert.Empty(routeOptions.Value.EndpointDataSources);
         }
 
         [Fact]
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore"));
+            services.AddSingleton<DiagnosticListener>(new DiagnosticListener("Microsoft.AspNetCore"));
             services.AddLogging();
             services.AddMvcCore(o => o.EnableEndpointRouting = true);
             var serviceProvider = services.BuildServiceProvider();
@@ -83,10 +82,10 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            var mvcEndpointDataSource = appBuilder.ApplicationServices
-                .GetRequiredService<IEnumerable<EndpointDataSource>>()
-                .OfType<MvcEndpointDataSource>()
-                .First();
+            var routeOptions = appBuilder.ApplicationServices
+                .GetRequiredService<IOptions<RouteOptions>>();
+
+            var mvcEndpointDataSource = (MvcEndpointDataSource)Assert.Single(routeOptions.Value.EndpointDataSources, ds => ds is MvcEndpointDataSource);
 
             var endpointInfo = Assert.Single(mvcEndpointDataSource.ConventionalEndpointInfos);
             Assert.Equal("default", endpointInfo.Name);

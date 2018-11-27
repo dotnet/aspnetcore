@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Template;
 using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
@@ -99,14 +98,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private bool ParameterExistsInAnyRoute(ActionModel action, string parameterName)
         {
-            foreach (var (route, _, _) in ActionAttributeRouteModel.GetAttributeRoutes(action))
+            foreach (var selector in ActionAttributeRouteModel.FlattenSelectors(action))
             {
-                if (route == null)
+                if (selector.AttributeRouteModel == null)
                 {
                     continue;
                 }
 
-                var parsedTemplate = TemplateParser.Parse(route.Template);
+                var parsedTemplate = TemplateParser.Parse(selector.AttributeRouteModel.Template);
                 if (parsedTemplate.GetParameter(parameterName) != null)
                 {
                     return true;

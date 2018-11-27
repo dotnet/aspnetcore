@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Filters
 {
     public class MiddlewareFilterAttributeTest
     {

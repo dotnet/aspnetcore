@@ -236,6 +236,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        public virtual void GetValue_EmptyKey()
+        {
+            // Arrange
+            var store = new Dictionary<string, StringValues>(BackingStore)
+            {
+                { string.Empty, "some-value" },
+            };
+            var valueProvider = GetEnumerableValueProvider(BindingSource.Query, store, culture: null);
+
+            // Act
+            var result = valueProvider.GetValue(string.Empty);
+
+            // Assert
+            Assert.Equal(ValueProviderResult.None, result);
+        }
+
+        [Fact]
         public virtual void FilterInclude()
         {
             // Arrange

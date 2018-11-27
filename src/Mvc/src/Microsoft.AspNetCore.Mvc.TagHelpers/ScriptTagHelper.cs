@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -209,9 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         protected JavaScriptEncoder JavaScriptEncoder { get; }
 
         // Internal for ease of use when testing.
-#pragma warning disable PUB0001 // Pubternal type in public API
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
-#pragma warning restore PUB0001
 
         // Shared writer for determining the string content of a TagHelperAttribute's Value.
         private StringWriter StringWriter

@@ -142,12 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string template)
         {
             var endpoints = GetDefaultEndpoints();
-            endpoints.Add(new RouteEndpoint(
-                httpContext => Task.CompletedTask,
-                RoutePatternFactory.Parse(template),
-                0,
-                EndpointMetadataCollection.Empty,
-                null));
+            endpoints.Add(CreateEndpoint(template, routeName: routeName));
             return CreateUrlHelper(endpoints, appRoot, host, protocol);
         }
 
@@ -181,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string template,
             object defaults)
         {
-            var endpoint = GetEndpoint(routeName, template, new RouteValueDictionary(defaults));
+            var endpoint = CreateEndpoint(template, new RouteValueDictionary(defaults), routeName: routeName);
             var services = CreateServices(new[] { endpoint });
             var httpContext = CreateHttpContext(services, appRoot: "", host: null, protocol: null);
             var actionContext = CreateActionContext(httpContext);
@@ -264,13 +259,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     routeName: "namedroute"));
             endpoints.Add(
                 CreateEndpoint(
-                    "any/url",
-                    defaults: new { },
-                    requiredValues: new { },
-                    order: 9,
-                    routeName: "MyRouteName"));
-            endpoints.Add(
-                CreateEndpoint(
                     "api/orders/{id}",
                     defaults: new { controller = "Orders", action = "GetById" },
                     requiredValues: new { controller = "Orders", action = "GetById" },
@@ -314,16 +302,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 ServiceDescriptor.Singleton<EndpointDataSource>(new DefaultEndpointDataSource(endpoints)));
             services.TryAddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             return services.BuildServiceProvider();
-        }
-
-        private RouteEndpoint GetEndpoint(string name, string template, RouteValueDictionary defaults)
-        {
-            return new RouteEndpoint(
-                c => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
-                0,
-                EndpointMetadataCollection.Empty,
-                null);
         }
     }
 }

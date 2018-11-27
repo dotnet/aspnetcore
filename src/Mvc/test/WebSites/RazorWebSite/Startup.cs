@@ -27,10 +27,6 @@ namespace RazorWebSite
                 .AddMvc()
                 .AddRazorOptions(options =>
                 {
-                    options.FileProviders.Add(new EmbeddedFileProvider(
-                        typeof(Startup).GetTypeInfo().Assembly,
-                        $"{nameof(RazorWebSite)}.EmbeddedResources"));
-                    options.FileProviders.Add(updateableFileProvider);
                     options.ViewLocationExpanders.Add(new NonMainPageViewLocationExpander());
                     options.ViewLocationExpanders.Add(new BackSlashExpander());
                 })

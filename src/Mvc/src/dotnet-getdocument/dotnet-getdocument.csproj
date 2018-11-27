@@ -7,6 +7,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UseAppHost>false</UseAppHost>
+    <VerifyVersion>false</VerifyVersion>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>

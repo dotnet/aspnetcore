@@ -4,7 +4,6 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using Xunit;
@@ -106,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 {
                     typeof(RouteCollection).FullName,
                     typeof(Route).FullName,
-                    typeof(MvcRouteHandler).FullName,
+                    "Microsoft.AspNetCore.Mvc.Routing.MvcRouteHandler",
                 },
                 result.Routers);
         }
@@ -126,8 +125,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(new string[]
                 {
                     typeof(RouteCollection).FullName,
-                    typeof(AttributeRoute).FullName,
-                    typeof(MvcAttributeRouteHandler).FullName,
+                    "Microsoft.AspNetCore.Mvc.Routing.AttributeRoute",
+                    "Microsoft.AspNetCore.Mvc.Routing.MvcAttributeRouteHandler",
                 },
                 result.Routers);
         }

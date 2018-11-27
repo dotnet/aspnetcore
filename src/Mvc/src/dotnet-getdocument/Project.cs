@@ -89,6 +89,8 @@ namespace Microsoft.Extensions.ApiDescription.Tool
                     // NB: Copy always in case it changes
                     Reporter.WriteVerbose(Resources.FormatWritingFile(targetsPath));
                     input.CopyTo(output);
+
+                    output.Flush();
                 }
             }
 
@@ -102,6 +104,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
                     "/target:WriteServiceProjectReferenceMetadata",
                     "/verbosity:quiet",
                     "/nologo",
+                    "/nodeReuse:false",
                     $"/property:ServiceProjectReferenceMetadataPath={metadataPath}",
                     projectFile,
                 };
@@ -134,8 +137,22 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             }
             finally
             {
-                File.Delete(metadataPath);
-                File.Delete(targetsPath);
+                // Ignore errors about in-use files. Should still be marked for delete after process cleanup.
+                try
+                {
+                    File.Delete(metadataPath);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
+
+                try
+                {
+                    File.Delete(targetsPath);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                }
             }
 
             var project = new Project

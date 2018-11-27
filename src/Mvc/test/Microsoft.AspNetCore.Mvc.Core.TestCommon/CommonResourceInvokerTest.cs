@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
 using Moq;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         // Intentionally choosing an uncommon exception type.
         protected static readonly Exception Exception = new DivideByZeroException();
 
-        protected ResourceInvoker CreateInvoker(
+        protected IActionInvoker CreateInvoker(
             IFilterMetadata filter,
             Exception exception = null,
             IActionResult result = null,
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc
             return CreateInvoker(new IFilterMetadata[] { filter }, exception, result, valueProviderFactories);
         }
 
-        protected abstract ResourceInvoker CreateInvoker(
+        protected abstract IActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
             Exception exception = null,
             IActionResult result = null,

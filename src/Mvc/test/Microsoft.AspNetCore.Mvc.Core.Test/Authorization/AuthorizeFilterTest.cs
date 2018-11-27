@@ -236,6 +236,9 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 GetPolicyCalls++;
                 return Task.FromResult(policyName == "true" ? _true : _false);
             }
+
+            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+                => Task.FromResult<AuthorizationPolicy>(null);
         }
 
         [Fact]

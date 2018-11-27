@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
@@ -429,7 +428,7 @@ namespace Microsoft.AspNetCore.Mvc
             return httpContext;
         }
 
-        public interface ITestActionConsumeConstraint : IConsumesActionConstraint, IResourceFilter
+        internal interface ITestActionConsumeConstraint : IConsumesActionConstraint, IResourceFilter
         {
         }
     }

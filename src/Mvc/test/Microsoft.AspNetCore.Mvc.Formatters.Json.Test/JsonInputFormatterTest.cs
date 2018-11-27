@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
             httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
             httpContext.Request.ContentType = "application/json";
-            
+
             var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
 
             // Act
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // missing password property here
             var contentBytes = Encoding.UTF8.GetBytes("{ \"UserName\" : \"John\"}");
             var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-8");
-            
+
             var formatterContext = CreateInputFormatterContext(typeof(UserLogin), httpContext);
 
             // Act
@@ -571,7 +571,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("{\"a\":{\"b\"}}", "a", "Invalid character after parsing property name. Expected ':' but got: }. Path 'a', line 1, position 9.")]
         [InlineData("{\"age\":\"x\"}", "age", "Could not convert string to decimal: x. Path 'age', line 1, position 10.")]
         [InlineData("{\"login\":1}", "login", "Error converting value 1 to type 'Microsoft.AspNetCore.Mvc.Formatters.JsonInputFormatterTest+UserLogin'. Path 'login', line 1, position 10.")]
-        [InlineData("{\"login\":{\"username\":\"somevalue\"}}", "login", "Required property 'Password' not found in JSON. Path 'login', line 1, position 33.")]
+        [InlineData("{\"login\":{\"username\":\"somevalue\"}}", "login.Password", "Required property 'Password' not found in JSON. Path 'login', line 1, position 33.")]
         public async Task ReadAsync_WithAllowInputFormatterExceptionMessages_RegistersJsonInputExceptionsAsInputFormatterException(
             string content,
             string modelStateKey,
@@ -582,7 +582,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var contentBytes = Encoding.UTF8.GetBytes(content);
             var httpContext = GetHttpContext(contentBytes);
-            
+
             var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
 
             // Act

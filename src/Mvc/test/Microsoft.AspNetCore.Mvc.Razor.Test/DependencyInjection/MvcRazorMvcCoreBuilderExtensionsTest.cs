@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,63 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
 
             // Assert
             Assert.Empty(builder.PartManager.ApplicationParts);
-        }
-
-        [Fact]
-        public void AddRazorViewEngine_AddsMetadataReferenceFeatureProvider()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvcCore();
-
-            // Act
-            builder.AddRazorViewEngine();
-
-            // Assert
-#pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Single(builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>());
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        [Fact]
-        public void AddRazorViewEngine_DoesNotAddMultipleMetadataReferenceFeatureProvider_OnMultipleInvocations()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvcCore();
-
-            // Act - 1
-            builder.AddRazorViewEngine();
-
-            // Act - 2
-            builder.AddRazorViewEngine();
-
-            // Assert
-#pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Single(builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>());
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        [Fact]
-        public void AddRazorViewEngine_DoesNotReplaceExistingMetadataReferenceFeatureProvider()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-            var builder = services.AddMvcCore();
-#pragma warning disable CS0618 // Type or member is obsolete
-            var metadataReferenceFeatureProvider = new MetadataReferenceFeatureProvider();
-#pragma warning restore CS0618 // Type or member is obsolete
-            builder.PartManager.FeatureProviders.Add(metadataReferenceFeatureProvider);
-
-            // Act
-            builder.AddRazorViewEngine();
-
-            // Assert
-            var actual = Assert.Single(
-#pragma warning disable CS0618 // Type or member is obsolete
-                collection: builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>());
-#pragma warning restore CS0618 // Type or member is obsolete
-            Assert.Same(metadataReferenceFeatureProvider, actual);
         }
 
         [Fact]

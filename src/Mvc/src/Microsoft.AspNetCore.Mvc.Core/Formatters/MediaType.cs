@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -393,9 +392,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="mediaType">The media type to parse.</param>
         /// <param name="start">The position at which the parsing starts.</param>
         /// <returns>The parsed media type with its associated quality.</returns>
-#pragma warning disable PUB0001 // Pubternal type in public API
         public static MediaTypeSegmentWithQuality CreateMediaTypeSegmentWithQuality(string mediaType, int start)
-#pragma warning restore PUB0001
         {
             var parsedMediaType = new MediaType(mediaType, start, length: null);
 

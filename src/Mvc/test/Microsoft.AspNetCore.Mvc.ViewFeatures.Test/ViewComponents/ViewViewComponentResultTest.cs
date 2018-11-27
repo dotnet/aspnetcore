@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Mvc
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(ICompositeViewEngine)))
                 .Returns(viewEngine.Object);
-            serviceProvider.Setup(p => p.GetService(typeof(DiagnosticSource)))
+            serviceProvider.Setup(p => p.GetService(typeof(DiagnosticListener)))
                 .Returns(new DiagnosticListener("Test"));
 
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Mvc
             diagnosticSource.SubscribeWithAdapter(diagnosticListener);
 
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(s => s.GetService(typeof(DiagnosticSource))).Returns(diagnosticSource);
+            serviceProvider.Setup(s => s.GetService(typeof(DiagnosticListener))).Returns(diagnosticSource);
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = serviceProvider.Object;

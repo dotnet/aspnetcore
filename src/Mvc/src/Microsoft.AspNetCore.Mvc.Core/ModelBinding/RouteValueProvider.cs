@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -57,9 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Culture = culture;
         }
 
-#pragma warning disable PUB0001 // Pubternal type in public API
         protected PrefixContainer PrefixContainer
-#pragma warning restore PUB0001
         {
             get
             {
@@ -86,6 +83,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
+            }
+
+            if (key.Length == 0)
+            {
+                // Top level parameters will fall back to an empty prefix when the parameter name does not
+                // appear in any value provider. This would result in the parameter binding to a route value
+                // an empty key which isn't a scenario we want to support.
+                // Return a "None" result in this event.
+                return ValueProviderResult.None;
             }
 
             if (_values.TryGetValue(key, out var value))

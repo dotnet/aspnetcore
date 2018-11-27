@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+    <VSTestVerboseOutput Condition="'$(CI)' == 'true'">true</VSTestVerboseOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,12 +15,11 @@
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageVersion>2.2.0-*</LineupPackageVersion>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>

@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
-    public class ViewComponentInvokerCache
+    internal class ViewComponentInvokerCache
     {
         private readonly IViewComponentDescriptorCollectionProvider _collectionProvider;
 
@@ -42,8 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var cache = CurrentCache;
             var viewComponentDescriptor = viewComponentContext.ViewComponentDescriptor;
 
-            ObjectMethodExecutor executor;
-            if (cache.Entries.TryGetValue(viewComponentDescriptor, out executor))
+            if (cache.Entries.TryGetValue(viewComponentDescriptor, out var executor))
             {
                 return executor;
             }

@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hello from buildtime-compiled precompilation view!", responseBody.Trim());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/8753")]
         public async Task Rzc_LocalPageWithDifferentContent_IsUsed()
         {
             // Act
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hello from runtime-compiled rzc page!", responseBody.Trim());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/8753")]
         public async Task Rzc_LocalViewWithDifferentContent_IsUsed()
         {
             // Act

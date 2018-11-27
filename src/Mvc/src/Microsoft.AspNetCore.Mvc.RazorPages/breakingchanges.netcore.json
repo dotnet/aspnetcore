@@ -1,0 +1,31 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.DefaultPageActivatorProvider : Microsoft.AspNetCore.Mvc.RazorPages.IPageActivatorProvider",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.DefaultPageFactoryProvider : Microsoft.AspNetCore.Mvc.RazorPages.IPageFactoryProvider",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.DefaultPageHandlerMethodSelector : Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.IPageHandlerMethodSelector",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.DefaultPageModelActivatorProvider : Microsoft.AspNetCore.Mvc.RazorPages.IPageModelActivatorProvider",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.DefaultPageModelFactoryProvider : Microsoft.AspNetCore.Mvc.RazorPages.IPageModelFactoryProvider",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageResultExecutor : Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine compositeViewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine razorViewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator razorPageActivator, System.Diagnostics.DiagnosticSource diagnosticSource, System.Text.Encodings.Web.HtmlEncoder htmlEncoder)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageDirectiveFeature",
+    "Kind": "Removal"
+  }
+]
