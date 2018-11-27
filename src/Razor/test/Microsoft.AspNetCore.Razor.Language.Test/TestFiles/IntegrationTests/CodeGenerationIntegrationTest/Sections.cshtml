@@ -1,0 +1,17 @@
+﻿@{
+    Layout = "_SectionTestLayout.cshtml"
+}
+
+<div>This is in the Body>
+
+@section Section2 {
+    <div class="some @thing">This is in Section 2</div>
+}
+
+@section Section1 {
+    <div>This is in Section 1</div>
+}
+
+@section NestedDelegates {
+    @{ Func<dynamic, object> f = @<span>@item</span>; }
+}

@@ -1,0 +1,8 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Razor
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - Template -  - 
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [13] HelloWorld.cshtml)
+                    IntermediateToken - (0:0,0 [13] HelloWorld.cshtml) - Html - Hello, World!

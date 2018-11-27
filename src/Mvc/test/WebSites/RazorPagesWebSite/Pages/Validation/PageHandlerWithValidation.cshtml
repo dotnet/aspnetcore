@@ -1,0 +1,10 @@
+@page
+@using System.ComponentModel.DataAnnotations
+@functions
+{
+    public void OnGet([Required(ErrorMessage = "Name is required")] string name)
+    {
+
+    }
+}
+<div asp-validation-summary="All"></div>

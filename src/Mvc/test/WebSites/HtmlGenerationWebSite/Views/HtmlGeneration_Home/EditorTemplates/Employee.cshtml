@@ -1,0 +1,35 @@
+@model HtmlGenerationWebSite.Models.Employee
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div>
+    @Html.LabelFor(m => m.Number)
+    @Html.TextBox(nameof(Model.Number), value: null, htmlAttributes: new { disabled = "disabled", @readonly = "readonly" })
+    <input asp-for="Number" type="number" class="form-control" />
+</div>
+<div>
+    <label asp-for="Name" class="employee"></label>
+    @Html.TextArea(nameof(Model.Name))
+</div>
+<div>
+    <label asp-for="PhoneNumber" class="employee"></label>
+    <input asp-for="PhoneNumber" type="tel" />
+</div>
+<div>
+    @{
+        var genders = new SelectList(new string[] { "Male", "Female" });
+    }
+    <label asp-for="Gender" class="employee"></label>
+    @Html.RadioButton(nameof(Model.Gender), "Female", htmlAttributes: new { disabled = "disabled", @readonly = "readonly" })
+    <select asp-for="Gender" asp-items="genders"></select>
+</div>
+<div>
+    <label asp-for="Remote" class="employee"></label>
+    @Html.CheckBoxFor(m => m.Remote)
+</div>
+<div>
+    <label asp-for="OfficeNumber" class="employee"></label>
+    @{
+        var offices = new SelectList(new string[] {"1001","1002"});
+    }
+    @Html.DropDownListFor(m => m.OfficeNumber, offices)
+</div>

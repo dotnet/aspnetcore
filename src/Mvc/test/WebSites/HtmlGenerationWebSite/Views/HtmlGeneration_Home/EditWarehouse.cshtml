@@ -1,0 +1,50 @@
+@model HtmlGenerationWebSite.Models.Warehouse
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewBag.Title = "Warehouse - Employee";
+}
+
+<html>
+<body>
+    <form asp-controller="HtmlGeneration_Home" asp-action="EditWarehouse" asp-antiforgery="false">
+        <div>
+            @Html.DisplayFor(m => m.City)
+            <input asp-for="City" type="text" />
+        </div>
+        <div>
+            <label>@Html.DisplayNameFor(m => m.Employee.Address)</label>
+            @Html.TextAreaFor(m => m.Employee.Address);
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Employee.Password)
+            @Html.PasswordFor(m => m.Employee.Password)
+        </div>
+        <div>
+            <label>@Html.DisplayNameFor(m => m.Employee.PhoneNumber)</label>
+            @Html.TextBoxFor(m => m.Employee.PhoneNumber)
+        </div>
+        <div>
+            <label for="@Html.IdFor(m => m.Employee.Name)">@Html.NameFor(m => m.Employee.Name)</label>
+            <input asp-for="Employee.Name" type="text" />
+            @Html.ValidationMessageFor(m => m.Employee.Name)
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Employee.Gender)
+            @Html.RadioButtonFor(m => m.Employee.Gender, "Female") Female
+            @Html.RadioButtonFor(m => m.Employee.Gender, "Male") Male
+        </div>
+        <div>
+            @Html.LabelFor(m => m.Employee.OfficeNumber)
+            @{
+                var offices = new SelectList(new string[] { "1001", "1002" });
+            }
+            @Html.DropDownListFor(m => m.Employee.OfficeNumber, offices)
+        </div>
+        @Html.EditorFor(m => m.Employee.Number)
+        @Html.ValidationSummary()
+        <input type="submit" />
+    </form>
+</body>
+</html>

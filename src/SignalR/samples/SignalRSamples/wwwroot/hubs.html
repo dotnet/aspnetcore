@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+
+<body>
+    <h1 id="head1">SignalR Hubs Sample</h1>
+    <div>
+        <select id="protocol">
+            <option value="json" selected>json</option>
+            <option value="msgpack">msgpack</option>
+        </select>
+
+        <select id="transport">
+            <option value="Automatic" selected>Automatic</option>
+            <option value="WebSockets">WebSockets</option>
+            <option value="ServerSentEvents">ServerSentEvents</option>
+            <option value="LongPolling">LongPolling</option>
+        </select>
+
+        <select id="hubType">
+            <option value="default" selected>Hub</option>
+            <option value="dynamic">DynamicHub</option>
+            <option value="hubT">Hub&lt;T&gt;</option>
+        </select>
+
+        <input type="button" id="connect" value="Connect" />
+        <input type="button" id="disconnect" value="Disconnect" />
+    </div>
+
+
+    <h4>To Everybody</h4>
+    <form class="form-inline">
+        <div class="input-append">
+            <input type="text" id="message-text" placeholder="Type a message, name or group" />
+            <input type="button" id="broadcast" class="btn" value="Broadcast" />
+            <input type="button" id="broadcast-exceptme" class="btn" value="Broadcast (Others)" />
+        </div>
+    </form>
+
+    <h4>To Connection</h4>
+    <form class="form-inline">
+        <div class="input-prepend input-append">
+            <input type="text" name="connection-message" id="connection-message-text" placeholder="Type a message" />
+            <input type="text" name="connection-id" id="connection-id" placeholder="Type a connection id" />
+            <input type="button" id="connection-send" class="btn" value="Send to Connection" />
+        </div>
+    </form>
+
+    <h4>To Me</h4>
+    <form class="form-inline">
+        <div class="input-append">
+            <input type="text" id="me-message-text" placeholder="Type a message" />
+            <input type="button" id="send" class="btn" value="Send to Me" />
+        </div>
+    </form>
+
+    <h4>Group Actions</h4>
+    <form class="form-inline">
+        <div class="input-prepend input-append">
+            <input type="text" name="group-message" id="group-message-text" placeholder="Type a message" />
+            <input type="text" name="group-name" id="group-name" placeholder="Type a group name" />
+            <input type="button" id="groupmsg" class="btn" value="Send to Group" />
+            <input type="button" id="others-groupmsg" class="btn" value="Send to Others in Group" />
+            <input type="button" id="join-group" class="btn" value="Join Group" />
+            <input type="button" id="leave-group" class="btn" value="Leave Group" />
+
+        </div>
+    </form>
+
+    <ul id="message-list"></ul>
+</body>
+
+</html>
+<script src="lib/signalr/signalr.js"></script>
+<script src="lib/msgpack5/msgpack5.js"></script>
+<script src="lib/signalr/signalr-protocol-msgpack.js"></script>
+<script src="utils.js"></script>
+<script>
+    var isConnected = false;
+    function invoke(connection, method) {
+        if (!isConnected) {
+            return;
+        }
+        var argsArray = Array.prototype.slice.call(arguments);
+        connection.invoke.apply(connection, argsArray.slice(1))
+            .then(function (result) {
+                console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
+
+                if (result) {
+                    addLine('message-list', result);
+                }
+            })
+            .catch(function (err) {
+                addLine('message-list', err, 'red');
+            });
+    }
+
+    function getText(id) {
+        return document.getElementById(id).value;
+    }
+
+    let connectButton = document.getElementById('connect');
+    let disconnectButton = document.getElementById('disconnect');
+    let broadcastButton = document.getElementById('broadcast');
+    let broadcastExceptMeButton = document.getElementById('broadcast-exceptme');
+    let sendToConnectionButton = document.getElementById('connection-send');
+    let joinGroupButton = document.getElementById('join-group');
+    let leaveGroupButton = document.getElementById('leave-group');
+    let groupMsgButton = document.getElementById('groupmsg');
+    let othersGroupMsgButton = document.getElementById('others-groupmsg');
+    let sendButton = document.getElementById('send');
+    let protocolDropdown = document.getElementById('protocol');
+    let transportDropdown = document.getElementById('transport');
+    let hubTypeDropdown = document.getElementById('hubType');
+
+    function updateButtonState(isConnected) {
+        broadcastButton.disabled = !isConnected;
+        broadcastExceptMeButton.disabled = !isConnected;
+        sendToConnectionButton.disabled = !isConnected;
+        joinGroupButton.disabled = !isConnected;
+        leaveGroupButton.disabled = !isConnected;
+        groupMsgButton.disabled = !isConnected;
+        othersGroupMsgButton.disabled = !isConnected;
+        sendButton.disabled = !isConnected;
+        disconnectButton.disabled = !isConnected;
+        connectButton.disabled = isConnected;
+    }
+
+    updateButtonState(false);
+    var connection;
+
+    click('connect', function (event) {
+        let hubRoute = hubTypeDropdown.value || "default";
+        let protocol = protocolDropdown.value === "msgpack" ?
+            new signalR.protocols.msgpack.MessagePackHubProtocol() :
+            new signalR.JsonHubProtocol();
+
+        var options = {};
+        if (transportDropdown.value !== "Automatic") {
+            options.transport = signalR.HttpTransportType[transportDropdown.value];
+        }
+
+        console.log('http://' + document.location.host + '/' + hubRoute);
+        connection = new signalR.HubConnectionBuilder()
+            .configureLogging(signalR.LogLevel.Trace)
+            .withUrl(hubRoute, options)
+            .withHubProtocol(protocol)
+            .build();
+        connection.on('Send', function (msg) {
+            addLine('message-list', msg);
+        });
+
+        connection.onclose(function (e) {
+            if (e) {
+                addLine('message-list', 'Connection closed with error: ' + e, 'red');
+            }
+            else {
+                addLine('message-list', 'Disconnected', 'green');
+            }
+            updateButtonState(false);
+        });
+
+        connection.start()
+            .then(function () {
+                isConnected = true;
+                updateButtonState(true);
+                addLine('message-list', 'Connected successfully', 'green');
+            })
+            .catch(function (err) {
+                updateButtonState(false);
+                addLine('message-list', err, 'red');
+            });
+    });
+
+    click('disconnect', function (event) {
+        connection.stop()
+            .then(function () {
+                isConnected = false;
+                updateButtonState(false);
+            });
+    });
+
+    click('broadcast', function (event) {
+        let data = getText('message-text');
+        invoke(connection, 'Send', data);
+    });
+
+    click('join-group', function (event) {
+        let groupName = getText('group-name');
+        invoke(connection, 'JoinGroup', groupName);
+    });
+
+    click('leave-group', function (event) {
+        let groupName = getText('group-name');
+        invoke(connection, 'LeaveGroup', groupName);
+    });
+
+    click('groupmsg', function (event) {
+        let groupName = getText('group-name');
+        let message = getText('group-message-text');
+        invoke(connection, 'SendToGroup', groupName, message);
+    });
+
+    click('others-groupmsg', function (event) {
+        let groupName = getText('group-name');
+        let message = getText('group-message-text');
+        invoke(connection, 'SendToOthersInGroup', groupName, message);
+    });
+
+    click('send', function (event) {
+        let data = getText('me-message-text');
+        invoke(connection, 'Echo', data);
+    });
+
+    click('broadcast-exceptme', function (event) {
+        let data = getText('message-text');
+        invoke(connection, 'SendToOthers', data);
+    });
+
+    click('connection-send', function (event) {
+        let data = getText('connection-message-text');
+        let id = getText('connection-id');
+        invoke(connection, 'SendToConnection', id, data);
+    });
+
+</script>

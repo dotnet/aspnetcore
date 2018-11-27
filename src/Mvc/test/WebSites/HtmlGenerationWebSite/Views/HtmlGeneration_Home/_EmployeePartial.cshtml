@@ -1,0 +1,15 @@
+@model HtmlGenerationWebSite.Models.Employee
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div>
+    <label asp-for="Name"></label>
+    <input asp-for="Name" type="text"/>
+</div>
+<div>
+    <label asp-for="OfficeNumber"></label>
+    <input asp-for="OfficeNumber" type="number"/>
+</div>
+<div>
+    <label asp-for="Address"></label>
+    <textarea asp-for="Address" rows="4" cols="50"></textarea>
+</div>

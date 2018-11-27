@@ -1,0 +1,13 @@
+@page "{handler?}/{id:int?}"
+@functions
+{
+    public IActionResult OnGetRedirectToPage(int id)
+    {
+        return RedirectToPage();
+    }
+
+    public IActionResult OnGetRedirectToAnotherHandler(int id)
+    {
+        return RedirectToPage(new { handler = "RedirectToPage", id = id });
+    }
+}

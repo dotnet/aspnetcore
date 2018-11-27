@@ -1,0 +1,36 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      Determines if the Sdk is allowed to add additional attributes to the project assembly.
+      For instance, MVC will generally want to add attributes to support view discovery and runtime compilation.
+    -->
+    <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'==''">true</GenerateRazorAssemblyInfo>
+
+    <!--
+      MVC will generally want to add support for runtime compilation, but only for applications.
+    -->
+    <GenerateRazorHostingAssemblyInfo Condition="'$(GenerateRazorHostingAssemblyInfo)'=='' AND '$(OutputType)'=='exe'">$(GenerateRazorAssemblyInfo)</GenerateRazorHostingAssemblyInfo>
+
+    <!--
+      Use the suffix .Views when producing compiled view assemblies. This matches the requirements for Mvc's ViewsFeatureProvider.
+    -->
+    <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)'==''">.Views</RazorTargetNameSuffix>
+
+    <!--
+      The type name of the ApplicationPartFactory applied to the generated Razor file.
+    -->
+    <ProvideApplicationPartFactoryAttributeTypeName Condition="'$(ProvideApplicationPartFactoryAttributeTypeName)' == ''">Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor</ProvideApplicationPartFactoryAttributeTypeName>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true' AND '$(ResolvedRazorCompileToolset)'=='RazorSdk' AND ('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' == 'true')">
+    <_RazorAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute">
+      <_Parameter1>$(RazorTargetName)</_Parameter1>
+    </_RazorAssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(GenerateProvideApplicationPartFactoryAttribute)' == 'true' AND '$(ProvideApplicationPartFactoryAttributeTypeName)'!=''">
+    <RazorTargetAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute">
+      <_Parameter1>$(ProvideApplicationPartFactoryAttributeTypeName)</_Parameter1>
+    </RazorTargetAssemblyAttribute>
+  </ItemGroup>
+</Project>
