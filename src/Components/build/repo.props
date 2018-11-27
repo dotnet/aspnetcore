@@ -3,11 +3,11 @@
 
   <!-- Properties to make KoreBuild more like dotnet/arcade. -->
   <PropertyGroup>
-    <BuildDir>$(ArtifactsDir)$(Configuration)\packages\</BuildDir>
     <SkipArtifactVerification>true</SkipArtifactVerification>
     <EnableBenchmarkValidation>false</EnableBenchmarkValidation>
     <SignCheckExclusionsFile>$(MSBuildThisFileDirectory)..\..\..\eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
     <SignToolDataWorkingDir>$(ArtifactsDir)\$(Configuration)\</SignToolDataWorkingDir>
+    <OverridePackageOutputPath>false</OverridePackageOutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
