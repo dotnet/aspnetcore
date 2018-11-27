@@ -1,0 +1,6 @@
+@using System;
+@using Microsoft.AspNetCore.Html
+@model System.String
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.PartialTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+@for (var i = 0; i < 100; i++)
+{<partial name="~/Views/HelperPartial_Partial.cshtml" model="@(Model + i.ToString())" />}
