@@ -1,6 +1,0 @@
-trigger:
-- master
-- release/*
-
-phases:
-- template: ../templates/project-ci.yml
