@@ -1,0 +1,25 @@
+Source Location: (1:0,1 [28] x:\dir\subdir\Test\TestComponent.cshtml)
+|using System.Threading.Tasks|
+Generated Location: (222:9,0 [28] )
+|using System.Threading.Tasks|
+
+Source Location: (48:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+|OnClick|
+Generated Location: (1028:27,133 [7] )
+|OnClick|
+
+Source Location: (73:2,12 [73] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    Task OnClick() 
+    {
+        return Task.CompletedTask;
+    }
+|
+Generated Location: (1151:31,12 [73] )
+|
+    Task OnClick() 
+    {
+        return Task.CompletedTask;
+    }
+|
+

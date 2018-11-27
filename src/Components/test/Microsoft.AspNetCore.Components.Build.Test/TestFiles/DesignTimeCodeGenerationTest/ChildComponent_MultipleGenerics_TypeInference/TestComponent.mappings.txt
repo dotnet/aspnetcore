@@ -1,0 +1,25 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (503:15,38 [15] )
+|*, TestAssembly|
+
+Source Location: (52:1,21 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+|"hi"|
+Generated Location: (1099:29,21 [4] )
+|"hi"|
+
+Source Location: (67:1,36 [16] x:\dir\subdir\Test\TestComponent.cshtml)
+|new List<long>()|
+Generated Location: (1243:35,36 [16] )
+|new List<long>()|
+
+Source Location: (109:2,22 [17] x:\dir\subdir\Test\TestComponent.cshtml)
+|context.ToLower()|
+Generated Location: (1413:41,22 [17] )
+|context.ToLower()|
+
+Source Location: (190:4,3 [29] x:\dir\subdir\Test\TestComponent.cshtml)
+|System.Math.Max(0, item.Item)|
+Generated Location: (1581:48,6 [29] )
+|System.Math.Max(0, item.Item)|
+

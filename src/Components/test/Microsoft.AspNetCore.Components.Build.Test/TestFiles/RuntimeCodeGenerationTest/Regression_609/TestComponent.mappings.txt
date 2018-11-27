@@ -1,0 +1,11 @@
+Source Location: (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    public string UserName { get; set; }
+    public bool UserIsActive { get; set; }
+|
+Generated Location: (1300:25,12 [88] )
+|
+    public string UserName { get; set; }
+    public bool UserIsActive { get; set; }
+|
+

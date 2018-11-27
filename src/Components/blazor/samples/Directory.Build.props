@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <!-- Workaround for #261 which requires the bin and obj directory be in the project directory -->
+    <DisableArcadeProjectLayout>true</DisableArcadeProjectLayout>
+  </PropertyGroup>
+  <Import Project="..\..\Directory.Build.props" />
+</Project>

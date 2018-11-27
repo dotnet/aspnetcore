@@ -1,0 +1,9 @@
+<input bind-value-oninput=@inputText />
+
+<p>The text below should update automatically as you type in the text field above</p>
+
+<p id="test-result">@inputText</p>
+
+@functions {
+    string inputText { get; set; }
+}

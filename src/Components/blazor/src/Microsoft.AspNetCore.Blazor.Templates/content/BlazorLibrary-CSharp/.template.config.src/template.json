@@ -1,0 +1,83 @@
+{
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "Library"
+  ],
+  "groupIdentity": "Microsoft.Web.Blazor.Library",
+  "identity": "Microsoft.Web.Blazor.Library.CSharp",
+  "name": "Blazor Library",
+  "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "path": "BlazorLibrary-CSharp.csproj"
+    }
+  ],
+  "shortName": "blazorlib",
+  "sourceName": "BlazorLibrary-CSharp",
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ]
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp2.1",
+          "description": "Target netcoreapp2.1"
+        }
+      ],
+      "replaces": "netcoreapp2.1",
+      "defaultValue": "netcoreapp2.1"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "IncludeCustomRestoreSourcesSymbol": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If set, includes restore sources for the Blazor MyGet feed.",
+      "defaultValue": "${IncludeCustomRestoreSources}"
+    },
+    "TemplateBlazorVersionSymbol": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "Specifies which version of Blazor packages to use.",
+      "replaces": "$(TemplateBlazorPackageVersion)",
+      "defaultValue": "${TemplateBlazorVersion}"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+@using System.Collections.Generic
+@using Microsoft.JSInterop
+
+<div>
+    <h2>Mouse position</h2>
+    <p>
+        Output: <span id="output">@message</span>
+    </p>
+    <p>
+        Mouseover: <input id="mouseover_input" type="text" onmouseover="@OnMouseOver" onmouseout="@OnMouseOut" />
+    </p>
+    <p>
+        <span id="mousemove_input" onmousemove="@OnMouseMove">Mousemove city!</span>
+    </p>
+    <p>
+        Mousedown: <input id="mousedown_input" onmousedown="@OnMouseDown" onmouseup="@OnMouseUp" />
+    </p>
+    <p>
+        <button onclick="@Clear">Clear</button>
+    </p>
+
+    <p>
+        Another input (to distract you) <input id="other" />
+    </p>
+</div>
+
+@functions {
+
+    string message;
+
+    void OnMouseOver(UIMouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseover,";
+        StateHasChanged();
+    }
+
+    void OnMouseOut(UIMouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseout,";
+        StateHasChanged();
+    }
+
+    void OnMouseMove(UIMouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmousemove,";
+        StateHasChanged();
+    }
+
+    void OnMouseDown(UIMouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmousedown,";
+        StateHasChanged();
+    }
+
+    void OnMouseUp(UIMouseEventArgs e)
+    {
+        DumpEvent(e);
+        message += "onmouseup,";
+        StateHasChanged();
+    }
+
+    void DumpEvent(UIMouseEventArgs e)
+    {
+        Console.WriteLine(Json.Serialize(e));
+    }
+
+    void Clear()
+    {
+        message = string.Empty;
+    }
+}

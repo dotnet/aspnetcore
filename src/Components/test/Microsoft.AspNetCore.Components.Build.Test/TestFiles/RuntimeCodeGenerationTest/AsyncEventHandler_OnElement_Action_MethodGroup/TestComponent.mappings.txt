@@ -1,0 +1,15 @@
+Source Location: (73:2,12 [73] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    Task OnClick() 
+    {
+        return Task.CompletedTask;
+    }
+|
+Generated Location: (918:22,12 [73] )
+|
+    Task OnClick() 
+    {
+        return Task.CompletedTask;
+    }
+|
+

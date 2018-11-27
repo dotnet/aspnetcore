@@ -1,0 +1,34 @@
+<Project>
+  <Import
+    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
+    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
+
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
+
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core Blazor</Product>
+    <RepositoryUrl>https://github.com/aspnet/blazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
+    <LangVersion>7.3</LangVersion>
+
+    <!-- Disable API baseline checks. -->
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <Import Project="build\arcade.props" />
+
+  <PropertyGroup>
+    <!-- So we can use the tool from source within the repo without having to pack -->
+    <BlazorToolsDir>$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Build\netcoreapp2.1\</BlazorToolsDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
+</Project>

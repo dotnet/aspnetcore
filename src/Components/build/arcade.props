@@ -1,0 +1,37 @@
+<!--
+These settings align older versions of KoreBuild with the layout expected by arcade tooling.
+This files is a temporary while this project transitions to using arcade.
+-->
+<Project>
+
+  <!--
+    Project output layout.
+
+    These properties overrdie the default locations to obj and bin directories.
+  -->
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepositoryRoot)artifacts\</ArtifactsDir>
+    <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
+    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
+    <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
+    <PackageOutputPath>$(ArtifactsConfigurationDir)packages\</PackageOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DisableArcadeProjectLayout)' != 'true'">
+    <OutDirName Condition="'$(OutDirName)' == ''">$(MSBuildProjectName)</OutDirName>
+
+    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$([System.IO.Path]::GetFullPath('$(ArtifactsBinDir)$(OutDirName)\'))</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <OutputPath Condition="'$(PlatformName)' != 'AnyCPU'">$(OutputPath)$(PlatformName)\</OutputPath>
+    <OutputPath Condition=" ! HasTrailingSlash($(OutputPath)) ">$(OutputPath)\</OutputPath>
+
+    <BaseIntermediateOutputPath Condition=" '$(BaseIntermediateOutputPath)' == '' ">$([System.IO.Path]::GetFullPath('$(ArtifactsObjDir)$(MSBuildProjectName)'))</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition=" ! HasTrailingSlash($(BaseIntermediateOutputPath)) ">$(BaseIntermediateOutputPath)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath Condition="'$(PlatformName)' == 'AnyCPU'">$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
+    <IntermediateOutputPath Condition="'$(PlatformName)' != 'AnyCPU'">$(BaseIntermediateOutputPath)$(PlatformName)\$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+
+</Project>

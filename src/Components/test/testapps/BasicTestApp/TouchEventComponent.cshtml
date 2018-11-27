@@ -1,0 +1,39 @@
+@using System.Collections.Generic
+@using Microsoft.JSInterop
+
+<div>
+    <h2>Touch position</h2>
+    <p>
+        Output: <span id="output">@message</span>
+    </p>
+    <p>
+        <button ontouchstart=@OnTouch
+                ontouchcancel=@OnTouch
+                ontouchenter=@OnTouch
+                ontouchleave=@OnTouch
+                ontouchend=@OnTouch
+                ontouchmove=@OnTouch>
+            TOUCH ME
+        </button>
+    </p>
+    <p>
+        <button onclick="@Clear">Clear</button>
+    </p>
+</div>
+
+@functions {
+
+    string message;
+
+    void OnTouch(UITouchEventArgs e)
+    {
+        message += e.Type;
+        Console.WriteLine(Json.Serialize(e));
+        StateHasChanged();
+    }
+
+    void Clear()
+    {
+        message = string.Empty;
+    }
+}

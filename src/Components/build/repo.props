@@ -1,0 +1,55 @@
+﻿<Project>
+  <Import Project="dependencies.props" />
+
+  <!-- Properties to make KoreBuild more like dotnet/arcade. -->
+  <PropertyGroup>
+    <BuildDir>$(ArtifactsDir)$(Configuration)\packages\</BuildDir>
+    <SkipArtifactVerification>true</SkipArtifactVerification>
+    <EnableBenchmarkValidation>false</EnableBenchmarkValidation>
+    <SignToolDataFile>$(MSBuildThisFileDirectory)SignToolData.json</SignToolDataFile>
+    <SignToolDataWorkingDir>$(ArtifactsDir)\$(Configuration)\</SignToolDataWorkingDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- These properties are use by the automation that updates dependencies.props -->
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
+
+    <!-- Let us hardcode versions -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+
+  <!-- Submodule support -->
+  <ItemGroup>
+    <ProjectsToTest Include="$(RepositoryRoot)modules\*\test\*\*.csproj" />
+    <ProjectsToPack Include="$(RepositoryRoot)modules\*\src\*\*.csproj" />
+  </ItemGroup>
+
+  <!-- blazor subfolder -->
+  <ItemGroup>
+    <ProjectsToTest Include="$(RepositoryRoot)blazor\test\*\*.csproj" />
+    <ProjectsToPack Include="$(RepositoryRoot)blazor\src\*\*.csproj" />
+  </ItemGroup>
+
+  <!--
+    By default, this excludes the end-to-end tests from the repo-level build command.
+    The CI will script these directly by passing BlazorAllTests=true
+  -->
+  <ItemGroup Condition="'$(BlazorAllTests)'!='true'">
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Components.E2ETest\Microsoft.AspNetCore.Components.E2ETest.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+   <AspNetCoreRuntime Include="$(AspNetCoreRuntimeVersion)" />
+ </ItemGroup>
+
+</Project>

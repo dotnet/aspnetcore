@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
+        <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
+    </ItemGroup>
+
+    <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Components.Build" /> -->
+    <Import Project="..\..\src\Microsoft.AspNetCore.Components.Build\ReferenceFromSource.props" />
+
+</Project>

@@ -1,0 +1,15 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (644:17,38 [15] )
+|*, TestAssembly|
+
+Source Location: (37:1,6 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+|"/MyPage"|
+Generated Location: (760:21,37 [9] )
+|"/MyPage"|
+
+Source Location: (54:2,6 [20] x:\dir\subdir\Test\TestComponent.cshtml)
+|"/AnotherRoute/{id}"|
+Generated Location: (869:25,37 [20] )
+|"/AnotherRoute/{id}"|
+

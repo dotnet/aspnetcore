@@ -1,0 +1,80 @@
+﻿<Project>
+  <PropertyGroup>
+    <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
+    <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
+    <VSIXProject>$(RepositoryRoot)blazor\tooling\Microsoft.VisualStudio.BlazorExtension\Microsoft.VisualStudio.BlazorExtension.csproj</VSIXProject>
+  </PropertyGroup>
+
+  <Target
+    Name="GenerateVSIX"
+    DependsOnTargets="RestoreVSIX;PackageVSIX"
+    Condition="'$(OS)'=='Windows_NT'" />
+
+  <!--
+    VisualStudioMSBuildx86Path is set by the GetToolsets target in KoreBuild if a version of VS matching the requirements in korebuild.json is found.
+   -->
+  <Target Name="RestoreVSIX" DependsOnTargets="GetToolsets">
+
+    <PropertyGroup>
+      <VSIXResponseFilePath>$(LogOutputDir)vsix-restore.rsp</VSIXResponseFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MSBuildArguments Remove="@(MSBuildArguments)" />
+      <MSBuildArguments Include="
+        &quot;$(VSIXProject);&quot;
+        /t:Restore;
+        /v:m;
+        /p:Configuration=$(Configuration);
+        /p:BuildNumber=$(BuildNumber);" />
+      <MSBuildArguments Include="/p:DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+      <MSBuildArguments Include="/p:DotNetRestoreSourcePropsPath=$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(LogOutputDir)" />
+
+    <WriteLinesToFile
+      File="$(VSIXResponseFilePath)"
+      Lines="@(MSBuildArguments)"
+      Overwrite="true" />
+
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(VSIXResponseFilePath)&quot;"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+
+  <Target Name="PackageVSIX" DependsOnTargets="GetToolsets">
+
+    <Warning Text="Could not find a version of Visual Studio that has the Visual Studio SDK installed. This is required to build the Razor VSIX. Skipping."
+      Condition="'$(VisualStudioMSBuildx86Path)' == ''" />
+
+    <PropertyGroup>
+      <VSIXLogFilePath>$(LogOutputDir)vsix.log</VSIXLogFilePath>
+      <VSIXResponseFilePath>$(LogOutputDir)vsix-build.rsp</VSIXResponseFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MSBuildArguments Remove="@(MSBuildArguments)" />
+      <MSBuildArguments Include="
+        &quot;$(VSIXProject)&quot;;
+        /v:M;
+        /fl;
+        &quot;/flp:LogFile=$(VSIXLogFilePath)&quot;;
+        /p:BuildProjectReferences=false;
+        /p:DeployExtension=false;
+        &quot;/p:SymbolsPublishDir=$(BuildDir)&quot;;
+        &quot;/p:Configuration=$(Configuration)&quot;;" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(LogOutputDir)" />
+
+    <WriteLinesToFile
+      File="$(VSIXResponseFilePath)"
+      Lines="@(MSBuildArguments)"
+      Overwrite="true" />
+
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(VSIXResponseFilePath)&quot;"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+
+</Project>

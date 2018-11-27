@@ -1,0 +1,25 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (503:15,38 [15] )
+|*, TestAssembly|
+
+Source Location: (33:1,2 [46] x:\dir\subdir\Test\TestComponent.cshtml)
+| RenderFragment<string> header = (context) => |
+Generated Location: (987:28,2 [46] )
+| RenderFragment<string> header = (context) => |
+
+Source Location: (86:1,55 [26] x:\dir\subdir\Test\TestComponent.cshtml)
+|context.ToLowerInvariant()|
+Generated Location: (1201:34,55 [26] )
+|context.ToLowerInvariant()|
+
+Source Location: (118:1,87 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+|; |
+Generated Location: (1414:40,87 [2] )
+|; |
+
+Source Location: (144:2,21 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+|header|
+Generated Location: (1607:46,21 [6] )
+|header|
+

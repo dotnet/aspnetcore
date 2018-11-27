@@ -1,0 +1,11 @@
+Source Location: (42:1,12 [31] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    void OnClick() {
+    }
+|
+Generated Location: (918:22,12 [31] )
+|
+    void OnClick() {
+    }
+|
+
