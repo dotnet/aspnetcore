@@ -21,6 +21,4 @@
     <!-- When updating this, ensure you also update Browser.JS/package.json to reference the corresponding version of @dotnet/jsinterop -->
     <JSInteropPackageVersion>0.8.0-preview1-20181126.1</JSInteropPackageVersion>
   </PropertyGroup>
-
-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>

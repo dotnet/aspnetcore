@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+    <Description>Build mechanism for ASP.NET Core Components.</Description>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
@@ -10,9 +11,15 @@
   <PropertyGroup>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NuspecFile>Microsoft.AspNetCore.Components.Build.nuspec</NuspecFile>
-    <IntermediatePackDir>$(OutputPath)publish\</IntermediatePackDir>
+    <IntermediatePackDir>obj\publish\</IntermediatePackDir>
     <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
   </PropertyGroup>
+
+  <ItemGroup>
+    <SignedPackageFile Include="$(PublishDir)\**\Microsoft.AspNetCore.Components.Build.exe" Certificate="3PartySHA2" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)\**\*.dll" Exclude="$(PublishDir)\**\Microsoft.AspNetCore.Components.dll;$(PublishDir)\**\Microsoft.AspNetCore.Components.Razor.Extensions.dll;" />
+    <ExcludePackageFileFromSigning Include="..\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.*.js" />
+  </ItemGroup>
 
   <!-- Executes /t:Publish for all target frameworks before packing-->
   <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
@@ -22,21 +29,14 @@
       version=$(PackageVersion);
       publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
       razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
-      blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);</NuspecProperties>
+      blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);
+      repositorycommit=$(RepositoryCommit);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFrameworks)" />
     </ItemGroup>
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
   </Target>
-
-  <ItemGroup>
-    <!-- This is a newer version than is in the shared framework, so copy it -->
-    <Content Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Razor.Extensions\netstandard2.0\Microsoft.AspNetCore.Razor.Language.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj" />

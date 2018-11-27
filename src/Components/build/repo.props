@@ -6,7 +6,7 @@
     <BuildDir>$(ArtifactsDir)$(Configuration)\packages\</BuildDir>
     <SkipArtifactVerification>true</SkipArtifactVerification>
     <EnableBenchmarkValidation>false</EnableBenchmarkValidation>
-    <SignToolDataFile>$(MSBuildThisFileDirectory)SignToolData.json</SignToolDataFile>
+    <SignCheckExclusionsFile>$(MSBuildThisFileDirectory)..\..\..\eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
     <SignToolDataWorkingDir>$(ArtifactsDir)\$(Configuration)\</SignToolDataWorkingDir>
   </PropertyGroup>
 

@@ -6,7 +6,14 @@
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <NoWarn>2008</NoWarn>
+    <Description>Templates for ASP.NET Core Blazor projects.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ExcludePackageFileFromSigning Include="content/**/*.js" />
+    <ExcludePackageFileFromSigning Include="content/**/*.otf" />
+    <ExcludePackageFileFromSigning Include="content/**/*.ttf" />
+  </ItemGroup>
 
   <Target Name="TransformTemplateConfigs" BeforeTargets="CoreBuild" DependsOnTargets="SetTemplateJsonSymbolReplacements">
     <!--

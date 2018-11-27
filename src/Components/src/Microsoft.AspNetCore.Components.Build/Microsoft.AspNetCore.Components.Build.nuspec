@@ -5,10 +5,13 @@
     <version>$version$</version>
     <authors>Microsoft</authors>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-    <description>Build mechanism for Blazor applications.</description>
+    <description>Build mechanism for ASP.NET Core Components.</description>
+    <tags>aspnet components</tags>
+    <iconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
     <licenseUrl>https://raw.githubusercontent.com/aspnet/Home/2.0.0/LICENSE.txt</licenseUrl>
     <projectUrl>https://asp.net/</projectUrl>
-    <repository type="git" url="https://github.com/aspnet/Blazor" />
+    <repository type="git" url="https://github.com/aspnet/aspnetcore" commit="$repositorycommit$" />
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <dependencies>
       <dependency id="Microsoft.AspNetCore.Razor.Design" version="$razorversion$" include="all" />
       <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$version$" include="all" />

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Components feature for ASP.NET Core.</Description>
   </PropertyGroup>
 
   <ItemGroup>

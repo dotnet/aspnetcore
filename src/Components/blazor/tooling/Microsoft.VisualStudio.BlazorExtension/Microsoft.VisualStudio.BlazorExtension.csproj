@@ -11,7 +11,7 @@
   </PropertyGroup>
   <Import Project="..\..\..\build\arcade.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <Import Project="..\..\..\version.props" />
+  <Import Project="..\..\version.props" />
   <!--
     Since the VSSDK doeesn't support SDK-based projects, we have to use the long/verbose version.
 
@@ -138,7 +138,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <Content Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Razor.Extensions\net461\Microsoft.AspNetCore.Components.Razor.Extensions.dll">
+    <Content Include="..\..\..\src\Microsoft.AspNetCore.Components.Razor.Extensions\bin\$(Configuration)\net461\Microsoft.AspNetCore.Components.Razor.Extensions.dll">
       <Link>Microsoft.AspNetCore.Components.Razor.Extensions.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -153,7 +153,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <Content Include="$(ArtifactsBinDir)Microsoft.VisualStudio.LanguageServices.Blazor\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
+    <Content Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\bin\$(Configuration)\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
       <Link>Microsoft.VisualStudio.LanguageServices.Blazor.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
