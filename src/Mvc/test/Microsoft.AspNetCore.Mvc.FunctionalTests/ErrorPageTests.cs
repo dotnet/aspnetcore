@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -17,8 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>
     {
         private static readonly string PreserveCompilationContextMessage = HtmlEncoder.Default.Encode(
-            "One or more compilation references are missing. Ensure that your project is referencing " +
-            "'Microsoft.NET.Sdk.Web' and the 'PreserveCompilationContext' property is not set to false.");
+            "One or more compilation references may be missing. " +
+            "If you're seeing this in a published application, set 'CopyRefAssembliesToPublishDirectory' to true in your project file to ensure files in the refs directory are published.");
         public ErrorPageTests(MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> fixture)
         {
             Client = fixture.CreateDefaultClient();

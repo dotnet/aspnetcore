@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// A <see cref="ModelAttributes"/> instance with the attributes of the property and its <see cref="Type"/>.
         /// </returns>
-        internal static ModelAttributes GetAttributesForProperty(Type containerType, PropertyInfo property, Type modelType)
+        public static ModelAttributes GetAttributesForProperty(Type containerType, PropertyInfo property, Type modelType)
         {
             if (containerType == null)
             {
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// A <see cref="ModelAttributes"/> instance with the attributes of the parameter and its <see cref="Type"/>.
         /// </returns>
-        internal static ModelAttributes GetAttributesForParameter(ParameterInfo parameterInfo, Type modelType)
+        public static ModelAttributes GetAttributesForParameter(ParameterInfo parameterInfo, Type modelType)
         {
             if (parameterInfo == null)
             {

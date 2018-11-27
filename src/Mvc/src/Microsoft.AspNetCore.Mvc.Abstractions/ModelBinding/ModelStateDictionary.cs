@@ -147,7 +147,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             get
             {
-                return ValidationState == ModelValidationState.Valid || ValidationState == ModelValidationState.Skipped;
+                var state = ValidationState;
+                return state == ModelValidationState.Valid || state == ModelValidationState.Skipped;
             }
         }
 
@@ -1003,7 +1004,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        public struct PrefixEnumerable : IEnumerable<KeyValuePair<string, ModelStateEntry>>
+        public readonly struct PrefixEnumerable : IEnumerable<KeyValuePair<string, ModelStateEntry>>
         {
             private readonly ModelStateDictionary _dictionary;
             private readonly string _prefix;
@@ -1136,7 +1137,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        public struct KeyEnumerable : IEnumerable<string>
+        public readonly struct KeyEnumerable : IEnumerable<string>
         {
             private readonly ModelStateDictionary _dictionary;
 
@@ -1191,7 +1192,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        public struct ValueEnumerable : IEnumerable<ModelStateEntry>
+        public readonly struct ValueEnumerable : IEnumerable<ModelStateEntry>
         {
             private readonly ModelStateDictionary _dictionary;
 

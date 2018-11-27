@@ -11,7 +11,9 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class DefaultRazorReferenceManager : RazorReferenceManager
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly ApplicationPartManager _partManager;
         private readonly IList<MetadataReference> _additionalMetadataReferences;
@@ -24,7 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             _partManager = partManager;
+#pragma warning disable CS0618 // Type or member is obsolete
             _additionalMetadataReferences = optionsAccessor.Value.AdditionalCompilationReferences;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override IReadOnlyList<MetadataReference> CompilationReferences
@@ -41,7 +45,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private IReadOnlyList<MetadataReference> GetCompilationReferences()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var feature = new MetadataReferenceFeature();
+#pragma warning restore CS0618 // Type or member is obsolete
             _partManager.PopulateFeature(feature);
             var applicationReferences = feature.MetadataReferences;
 

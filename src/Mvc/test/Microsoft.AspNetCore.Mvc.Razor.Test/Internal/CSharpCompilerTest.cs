@@ -17,6 +17,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class CSharpCompilerTest
     {
+#pragma warning disable CS0618 // Type or member is obsolete
+        private readonly RazorReferenceManager ReferenceManager = Mock.Of<RazorReferenceManager>();
+#pragma warning restore CS0618 // Type or member is obsolete
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -24,8 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ApplicationName == name);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
-            var compiler = new CSharpCompiler(referenceManager, hostingEnvironment);
+            var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment);
 
             // Act
             var options = compiler.GetDependencyContextCompilationOptions();
@@ -41,8 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.SetupGet(e => e.ApplicationName)
                 .Returns(typeof(Controller).GetTypeInfo().Assembly.GetName().Name);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
-            var compiler = new CSharpCompiler(referenceManager, hostingEnvironment.Object);
+            var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment.Object);
 
             // Act
             var options = compiler.GetDependencyContextCompilationOptions();
@@ -58,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.SetupGet(e => e.ApplicationName)
                 .Returns(GetType().GetTypeInfo().Assembly.GetName().Name);
-            var compiler = new CSharpCompiler(Mock.Of<RazorReferenceManager>(), hostingEnvironment.Object);
+            var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment.Object);
 
             // Act & Assert
             var parseOptions = compiler.ParseOptions;
@@ -78,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.SetupGet(e => e.EnvironmentName)
                   .Returns(environment);
-            var compiler = new CSharpCompiler(Mock.Of<RazorReferenceManager>(), hostingEnvironment.Object);
+            var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment.Object);
 
             // Act & Assert
             var compilationOptions = compiler.CSharpCompilationOptions;
@@ -96,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var hostingEnvironment = new Mock<IHostingEnvironment>();
             hostingEnvironment.SetupGet(e => e.EnvironmentName)
                   .Returns(environment);
-            var compiler = new CSharpCompiler(Mock.Of<RazorReferenceManager>(), hostingEnvironment.Object);
+            var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment.Object);
 
             // Act & Assert
             var parseOptions = compiler.ParseOptions;
@@ -108,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var hostingEnvironment = Mock.Of<IHostingEnvironment>(h => h.EnvironmentName == "Development");
-            var compiler = new CSharpCompiler(Mock.Of<RazorReferenceManager>(), hostingEnvironment);
+            var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment);
 
             // Act & Assert
             var compilationOptions = compiler.CSharpCompilationOptions;
@@ -138,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var hostingEnvironment = Mock.Of<IHostingEnvironment>(h => h.EnvironmentName == "Development");
-            var compiler = new CSharpCompiler(Mock.Of<RazorReferenceManager>(), hostingEnvironment);
+            var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment);
 
             // Act & Assert
             var parseOptions = compiler.ParseOptions;
@@ -163,10 +165,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: null,
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
 
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
             var compilationOptions = compiler.ParseOptions;
@@ -191,10 +192,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: "portable",
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
 
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
             var emitOptions = compiler.EmitOptions;
@@ -219,10 +219,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: "embedded",
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
 
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
             var emitOptions = compiler.EmitOptions;
@@ -247,10 +246,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: "none",
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
 
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
             Assert.False(compiler.EmitPdb);
@@ -273,10 +271,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: null,
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
 
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
             var compilationOptions = compiler.CSharpCompilationOptions;
@@ -300,10 +297,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: null,
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
 
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
             var compilationOptions = compiler.CSharpCompilationOptions;
@@ -327,10 +323,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: null,
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
 
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
             var compilationOptions = compiler.CSharpCompilationOptions;
@@ -354,10 +349,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: null,
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
 
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
             var parseOptions = compiler.ParseOptions;
@@ -383,9 +377,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 debugType: null,
                 emitEntryPoint: null,
                 generateXmlDocumentation: null);
-            var referenceManager = Mock.Of<RazorReferenceManager>();
             var hostingEnvironment = Mock.Of<IHostingEnvironment>();
-            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+            var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act
             var syntaxTree = compiler.CreateSyntaxTree(SourceText.From(content));
@@ -399,7 +392,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             private readonly DependencyContextCompilationOptions _options;
 
             public TestCSharpCompiler(
+#pragma warning disable CS0618 // Type or member is obsolete
                 RazorReferenceManager referenceManager,
+#pragma warning restore CS0618 // Type or member is obsolete
                 IHostingEnvironment hostingEnvironment,
                 DependencyContextCompilationOptions options)
                 : base(referenceManager, hostingEnvironment)

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC is a web framework that gives you a powerful, patterns-based way to build dynamic websites and web APIs. ASP.NET Core MVC enables a clean separation of concerns and gives you full control over markup.</Description>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Analyzers\Microsoft.AspNetCore.Mvc.Analyzers.csproj" PrivateAssets="None" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Analyzers\Microsoft.AspNetCore.Mvc.Analyzers.csproj" PrivateAssets="None" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.ApiExplorer\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Cors\Microsoft.AspNetCore.Mvc.Cors.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -13,8 +14,14 @@ namespace RazorWebSite
 {
     public class UpdateableFileProvider : IFileProvider
     {
+        public CancellationTokenSource _pagesTokenSource = new CancellationTokenSource();
+
         private readonly Dictionary<string, TestFileInfo> _content = new Dictionary<string, TestFileInfo>()
         {
+            {
+                "/Views/UpdateableIndex/_ViewImports.cshtml",
+                new TestFileInfo(string.Empty)
+            },
             {
                 "/Views/UpdateableIndex/Index.cshtml",
                 new TestFileInfo(@"@Html.Partial(""../UpdateableShared/_Partial.cshtml"")")
@@ -23,9 +30,21 @@ namespace RazorWebSite
                 "/Views/UpdateableShared/_Partial.cshtml",
                 new TestFileInfo("Original content")
             },
+            {
+                "/Pages/UpdateablePage.cshtml",
+                new TestFileInfo("@page" + Environment.NewLine + "Original content")
+            },
         };
 
-        public IDirectoryContents GetDirectoryContents(string subpath) => new NotFoundDirectoryContents();
+        public IDirectoryContents GetDirectoryContents(string subpath)
+        {
+            if (subpath == "/Pages")
+            {
+                return new PagesDirectoryContents();
+            }
+
+            return new NotFoundDirectoryContents();
+        }
 
         public void UpdateContent(string subpath, string content)
         {
@@ -34,10 +53,16 @@ namespace RazorWebSite
             _content[subpath] = new TestFileInfo(content);
         }
 
+        public void CancelRazorPages()
+        {
+            var oldToken = _pagesTokenSource;
+            _pagesTokenSource = new CancellationTokenSource();
+            oldToken.Cancel();
+        }
+
         public IFileInfo GetFileInfo(string subpath)
         {
-            TestFileInfo fileInfo;
-            if (!_content.TryGetValue(subpath, out fileInfo))
+            if (!_content.TryGetValue(subpath, out var fileInfo))
             {
                 fileInfo = new TestFileInfo(null);
             }
@@ -47,8 +72,12 @@ namespace RazorWebSite
 
         public IChangeToken Watch(string filter)
         {
-            TestFileInfo fileInfo;
-            if (_content.TryGetValue(filter, out fileInfo))
+            if (filter == "/Pages/**/*.cshtml")
+            {
+                return new CancellationChangeToken(_pagesTokenSource.Token);
+            }
+
+            if (_content.TryGetValue(filter, out var fileInfo))
             {
                 return fileInfo.ChangeToken;
             }
@@ -71,7 +100,7 @@ namespace RazorWebSite
             public bool IsDirectory => false;
             public DateTimeOffset LastModified => DateTimeOffset.MinValue;
             public long Length => -1;
-            public string Name => null;
+            public string Name { get; set; }
             public string PhysicalPath => null;
             public CancellationTokenSource TokenSource { get; } = new CancellationTokenSource();
             public CancellationChangeToken ChangeToken { get; }
@@ -80,6 +109,24 @@ namespace RazorWebSite
             {
                 return new MemoryStream(Encoding.UTF8.GetBytes(_content));
             }
+        }
+
+        private class PagesDirectoryContents : IDirectoryContents
+        {
+            public bool Exists => true;
+
+            public IEnumerator<IFileInfo> GetEnumerator()
+            {
+                var file = new TestFileInfo("@page" + Environment.NewLine + "Original content")
+                {
+                    Name = "UpdateablePage.cshtml"
+                };
+
+                var files = new List<IFileInfo> {  file };
+                return files.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

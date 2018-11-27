@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

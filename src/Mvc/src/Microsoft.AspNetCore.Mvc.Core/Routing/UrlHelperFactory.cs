@@ -3,7 +3,11 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
@@ -37,13 +41,29 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             // Perf: Create only one UrlHelper per context
-            object value;
-            if (httpContext.Items.TryGetValue(typeof(IUrlHelper), out value) && value is IUrlHelper)
+            if (httpContext.Items.TryGetValue(typeof(IUrlHelper), out var value) && value is IUrlHelper)
             {
                 return (IUrlHelper)value;
             }
 
-            var urlHelper = new UrlHelper(context);
+            IUrlHelper urlHelper;
+            var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+            if (endpointFeature?.Endpoint != null)
+            {
+                var services = httpContext.RequestServices;
+                var linkGenerator = services.GetRequiredService<LinkGenerator>();
+                var logger = services.GetRequiredService<ILogger<EndpointRoutingUrlHelper>>();
+
+                urlHelper = new EndpointRoutingUrlHelper(
+                    context,
+                    linkGenerator,
+                    logger);
+            }
+            else
+            {
+                urlHelper = new UrlHelper(context);
+            }
+
             httpContext.Items[typeof(IUrlHelper)] = urlHelper;
 
             return urlHelper;

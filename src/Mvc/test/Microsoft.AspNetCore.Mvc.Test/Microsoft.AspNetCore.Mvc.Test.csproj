@@ -1,15 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
 
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
   </ItemGroup>
 </Project>

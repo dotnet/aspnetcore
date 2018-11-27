@@ -10,9 +10,11 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -65,10 +67,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void AddRazorViewEngineFeatureProviders(IMvcCoreBuilder builder)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             if (!builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>().Any())
             {
                 builder.PartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (!builder.PartManager.FeatureProviders.OfType<TagHelperFeatureProvider>().Any())
             {
@@ -78,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // ViewFeature items have precedence semantics - when two views have the same path \ identifier,
             // the one that appears earlier in the list wins. Therefore the ordering of
             // RazorCompiledItemFeatureProvider and ViewsFeatureProvider is pertinent - any view compiled
-            // using the Sdk will be prefered to views compiled using MvcPrecompilation.
+            // using the Sdk will be preferred to views compiled using MvcPrecompilation.
             if (!builder.PartManager.FeatureProviders.OfType<RazorCompiledItemFeatureProvider>().Any())
             {
                 builder.PartManager.FeatureProviders.Add(new RazorCompiledItemFeatureProvider());
@@ -146,13 +150,18 @@ namespace Microsoft.Extensions.DependencyInjection
         internal static void AddRazorViewEngineServices(IServiceCollection services)
         {
             services.TryAddSingleton<CSharpCompiler>();
+#pragma warning disable CS0618 // Type or member is obsolete
             services.TryAddSingleton<RazorReferenceManager, DefaultRazorReferenceManager>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcRazorMvcViewOptionsSetup>());
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
+
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IPostConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
             services.TryAddSingleton<
                 IRazorViewEngineFileProviderAccessor,
@@ -172,6 +181,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return viewEngine;
             });
             services.TryAddSingleton<IViewCompilerProvider, RazorViewCompilerProvider>();
+            services.TryAddSingleton<IViewCompilationMemoryCacheProvider, RazorViewCompilationMemoryCacheProvider>();
 
             // In the default scenario the following services are singleton by virtue of being initialized as part of
             // creating the singleton RazorViewEngine instance.
@@ -219,8 +229,10 @@ namespace Microsoft.Extensions.DependencyInjection
             // TagHelperComponents manager
             services.TryAddScoped<ITagHelperComponentManager, TagHelperComponentManager>();
 
-            // Consumed by the Cache tag helper to cache results across the lifetime of the application.
+            // Infrastructure for MVC TagHelpers
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
+            services.TryAddSingleton<TagHelperMemoryCacheProvider>();
+            services.TryAddSingleton<IFileVersionProvider, DefaultFileVersionProvider>();
         }
     }
 }

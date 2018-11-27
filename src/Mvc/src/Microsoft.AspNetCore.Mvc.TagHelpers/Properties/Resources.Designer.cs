@@ -206,6 +206,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         internal static string FormatPartialTagHelper_InvalidModelAttributes(object p0, object p1, object p2)
             => string.Format(CultureInfo.CurrentCulture, GetString("PartialTagHelper_InvalidModelAttributes"), p0, p1, p2);
 
+        /// <summary>
+        /// The fallback partial view '{0}' was not found. The following locations were searched:{1}
+        /// </summary>
+        internal static string ViewEngine_FallbackViewNotFound
+        {
+            get => GetString("ViewEngine_FallbackViewNotFound");
+        }
+
+        /// <summary>
+        /// The fallback partial view '{0}' was not found. The following locations were searched:{1}
+        /// </summary>
+        internal static string FormatViewEngine_FallbackViewNotFound(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewEngine_FallbackViewNotFound"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

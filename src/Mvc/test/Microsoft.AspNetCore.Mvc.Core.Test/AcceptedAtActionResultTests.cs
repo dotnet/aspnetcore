@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void OnFormatting_NullUrlHelperContextNoRequestServices_ThrowsArgumentNullExeption()
+        public void OnFormatting_NullUrlHelperContextNoRequestServices_ThrowsArgumentNullException()
         {
             // Arrange
             var context = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());

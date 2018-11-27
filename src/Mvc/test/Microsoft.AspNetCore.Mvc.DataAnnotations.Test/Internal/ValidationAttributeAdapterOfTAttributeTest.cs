@@ -39,16 +39,16 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             adapter.GetErrorMessage(validationContext);
 
             // Assert
-            Assert.True(attribute.Formated);
+            Assert.True(attribute.Formatted);
         }
 
         public class TestValidationAttribute : ValidationAttribute
         {
-            public bool Formated = false;
+            public bool Formatted = false;
 
             public override string FormatErrorMessage(string name)
             {
-                Formated = true;
+                Formatted = true;
                 return base.FormatErrorMessage(name);
             }
         }

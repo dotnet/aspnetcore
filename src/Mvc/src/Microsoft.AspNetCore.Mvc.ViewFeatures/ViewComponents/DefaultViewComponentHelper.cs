@@ -41,7 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             HtmlEncoder htmlEncoder,
             IViewComponentSelector selector,
             IViewComponentInvokerFactory invokerFactory,
-            IViewBufferScope viewBufferScope)
+#pragma warning disable PUB0001 // Pubternal type in public API
+            IViewBufferScope viewBufferScope
+#pragma warning restore PUB0001
+            )
         {
             if (descriptorProvider == null)
             {

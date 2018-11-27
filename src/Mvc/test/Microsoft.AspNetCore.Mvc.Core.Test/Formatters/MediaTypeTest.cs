@@ -214,6 +214,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("application/entity+json", "application/entity+json")]
         [InlineData("application/*+json", "application/entity+json")]
         [InlineData("application/*", "application/entity+json")]
+        [InlineData("application/json", "application/vnd.restful+json")]
+        [InlineData("application/json", "application/problem+json")]
         public void IsSubsetOf_ReturnsTrueWhenExpected(string set, string subset)
         {
             // Arrange
@@ -242,6 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("application/*+*", "application/json")]
         [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
         [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/entity+json", "application/entity")]
         public void IsSubsetOf_ReturnsFalseWhenExpected(string set, string subset)
         {
             // Arrange

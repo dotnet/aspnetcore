@@ -267,18 +267,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             => string.Format(CultureInfo.CurrentCulture, GetString("LayoutHasCircularReference"), p0, p1);
 
         /// <summary>
-        /// One or more compilation references are missing. Ensure that your project is referencing '{0}' and the '{1}' property is not set to false.
+        /// One or more compilation references may be missing. If you're seeing this in a published application, set '{0}' to true in your project file to ensure files in the refs directory are published.
         /// </summary>
-        internal static string Compilation_DependencyContextIsNotSpecified
+        internal static string Compilation_MissingReferences
         {
-            get => GetString("Compilation_DependencyContextIsNotSpecified");
+            get => GetString("Compilation_MissingReferences");
         }
 
         /// <summary>
-        /// One or more compilation references are missing. Ensure that your project is referencing '{0}' and the '{1}' property is not set to false.
+        /// One or more compilation references may be missing. If you're seeing this in a published application, set '{0}' to true in your project file to ensure files in the refs directory are published.
         /// </summary>
-        internal static string FormatCompilation_DependencyContextIsNotSpecified(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("Compilation_DependencyContextIsNotSpecified"), p0, p1);
+        internal static string FormatCompilation_MissingReferences(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Compilation_MissingReferences"), p0);
 
         /// <summary>
         /// '{0}' cannot be empty. These locations are required to locate a view for rendering.

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC API explorer functionality for discovering metadata such as the list of controllers and actions, and their URLs and allowed HTTP methods.</Description>
@@ -10,10 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
-
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
   </ItemGroup>
 
 </Project>

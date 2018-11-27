@@ -53,7 +53,7 @@
         Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.ResolvedFrom)', '.deps.json'))" />
     </ItemGroup>
 
-    <Copy SourceFiles="%(DepsFilePaths.FullPath)" DestinationFolder="$(OutputPath)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+    <Copy SourceFiles="%(DepsFilePaths.FullPath)" DestinationFolder="$(OutDir)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
   </Target>
     
 </Project>

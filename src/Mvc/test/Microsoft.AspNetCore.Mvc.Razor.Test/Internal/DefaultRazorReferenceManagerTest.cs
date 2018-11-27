@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class DefaultRazorReferenceManagerTest
     {
         [Fact]
@@ -52,4 +53,5 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
             return applicationPartManager;
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

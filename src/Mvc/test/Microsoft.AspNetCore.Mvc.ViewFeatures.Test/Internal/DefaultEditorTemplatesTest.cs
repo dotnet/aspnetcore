@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Testing;
 using Moq;
@@ -375,7 +374,7 @@ Environment.NewLine;
         }
 
         [Fact]
-        public void ObjectTemplate_HonoursHideSurroundingHtml()
+        public void ObjectTemplate_HonorsHideSurroundingHtml()
         {
             // Arrange
             var expected =
@@ -471,7 +470,7 @@ Environment.NewLine;
         }
 
         [Fact]
-        public void HiddenInputTemplate_HonoursHideSurroundingHtml()
+        public void HiddenInputTemplate_HonorsHideSurroundingHtml()
         {
             // Arrange
             var expected = "<input id=\"HtmlEncode[[FieldPrefix]]\" name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[Model string]]\" />";
@@ -660,6 +659,7 @@ Environment.NewLine;
                 Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
+                localizerFactory: null,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
             helper.ViewData["Property1"] = "True";
 
@@ -702,6 +702,7 @@ Environment.NewLine;
                 Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
+                localizerFactory: null,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.
@@ -743,6 +744,7 @@ Environment.NewLine;
                 Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
+                localizerFactory: null,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
             helper.ViewData["Property1"] = "True";
 
@@ -785,6 +787,7 @@ Environment.NewLine;
                 Mock.Of<IUrlHelper>(),
                 viewEngine.Object,
                 provider,
+                localizerFactory: null,
                 innerHelper => new StubbyHtmlHelper(innerHelper));
 
             // TemplateBuilder sets FormattedModelValue before calling TemplateRenderer and it's used in most templates.

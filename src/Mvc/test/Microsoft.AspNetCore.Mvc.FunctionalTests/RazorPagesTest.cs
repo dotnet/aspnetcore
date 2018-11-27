@@ -11,7 +11,6 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json.Linq;
@@ -142,6 +141,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal("CustomActionResult", content);
+        }
+
+        [Fact]
+        public async Task Page_Handler_ReturnPartialWithoutModel()
+        {
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("RenderPartialWithoutModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Welcome, Guest", element.TextContent);
+        }
+
+        [Fact]
+        public async Task Page_Handler_ReturnPartialWithModel()
+        {
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("RenderPartialWithModel");
+
+            var element = document.RequiredQuerySelector("#content");
+            Assert.Equal("Welcome, Admin", element.TextContent);
         }
 
         [Fact]
@@ -900,7 +919,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         {
             // Arrange
             var expected =
-@"Microsoft.AspNetCore.Mvc.Routing.UrlHelper
+@"Microsoft.AspNetCore.Mvc.Routing.EndpointRoutingUrlHelper
 Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper`1[AspNetCore.InjectedPageProperties]
 Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPageProperties]";
 
@@ -1403,13 +1422,61 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
         }
 
         [Fact]
-        public async Task ViewDataAvaialableInPageFilter_AfterHandlerMethod_ReturnsPageResult()
+        public async Task ViewDataAwaitableInPageFilter_AfterHandlerMethod_ReturnsPageResult()
         {
             // Act
             var content = await Client.GetStringAsync("http://localhost/Pages/ViewDataAvailableAfterHandlerExecuted");
 
             // Assert
             Assert.Equal("ViewData: Bar", content);
+        }
+
+        [Fact]
+        public async Task OptionsRequest_WithoutHandler_Returns200_WithoutExecutingPage()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Options, "http://localhost/HelloWorld");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Empty(content.Trim());
+        }
+
+        [Fact]
+        public async Task PageWithOptionsHandler_ExecutesGetRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/HelloWorldWithOptionsHandler");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello from OnGet!", content.Trim());
+        }
+
+        [Fact]
+        public async Task PageWithOptionsHandler_ExecutesOptionsRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Options, "http://localhost/HelloWorldWithOptionsHandler");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello from OnOptions!", content.Trim());
         }
 
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)

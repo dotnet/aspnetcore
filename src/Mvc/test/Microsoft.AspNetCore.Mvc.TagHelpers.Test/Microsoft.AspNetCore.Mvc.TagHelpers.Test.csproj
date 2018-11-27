@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
@@ -6,12 +6,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
   </ItemGroup>
 
 </Project>

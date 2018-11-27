@@ -46,7 +46,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         public CultureInfo Culture => _culture;
 
+#pragma warning disable PUB0001 // Pubternal type in public API
         protected PrefixContainer PrefixContainer
+#pragma warning restore PUB0001
         {
             get
             {

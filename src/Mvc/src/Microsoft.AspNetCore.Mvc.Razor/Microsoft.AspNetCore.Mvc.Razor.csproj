@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC Razor view engine for CSHTML files.</Description>
@@ -19,10 +19,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.PropertyActivator.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyActivatorSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/$(TargetFramework)/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;DocumentationProjectOutputGroup">

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -190,6 +192,12 @@ namespace Microsoft.AspNetCore.Mvc
                 },
                 provider =>
                 {
+                    var formFileParameter = Assert.IsType<BindingSourceMetadataProvider>(provider);
+                    Assert.Equal(typeof(IEnumerable<IFormFile>), formFileParameter.Type);
+                    Assert.Equal(BindingSource.FormFile, formFileParameter.BindingSource);
+                },
+                provider =>
+                {
                     var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(Type), excludeFilter.Type);
                 },
@@ -244,7 +252,8 @@ namespace Microsoft.AspNetCore.Mvc
                 {
                     var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
                     Assert.Equal(typeof(XmlNode).FullName, excludeFilter.FullTypeName);
-                });
+                },
+                provider => Assert.IsType<HasValidatorsValidationMetadataProvider>(provider));
         }
 
         private static T GetOptions<T>(Action<IServiceCollection> action = null)

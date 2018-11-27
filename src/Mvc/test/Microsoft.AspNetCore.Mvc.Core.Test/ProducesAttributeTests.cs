@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters.Internal;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Moq;

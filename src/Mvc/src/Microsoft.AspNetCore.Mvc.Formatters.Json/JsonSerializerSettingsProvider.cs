@@ -15,10 +15,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         // return shared resolver by default for perf so slow reflection logic is cached once
         // developers can set their own resolver after the settings are returned if desired
-        private static readonly DefaultContractResolver SharedContractResolver = new DefaultContractResolver
+        private static readonly DefaultContractResolver SharedContractResolver;
+
+        static JsonSerializerSettingsProvider()
         {
-            NamingStrategy = new CamelCaseNamingStrategy(),
-        };
+            SharedContractResolver = CreateContractResolver();
+        }
 
         /// <summary>
         /// Creates default <see cref="JsonSerializerSettings"/>.
@@ -39,6 +41,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // Do not change this setting
                 // Setting this to None prevents Json.NET from loading malicious, unsafe, or security-sensitive types
                 TypeNameHandling = TypeNameHandling.None,
+            };
+        }
+
+        // To enable unit testing
+        internal static DefaultContractResolver CreateContractResolver()
+        {
+            return new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy(),
             };
         }
     }

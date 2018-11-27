@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Represents an <see cref="ActionResult"/> that renders a partial view to the response.
     /// </summary>
-    public class PartialViewResult : ActionResult
+    public class PartialViewResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or sets the HTTP status code.

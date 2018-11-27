@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
@@ -34,11 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(obj.MemberName, StringComparer.Ordinal);
-            hashCodeCombiner.Add(obj.Message, StringComparer.Ordinal);
-
-            return hashCodeCombiner.CombinedHash;
+            return obj.MemberName.GetHashCode();
         }
     }
 }

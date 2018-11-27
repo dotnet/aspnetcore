@@ -32,7 +32,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <param name="logger">The <see cref="ILogger"/>.</param>
         public DefaultViewComponentInvoker(
             IViewComponentFactory viewComponentFactory,
+#pragma warning disable PUB0001 // Pubternal type in public API
             ViewComponentInvokerCache viewComponentInvokerCache,
+#pragma warning restore PUB0001
             DiagnosticSource diagnosticSource,
             ILogger logger)
         {

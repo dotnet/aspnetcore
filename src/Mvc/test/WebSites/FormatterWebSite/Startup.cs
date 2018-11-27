@@ -19,11 +19,11 @@ namespace FormatterWebSite
 
                 options.InputFormatters.Add(new StringInputFormatter());
             })
-            .AddXmlDataContractSerializerFormatters();
+            .AddXmlDataContractSerializerFormatters()
+            .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.Configure<MvcJsonOptions>(options => { options.SerializerSettings.Converters.Insert(0, new IModelConverter()); });
         }
-
 
         public void Configure(IApplicationBuilder app)
         {

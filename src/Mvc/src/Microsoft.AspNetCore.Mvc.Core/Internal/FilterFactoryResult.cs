@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public struct FilterFactoryResult
+    public readonly struct FilterFactoryResult
     {
         public FilterFactoryResult(
             FilterItem[] cacheableFilters,

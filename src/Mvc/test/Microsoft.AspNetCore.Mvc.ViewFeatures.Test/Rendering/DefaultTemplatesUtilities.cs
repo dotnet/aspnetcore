@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 CreateUrlHelper(),
                 CreateViewEngine(),
                 metadataProvider,
+                localizerFactory: null,
                 innerHelperWrapper: null,
                 htmlGenerator: htmlGenerator,
                 idAttributeDotReplacement: null);
@@ -92,6 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 CreateUrlHelper(),
                 CreateViewEngine(),
                 TestModelMetadataProvider.CreateDefaultProvider(),
+                localizerFactory: null,
                 innerHelperWrapper: null,
                 htmlGenerator: null,
                 idAttributeDotReplacement: null);
@@ -106,6 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 CreateUrlHelper(),
                 CreateViewEngine(),
                 TestModelMetadataProvider.CreateDefaultProvider(),
+                localizerFactory: null,
                 innerHelperWrapper: null,
                 htmlGenerator: null,
                 idAttributeDotReplacement: idAttributeDotReplacement);
@@ -127,6 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 CreateUrlHelper(),
                 CreateViewEngine(),
                 provider,
+                localizerFactory: null,
                 innerHelperWrapper: null,
                 htmlGenerator: null,
                 idAttributeDotReplacement: idAttributeDotReplacement);
@@ -167,7 +171,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 model,
                 CreateUrlHelper(),
                 viewEngine,
-                TestModelMetadataProvider.CreateDefaultProvider(stringLocalizerFactory));
+                TestModelMetadataProvider.CreateDefaultProvider(stringLocalizerFactory),
+                stringLocalizerFactory);
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
@@ -180,6 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 CreateUrlHelper(),
                 viewEngine,
                 TestModelMetadataProvider.CreateDefaultProvider(),
+                localizerFactory: null,
                 innerHelperWrapper);
         }
 
@@ -187,9 +193,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             TModel model,
             IUrlHelper urlHelper,
             ICompositeViewEngine viewEngine,
-            IModelMetadataProvider provider)
+            IModelMetadataProvider provider,
+            IStringLocalizerFactory localizerFactory = null)
         {
-            return GetHtmlHelper(model, urlHelper, viewEngine, provider, innerHelperWrapper: null);
+            return GetHtmlHelper(model, urlHelper, viewEngine, provider, localizerFactory, innerHelperWrapper: null);
         }
 
         public static HtmlHelper<TModel> GetHtmlHelper<TModel>(
@@ -197,6 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             IUrlHelper urlHelper,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider provider,
+            IStringLocalizerFactory localizerFactory,
             Func<IHtmlHelper, IHtmlHelper> innerHelperWrapper)
         {
             var viewData = new ViewDataDictionary<TModel>(provider);
@@ -207,6 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 urlHelper,
                 viewEngine,
                 provider,
+                localizerFactory,
                 innerHelperWrapper,
                 htmlGenerator: null,
                 idAttributeDotReplacement: null);
@@ -217,6 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             IUrlHelper urlHelper,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider provider,
+            IStringLocalizerFactory localizerFactory,
             Func<IHtmlHelper, IHtmlHelper> innerHelperWrapper,
             IHtmlGenerator htmlGenerator,
             string idAttributeDotReplacement)
@@ -229,14 +239,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             {
                 options.HtmlHelperOptions.IdAttributeDotReplacement = idAttributeDotReplacement;
             }
-            var localizationOptionsAccesor = new Mock<IOptions<MvcDataAnnotationsLocalizationOptions>>();
 
-            localizationOptionsAccesor.SetupGet(o => o.Value).Returns(new MvcDataAnnotationsLocalizationOptions());
+            var localizationOptions = new MvcDataAnnotationsLocalizationOptions();
+            var localizationOptionsAccesor = Options.Create(localizationOptions);
 
             options.ClientModelValidatorProviders.Add(new DataAnnotationsClientModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                localizationOptionsAccesor.Object,
-                stringLocalizerFactory: null));
+                localizationOptionsAccesor,
+                localizerFactory));
 
             var urlHelperFactory = new Mock<IUrlHelperFactory>();
             urlHelperFactory

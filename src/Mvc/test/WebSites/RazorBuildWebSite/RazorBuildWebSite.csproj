@@ -25,6 +25,7 @@
       -->
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

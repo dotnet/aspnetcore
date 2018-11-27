@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -10,6 +9,8 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -17,7 +18,47 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 {
     public class KnownRouteValueConstraintTests
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly IRouteConstraint _constraint = new KnownRouteValueConstraint();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        [Fact]
+        public void ResolveFromServices_InjectsServiceProvider_HttpContextNotNeeded()
+        {
+            // Arrange
+            var actionDescriptor = CreateActionDescriptor("testArea",
+                "testController",
+                "testAction");
+            actionDescriptor.RouteValues.Add("randomKey", "testRandom");
+            var descriptorCollectionProvider = CreateActionDescriptorCollectionProvider(actionDescriptor);
+
+            var services = new ServiceCollection();
+            services.AddRouting();
+            services.AddSingleton(descriptorCollectionProvider);
+
+            var routeOptionsSetup = new MvcCoreRouteOptionsSetup();
+            services.Configure<RouteOptions>(routeOptionsSetup.Configure);
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var inlineConstraintResolver = serviceProvider.GetRequiredService<IInlineConstraintResolver>();
+            var constraint = inlineConstraintResolver.ResolveConstraint("exists");
+
+            var values = new RouteValueDictionary()
+            {
+                { "area", "testArea" },
+                { "controller", "testController" },
+                { "action", "testAction" },
+                { "randomKey", "testRandom" }
+            };
+
+            // Act
+            var knownRouteValueConstraint = Assert.IsType<KnownRouteValueConstraint>(constraint);
+            var match = knownRouteValueConstraint.Match(httpContext: null, route: null, "area", values, RouteDirection.IncomingRequest);
+
+            // Assert
+            Assert.True(match);
+        }
 
         [Theory]
         [InlineData("area", RouteDirection.IncomingRequest)]
@@ -55,8 +96,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             // Arrange
             var actionDescriptor = CreateActionDescriptor("testArea",
-                                                          "testController",
-                                                          "testAction");
+                "testController",
+                "testAction");
             actionDescriptor.RouteValues.Add("randomKey", "testRandom");
             var httpContext = GetHttpContext(actionDescriptor);
             var route = Mock.Of<IRouter>();
@@ -115,8 +156,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public void RouteValue_IsNotAString_MatchFails(RouteDirection direction)
         {
             var actionDescriptor = CreateActionDescriptor("testArea",
-                                                          controller: null,
-                                                          action: null);
+                controller: null,
+                action: null);
             var httpContext = GetHttpContext(actionDescriptor);
             var route = Mock.Of<IRouter>();
             var values = new RouteValueDictionary()
@@ -157,7 +198,86 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 ex.Message);
         }
 
-        private static HttpContext GetHttpContext(ActionDescriptor actionDescriptor)
+        [Theory]
+        [InlineData("area", RouteDirection.IncomingRequest)]
+        [InlineData("controller", RouteDirection.IncomingRequest)]
+        [InlineData("action", RouteDirection.IncomingRequest)]
+        [InlineData("randomKey", RouteDirection.IncomingRequest)]
+        [InlineData("area", RouteDirection.UrlGeneration)]
+        [InlineData("controller", RouteDirection.UrlGeneration)]
+        [InlineData("action", RouteDirection.UrlGeneration)]
+        [InlineData("randomKey", RouteDirection.UrlGeneration)]
+        public void ServiceInjected_RouteKey_Exists_MatchSucceeds(string keyName, RouteDirection direction)
+        {
+            // Arrange
+            var actionDescriptor = CreateActionDescriptor("testArea",
+                "testController",
+                "testAction");
+            actionDescriptor.RouteValues.Add("randomKey", "testRandom");
+
+            var provider = CreateActionDescriptorCollectionProvider(actionDescriptor);
+
+            var constraint = new KnownRouteValueConstraint(provider);
+
+            var values = new RouteValueDictionary()
+            {
+                { "area", "testArea" },
+                { "controller", "testController" },
+                { "action", "testAction" },
+                { "randomKey", "testRandom" }
+            };
+
+            // Act
+            var match = constraint.Match(httpContext: null, route: null, keyName, values, direction);
+
+            // Assert
+            Assert.True(match);
+        }
+
+        [Theory]
+        [InlineData(RouteDirection.IncomingRequest)]
+        [InlineData(RouteDirection.UrlGeneration)]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void ServiceInjected_RouteKey_Exists_UsesInvariantCulture(RouteDirection direction)
+        {
+            // Arrange
+            var actionDescriptor = CreateActionDescriptor("testArea", "testController", "testAction");
+            actionDescriptor.RouteValues.Add("randomKey", "10/31/2018 07:37:38 -07:00");
+
+            var provider = CreateActionDescriptorCollectionProvider(actionDescriptor);
+
+            var constraint = new KnownRouteValueConstraint(provider);
+
+            var values = new RouteValueDictionary()
+            {
+                { "area", "testArea" },
+                { "controller", "testController" },
+                { "action", "testAction" },
+                { "randomKey", new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)) },
+            };
+
+            // Act
+            var match = constraint.Match(httpContext: null, route: null, "randomKey", values, direction);
+
+            // Assert
+            Assert.True(match);
+        }
+
+        private static HttpContext GetHttpContext(ActionDescriptor actionDescriptor, bool setupRequestServices = true)
+        {
+            var descriptorCollectionProvider = CreateActionDescriptorCollectionProvider(actionDescriptor);
+
+            var context = new Mock<HttpContext>();
+            if (setupRequestServices)
+            {
+                context.Setup(o => o.RequestServices
+                    .GetService(typeof(IActionDescriptorCollectionProvider)))
+                    .Returns(descriptorCollectionProvider);
+            }
+            return context.Object;
+        }
+
+        private static IActionDescriptorCollectionProvider CreateActionDescriptorCollectionProvider(ActionDescriptor actionDescriptor)
         {
             var actionProvider = new Mock<IActionDescriptorProvider>(MockBehavior.Strict);
 
@@ -173,15 +293,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 .Setup(p => p.OnProvidersExecuted(It.IsAny<ActionDescriptorProviderContext>()))
                 .Verifiable();
 
-            var descriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var descriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new[] { actionProvider.Object },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
-
-            var context = new Mock<HttpContext>();
-            context.Setup(o => o.RequestServices
-                .GetService(typeof(IActionDescriptorCollectionProvider)))
-                .Returns(descriptorCollectionProvider);
-            return context.Object;
+            return descriptorCollectionProvider;
         }
 
         private static ActionDescriptor CreateActionDescriptor(string area, string controller, string action)

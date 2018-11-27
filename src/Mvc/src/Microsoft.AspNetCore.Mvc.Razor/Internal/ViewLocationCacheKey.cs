@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// <summary>
     /// Key for entries in <see cref="RazorViewEngine.ViewLookupCache"/>.
     /// </summary>
-    public struct ViewLocationCacheKey : IEquatable<ViewLocationCacheKey>
+    public readonly struct ViewLocationCacheKey : IEquatable<ViewLocationCacheKey>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ViewLocationCacheKey"/>.

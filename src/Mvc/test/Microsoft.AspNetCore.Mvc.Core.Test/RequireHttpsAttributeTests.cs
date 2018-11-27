@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData(null, false)]
         [InlineData(true, false)]
         [InlineData(false, true)]
-        public void OnAuthorization_RedirectsToHttpsEndpoint_WithSpecifiedStatusCodeAndrequireHttpsPermanentOption(bool? permanent, bool requireHttpsPermanent)
+        public void OnAuthorization_RedirectsToHttpsEndpoint_WithSpecifiedStatusCodeAndRequireHttpsPermanentOption(bool? permanent, bool requireHttpsPermanent)
         {
             var requestContext = new DefaultHttpContext();
             requestContext.RequestServices = CreateServices(null, requireHttpsPermanent);

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         [Theory]
         [InlineData(typeof(FormCollection))]
-        [InlineData(typeof(DerviedFormCollection))]
+        [InlineData(typeof(DerivedFormCollection))]
         public void Create_ThrowsException_ForFormCollectionModelType(Type modelType)
         {
             // Arrange
@@ -62,9 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
         }
 
-        private class DerviedFormCollection : FormCollection
+        private class DerivedFormCollection : FormCollection
         {
-            public DerviedFormCollection() : base(fields: null, files: null) { }
+            public DerivedFormCollection() : base(fields: null, files: null) { }
         }
     }
 }

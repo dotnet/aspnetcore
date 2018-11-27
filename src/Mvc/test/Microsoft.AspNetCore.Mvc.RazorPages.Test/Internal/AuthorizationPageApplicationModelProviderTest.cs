@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -20,17 +21,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
-            var autorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
             var typeInfo = typeof(PageWithAuthorizeHandlers).GetTypeInfo();
             var context = GetApplicationProviderContext(typeInfo);
 
             // Act
-            autorizationProvider.OnProvidersExecuting(context);
+            authorizationProvider.OnProvidersExecuting(context);
 
             // Assert
             Assert.Collection(
                 context.PageApplicationModel.Filters,
-                f => Assert.IsType<PageHandlerPageFilter>(f));
+                f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => Assert.IsType<HandleOptionsRequestsPageFilter>(f));
         }
 
         private class PageWithAuthorizeHandlers : Page
@@ -53,16 +55,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
-            var autorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
             var context = GetApplicationProviderContext(typeof(TestPage).GetTypeInfo());
 
             // Act
-            autorizationProvider.OnProvidersExecuting(context);
+            authorizationProvider.OnProvidersExecuting(context);
 
             // Assert
             Assert.Collection(
                 context.PageApplicationModel.Filters,
                 f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => Assert.IsType<HandleOptionsRequestsPageFilter>(f),
                 f => Assert.IsType<AuthorizeFilter>(f));
         }
 
@@ -90,18 +93,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             options.Value.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
 
             var policyProvider = new DefaultAuthorizationPolicyProvider(options);
-            var autorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
 
             var context = GetApplicationProviderContext(typeof(TestPageWithDerivedModel).GetTypeInfo());
 
             // Act
-            autorizationProvider.OnProvidersExecuting(context);
+            authorizationProvider.OnProvidersExecuting(context);
 
             // Assert
             AuthorizeFilter authorizeFilter = null;
             Assert.Collection(
                 context.PageApplicationModel.Filters,
                 f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => Assert.IsType<HandleOptionsRequestsPageFilter>(f),
                 f => authorizeFilter = Assert.IsType<AuthorizeFilter>(f));
 
             // Basic + Basic2 + Derived authorize
@@ -110,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private class TestPageWithDerivedModel : Page
         {
-            public DeriviedModel Model => null;
+            public DerivedModel Model => null;
 
             public override Task ExecuteAsync() =>throw new NotImplementedException();
         }
@@ -121,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Authorize(Policy = "Derived")]
-        private class DeriviedModel : BaseModel
+        private class DerivedModel : BaseModel
         {
             public virtual void OnGet()
             {
@@ -133,16 +137,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
-            var autorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
+            var authorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
             var context = GetApplicationProviderContext(typeof(PageWithAnonymousModel).GetTypeInfo());
 
             // Act
-            autorizationProvider.OnProvidersExecuting(context);
+            authorizationProvider.OnProvidersExecuting(context);
 
             // Assert
             Assert.Collection(
                 context.PageApplicationModel.Filters,
                 f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => Assert.IsType<HandleOptionsRequestsPageFilter>(f),
                 f => Assert.IsType<AllowAnonymousFilter>(f));
         }
 
@@ -163,7 +168,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             var defaultProvider = new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }));
+                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }),
+                Options.Create(new RazorPagesOptions { AllowDefaultHandlingForOptionsRequests = true }));
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);
             return context;

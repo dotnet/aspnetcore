@@ -553,7 +553,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelBinderFactory,
                 new DefaultObjectValidator(
                     modelMetadataProvider,
-                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
                 _optionsAccessor,
                 NullLoggerFactory.Instance);
 
@@ -678,7 +679,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelBinderFactory,
                 new DefaultObjectValidator(
                     modelMetadataProvider,
-                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
                 _optionsAccessor,
                 NullLoggerFactory.Instance);
 
@@ -732,7 +734,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelBinderFactory,
                 new DefaultObjectValidator(
                     modelMetadataProvider,
-                    new[] { TestModelValidatorProvider.CreateDefaultProvider() }),
+                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
+                    new MvcOptions()),
                 Options.Create(mvcOptions),
                 NullLoggerFactory.Instance);
 

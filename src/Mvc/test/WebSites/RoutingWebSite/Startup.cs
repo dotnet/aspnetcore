@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RoutingWebSite
@@ -14,7 +16,30 @@ namespace RoutingWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            var pageRouteTransformerConvention = new PageRouteTransformerConvention(new SlugifyParameterTransformer());
+
+            services
+                .AddMvc(options =>
+                {
+                    // Add route token transformer to one controller
+                    options.Conventions.Add(new ControllerRouteTokenTransformerConvention(
+                        typeof(ParameterTransformerController),
+                        new SlugifyParameterTransformer()));
+                })
+                .AddRazorPagesOptions(options =>
+                {
+                    options.Conventions.AddPageRoute("/PageRouteTransformer/PageWithConfiguredRoute", "/PageRouteTransformer/NewConventionRoute/{id?}");
+                    options.Conventions.AddFolderRouteModelConvention("/PageRouteTransformer", model =>
+                    {
+                        pageRouteTransformerConvention.Apply(model);
+                    });
+                })
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services
+                .AddRouting(options =>
+                {
+                    options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+                });
 
             services.AddScoped<TestResponseGenerator>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -24,13 +49,43 @@ namespace RoutingWebSite
         {
             app.UseMvc(routes =>
             {
+                routes.MapRoute(
+                    "DataTokensRoute",
+                    "DataTokensRoute/{controller}/{action}",
+                    defaults: null,
+                    constraints: new { controller = "DataTokens" },
+                    dataTokens: new { hasDataTokens = true });
+
+                routes.MapRoute(
+                    "ConventionalTransformerRoute",
+                    "ConventionalTransformerRoute/{controller:slugify}/{action=Index}/{param:slugify?}",
+                    defaults: null,
+                    constraints: new { controller = "ConventionalTransformer" });
+
+                routes.MapRoute(
+                    "DefaultValuesRoute_OptionalParameter",
+                    "DefaultValuesRoute/Optional/{controller=DEFAULTVALUES}/{action=OPTIONALPARAMETER}/{id?}/{**catchAll}",
+                    defaults: null,
+                    constraints: new { controller = "DefaultValues", action = "OptionalParameter" });
+
+                routes.MapRoute(
+                    "DefaultValuesRoute_DefaultParameter",
+                    "DefaultValuesRoute/Default/{controller=DEFAULTVALUES}/{action=DEFAULTPARAMETER}/{id=17}/{**catchAll}",
+                    defaults: null,
+                    constraints: new { controller = "DefaultValues", action = "DefaultParameter" });
+
                 routes.MapAreaRoute(
-                   "flightRoute",
-                   "adminRoute",
-                   "{area:exists}/{controller}/{action}",
-                   new { controller = "Home", action = "Index" },
-                   new { area = "Travel" }
-               );
+                    "flightRoute",
+                    "adminRoute",
+                    "{area:exists}/{controller}/{action}",
+                    defaults: new { controller = "Home", action = "Index" },
+                    constraints: new { area = "Travel" });
+
+                routes.MapRoute(
+                    "PageRoute",
+                    "{controller}/{action}/{page}",
+                    defaults: null,
+                    constraints: new { controller = "PageRoute" });
 
                 routes.MapRoute(
                     "ActionAsMethod",
@@ -41,22 +96,11 @@ namespace RoutingWebSite
                     "RouteWithOptionalSegment",
                     "{controller}/{action}/{path?}");
             });
+
+            app.Map("/afterrouting", b => b.Run(c =>
+            {
+                return c.Response.WriteAsync("Hello from middleware after routing");
+            }));
         }
-
-        public static void Main(string[] args)
-        {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseKestrel()
-                .UseIISIntegration();
     }
 }
-

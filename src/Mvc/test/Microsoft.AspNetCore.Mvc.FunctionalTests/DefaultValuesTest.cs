@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Fact]
-        public async Task Controller_WithDefaultValueAttribut_ReturnsDefault()
+        public async Task Controller_WithDefaultValueAttribute_ReturnsDefault()
         {
             // Arrange
             var expected = "hello";

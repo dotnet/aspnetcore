@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC abstractions and interfaces for action invocation and dispatching, authorization, action filters, formatters, model binding, routing, validation, and more.
@@ -12,11 +12,12 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="$(MicrosoftAspNetCoreRoutingAbstractionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Sources packages">
+    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
   </ItemGroup>
 
 </Project>

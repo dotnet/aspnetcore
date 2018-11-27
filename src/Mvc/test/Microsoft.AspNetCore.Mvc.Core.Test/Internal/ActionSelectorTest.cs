@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -56,6 +57,49 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var routeContext = CreateRouteContext("GET");
             routeContext.RouteData.Values.Add("controller", "Home");
             routeContext.RouteData.Values.Add("action", "Index");
+
+            // Act
+            var candidates = selector.SelectCandidates(routeContext);
+
+            // Assert
+            Assert.Collection(candidates, (a) => Assert.Same(actions[0], a));
+        }
+
+        [Fact]
+        [ReplaceCulture("de-CH", "de-CH")]
+        public void SelectCandidates_SingleMatch_UsesInvariantCulture()
+        {
+            var actions = new ActionDescriptor[]
+            {
+                new ActionDescriptor()
+                {
+                    DisplayName = "A1",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" },
+                        { "date", "10/31/2018 07:37:38 -07:00" },
+                    },
+                },
+                new ActionDescriptor()
+                {
+                    DisplayName = "A2",
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "About" }
+                    },
+                },
+            };
+
+            var selector = CreateSelector(actions);
+
+            var routeContext = CreateRouteContext("GET");
+            routeContext.RouteData.Values.Add("controller", "Home");
+            routeContext.RouteData.Values.Add("action", "Index");
+            routeContext.RouteData.Values.Add(
+                "date",
+                new DateTimeOffset(2018, 10, 31, 7, 37, 38, TimeSpan.FromHours(-7)));
 
             // Act
             var candidates = selector.SelectCandidates(routeContext);
@@ -932,7 +976,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private ControllerActionDescriptor InvokeActionSelector(RouteContext context)
         {
             var actionDescriptorProvider = GetActionDescriptorProvider();
-            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
+            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 new[] { actionDescriptorProvider },
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
 
@@ -961,7 +1005,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var manager = GetApplicationManager(controllerTypes);
 
-            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
+            var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
@@ -1092,7 +1136,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static ActionConstraintCache GetActionConstraintCache(IActionConstraintProvider[] actionConstraintProviders = null)
         {
-            var descriptorProvider = new ActionDescriptorCollectionProvider(
+            var descriptorProvider = new DefaultActionDescriptorCollectionProvider(
                 Enumerable.Empty<IActionDescriptorProvider>(),
                 Enumerable.Empty<IActionDescriptorChangeProvider>());
             return new ActionConstraintCache(descriptorProvider, actionConstraintProviders.AsEnumerable() ?? new List<IActionConstraintProvider>());

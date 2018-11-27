@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -27,6 +25,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     {
         private readonly MvcOptions _mvcOptions;
         private readonly IActionResultTypeMapper _mapper;
+        private readonly ApiResponseTypeProvider _responseTypeProvider;
+        private readonly RouteOptions _routeOptions;
         private readonly IInlineConstraintResolver _constraintResolver;
         private readonly IModelMetadataProvider _modelMetadataProvider;
 
@@ -42,10 +42,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             IOptions<MvcOptions> optionsAccessor,
             IInlineConstraintResolver constraintResolver,
             IModelMetadataProvider modelMetadataProvider)
+            : this(optionsAccessor, constraintResolver, modelMetadataProvider, null)
         {
-            _mvcOptions = optionsAccessor.Value;
-            _constraintResolver = constraintResolver;
-            _modelMetadataProvider = modelMetadataProvider;
         }
 
         /// <summary>
@@ -56,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public DefaultApiDescriptionProvider(
             IOptions<MvcOptions> optionsAccessor,
             IInlineConstraintResolver constraintResolver,
@@ -66,6 +65,31 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
             _mapper = mapper;
+            _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
+        /// </summary>
+        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
+        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
+        /// constraints.</param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
+        /// <param name="routeOptions">The accessor for <see cref="RouteOptions"/>.</param>
+        public DefaultApiDescriptionProvider(
+            IOptions<MvcOptions> optionsAccessor,
+            IInlineConstraintResolver constraintResolver,
+            IModelMetadataProvider modelMetadataProvider,
+            IActionResultTypeMapper mapper,
+            IOptions<RouteOptions> routeOptions)
+        {
+            _mvcOptions = optionsAccessor.Value;
+            _constraintResolver = constraintResolver;
+            _modelMetadataProvider = modelMetadataProvider;
+            _mapper = mapper;
+            _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
+            _routeOptions = routeOptions.Value;
         }
 
         /// <inheritdoc />
@@ -127,15 +151,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             var requestMetadataAttributes = GetRequestMetadataAttributes(action);
-            var responseMetadataAttributes = GetResponseMetadataAttributes(action);
 
-            // We only provide response info if we can figure out a type that is a user-data type.
-            // Void /Task object/IActionResult will result in no data.
-            var declaredReturnType = GetDeclaredReturnType(action);
-
-            var runtimeReturnType = GetRuntimeReturnType(declaredReturnType);
-
-            var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, runtimeReturnType);
+            var apiResponseTypes = _responseTypeProvider.GetApiResponseTypes(action);
             foreach (var apiResponseType in apiResponseTypes)
             {
                 apiDescription.SupportedResponseTypes.Add(apiResponseType);
@@ -184,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     var visitor = new PseudoModelBindingVisitor(context, actionParameter);
 
-                    ModelMetadata metadata = null;
+                    ModelMetadata metadata;
                     if (_mvcOptions.AllowValidatingTopLevelNodes &&
                         actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
                         _modelMetadataProvider is ModelMetadataProvider provider)
@@ -239,6 +256,21 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             // Next, we want to join up any route parameters with those discovered from the action's parameters.
+            // This will result us in creating a parameter representation for each route parameter that does not
+            // have a mapping parameter or bound property.
+            ProcessRouteParameters(context);
+
+            // Set IsRequired=true
+            ProcessIsRequired(context);
+
+            // Set DefaultValue
+            ProcessParameterDefaultValue(context);
+
+            return context.Results;
+        }
+
+        private void ProcessRouteParameters(ApiParameterContext context)
+        {
             var routeParameters = new Dictionary<string, ApiParameterRouteInfo>(StringComparer.OrdinalIgnoreCase);
             foreach (var routeParameter in context.RouteParameters)
             {
@@ -278,8 +310,46 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     Source = BindingSource.Path,
                 });
             }
+        }
 
-            return context.Results;
+        internal static void ProcessIsRequired(ApiParameterContext context)
+        {
+            foreach (var parameter in context.Results)
+            {
+                if (parameter.Source == BindingSource.Body)
+                {
+                    parameter.IsRequired = true;
+                }
+
+                if (parameter.ModelMetadata != null && parameter.ModelMetadata.IsBindingRequired)
+                {
+                    parameter.IsRequired = true;
+                }
+
+                if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null && !parameter.RouteInfo.IsOptional)
+                {
+                    parameter.IsRequired = true;
+                }
+            }
+        }
+
+        internal static void ProcessParameterDefaultValue(ApiParameterContext context)
+        {
+            foreach (var parameter in context.Results)
+            {
+                if (parameter.Source == BindingSource.Path)
+                {
+                    parameter.DefaultValue = parameter.RouteInfo?.DefaultValue;
+                }
+                else
+                {
+                    if (parameter.ParameterDescriptor is ControllerParameterDescriptor controllerParameter &&
+                        ParameterDefaultValues.TryGetDeclaredParameterDefaultValue(controllerParameter.ParameterInfo, out var defaultValue))
+                    {
+                        parameter.DefaultValue = defaultValue;
+                    }
+                }
+            }
         }
 
         private ApiParameterRouteInfo CreateRouteInfo(TemplatePart routeParameter)
@@ -339,7 +409,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 {
                     if (part.IsLiteral)
                     {
-                        currentSegment += part.Text;
+                        currentSegment += _routeOptions.LowercaseUrls ?
+                            part.Text.ToLowerInvariant() :
+                            part.Text;
                     }
                     else if (part.IsParameter)
                     {
@@ -406,151 +478,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return contentTypes;
         }
 
-        private IReadOnlyList<ApiResponseType> GetApiResponseTypes(
-            IApiResponseMetadataProvider[] responseMetadataAttributes,
-            Type type)
-        {
-            var results = new List<ApiResponseType>();
-
-            // Build list of all possible return types (and status codes) for an action.
-            var objectTypes = new Dictionary<int, Type>();
-
-            // Get the content type that the action explicitly set to support.
-            // Walk through all 'filter' attributes in order, and allow each one to see or override
-            // the results of the previous ones. This is similar to the execution path for content-negotiation.
-            var contentTypes = new MediaTypeCollection();
-            if (responseMetadataAttributes != null)
-            {
-                foreach (var metadataAttribute in responseMetadataAttributes)
-                {
-                    metadataAttribute.SetContentTypes(contentTypes);
-                    if (metadataAttribute.Type == typeof(void) &&
-                        type != null &&
-                        (metadataAttribute.StatusCode == StatusCodes.Status200OK || metadataAttribute.StatusCode == StatusCodes.Status201Created))
-                    {
-                        // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
-                        // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
-                        // [ProducesResponseType(201)] instead of [ProducesResponseType(201, typeof(Person)] when typeof(Person) can be inferred
-                        // from the return type.
-                        objectTypes[metadataAttribute.StatusCode] = type;
-                    }
-                    else if (metadataAttribute.Type != null)
-                    {
-                        objectTypes[metadataAttribute.StatusCode] = metadataAttribute.Type;
-                    }
-                }
-            }
-
-            // Set the default status only when no status has already been set explicitly
-            if (objectTypes.Count == 0
-                && type != null)
-            {
-                objectTypes[StatusCodes.Status200OK] = type;
-            }
-
-            if (contentTypes.Count == 0)
-            {
-                contentTypes.Add((string)null);
-            }
-
-            var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
-
-            foreach (var objectType in objectTypes)
-            {
-                if (objectType.Value == typeof(void))
-                {
-                    results.Add(new ApiResponseType()
-                    {
-                        StatusCode = objectType.Key,
-                        Type = objectType.Value
-                    });
-
-                    continue;
-                }
-
-                var apiResponseType = new ApiResponseType()
-                {
-                    Type = objectType.Value,
-                    StatusCode = objectType.Key,
-                    ModelMetadata = _modelMetadataProvider.GetMetadataForType(objectType.Value)
-                };
-
-                foreach (var contentType in contentTypes)
-                {
-                    foreach (var responseTypeMetadataProvider in responseTypeMetadataProviders)
-                    {
-                        var formatterSupportedContentTypes = responseTypeMetadataProvider.GetSupportedContentTypes(
-                            contentType,
-                            objectType.Value);
-
-                        if (formatterSupportedContentTypes == null)
-                        {
-                            continue;
-                        }
-
-                        foreach (var formatterSupportedContentType in formatterSupportedContentTypes)
-                        {
-                            apiResponseType.ApiResponseFormats.Add(new ApiResponseFormat()
-                            {
-                                Formatter = (IOutputFormatter)responseTypeMetadataProvider,
-                                MediaType = formatterSupportedContentType,
-                            });
-                        }
-                    }
-                }
-
-                results.Add(apiResponseType);
-            }
-
-            return results;
-        }
-
-        private Type GetDeclaredReturnType(ControllerActionDescriptor action)
-        {
-            var declaredReturnType = action.MethodInfo.ReturnType;
-            if (declaredReturnType == typeof(void) ||
-                declaredReturnType == typeof(Task))
-            {
-                return typeof(void);
-            }
-            
-            // Unwrap the type if it's a Task<T>. The Task (non-generic) case was already handled.
-            Type unwrappedType = declaredReturnType;
-            if (declaredReturnType.IsGenericType && 
-                declaredReturnType.GetGenericTypeDefinition() == typeof(Task<>))
-            {
-                unwrappedType = declaredReturnType.GetGenericArguments()[0];
-            }
-
-            // If the method is declared to return IActionResult or a derived class, that information
-            // isn't valuable to the formatter.
-            if (typeof(IActionResult).IsAssignableFrom(unwrappedType))
-            {
-                return null;
-            }
-
-            // If we get here, the type should be a user-defined data type or an envelope type
-            // like ActionResult<T>. The mapper service will unwrap envelopes.
-            unwrappedType = _mapper.GetResultDataType(unwrappedType);
-            return unwrappedType;
-        }
-
-        private Type GetRuntimeReturnType(Type declaredReturnType)
-        {
-            // If we get here, then a filter didn't give us an answer, so we need to figure out if we
-            // want to use the declared return type.
-            //
-            // We've already excluded Task, void, and IActionResult at this point.
-            //
-            // If the action might return any object, then assume we don't know anything about it.
-            if (declaredReturnType == typeof(object))
-            {
-                return null;
-            }
-
-            return declaredReturnType;
-        }
-
         private IApiRequestMetadataProvider[] GetRequestMetadataAttributes(ControllerActionDescriptor action)
         {
             if (action.FilterDescriptors == null)
@@ -566,46 +493,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 .Select(fd => fd.Filter)
                 .OfType<IApiRequestMetadataProvider>()
                 .ToArray();
-        }
-
-        private IApiResponseMetadataProvider[] GetResponseMetadataAttributes(ControllerActionDescriptor action)
-        {
-            if (action.FilterDescriptors == null)
-            {
-                return null;
-            }
-
-            // This technique for enumerating filters will intentionally ignore any filter that is an IFilterFactory
-            // while searching for a filter that implements IApiResponseMetadataProvider.
-            //
-            // The workaround for that is to implement the metadata interface on the IFilterFactory.
-            return action.FilterDescriptors
-                .Select(fd => fd.Filter)
-                .OfType<IApiResponseMetadataProvider>()
-                .ToArray();
-        }
-
-        private class ApiParameterContext
-        {
-            public ApiParameterContext(
-                IModelMetadataProvider metadataProvider,
-                ControllerActionDescriptor actionDescriptor,
-                IReadOnlyList<TemplatePart> routeParameters)
-            {
-                MetadataProvider = metadataProvider;
-                ActionDescriptor = actionDescriptor;
-                RouteParameters = routeParameters;
-
-                Results = new List<ApiParameterDescription>();
-            }
-
-            public ControllerActionDescriptor ActionDescriptor { get; }
-
-            public IModelMetadataProvider MetadataProvider { get; }
-
-            public IList<ApiParameterDescription> Results { get; }
-
-            public IReadOnlyList<TemplatePart> RouteParameters { get; }
         }
 
         private class ApiParameterDescriptionContext
@@ -772,7 +659,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 }
             }
 
-            private struct PropertyKey
+            private readonly struct PropertyKey
             {
                 public readonly Type ContainerType;
 

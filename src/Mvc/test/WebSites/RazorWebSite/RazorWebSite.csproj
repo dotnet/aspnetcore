@@ -17,5 +17,6 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(MicrosoftAspNetCoreDiagnosticsPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>

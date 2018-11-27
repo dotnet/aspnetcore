@@ -7,11 +7,11 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
+using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc
 
                 // Confirm the request's content type is more specific than a media type this action supports e.g. OK
                 // if client sent "text/plain" data and this action supports "text/*".
-                if (requestContentType != null && !IsSubsetOfAnyContentType(requestContentType))
+                if (requestContentType == null || !IsSubsetOfAnyContentType(requestContentType))
                 {
                     context.Result = new UnsupportedMediaTypeResult();
                 }
@@ -189,11 +189,10 @@ namespace Microsoft.AspNetCore.Mvc
             // If there are multiple IConsumeActionConstraints which are defined at the class and
             // at the action level, the one closest to the action overrides the others. To ensure this
             // we take advantage of the fact that ConsumesAttribute is both an IActionFilter and an
-            // IConsumeActionConstraint. Since filterdescriptor collection is ordered (the last filter is the one
+            // IConsumeActionConstraint. Since FilterDescriptor collection is ordered (the last filter is the one
             // closest to the action), we apply this constraint only if there is no IConsumeActionConstraint after this.
             return actionDescriptor.FilterDescriptors.Last(
                 filter => filter.Filter is IConsumesActionConstraint).Filter == this;
-
         }
 
         private MediaTypeCollection GetContentTypes(string firstArg, string[] args)

@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ActionThrowsHttpResponseException_EnsureGlobalHttpresponseExceptionActionFilter_IsInvoked()
+        public async Task ActionThrowsHttpResponseException_EnsureGlobalHttpResponseExceptionActionFilter_IsInvoked()
         {
             // Arrange & Act
             var response = await Client.GetAsync(
@@ -358,10 +358,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("text/json", response.Content.Headers.ContentType.MediaType);
         }
 
+        // Use int for HttpStatusCode data because xUnit cannot serialize a GAC'd enum when running on .NET Framework.
         [Theory]
-        [InlineData("http://localhost/Mvc/Index", HttpStatusCode.OK)]
-        [InlineData("http://localhost/api/Blog/Mvc/Index", HttpStatusCode.NotFound)]
-        public async Task WebApiRouting_AccessMvcController(string url, HttpStatusCode expected)
+        [InlineData("http://localhost/Mvc/Index", (int)HttpStatusCode.OK)]
+        [InlineData("http://localhost/api/Blog/Mvc/Index", (int)HttpStatusCode.NotFound)]
+        public async Task WebApiRouting_AccessMvcController(string url, int expected)
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -370,13 +371,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(expected, response.StatusCode);
+            Assert.Equal(expected, (int)response.StatusCode);
         }
 
+        // Use int for HttpStatusCode data because xUnit cannot serialize a GAC'd enum when running on .NET Framework.
         [Theory]
-        [InlineData("http://localhost/BasicApi/GenerateUrl", HttpStatusCode.NotFound)]
-        [InlineData("http://localhost/api/Blog/BasicApi/GenerateUrl", HttpStatusCode.OK)]
-        public async Task WebApiRouting_AccessWebApiController(string url, HttpStatusCode expected)
+        [InlineData("http://localhost/BasicApi/GenerateUrl", (int)HttpStatusCode.NotFound)]
+        [InlineData("http://localhost/api/Blog/BasicApi/GenerateUrl", (int)HttpStatusCode.OK)]
+        public async Task WebApiRouting_AccessWebApiController(string url, int expected)
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -385,7 +387,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(expected, response.StatusCode);
+            Assert.Equal(expected, (int)response.StatusCode);
         }
 
         [Fact]

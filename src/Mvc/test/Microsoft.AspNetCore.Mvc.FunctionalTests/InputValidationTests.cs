@@ -89,10 +89,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "The RequiredProp field is required.",
                 errors["RequiredProp"]);
             Assert.Equal(
-                "A value for the 'BindRequiredProp' property was not provided.",
+                "A value for the 'BindRequiredProp' parameter or property was not provided.",
                 errors["BindRequiredProp"]);
             Assert.Equal(
-                "A value for the 'RequiredAndBindRequiredProp' property was not provided.",
+                "A value for the 'RequiredAndBindRequiredProp' parameter or property was not provided.",
                 errors["RequiredAndBindRequiredProp"]);
             Assert.Equal(
                 "The field OptionalStringLengthProp must be a string with a maximum length of 5.",
@@ -104,10 +104,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "The requiredParam field is required.",
                 errors["requiredParam"]);
             Assert.Equal(
-                "A value for the 'bindRequiredParam' property was not provided.",
+                "A value for the 'bindRequiredParam' parameter or property was not provided.",
                 errors["bindRequiredParam"]);
             Assert.Equal(
-                "A value for the 'requiredAndBindRequiredParam' property was not provided.",
+                "A value for the 'requiredAndBindRequiredParam' parameter or property was not provided.",
                 errors["requiredAndBindRequiredParam"]);
             Assert.Equal(
                 "The field optionalStringLengthParam must be a string with a maximum length of 5.",

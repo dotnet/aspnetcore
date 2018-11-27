@@ -6,18 +6,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestCommon\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.Core.TestCommon\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.Views.TestCommon\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\*.csproj" />
     <ExcludeSolutions Include="$(RepositoryRoot)Mvc.*Fun.sln" />
   </ItemGroup>
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageVersion>2.1.0-rc1-*</LineupPackageVersion>
+    <LineupPackageVersion>2.2.0-*</LineupPackageVersion>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp22PackageVersion)" />
   </ItemGroup>
 </Project>

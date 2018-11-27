@@ -10,9 +10,10 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
+using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -138,10 +139,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ActionModel action)
         {
             var defaultControllerConstraints = Enumerable.Empty<IActionConstraintMetadata>();
+            var defaultControllerEndpointMetadata = Enumerable.Empty<object>();
             if (controller.Selectors.Count > 0)
             {
                 defaultControllerConstraints = controller.Selectors[0].ActionConstraints
                     .Where(constraint => !(constraint is IRouteTemplateProvider));
+                defaultControllerEndpointMetadata = controller.Selectors[0].EndpointMetadata;
             }
 
             var actionDescriptors = new List<ControllerActionDescriptor>();
@@ -163,6 +166,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
 
                 AddActionConstraints(actionDescriptor, actionSelector, controllerConstraints);
+
+                // Metadata for the action is more significant so order it before the controller metadata
+                var actionDescriptorMetadata = actionSelector.EndpointMetadata.ToList();
+                actionDescriptorMetadata.AddRange(defaultControllerEndpointMetadata);
+
+                actionDescriptor.EndpointMetadata = actionDescriptorMetadata;
             }
 
             return actionDescriptors;
@@ -381,15 +390,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             try
             {
+                actionDescriptor.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out var transformer);
+                var routeTokenTransformer = transformer as IOutboundParameterTransformer;
+
                 actionDescriptor.AttributeRouteInfo.Template = AttributeRouteModel.ReplaceTokens(
                     actionDescriptor.AttributeRouteInfo.Template,
-                    actionDescriptor.RouteValues);
+                    actionDescriptor.RouteValues,
+                    routeTokenTransformer);
 
                 if (actionDescriptor.AttributeRouteInfo.Name != null)
                 {
                     actionDescriptor.AttributeRouteInfo.Name = AttributeRouteModel.ReplaceTokens(
                         actionDescriptor.AttributeRouteInfo.Name,
-                        actionDescriptor.RouteValues);
+                        actionDescriptor.RouteValues,
+                        routeTokenTransformer);
                 }
             }
             catch (InvalidOperationException ex)

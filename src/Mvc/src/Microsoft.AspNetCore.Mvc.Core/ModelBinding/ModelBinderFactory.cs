@@ -275,15 +275,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override IModelBinder CreateBinder(ModelMetadata metadata)
             {
-                return CreateBinder(
-                    metadata,
-                    new BindingInfo()
-                    {
-                        BinderModelName = metadata.BinderModelName,
-                        BinderType = metadata.BinderType,
-                        BindingSource = metadata.BindingSource,
-                        PropertyFilterProvider = metadata.PropertyFilterProvider,
-                    });
+                var bindingInfo = new BindingInfo();
+                bindingInfo.TryApplyBindingInfo(metadata);
+
+                return CreateBinder(metadata, bindingInfo);
             }
 
             public override IModelBinder CreateBinder(ModelMetadata metadata, BindingInfo bindingInfo)
@@ -315,7 +310,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         // the ParameterDescriptor) or in a call to TryUpdateModel (no BindingInfo) or as a collection element.
         //
         // We need to be able to tell the difference between these things to avoid over-caching.
-        private struct Key : IEquatable<Key>
+        private readonly struct Key : IEquatable<Key>
         {
             private readonly ModelMetadata _metadata;
             private readonly object _token; // Explicitly using ReferenceEquality for tokens.

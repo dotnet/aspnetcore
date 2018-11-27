@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -90,55 +91,73 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         /// <inheritdoc />
+        // Very common trivial method; nudge it to inline https://github.com/aspnet/Mvc/pull/8339
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IHtmlContentBuilder Append(string unencoded)
         {
-            if (unencoded == null)
+            if (unencoded != null)
             {
-                return this;
+                // Text that needs encoding is the uncommon case in views, which is why it
+                // creates a wrapper and pre-encoded text does not.
+                AppendValue(new ViewBufferValue(new EncodingWrapper(unencoded)));
             }
 
-            // Text that needs encoding is the uncommon case in views, which is why it
-            // creates a wrapper and pre-encoded text does not.
-            AppendValue(new ViewBufferValue(new EncodingWrapper(unencoded)));
             return this;
         }
 
         /// <inheritdoc />
+        // Very common trivial method; nudge it to inline https://github.com/aspnet/Mvc/pull/8339
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IHtmlContentBuilder AppendHtml(IHtmlContent content)
         {
-            if (content == null)
+            if (content != null)
             {
-                return this;
+                AppendValue(new ViewBufferValue(content));
             }
 
-            AppendValue(new ViewBufferValue(content));
             return this;
         }
 
         /// <inheritdoc />
+        // Very common trivial method; nudge it to inline https://github.com/aspnet/Mvc/pull/8339
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IHtmlContentBuilder AppendHtml(string encoded)
         {
-            if (encoded == null)
+            if (encoded != null)
             {
-                return this;
+                AppendValue(new ViewBufferValue(encoded));
             }
 
-            AppendValue(new ViewBufferValue(encoded));
             return this;
         }
 
+        // Very common trivial method; nudge it to inline https://github.com/aspnet/Mvc/pull/8339
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AppendValue(ViewBufferValue value)
         {
             var page = GetCurrentPage();
             page.Append(value);
         }
 
+        // Very common trivial method; nudge it to inline https://github.com/aspnet/Mvc/pull/8339
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ViewBufferPage GetCurrentPage()
         {
-            if (_currentPage == null || _currentPage.IsFull)
+            var currentPage = _currentPage;
+            if (currentPage == null || currentPage.IsFull)
             {
-                AddPage(new ViewBufferPage(_bufferScope.GetPage(_pageSize)));
+                // Uncommon slow-path
+                return AppendNewPage();
             }
+
+            return currentPage;
+        }
+
+        // Slow path for above, don't inline
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private ViewBufferPage AppendNewPage()
+        {
+            AddPage(new ViewBufferPage(_bufferScope.GetPage(_pageSize)));
             return _currentPage;
         }
 

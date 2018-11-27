@@ -4,11 +4,13 @@
 using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
@@ -27,8 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string AppendVersionAttributeName = "asp-append-version";
         private const string SrcAttributeName = "src";
 
-        private FileVersionProvider _fileVersionProvider;
-
         /// <summary>
         /// Creates a new <see cref="ImageTagHelper"/>.
         /// </summary>
@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public ImageTagHelper(
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
@@ -45,6 +46,30 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             HostingEnvironment = hostingEnvironment;
             Cache = cache;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ImageTagHelper"/>.
+        /// </summary>
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
+        /// <param name="cacheProvider">The <see cref="TagHelperMemoryCacheProvider"/>.</param>
+        /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
+        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
+        // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
+        // to use this constructor in the default case.
+        [ActivatorUtilitiesConstructor]
+        public ImageTagHelper(
+            IHostingEnvironment hostingEnvironment,
+            TagHelperMemoryCacheProvider cacheProvider,
+            IFileVersionProvider fileVersionProvider,
+            HtmlEncoder htmlEncoder,
+            IUrlHelperFactory urlHelperFactory)
+            : base(urlHelperFactory, htmlEncoder)
+        {
+            HostingEnvironment = hostingEnvironment;
+            Cache = cacheProvider.Cache;
+            FileVersionProvider = fileVersionProvider;
         }
 
         /// <inheritdoc />
@@ -68,9 +93,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(AppendVersionAttributeName)]
         public bool AppendVersion { get; set; }
 
-        protected IHostingEnvironment HostingEnvironment { get; }
+        protected internal IHostingEnvironment HostingEnvironment { get; }
 
-        protected IMemoryCache Cache { get; }
+        protected internal IMemoryCache Cache { get; }
+
+        internal IFileVersionProvider FileVersionProvider { get; private set; }
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
@@ -97,18 +124,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 // not function properly.
                 Src = output.Attributes[SrcAttributeName].Value as string;
 
-                output.Attributes.SetAttribute(SrcAttributeName, _fileVersionProvider.AddFileVersionToPath(Src));
+                output.Attributes.SetAttribute(SrcAttributeName, FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Src));
             }
         }
 
         private void EnsureFileVersionProvider()
         {
-            if (_fileVersionProvider == null)
+            if (FileVersionProvider == null)
             {
-                _fileVersionProvider = new FileVersionProvider(
-                    HostingEnvironment.WebRootFileProvider,
-                    Cache,
-                    ViewContext.HttpContext.Request.PathBase);
+                FileVersionProvider = ViewContext.HttpContext.RequestServices.GetRequiredService<IFileVersionProvider>();
             }
         }
     }
