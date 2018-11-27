@@ -1,0 +1,21 @@
+Markup block - Gen<None> - 53 - (0:0,0)
+    Tag block - Gen<TagHelper> - 29 - (0:0,0) - script - scripttaghelper
+        StartTagAndEndTag - <script> ... </script>
+        Markup span - Gen<Markup> - [Hel<p>lo</p>] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:9
+            HtmlTokenType.Text;[Hel];
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Text;[p];
+            HtmlTokenType.CloseAngle;[>];
+            HtmlTokenType.Text;[lo];
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.ForwardSlash;[/];
+            HtmlTokenType.Text;[p];
+            HtmlTokenType.CloseAngle;[>];
+    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (29:0,29) - Tokens:1
+        HtmlTokenType.WhiteSpace;[ ];
+    Tag block - Gen<TagHelper> - 23 - (30:0,30) - p - ptaghelper
+        StartTagAndEndTag - <p> ... </p>
+        Tag block - Gen<TagHelper> - 16 - (33:0,33) - div - divtaghelper
+            StartTagAndEndTag - <div> ... </div>
+            Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (38:0,38) - Tokens:1
+                HtmlTokenType.Text;[World];

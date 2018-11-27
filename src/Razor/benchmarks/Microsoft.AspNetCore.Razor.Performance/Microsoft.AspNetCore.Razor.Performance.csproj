@@ -17,6 +17,18 @@
     <Compile Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\*.cs">
       <Link>Serialization\%(FileName)%(Extension)</Link>
     </Compile>
+    <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestServices.cs">
+      <Link>TestServices\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestWorkspace.cs">
+      <Link>TestServices\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestLanguageServices.cs">
+      <Link>TestServices\%(FileName)%(Extension)</Link>
+    </Compile>
+    <Compile Include="..\..\test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\TestWorkspaceServices.cs">
+      <Link>TestServices\%(FileName)%(Extension)</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

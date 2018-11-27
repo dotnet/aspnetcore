@@ -30,7 +30,9 @@
         <Category>$(MPackArtifactCategory)</Category>
       </ArtifactInfo>
 
-      <FilesToExcludeFromSigning Include="$(MPackOutputPath)" />
+      <!-- Certificate=None means don't sign the .mpack file itself, but sign its contents. -->
+      <FilesToSign Include="$(MPackOutputPath)" Certificate="None" />
+      <FilesToSign Include="Microsoft.VisualStudio.Mac.RazorAddin.dll" Certificate="$(AssemblySigningCertName)" Container="$(MPackOutputPath)" />
     </ItemGroup>
   </Target>
 

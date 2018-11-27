@@ -47,5 +47,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             extension.WriteViewComponentTagHelper(context, this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(ClassName);
+
+            formatter.WriteProperty(nameof(ClassName), ClassName);
+            formatter.WriteProperty(nameof(TagHelper), TagHelper?.DisplayName);
+        }
     }
 }

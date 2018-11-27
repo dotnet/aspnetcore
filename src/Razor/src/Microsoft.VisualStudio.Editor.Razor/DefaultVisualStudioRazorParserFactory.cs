@@ -9,7 +9,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
     internal class DefaultVisualStudioRazorParserFactory : VisualStudioRazorParserFactory
     {
         private readonly ForegroundDispatcher _dispatcher;
-        private readonly RazorProjectEngineFactoryService _projectEngineFactoryService;
+        private readonly ProjectSnapshotProjectEngineFactory _projectEngineFactory;
         private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly ErrorReporter _errorReporter;
 
@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ForegroundDispatcher dispatcher,
             ErrorReporter errorReporter,
             VisualStudioCompletionBroker completionBroker,
-            RazorProjectEngineFactoryService projectEngineFactoryService)
+            ProjectSnapshotProjectEngineFactory projectEngineFactory)
         {
             if (dispatcher == null)
             {
@@ -34,15 +34,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(completionBroker));
             }
 
-            if (projectEngineFactoryService == null)
+            if (projectEngineFactory == null)
             {
-                throw new ArgumentNullException(nameof(projectEngineFactoryService));
+                throw new ArgumentNullException(nameof(projectEngineFactory));
             }
 
             _dispatcher = dispatcher;
             _errorReporter = errorReporter;
             _completionBroker = completionBroker;
-            _projectEngineFactoryService = projectEngineFactoryService;
+            _projectEngineFactory = projectEngineFactory;
         }
 
         public override VisualStudioRazorParser Create(VisualStudioDocumentTracker documentTracker)
@@ -57,7 +57,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var parser = new DefaultVisualStudioRazorParser(
                 _dispatcher,
                 documentTracker,
-                _projectEngineFactoryService,
+                _projectEngineFactory,
                 _errorReporter,
                 _completionBroker);
             return parser;

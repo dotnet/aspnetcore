@@ -1,0 +1,43 @@
+Statement block - Gen<None> - 55 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.Transition;[@];
+    Code span - Gen<Stmt> - [while(true) { for(int i = 0; i < 10; i++) { foo(); } }] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:39
+        CSharpTokenType.Keyword;[while];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Keyword;[true];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[for];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Keyword;[int];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[i];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Assign;[=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.IntegerLiteral;[0];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[i];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LessThan;[<];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.IntegerLiteral;[10];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[i];
+        CSharpTokenType.Increment;[++];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];

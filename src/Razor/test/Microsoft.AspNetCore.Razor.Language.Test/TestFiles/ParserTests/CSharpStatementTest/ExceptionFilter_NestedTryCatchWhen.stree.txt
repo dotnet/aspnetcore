@@ -1,0 +1,38 @@
+Statement block - Gen<None> - 69 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.Transition;[@];
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:1
+        CSharpTokenType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [try { someMethod(); } catch(Exception) when (true) { handleIO(); }] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (2:0,2) - Tokens:30
+        CSharpTokenType.Keyword;[try];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[someMethod];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[catch];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[Exception];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[when];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Keyword;[true];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[handleIO];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (68:0,68) - Tokens:1
+        CSharpTokenType.RightBrace;[}];

@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private readonly LineTrackingStringBuffer _buffer;
         private int _position = 0;
+        private int _current;
         private SourceLocation _location;
-        private char? _current;
 
         public SeekableTextReader(string source, string filePath) : this(source.ToCharArray(), filePath) { }
 
@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             _buffer = new LineTrackingStringBuffer(source, filePath);
             UpdateState();
-
-            _location = new SourceLocation(filePath, 0, 0, 0);
         }
 
         public SourceLocation Location => _location;
@@ -47,24 +45,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override int Read()
         {
-            if (_current == null)
-            {
-                return -1;
-            }
-            var chr = _current.Value;
+            var c = _current;
             _position++;
             UpdateState();
-            return chr;
+            return c;
         }
 
-        public override int Peek()
-        {
-            if (_current == null)
-            {
-                return -1;
-            }
-            return _current.Value;
-        }
+        public override int Peek() => _current;
 
         private void UpdateState()
         {
@@ -76,12 +63,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else if (_buffer.Length == 0)
             {
-                _current = null;
+                _current = -1;
                 _location = SourceLocation.Zero;
             }
             else
             {
-                _current = null;
+                _current = -1;
                 _location = _buffer.EndLocation;
             }
         }

@@ -1,0 +1,6 @@
+Markup block - Gen<None> - 19 - (0:0,0)
+    Tag block - Gen<TagHelper> - 19 - (0:0,0) - input - InputTagHelper
+        StartTagOnly - <input type='text'>
+        type - SingleQuotes
+            Markup span - Gen<Markup> - [text] - SpanEditHandler;Accepts:Any - (13:0,13) - Tokens:1
+                HtmlTokenType.Text;[text];

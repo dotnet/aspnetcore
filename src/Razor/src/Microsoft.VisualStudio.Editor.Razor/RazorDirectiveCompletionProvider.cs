@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Tags;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Projection;
@@ -139,7 +140,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     // This groups all Razor directives together
                     sortText: "_RazorDirective_",
                     rules: CompletionItemRules.Create(formatOnCommit: false),
-                    tags: ImmutableArray.Create(CompletionTags.Intrinsic),
+                    tags: ImmutableArray.Create(WellKnownTags.Intrinsic),
                     properties: propertyDictionary.ToImmutableDictionary());
                 completionItems.Add(completionItem);
             }
@@ -161,7 +162,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
 
                 if (owner.ChunkGenerator is ExpressionChunkGenerator &&
-                    owner.Symbols.All(IsDirectiveCompletableSymbol) &&
+                    owner.Tokens.All(IsDirectiveCompletableSymbol) &&
                     // Do not provide IntelliSense for explicit expressions. Explicit expressions will usually look like:
                     // [@] [(] [DateTime.Now] [)]
                     owner.Parent?.Children.Count > 1 &&
@@ -203,16 +204,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return false;
         }
 
-        private static bool IsDirectiveCompletableSymbol(AspNetCore.Razor.Language.Legacy.ISymbol symbol)
+        private static bool IsDirectiveCompletableSymbol(AspNetCore.Razor.Language.Legacy.IToken symbol)
         {
-            if (!(symbol is CSharpSymbol csharpSymbol))
+            if (!(symbol is CSharpToken csharpSymbol))
             {
                 return false;
             }
 
-            return csharpSymbol.Type == CSharpSymbolType.Identifier ||
+            return csharpSymbol.Type == CSharpTokenType.Identifier ||
                 // Marker symbol
-                csharpSymbol.Type == CSharpSymbolType.Unknown;
+                csharpSymbol.Type == CSharpTokenType.Unknown;
         }
     }
 }

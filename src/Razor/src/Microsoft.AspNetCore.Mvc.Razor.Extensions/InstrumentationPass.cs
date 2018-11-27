@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private static void AddInstrumentation(InstrumentationItem item)
         {
-            var beginContextMethodName = "BeginContext"; /* ORIGINAL: BeginContextMethodName */
-            var endContextMethodName = "EndContext"; /* ORIGINAL: EndContextMethodName */
+            var beginContextMethodName = "BeginContext"; // ORIGINAL: BeginContextMethodName
+            var endContextMethodName = "EndContext"; // ORIGINAL: EndContextMethodName
 
             var beginNode = new CSharpCodeIntermediateNode();
             beginNode.Children.Add(new IntermediateToken()

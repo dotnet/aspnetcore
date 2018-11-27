@@ -45,7 +45,10 @@ namespace Microsoft.CodeAnalysis.Razor
             context.IncludeDocumentation = true;
 
             var compilation = await project.WorkspaceProject.GetCompilationAsync().ConfigureAwait(false);
-            context.SetCompilation(compilation);
+            if (CompilationTagHelperFeature.IsValidCompilation(compilation))
+            {
+                context.SetCompilation(compilation);
+            }
 
             for (var i = 0; i < providers.Length; i++)
             {

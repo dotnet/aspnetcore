@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using Moq;
 using Xunit;
@@ -90,6 +92,148 @@ namespace Microsoft.AspNetCore.Razor.Language
             var csharpDocument = codeDocument.GetCSharpDocument();
             Assert.NotNull(csharpDocument);
             Assert.Empty(csharpDocument.Diagnostics);
+        }
+
+        [Fact]
+        public void Process_WithImportsAndTagHelpers_SetsOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+            var importItem = new TestRazorProjectItem("_import.cshtml");
+            var expectedImports = new[] { RazorSourceDocument.ReadFrom(importItem) };
+            var expectedTagHelpers = new[]
+            {
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
+                TagHelperDescriptorBuilder.Create("Test2TagHelper", "TestAssembly").Build(),
+            };
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), expectedImports, expectedTagHelpers);
+
+            // Assert
+            var tagHelpers = codeDocument.GetTagHelpers();
+            Assert.Same(expectedTagHelpers, tagHelpers);
+            Assert.Equal(expectedImports, codeDocument.Imports);
+        }
+
+        [Fact]
+        public void Process_WithNullTagHelpers_SetsOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), Array.Empty<RazorSourceDocument>(), tagHelpers: null);
+
+            // Assert
+            var tagHelpers = codeDocument.GetTagHelpers();
+            Assert.Null(tagHelpers);
+        }
+
+        [Fact]
+        public void Process_SetsNullTagHelpersOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.Process(projectItem);
+
+            // Assert
+            var tagHelpers = codeDocument.GetTagHelpers();
+            Assert.Null(tagHelpers);
+        }
+
+        [Fact]
+        public void Process_WithNullImports_SetsEmptyListOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.Process(RazorSourceDocument.ReadFrom(projectItem), importSources: null, tagHelpers: null);
+
+            // Assert
+            Assert.Empty(codeDocument.Imports);
+        }
+
+        [Fact]
+        public void ProcessDesignTime_WithImportsAndTagHelpers_SetsOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+            var importItem = new TestRazorProjectItem("_import.cshtml");
+            var expectedImports = new[] { RazorSourceDocument.ReadFrom(importItem) };
+            var expectedTagHelpers = new[]
+            {
+                TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build(),
+                TagHelperDescriptorBuilder.Create("Test2TagHelper", "TestAssembly").Build(),
+            };
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), expectedImports, expectedTagHelpers);
+
+            // Assert
+            var tagHelpers = codeDocument.GetTagHelpers();
+            Assert.Same(expectedTagHelpers, tagHelpers);
+            Assert.Equal(expectedImports, codeDocument.Imports);
+        }
+
+        [Fact]
+        public void ProcessDesignTime_WithNullTagHelpers_SetsOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), Array.Empty<RazorSourceDocument>(), tagHelpers: null);
+
+            // Assert
+            var tagHelpers = codeDocument.GetTagHelpers();
+            Assert.Null(tagHelpers);
+        }
+
+        [Fact]
+        public void ProcessDesignTime_SetsNullTagHelpersOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.ProcessDesignTime(projectItem);
+
+            // Assert
+            var tagHelpers = codeDocument.GetTagHelpers();
+            Assert.Null(tagHelpers);
+        }
+
+        [Fact]
+        public void ProcessDesignTime_WithNullImports_SetsEmptyListOnCodeDocument()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.ProcessDesignTime(RazorSourceDocument.ReadFrom(projectItem), importSources: null, tagHelpers: null);
+
+            // Assert
+            Assert.Empty(codeDocument.Imports);
         }
     }
 }

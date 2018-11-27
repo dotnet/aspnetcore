@@ -1,0 +1,17 @@
+Markup block - Gen<None> - 52 - (0:0,0)
+    Markup span - Gen<Markup> - [Hello] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:1
+        HtmlTokenType.Text;[Hello];
+    Tag block - Gen<TagHelper> - 17 - (5:0,5) - p - ptaghelper
+        SelfClosing - <p class="foo" />
+        class - DoubleQuotes
+            Markup span - Gen<Markup> - [foo] - SpanEditHandler;Accepts:Any - (15:0,15) - Tokens:1
+                HtmlTokenType.Text;[foo];
+    Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:1
+        HtmlTokenType.WhiteSpace;[ ];
+    Tag block - Gen<TagHelper> - 24 - (23:0,23) - p - ptaghelper
+        SelfClosing - <p style="color:red;" />
+        style - DoubleQuotes
+            Markup span - Gen<Markup> - [color:red;] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
+                HtmlTokenType.Text;[color:red;];
+    Markup span - Gen<Markup> - [World] - SpanEditHandler;Accepts:Any - (47:0,47) - Tokens:1
+        HtmlTokenType.Text;[World];

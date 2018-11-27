@@ -206,29 +206,6 @@ __o = i++;
         }
 
         [Fact]
-        public void WriteCSharpCode_WhitespaceContent_DoesNothing()
-        {
-            // Arrange
-            var writer = new DesignTimeNodeWriter();
-            var context = TestCodeRenderingContext.CreateDesignTime();
-
-            var node = new CSharpCodeIntermediateNode();
-            IntermediateNodeBuilder.Create(node)
-                .Add(new IntermediateToken()
-                {
-                    Kind = TokenKind.CSharp,
-                    Content = "  \t"
-                });
-
-            // Act
-            writer.WriteCSharpCode(context, node);
-
-            // Assert
-            var csharp = context.CodeWriter.GenerateCode();
-            Assert.Empty(csharp);
-        }
-
-        [Fact]
         public void WriteCSharpCode_WhitespaceContentWithSource_WritesContent()
         {
             // Arrange
@@ -252,7 +229,11 @@ __o = i++;
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-@"    
+@"#line 1 ""test.cshtml""
+    
+
+#line default
+#line hidden
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);

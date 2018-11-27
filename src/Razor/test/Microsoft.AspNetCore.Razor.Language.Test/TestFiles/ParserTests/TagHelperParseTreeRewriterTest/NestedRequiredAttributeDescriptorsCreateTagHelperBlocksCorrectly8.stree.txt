@@ -1,0 +1,22 @@
+Markup block - Gen<None> - 79 - (0:0,0)
+    Tag block - Gen<TagHelper> - 79 - (0:0,0) - strong - catchAllTagHelper
+        StartTagAndEndTag - <strong catchAll="hi"> ... </strong>
+        catchAll - DoubleQuotes
+            Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
+                HtmlTokenType.Text;[hi];
+        Tag block - Gen<TagHelper> - 48 - (22:0,22) - strong - catchAllTagHelper
+            StartTagAndEndTag - <strong catchAll="hi"> ... </strong>
+            catchAll - DoubleQuotes
+                Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (40:0,40) - Tokens:1
+                    HtmlTokenType.Text;[hi];
+            Tag block - Gen<None> - 8 - (44:0,44)
+                Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (44:0,44) - Tokens:3
+                    HtmlTokenType.OpenAngle;[<];
+                    HtmlTokenType.Text;[strong];
+                    HtmlTokenType.CloseAngle;[>];
+            Tag block - Gen<None> - 9 - (52:0,52)
+                Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (52:0,52) - Tokens:4
+                    HtmlTokenType.OpenAngle;[<];
+                    HtmlTokenType.ForwardSlash;[/];
+                    HtmlTokenType.Text;[strong];
+                    HtmlTokenType.CloseAngle;[>];

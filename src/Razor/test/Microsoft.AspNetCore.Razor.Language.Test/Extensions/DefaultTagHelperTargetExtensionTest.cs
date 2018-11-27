@@ -1118,6 +1118,20 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
                 ignoreLineEndingDifferences: true);
         }
 
+        [Fact]
+        public void GetDeterministicId_IsDeterministic()
+        {
+            // Arrange
+            var context = TestCodeRenderingContext.CreateRuntime(suppressUniqueIds: null);
+
+            // Act
+            var firstId = DefaultTagHelperTargetExtension.GetDeterministicId(context);
+            var secondId = DefaultTagHelperTargetExtension.GetDeterministicId(context);
+
+            // Assert
+            Assert.Equal(firstId, secondId);
+        }
+
         private static void Push(CodeRenderingContext context, TagHelperIntermediateNode node)
         {
             ((DefaultCodeRenderingContext)context).AncestorsInternal.Push(node);

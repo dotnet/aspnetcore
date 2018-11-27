@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "\r\n @something \r\n @this is ignored",
-                new CSharpSymbol("\r\n", CSharpSymbolType.NewLine),
-                new CSharpSymbol(" ", CSharpSymbolType.WhiteSpace),
-                new CSharpSymbol("@", CSharpSymbolType.Transition),
-                new CSharpSymbol("something", CSharpSymbolType.Identifier),
-                new CSharpSymbol(" ", CSharpSymbolType.WhiteSpace),
-                new CSharpSymbol("\r\n", CSharpSymbolType.NewLine));
+                new CSharpToken("\r\n", CSharpTokenType.NewLine),
+                new CSharpToken(" ", CSharpTokenType.WhiteSpace),
+                new CSharpToken("@", CSharpTokenType.Transition),
+                new CSharpToken("something", CSharpTokenType.Identifier),
+                new CSharpToken(" ", CSharpTokenType.WhiteSpace),
+                new CSharpToken("\r\n", CSharpTokenType.NewLine));
         }
 
         [Fact]
@@ -25,18 +25,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "@*included*@\r\n @something   \"value\"\r\n @this is ignored",
-                new CSharpSymbol("@", CSharpSymbolType.RazorCommentTransition),
-                new CSharpSymbol("*", CSharpSymbolType.RazorCommentStar),
-                new CSharpSymbol("included", CSharpSymbolType.RazorComment),
-                new CSharpSymbol("*", CSharpSymbolType.RazorCommentStar),
-                new CSharpSymbol("@", CSharpSymbolType.RazorCommentTransition),
-                new CSharpSymbol("\r\n", CSharpSymbolType.NewLine),
-                new CSharpSymbol(" ", CSharpSymbolType.WhiteSpace),
-                new CSharpSymbol("@", CSharpSymbolType.Transition),
-                new CSharpSymbol("something", CSharpSymbolType.Identifier),
-                new CSharpSymbol("   ", CSharpSymbolType.WhiteSpace),
-                new CSharpSymbol("\"value\"", CSharpSymbolType.StringLiteral),
-                new CSharpSymbol("\r\n", CSharpSymbolType.NewLine));
+                new CSharpToken("@", CSharpTokenType.RazorCommentTransition),
+                new CSharpToken("*", CSharpTokenType.RazorCommentStar),
+                new CSharpToken("included", CSharpTokenType.RazorComment),
+                new CSharpToken("*", CSharpTokenType.RazorCommentStar),
+                new CSharpToken("@", CSharpTokenType.RazorCommentTransition),
+                new CSharpToken("\r\n", CSharpTokenType.NewLine),
+                new CSharpToken(" ", CSharpTokenType.WhiteSpace),
+                new CSharpToken("@", CSharpTokenType.Transition),
+                new CSharpToken("something", CSharpTokenType.Identifier),
+                new CSharpToken("   ", CSharpTokenType.WhiteSpace),
+                new CSharpToken("\"value\"", CSharpTokenType.StringLiteral),
+                new CSharpToken("\r\n", CSharpTokenType.NewLine));
         }
 
         internal override object CreateTokenizer(ITextDocument source)

@@ -42,7 +42,8 @@
         <PackageId>$(VSIXName)</PackageId>
       </ArtifactInfo>
 
-      <FilesToSign Include="$(VSIXOutputPath)" Certificate="Vsix" />
+      <FilesToSign Include="$(VSIXOutputPath)" Certificate="$(VsixSigningCertName)" />
+      <FilesToSign Include="Microsoft.VisualStudio.RazorExtension.dll" Certificate="$(AssemblySigningCertName)" Container="$(VSIXOutputPath)" />
       <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
       <FilesToExcludeFromSigning Include="$(VSIXSymbolsOutputPath)" />
 
@@ -63,7 +64,6 @@
       <MSBuildArguments Include="
         $(VSIXProject);
         /t:Restore;
-        /m;
         /v:m;
         /p:Configuration=$(Configuration);
         /p:BuildNumber=$(BuildNumber);" />
@@ -96,7 +96,6 @@
       <MSBuildArguments Remove="@(MSBuildArguments)" />
       <MSBuildArguments Include="
         $(VSIXProject);
-        /m;
         /v:M;
         /fl;
         /flp:LogFile=$(VSIXLogFilePath);
@@ -104,6 +103,8 @@
         /p:TargetVSIXContainer=$(VSIXOutputPath);
         /p:SymbolsPublishDir=$(BuildDir);
         /p:Configuration=$(Configuration);
+        /p:FeatureBranchVersionSuffix=$(FeatureBranchVersionSuffix);
+        /p:BuildNumber=$(BuildNumber);
         /p:LangVersion=7.1" />
     </ItemGroup>
 

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal class SpanBuilder
     {
         private SourceLocation _start;
-        private List<ISymbol> _symbols;
+        private List<IToken> _tokens;
         private SourceLocationTracker _tracker;
 
         public SpanBuilder(Span original)
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             _start = original.Start;
             ChunkGenerator = original.ChunkGenerator;
 
-            _symbols = new List<ISymbol>(original.Symbols);
+            _tokens = new List<IToken>(original.Tokens);
             _tracker = new SourceLocationTracker(original.Start);
         }
 
@@ -49,16 +49,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SpanKindInternal Kind { get; set; }
 
-        public IReadOnlyList<ISymbol> Symbols
+        public IReadOnlyList<IToken> Tokens
         {
             get
             {
-                if (_symbols == null)
+                if (_tokens == null)
                 {
-                    _symbols = new List<ISymbol>();
+                    _tokens = new List<IToken>();
                 }
 
-                return _symbols;
+                return _tokens;
             }
         }
 
@@ -68,10 +68,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Need to potentially allocate a new list because Span.ReplaceWith takes ownership
             // of the original list.
-            _symbols = null;
-            _symbols = new List<ISymbol>();
+            _tokens = null;
+            _tokens = new List<IToken>();
 
-            EditHandler = SpanEditHandler.CreateDefault((content) => Enumerable.Empty<ISymbol>());
+            EditHandler = SpanEditHandler.CreateDefault((content) => Enumerable.Empty<IToken>());
             ChunkGenerator = SpanChunkGenerator.Null;
             Start = SourceLocation.Undefined;
         }
@@ -80,23 +80,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var span = new Span(this);
             
-            for (var i = 0; i < span.Symbols.Count; i++)
+            for (var i = 0; i < span.Tokens.Count; i++)
             {
-                var symbol = span.Symbols[i];
-                symbol.Parent = span;
+                var token = span.Tokens[i];
+                token.Parent = span;
             }
 
             return span;
         }
 
-        public void ClearSymbols()
+        public void ClearTokens()
         {
-            _symbols?.Clear();
+            _tokens?.Clear();
         }
 
-        public void Accept(ISymbol symbol)
+        public void Accept(IToken token)
         {
-            if (symbol == null)
+            if (token == null)
             {
                 return;
             }
@@ -106,8 +106,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 throw new InvalidOperationException("SpanBuilder must have a valid location");
             }
 
-            _symbols.Add(symbol);
-            _tracker.UpdateLocation(symbol.Content);
+            _tokens.Add(token);
+            _tracker.UpdateLocation(token.Content);
         }
     }
 }

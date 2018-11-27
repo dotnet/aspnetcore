@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             public void Accept(ParserVisitor visitor, Span span)
             {
+                visitor.VisitDefault(span);
             }
 
             public void GenerateChunk(Span target, ChunkGeneratorContext context)

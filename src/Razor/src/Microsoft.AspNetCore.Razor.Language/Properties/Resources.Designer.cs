@@ -139,128 +139,128 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// &lt;&lt;character literal&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_CharacterLiteral
+        internal static string CSharpToken_CharacterLiteral
         {
-            get => GetString("CSharpSymbol_CharacterLiteral");
+            get => GetString("CSharpToken_CharacterLiteral");
         }
 
         /// <summary>
         /// &lt;&lt;character literal&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_CharacterLiteral()
-            => GetString("CSharpSymbol_CharacterLiteral");
+        internal static string FormatCSharpToken_CharacterLiteral()
+            => GetString("CSharpToken_CharacterLiteral");
 
         /// <summary>
         /// &lt;&lt;comment&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_Comment
+        internal static string CSharpToken_Comment
         {
-            get => GetString("CSharpSymbol_Comment");
+            get => GetString("CSharpToken_Comment");
         }
 
         /// <summary>
         /// &lt;&lt;comment&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_Comment()
-            => GetString("CSharpSymbol_Comment");
+        internal static string FormatCSharpToken_Comment()
+            => GetString("CSharpToken_Comment");
 
         /// <summary>
         /// &lt;&lt;identifier&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_Identifier
+        internal static string CSharpToken_Identifier
         {
-            get => GetString("CSharpSymbol_Identifier");
+            get => GetString("CSharpToken_Identifier");
         }
 
         /// <summary>
         /// &lt;&lt;identifier&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_Identifier()
-            => GetString("CSharpSymbol_Identifier");
+        internal static string FormatCSharpToken_Identifier()
+            => GetString("CSharpToken_Identifier");
 
         /// <summary>
         /// &lt;&lt;integer literal&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_IntegerLiteral
+        internal static string CSharpToken_IntegerLiteral
         {
-            get => GetString("CSharpSymbol_IntegerLiteral");
+            get => GetString("CSharpToken_IntegerLiteral");
         }
 
         /// <summary>
         /// &lt;&lt;integer literal&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_IntegerLiteral()
-            => GetString("CSharpSymbol_IntegerLiteral");
+        internal static string FormatCSharpToken_IntegerLiteral()
+            => GetString("CSharpToken_IntegerLiteral");
 
         /// <summary>
         /// &lt;&lt;keyword&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_Keyword
+        internal static string CSharpToken_Keyword
         {
-            get => GetString("CSharpSymbol_Keyword");
+            get => GetString("CSharpToken_Keyword");
         }
 
         /// <summary>
         /// &lt;&lt;keyword&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_Keyword()
-            => GetString("CSharpSymbol_Keyword");
+        internal static string FormatCSharpToken_Keyword()
+            => GetString("CSharpToken_Keyword");
 
         /// <summary>
         /// &lt;&lt;newline sequence&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_Newline
+        internal static string CSharpToken_Newline
         {
-            get => GetString("CSharpSymbol_Newline");
+            get => GetString("CSharpToken_Newline");
         }
 
         /// <summary>
         /// &lt;&lt;newline sequence&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_Newline()
-            => GetString("CSharpSymbol_Newline");
+        internal static string FormatCSharpToken_Newline()
+            => GetString("CSharpToken_Newline");
 
         /// <summary>
         /// &lt;&lt;real literal&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_RealLiteral
+        internal static string CSharpToken_RealLiteral
         {
-            get => GetString("CSharpSymbol_RealLiteral");
+            get => GetString("CSharpToken_RealLiteral");
         }
 
         /// <summary>
         /// &lt;&lt;real literal&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_RealLiteral()
-            => GetString("CSharpSymbol_RealLiteral");
+        internal static string FormatCSharpToken_RealLiteral()
+            => GetString("CSharpToken_RealLiteral");
 
         /// <summary>
         /// &lt;&lt;string literal&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_StringLiteral
+        internal static string CSharpToken_StringLiteral
         {
-            get => GetString("CSharpSymbol_StringLiteral");
+            get => GetString("CSharpToken_StringLiteral");
         }
 
         /// <summary>
         /// &lt;&lt;string literal&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_StringLiteral()
-            => GetString("CSharpSymbol_StringLiteral");
+        internal static string FormatCSharpToken_StringLiteral()
+            => GetString("CSharpToken_StringLiteral");
 
         /// <summary>
         /// &lt;&lt;white space&gt;&gt;
         /// </summary>
-        internal static string CSharpSymbol_Whitespace
+        internal static string CSharpToken_Whitespace
         {
-            get => GetString("CSharpSymbol_Whitespace");
+            get => GetString("CSharpToken_Whitespace");
         }
 
         /// <summary>
         /// &lt;&lt;white space&gt;&gt;
         /// </summary>
-        internal static string FormatCSharpSymbol_Whitespace()
-            => GetString("CSharpSymbol_Whitespace");
+        internal static string FormatCSharpToken_Whitespace()
+            => GetString("CSharpToken_Whitespace");
 
         /// <summary>
         /// The document type '{0}' does not support the extension '{1}'.
@@ -489,58 +489,58 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// &lt;&lt;newline sequence&gt;&gt;
         /// </summary>
-        internal static string HtmlSymbol_NewLine
+        internal static string HtmlToken_NewLine
         {
-            get => GetString("HtmlSymbol_NewLine");
+            get => GetString("HtmlToken_NewLine");
         }
 
         /// <summary>
         /// &lt;&lt;newline sequence&gt;&gt;
         /// </summary>
-        internal static string FormatHtmlSymbol_NewLine()
-            => GetString("HtmlSymbol_NewLine");
+        internal static string FormatHtmlToken_NewLine()
+            => GetString("HtmlToken_NewLine");
 
         /// <summary>
         /// &lt;&lt;razor comment&gt;&gt;
         /// </summary>
-        internal static string HtmlSymbol_RazorComment
+        internal static string HtmlToken_RazorComment
         {
-            get => GetString("HtmlSymbol_RazorComment");
+            get => GetString("HtmlToken_RazorComment");
         }
 
         /// <summary>
         /// &lt;&lt;razor comment&gt;&gt;
         /// </summary>
-        internal static string FormatHtmlSymbol_RazorComment()
-            => GetString("HtmlSymbol_RazorComment");
+        internal static string FormatHtmlToken_RazorComment()
+            => GetString("HtmlToken_RazorComment");
 
         /// <summary>
         /// &lt;&lt;text&gt;&gt;
         /// </summary>
-        internal static string HtmlSymbol_Text
+        internal static string HtmlToken_Text
         {
-            get => GetString("HtmlSymbol_Text");
+            get => GetString("HtmlToken_Text");
         }
 
         /// <summary>
         /// &lt;&lt;text&gt;&gt;
         /// </summary>
-        internal static string FormatHtmlSymbol_Text()
-            => GetString("HtmlSymbol_Text");
+        internal static string FormatHtmlToken_Text()
+            => GetString("HtmlToken_Text");
 
         /// <summary>
         /// &lt;&lt;white space&gt;&gt;
         /// </summary>
-        internal static string HtmlSymbol_WhiteSpace
+        internal static string HtmlToken_WhiteSpace
         {
-            get => GetString("HtmlSymbol_WhiteSpace");
+            get => GetString("HtmlToken_WhiteSpace");
         }
 
         /// <summary>
         /// &lt;&lt;white space&gt;&gt;
         /// </summary>
-        internal static string FormatHtmlSymbol_WhiteSpace()
-            => GetString("HtmlSymbol_WhiteSpace");
+        internal static string FormatHtmlToken_WhiteSpace()
+            => GetString("HtmlToken_WhiteSpace");
 
         /// <summary>
         /// Specify the base class for the current document.
@@ -711,7 +711,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             => GetString("KeyMustNotBeNull");
 
         /// <summary>
-        /// Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known symbol types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment
+        /// Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known token types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment
         /// </summary>
         internal static string Language_Does_Not_Support_RazorComment
         {
@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         /// <summary>
-        /// Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known symbol types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment
+        /// Cannot use built-in RazorComment handler, language characteristics does not define the CommentStart, CommentStar and CommentBody known token types or parser does not override TokenizerBackedParser.OutputSpanBeforeRazorComment
         /// </summary>
         internal static string FormatLanguage_Does_Not_Support_RazorComment()
             => GetString("Language_Does_Not_Support_RazorComment");
@@ -1351,16 +1351,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// &lt;&lt;unknown&gt;&gt;
         /// </summary>
-        internal static string Symbol_Unknown
+        internal static string Token_Unknown
         {
-            get => GetString("Symbol_Unknown");
+            get => GetString("Token_Unknown");
         }
 
         /// <summary>
         /// &lt;&lt;unknown&gt;&gt;
         /// </summary>
-        internal static string FormatSymbol_Unknown()
-            => GetString("Symbol_Unknown");
+        internal static string FormatToken_Unknown()
+            => GetString("Token_Unknown");
 
         /// <summary>
         /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name contains a '{3}' character.

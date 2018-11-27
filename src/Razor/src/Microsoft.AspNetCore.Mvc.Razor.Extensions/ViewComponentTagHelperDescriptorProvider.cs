@@ -27,8 +27,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 return;
             }
 
+            var vcAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute);
+            var nonVCAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute);
+            if (vcAttribute == null || vcAttribute.TypeKind == TypeKind.Error)
+            {
+                // Could not find attributes we care about in the compilation. Nothing to do.
+                return;
+            }
+
             var types = new List<INamedTypeSymbol>();
-            var visitor = ViewComponentTypeVisitor.Create(compilation, types);
+            var visitor = new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, types);
 
             // We always visit the global namespace.
             visitor.Visit(compilation.Assembly.GlobalNamespace);

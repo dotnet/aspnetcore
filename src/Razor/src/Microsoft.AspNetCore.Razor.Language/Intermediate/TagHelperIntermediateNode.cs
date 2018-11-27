@@ -44,5 +44,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             visitor.VisitTagHelper(this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(TagName);
+
+            formatter.WriteProperty(nameof(TagHelpers), string.Join(", ", TagHelpers.Select(t => t.DisplayName)));
+            formatter.WriteProperty(nameof(TagMode), TagMode.ToString());
+            formatter.WriteProperty(nameof(TagName), TagName);
+        }
     }
 }

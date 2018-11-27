@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
+using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -30,6 +31,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly ForegroundDispatcher _dispatcher;
         private readonly ITextBuffer _textBuffer;
         private readonly VisualStudioDocumentTracker _documentTracker;
+        private readonly TextBufferCodeDocumentProvider _codeDocumentProvider;
         private readonly IEditorOperationsFactoryService _editorOperationsFactory;
         private readonly StringBuilder _indentBuilder = new StringBuilder();
         private BraceIndentationContext _context;
@@ -42,6 +44,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public BraceSmartIndenter(
             ForegroundDispatcher dispatcher,
             VisualStudioDocumentTracker documentTracker,
+            TextBufferCodeDocumentProvider codeDocumentProvider,
             IEditorOperationsFactoryService editorOperationsFactory)
         {
             if (dispatcher == null)
@@ -54,6 +57,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(documentTracker));
             }
 
+            if (codeDocumentProvider == null)
+            {
+                throw new ArgumentNullException(nameof(codeDocumentProvider));
+            }
+
             if (editorOperationsFactory == null)
             {
                 throw new ArgumentNullException(nameof(editorOperationsFactory));
@@ -61,6 +69,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             _dispatcher = dispatcher;
             _documentTracker = documentTracker;
+            _codeDocumentProvider = codeDocumentProvider;
             _editorOperationsFactory = editorOperationsFactory;
             _textBuffer = _documentTracker.TextBuffer;
             _textBuffer.Changed += TextBuffer_OnChanged;
@@ -95,7 +104,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             var newText = changeInformation.newText;
-            if (TryCreateIndentationContext(changeInformation.firstChange.NewPosition, newText.Length, newText, _documentTracker, out var context))
+            if (!_codeDocumentProvider.TryGetFromBuffer(_documentTracker.TextBuffer, out var codeDocument))
+            {
+                // Parse not available.
+                return;
+            }
+
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            if (TryCreateIndentationContext(changeInformation.firstChange.NewPosition, newText.Length, newText, syntaxTree, _documentTracker, out var context))
             {
                 _context = context;
             }
@@ -183,11 +199,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal static bool TryCreateIndentationContext(int changePosition, int changeLength, string finalText, VisualStudioDocumentTracker documentTracker, out BraceIndentationContext context)
+        internal static bool TryCreateIndentationContext(
+            int changePosition,
+            int changeLength,
+            string finalText,
+            RazorSyntaxTree syntaxTree,
+            VisualStudioDocumentTracker documentTracker,
+            out BraceIndentationContext context)
         {
             var focusedTextView = documentTracker.GetFocusedTextView();
             if (focusedTextView != null && ParserHelpers.IsNewLine(finalText))
             {
+                if (!AtApplicableRazorBlock(changePosition, syntaxTree))
+                {
+                    context = null;
+                    return false;
+                }
+
                 var currentSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
                 var preChangeLineSnapshot = currentSnapshot.GetLineFromPosition(changePosition);
 
@@ -211,6 +239,69 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             context = null;
             return false;
+        }
+
+        // Internal for testing
+        internal static bool AtApplicableRazorBlock(int changePosition, RazorSyntaxTree syntaxTree)
+        {
+            // Our goal here is to return true when we're acting on code blocks that have all 
+            // whitespace content and are surrounded by metacode.
+            // Some examples:
+            // @functions { |}
+            // @section foo { |}
+            // @{ |}
+
+            var change = new SourceChange(changePosition, 0, string.Empty);
+            var owner = syntaxTree.Root.LocateOwner(change);
+
+            if (IsUnlinkedSpan(owner))
+            {
+                return false;
+            }
+
+            if (SurroundedByInvalidContent(owner))
+            {
+                return false;
+            }
+
+            if (ContainsInvalidContent(owner))
+            {
+                return false;
+            }
+
+            // Indentable content inside of a code block.
+            return true;
+        }
+
+        // Internal for testing
+        internal static bool ContainsInvalidContent(Span owner)
+        {
+            // We only support whitespace based content. Any non-whitespace content is an unkonwn to us
+            // in regards to indentation.
+            for (var i = 0; i < owner.Tokens.Count; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(owner.Tokens[i].Content))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Internal for testing
+        internal static bool IsUnlinkedSpan(Span owner)
+        {
+            return owner == null ||
+                owner.Next == null ||
+                owner.Previous == null;
+        }
+
+        // Internal for testing
+        internal static bool SurroundedByInvalidContent(Span owner)
+        {
+            return owner.Next.Kind != SpanKindInternal.MetaCode ||
+                owner.Previous.Kind != SpanKindInternal.MetaCode;
         }
 
         internal static bool BeforeClosingBrace(int linePosition, ITextSnapshotLine lineSnapshot)

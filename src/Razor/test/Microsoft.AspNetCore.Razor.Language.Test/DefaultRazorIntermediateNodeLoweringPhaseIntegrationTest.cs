@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Moq;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
-using Moq;
-using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 TestRazorSourceDocument.Create("@using System.Globalization"),
                 TestRazorSourceDocument.Create("@using System.Text"),
             };
-            
+
             var codeDocument = TestRazorCodeDocument.Create(source, imports);
 
             // Act
@@ -371,6 +371,29 @@ namespace Microsoft.AspNetCore.Razor.Language
                 n => Using("System.Text", n),
                 n => Using("System.Threading.Tasks", n),
                 n => Html("<p>Hi!</p>", n));
+        }
+
+        [Fact]
+        public void Lower_WithImports_AllowsIdenticalNamespacesInPrimaryDocument()
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create(@"@using System.Threading.Tasks
+@using System.Threading.Tasks");
+            var imports = new[]
+            {
+                TestRazorSourceDocument.Create("@using System.Threading.Tasks"),
+            };
+
+            var codeDocument = TestRazorCodeDocument.Create(source, imports);
+
+            // Act
+            var documentNode = Lower(codeDocument);
+
+            // Assert
+            Children(
+                documentNode,
+                n => Using("System.Threading.Tasks", n),
+                n => Using("System.Threading.Tasks", n));
         }
 
         [Fact]
@@ -390,8 +413,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var documentNode = Lower(codeDocument, b =>
             {
                 b.AddDirective(DirectiveDescriptor.CreateDirective(
-                    "test", 
-                    DirectiveKind.SingleLine, 
+                    "test",
+                    DirectiveKind.SingleLine,
                     builder =>
                     {
                         builder.AddMemberToken();

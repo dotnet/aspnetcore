@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "\r\n <div>Ignored</div>",
-                new HtmlSymbol("\r\n", HtmlSymbolType.NewLine),
-                new HtmlSymbol(" ", HtmlSymbolType.WhiteSpace),
-                new HtmlSymbol("<", HtmlSymbolType.OpenAngle));
+                new HtmlToken("\r\n", HtmlTokenType.NewLine),
+                new HtmlToken(" ", HtmlTokenType.WhiteSpace),
+                new HtmlToken("<", HtmlTokenType.OpenAngle));
         }
 
         [Fact]
@@ -22,15 +22,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             TestTokenizer(
                 "\r\n @*included*@ <div>Ignored</div>",
-                new HtmlSymbol("\r\n", HtmlSymbolType.NewLine),
-                new HtmlSymbol(" ", HtmlSymbolType.WhiteSpace),
-                new HtmlSymbol("@", HtmlSymbolType.RazorCommentTransition),
-                new HtmlSymbol("*", HtmlSymbolType.RazorCommentStar),
-                new HtmlSymbol("included", HtmlSymbolType.RazorComment),
-                new HtmlSymbol("*", HtmlSymbolType.RazorCommentStar),
-                new HtmlSymbol("@", HtmlSymbolType.RazorCommentTransition),
-                new HtmlSymbol(" ", HtmlSymbolType.WhiteSpace),
-                new HtmlSymbol("<", HtmlSymbolType.OpenAngle));
+                new HtmlToken("\r\n", HtmlTokenType.NewLine),
+                new HtmlToken(" ", HtmlTokenType.WhiteSpace),
+                new HtmlToken("@", HtmlTokenType.RazorCommentTransition),
+                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
+                new HtmlToken("included", HtmlTokenType.RazorComment),
+                new HtmlToken("*", HtmlTokenType.RazorCommentStar),
+                new HtmlToken("@", HtmlTokenType.RazorCommentTransition),
+                new HtmlToken(" ", HtmlTokenType.WhiteSpace),
+                new HtmlToken("<", HtmlTokenType.OpenAngle));
         }
 
         internal override object CreateTokenizer(ITextDocument source)

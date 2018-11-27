@@ -139,7 +139,7 @@ $@"<Project>
             }
         }
 
-        private ProjectDirectory(string solutionPath, string directoryPath, string projectFilePath)
+        protected ProjectDirectory(string solutionPath, string directoryPath, string projectFilePath)
         {
             SolutionPath = solutionPath;
             DirectoryPath = directoryPath;
@@ -164,7 +164,7 @@ $@"<Project>
             }
         }
 
-        private static void CleanupDirectory(string filePath)
+        internal static void CleanupDirectory(string filePath)
         {
             var tries = 5;
             var sleep = TimeSpan.FromSeconds(3);

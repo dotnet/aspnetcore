@@ -2,19 +2,26 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-
-  <!-- These package versions may be overridden or updated by automation. -->
-  <PropertyGroup Label="Package Versions: Auto">
+  <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.3-rtm-15802</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.0-preview2-20181108.4</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>2.2.0-rtm-35661</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.2.0-rtm-181106-13</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.6.82</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildPackageVersion>15.6.82</MicrosoftBuildPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.2</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0-rtm-35661</MicrosoftExtensionsWebEncodersPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp22PackageVersion>2.2.0-rtm-27105-02</MicrosoftNETCoreApp22PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>15.0.26606</MicrosoftVisualStudioComponentModelHostPackageVersion>
     <MicrosoftVisualStudioEditorPackageVersion>15.6.161-preview</MicrosoftVisualStudioEditorPackageVersion>
@@ -33,7 +40,7 @@
     <MicrosoftVisualStudioTextUIPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIPackageVersion>
     <MonoAddinsPackageVersion>1.3.8</MonoAddinsPackageVersion>
     <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>
-    <MoqPackageVersion>4.7.49</MoqPackageVersion>
+    <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
@@ -41,32 +48,21 @@
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.8.0</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.8.0</VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.8.0</VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>2.8.0-beta2-62721-09</VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.8.0</VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
-    <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.8.0</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
-    <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>2.8.0</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
-    <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>2.8.0-beta2-62721-09</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
-    <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
+    <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>2.9.0-beta4-62911-02</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
+    <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
+  <PropertyGroup Label="Package Versions: Pinned" />
 
-  <!-- This may import a generated file which may override the variables above. -->
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
-
-  <!-- These are package versions that should not be overridden or updated by automation. -->
-  <PropertyGroup Label="Package Versions: Pinned">
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>2.1.1</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.1.1</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.1.1</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersPackageVersion>2.1.1</MicrosoftExtensionsWebEncodersPackageVersion>
-  </PropertyGroup>
 </Project>

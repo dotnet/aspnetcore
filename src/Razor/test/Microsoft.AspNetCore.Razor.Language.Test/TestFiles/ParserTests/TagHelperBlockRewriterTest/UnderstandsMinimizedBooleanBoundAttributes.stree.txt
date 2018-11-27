@@ -1,0 +1,5 @@
+Markup block - Gen<None> - 37 - (0:0,0)
+    Tag block - Gen<TagHelper> - 37 - (0:0,0) - input - InputTagHelper
+        SelfClosing - <input boundbool boundbooldict-key />
+        boundbool - Minimized
+        boundbooldict-key - Minimized

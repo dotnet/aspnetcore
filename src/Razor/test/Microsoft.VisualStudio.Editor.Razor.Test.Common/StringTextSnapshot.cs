@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Utilities;
 
 namespace Microsoft.VisualStudio.Text
 {
-    public class StringTextSnapshot : ITextSnapshot
+    public class StringTextSnapshot : ITextSnapshot2
     {
         private readonly List<ITextSnapshotLine> _lines;
 
@@ -49,13 +50,15 @@ namespace Microsoft.VisualStudio.Text
 
         public int Length => Content.Length;
 
-        public ITextBuffer TextBuffer => throw new NotImplementedException();
+        public ITextBuffer TextBuffer { get; set; }
 
         public IContentType ContentType => throw new NotImplementedException();
 
         public int LineCount => throw new NotImplementedException();
 
         public IEnumerable<ITextSnapshotLine> Lines => throw new NotImplementedException();
+
+        public ITextImage TextImage => new StringTextImage(Content);
 
         public void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count) => Content.CopyTo(sourceIndex, destination, destinationIndex, count);
 
@@ -109,6 +112,11 @@ namespace Microsoft.VisualStudio.Text
         public void Write(TextWriter writer, VisualStudio.Text.Span span) => throw new NotImplementedException();
 
         public void Write(TextWriter writer) => throw new NotImplementedException();
+
+        public void SaveToFile(string filePath, bool replaceFile, Encoding encoding)
+        {
+            throw new NotImplementedException();
+        }
 
         private class TextVersion : ITextVersion
         {

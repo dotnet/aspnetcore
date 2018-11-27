@@ -1,0 +1,6 @@
+Markup block - Gen<None> - 25 - (0:0,0)
+    Tag block - Gen<TagHelper> - 25 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p class=btn" bar<strong>
+        class - NoQuotes
+            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:1
+                HtmlTokenType.Text;[btn];

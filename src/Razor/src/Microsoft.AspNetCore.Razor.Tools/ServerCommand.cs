@@ -25,7 +25,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
         internal ServerCommand(Application parent, string pipeName, int? keepAlive = null)
             : this(parent)
         {
-            Pipe.Values.Add(pipeName);
+            if (!string.IsNullOrEmpty(pipeName))
+            {
+                Pipe.Values.Add(pipeName);
+            }
 
             if (keepAlive.HasValue)
             {
@@ -119,8 +122,21 @@ namespace Microsoft.AspNetCore.Razor.Tools
             dispatcher.Run();
         }
 
-        internal FileStream WritePidFile()
+        protected virtual FileStream WritePidFile()
         {
+            var path = GetPidFilePath(env => Environment.GetEnvironmentVariable(env));
+            return WritePidFile(path);
+        }
+
+        // Internal for testing.
+        internal virtual FileStream WritePidFile(string directoryPath)
+        {
+            if (string.IsNullOrEmpty(directoryPath))
+            {
+                // Invalid path. Bail.
+                return null;
+            }
+
             // To make all the running rzc servers more discoverable, We want to write the process Id and pipe name to a file.
             // The file contents will be in the following format,
             //
@@ -133,24 +149,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var processId = Process.GetCurrentProcess().Id;
             var fileName = $"rzc-{processId}";
 
-            var path = Environment.GetEnvironmentVariable("DOTNET_BUILD_PIDFILE_DIRECTORY");
-            if (string.IsNullOrEmpty(path))
-            {
-                var homeEnvVariable = PlatformInformation.IsWindows ? "USERPROFILE" : "HOME";
-                var homePath = Environment.GetEnvironmentVariable(homeEnvVariable);
-                if (string.IsNullOrEmpty(homePath))
-                {
-                    // Couldn't locate the user profile directory. Bail.
-                    return null;
-                }
-
-                path = Path.Combine(homePath, ".dotnet", "pids", "build");
-            }
-
             // Make sure the directory exists.
-            Directory.CreateDirectory(path);
+            Directory.CreateDirectory(directoryPath);
 
-            path = Path.Combine(path, fileName);
+            var path = Path.Combine(directoryPath, fileName);
             var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, DefaultBufferSize, FileOptions.DeleteOnClose);
 
             using (var writer = new StreamWriter(fileStream, Encoding.UTF8, DefaultBufferSize, leaveOpen: true))
@@ -161,6 +163,26 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
 
             return fileStream;
+        }
+
+        // Internal for testing.
+        internal virtual string GetPidFilePath(Func<string, string> getEnvironmentVariable)
+        {
+            var path = getEnvironmentVariable("DOTNET_BUILD_PIDFILE_DIRECTORY");
+            if (string.IsNullOrEmpty(path))
+            {
+                var homeEnvVariable = PlatformInformation.IsWindows ? "USERPROFILE" : "HOME";
+                var homePath = getEnvironmentVariable(homeEnvVariable);
+                if (string.IsNullOrEmpty(homePath))
+                {
+                    // Couldn't locate the user profile directory. Bail.
+                    return null;
+                }
+
+                path = Path.Combine(homePath, ".dotnet", "pids", "build");
+            }
+
+            return path;
         }
     }
 }

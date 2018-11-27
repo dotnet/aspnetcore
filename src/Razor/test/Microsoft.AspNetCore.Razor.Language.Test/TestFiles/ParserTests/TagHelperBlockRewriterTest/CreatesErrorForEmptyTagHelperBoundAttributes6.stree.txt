@@ -1,0 +1,8 @@
+Markup block - Gen<None> - 29 - (0:0,0)
+    Tag block - Gen<TagHelper> - 29 - (0:0,0) - myth - mythTagHelper
+        SelfClosing - <myth bound='true' bound=  />
+        bound - SingleQuotes
+            Code span - Gen<Expr> - [true] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (13:0,13) - Tokens:1
+                HtmlTokenType.Text;[true];
+        bound - DoubleQuotes
+            Code span - Gen<None> - [] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (25:0,25) - Tokens:0

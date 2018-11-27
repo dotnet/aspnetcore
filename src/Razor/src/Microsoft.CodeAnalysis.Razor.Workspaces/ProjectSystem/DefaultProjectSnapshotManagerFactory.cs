@@ -45,8 +45,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return new DefaultProjectSnapshotManager(
                 _foregroundDispatcher,
                 languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>(),
-                languageServices.GetRequiredService<ProjectSnapshotWorker>(),
-                _triggers, 
+                _triggers,
                 languageServices.WorkspaceServices.Workspace);
         }
     }

@@ -9,649 +9,265 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class HtmlBlockTest : CsHtmlMarkupParserTestBase
     {
         [Fact]
-        public void ParseBlockHandlesUnbalancedTripleDashHTMLComments()
+        public void HandlesUnbalancedTripleDashHTMLComments()
         {
             ParseDocumentTest(
 @"@{
     <!-- Hello, I'm a comment that shouldn't break razor --->
-}",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code(Environment.NewLine).AsStatement().AutoCompleteWith(null),
-                        new MarkupBlock(
-                            Factory.Markup("    "),
-                            BlockFactory.HtmlCommentBlock(" Hello, I'm a comment that shouldn't break razor -"),
-                            Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None)),
-                        Factory.EmptyCSharp().AsStatement(),
-                        Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.EmptyHtml()),
-                new RazorDiagnostic[0]);
+}");
         }
 
         [Fact]
-        public void ParseBlockHandlesOpenAngleAtEof()
+        public void HandlesOpenAngleAtEof()
         {
             ParseDocumentTest("@{" + Environment.NewLine
-                            + "<",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code(Environment.NewLine)
-                            .AsStatement()
-                            .AutoCompleteWith("}"),
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                Factory.Markup("<"))))),
-                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"));
+                            + "<");
         }
 
         [Fact]
-        public void ParseBlockHandlesOpenAngleWithProperTagFollowingIt()
+        public void HandlesOpenAngleWithProperTagFollowingIt()
         {
             ParseDocumentTest("@{" + Environment.NewLine
                             + "<" + Environment.NewLine
                             + "</html>",
-                new MarkupBlock(
-                    Factory.EmptyHtml(),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.MetaCode("{").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Code(Environment.NewLine)
-                            .AsStatement()
-                            .AutoCompleteWith("}"),
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                Factory.Markup("<" + Environment.NewLine))
-                        ),
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                Factory.Markup("</html>").Accepts(AcceptedCharactersInternal.None))
-                        ),
-                        Factory.EmptyCSharp().AsStatement()
-                    )
-                ),
-                designTime: true,
-                expectedErrors: new[]
-                {
-                    RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
-                        new SourceSpan(new SourceLocation(5 + Environment.NewLine.Length * 2, 2, 2), contentLength: 4), "html"),
-                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
-                });
+                            designTime: true);
         }
 
         [Fact]
         public void TagWithoutCloseAngleDoesNotTerminateBlock()
         {
             ParseBlockTest("<                      " + Environment.NewLine
-                         + "   ",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup($"<                      {Environment.NewLine}   "))),
-                designTime: true,
-                expectedErrors: RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), string.Empty));
+                         + "   ");
         }
 
         [Fact]
-        public void ParseBlockAllowsStartAndEndTagsToDifferInCase()
+        public void AllowsStartAndEndTagsToDifferInCase()
         {
-            ParseBlockTest("<li><p>Foo</P></lI>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<li>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<p>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("Foo"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</P>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</lI>").Accepts(AcceptedCharactersInternal.None))
-                    ));
+            ParseBlockTest("<li><p>Foo</P></lI>");
         }
 
         [Fact]
-        public void ParseBlockReadsToEndOfLineIfFirstCharacterAfterTransitionIsColon()
+        public void ReadsToEndOfLineIfFirstCharacterAfterTransitionIsColon()
         {
             ParseBlockTest("@:<li>Foo Bar Baz" + Environment.NewLine
-                         + "bork",
-                new MarkupBlock(
-                    Factory.MarkupTransition(),
-                    Factory.MetaMarkup(":", HtmlSymbolType.Colon),
-                    Factory.Markup("<li>Foo Bar Baz" + Environment.NewLine)
-                           .With(new SpanEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharactersInternal.None))
-                ));
+                         + "bork");
         }
 
         [Fact]
-        public void ParseBlockStopsParsingSingleLineBlockAtEOFIfNoEOLReached()
+        public void StopsParsingSingleLineBlockAtEOFIfNoEOLReached()
         {
-            ParseBlockTest("@:foo bar",
-                new MarkupBlock(
-                    Factory.MarkupTransition(),
-                    Factory.MetaMarkup(":", HtmlSymbolType.Colon),
-                    Factory.Markup(@"foo bar")
-                           .With(new SpanEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString))
-                    ));
+            ParseBlockTest("@:foo bar");
         }
 
         [Fact]
-        public void ParseBlockStopsAtMatchingCloseTagToStartTag()
+        public void StopsAtMatchingCloseTagToStartTag()
         {
-            ParseBlockTest("<a><b></b></a><c></c>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<a>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<b>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</b>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</a>").Accepts(AcceptedCharactersInternal.None))
-                    ));
+            ParseBlockTest("<a><b></b></a><c></c>");
         }
 
         [Fact]
-        public void ParseBlockParsesUntilMatchingEndTagIfFirstNonWhitespaceCharacterIsStartTag()
+        public void ParsesUntilMatchingEndTagIfFirstNonWhitespaceCharacterIsStartTag()
         {
-            ParseBlockTest("<baz><boz><biz></biz></boz></baz>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<baz>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<boz>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<biz>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</biz>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</boz>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</baz>").Accepts(AcceptedCharactersInternal.None))
-                    ));
+            ParseBlockTest("<baz><boz><biz></biz></boz></baz>");
         }
 
         [Fact]
-        public void ParseBlockAllowsUnclosedTagsAsLongAsItCanRecoverToAnExpectedEndTag()
+        public void AllowsUnclosedTagsAsLongAsItCanRecoverToAnExpectedEndTag()
         {
-            ParseBlockTest("<foo><bar><baz></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<bar>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<baz>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))
-                    ));
+            ParseBlockTest("<foo><bar><baz></foo>");
         }
 
         [Fact]
-        public void ParseBlockWithSelfClosingTagJustEmitsTag()
+        public void WithSelfClosingTagJustEmitsTag()
         {
-            ParseBlockTest("<foo />",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo />").Accepts(AcceptedCharactersInternal.None))
-                    ));
+            ParseBlockTest("<foo />");
         }
 
         [Fact]
-        public void ParseBlockCanHandleSelfClosingTagsWithinBlock()
+        public void CanHandleSelfClosingTagsWithinBlock()
         {
-            ParseBlockTest("<foo><bar /></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<bar />").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))
-                    ));
+            ParseBlockTest("<foo><bar /></foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsTagsWithAttributes()
+        public void SupportsTagsWithAttributes()
         {
-            ParseBlockTest("<foo bar=\"baz\"><biz><boz zoop=zork/></biz></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator("bar", new LocationTagged<string>(" bar=\"", 4, 0, 4), new LocationTagged<string>("\"", 13, 0, 13)),
-                            Factory.Markup(" bar=\"").With(SpanChunkGenerator.Null),
-                            Factory.Markup("baz").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 10, 0, 10), new LocationTagged<string>("baz", 10, 0, 10))),
-                            Factory.Markup("\"").With(SpanChunkGenerator.Null)),
-                        Factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<biz>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<boz"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator("zoop", new LocationTagged<string>(" zoop=", 24, 0, 24), new LocationTagged<string>(string.Empty, 34, 0, 34)),
-                            Factory.Markup(" zoop=").With(SpanChunkGenerator.Null),
-                            Factory.Markup("zork").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 30, 0, 30), new LocationTagged<string>("zork", 30, 0, 30)))),
-                        Factory.Markup("/>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</biz>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo bar=\"baz\"><biz><boz zoop=zork/></biz></foo>");
         }
 
         [Fact]
-        public void ParseBlockAllowsCloseAngleBracketInAttributeValueIfDoubleQuoted()
+        public void AllowsCloseAngleBracketInAttributeValueIfDoubleQuoted()
         {
-            ParseBlockTest("<foo><bar baz=\">\" /></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<bar"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator("baz", new LocationTagged<string>(" baz=\"", 9, 0, 9), new LocationTagged<string>("\"", 16, 0, 16)),
-                            Factory.Markup(" baz=\"").With(SpanChunkGenerator.Null),
-                            Factory.Markup(">").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 15, 0, 15), new LocationTagged<string>(">", 15, 0, 15))),
-                            Factory.Markup("\"").With(SpanChunkGenerator.Null)),
-                        Factory.Markup(" />").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo><bar baz=\">\" /></foo>");
         }
 
         [Fact]
-        public void ParseBlockAllowsCloseAngleBracketInAttributeValueIfSingleQuoted()
+        public void AllowsCloseAngleBracketInAttributeValueIfSingleQuoted()
         {
-            ParseBlockTest("<foo><bar baz=\'>\' /></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<bar"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator("baz", new LocationTagged<string>(" baz='", 9, 0, 9), new LocationTagged<string>("'", 16, 0, 16)),
-                            Factory.Markup(" baz='").With(SpanChunkGenerator.Null),
-                            Factory.Markup(">").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 15, 0, 15), new LocationTagged<string>(">", 15, 0, 15))),
-                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
-                        Factory.Markup(" />").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo><bar baz=\'>\' /></foo>");
         }
 
         [Fact]
-        public void ParseBlockAllowsSlashInAttributeValueIfDoubleQuoted()
+        public void AllowsSlashInAttributeValueIfDoubleQuoted()
         {
-            ParseBlockTest("<foo><bar baz=\"/\"></bar></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<bar"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator("baz", new LocationTagged<string>(" baz=\"", 9, 0, 9), new LocationTagged<string>("\"", 16, 0, 16)),
-                            Factory.Markup(" baz=\"").With(SpanChunkGenerator.Null),
-                            Factory.Markup("/").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 15, 0, 15), new LocationTagged<string>("/", 15, 0, 15))),
-                            Factory.Markup("\"").With(SpanChunkGenerator.Null)),
-                        Factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</bar>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo><bar baz=\"/\"></bar></foo>");
         }
 
         [Fact]
-        public void ParseBlockAllowsSlashInAttributeValueIfSingleQuoted()
+        public void AllowsSlashInAttributeValueIfSingleQuoted()
         {
-            ParseBlockTest("<foo><bar baz=\'/\'></bar></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<bar"),
-                        new MarkupBlock(new AttributeBlockChunkGenerator("baz", new LocationTagged<string>(" baz='", 9, 0, 9), new LocationTagged<string>("'", 16, 0, 16)),
-                            Factory.Markup(" baz='").With(SpanChunkGenerator.Null),
-                            Factory.Markup("/").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 15, 0, 15), new LocationTagged<string>("/", 15, 0, 15))),
-                            Factory.Markup("'").With(SpanChunkGenerator.Null)),
-                        Factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</bar>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo><bar baz=\'/\'></bar></foo>");
         }
 
         [Fact]
-        public void ParseBlockTerminatesAtEOF()
+        public void TerminatesAtEOF()
         {
-            ParseBlockTest("<foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None))),
-                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 3), "foo"));
+            ParseBlockTest("<foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsCommentAsBlock()
+        public void SupportsCommentAsBlock()
         {
-            ParseBlockTest("<!-- foo -->", new MarkupBlock(BlockFactory.HtmlCommentBlock(" foo ")));
+            ParseBlockTest("<!-- foo -->");
         }
 
         [Fact]
-        public void ParseBlockSupportsCommentWithExtraDashAsBlock()
+        public void SupportsCommentWithExtraDashAsBlock()
         {
-            ParseBlockTest("<!-- foo --->", new MarkupBlock(BlockFactory.HtmlCommentBlock(" foo -")));
+            ParseBlockTest("<!-- foo --->");
         }
 
         [Fact]
-        public void ParseBlockSupportsCommentWithinBlock()
+        public void SupportsCommentWithinBlock()
         {
-            ParseBlockTest("<foo>bar<!-- zoop -->baz</foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("bar"),
-                    BlockFactory.HtmlCommentBlock(" zoop "),
-                    Factory.Markup("baz").Accepts(AcceptedCharactersInternal.None),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
-        }
-
-        public static TheoryData HtmlCommentSupportsMultipleDashesData
-        {
-            get
-            {
-                var factory = new SpanFactory();
-                var blockFactory = new BlockFactory(factory);
-                return new TheoryData<string, MarkupBlock>
-                {
-                    {
-                        "<div><!--- Hello World ---></div>",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                            blockFactory.HtmlCommentBlock("- Hello World -"),
-                            new MarkupTagBlock(
-                                factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None)))
-                    },
-                    {
-                        "<div><!---- Hello World ----></div>",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                            blockFactory.HtmlCommentBlock("-- Hello World --"),
-                            new MarkupTagBlock(
-                                factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None)))
-                    },
-                    {
-                        "<div><!----- Hello World -----></div>",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                            blockFactory.HtmlCommentBlock("--- Hello World ---"),
-                            new MarkupTagBlock(
-                                factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None)))
-                    },
-                    {
-                        "<div><!----- Hello < --- > World </div> -----></div>",
-                        new MarkupBlock(
-                            new MarkupTagBlock(
-                                factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                           blockFactory.HtmlCommentBlock("--- Hello < --- > World </div> ---"),
-                            new MarkupTagBlock(
-                                factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None)))
-                    },
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(HtmlCommentSupportsMultipleDashesData))]
-        public void HtmlCommentSupportsMultipleDashes(string documentContent, object expectedOutput)
-        {
-            FixupSpans = true;
-
-            ParseBlockTest(documentContent, (MarkupBlock)expectedOutput);
+            ParseBlockTest("<foo>bar<!-- zoop -->baz</foo>");
         }
 
         [Fact]
-        public void ParseBlockProperlyBalancesCommentStartAndEndTags()
+        public void HtmlCommentSupportsMultipleDashes()
         {
-            ParseBlockTest("<!--<foo></bar>-->", new MarkupBlock(BlockFactory.HtmlCommentBlock("<foo></bar>")));
+            ParseDocumentTest(
+@"<div><!--- Hello World ---></div>
+<div><!---- Hello World ----></div>
+<div><!----- Hello World -----></div>
+<div><!----- Hello < --- > World </div> -----></div>
+");
         }
 
         [Fact]
-        public void ParseBlockTerminatesAtEOFWhenParsingComment()
+        public void ProperlyBalancesCommentStartAndEndTags()
         {
-            ParseBlockTest(
-                "<!--<foo>",
-                new MarkupBlock(
-                    Factory.Markup("<!--<foo>").Accepts(AcceptedCharactersInternal.None)));
+            ParseBlockTest("<!--<foo></bar>-->");
         }
 
         [Fact]
-        public void ParseBlockOnlyTerminatesCommentOnFullEndSequence()
+        public void TerminatesAtEOFWhenParsingComment()
         {
-            ParseBlockTest("<!--<foo>--</bar>-->", new MarkupBlock(BlockFactory.HtmlCommentBlock("<foo>--</bar>")));
+            ParseBlockTest("<!--<foo>");
         }
 
         [Fact]
-        public void ParseBlockTerminatesCommentAtFirstOccurrenceOfEndSequence()
+        public void OnlyTerminatesCommentOnFullEndSequence()
         {
-            ParseBlockTest("<foo><!--<foo></bar-->--></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    BlockFactory.HtmlCommentBlock("<foo></bar"),
-                    Factory.Markup("-->").Accepts(AcceptedCharactersInternal.None),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<!--<foo>--</bar>-->");
         }
 
         [Fact]
-        public void ParseBlockTreatsMalformedTagsAsContent()
+        public void TerminatesCommentAtFirstOccurrenceOfEndSequence()
         {
-            ParseBlockTest("<foo></!-- bar --></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</!-- bar -->").Accepts(AcceptedCharactersInternal.None))),
-                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 3), "foo"));
+            ParseBlockTest("<foo><!--<foo></bar-->--></foo>");
+        }
+
+        [Fact]
+        public void TreatsMalformedTagsAsContent()
+        {
+            ParseBlockTest("<foo></!-- bar --></foo>");
         }
 
 
         [Fact]
-        public void ParseBlockParsesSGMLDeclarationAsEmptyTag()
+        public void ParsesSGMLDeclarationAsEmptyTag()
         {
-            ParseBlockTest("<foo><!DOCTYPE foo bar baz></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("<!DOCTYPE foo bar baz>").Accepts(AcceptedCharactersInternal.None),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo><!DOCTYPE foo bar baz></foo>");
         }
 
         [Fact]
-        public void ParseBlockTerminatesSGMLDeclarationAtFirstCloseAngle()
+        public void TerminatesSGMLDeclarationAtFirstCloseAngle()
         {
-            ParseBlockTest("<foo><!DOCTYPE foo bar> baz></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("<!DOCTYPE foo bar>").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Markup(" baz>"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo><!DOCTYPE foo bar> baz></foo>");
         }
 
         [Fact]
-        public void ParseBlockParsesXMLProcessingInstructionAsEmptyTag()
+        public void ParsesXMLProcessingInstructionAsEmptyTag()
         {
-            ParseBlockTest("<foo><?xml foo bar baz?></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("<?xml foo bar baz?>").Accepts(AcceptedCharactersInternal.None),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo><?xml foo bar baz?></foo>");
         }
 
         [Fact]
-        public void ParseBlockTerminatesXMLProcessingInstructionAtQuestionMarkCloseAnglePair()
+        public void TerminatesXMLProcessingInstructionAtQuestionMarkCloseAnglePair()
         {
-            ParseBlockTest("<foo><?xml foo bar baz?> baz</foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("<?xml foo bar baz?>").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Markup(" baz"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<foo><?xml foo bar baz?> baz</foo>");
         }
 
         [Fact]
-        public void ParseBlockDoesNotTerminateXMLProcessingInstructionAtCloseAngleUnlessPreceededByQuestionMark()
+        public void DoesNotTerminateXMLProcInstrAtCloseAngleUnlessPreceededByQuestionMark()
         {
-            ParseBlockTest("<foo><?xml foo bar> baz?></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("<?xml foo bar> baz?>").Accepts(AcceptedCharactersInternal.None),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
+            // ParseBlockDoesNotTerminateXMLProcessingInstructionAtCloseAngleUnlessPreceededByQuestionMark
+            ParseBlockTest("<foo><?xml foo bar> baz?></foo>");
         }
 
         [Fact]
-        public void ParseBlockSupportsScriptTagsWithLessThanSignsInThem()
+        public void SupportsScriptTagsWithLessThanSignsInThem()
         {
-            ParseBlockTest(@"<script>if(foo<bar) { alert(""baz"");)</script>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<script>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup(@"if(foo<bar) { alert(""baz"");)"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</script>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest(@"<script>if(foo<bar) { alert(""baz"");)</script>");
         }
 
         [Fact]
-        public void ParseBlockSupportsScriptTagsWithSpacedLessThanSignsInThem()
+        public void SupportsScriptTagsWithSpacedLessThanSignsInThem()
         {
-            ParseBlockTest(@"<script>if(foo < bar) { alert(""baz"");)</script>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<script>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup(@"if(foo < bar) { alert(""baz"");)"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</script>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest(@"<script>if(foo < bar) { alert(""baz"");)</script>");
         }
 
         [Fact]
-        public void ParseBlockAcceptsEmptyTextTag()
+        public void AcceptsEmptyTextTag()
         {
-            ParseBlockTest("<text/>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("<text/>"))
-                ));
+            ParseBlockTest("<text/>");
         }
 
         [Fact]
-        public void ParseBlockAcceptsTextTagAsOuterTagButDoesNotRender()
+        public void AcceptsTextTagAsOuterTagButDoesNotRender()
         {
-            ParseBlockTest("<text>Foo Bar <foo> Baz</text> zoop",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("<text>")),
-                    Factory.Markup("Foo Bar ").Accepts(AcceptedCharactersInternal.None),
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup(" Baz"),
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("</text>"))));
+            ParseBlockTest("<text>Foo Bar <foo> Baz</text> zoop");
         }
 
         [Fact]
-        public void ParseBlockRendersLiteralTextTagIfDoubled()
+        public void RendersLiteralTextTagIfDoubled()
         {
-            ParseBlockTest("<text><text>Foo Bar <foo> Baz</text></text> zoop",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("<text>")),
-                    new MarkupTagBlock(
-                        Factory.Markup("<text>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("Foo Bar "),
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup(" Baz"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</text>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.MarkupTransition("</text>"))));
+            ParseBlockTest("<text><text>Foo Bar <foo> Baz</text></text> zoop");
         }
 
         [Fact]
-        public void ParseBlockDoesNotConsiderPsuedoTagWithinMarkupBlock()
+        public void DoesNotConsiderPsuedoTagWithinMarkupBlock()
         {
-            ParseBlockTest("<foo><text><bar></bar></foo>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<text>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("<bar>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</bar>").Accepts(AcceptedCharactersInternal.None)),
-                    new MarkupTagBlock(
-                        Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))
-                ));
+            ParseBlockTest("<foo><text><bar></bar></foo>");
         }
 
         [Fact]
-        public void ParseBlockStopsParsingMidEmptyTagIfEOFReached()
+        public void StopsParsingMidEmptyTagIfEOFReached()
         {
-            ParseBlockTest("<br/",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<br/"))),
-                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 2), "br"));
+            ParseBlockTest("<br/");
         }
 
         [Fact]
-        public void ParseBlockCorrectlyHandlesSingleLineOfMarkupWithEmbeddedStatement()
+        public void CorrectlyHandlesSingleLineOfMarkupWithEmbeddedStatement()
         {
-            ParseBlockTest("<div>Foo @if(true) {} Bar</div>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<div>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("Foo "),
-                    new StatementBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("if(true) {}").AsStatement()),
-                    Factory.Markup(" Bar"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</div>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest("<div>Foo @if(true) {} Bar</div>");
         }
 
         [Fact]
-        public void ParseBlockIgnoresTagsInContentsOfScriptTag()
+        public void IgnoresTagsInContentsOfScriptTag()
         {
-            ParseBlockTest(@"<script>foo<bar baz='@boz'></script>",
-                new MarkupBlock(
-                    new MarkupTagBlock(
-                        Factory.Markup("<script>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("foo<bar baz='"),
-                    new ExpressionBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("boz")
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords, acceptTrailingDot: false)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                    Factory.Markup("'>"),
-                    new MarkupTagBlock(
-                        Factory.Markup("</script>").Accepts(AcceptedCharactersInternal.None))));
+            ParseBlockTest(@"<script>foo<bar baz='@boz'></script>");
         }
     }
 }

@@ -12,5 +12,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public abstract event EventHandler<ProjectChangeEventArgs> Changed;
 
         public abstract IReadOnlyList<ProjectSnapshot> Projects { get; }
+
+        public abstract bool IsDocumentOpen(string documentFilePath);
+
+        public abstract ProjectSnapshot GetLoadedProject(string filePath);
+
+        public abstract ProjectSnapshot GetOrCreateProject(string filePath);
     }
 }
