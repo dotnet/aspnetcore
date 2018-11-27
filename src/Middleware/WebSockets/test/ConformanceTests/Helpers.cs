@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
         {
             var applicationBasePath = AppContext.BaseDirectory;
             var directoryInfo = new DirectoryInfo(applicationBasePath);
-            return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "test", projectName));
+            return Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, projectName));
         }
     }
 }
