@@ -98,7 +98,7 @@ namespace RoutingWebSite
                         return response.WriteAsync(
                             "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
                     },
-                    new RouteValuesAddressMetadata(routeName: "WithSingleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
+                    new RouteNameMetadata(routeName: "WithSingleAsteriskCatchAll"));
                 routes.MapGet(
                     "/WithDoubleAsteriskCatchAll/{**path}",
                     (httpContext) =>
@@ -111,7 +111,7 @@ namespace RoutingWebSite
                         return response.WriteAsync(
                             "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
                     },
-                    new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
+                    new RouteNameMetadata(routeName: "WithDoubleAsteriskCatchAll"));
             });
 
             app.Map("/Branch1", branch => SetupBranch(branch, "Branch1"));

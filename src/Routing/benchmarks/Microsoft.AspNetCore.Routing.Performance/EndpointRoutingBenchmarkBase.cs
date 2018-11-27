@@ -116,11 +116,14 @@ namespace Microsoft.AspNetCore.Routing
             params object[] metadata)
         {
             var endpointMetadata = new List<object>(metadata ?? Array.Empty<object>());
-            endpointMetadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
+            if (routeName != null)
+            {
+                endpointMetadata.Add(new RouteNameMetadata(routeName));
+            }
 
             return new RouteEndpoint(
                 (context) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, constraints),
+                RoutePatternFactory.Parse(template, defaults, constraints, requiredValues),
                 order,
                 new EndpointMetadataCollection(endpointMetadata),
                 displayName);
@@ -139,16 +142,13 @@ namespace Microsoft.AspNetCore.Routing
 
         protected void CreateOutboundRouteEntry(TreeRouteBuilder treeRouteBuilder, RouteEndpoint endpoint)
         {
-            var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
-            var requiredValues = routeValuesAddressMetadata?.RequiredValues ?? new RouteValueDictionary();
-
             treeRouteBuilder.MapOutbound(
                 NullRouter.Instance,
                 new RouteTemplate(RoutePatternFactory.Parse(
                     endpoint.RoutePattern.RawText,
                     defaults: endpoint.RoutePattern.Defaults,
                     parameterPolicies: null)),
-                requiredLinkValues: new RouteValueDictionary(requiredValues),
+                requiredLinkValues: new RouteValueDictionary(endpoint.RoutePattern.RequiredValues),
                 routeName: null,
                 order: 0);
         }

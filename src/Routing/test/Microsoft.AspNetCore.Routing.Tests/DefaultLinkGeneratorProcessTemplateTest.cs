@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

@@ -309,14 +309,6 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex?query=some%3Fquery#Fragment?", path);
         }
 
-        private class UpperCaseParameterTransform : IOutboundParameterTransformer
-        {
-            public string TransformOutbound(object value)
-            {
-                return value?.ToString()?.ToUpperInvariant();
-            }
-        }
-
         [Fact]
         public void GetLink_ParameterTransformer()
         {
@@ -346,7 +338,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "{controller:upper-case}/{name}",
-                requiredValues: new { controller = "Home", name = "Test", c = "hithere", },
+                requiredValues: new { controller = "Home", name = "Test", },
                 policies: new { c = new UpperCaseParameterTransform(), });
 
             Action<IServiceCollection> configure = (s) =>
@@ -586,24 +578,24 @@ namespace Microsoft.AspNetCore.Routing
                 "Home/Index",
                 order: 3,
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var endpointController = EndpointFactory.CreateRouteEndpoint(
                 "Home",
                 order: 2,
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var endpointEmpty = EndpointFactory.CreateRouteEndpoint(
                 "",
                 order: 1,
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
 
             // This endpoint should be used to generate the link when an id is present
             var endpointControllerActionParameter = EndpointFactory.CreateRouteEndpoint(
                 "Home/Index/{id}",
                 order: 0,
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
 
             var linkGenerator = CreateLinkGenerator(endpointControllerAction, endpointController, endpointEmpty, endpointControllerActionParameter);
 
@@ -642,11 +634,11 @@ namespace Microsoft.AspNetCore.Routing
             var homeIndex = EndpointFactory.CreateRouteEndpoint(
                 "{controller}/{action}/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var homeLogin = EndpointFactory.CreateRouteEndpoint(
                 "{controller}/{action}/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Login", })) });
+                requiredValues: new { controller = "Home", action = "Login", });
 
             var linkGenerator = CreateLinkGenerator(homeIndex, homeLogin);
 
@@ -685,11 +677,11 @@ namespace Microsoft.AspNetCore.Routing
             var homeIndex = EndpointFactory.CreateRouteEndpoint(
                 "{controller}/{action}/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
+                requiredValues: new { controller = "Home", action = "Index", });
             var homeLogin = EndpointFactory.CreateRouteEndpoint(
                 "{controller}/{action}/{id?}",
                 defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Login", })) });
+                requiredValues: new { controller = "Home", action = "Login", });
 
             var linkGenerator = CreateLinkGenerator(homeIndex, homeLogin);
 

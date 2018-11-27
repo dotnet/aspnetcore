@@ -335,5 +335,24 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 kvp => Assert.Equal(new KeyValuePair<string, object>("area", "Admin"), kvp),
                 kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp));
         }
+
+        [Fact]
+        public void SubstituteRequiredValues_NullRequiredValueParameter_Fail()
+        {
+            // Arrange
+            var template = "PageRoute/Attribute/{page}";
+            var defaults = new { area = (string)null, page = (string)null, controller = "Home", action = "Index", };
+            var policies = new { };
+
+            var original = RoutePatternFactory.Parse(template, defaults, policies);
+
+            var requiredValues = new { area = (string)null, page = (string)null, controller = "Home", action = "Index", };
+
+            // Act
+            var actual = Transformer.SubstituteRequiredValues(original, requiredValues);
+
+            // Assert
+            Assert.Null(actual);
+        }
     }
 }
