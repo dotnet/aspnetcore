@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             _host.Start();
         }
 
-        public static void RemoveDevCert(IServiceCollection services)
+        private static void RemoveDevCert(IServiceCollection services)
         {
             // KestrelServerOptionsSetup would scan all system certificates on every test server creation
             // making test runs very slow

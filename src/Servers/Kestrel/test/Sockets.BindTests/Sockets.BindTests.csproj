@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <TestGroupName>Sockets.BindTests</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\BindTests\**\*.cs" />
+    <Compile Include="..\Sockets.FunctionalTests\TransportSelector.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\**\*.cs" />
+    <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+    <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+  </ItemGroup>
+
+</Project>
