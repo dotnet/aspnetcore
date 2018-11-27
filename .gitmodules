@@ -1,3 +1,0 @@
-[submodule "modules/jsinterop"]
-	path = modules/jsinterop
-	url = https://github.com/dotnet/jsinterop.git

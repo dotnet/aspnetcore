@@ -13,10 +13,8 @@
         "bin/Microsoft.AspNetCore.Components.Razor.Extensions/net461/Microsoft.AspNetCore.Components.Razor.Extensions.dll",
         "bin/Microsoft.AspNetCore.Components.Razor.Extensions/netstandard2.0/Microsoft.AspNetCore.Components.Razor.Extensions.dll",
         "bin/Microsoft.AspNetCore.Components/netstandard2.0/Microsoft.AspNetCore.Components.dll",
-        "bin/Microsoft.JSInterop/netstandard2.0/Microsoft.JSInterop.dll",
         "bin/Microsoft.VisualStudio.BlazorExtension/Microsoft.VisualStudio.BlazorExtension.dll",
-        "bin/Microsoft.VisualStudio.LanguageServices.Blazor/net461/Microsoft.VisualStudio.LanguageServices.Blazor.dll",
-        "bin/Mono.WebAssembly.Interop/netstandard2.0/Mono.WebAssembly.Interop.dll"
+        "bin/Microsoft.VisualStudio.LanguageServices.Blazor/net461/Microsoft.VisualStudio.LanguageServices.Blazor.dll"
       ]
     },
     {
