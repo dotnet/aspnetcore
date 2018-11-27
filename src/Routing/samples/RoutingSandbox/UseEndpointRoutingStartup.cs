@@ -10,9 +10,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using RoutingSandbox.Framework;
 
 namespace RoutingSandbox
 {
@@ -23,7 +22,11 @@ namespace RoutingSandbox
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
+            services.AddRouting(options =>
+            {
+                options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+            });
+            services.AddSingleton<FrameworkEndpointDataSource>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -72,12 +75,22 @@ namespace RoutingSandbox
                         using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                         {
                             var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
-                            var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
+                            var dataSource = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
                             graphWriter.Write(dataSource, writer);
                         }
 
                         return Task.CompletedTask;
                     });
+
+                builder.MapFramework(frameworkBuilder =>
+                {
+                    frameworkBuilder.AddPattern("/transform/{hub:slugify=TestHub}/{method:slugify=TestMethod}");
+                    frameworkBuilder.AddPattern("/{hub}/{method=TestMethod}");
+
+                    frameworkBuilder.AddHubMethod("TestHub", "TestMethod", context => context.Response.WriteAsync("TestMethod!"));
+                    frameworkBuilder.AddHubMethod("Login", "Authenticate", context => context.Response.WriteAsync("Authenticate!"));
+                    frameworkBuilder.AddHubMethod("Login", "Logout", context => context.Response.WriteAsync("Logout!"));
+                });
             });
 
             app.UseStaticFiles();

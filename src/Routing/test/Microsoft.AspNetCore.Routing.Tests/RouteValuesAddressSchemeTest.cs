@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing
         public void EndpointDataSource_ChangeCallback_Refreshes_OutboundMatches()
         {
             // Arrange 1
-            var endpoint1 = CreateEndpoint("/a", metadataRequiredValues: new { });
+            var endpoint1 = CreateEndpoint("/a", routeName: "a");
             var dynamicDataSource = new DynamicEndpointDataSource(new[] { endpoint1 });
 
             // Act 1
@@ -93,21 +93,21 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Same(endpoint1, actual);
 
             // Arrange 2
-            var endpoint2 = CreateEndpoint("/b", metadataRequiredValues: new { });
+            var endpoint2 = CreateEndpoint("/b", routeName: "b");
 
             // Act 2
             // Trigger change
             dynamicDataSource.AddEndpoint(endpoint2);
 
             // Arrange 2
-            var endpoint3 = CreateEndpoint("/c", metadataRequiredValues: new { });
+            var endpoint3 = CreateEndpoint("/c", routeName: "c");
 
             // Act 2
             // Trigger change
             dynamicDataSource.AddEndpoint(endpoint3);
 
             // Arrange 3
-            var endpoint4 = CreateEndpoint("/d", metadataRequiredValues: new { });
+            var endpoint4 = CreateEndpoint("/d", routeName: "d");
 
             // Act 3
             // Trigger change
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Routing
             var expected = CreateEndpoint(
                 "api/orders/{id}",
                 defaults: new { controller = "Orders", action = "GetById" },
-                routePatternRequiredValues: new { controller = "Orders", action = "GetById" });
+                metadataRequiredValues: new { controller = "Orders", action = "GetById" });
             var addressScheme = CreateAddressScheme(expected);
 
             // Act
@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "/a",
-                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), new RouteValuesAddressMetadata(string.Empty), });
+                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), new RouteNameMetadata(string.Empty), });
 
             // Act
             var addressScheme = CreateAddressScheme(endpoint);
@@ -369,7 +369,6 @@ namespace Microsoft.AspNetCore.Routing
             string template,
             object defaults = null,
             object metadataRequiredValues = null,
-            object routePatternRequiredValues = null,
             int order = 0,
             string routeName = null,
             EndpointMetadataCollection metadataCollection = null)
@@ -377,16 +376,16 @@ namespace Microsoft.AspNetCore.Routing
             if (metadataCollection == null)
             {
                 var metadata = new List<object>();
-                if (!string.IsNullOrEmpty(routeName) || metadataRequiredValues != null)
+                if (!string.IsNullOrEmpty(routeName))
                 {
-                    metadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(metadataRequiredValues)));
+                    metadata.Add(new RouteNameMetadata(routeName));
                 }
                 metadataCollection = new EndpointMetadataCollection(metadata);
             }
 
             return new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null, requiredValues: routePatternRequiredValues),
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null, requiredValues: metadataRequiredValues),
                 order,
                 metadataCollection,
                 null);
