@@ -1,14 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="15.0">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
   <PropertyGroup>
-    <VsixVersion>15.8</VsixVersion>
-    
+    <VsixVersion>16.0</VsixVersion>
     <!-- VS does not like letters in package versions -->
     <VSIXBuildNumber Condition="'$(BuildNumber)' == 't000'">99999</VSIXBuildNumber>
     <VSIXBuildNumber Condition="'$(VSIXBuildNumber)' == ''">$(BuildNumber)</VSIXBuildNumber>
     <VsixVersion Condition="'$(VSIXBuildNumber)'!=''">$(VsixVersion).$(VSIXBuildNumber)</VsixVersion>
     <VsixVersion Condition="'$(VSIXBuildNumber)'==''">$(VsixVersion).999999</VsixVersion>
-    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -27,6 +26,7 @@
     <IsProductComponent>true</IsProductComponent>
     <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
     <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <IncludePackageReferencesInVSIXContainer>false</IncludePackageReferencesInVSIXContainer>
   </PropertyGroup>
   <Import Project="..\..\version.props" />
   <Import Project="..\..\build\sources.props" />
@@ -41,11 +41,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.VisualStudio.RazorExtension</RootNamespace>
     <AssemblyName>Microsoft.VisualStudio.RazorExtension</AssemblyName>
-    <!--
-    We exclude some facade-only assemblies (i.e. assemblies without any implementation) from the VSIX using the SuppressFromVsix ItemGroup listed in this file.
-    The list is dependent on the framework being targeted. Changes to TargetFrameworkVersion would warrant rebuilding the SuppressFromVsix ItemGroup.
-    -->
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
@@ -176,6 +172,15 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj">
+      <Project>{0693ca32-bb75-401e-bc08-72d6deeb4c99}</Project>
+      <Name>Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj">
       <Project>{932f3c9c-a6c0-40d3-ba50-9309886242fc}</Project>
       <Name>Microsoft.AspNetCore.Razor.Language</Name>
@@ -235,42 +240,9 @@
       Versions must be written here instead of being set as MSBuild variable.
       See https://github.com/dotnet/project-system/issues/2129.
     -->
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.7.109" />
-  </ItemGroup>
-  <ItemDefinitionGroup>
-    <SuppressFromVsix>
-      <Visible>false</Visible>
-    </SuppressFromVsix>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <SuppressFromVsix Include="Esent.Interop.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.CSharp.EditorFeatures.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.EditorFeatures.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.EditorFeatures.Text.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Elfie.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Features.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.VisualBasic.EditorFeatures.dll" />
-    <SuppressFromVsix Include="System.AppContext.dll" />
-    <SuppressFromVsix Include="System.Console.dll" />
-    <SuppressFromVsix Include="System.Diagnostics.FileVersionInfo.dll" />
-    <SuppressFromVsix Include="System.Diagnostics.StackTrace.dll" />
-    <SuppressFromVsix Include="System.IO.Compression.dll" />
-    <SuppressFromVsix Include="System.IO.FileSystem.dll" />
-    <SuppressFromVsix Include="System.IO.FileSystem.Primitives.dll" />
-    <SuppressFromVsix Include="System.Runtime.InteropServices.RuntimeInformation.dll" />
-    <SuppressFromVsix Include="System.Security.Cryptography.Algorithms.dll" />
-    <SuppressFromVsix Include="System.Security.Cryptography.Encoding.dll" />
-    <SuppressFromVsix Include="System.Security.Cryptography.Primitives.dll" />
-    <SuppressFromVsix Include="System.Security.Cryptography.X509Certificates.dll" />
-    <SuppressFromVsix Include="System.Text.Encoding.CodePages.dll" />
-    <SuppressFromVsix Include="System.Threading.Thread.dll" />
-    <SuppressFromVsix Include="System.ValueTuple.dll" />
-    <SuppressFromVsix Include="System.Xml.ReaderWriter.dll" />
-    <SuppressFromVsix Include="System.Xml.XmlDocument.dll" />
-    <SuppressFromVsix Include="System.Xml.XPath.dll" />
-    <SuppressFromVsix Include="System.Xml.XPath.XDocument.dll" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.8.525" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.8.28010" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.8.3252" />
   </ItemGroup>
   <Target Name="CopySymbolsToOutput" AfterTargets="Build" Condition="'$(SymbolsPublishDir)' != ''">
     <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(SymbolsPublishDir)" />
@@ -300,14 +272,15 @@
     </VSIXSourceItem>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <VSIXSourceItem Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Remote.Razor.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.AspNetCore.Razor.Language.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Razor.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.VisualStudio.Editor.Razor.dll" />
-    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net46\Microsoft.VisualStudio.LanguageServices.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Remote.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.AspNetCore.Razor.Language.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.VisualStudio.Editor.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.VisualStudio.LanguageServices.Razor.dll" />
     <Content Include="@(VSIXSourceItem)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -331,20 +304,14 @@
       <_Parameter1>$(VsixVersion)</_Parameter1>
     </_VSIXAssemblyAttribute>
   </ItemGroup>
-  <Target Name="_GenerateVSIXBindingRedirects"
-    DependsOnTargets="PrepareForBuild"
-    BeforeTargets="CoreCompile"
-    Inputs="$(MSBuildAllProjects)"
-    Outputs="$(_GeneratedVSIXBindingRedirectFile)">
+  <Target Name="_GenerateVSIXBindingRedirects" DependsOnTargets="PrepareForBuild" BeforeTargets="CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(_GeneratedVSIXBindingRedirectFile)">
     <PropertyGroup>
-      <_GeneratedVSIXBindingRedirectContent>
-      <![CDATA[
+      <_GeneratedVSIXBindingRedirectContent><![CDATA[
 // <auto-generated />
 using Microsoft.VisualStudio.Shell;
 
 @(ProjectReference->'[assembly: ProvideBindingRedirection(AssemblyName = "%(Name)", GenerateCodeBase = true, PublicKeyToken = "adb9793829ddae60", OldVersionLowerBound = "0.0.0.0", OldVersionUpperBound = "$(VersionPrefix).0", NewVersion = "$(VersionPrefix).0")]', '%0A')
-]]>
-      </_GeneratedVSIXBindingRedirectContent>
+]]></_GeneratedVSIXBindingRedirectContent>
     </PropertyGroup>
     <WriteLinesToFile Lines="$([MSBuild]::Escape($(_GeneratedVSIXBindingRedirectContent)))" File="$(_GeneratedVSIXBindingRedirectFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
     <ItemGroup>

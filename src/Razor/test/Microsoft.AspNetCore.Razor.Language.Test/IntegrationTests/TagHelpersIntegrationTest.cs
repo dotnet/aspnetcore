@@ -94,6 +94,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var irTree = codeDocument.GetDocumentIntermediateNode();
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 

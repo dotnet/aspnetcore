@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -15,11 +16,10 @@ using ItemCollection = Microsoft.VisualStudio.ProjectSystem.ItemCollection;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class DefaultRazorProjectHostTest : ForegroundDispatcherTestBase
+    public class DefaultRazorProjectHostTest : ForegroundDispatcherWorkspaceTestBase
     {
         public DefaultRazorProjectHostTest()
         {
-            Workspace = new AdhocWorkspace();
             ProjectManager = new TestProjectSnapshotManager(Dispatcher, Workspace);
 
             ConfigurationItems = new ItemCollection(Rules.RazorConfiguration.SchemaName);
@@ -37,8 +37,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private PropertyCollection RazorGeneralProperties { get; }
 
         private TestProjectSnapshotManager ProjectManager { get; }
-
-        private Workspace Workspace { get; }
 
         [Fact]
         public void TryGetDefaultConfiguration_FailsIfNoRule()
@@ -612,7 +610,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task DefaultRazorProjectHost_ForegroundThread_CreateAndDispose_Succeeds()
         {
             // Arrange
-            var services = new TestProjectSystemServices("c:\\MyProject\\Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
             // Act & Assert
@@ -627,7 +625,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public async Task DefaultRazorProjectHost_BackgroundThread_CreateAndDispose_Succeeds()
         {
             // Arrange
-            var services = new TestProjectSystemServices("c:\\MyProject\\Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
             // Act & Assert
@@ -646,7 +644,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
             };
 
-            var services = new TestProjectSystemServices("Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
             // Act & Assert
@@ -670,8 +668,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item("File.cshtml");
-            DocumentItems.Property("File.cshtml", Rules.RazorGenerateWithTargetPath.TargetPathProperty, "File.cshtml");
+            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
@@ -681,7 +679,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 DocumentItems.ToChange(),
             };
 
-            var services = new TestProjectSystemServices("c:\\MyProject\\Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
@@ -693,7 +691,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             var snapshot = Assert.Single(ProjectManager.Projects);
-            Assert.Equal("c:\\MyProject\\Test.csproj", snapshot.FilePath);
+            Assert.Equal(TestProjectData.SomeProject.FilePath, snapshot.FilePath);
 
             Assert.Equal(RazorLanguageVersion.Version_2_1, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.1", snapshot.Configuration.ConfigurationName);
@@ -707,8 +705,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 d =>
                 {
                     var document = snapshot.GetDocument(d);
-                    Assert.Equal("c:\\MyProject\\File.cshtml", document.FilePath);
-                    Assert.Equal("File.cshtml", document.TargetPath);
+                    Assert.Equal(TestProjectData.SomeProjectFile1.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.SomeProjectFile1.TargetPath, document.TargetPath);
                 });
 
             await Task.Run(async () => await host.DisposeAsync());
@@ -726,7 +724,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             ExtensionItems.Item("TestExtension");
 
-            DocumentItems.Item("File.cshtml");
+            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
 
             var changes = new TestProjectChangeDescription[]
             {
@@ -736,7 +734,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 DocumentItems.ToChange(),
             };
 
-            var services = new TestProjectSystemServices("c:\\MyProject\\Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
@@ -766,8 +764,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item("File.cshtml");
-            DocumentItems.Property("File.cshtml", Rules.RazorGenerateWithTargetPath.TargetPathProperty, "File.cshtml");
+            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
@@ -777,7 +775,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 DocumentItems.ToChange(),
             };
 
-            var services = new TestProjectSystemServices("c:\\MyProject\\Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
@@ -789,7 +787,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert - 1
             var snapshot = Assert.Single(ProjectManager.Projects);
-            Assert.Equal("c:\\MyProject\\Test.csproj", snapshot.FilePath);
+            Assert.Equal(TestProjectData.SomeProject.FilePath, snapshot.FilePath);
 
             Assert.Equal(RazorLanguageVersion.Version_2_1, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.1", snapshot.Configuration.ConfigurationName);
@@ -803,8 +801,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 d => 
                 {
                     var document = snapshot.GetDocument(d);
-                    Assert.Equal("c:\\MyProject\\File.cshtml", document.FilePath);
-                    Assert.Equal("File.cshtml", document.TargetPath);
+                    Assert.Equal(TestProjectData.SomeProjectFile1.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.SomeProjectFile1.TargetPath, document.TargetPath);
                 });
 
             // Act - 2
@@ -813,9 +811,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ConfigurationItems.RemoveItem("MVC-2.1");
             ConfigurationItems.Item("MVC-2.0", new Dictionary<string, string>() { { "Extensions", "MVC-2.0;Another-Thing" }, });
             ExtensionItems.Item("MVC-2.0");
-            DocumentItems.Item("c:\\AnotherProject\\AnotherFile.cshtml", new Dictionary<string, string>()
+            DocumentItems.Item(TestProjectData.AnotherProjectNestedFile3.FilePath, new Dictionary<string, string>()
             {
-                { Rules.RazorGenerateWithTargetPath.TargetPathProperty, "Pages\\AnotherFile.cshtml" },
+                { Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.AnotherProjectNestedFile3.TargetPath },
             });
 
             changes = new TestProjectChangeDescription[]
@@ -830,7 +828,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert - 2
             snapshot = Assert.Single(ProjectManager.Projects);
-            Assert.Equal("c:\\MyProject\\Test.csproj", snapshot.FilePath);
+            Assert.Equal(TestProjectData.SomeProject.FilePath, snapshot.FilePath);
 
             Assert.Equal(RazorLanguageVersion.Version_2_0, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.0", snapshot.Configuration.ConfigurationName);
@@ -844,14 +842,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 d =>
                 {
                     var document = snapshot.GetDocument(d);
-                    Assert.Equal("c:\\AnotherProject\\AnotherFile.cshtml", document.FilePath);
-                    Assert.Equal("Pages\\AnotherFile.cshtml", document.TargetPath);
+                    Assert.Equal(TestProjectData.AnotherProjectNestedFile3.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.AnotherProjectNestedFile3.TargetPath, document.TargetPath);
                 },
                 d =>
                 {
                     var document = snapshot.GetDocument(d);
-                    Assert.Equal("c:\\MyProject\\File.cshtml", document.FilePath);
-                    Assert.Equal("File.cshtml", document.TargetPath);
+                    Assert.Equal(TestProjectData.SomeProjectFile1.FilePath, document.FilePath);
+                    Assert.Equal(TestProjectData.SomeProjectFile1.TargetPath, document.TargetPath);
                 });
 
             await Task.Run(async () => await host.DisposeAsync());
@@ -871,8 +869,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item("File.cshtml");
-            DocumentItems.Property("File.cshtml", Rules.RazorGenerateWithTargetPath.TargetPathProperty, "File.cshtml");
+            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
@@ -882,7 +880,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 DocumentItems.ToChange(),
             };
 
-            var services = new TestProjectSystemServices("c:\\MyProject\\Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
@@ -894,7 +892,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert - 1
             var snapshot = Assert.Single(ProjectManager.Projects);
-            Assert.Equal("c:\\MyProject\\Test.csproj", snapshot.FilePath);
+            Assert.Equal(TestProjectData.SomeProject.FilePath, snapshot.FilePath);
 
             Assert.Equal(RazorLanguageVersion.Version_2_1, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.1", snapshot.Configuration.ConfigurationName);
@@ -937,8 +935,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item("File.cshtml");
-            DocumentItems.Property("File.cshtml", Rules.RazorGenerateWithTargetPath.TargetPathProperty, "File.cshtml");
+            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
@@ -948,7 +946,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 DocumentItems.ToChange(),
             };
 
-            var services = new TestProjectSystemServices("c:\\MyProject\\Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
@@ -960,7 +958,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert - 1
             var snapshot = Assert.Single(ProjectManager.Projects);
-            Assert.Equal("c:\\MyProject\\Test.csproj", snapshot.FilePath);
+            Assert.Equal(TestProjectData.SomeProject.FilePath, snapshot.FilePath);
 
             Assert.Equal(RazorLanguageVersion.Version_2_1, snapshot.Configuration.LanguageVersion);
             Assert.Equal("MVC-2.1", snapshot.Configuration.ConfigurationName);
@@ -1007,8 +1005,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ExtensionItems.Item("MVC-2.1");
             ExtensionItems.Item("Another-Thing");
 
-            DocumentItems.Item("File.cshtml");
-            DocumentItems.Property("File.cshtml", Rules.RazorGenerateWithTargetPath.TargetPathProperty, "File.cshtml");
+            DocumentItems.Item(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath));
+            DocumentItems.Property(Path.GetFileName(TestProjectData.SomeProjectFile1.FilePath), Rules.RazorGenerateWithTargetPath.TargetPathProperty, TestProjectData.SomeProjectFile1.TargetPath);
 
             var changes = new TestProjectChangeDescription[]
             {
@@ -1018,7 +1016,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 DocumentItems.ToChange(),
             };
 
-            var services = new TestProjectSystemServices("c:\\MyProject\\Test.csproj");
+            var services = new TestProjectSystemServices(TestProjectData.SomeProject.FilePath);
 
             var host = new DefaultRazorProjectHost(services, Workspace, ProjectManager);
 
@@ -1030,16 +1028,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert - 1
             var snapshot = Assert.Single(ProjectManager.Projects);
-            Assert.Equal("c:\\MyProject\\Test.csproj", snapshot.FilePath);
+            Assert.Equal(TestProjectData.SomeProject.FilePath, snapshot.FilePath);
             Assert.Same("MVC-2.1", snapshot.Configuration.ConfigurationName);
 
             // Act - 2
-            services.UnconfiguredProject.FullPath = "c:\\AnotherProject\\Test2.csproj";
+            services.UnconfiguredProject.FullPath = TestProjectData.AnotherProject.FilePath;
             await Task.Run(async () => await host.OnProjectRenamingAsync());
 
             // Assert - 1
             snapshot = Assert.Single(ProjectManager.Projects);
-            Assert.Equal("c:\\AnotherProject\\Test2.csproj", snapshot.FilePath);
+            Assert.Equal(TestProjectData.AnotherProject.FilePath, snapshot.FilePath);
             Assert.Same("MVC-2.1", snapshot.Configuration.ConfigurationName);
 
             await Task.Run(async () => await host.DisposeAsync());

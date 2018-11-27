@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -14,12 +15,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             get
             {
-                var factory = new SpanFactory();
-                var blockFactory = new BlockFactory(factory);
                 Func<string, string, KeyValuePair<string, string>> kvp =
                     (key, value) => new KeyValuePair<string, string>(key, value);
                 var empty = Enumerable.Empty<KeyValuePair<string, string>>();
-                var csharp = TagHelperParseTreeRewriter.InvalidAttributeValueMarker;
+                var csharp = TagHelperParseTreeRewriter.Rewriter.InvalidAttributeValueMarker;
 
                 // documentContent, expectedPairs
                 return new TheoryData<string, IEnumerable<KeyValuePair<string, string>>>
@@ -29,13 +28,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     { "<a href=\"@true\">", new[] { kvp("href", csharp) } },
                     { "<a href=\"prefix @true suffix\">", new[] { kvp("href", $"prefix{csharp} suffix") } },
                     { "<a href=~/home>", new[] { kvp("href", "~/home") } },
-                    { "<a href=~/home @{ } nothing='something'>", new[] { kvp("href", "~/home"), kvp("", "") } },
+                    { "<a href=~/home @{ } nothing='something'>", new[] { kvp("href", "~/home") } },
                     {
                         "<a href=\"@DateTime.Now::0\" class='btn btn-success' random>",
                         new[] { kvp("href", $"{csharp}::0"), kvp("class", "btn btn-success"), kvp("random", "") }
                     },
                     { "<a href=>", new[] { kvp("href", "") } },
-                    { "<a href='\">  ", new[] { kvp("href", "\">") } },
+                    { "<a href='\">  ", new[] { kvp("href", "\">  ") } },
                     { "<a href'", new[] { kvp("href'", "") } },
                 };
             }
@@ -51,13 +50,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var errorSink = new ErrorSink();
             var parseResult = ParseDocument(documentContent);
             var document = parseResult.Root;
-            var parseTreeRewriter = new TagHelperParseTreeRewriter(null, Enumerable.Empty<TagHelperDescriptor>(), parseResult.Options.FeatureFlags);
+            var parseTreeRewriter = new TagHelperParseTreeRewriter.Rewriter(
+                parseResult.Source,
+                null,
+                Enumerable.Empty<TagHelperDescriptor>(),
+                parseResult.Options.FeatureFlags,
+                errorSink);
 
             // Assert - Guard
-            var rootBlock = Assert.IsType<Block>(document);
-            var child = Assert.Single(rootBlock.Children);
-            var tagBlock = Assert.IsType<Block>(child);
-            Assert.Equal(BlockKindInternal.Tag, tagBlock.Type);
+            var rootBlock = Assert.IsType<RazorDocumentSyntax>(document);
+            var rootMarkup = Assert.IsType<MarkupBlockSyntax>(rootBlock.Document);
+            var childBlock = Assert.Single(rootMarkup.Children);
+            var tagBlock = Assert.IsType<MarkupTagBlockSyntax>(childBlock);
             Assert.Empty(errorSink.Errors);
 
             // Act

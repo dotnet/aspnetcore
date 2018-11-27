@@ -4,13 +4,13 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
-using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class RazorSyntaxTreePartialParser
     {
-        private Span _lastChangeOwner;
+        private SyntaxNode _lastChangeOwner;
         private bool _lastResultProvisional;
 
         public RazorSyntaxTreePartialParser(RazorSyntaxTree syntaxTree)
@@ -20,13 +20,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(syntaxTree));
             }
 
-            // We mutate the existing syntax tree so we need to clone the one passed in so our mutations don't
-            // impact external state.
-            SyntaxTreeRoot = (Block)syntaxTree.Root.Clone();
+            OriginalSyntaxTree = syntaxTree;
+            ModifiedSyntaxTreeRoot = syntaxTree.Root;
         }
 
         // Internal for testing
-        internal Block SyntaxTreeRoot { get; }
+        internal RazorSyntaxTree OriginalSyntaxTree { get; }
+
+        // Internal for testing
+        internal SyntaxNode ModifiedSyntaxTreeRoot { get; private set; }
 
         public PartialParseResultInternal Parse(SourceChange change)
         {
@@ -43,20 +45,24 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var result = PartialParseResultInternal.Rejected;
 
             // Try the last change owner
-            if (_lastChangeOwner != null && _lastChangeOwner.EditHandler.OwnsChange(_lastChangeOwner, change))
+            if (_lastChangeOwner != null)
             {
-                var editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
-                result = editResult.Result;
-                if ((editResult.Result & PartialParseResultInternal.Rejected) != PartialParseResultInternal.Rejected)
+                var editHandler = _lastChangeOwner.GetSpanContext()?.EditHandler ?? SpanEditHandler.CreateDefault();
+                if (editHandler.OwnsChange(_lastChangeOwner, change))
                 {
-                    _lastChangeOwner.ReplaceWith(editResult.EditedSpan);
+                    var editResult = editHandler.ApplyChange(_lastChangeOwner, change);
+                    result = editResult.Result;
+                    if ((editResult.Result & PartialParseResultInternal.Rejected) != PartialParseResultInternal.Rejected)
+                    {
+                        ReplaceLastChangeOwner(editResult.EditedNode);
+                    }
                 }
 
                 return result;
             }
 
             // Locate the span responsible for this change
-            _lastChangeOwner = SyntaxTreeRoot.LocateOwner(change);
+            _lastChangeOwner = ModifiedSyntaxTreeRoot.LocateOwner(change);
 
             if (_lastResultProvisional)
             {
@@ -65,15 +71,29 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
             else if (_lastChangeOwner != null)
             {
-                var editResult = _lastChangeOwner.EditHandler.ApplyChange(_lastChangeOwner, change);
+                var editHandler = _lastChangeOwner.GetSpanContext()?.EditHandler ?? SpanEditHandler.CreateDefault();
+                var editResult = editHandler.ApplyChange(_lastChangeOwner, change);
                 result = editResult.Result;
                 if ((editResult.Result & PartialParseResultInternal.Rejected) != PartialParseResultInternal.Rejected)
                 {
-                    _lastChangeOwner.ReplaceWith(editResult.EditedSpan);
+                    ReplaceLastChangeOwner(editResult.EditedNode);
                 }
             }
 
             return result;
+        }
+
+        private void ReplaceLastChangeOwner(SyntaxNode editedNode)
+        {
+            ModifiedSyntaxTreeRoot = ModifiedSyntaxTreeRoot.ReplaceNode(_lastChangeOwner, editedNode);
+            foreach (var node in ModifiedSyntaxTreeRoot.DescendantNodes())
+            {
+                if (node.Green == editedNode.Green)
+                {
+                    _lastChangeOwner = node;
+                    break;
+                }
+            }
         }
     }
 }

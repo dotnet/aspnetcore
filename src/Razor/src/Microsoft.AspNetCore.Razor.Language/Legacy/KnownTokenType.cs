@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal enum KnownTokenType
     {
-        WhiteSpace,
+        Whitespace,
         NewLine,
         Identifier,
         Keyword,

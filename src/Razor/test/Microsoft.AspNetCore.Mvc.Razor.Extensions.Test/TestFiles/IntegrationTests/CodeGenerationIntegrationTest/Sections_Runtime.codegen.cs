@@ -38,26 +38,17 @@ namespace AspNetCore
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-            BeginContext(17, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
-            BeginContext(64, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
    
     Layout = "_SectionTestLayout.cshtml";
 
 #line default
 #line hidden
-            BeginContext(117, 26, true);
             WriteLiteral("\r\n<div>Some body</div>\r\n\r\n");
-            EndContext();
             DefineSection("Section1", async() => {
-                BeginContext(162, 43, true);
                 WriteLiteral("\r\n    <div>This is in Section 1</div>\r\n    ");
-                EndContext();
-                BeginContext(205, 25, false);
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
                 }
                 );
@@ -76,10 +67,7 @@ __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewDat
                 }
                 Write(__tagHelperExecutionContext.Output);
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                EndContext();
-                BeginContext(230, 2, true);
                 WriteLiteral("\r\n");
-                EndContext();
             }
             );
         }

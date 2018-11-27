@@ -1,20 +1,22 @@
-Statement block - Gen<None> - 27 - (0:0,0)
-    Code span - Gen<Stmt> - [if(foo)) { var bar = foo; }] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:18
-        CSharpTokenType.Keyword;[if];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
+CSharpCodeBlock - [0..27)::27 - [if(foo)) { var bar = foo; }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..27)::27 - [if(foo)) { var bar = foo; }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[bar];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

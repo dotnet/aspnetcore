@@ -1,31 +1,24 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class TagHelperSpanWriter
     {
-        private readonly string _filePath;
+        private readonly RazorSyntaxTree _syntaxTree;
         private readonly TextWriter _writer;
 
-        public TagHelperSpanWriter(TextWriter writer, string filePath)
+        public TagHelperSpanWriter(TextWriter writer, RazorSyntaxTree syntaxTree)
         {
             _writer = writer;
-            _filePath = filePath;
+            _syntaxTree = syntaxTree;
         }
 
-        public virtual void Visit(SyntaxTreeNode node)
+        public virtual void Visit()
         {
-            if (!(node is Block block))
-            {
-                return;
-            }
-
-            var tagHelperSpans = GetTagHelperSpans(block, _filePath);
+            var tagHelperSpans = _syntaxTree.GetTagHelperSpans();
             foreach (var span in tagHelperSpans)
             {
                 VisitTagHelperSpan(span);
@@ -64,18 +57,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected void Write(object value)
         {
             _writer.Write(value);
-        }
-
-        internal static IReadOnlyList<TagHelperSpanInternal> GetTagHelperSpans(Block root, string filePath)
-        {
-            // We don't care about the options and diagnostic here.
-            var syntaxTree = RazorSyntaxTree.Create(
-                root,
-                TestRazorSourceDocument.Create(filePath: filePath),
-                Array.Empty<RazorDiagnostic>(),
-                RazorParserOptions.CreateDefault());
-
-            return syntaxTree.GetTagHelperSpans();
         }
     }
 }

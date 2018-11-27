@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.IO.Pipes;
-#if NET46
+#if NETFRAMEWORK
 using System.Security.AccessControl;
 using System.Security.Principal;
 #endif
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 ServerLogger.Log("Named pipe '{0}' connected", pipeName);
                 cancellationToken.ThrowIfCancellationRequested();
 
-#if NET46
+#if NETFRAMEWORK
                 // Verify that we own the pipe.
                 if (!CheckPipeConnectionOwnership(stream))
                 {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-#if NET46
+#if NETFRAMEWORK
         /// <summary>
         /// Check to ensure that the named pipe server we connected to is owned by the same
         /// user.

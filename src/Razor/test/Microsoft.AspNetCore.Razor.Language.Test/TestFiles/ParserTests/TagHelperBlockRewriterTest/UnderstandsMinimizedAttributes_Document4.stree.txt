@@ -1,4 +1,16 @@
-Markup block - Gen<None> - 28 - (0:0,0)
-    Tag block - Gen<TagHelper> - 28 - (0:0,0) - input - InputTagHelper2 - InputTagHelper3
-        SelfClosing - <input bound-required-int />
-        bound-required-int - Minimized
+RazorDocument - [0..28)::28 - [<input bound-required-int />]
+    MarkupBlock - [0..28)::28
+        MarkupTagHelperElement - [0..28)::28 - input[SelfClosing] - InputTagHelper2 - InputTagHelper3
+            MarkupTagHelperStartTag - [0..28)::28
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupMinimizedTagHelperAttribute - [6..25)::19 - bound-required-int - Minimized - Bound - [ bound-required-int]
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..25)::18 - [bound-required-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound-required-int];
+                MarkupTextLiteral - [25..28)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

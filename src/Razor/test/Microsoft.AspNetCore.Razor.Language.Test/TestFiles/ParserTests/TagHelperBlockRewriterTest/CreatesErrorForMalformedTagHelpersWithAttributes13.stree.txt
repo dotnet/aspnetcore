@@ -1,3 +1,32 @@
-Markup block - Gen<None> - 33 - (0:0,0)
-    Tag block - Gen<TagHelper> - 33 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p @DateTime.Now class="btn"> ... </p>
+RazorDocument - [0..33)::33 - [<p @DateTime.Now class="btn"></p>]
+    MarkupBlock - [0..33)::33
+        MarkupTagHelperElement - [0..33)::33 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..29)::29
+                MarkupTextLiteral - [0..3)::3 - [<p ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    Whitespace;[ ];
+                CSharpCodeBlock - [3..16)::13
+                    CSharpImplicitExpression - [3..16)::13
+                        CSharpTransition - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        CSharpImplicitExpressionBody - [4..16)::12
+                            CSharpCodeBlock - [4..16)::12
+                                CSharpExpressionLiteral - [4..16)::12 - [DateTime.Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                    Identifier;[DateTime];
+                                    Dot;[.];
+                                    Identifier;[Now];
+                MarkupTextLiteral - [16..29)::13 - [ class="btn">] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    Text;[class];
+                    Equals;[=];
+                    DoubleQuote;["];
+                    Text;[btn];
+                    DoubleQuote;["];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [29..33)::4
+                MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

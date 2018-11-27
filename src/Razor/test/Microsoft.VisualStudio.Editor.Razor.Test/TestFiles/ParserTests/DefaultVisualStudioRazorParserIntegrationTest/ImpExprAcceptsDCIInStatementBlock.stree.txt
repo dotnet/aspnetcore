@@ -1,0 +1,30 @@
+RazorDocument - [0..18)::18 - [@{LF    @DateT.LF}]
+    MarkupBlock - [0..18)::18
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..18)::18
+            CSharpStatement - [0..18)::18
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..18)::17
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..17)::15
+                        CSharpStatementLiteral - [2..8)::6 - [LF    ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            NewLine;[LF];
+                            Whitespace;[    ];
+                        CSharpCodeBlock - [8..15)::7
+                            CSharpImplicitExpression - [8..15)::7
+                                CSharpTransition - [8..9)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [9..15)::6
+                                    CSharpCodeBlock - [9..15)::6
+                                        CSharpExpressionLiteral - [9..15)::6 - [DateT.] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K20
+                                            Identifier;[DateT];
+                                            Dot;[.];
+                        CSharpStatementLiteral - [15..17)::2 - [LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            NewLine;[LF];
+                    RazorMetaCode - [17..18)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [18..18)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

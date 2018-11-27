@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -23,37 +24,42 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentNullException(nameof(syntaxTree));
             }
-
-            var sectionVerifier = new NestedSectionVerifier();
-            sectionVerifier.Verify(syntaxTree);
-
-            return syntaxTree;
+            
+            var sectionVerifier = new NestedSectionVerifier(syntaxTree);
+            return sectionVerifier.Verify();
         }
 
-        private class NestedSectionVerifier : ParserVisitor
+        private class NestedSectionVerifier : SyntaxRewriter
         {
             private int _nestedLevel;
+            private RazorSyntaxTree _syntaxTree;
 
-            public void Verify(RazorSyntaxTree tree)
+            public NestedSectionVerifier(RazorSyntaxTree syntaxTree)
             {
-                tree.Root.Accept(this);
+                _syntaxTree = syntaxTree;
             }
 
-            public override void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            public RazorSyntaxTree Verify()
+            {
+                var root = Visit(_syntaxTree.Root);
+                var rewrittenTree = new DefaultRazorSyntaxTree(root, _syntaxTree.Source, _syntaxTree.Diagnostics, _syntaxTree.Options);
+                return rewrittenTree;
+            }
+
+            public override SyntaxNode VisitRazorDirective(RazorDirectiveSyntax node)
             {
                 if (_nestedLevel > 0)
                 {
-                    var directiveStart = block.Children.First(child => !child.IsBlock && ((Span)child).Kind == SpanKindInternal.Transition).Start;
+                    var directiveStart = node.Transition.GetSourceLocation(_syntaxTree.Source);
                     var errorLength = /* @ */ 1 + SectionDirective.Directive.Directive.Length;
                     var error = RazorDiagnosticFactory.CreateParsing_SectionsCannotBeNested(new SourceSpan(directiveStart, errorLength));
-                    chunkGenerator.Diagnostics.Add(error);
+                    node = node.AppendDiagnostic(error);
                 }
-
                 _nestedLevel++;
-
-                VisitDefault(block);
-
+                var result = base.VisitRazorDirective(node);
                 _nestedLevel--;
+
+                return result;
             }
         }
     }

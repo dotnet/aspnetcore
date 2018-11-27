@@ -1,24 +1,25 @@
-Markup block - Gen<None> - 36 - (0:0,0)
-    Tag block - Gen<None> - 5 - (0:0,0)
-        Markup span - Gen<Markup> - [<foo>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [<!DOCTYPE hello="world" >] - SpanEditHandler;Accepts:Any - (5:0,5) - Tokens:11
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.Bang;[!];
-        HtmlTokenType.Text;[DOCTYPE];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[hello];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.DoubleQuote;["];
-        HtmlTokenType.Text;[world];
-        HtmlTokenType.DoubleQuote;["];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.CloseAngle;[>];
-    Tag block - Gen<None> - 6 - (30:0,30)
-        Markup span - Gen<Markup> - [</foo>] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[foo];
-            HtmlTokenType.CloseAngle;[>];
+RazorDocument - [0..36)::36 - [<foo><!DOCTYPE hello="world" ></foo>]
+    MarkupBlock - [0..36)::36
+        MarkupTagBlock - [0..5)::5 - [<foo>]
+            MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[foo];
+                CloseAngle;[>];
+        MarkupTextLiteral - [5..30)::25 - [<!DOCTYPE hello="world" >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Bang;[!];
+            Text;[DOCTYPE];
+            Whitespace;[ ];
+            Text;[hello];
+            Equals;[=];
+            DoubleQuote;["];
+            Text;[world];
+            DoubleQuote;["];
+            Whitespace;[ ];
+            CloseAngle;[>];
+        MarkupTagBlock - [30..36)::6 - [</foo>]
+            MarkupTextLiteral - [30..36)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[foo];
+                CloseAngle;[>];

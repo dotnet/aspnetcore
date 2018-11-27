@@ -25,12 +25,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             DesignTimeMode = options.DesignTime;
             FeatureFlags = options.FeatureFlags;
             ParseLeadingDirectives = options.ParseLeadingDirectives;
-            Builder = new SyntaxTreeBuilder();
             ErrorSink = new ErrorSink();
             SeenDirectives = new HashSet<string>(StringComparer.Ordinal);
         }
-
-        public SyntaxTreeBuilder Builder { get; }
 
         public ErrorSink ErrorSink { get; set; }
 
@@ -49,6 +46,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public bool WhiteSpaceIsSignificantToAncestorBlock { get; set; }
 
         public bool NullGenerateWhitespaceAndNewLine { get; set; }
+
+        public bool InTemplateContext { get; set; }
+
+        public AcceptedCharactersInternal LastAcceptedCharacters { get; set; } = AcceptedCharactersInternal.None;
 
         public bool EndOfFile
         {

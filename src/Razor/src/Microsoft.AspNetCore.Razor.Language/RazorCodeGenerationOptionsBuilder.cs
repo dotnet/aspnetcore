@@ -42,6 +42,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </remarks>
         public virtual bool SuppressMetadataAttributes { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that determines if an empty body is generated for the primary method.
+        /// </summary>
+        public virtual bool SuppressPrimaryMethodBody { get; set; }
+
         public abstract RazorCodeGenerationOptions Build();
 
         public virtual void SetDesignTime(bool designTime)

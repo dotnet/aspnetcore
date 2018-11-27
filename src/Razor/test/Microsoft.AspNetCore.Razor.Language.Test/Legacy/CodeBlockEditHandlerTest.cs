@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
@@ -205,17 +206,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             Assert.False(result);
         }
 
-        private static Span GetSpan(SourceLocation start, string content)
+        private static SyntaxNode GetSpan(SourceLocation start, string content)
         {
-            var spanBuilder = new SpanBuilder(start);
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
             var tokens = CSharpLanguageCharacteristics.Instance.TokenizeString(content).ToArray();
             foreach (var token in tokens)
             {
-                spanBuilder.Accept(token);
+                builder.Add((SyntaxToken)token.CreateRed());
             }
-            var span = spanBuilder.Build();
+            var node = SyntaxFactory.CSharpStatementLiteral(builder.ToList());
 
-            return span;
+            return node;
         }
     }
 }

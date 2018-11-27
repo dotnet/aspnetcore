@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // Act
             var i = 3;
-            IEnumerable<HtmlToken> previousTokens = null;
+            IEnumerable<SyntaxToken> previousTokens = null;
             var tokenFound = tokenizer.LookaheadUntil((s, p) =>
             {
                 previousTokens = p;
@@ -77,9 +78,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // For the very first element, there will be no previous items, so null is expected
             var orderIndex = 0;
             Assert.Null(previousTokens.ElementAt(orderIndex++));
-            Assert.Equal(new HtmlToken("asdf", HtmlTokenType.Text), previousTokens.ElementAt(orderIndex++));
-            Assert.Equal(new HtmlToken("--", HtmlTokenType.DoubleHyphen), previousTokens.ElementAt(orderIndex++));
-            Assert.Equal(new HtmlToken("fvd", HtmlTokenType.Text), previousTokens.ElementAt(orderIndex++));
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "asdf"), previousTokens.ElementAt(orderIndex++));
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--"), previousTokens.ElementAt(orderIndex++));
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "fvd"), previousTokens.ElementAt(orderIndex++));
         }
 
         [Fact]
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var tokenizer = CreateContentTokenizer("asdf--fvd");
 
             // Act
-            var tokens = new Stack<HtmlToken>();
+            var tokens = new Stack<SyntaxToken>();
             var tokenFound = tokenizer.LookaheadUntil((s, p) =>
             {
                 tokens.Push(s);
@@ -99,9 +100,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Assert
             Assert.False(tokenFound);
             Assert.Equal(3, tokens.Count);
-            Assert.Equal(new HtmlToken("fvd", HtmlTokenType.Text), tokens.Pop());
-            Assert.Equal(new HtmlToken("--", HtmlTokenType.DoubleHyphen), tokens.Pop());
-            Assert.Equal(new HtmlToken("asdf", HtmlTokenType.Text), tokens.Pop());
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "fvd"), tokens.Pop());
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--"), tokens.Pop());
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "asdf"), tokens.Pop());
         }
 
         [Fact]
@@ -111,18 +112,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var tokenizer = CreateContentTokenizer("asdf--fvd");
 
             // Act
-            var tokens = new Stack<HtmlToken>();
+            var tokens = new Stack<SyntaxToken>();
             var tokenFound = tokenizer.LookaheadUntil((s, p) =>
             {
                 tokens.Push(s);
-                return s.Type == HtmlTokenType.DoubleHyphen;
+                return s.Kind == SyntaxKind.DoubleHyphen;
             });
 
             // Assert
             Assert.True(tokenFound);
             Assert.Equal(2, tokens.Count);
-            Assert.Equal(new HtmlToken("--", HtmlTokenType.DoubleHyphen), tokens.Pop());
-            Assert.Equal(new HtmlToken("asdf", HtmlTokenType.Text), tokens.Pop());
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.DoubleHyphen, "--"), tokens.Pop());
+            AssertTokenEqual(SyntaxFactory.Token(SyntaxKind.Text, "asdf"), tokens.Pop());
         }
 
         private static TestTokenizerBackedParser CreateContentTokenizer(string content)
@@ -135,7 +136,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return tokenizer;
         }
 
-        private class ExposedTokenizer : Tokenizer<CSharpToken, CSharpTokenType>
+        private static void AssertTokenEqual(SyntaxToken expected, SyntaxToken actual)
+        {
+            Assert.True(expected.IsEquivalentTo(actual), "Tokens not equal.");
+        }
+
+        private class ExposedTokenizer : Tokenizer
         {
             public ExposedTokenizer(string input)
                 : base(new SeekableTextReader(input, filePath: null))
@@ -150,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            public override CSharpTokenType RazorCommentStarType
+            public override SyntaxKind RazorCommentStarKind
             {
                 get
                 {
@@ -158,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            public override CSharpTokenType RazorCommentTransitionType
+            public override SyntaxKind RazorCommentTransitionKind
             {
                 get
                 {
@@ -166,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            public override CSharpTokenType RazorCommentType
+            public override SyntaxKind RazorCommentKind
             {
                 get
                 {
@@ -182,9 +188,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            protected override CSharpToken CreateToken(
+            protected override SyntaxToken CreateToken(
                 string content,
-                CSharpTokenType type,
+                SyntaxKind type,
                 IReadOnlyList<RazorDiagnostic> errors)
             {
                 throw new NotImplementedException();
@@ -196,23 +202,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private class TestTokenizerBackedParser : TokenizerBackedParser<HtmlTokenizer, HtmlToken, HtmlTokenType>
+        private class TestTokenizerBackedParser : TokenizerBackedParser<HtmlTokenizer>
         {
-            internal TestTokenizerBackedParser(LanguageCharacteristics<HtmlTokenizer, HtmlToken, HtmlTokenType> language, ParserContext context) : base(language, context)
+            internal TestTokenizerBackedParser(LanguageCharacteristics<HtmlTokenizer> language, ParserContext context) : base(language, context)
             {
             }
 
-            public override void ParseBlock()
-            {
-                throw new NotImplementedException();
-            }
-
-            protected override bool TokenTypeEquals(HtmlTokenType x, HtmlTokenType y)
-            {
-                throw new NotImplementedException();
-            }
-
-            internal new bool LookaheadUntil(Func<HtmlToken, IEnumerable<HtmlToken>, bool> condition)
+            internal new bool LookaheadUntil(Func<SyntaxToken, IEnumerable<SyntaxToken>, bool> condition)
             {
                 return base.LookaheadUntil(condition);
             }

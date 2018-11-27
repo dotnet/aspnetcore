@@ -1,30 +1,32 @@
-Statement block - Gen<None> - 53 - (0:0,0)
-    Code span - Gen<Stmt> - [try { bar(); }LF// FooLF// BarLFcatch(bar) { baz(); }] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:28
-        CSharpTokenType.Keyword;[try];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.Comment;[// Foo];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.Comment;[// Bar];
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.Keyword;[catch];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[baz];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
+CSharpCodeBlock - [0..53)::53 - [try { bar(); }LF// FooLF// BarLFcatch(bar) { baz(); }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..53)::53 - [try { bar(); }LF// FooLF// BarLFcatch(bar) { baz(); }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[try];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[bar];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        NewLine;[LF];
+        CSharpComment;[// Foo];
+        NewLine;[LF];
+        CSharpComment;[// Bar];
+        NewLine;[LF];
+        Keyword;[catch];
+        LeftParenthesis;[(];
+        Identifier;[bar];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[baz];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

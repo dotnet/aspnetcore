@@ -1,20 +1,20 @@
-Statement block - Gen<None> - 27 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
-    Code span - Gen<Stmt> - [do { foo(); } while(true);] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:16
-        CSharpTokenType.Keyword;[do];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[while];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Keyword;[true];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
+CSharpCodeBlock - [0..27)::27 - [@do { foo(); } while(true);]
+    CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    CSharpStatementLiteral - [1..27)::26 - [do { foo(); } while(true);] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[do];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[foo];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[while];
+        LeftParenthesis;[(];
+        Keyword;[true];
+        RightParenthesis;[)];
+        Semicolon;[;];

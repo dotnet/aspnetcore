@@ -1,5 +1,26 @@
-Markup block - Gen<None> - 36 - (0:0,0)
-    Tag block - Gen<TagHelper> - 36 - (0:0,0) - th:p - PTagHelper
-        StartTagAndEndTag - <th:p> ... </th:p>
-        Tag block - Gen<TagHelper> - 23 - (6:0,6) - th:strong - StrongTagHelper
-            StartTagAndEndTag - <th:strong> ... </th:strong>
+RazorDocument - [0..36)::36 - [<th:p><th:strong></th:strong></th:p>]
+    MarkupBlock - [0..36)::36
+        MarkupTagHelperElement - [0..36)::36 - th:p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..6)::6
+                MarkupTextLiteral - [0..6)::6 - [<th:p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[th:p];
+                    CloseAngle;[>];
+            MarkupTagHelperElement - [6..29)::23 - th:strong[StartTagAndEndTag] - StrongTagHelper
+                MarkupTagHelperStartTag - [6..17)::11
+                    MarkupTextLiteral - [6..17)::11 - [<th:strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[th:strong];
+                        CloseAngle;[>];
+                MarkupTagHelperEndTag - [17..29)::12
+                    MarkupTextLiteral - [17..29)::12 - [</th:strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[th:strong];
+                        CloseAngle;[>];
+            MarkupTagHelperEndTag - [29..36)::7
+                MarkupTextLiteral - [29..36)::7 - [</th:p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[th:p];
+                    CloseAngle;[>];

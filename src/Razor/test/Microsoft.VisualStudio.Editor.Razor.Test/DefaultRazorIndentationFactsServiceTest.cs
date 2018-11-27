@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.VisualStudio.Text;
 using Xunit;
 
@@ -33,9 +33,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsCSharpOpenCurlyBrace_SpanWithLeftBrace_ReturnTrue()
         {
             // Arrange
-            var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpToken("{", CSharpTokenType.LeftBrace));
-            var child = childBuilder.Build();
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(SyntaxKind.LeftBrace, "{"));
+            var child = SyntaxFactory.RazorMetaCode(builder.ToList());
 
             // Act
             var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
@@ -45,17 +45,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Theory]
-        [InlineData("if", CSharpTokenType.Keyword)]
-        [InlineData("}", CSharpTokenType.RightBrace)]
-        [InlineData("++", CSharpTokenType.Increment)]
-        [InlineData("text", CSharpTokenType.Identifier)]
+        [InlineData("if", SyntaxKind.Keyword)]
+        [InlineData("}", SyntaxKind.RightBrace)]
+        [InlineData("++", SyntaxKind.Increment)]
+        [InlineData("text", SyntaxKind.Identifier)]
         public void IsCSharpOpenCurlyBrace_SpanWithUnsupportedSymbolType_ReturnFalse(string content, object symbolTypeObject)
         {
             // Arrange
-            var symbolType = (CSharpTokenType)symbolTypeObject;
-            var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpToken(content, symbolType));
-            var child = childBuilder.Build();
+            var symbolType = (SyntaxKind)symbolTypeObject;
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(symbolType, content));
+            var child = SyntaxFactory.MarkupTextLiteral(builder.ToList());
 
             // Act
             var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
@@ -68,10 +68,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsCSharpOpenCurlyBrace_MultipleSymbols_ReturnFalse()
         {
             // Arrange
-            var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new CSharpToken("hello", CSharpTokenType.Identifier));
-            childBuilder.Accept(new CSharpToken(",", CSharpTokenType.Comma));
-            var child = childBuilder.Build();
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Identifier, "hello"));
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Comma, ","));
+            var child = SyntaxFactory.MarkupTextLiteral(builder.ToList());
 
             // Act
             var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
@@ -84,9 +84,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsCSharpOpenCurlyBrace_SpanWithHtmlSymbol_ReturnFalse()
         {
             // Arrange
-            var childBuilder = new SpanBuilder(SourceLocation.Zero);
-            childBuilder.Accept(new HtmlToken("hello", HtmlTokenType.Text));
-            var child = childBuilder.Build();
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
+            builder.Add(SyntaxFactory.Token(SyntaxKind.Text, "hello"));
+            var child = SyntaxFactory.MarkupTextLiteral(builder.ToList());
 
             // Act
             var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
@@ -99,10 +99,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void IsCSharpOpenCurlyBrace_Blocks_ReturnFalse()
         {
             // Arrange
-            var child = new BlockBuilder()
-            {
-                Type = BlockKindInternal.Markup,
-            }.Build();
+            var child = SyntaxFactory.MarkupBlock();
 
             // Act
             var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);

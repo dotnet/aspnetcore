@@ -5,16 +5,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class StatementChunkGenerator : SpanChunkGenerator
     {
-        public override void Accept(ParserVisitor visitor, Span span)
-        {
-            visitor.VisitStatementSpan(this, span);
-        }
-
-        public override void GenerateChunk(Span target, ChunkGeneratorContext context)
-        {
-            //context.ChunkTreeBuilder.AddStatementChunk(target.Content, target);
-        }
-
         public override string ToString()
         {
             return "Stmt";

@@ -1,29 +1,30 @@
-Markup block - Gen<None> - 39 - (0:0,0)
-    Tag block - Gen<None> - 8 - (0:0,0)
-        Markup span - Gen<Markup> - [<script>] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:3
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.Text;[script];
-            HtmlTokenType.CloseAngle;[>];
-    Markup span - Gen<Markup> - [var four = 4; /* </ */] - SpanEditHandler;Accepts:Any - (8:0,8) - Tokens:16
-        HtmlTokenType.Text;[var];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[four];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Equals;[=];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[4;];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.ForwardSlash;[/];
-        HtmlTokenType.Text;[*];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.OpenAngle;[<];
-        HtmlTokenType.ForwardSlash;[/];
-        HtmlTokenType.WhiteSpace;[ ];
-        HtmlTokenType.Text;[*];
-        HtmlTokenType.ForwardSlash;[/];
-    Tag block - Gen<None> - 9 - (30:0,30)
-        Markup span - Gen<Markup> - [</script>] - SpanEditHandler;Accepts:Any - (30:0,30) - Tokens:4
-            HtmlTokenType.OpenAngle;[<];
-            HtmlTokenType.ForwardSlash;[/];
-            HtmlTokenType.Text;[script];
-            HtmlTokenType.CloseAngle;[>];
+RazorDocument - [0..39)::39 - [<script>var four = 4; /* </ */</script>]
+    MarkupBlock - [0..39)::39
+        MarkupTagBlock - [0..8)::8 - [<script>]
+            MarkupTextLiteral - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
+        MarkupTextLiteral - [8..30)::22 - [var four = 4; /* </ */] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[var];
+            Whitespace;[ ];
+            Text;[four];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[4;];
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            Text;[*];
+            Whitespace;[ ];
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Whitespace;[ ];
+            Text;[*];
+            ForwardSlash;[/];
+        MarkupTagBlock - [30..39)::9 - [</script>]
+            MarkupTextLiteral - [30..39)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

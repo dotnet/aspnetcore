@@ -1,7 +1,18 @@
-Markup block - Gen<None> - 18 - (0:0,0)
-    Tag block - Gen<TagHelper> - 18 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [Hello World] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[World];
+RazorDocument - [0..18)::18 - [<p>Hello World</p>]
+    MarkupBlock - [0..18)::18
+        MarkupTagHelperElement - [0..18)::18 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [3..14)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Hello];
+                Whitespace;[ ];
+                Text;[World];
+            MarkupTagHelperEndTag - [14..18)::4
+                MarkupTextLiteral - [14..18)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

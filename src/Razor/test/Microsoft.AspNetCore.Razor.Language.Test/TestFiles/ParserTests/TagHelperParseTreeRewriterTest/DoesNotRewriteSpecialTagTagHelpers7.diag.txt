@@ -1,0 +1,5 @@
+(0,0): Error RZ3008: Tag helpers cannot target tag name '!--' because it contains a '!' character.
+(0,0): Error RZ3008: Tag helpers cannot target tag name '?xml' because it contains a '?' character.
+(0,0): Error RZ3008: Tag helpers cannot target tag name '![CDATA[' because it contains a '!' character.
+(0,0): Error RZ3008: Tag helpers cannot target tag name '![CDATA[' because it contains a '[' character.
+(0,0): Error RZ3008: Tag helpers cannot target tag name '!DOCTYPE' because it contains a '!' character.

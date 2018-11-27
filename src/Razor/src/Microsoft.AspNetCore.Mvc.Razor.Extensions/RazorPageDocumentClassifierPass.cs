@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -58,12 +57,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 // It's possible for a Razor document to not have a file path.
                 // Eg. When we try to generate code for an in memory document like default imports.
-                var checksum = BytesToString(codeDocument.Source.GetChecksum());
+                var checksum = Checksum.BytesToString(codeDocument.Source.GetChecksum());
                 @class.ClassName = $"AspNetCore_{checksum}";
             }
             else
             {
-                @class.ClassName = CSharpIdentifier.GetClassNameFromPath(filePath);
+                @class.ClassName = GetClassNameFromPath(filePath);
             }
 
             @class.Modifiers.Clear();
@@ -144,21 +143,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private static string BytesToString(byte[] bytes)
+        private static string GetClassNameFromPath(string path)
         {
-            if (bytes == null)
+            const string cshtmlExtension = ".cshtml";
+
+            if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentNullException(nameof(bytes));
+                return path;
             }
 
-            var result = new StringBuilder(bytes.Length);
-            for (var i = 0; i < bytes.Length; i++)
+            if (path.EndsWith(cshtmlExtension, StringComparison.OrdinalIgnoreCase))
             {
-                // The x2 format means lowercase hex, where each byte is a 2-character string.
-                result.Append(bytes[i].ToString("x2"));
+                path = path.Substring(0, path.Length - cshtmlExtension.Length);
             }
 
-            return result.ToString();
+            return CSharpIdentifier.SanitizeIdentifier(path);
         }
     }
 }

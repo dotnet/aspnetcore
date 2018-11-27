@@ -1,8 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Moq;
 using Xunit;
@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var features = engine.EngineFeatures.OrderBy(f => f.GetType().Name).ToArray();
             Assert.Collection(
                 features,
+                feature => Assert.IsType<ComponentDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
@@ -56,6 +57,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
                 feature => Assert.IsType<DefaultTagHelperOptimizationPass>(feature),
                 feature => Assert.IsType<DesignTimeDirectivePass>(feature),
                 feature => Assert.IsType<DirectiveRemovalOptimizationPass>(feature),
+                feature => Assert.IsType<EliminateMethodBodyPass>(feature),
+                feature => Assert.IsType<FunctionsDirectivePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<MetadataAttributePass>(feature),
                 feature => Assert.IsType<PreallocatedTagHelperAttributeOptimizationPass>(feature));
@@ -65,7 +68,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
         {
             var feature = engine.EngineFeatures.OfType<IRazorDirectiveFeature>().FirstOrDefault();
             Assert.NotNull(feature);
-            Assert.Empty(feature.Directives);
+            Assert.Collection(
+                feature.Directives,
+                directive => Assert.Same(FunctionsDirective.Directive, directive));
         }
 
         private static void AssertDefaultTargetExtensions(RazorProjectEngine engine)

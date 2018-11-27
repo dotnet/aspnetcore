@@ -11,9 +11,5 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         public ParserContext Context { get; }
-
-        public abstract void BuildSpan(SpanBuilder span, SourceLocation start, string content);
-
-        public abstract void ParseBlock();
     }
 }

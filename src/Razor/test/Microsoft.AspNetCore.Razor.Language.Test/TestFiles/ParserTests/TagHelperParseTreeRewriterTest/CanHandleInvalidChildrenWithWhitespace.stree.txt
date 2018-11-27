@@ -1,25 +1,36 @@
-Markup block - Gen<None> - 53 - (0:0,0)
-    Tag block - Gen<TagHelper> - 53 - (0:0,0) - p - PTagHelper
-        StartTagAndEndTag - <p> ... </p>
-        Markup span - Gen<Markup> - [LF    ] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
-            HtmlTokenType.NewLine;[LF];
-            HtmlTokenType.WhiteSpace;[    ];
-        Tag block - Gen<None> - 8 - (9:1,4)
-            Markup span - Gen<Markup> - [<strong>] - SpanEditHandler;Accepts:Any - (9:1,4) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[strong];
-                HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF        HelloLF    ] - SpanEditHandler;Accepts:Any - (17:1,12) - Tokens:5
-            HtmlTokenType.NewLine;[LF];
-            HtmlTokenType.WhiteSpace;[        ];
-            HtmlTokenType.Text;[Hello];
-            HtmlTokenType.NewLine;[LF];
-            HtmlTokenType.WhiteSpace;[    ];
-        Tag block - Gen<None> - 9 - (38:3,4)
-            Markup span - Gen<Markup> - [</strong>] - SpanEditHandler;Accepts:Any - (38:3,4) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[strong];
-                HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (47:3,13) - Tokens:1
-            HtmlTokenType.NewLine;[LF];
+RazorDocument - [0..53)::53 - [<p>LF    <strong>LF        HelloLF    </strong>LF</p>]
+    MarkupBlock - [0..53)::53
+        MarkupTagHelperElement - [0..53)::53 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [3..9)::6 - [LF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+                Whitespace;[    ];
+            MarkupTagBlock - [9..17)::8 - [<strong>]
+                MarkupTextLiteral - [9..17)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [17..38)::21 - [LF        HelloLF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+                Whitespace;[        ];
+                Text;[Hello];
+                NewLine;[LF];
+                Whitespace;[    ];
+            MarkupTagBlock - [38..47)::9 - [</strong>]
+                MarkupTextLiteral - [38..47)::9 - [</strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [47..49)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+            MarkupTagHelperEndTag - [49..53)::4
+                MarkupTextLiteral - [49..53)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

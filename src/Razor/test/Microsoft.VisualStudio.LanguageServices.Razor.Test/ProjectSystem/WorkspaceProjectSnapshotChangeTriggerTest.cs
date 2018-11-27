@@ -9,11 +9,10 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class WorkspaceProjectSnapshotChangeTriggerTest : ForegroundDispatcherTestBase
+    public class WorkspaceProjectSnapshotChangeTriggerTest : ForegroundDispatcherWorkspaceTestBase
     {
         public WorkspaceProjectSnapshotChangeTriggerTest()
         {
-            Workspace = TestWorkspace.Create();
             EmptySolution = Workspace.CurrentSolution.GetIsolatedSolution();
 
             var projectId1 = ProjectId.CreateNewId("One");
@@ -71,8 +70,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private Project ProjectNumberTwo { get; }
 
         private Project ProjectNumberThree { get; }
-
-        private Workspace Workspace { get; }
 
         [ForegroundTheory]
         [InlineData(WorkspaceChangeKind.SolutionAdded)]

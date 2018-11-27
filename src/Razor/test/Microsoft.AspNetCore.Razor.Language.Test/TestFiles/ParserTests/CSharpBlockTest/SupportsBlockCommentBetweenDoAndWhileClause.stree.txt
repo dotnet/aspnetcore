@@ -1,26 +1,28 @@
-Statement block - Gen<None> - 54 - (0:0,0)
-    Code span - Gen<Stmt> - [do { var foo = bar; } /* Foo */ /* Bar */ while(true);] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:24
-        CSharpTokenType.Keyword;[do];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Comment;[/* Foo */];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Comment;[/* Bar */];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[while];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Keyword;[true];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
+CSharpCodeBlock - [0..54)::54 - [do { var foo = bar; } /* Foo */ /* Bar */ while(true);]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..54)::54 - [do { var foo = bar; } /* Foo */ /* Bar */ while(true);] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[do];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Identifier;[bar];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        CSharpComment;[/* Foo */];
+        Whitespace;[ ];
+        CSharpComment;[/* Bar */];
+        Whitespace;[ ];
+        Keyword;[while];
+        LeftParenthesis;[(];
+        Keyword;[true];
+        RightParenthesis;[)];
+        Semicolon;[;];

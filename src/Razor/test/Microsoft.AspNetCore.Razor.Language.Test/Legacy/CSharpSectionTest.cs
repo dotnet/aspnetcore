@@ -139,15 +139,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ReportsErrorAndAcceptsWhitespaceToEOLIfSectionNotFollowedByOpenBrace()
         {
             // ParseSectionBlockReportsErrorAndAcceptsWhitespaceToEndOfLineIfSectionNotFollowedByOpenBrace
-            // Arrange
-            var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
-            chunkGenerator.Diagnostics.Add(
-                RazorDiagnosticFactory.CreateParsing_UnexpectedEOFAfterDirective(
-                    new SourceSpan(new SourceLocation(18 + Environment.NewLine.Length, 1, 0), contentLength: 1),
-                    SectionDirective.Directive.Directive,
-                    "{"));
-
-            // Act & Assert
             ParseDocumentTest(
                 "@section foo      " + Environment.NewLine,
                 new[] { SectionDirective.Directive });

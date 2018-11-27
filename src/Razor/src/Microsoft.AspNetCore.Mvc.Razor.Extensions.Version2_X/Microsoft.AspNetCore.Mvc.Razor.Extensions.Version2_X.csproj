@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core design time hosting infrastructure for the Razor view engine.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageTags>$(PackageTags);aspnetcoremvc</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\CodeGeneration\CodeWriterExtensions.cs">
+      <Link>Shared\CodeWriterExtensions.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Microsoft.AspNetCore.Razor.Language/Microsoft.AspNetCore.Razor.Language.csproj" />
+    <ProjectReference Include="../Microsoft.CodeAnalysis.Razor/Microsoft.CodeAnalysis.Razor.csproj" />
+  </ItemGroup>
+
+</Project>

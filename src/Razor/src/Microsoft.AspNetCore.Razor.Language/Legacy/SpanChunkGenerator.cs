@@ -11,12 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public static readonly ISpanChunkGenerator Null = new NullSpanChunkGenerator();
 
-        public abstract void Accept(ParserVisitor visitor, Span span);
-
-        public virtual void GenerateChunk(Span target, ChunkGeneratorContext context)
-        {
-        }
-
         public override bool Equals(object obj)
         {
             return obj != null &&
@@ -30,15 +24,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private class NullSpanChunkGenerator : ISpanChunkGenerator
         {
-            public void Accept(ParserVisitor visitor, Span span)
-            {
-                visitor.VisitDefault(span);
-            }
-
-            public void GenerateChunk(Span target, ChunkGeneratorContext context)
-            {
-            }
-
             public override string ToString()
             {
                 return "None";

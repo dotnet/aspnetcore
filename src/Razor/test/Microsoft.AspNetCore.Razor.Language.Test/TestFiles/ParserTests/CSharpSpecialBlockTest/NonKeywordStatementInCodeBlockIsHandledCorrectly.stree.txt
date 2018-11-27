@@ -1,26 +1,31 @@
-Statement block - Gen<None> - 56 - (0:0,0)
-    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.LeftBrace;[{];
-    Code span - Gen<Stmt> - [LF    List<dynamic> photos = gallery.Photo.ToList();LF] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL - (1:0,1) - Tokens:20
-        CSharpTokenType.NewLine;[LF];
-        CSharpTokenType.WhiteSpace;[    ];
-        CSharpTokenType.Identifier;[List];
-        CSharpTokenType.LessThan;[<];
-        CSharpTokenType.Identifier;[dynamic];
-        CSharpTokenType.GreaterThan;[>];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[photos];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[gallery];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Photo];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[ToList];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.NewLine;[LF];
-    MetaCode span - Gen<None> - [}] - SpanEditHandler;Accepts:None - (55:2,0) - Tokens:1
-        CSharpTokenType.RightBrace;[}];
+CSharpCodeBlock - [0..56)::56 - [{LF    List<dynamic> photos = gallery.Photo.ToList();LF}]
+    CSharpStatement - [0..56)::56
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..56)::56
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..55)::54
+                CSharpStatementLiteral - [1..55)::54 - [LF    List<dynamic> photos = gallery.Photo.ToList();LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Identifier;[List];
+                    LessThan;[<];
+                    Identifier;[dynamic];
+                    GreaterThan;[>];
+                    Whitespace;[ ];
+                    Identifier;[photos];
+                    Whitespace;[ ];
+                    Assign;[=];
+                    Whitespace;[ ];
+                    Identifier;[gallery];
+                    Dot;[.];
+                    Identifier;[Photo];
+                    Dot;[.];
+                    Identifier;[ToList];
+                    LeftParenthesis;[(];
+                    RightParenthesis;[)];
+                    Semicolon;[;];
+                    NewLine;[LF];
+            RazorMetaCode - [55..56)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

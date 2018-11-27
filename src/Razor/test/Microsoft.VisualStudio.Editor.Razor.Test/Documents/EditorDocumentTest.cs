@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
@@ -16,8 +17,8 @@ namespace Microsoft.VisualStudio.Editor.Razor.Documents
         public EditorDocumentTest()
         {
             DocumentManager = Mock.Of<EditorDocumentManager>();
-            ProjectFilePath = "C:\\project1\\project.csproj";
-            DocumentFilePath = "c:\\project1\\file1.cshtml";
+            ProjectFilePath = TestProjectData.SomeProject.FilePath;
+            DocumentFilePath = TestProjectData.SomeProjectFile1.FilePath;
             TextLoader = TextLoader.From(TextAndVersion.Create(SourceText.From("FILE"), VersionStamp.Default));
             FileChangeTracker = new DefaultFileChangeTracker(DocumentFilePath);
 

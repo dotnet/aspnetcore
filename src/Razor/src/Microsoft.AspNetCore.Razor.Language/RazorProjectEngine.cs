@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -176,6 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             features.Add(new DirectiveRemovalOptimizationPass());
             features.Add(new DefaultTagHelperOptimizationPass());
             features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
+            features.Add(new EliminateMethodBodyPass());
 
             // Default Code Target Extensions
             var targetExtensionFeature = new DefaultRazorTargetExtensionFeature();
@@ -217,10 +218,15 @@ namespace Microsoft.AspNetCore.Razor.Language
                 // For now we only handle AssemblyExtension - which is not user-constructable. We're keeping a tight
                 // lid on how things work until we add official support for extensibility everywhere. So, this is
                 // intentionally inflexible for the time being.
-                var extension = extensions[i] as AssemblyExtension;
-                var initializer = extension?.CreateInitializer();
-                initializer?.Initialize(builder);
+                if (extensions[i] is AssemblyExtension extension)
+                {
+                    var initializer = extension.CreateInitializer();
+                    initializer?.Initialize(builder);
+                }
             }
+
+            // Default extensions.
+            ComponentExtensions.Register(builder);
         }
     }
 }

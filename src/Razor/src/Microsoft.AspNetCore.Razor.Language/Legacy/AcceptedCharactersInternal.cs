@@ -10,13 +10,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         None = 0,
         NewLine = 1,
-        WhiteSpace = 2,
+        Whitespace = 2,
 
-        NonWhiteSpace = 4,
+        NonWhitespace = 4,
 
-        AllWhiteSpace = NewLine | WhiteSpace,
-        Any = AllWhiteSpace | NonWhiteSpace,
+        AllWhitespace = NewLine | Whitespace,
+        Any = AllWhitespace | NonWhitespace,
 
-        AnyExceptNewline = NonWhiteSpace | WhiteSpace
+        AnyExceptNewline = NonWhitespace | Whitespace
     }
 }

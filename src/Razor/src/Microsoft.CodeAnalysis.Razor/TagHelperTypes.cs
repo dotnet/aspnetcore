@@ -7,6 +7,8 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         public const string ITagHelper = "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper";
 
+        public const string IComponent = "Microsoft.AspNetCore.Components.IComponent";
+
         public const string IDictionary = "System.Collections.Generic.IDictionary`2";
 
         public const string HtmlAttributeNameAttribute = "Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute";

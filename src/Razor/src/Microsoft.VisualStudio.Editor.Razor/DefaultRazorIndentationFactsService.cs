@@ -5,8 +5,8 @@ using System;
 using System.ComponentModel.Composition;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.VisualStudio.Text;
-using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -63,8 +63,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var previousLineEndIndex = GetPreviousLineEndIndex(syntaxTreeSnapshot, line);
             var simulatedChange = new SourceChange(previousLineEndIndex, 0, string.Empty);
-            var owningSpan = syntaxTree.Root.LocateOwner(simulatedChange);
-            if (owningSpan == null || owningSpan.Kind == SpanKindInternal.Code)
+            var owner = syntaxTree.Root.LocateOwner(simulatedChange);
+            if (owner == null || owner.IsCodeSpanKind())
             {
                 // Example,
                 // @{\n
@@ -74,20 +74,19 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             int? desiredIndentation = null;
-            SyntaxTreeNode owningChild = owningSpan;
-            while (owningChild.Parent != null)
+            while (owner.Parent != null)
             {
-                var owningParent = owningChild.Parent;
-                for (var i = 0; i < owningParent.Children.Count; i++)
+                var children = owner.Parent.ChildNodes();
+                for (var i = 0; i < children.Count; i++)
                 {
-                    var currentChild = owningParent.Children[i];
+                    var currentChild = children[i];
                     if (IsCSharpOpenCurlyBrace(currentChild))
                     {
-                        var lineText = line.Snapshot.GetLineFromLineNumber(currentChild.Start.LineIndex).GetText();
+                        var lineText = line.Snapshot.GetLineFromLineNumber(currentChild.GetSourceLocation(syntaxTree.Source).LineIndex).GetText();
                         desiredIndentation = GetIndentLevelOfLine(lineText, tabSize) + indentSize;
                     }
 
-                    if (currentChild == owningChild)
+                    if (currentChild == owner)
                     {
                         break;
                     }
@@ -98,7 +97,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     return desiredIndentation;
                 }
 
-                owningChild = owningParent;
+                owner = owner.Parent;
             }
 
             // Couldn't determine indentation
@@ -139,12 +138,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal static bool IsCSharpOpenCurlyBrace(SyntaxTreeNode currentChild)
+        internal static bool IsCSharpOpenCurlyBrace(SyntaxNode node)
         {
-            return currentChild is Span currentSpan &&
-                currentSpan.Tokens.Count == 1 &&
-                currentSpan.Tokens[0] is CSharpToken symbol &&
-                symbol.Type == CSharpTokenType.LeftBrace;
+            var children = node.ChildNodes();
+            return children.Count == 1 &&
+                children[0].IsToken &&
+                children[0].Kind == SyntaxKind.LeftBrace;
         }
     }
 }

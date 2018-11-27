@@ -11,30 +11,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         internal void RunParseTreeRewriterTest(string documentContent, params string[] tagNames)
         {
-            RunParseTreeRewriterTest(documentContent, expectedOutput: null, tagNames: tagNames);
-        }
-
-        internal void RunParseTreeRewriterTest(
-            string documentContent,
-            MarkupBlock expectedOutput,
-            params string[] tagNames)
-        {
-            RunParseTreeRewriterTest(
-                documentContent,
-                expectedOutput,
-                errors: Enumerable.Empty<RazorDiagnostic>(),
-                tagNames: tagNames);
-        }
-
-        internal void RunParseTreeRewriterTest(
-            string documentContent,
-            MarkupBlock expectedOutput,
-            IEnumerable<RazorDiagnostic> errors,
-            params string[] tagNames)
-        {
             var descriptors = BuildDescriptors(tagNames);
 
-            EvaluateData(descriptors, documentContent, expectedOutput, errors);
+            EvaluateData(descriptors, documentContent);
         }
 
         internal IEnumerable<TagHelperDescriptor> BuildDescriptors(params string[] tagNames)
@@ -58,32 +37,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             string tagHelperPrefix = null,
             RazorParserFeatureFlags featureFlags = null)
         {
-            EvaluateData(descriptors, documentContent, null, Array.Empty<RazorDiagnostic>(), tagHelperPrefix, featureFlags);
-        }
-
-        internal void EvaluateData(
-            IEnumerable<TagHelperDescriptor> descriptors,
-            string documentContent,
-            MarkupBlock expectedOutput,
-            IEnumerable<RazorDiagnostic> expectedErrors,
-            string tagHelperPrefix = null,
-            RazorParserFeatureFlags featureFlags = null)
-        {
-            var syntaxTree = ParseDocument(documentContent);
+            var syntaxTree = ParseDocument(documentContent, featureFlags: featureFlags);
             var errorSink = new ErrorSink();
-            var parseTreeRewriter = new TagHelperParseTreeRewriter(
-                tagHelperPrefix,
-                descriptors,
-                featureFlags ?? syntaxTree.Options.FeatureFlags);
 
-            var actualTree = parseTreeRewriter.Rewrite(syntaxTree.Root, errorSink);
+            var rewrittenTree = TagHelperParseTreeRewriter.Rewrite(syntaxTree, tagHelperPrefix, descriptors);
 
-            var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors);
-            var actualErrors = allErrors
-                .OrderBy(error => error.Span.AbsoluteIndex)
-                .ToList();
-
-            BaselineTest(actualTree, filePath: null, verifySyntaxTree: false, actualErrors.ToArray());
+            BaselineTest(rewrittenTree, verifySyntaxTree: false);
         }
     }
 }

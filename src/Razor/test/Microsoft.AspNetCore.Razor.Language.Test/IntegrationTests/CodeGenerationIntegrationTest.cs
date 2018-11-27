@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class CodeGenerationIntegrationTest : IntegrationTestBase
     {
-
+        public CodeGenerationIntegrationTest()
+            : base(generateBaselines: null)
+        {
+        }
+        
         #region Runtime
         [Fact]
         public void IncompleteDirectives_Runtime()
@@ -880,7 +884,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
 
-                FunctionsDirective.Register(builder);
                 InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
             });
@@ -905,8 +908,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
-
-                FunctionsDirective.Register(builder);
+                
                 InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
             });
@@ -931,7 +933,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
 
-                FunctionsDirective.Register(builder);
                 InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
             });
@@ -957,7 +958,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
 
-                FunctionsDirective.Register(builder);
                 InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
             });

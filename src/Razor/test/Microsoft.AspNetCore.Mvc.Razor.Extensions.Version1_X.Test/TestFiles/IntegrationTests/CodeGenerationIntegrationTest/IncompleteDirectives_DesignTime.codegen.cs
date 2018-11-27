@@ -28,7 +28,11 @@ namespace AspNetCore
  }
         ))();
         ((System.Action)(() => {
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 MyService<TModel> __typeHelper = default(MyService<TModel>);
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {

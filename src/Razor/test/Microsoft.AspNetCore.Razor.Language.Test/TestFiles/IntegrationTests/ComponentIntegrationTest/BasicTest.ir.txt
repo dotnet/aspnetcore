@@ -1,0 +1,17 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - AspNetCore
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public sealed - BasicTest - global::Microsoft.AspNetCore.Components.Component - 
+            MethodDeclaration -  - public override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                HtmlContent - (0:0,0 [46] BasicTest.razor)
+                    IntermediateToken - (0:0,0 [13] BasicTest.razor) - Html - Hello world\n
+                    IntermediateToken - (13:1,0 [5] BasicTest.razor) - Html - <span
+                    IntermediateToken - (18:1,5 [16] BasicTest.razor) - Html -  class="content"
+                    IntermediateToken - (34:1,21 [1] BasicTest.razor) - Html - >
+                    IntermediateToken - (35:1,22 [7] BasicTest.razor) - Html - </span>
+                    IntermediateToken - (42:1,29 [4] BasicTest.razor) - Html - \n\n
+            CSharpCode - (58:3,12 [41] BasicTest.razor)
+                IntermediateToken - (58:3,12 [41] BasicTest.razor) - CSharp - \n    string SomeProperty { get; set; }\n

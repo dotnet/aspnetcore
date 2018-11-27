@@ -38,13 +38,8 @@ namespace AspNetCore
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-            BeginContext(17, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
-            BeginContext(64, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
-            BeginContext(66, 25, false);
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
             }
             );
@@ -63,11 +58,7 @@ __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewDat
             }
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            EndContext();
-            BeginContext(91, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
-            BeginContext(93, 27, false);
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input-test", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
             }
             );
@@ -86,10 +77,7 @@ __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewDat
             }
             Write(__tagHelperExecutionContext.Output);
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            EndContext();
-            BeginContext(120, 2, true);
             WriteLiteral("\r\n");
-            EndContext();
         }
         #pragma warning restore 1998
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

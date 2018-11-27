@@ -1,70 +1,70 @@
 Source Location: (100:2,13 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (427:10,38 [0] )
+Generated Location: (523:11,38 [0] )
 ||
 
 Source Location: (116:3,14 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (529:14,38 [0] )
+Generated Location: (752:19,38 [0] )
 ||
 
 Source Location: (132:4,14 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 |"|
-Generated Location: (630:18,37 [1] )
+Generated Location: (980:27,37 [1] )
 |"|
 
 Source Location: (153:6,16 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (732:22,38 [0] )
+Generated Location: (1209:35,38 [0] )
 ||
 
 Source Location: (172:7,17 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (834:26,38 [0] )
+Generated Location: (1438:43,38 [0] )
 ||
 
 Source Location: (191:8,17 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 |"|
-Generated Location: (935:30,37 [1] )
+Generated Location: (1666:51,37 [1] )
 |"|
 
 Source Location: (212:10,16 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (1037:34,38 [0] )
+Generated Location: (1896:59,38 [0] )
 ||
 
 Source Location: (231:11,17 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (1139:38,38 [0] )
+Generated Location: (2126:67,38 [0] )
 ||
 
 Source Location: (250:12,17 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 |"|
-Generated Location: (1240:42,37 [1] )
+Generated Location: (2355:75,37 [1] )
 |"|
 
 Source Location: (264:14,9 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (1304:46,0 [0] )
+Generated Location: (2450:82,0 [0] )
 ||
 
 Source Location: (276:15,10 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (1357:49,0 [0] )
+Generated Location: (2503:85,0 [0] )
 ||
 
 Source Location: (315:20,8 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (1410:52,0 [0] )
+Generated Location: (2556:88,0 [0] )
 ||
 
 Source Location: (326:21,9 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (1463:55,0 [0] )
+Generated Location: (2609:91,0 [0] )
 ||
 
 Source Location: (354:24,12 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (1879:66,12 [0] )
+Generated Location: (3025:102,12 [0] )
 ||
 

@@ -1,5 +1,23 @@
-Markup block - Gen<None> - 14 - (0:0,0)
-    Tag block - Gen<TagHelper> - 14 - (0:0,0) - p - ptaghelper
-        StartTagAndEndTag - <p class=> ... </p>
-        class - DoubleQuotes
-            Markup span - Gen<None> - [] - SpanEditHandler;Accepts:Any - (9:0,9) - Tokens:0
+RazorDocument - [0..14)::14 - [<p class=></p>]
+    MarkupBlock - [0..14)::14
+        MarkupTagHelperElement - [0..14)::14 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [0..10)::10
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupTagHelperAttribute - [2..9)::7 - class - DoubleQuotes - Unbound - [ class=]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..8)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[class];
+                    Equals;[=];
+                    MarkupTagHelperAttributeValue - [9..9)::0
+                        MarkupTextLiteral - [9..9)::0 - []
+                MarkupTextLiteral - [9..10)::1 - [>] - Gen<None> - SpanEditHandler;Accepts:Any
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [10..14)::4
+                MarkupTextLiteral - [10..14)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

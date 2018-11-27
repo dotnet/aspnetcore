@@ -14,6 +14,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract string TargetPath { get; }
 
+        public abstract ProjectSnapshot Project { get; }
+
+        public abstract bool SupportsOutput { get; }
+
         public abstract IReadOnlyList<DocumentSnapshot> GetImports();
 
         public abstract Task<SourceText> GetTextAsync();
@@ -22,10 +26,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract Task<RazorCodeDocument> GetGeneratedOutputAsync();
 
+        public abstract Task<VersionStamp> GetGeneratedOutputVersionAsync();
+
         public abstract bool TryGetText(out SourceText result);
 
         public abstract bool TryGetTextVersion(out VersionStamp result);
 
         public abstract bool TryGetGeneratedOutput(out RazorCodeDocument result);
+
+        public abstract bool TryGetGeneratedOutputVersionAsync(out VersionStamp result);
     }
 }

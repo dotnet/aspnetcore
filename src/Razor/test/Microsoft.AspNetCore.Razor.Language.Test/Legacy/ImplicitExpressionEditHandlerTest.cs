@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void IsAcceptableDeletionInBalancedParenthesis_DeletionStartNotInBalancedParenthesis_ReturnsFalse()
         {
             // Arrange
-            var span = GetSpan(SourceLocation.Zero, "(Hell)(o)");
+            var span = GetSyntaxNode(SourceLocation.Zero, "(Hell)(o)");
             var change = new SourceChange(new SourceSpan(6, 1), string.Empty);
 
             // Act
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void IsAcceptableDeletionInBalancedParenthesis_DeletionEndNotInBalancedParenthesis_ReturnsFalse()
         {
             // Arrange
-            var span = GetSpan(SourceLocation.Zero, "(Hell)(o)");
+            var span = GetSyntaxNode(SourceLocation.Zero, "(Hell)(o)");
             var change = new SourceChange(new SourceSpan(5, 1), string.Empty);
 
             // Act
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void IsAcceptableDeletionInBalancedParenthesis_DeletionOverlapsBalancedParenthesis_ReturnsFalse()
         {
             // Arrange
-            var span = GetSpan(SourceLocation.Zero, "(Hell)(o)");
+            var span = GetSyntaxNode(SourceLocation.Zero, "(Hell)(o)");
             var change = new SourceChange(new SourceSpan(5, 2), string.Empty);
 
             // Act
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void IsAcceptableDeletionInBalancedParenthesis_DeletionDoesNotImpactBalancedParenthesis_ReturnsTrue()
         {
             // Arrange
-            var span = GetSpan(SourceLocation.Zero, "(H(ell)o)");
+            var span = GetSyntaxNode(SourceLocation.Zero, "(H(ell)o)");
             var change = new SourceChange(new SourceSpan(3, 3), string.Empty);
 
             // Act
@@ -159,7 +160,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_SingleLeftParenthesis_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("(", CSharpTokenType.LeftParenthesis);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.LeftParenthesis, "(");
             var count = 0;
 
             // Act
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_SingleRightParenthesis_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken(")", CSharpTokenType.RightParenthesis);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.RightParenthesis, ")");
             var count = 2;
 
             // Act
@@ -189,7 +190,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_IncompleteStringLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("\"((", CSharpTokenType.StringLiteral);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.StringLiteral, "\"((");
             var count = 2;
 
             // Act
@@ -204,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_IncompleteCharacterLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("'((", CSharpTokenType.CharacterLiteral);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.CharacterLiteral, "'((");
             var count = 2;
 
             // Act
@@ -219,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_CompleteStringLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("\"((\"", CSharpTokenType.StringLiteral);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.StringLiteral, "\"((\"");
             var count = 2;
 
             // Act
@@ -234,7 +235,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_CompleteCharacterLiteral_CountsCorrectly()
         {
             // Arrange
-            var token = new CSharpToken("'('", CSharpTokenType.CharacterLiteral);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.CharacterLiteral, "'('");
             var count = 2;
 
             // Act
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesis_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpToken(")", CSharpTokenType.RightParenthesis);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.RightParenthesis, ")");
             var count = 0;
 
             // Act
@@ -264,7 +265,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesisStringLiteral_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpToken("\")", CSharpTokenType.StringLiteral);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.StringLiteral, "\")");
             var count = 0;
 
             // Act
@@ -279,7 +280,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TryUpdateBalanceCount_InvalidParenthesisCharacterLiteral_ReturnsFalse()
         {
             // Arrange
-            var token = new CSharpToken("')", CSharpTokenType.CharacterLiteral);
+            var token = Syntax.SyntaxFactory.Token(SyntaxKind.CharacterLiteral, "')");
             var count = 0;
 
             // Act
@@ -402,7 +403,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void IsAcceptableInsertionInBalancedParenthesis_InsertingParenthesis_ReturnsFalse(string text)
         {
             // Arrange
-            var span = GetSpan(SourceLocation.Zero, "(Hello World)");
+            var span = GetSyntaxNode(SourceLocation.Zero, "(Hello World)");
             var change = new SourceChange(new SourceSpan(3, 0), text);
 
             // Act
@@ -416,7 +417,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void IsAcceptableInsertionInBalancedParenthesis_UnbalancedParenthesis_ReturnsFalse()
         {
             // Arrange
-            var span = GetSpan(SourceLocation.Zero, "(Hello");
+            var span = GetSyntaxNode(SourceLocation.Zero, "(Hello");
             var change = new SourceChange(new SourceSpan(6, 0), " World");
 
             // Act
@@ -430,7 +431,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void IsAcceptableInsertionInBalancedParenthesis_BalancedParenthesis_ReturnsTrue()
         {
             // Arrange
-            var span = GetSpan(SourceLocation.Zero, "(Hello)");
+            var span = GetSyntaxNode(SourceLocation.Zero, "(Hello)");
             var change = new SourceChange(new SourceSpan(6, 0), " World");
 
             // Act
@@ -440,24 +441,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Assert.True(result);
         }
 
-        private static Span GetSpan(SourceLocation start, string content)
+        private static Syntax.MarkupTextLiteralSyntax GetSyntaxNode(SourceLocation start, string content)
         {
-            var spanBuilder = new SpanBuilder(start);
+            var builder = SyntaxListBuilder<SyntaxToken>.Create();
             var tokens = CSharpLanguageCharacteristics.Instance.TokenizeString(content).ToArray();
             foreach (var token in tokens)
             {
-                spanBuilder.Accept(token);
+                builder.Add(token);
             }
-            var span = spanBuilder.Build();
+            var node = SyntaxFactory.MarkupTextLiteral(builder.ToList()).CreateRed(parent: null, position: start.AbsoluteIndex);
 
-            return span;
+            return (Syntax.MarkupTextLiteralSyntax)node;
         }
 
-        private static IReadOnlyList<CSharpToken> GetTokens(SourceLocation start, string content)
+        private static IReadOnlyList<Syntax.SyntaxToken> GetTokens(SourceLocation start, string content)
         {
-            var parent = GetSpan(start, content);
-            var tokens = parent.Tokens.Cast<CSharpToken>().ToArray();
-            return tokens;
+            var parent = GetSyntaxNode(start, content);
+            return parent.LiteralTokens;
         }
     }
 }

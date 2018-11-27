@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Mvc*\**\*.cs" />
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.*\**\*.cs" />
   </ItemGroup>
 
 </Project>

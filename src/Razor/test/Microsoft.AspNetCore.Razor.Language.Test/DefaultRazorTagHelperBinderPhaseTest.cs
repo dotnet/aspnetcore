@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -45,8 +46,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
-            var directiveValue = rewrittenTree.Root.Children.OfType<Block>().First().Children.Last() as Span;
-            var chunkGenerator = Assert.IsType<AddTagHelperChunkGenerator>(directiveValue.ChunkGenerator);
+            var erroredNode = rewrittenTree.Root.DescendantNodes().First(n => n.GetSpanContext()?.ChunkGenerator is AddTagHelperChunkGenerator);
+            var chunkGenerator = Assert.IsType<AddTagHelperChunkGenerator>(erroredNode.GetSpanContext().ChunkGenerator);
             Assert.Equal(expectedDiagnostics, chunkGenerator.Diagnostics);
         }
 
@@ -84,8 +85,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
-            var directiveValue = rewrittenTree.Root.Children.OfType<Block>().First().Children.Last() as Span;
-            var chunkGenerator = Assert.IsType<RemoveTagHelperChunkGenerator>(directiveValue.ChunkGenerator);
+            var erroredNode = rewrittenTree.Root.DescendantNodes().First(n => n.GetSpanContext()?.ChunkGenerator is RemoveTagHelperChunkGenerator);
+            var chunkGenerator = Assert.IsType<RemoveTagHelperChunkGenerator>(erroredNode.GetSpanContext().ChunkGenerator);
             Assert.Equal(expectedDiagnostics, chunkGenerator.Diagnostics);
         }
 
@@ -123,8 +124,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
-            var directiveValue = rewrittenTree.Root.Children.OfType<Block>().First().Children.Last() as Span;
-            var chunkGenerator = Assert.IsType<TagHelperPrefixDirectiveChunkGenerator>(directiveValue.ChunkGenerator);
+            var erroredNode = rewrittenTree.Root.DescendantNodes().First(n => n.GetSpanContext()?.ChunkGenerator is TagHelperPrefixDirectiveChunkGenerator);
+            var chunkGenerator = Assert.IsType<TagHelperPrefixDirectiveChunkGenerator>(erroredNode.GetSpanContext().ChunkGenerator);
             Assert.Equal(expectedDiagnostics, chunkGenerator.Diagnostics);
         }
 
@@ -162,13 +163,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
+            var descendantNodes = rewrittenTree.Root.DescendantNodes();
             Assert.Empty(rewrittenTree.Diagnostics);
-            Assert.Equal(3, rewrittenTree.Root.Children.Count);
-            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
-            Assert.Equal("form", formTagHelper.TagName);
-            Assert.Equal(3, formTagHelper.Children.Count);
-            var inputTagHelper = Assert.IsType<TagHelperBlock>(formTagHelper.Children[1]);
-            Assert.Equal("input", inputTagHelper.TagName);
+            var tagHelperNodes = descendantNodes.Where(n => n is MarkupTagHelperElementSyntax tagHelper).Cast<MarkupTagHelperElementSyntax>().ToArray();
+            Assert.Equal("form", tagHelperNodes[0].TagHelperInfo.TagName);
+            Assert.Equal("input", tagHelperNodes[1].TagHelperInfo.TagName);
         }
 
         [Fact]
@@ -204,13 +203,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
+            var descendantNodes = rewrittenTree.Root.DescendantNodes();
             Assert.Empty(rewrittenTree.Diagnostics);
-            Assert.Equal(3, rewrittenTree.Root.Children.Count);
-            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
-            Assert.Equal("form", formTagHelper.TagName);
-            Assert.Equal(3, formTagHelper.Children.Count);
-            var inputTagHelper = Assert.IsType<TagHelperBlock>(formTagHelper.Children[1]);
-            Assert.Equal("input", inputTagHelper.TagName);
+            var tagHelperNodes = descendantNodes.Where(n => n is MarkupTagHelperElementSyntax tagHelper).Cast<MarkupTagHelperElementSyntax>().ToArray();
+            Assert.Equal("form", tagHelperNodes[0].TagHelperInfo.TagName);
+            Assert.Equal("input", tagHelperNodes[1].TagHelperInfo.TagName);
         }
 
         [Fact]
@@ -246,13 +243,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
+            var descendantNodes = rewrittenTree.Root.DescendantNodes();
             Assert.Empty(rewrittenTree.Diagnostics);
-            Assert.Equal(3, rewrittenTree.Root.Children.Count);
-            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
-            Assert.Equal("form", formTagHelper.TagName);
-            Assert.Equal(3, formTagHelper.Children.Count);
-            var inputTagHelper = Assert.IsType<TagHelperBlock>(formTagHelper.Children[1]);
-            Assert.Equal("input", inputTagHelper.TagName);
+            var tagHelperNodes = descendantNodes.Where(n => n is MarkupTagHelperElementSyntax tagHelper).Cast<MarkupTagHelperElementSyntax>().ToArray();
+            Assert.Equal("form", tagHelperNodes[0].TagHelperInfo.TagName);
+            Assert.Equal("input", tagHelperNodes[1].TagHelperInfo.TagName);
         }
 
         [Fact]
@@ -288,10 +283,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
+            var descendantNodes = rewrittenTree.Root.DescendantNodes();
             Assert.Empty(rewrittenTree.Diagnostics);
-            Assert.Equal(7, rewrittenTree.Root.Children.Count);
-            var rewrittenNodes = rewrittenTree.Root.Children.OfType<TagHelperBlock>();
-            Assert.Empty(rewrittenNodes);
+            var tagHelperNodes = descendantNodes.Where(n => n is MarkupTagHelperElementSyntax tagHelper).Cast<MarkupTagHelperElementSyntax>().ToArray();
+            Assert.Empty(tagHelperNodes);
         }
 
         [Fact]
@@ -339,12 +334,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
+            var descendantNodes = rewrittenTree.Root.DescendantNodes();
             Assert.Empty(rewrittenTree.Diagnostics);
-            Assert.Equal(3, rewrittenTree.Root.Children.Count);
+            var tagHelperNodes = descendantNodes.Where(n => n is MarkupTagHelperElementSyntax tagHelper).Cast<MarkupTagHelperElementSyntax>().ToArray();
 
-            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
-            Assert.Equal("form", formTagHelper.TagName);
-            Assert.Equal(2, formTagHelper.Binding.GetBoundRules(descriptor).Count());
+            var formTagHelper = Assert.Single(tagHelperNodes);
+            Assert.Equal("form", formTagHelper.TagHelperInfo.TagName);
+            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.GetBoundRules(descriptor).Count());
         }
 
         [Fact]
@@ -392,12 +388,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
+            var descendantNodes = rewrittenTree.Root.DescendantNodes();
             Assert.Empty(rewrittenTree.Diagnostics);
-            Assert.Equal(3, rewrittenTree.Root.Children.Count);
+            var tagHelperNodes = descendantNodes.Where(n => n is MarkupTagHelperElementSyntax tagHelper).Cast<MarkupTagHelperElementSyntax>().ToArray();
 
-            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
-            Assert.Equal("form", formTagHelper.TagName);
-            Assert.Equal(2, formTagHelper.Binding.GetBoundRules(descriptor).Count());
+            var formTagHelper = Assert.Single(tagHelperNodes);
+            Assert.Equal("form", formTagHelper.TagHelperInfo.TagName);
+            Assert.Equal(2, formTagHelper.TagHelperInfo.BindingResult.GetBoundRules(descriptor).Count());
         }
 
         [Fact]
@@ -437,15 +434,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var rewrittenTree = codeDocument.GetSyntaxTree();
+            var descendantNodes = rewrittenTree.Root.DescendantNodes();
             Assert.Empty(rewrittenTree.Diagnostics);
-            Assert.Equal(3, rewrittenTree.Root.Children.Count);
-            var formTagHelper = Assert.IsType<TagHelperBlock>(rewrittenTree.Root.Children[2]);
-            Assert.Equal("form", formTagHelper.TagName);
-            Assert.Collection(
-                formTagHelper.Children,
-                node => Assert.IsNotType<TagHelperBlock>(node),
-                node => Assert.IsNotType<TagHelperBlock>(node),
-                node => Assert.IsNotType<TagHelperBlock>(node));
+            var tagHelperNodes = descendantNodes.Where(n => n is MarkupTagHelperElementSyntax tagHelper).Cast<MarkupTagHelperElementSyntax>().ToArray();
+
+            var formTagHelper = Assert.Single(tagHelperNodes);
+            Assert.Equal("form", formTagHelper.TagHelperInfo.TagName);
         }
 
         [Fact]
@@ -691,7 +685,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor(tagHelpers: new List<TagHelperDescriptor>());
 
             // Act
-            visitor.VisitBlock(syntaxTree.Root);
+            visitor.Visit(syntaxTree.Root);
 
             // Assert
             Assert.Equal(expectedPrefix, visitor.TagHelperPrefix);
@@ -857,7 +851,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor((TagHelperDescriptor[])tagHelpers);
 
             // Act
-            visitor.VisitBlock(syntaxTree.Root);
+            visitor.Visit(syntaxTree.Root);
 
             // Assert
             Assert.Equal(expected.Count(), visitor.Matches.Count());
@@ -1001,7 +995,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor((TagHelperDescriptor[])tagHelpers);
 
             // Act
-            visitor.VisitBlock(syntaxTree.Root);
+            visitor.Visit(syntaxTree.Root);
 
             // Assert
             Assert.Empty(visitor.Matches);

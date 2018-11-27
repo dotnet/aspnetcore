@@ -9,4 +9,4 @@ Code span at (34:0,34 [12] ) (Accepts:AnyExceptNewline) - Parent: Tag block at (
 Markup span at (54:0,54 [5] ) (Accepts:Any) - Parent: Markup block at (54:0,54 [19] )
 Markup span at (59:0,59 [1] ) (Accepts:Any) - Parent: Markup block at (59:0,59 [14] )
 Transition span at (60:0,60 [1] ) (Accepts:None) - Parent: Expression block at (60:0,60 [13] )
-Code span at (61:0,61 [12] ) (Accepts:NonWhiteSpace) - Parent: Expression block at (60:0,60 [13] )
+Code span at (61:0,61 [12] ) (Accepts:NonWhitespace) - Parent: Expression block at (60:0,60 [13] )

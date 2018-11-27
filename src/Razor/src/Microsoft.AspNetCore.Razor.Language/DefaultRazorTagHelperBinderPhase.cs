@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -39,11 +40,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 for (var i = 0; i < imports.Count; i++)
                 {
                     var import = imports[i];
-                    visitor.VisitBlock(import.Root);
+                    visitor.Visit(import.Root);
                 }
             }
 
-            visitor.VisitBlock(syntaxTree.Root);
+            visitor.Visit(syntaxTree.Root);
 
             var tagHelperPrefix = visitor.TagHelperPrefix;
             descriptors = visitor.Matches.ToArray();
@@ -57,21 +58,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return;
             }
 
-            var errorSink = new ErrorSink();
-            var rewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptors, syntaxTree.Options.FeatureFlags);
-
-            var root = syntaxTree.Root;
-            root = rewriter.Rewrite(root, errorSink);
-
-            var errorList = new List<RazorDiagnostic>();
-            errorList.AddRange(errorSink.Errors);
-
-            errorList.AddRange(descriptors.SelectMany(d => d.GetAllDiagnostics()));
-
-            var diagnostics = CombineErrors(syntaxTree.Diagnostics, errorList);
-
-            var newSyntaxTree = RazorSyntaxTree.Create(root, syntaxTree.Source, diagnostics, syntaxTree.Options);
-            codeDocument.SetSyntaxTree(newSyntaxTree);
+            var rewrittenSyntaxTree = TagHelperParseTreeRewriter.Rewrite(syntaxTree, tagHelperPrefix, descriptors);
+            
+            codeDocument.SetSyntaxTree(rewrittenSyntaxTree);
         }
 
         private static bool MatchesDirective(TagHelperDescriptor descriptor, string typePattern, string assemblyName)
@@ -97,25 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return string.Equals(descriptor.Name, typePattern, StringComparison.Ordinal);
         }
 
-        private static int GetErrorLength(string directiveText)
-        {
-            var nonNullLength = directiveText == null ? 1 : directiveText.Length;
-            var normalizeEmptyStringLength = Math.Max(nonNullLength, 1);
-
-            return normalizeEmptyStringLength;
-        }
-
-        private IReadOnlyList<RazorDiagnostic> CombineErrors(IReadOnlyList<RazorDiagnostic> errors1, IReadOnlyList<RazorDiagnostic> errors2)
-        {
-            var combinedErrors = new List<RazorDiagnostic>(errors1.Count + errors2.Count);
-            combinedErrors.AddRange(errors1);
-            combinedErrors.AddRange(errors2);
-
-            return combinedErrors;
-        }
-
-        // Internal for testing.
-        internal class DirectiveVisitor : ParserVisitor
+        internal class DirectiveVisitor : SyntaxRewriter
         {
             private IReadOnlyList<TagHelperDescriptor> _tagHelpers;
 
@@ -128,62 +99,80 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public HashSet<TagHelperDescriptor> Matches { get; } = new HashSet<TagHelperDescriptor>();
 
-            public override void VisitAddTagHelperSpan(AddTagHelperChunkGenerator chunkGenerator, Span span)
+            public override SyntaxNode VisitRazorDirective(RazorDirectiveSyntax node)
             {
-                if (chunkGenerator.AssemblyName == null)
+                var descendantLiterals = node.DescendantNodes();
+                foreach (var child in descendantLiterals)
                 {
-                    // Skip this one, it's an error
-                    return;
-                }
-
-                if (!AssemblyContainsTagHelpers(chunkGenerator.AssemblyName, _tagHelpers))
-                {
-                    // No tag helpers in the assembly.
-                    return;
-                }
-
-                for (var i = 0; i < _tagHelpers.Count; i++)
-                {
-                    var tagHelper = _tagHelpers[i];
-                    if (MatchesDirective(tagHelper, chunkGenerator.TypePattern, chunkGenerator.AssemblyName))
+                    if (!(child is CSharpStatementLiteralSyntax literal))
                     {
-                        Matches.Add(tagHelper);
+                        continue;
+                    }
+
+                    var context = literal.GetSpanContext();
+                    if (context == null)
+                    {
+                        // We can't find a chunk generator.
+                        continue;
+                    }
+                    else if (context.ChunkGenerator is AddTagHelperChunkGenerator addTagHelper)
+                    {
+                        if (addTagHelper.AssemblyName == null)
+                        {
+                            // Skip this one, it's an error
+                            continue;
+                        }
+
+                        if (!AssemblyContainsTagHelpers(addTagHelper.AssemblyName, _tagHelpers))
+                        {
+                            // No tag helpers in the assembly.
+                            continue;
+                        }
+
+                        for (var i = 0; i < _tagHelpers.Count; i++)
+                        {
+                            var tagHelper = _tagHelpers[i];
+                            if (MatchesDirective(tagHelper, addTagHelper.TypePattern, addTagHelper.AssemblyName))
+                            {
+                                Matches.Add(tagHelper);
+                            }
+                        }
+                    }
+                    else if (context.ChunkGenerator is RemoveTagHelperChunkGenerator removeTagHelper)
+                    {
+                        if (removeTagHelper.AssemblyName == null)
+                        {
+                            // Skip this one, it's an error
+                            continue;
+                        }
+
+
+                        if (!AssemblyContainsTagHelpers(removeTagHelper.AssemblyName, _tagHelpers))
+                        {
+                            // No tag helpers in the assembly.
+                            continue;
+                        }
+
+                        for (var i = 0; i < _tagHelpers.Count; i++)
+                        {
+                            var tagHelper = _tagHelpers[i];
+                            if (MatchesDirective(tagHelper, removeTagHelper.TypePattern, removeTagHelper.AssemblyName))
+                            {
+                                Matches.Remove(tagHelper);
+                            }
+                        }
+                    }
+                    else if (context.ChunkGenerator is TagHelperPrefixDirectiveChunkGenerator tagHelperPrefix)
+                    {
+                        if (!string.IsNullOrEmpty(tagHelperPrefix.DirectiveText))
+                        {
+                            // We only expect to see a single one of these per file, but that's enforced at another level.
+                            TagHelperPrefix = tagHelperPrefix.DirectiveText;
+                        }
                     }
                 }
-            }
 
-            public override void VisitRemoveTagHelperSpan(RemoveTagHelperChunkGenerator chunkGenerator, Span span)
-            {
-                if (chunkGenerator.AssemblyName == null)
-                {
-                    // Skip this one, it's an error
-                    return;
-                }
-
-
-                if (!AssemblyContainsTagHelpers(chunkGenerator.AssemblyName, _tagHelpers))
-                {
-                    // No tag helpers in the assembly.
-                    return;
-                }
-
-                for (var i = 0; i < _tagHelpers.Count; i++)
-                {
-                    var tagHelper = _tagHelpers[i];
-                    if (MatchesDirective(tagHelper, chunkGenerator.TypePattern, chunkGenerator.AssemblyName))
-                    {
-                        Matches.Remove(tagHelper);
-                    }
-                }
-            }
-
-            public override void VisitTagHelperPrefixDirectiveSpan(TagHelperPrefixDirectiveChunkGenerator chunkGenerator, Span span)
-            {
-                if (!string.IsNullOrEmpty(chunkGenerator.DirectiveText))
-                {
-                    // We only expect to see a single one of these per file, but that's enforced at another level.
-                    TagHelperPrefix = chunkGenerator.DirectiveText;
-                }
+                return base.VisitRazorDirective(node);
             }
 
             private bool AssemblyContainsTagHelpers(string assemblyName, IReadOnlyList<TagHelperDescriptor> tagHelpers)

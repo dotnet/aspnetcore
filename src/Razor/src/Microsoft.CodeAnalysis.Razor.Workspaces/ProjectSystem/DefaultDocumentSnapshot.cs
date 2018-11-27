@@ -23,11 +23,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(state));
             }
 
-            Project = project;
+            ProjectInternal = project;
             State = state;
         }
 
-        public DefaultProjectSnapshot Project { get; }
+        public DefaultProjectSnapshot ProjectInternal { get; }
 
         public DocumentState State { get; }
 
@@ -35,9 +35,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override string TargetPath => State.HostDocument.TargetPath;
 
+        public override ProjectSnapshot Project => ProjectInternal;
+
+        public override bool SupportsOutput => true;
+
         public override IReadOnlyList<DocumentSnapshot> GetImports()
         {
-            return State.Imports.GetImports(Project, this);
+            return State.GetImports(ProjectInternal);
         }
 
         public override Task<SourceText> GetTextAsync()
@@ -50,10 +54,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return State.GetTextVersionAsync();
         }
 
-        public override Task<RazorCodeDocument> GetGeneratedOutputAsync()
+        public override async Task<RazorCodeDocument> GetGeneratedOutputAsync()
         {
-            // IMPORTANT: Don't put more code here. We want this to return a cached task.
-            return State.GeneratedOutput.GetGeneratedOutputInitializationTask(Project, this);
+            var (output, _, _) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            return output;
+        }
+
+        public override async Task<VersionStamp> GetGeneratedOutputVersionAsync()
+        {
+            var (_, _, version) = await State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).ConfigureAwait(false);
+            return version;
         }
 
         public override bool TryGetText(out SourceText result)
@@ -68,13 +78,25 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override bool TryGetGeneratedOutput(out RazorCodeDocument result)
         {
-            if (State.GeneratedOutput.IsResultAvailable)
+            if (State.IsGeneratedOutputResultAvailable)
             {
-                result = State.GeneratedOutput.GetGeneratedOutputInitializationTask(Project, this).Result;
+                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.output;
                 return true;
             }
 
             result = null;
+            return false;
+        }
+
+        public override bool TryGetGeneratedOutputVersionAsync(out VersionStamp result)
+        {
+            if (State.IsGeneratedOutputResultAvailable)
+            {
+                result = State.GetGeneratedOutputAndVersionAsync(ProjectInternal, this).Result.outputVersion;
+                return true;
+            }
+
+            result = default(VersionStamp);
             return false;
         }
     }

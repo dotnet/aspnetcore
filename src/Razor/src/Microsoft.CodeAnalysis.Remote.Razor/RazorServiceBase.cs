@@ -76,6 +76,16 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
                 return null;
             }
 
+            public override bool IsImportDocument(DocumentSnapshot document)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override IEnumerable<DocumentSnapshot> GetRelatedDocuments(DocumentSnapshot document)
+            {
+                throw new NotImplementedException();
+            }
+
             public override RazorProjectEngine GetProjectEngine()
             {
                 throw new NotImplementedException();

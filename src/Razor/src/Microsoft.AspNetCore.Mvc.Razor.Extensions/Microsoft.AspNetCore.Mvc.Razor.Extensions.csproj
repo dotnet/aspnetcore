@@ -2,19 +2,14 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core design time hosting infrastructure for the Razor view engine.</Description>
-    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);aspnetcoremvc</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\CodeGeneration\CodeWriterExtensions.cs">
-      <Link>Shared\CodeWriterExtensions.cs</Link>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="build\**\*.props" PackagePath="build\" />
-    <Content Include="build\**\*.targets" PackagePath="build\" />
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\CodeGeneration\CodeWriterExtensions.cs" Link="Shared\CodeWriterExtensions.cs" />
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\CSharpIdentifier.cs" Link="Shared\CSharpIdentifier.cs" />
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Language\Checksum.cs" Link="Shared\Checksum.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,3 +1,10 @@
-Markup block - Gen<None> - 9 - (0:0,0)
-    Tag block - Gen<TagHelper> - 9 - (0:0,0) - input - InputTagHelper1 - InputTagHelper2
-        SelfClosing - <input />
+RazorDocument - [0..9)::9 - [<input />]
+    MarkupBlock - [0..9)::9
+        MarkupTagHelperElement - [0..9)::9 - input[SelfClosing] - InputTagHelper1 - InputTagHelper2
+            MarkupTagHelperStartTag - [0..9)::9
+                MarkupTextLiteral - [0..9)::9 - [<input />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

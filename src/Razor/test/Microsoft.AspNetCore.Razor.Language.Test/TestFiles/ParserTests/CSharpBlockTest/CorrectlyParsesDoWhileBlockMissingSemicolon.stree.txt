@@ -1,25 +1,27 @@
-Statement block - Gen<None> - 39 - (0:0,0)
-    Code span - Gen<Stmt> - [do { var foo = bar; } while(foo != bar)] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:23
-        CSharpTokenType.Keyword;[do];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[while];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.NotEqual;[!=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[bar];
-        CSharpTokenType.RightParenthesis;[)];
+CSharpCodeBlock - [0..39)::39 - [do { var foo = bar; } while(foo != bar)]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..39)::39 - [do { var foo = bar; } while(foo != bar)] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[do];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Identifier;[bar];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[while];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        Whitespace;[ ];
+        NotEqual;[!=];
+        Whitespace;[ ];
+        Identifier;[bar];
+        RightParenthesis;[)];

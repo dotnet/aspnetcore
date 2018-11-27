@@ -7,28 +7,38 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class ProjectChangeEventArgs : EventArgs
     {
-        public ProjectChangeEventArgs(string projectFilePath, ProjectChangeKind kind)
+        public ProjectChangeEventArgs(ProjectSnapshot older, ProjectSnapshot newer, ProjectChangeKind kind)
         {
-            if (projectFilePath == null)
+            if (older == null && newer == null)
             {
-                throw new ArgumentNullException(nameof(projectFilePath));
+                throw new ArgumentException("Both projects cannot be null.");
             }
 
-            ProjectFilePath = projectFilePath;
+            Older = older;
+            Newer = newer;
             Kind = kind;
+
+            ProjectFilePath = older?.FilePath ?? newer.FilePath;
         }
 
-        public ProjectChangeEventArgs(string projectFilePath, string documentFilePath, ProjectChangeKind kind)
+        public ProjectChangeEventArgs(ProjectSnapshot older, ProjectSnapshot newer, string documentFilePath, ProjectChangeKind kind)
         {
-            if (projectFilePath == null)
+            if (older == null && newer == null)
             {
-                throw new ArgumentNullException(nameof(projectFilePath));
+                throw new ArgumentException("Both projects cannot be null.");
             }
 
-            ProjectFilePath = projectFilePath;
+            Older = older;
+            Newer = newer;
             DocumentFilePath = documentFilePath;
             Kind = kind;
+
+            ProjectFilePath = older?.FilePath ?? newer.FilePath;
         }
+
+        public ProjectSnapshot Older { get; }
+
+        public ProjectSnapshot Newer { get; }
 
         public string ProjectFilePath { get; }
 

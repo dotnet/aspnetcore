@@ -17,15 +17,27 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 DateTime __typeHelper = default(DateTime);
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object __typeHelper = "InputTestTagHelper, AppCode";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object Section1 = null;
+
+#line default
+#line hidden
         }
         ))();
         }

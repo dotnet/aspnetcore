@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -17,11 +18,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected override StateResult Dispatch()
         {
             var result = base.Dispatch();
-            if (result.Result != null && !_visitedFirstTokenStart && IsValidTokenType(result.Result.Type))
+            if (result.Result != null && !_visitedFirstTokenStart && IsValidTokenType(result.Result.Kind))
             {
                 _visitedFirstTokenStart = true;
             }
-            else if (result.Result != null && _visitedFirstTokenStart && result.Result.Type == CSharpTokenType.NewLine)
+            else if (result.Result != null && _visitedFirstTokenStart && result.Result.Kind == SyntaxKind.NewLine)
             {
                 _visitedFirstTokenLineEnd = true;
             }
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return result;
         }
 
-        public override CSharpToken NextToken()
+        public override SyntaxToken NextToken()
         {
             // Post-Condition: Buffer should be empty at the start of Next()
             Debug.Assert(Buffer.Length == 0);
@@ -48,15 +49,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return token;
         }
 
-        private bool IsValidTokenType(CSharpTokenType type)
+        private bool IsValidTokenType(SyntaxKind kind)
         {
-            return type != CSharpTokenType.WhiteSpace &&
-                type != CSharpTokenType.NewLine &&
-                type != CSharpTokenType.Comment &&
-                type != CSharpTokenType.RazorComment &&
-                type != CSharpTokenType.RazorCommentStar &&
-                type != CSharpTokenType.RazorCommentTransition &&
-                type != CSharpTokenType.Transition;
+            return kind != SyntaxKind.Whitespace &&
+                kind != SyntaxKind.NewLine &&
+                kind != SyntaxKind.CSharpComment &&
+                kind != SyntaxKind.RazorCommentLiteral &&
+                kind != SyntaxKind.RazorCommentStar &&
+                kind != SyntaxKind.RazorCommentTransition &&
+                kind != SyntaxKind.Transition;
         }
     }
 }

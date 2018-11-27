@@ -1,3 +1,13 @@
-Markup block - Gen<None> - 16 - (0:0,0)
-    Tag block - Gen<TagHelper> - 16 - (0:0,0) - strong - strongtaghelper
-        StartTagAndEndTag - <strong  ... </strong
+RazorDocument - [0..16)::16 - [<strong </strong]
+    MarkupBlock - [0..16)::16
+        MarkupTagHelperElement - [0..16)::16 - strong[StartTagAndEndTag] - strongtaghelper
+            MarkupTagHelperStartTag - [0..8)::8
+                MarkupTextLiteral - [0..8)::8 - [<strong ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[strong];
+                    Whitespace;[ ];
+            MarkupTagHelperEndTag - [8..16)::8
+                MarkupTextLiteral - [8..16)::8 - [</strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[strong];

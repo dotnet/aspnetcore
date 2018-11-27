@@ -1,0 +1,31 @@
+RazorDocument - [0..22)::22 - [@{LF    @DateTime..LF}]
+    MarkupBlock - [0..22)::22
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..22)::22
+            CSharpStatement - [0..22)::22
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..22)::21
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..21)::19
+                        CSharpStatementLiteral - [2..8)::6 - [LF    ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            NewLine;[LF];
+                            Whitespace;[    ];
+                        CSharpCodeBlock - [8..19)::11
+                            CSharpImplicitExpression - [8..19)::11
+                                CSharpTransition - [8..9)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [9..19)::10
+                                    CSharpCodeBlock - [9..19)::10
+                                        CSharpExpressionLiteral - [9..19)::10 - [DateTime..] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K20
+                                            Identifier;[DateTime];
+                                            Dot;[.];
+                                            Dot;[.];
+                        CSharpStatementLiteral - [19..21)::2 - [LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            NewLine;[LF];
+                    RazorMetaCode - [21..22)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [22..22)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

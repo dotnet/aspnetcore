@@ -465,7 +465,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 builder?.Invoke(b);
 
-                FunctionsDirective.Register(b);
                 SectionDirective.Register(b);
                 b.AddTagHelpers(tagHelpers);
 

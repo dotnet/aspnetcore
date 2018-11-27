@@ -1,4 +1,12 @@
-Markup block - Gen<None> - 12 - (0:0,0)
-    Tag block - Gen<TagHelper> - 12 - (0:0,0) - p - PTagHelper
-        StartTagAndEndTag - <p bound-int
-        bound-int - Minimized
+RazorDocument - [0..12)::12 - [<p bound-int]
+    MarkupBlock - [0..12)::12
+        MarkupTagHelperElement - [0..12)::12 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..12)::12
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                MarkupMinimizedTagHelperAttribute - [2..12)::10 - bound-int - Minimized - Bound - [ bound-int]
+                    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [3..12)::9 - [bound-int] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[bound-int];

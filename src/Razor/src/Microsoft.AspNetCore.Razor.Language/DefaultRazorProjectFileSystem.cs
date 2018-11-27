@@ -49,6 +49,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             var absolutePath = NormalizeAndEnsureValidPath(path);
 
             var file = new FileInfo(absolutePath);
+            if (!absolutePath.StartsWith(absoluteBasePath))
+            {
+                throw new InvalidOperationException($"The file '{file.FullName}' is not a descendent of the base path '{absoluteBasePath}'.");
+            }
 
             var relativePhysicalPath = file.FullName.Substring(absoluteBasePath.Length + 1); // Include leading separator
             var filePath = "/" + relativePhysicalPath.Replace(Path.DirectorySeparatorChar, '/');

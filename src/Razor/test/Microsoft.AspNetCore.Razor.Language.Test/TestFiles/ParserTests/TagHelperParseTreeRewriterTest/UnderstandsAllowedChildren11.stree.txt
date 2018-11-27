@@ -1,39 +1,60 @@
-Markup block - Gen<None> - 69 - (0:0,0)
-    Tag block - Gen<TagHelper> - 69 - (0:0,0) - p - PTagHelper
-        StartTagAndEndTag - <p> ... </p>
-        Tag block - Gen<None> - 8 - (3:0,3)
-            Markup span - Gen<Markup> - [<custom>] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[custom];
-                HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [Title:] - SpanEditHandler;Accepts:Any - (11:0,11) - Tokens:1
-            HtmlTokenType.Text;[Title:];
-        Tag block - Gen<TagHelper> - 4 - (17:0,17) - br - BRTagHelper
-            StartTagOnly - <br>
-        Tag block - Gen<None> - 4 - (21:0,21)
-            Markup span - Gen<Markup> - [<em>] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:3
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.Text;[em];
-                HtmlTokenType.CloseAngle;[>];
-        Markup span - Gen<Markup> - [A Very Cool] - SpanEditHandler;Accepts:Any - (25:0,25) - Tokens:5
-            HtmlTokenType.Text;[A];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[Very];
-            HtmlTokenType.WhiteSpace;[ ];
-            HtmlTokenType.Text;[Cool];
-        Tag block - Gen<None> - 5 - (36:0,36)
-            Markup span - Gen<Markup> - [</em>] - SpanEditHandler;Accepts:Any - (36:0,36) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[em];
-                HtmlTokenType.CloseAngle;[>];
-        Tag block - Gen<None> - 9 - (41:0,41)
-            Markup span - Gen<Markup> - [</custom>] - SpanEditHandler;Accepts:Any - (41:0,41) - Tokens:4
-                HtmlTokenType.OpenAngle;[<];
-                HtmlTokenType.ForwardSlash;[/];
-                HtmlTokenType.Text;[custom];
-                HtmlTokenType.CloseAngle;[>];
-        Tag block - Gen<TagHelper> - 6 - (50:0,50) - br - BRTagHelper
-            SelfClosing - <br />
-        Markup span - Gen<Markup> - [Something] - SpanEditHandler;Accepts:Any - (56:0,56) - Tokens:1
-            HtmlTokenType.Text;[Something];
+RazorDocument - [0..69)::69 - [<p><custom>Title:<br><em>A Very Cool</em></custom><br />Something</p>]
+    MarkupBlock - [0..69)::69
+        MarkupTagHelperElement - [0..69)::69 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTagBlock - [3..11)::8 - [<custom>]
+                MarkupTextLiteral - [3..11)::8 - [<custom>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[custom];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [11..17)::6 - [Title:] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Title:];
+            MarkupTagHelperElement - [17..21)::4 - br[StartTagOnly] - BRTagHelper
+                MarkupTagHelperStartTag - [17..21)::4
+                    MarkupTextLiteral - [17..21)::4 - [<br>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[br];
+                        CloseAngle;[>];
+            MarkupTagBlock - [21..25)::4 - [<em>]
+                MarkupTextLiteral - [21..25)::4 - [<em>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[em];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [25..36)::11 - [A Very Cool] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[A];
+                Whitespace;[ ];
+                Text;[Very];
+                Whitespace;[ ];
+                Text;[Cool];
+            MarkupTagBlock - [36..41)::5 - [</em>]
+                MarkupTextLiteral - [36..41)::5 - [</em>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[em];
+                    CloseAngle;[>];
+            MarkupTagBlock - [41..50)::9 - [</custom>]
+                MarkupTextLiteral - [41..50)::9 - [</custom>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[custom];
+                    CloseAngle;[>];
+            MarkupTagHelperElement - [50..56)::6 - br[SelfClosing] - BRTagHelper
+                MarkupTagHelperStartTag - [50..56)::6
+                    MarkupTextLiteral - [50..56)::6 - [<br />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[br];
+                        Whitespace;[ ];
+                        ForwardSlash;[/];
+                        CloseAngle;[>];
+            MarkupTextLiteral - [56..65)::9 - [Something] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Something];
+            MarkupTagHelperEndTag - [65..69)::4
+                MarkupTextLiteral - [65..69)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

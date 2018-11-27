@@ -1,5 +1,23 @@
-Markup block - Gen<None> - 29 - (0:0,0)
-    Tag block - Gen<TagHelper> - 29 - (0:0,0) - input - InputTagHelper3
-        SelfClosing - <input int-prefix-value='' />
-        int-prefix-value - SingleQuotes
-            Markup block - Gen<None> - 0 - (0:0,0)
+RazorDocument - [0..29)::29 - [<input int-prefix-value='' />]
+    MarkupBlock - [0..29)::29
+        MarkupTagHelperElement - [0..29)::29 - input[SelfClosing] - InputTagHelper3
+            MarkupTagHelperStartTag - [0..29)::29
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupTagHelperAttribute - [6..26)::20 - int-prefix-value - SingleQuotes - Bound - [ int-prefix-value='']
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..23)::16 - [int-prefix-value] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[int-prefix-value];
+                    Equals;[=];
+                    MarkupTextLiteral - [24..25)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [25..25)::0
+                        CSharpExpressionLiteral - [25..25)::0 - [] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
+                    MarkupTextLiteral - [25..26)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [26..29)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

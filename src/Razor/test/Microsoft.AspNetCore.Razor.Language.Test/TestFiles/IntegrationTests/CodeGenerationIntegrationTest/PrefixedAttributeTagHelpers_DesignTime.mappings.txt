@@ -1,6 +1,6 @@
 Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |"*, TestAssembly"|
-Generated Location: (609:12,37 [17] )
+Generated Location: (712:13,37 [17] )
 |"*, TestAssembly"|
 
 Source Location: (37:2,2 [242] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
@@ -15,7 +15,7 @@ Source Location: (37:2,2 [242] TestFiles/IntegrationTests/CodeGenerationIntegrat
         { "name", "value" },
     };
 |
-Generated Location: (1048:24,2 [242] )
+Generated Location: (1182:28,2 [242] )
 |
     var literate = "or illiterate";
     var intDictionary = new Dictionary<string, int>
@@ -30,51 +30,51 @@ Generated Location: (1048:24,2 [242] )
 
 Source Location: (370:15,43 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |intDictionary|
-Generated Location: (1691:40,56 [13] )
+Generated Location: (1825:44,56 [13] )
 |intDictionary|
 
 Source Location: (404:15,77 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |stringDictionary|
-Generated Location: (2043:46,77 [16] )
+Generated Location: (2177:50,77 [16] )
 |stringDictionary|
 
 Source Location: (468:16,43 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |intDictionary|
-Generated Location: (2593:54,56 [13] )
+Generated Location: (2727:58,56 [13] )
 |intDictionary|
 
 Source Location: (502:16,77 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |37|
-Generated Location: (2945:60,77 [2] )
+Generated Location: (3079:64,77 [2] )
 |37|
 
 Source Location: (526:16,101 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |42|
-Generated Location: (3330:66,101 [2] )
+Generated Location: (3464:70,101 [2] )
 |42|
 
 Source Location: (590:18,31 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |42|
-Generated Location: (3851:74,46 [2] )
+Generated Location: (3985:78,46 [2] )
 |42|
 
 Source Location: (611:18,52 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |37|
-Generated Location: (4180:80,64 [2] )
+Generated Location: (4314:84,64 [2] )
 |37|
 
 Source Location: (634:18,75 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |98|
-Generated Location: (4535:86,75 [2] )
+Generated Location: (4669:90,75 [2] )
 |98|
 
 Source Location: (783:20,42 [8] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |literate|
-Generated Location: (5317:96,42 [8] )
+Generated Location: (5451:100,42 [8] )
 |literate|
 
 Source Location: (826:21,29 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PrefixedAttributeTagHelpers.cshtml)
 |37|
-Generated Location: (5981:105,65 [2] )
+Generated Location: (6115:109,65 [2] )
 |37|
 

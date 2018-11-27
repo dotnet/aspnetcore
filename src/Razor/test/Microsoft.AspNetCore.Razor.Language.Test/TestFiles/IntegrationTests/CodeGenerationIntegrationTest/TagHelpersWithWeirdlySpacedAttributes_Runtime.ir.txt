@@ -8,7 +8,7 @@ Document -
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - data-content - hello - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_3 - data-content - hello2 - HtmlAttributeValueStyle.SingleQuotes
             PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_4 - type - password - HtmlAttributeValueStyle.DoubleQuotes
-            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_5 - data-content - blah - HtmlAttributeValueStyle.NoQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_5 - data-content - blah - HtmlAttributeValueStyle.DoubleQuotes
             DefaultTagHelperRuntime - 
             FieldDeclaration -  - private - global::TestNamespace.PTagHelper - __TestNamespace_PTagHelper
             FieldDeclaration -  - private - global::TestNamespace.InputTagHelper - __TestNamespace_InputTagHelper

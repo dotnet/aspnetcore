@@ -30,6 +30,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultRazorGenerateItems Condition="'$(EnableDefaultRazorGenerateItems)'==''">true</EnableDefaultRazorGenerateItems>
 
     <!--
+      Set to true to automatically include Razor (.razor) files in @(RazorComponent) from @(Content).
+    -->
+    <EnableDefaultRazorComponentItems Condition="'$(EnableDefaultRazorComponentItems)'==''">true</EnableDefaultRazorComponentItems>
+
+    <!--
       Set to true to copy RazorGenerate items (.cshtml) to the publish directory.
 
       Typically Razor files are not needed for a published application if they participate in compilation at build-time
@@ -61,14 +66,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--
     Configures the file extension used for generated C# files.
     -->
-    <RazorGenerateOutputFileExtension>.g.cshtml.cs</RazorGenerateOutputFileExtension>
+    <RazorGenerateOutputFileExtension>.g.cs</RazorGenerateOutputFileExtension>
+
+    <!--
+    Configures the file extension used for the generated C# definition files.
+    -->
+    <RazorGenerateOutputDefinitionFileExtension>.g.i.cs</RazorGenerateOutputDefinitionFileExtension>
 
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
     <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <Content Include="**\*.razor" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
     <None Remove="**\*.cshtml" />
+    <None Remove="**\*.razor" />
   </ItemGroup>
 
 </Project>

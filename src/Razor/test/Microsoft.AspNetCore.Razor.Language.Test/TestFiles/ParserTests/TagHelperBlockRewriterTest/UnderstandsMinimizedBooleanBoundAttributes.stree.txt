@@ -1,5 +1,21 @@
-Markup block - Gen<None> - 37 - (0:0,0)
-    Tag block - Gen<TagHelper> - 37 - (0:0,0) - input - InputTagHelper
-        SelfClosing - <input boundbool boundbooldict-key />
-        boundbool - Minimized
-        boundbooldict-key - Minimized
+RazorDocument - [0..37)::37 - [<input boundbool boundbooldict-key />]
+    MarkupBlock - [0..37)::37
+        MarkupTagHelperElement - [0..37)::37 - input[SelfClosing] - InputTagHelper
+            MarkupTagHelperStartTag - [0..37)::37
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupMinimizedTagHelperAttribute - [6..16)::10 - boundbool - Minimized - Bound - [ boundbool]
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..16)::9 - [boundbool] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[boundbool];
+                MarkupMinimizedTagHelperAttribute - [16..34)::18 - boundbooldict-key - Minimized - Bound - [ boundbooldict-key]
+                    MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [17..34)::17 - [boundbooldict-key] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[boundbooldict-key];
+                MarkupTextLiteral - [34..37)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

@@ -34,12 +34,36 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void RazorMultilineCommentInBlock()
+        {
+            ParseDocumentTest(@"
+@{
+    @*
+This is a comment
+    *@
+}
+");
+        }
+
+        [Fact]
         public void RazorCommentInVerbatimBlock()
         {
             ParseDocumentTest("@{" + Environment.NewLine
                             + "    <text" + Environment.NewLine
                             + "    @**@" + Environment.NewLine
                             + "}");
+        }
+
+        [Fact]
+        public void RazorCommentInOpeningTagBlock()
+        {
+            ParseDocumentTest("<text @* razor comment *@></text>");
+        }
+
+        [Fact]
+        public void RazorCommentInClosingTagBlock()
+        {
+            ParseDocumentTest("<text></text @* razor comment *@>");
         }
 
         [Fact]

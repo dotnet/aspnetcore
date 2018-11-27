@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public sealed class TagHelperResolutionResult
+    internal sealed class TagHelperResolutionResult
     {
-        internal static TagHelperResolutionResult Empty = new TagHelperResolutionResult(Array.Empty<TagHelperDescriptor>(), Array.Empty<RazorDiagnostic>());
+        internal static readonly TagHelperResolutionResult Empty = new TagHelperResolutionResult(Array.Empty<TagHelperDescriptor>(), Array.Empty<RazorDiagnostic>());
 
         public TagHelperResolutionResult(IReadOnlyList<TagHelperDescriptor> descriptors, IReadOnlyList<RazorDiagnostic> diagnostics)
         {

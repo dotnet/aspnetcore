@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using Xunit;
@@ -10,12 +11,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class TagHelperSpanVerifier
     {
-        internal static void Verify(SyntaxTreeNode node, string filePath, string[] baseline)
+        internal static void Verify(RazorSyntaxTree syntaxTree, string[] baseline)
         {
             using (var writer = new StringWriter())
             {
-                var walker = new Walker(writer, filePath, baseline);
-                walker.Visit(node);
+                var walker = new Walker(writer, syntaxTree, baseline);
+                walker.Visit();
                 walker.AssertReachedEndOfBaseline();
             }
         }
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             private int _index;
 
-            public Walker(StringWriter writer, string filePath, string[] baseline) : base(writer, filePath)
+            public Walker(StringWriter writer, RazorSyntaxTree syntaxTree, string[] baseline) : base(writer, syntaxTree)
             {
                 _writer = writer;
                 _baseline = baseline;

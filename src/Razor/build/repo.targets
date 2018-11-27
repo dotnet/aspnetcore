@@ -11,9 +11,9 @@
 
   <PropertyGroup>
     <PrepareDependsOn>$(PrepareDependsOn);GenerateMSBuildLocationFile</PrepareDependsOn>
-    <RazorDesignTestProject>$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Design.Test\</RazorDesignTestProject>
-    <MSBuildLocationFileTemplate>$(RazorDesignTestProject)BuildVariables.cs.template</MSBuildLocationFileTemplate>
-    <MSBuildLocationFileOutput>$(RazorDesignTestProject)obj\BuildVariables.generated.cs</MSBuildLocationFileOutput>
+    <RazorSdkTestProject>$(RepositoryRoot)test\Microsoft.NET.Sdk.Razor.Test\</RazorSdkTestProject>
+    <MSBuildLocationFileTemplate>$(RazorSdkTestProject)BuildVariables.cs.template</MSBuildLocationFileTemplate>
+    <MSBuildLocationFileOutput>$(RazorSdkTestProject)obj\BuildVariables.generated.cs</MSBuildLocationFileOutput>
   </PropertyGroup>
 
   <Target Name="GenerateMSBuildLocationFile"
@@ -24,8 +24,8 @@
     <PropertyGroup>
       <TemplateProperties>
         MSBuildLocation=$(VisualStudioMSBuildx86Path);
-        MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreApp22PackageVersion);
-        NETStandardLibraryPackageVersion=$(NETStandardLibrary20PackageVersion)
+        MicrosoftNETCoreApp30PackageVersion=$(MicrosoftNETCoreApp30PackageVersion);
+        NETStandardLibrary20PackageVersion=$(NETStandardLibrary20PackageVersion)
       </TemplateProperties>
     </PropertyGroup>
 

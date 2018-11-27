@@ -1,29 +1,29 @@
-Statement block - Gen<None> - 42 - (0:0,0)
-    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
-        CSharpTokenType.Transition;[@];
-    Code span - Gen<Stmt> - [using(var foo = new Foo()) { foo.Bar(); }] - SpanEditHandler;Accepts:None - (1:0,1) - Tokens:25
-        CSharpTokenType.Keyword;[using];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.Identifier;[var];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Assign;[=];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Keyword;[new];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.LeftBrace;[{];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[foo];
-        CSharpTokenType.Dot;[.];
-        CSharpTokenType.Identifier;[Bar];
-        CSharpTokenType.LeftParenthesis;[(];
-        CSharpTokenType.RightParenthesis;[)];
-        CSharpTokenType.Semicolon;[;];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.RightBrace;[}];
+CSharpCodeBlock - [0..42)::42 - [@using(var foo = new Foo()) { foo.Bar(); }]
+    CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    CSharpStatementLiteral - [1..42)::41 - [using(var foo = new Foo()) { foo.Bar(); }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[using];
+        LeftParenthesis;[(];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Keyword;[new];
+        Whitespace;[ ];
+        Identifier;[Foo];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Dot;[.];
+        Identifier;[Bar];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

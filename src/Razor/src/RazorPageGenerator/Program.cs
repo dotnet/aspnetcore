@@ -61,7 +61,6 @@ Examples:
                         @class.Modifiers.Add("internal");
                     });
 
-                FunctionsDirective.Register(builder);
                 InheritsDirective.Register(builder);
                 SectionDirective.Register(builder);
 

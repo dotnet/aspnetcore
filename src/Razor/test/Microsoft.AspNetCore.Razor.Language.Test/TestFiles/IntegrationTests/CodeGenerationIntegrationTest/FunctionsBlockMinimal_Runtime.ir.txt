@@ -6,7 +6,7 @@ Document -
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [4] FunctionsBlockMinimal.cshtml)
                     IntermediateToken - (0:0,0 [4] FunctionsBlockMinimal.cshtml) - Html - \n\n
-            CSharpCode - (4:2,0 [1] FunctionsBlockMinimal.cshtml)
-                IntermediateToken - (4:2,0 [1] FunctionsBlockMinimal.cshtml) - CSharp - 	
+                CSharpCode - (4:2,0 [1] FunctionsBlockMinimal.cshtml)
+                    IntermediateToken - (4:2,0 [1] FunctionsBlockMinimal.cshtml) - CSharp - 	
             CSharpCode - (16:2,12 [55] FunctionsBlockMinimal.cshtml)
                 IntermediateToken - (16:2,12 [55] FunctionsBlockMinimal.cshtml) - CSharp - \nstring foo(string input) {\n	return input + "!";\n}\n

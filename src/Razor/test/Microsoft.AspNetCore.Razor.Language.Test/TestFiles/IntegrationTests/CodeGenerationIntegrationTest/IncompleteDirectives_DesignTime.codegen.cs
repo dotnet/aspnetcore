@@ -8,39 +8,75 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = "";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = "";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = ";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = "";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = "";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = ";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = "";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = "";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {
+#line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 global::System.Object __typeHelper = ";
+
+#line default
+#line hidden
         }
         ))();
         ((System.Action)(() => {

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal void ImplicitExpressionTest(string input, params RazorDiagnostic[] errors)
         {
-            ImplicitExpressionTest(input, AcceptedCharactersInternal.NonWhiteSpace, errors);
+            ImplicitExpressionTest(input, AcceptedCharactersInternal.NonWhitespace, errors);
         }
 
         internal void ImplicitExpressionTest(string input, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] errors)
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal void ImplicitExpressionTest(string input, string expected, params RazorDiagnostic[] errors)
         {
-            ImplicitExpressionTest(input, expected, AcceptedCharactersInternal.NonWhiteSpace, errors);
+            ImplicitExpressionTest(input, expected, AcceptedCharactersInternal.NonWhitespace, errors);
         }
 
         internal override void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)

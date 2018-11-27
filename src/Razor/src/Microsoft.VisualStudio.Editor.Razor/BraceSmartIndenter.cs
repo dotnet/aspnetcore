@@ -5,12 +5,12 @@ using System;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
-using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -274,13 +274,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal static bool ContainsInvalidContent(Span owner)
+        internal static bool ContainsInvalidContent(SyntaxNode owner)
         {
-            // We only support whitespace based content. Any non-whitespace content is an unkonwn to us
+            // We only support whitespace based content. Any non-whitespace content is an unknown to us
             // in regards to indentation.
-            for (var i = 0; i < owner.Tokens.Count; i++)
+            var children = owner.ChildNodes();
+            for (var i = 0; i < children.Count; i++)
             {
-                if (!string.IsNullOrWhiteSpace(owner.Tokens[i].Content))
+                if (!(children[i] is SyntaxToken token) ||
+                    !string.IsNullOrWhiteSpace(token.Content))
                 {
                     return true;
                 }
@@ -290,18 +292,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal static bool IsUnlinkedSpan(Span owner)
+        internal static bool IsUnlinkedSpan(SyntaxNode owner)
         {
             return owner == null ||
-                owner.Next == null ||
-                owner.Previous == null;
+                owner.NextSpan() == null ||
+                owner.PreviousSpan() == null;
         }
 
         // Internal for testing
-        internal static bool SurroundedByInvalidContent(Span owner)
+        internal static bool SurroundedByInvalidContent(SyntaxNode owner)
         {
-            return owner.Next.Kind != SpanKindInternal.MetaCode ||
-                owner.Previous.Kind != SpanKindInternal.MetaCode;
+            return !owner.NextSpan().IsMetaCodeSpanKind() ||
+                !owner.PreviousSpan().IsMetaCodeSpanKind();
         }
 
         internal static bool BeforeClosingBrace(int linePosition, ITextSnapshotLine lineSnapshot)

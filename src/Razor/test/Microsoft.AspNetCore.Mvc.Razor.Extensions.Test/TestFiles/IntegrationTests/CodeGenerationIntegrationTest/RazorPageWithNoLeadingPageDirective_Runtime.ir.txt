@@ -13,15 +13,11 @@ Document -
         RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPageWithNoLeadingPageDirective - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(0, 28, true);
                 HtmlContent - (0:0,0 [28] RazorPageWithNoLeadingPageDirective.cshtml)
                     IntermediateToken - (0:0,0 [5] RazorPageWithNoLeadingPageDirective.cshtml) - Html - <div>
                     IntermediateToken - (5:0,5 [15] RazorPageWithNoLeadingPageDirective.cshtml) - Html - Some text here.
                     IntermediateToken - (20:0,20 [6] RazorPageWithNoLeadingPageDirective.cshtml) - Html - </div>
                     IntermediateToken - (26:0,26 [2] RazorPageWithNoLeadingPageDirective.cshtml) - Html - \n
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - EndContext();
             Inject - 
             Inject - 
             Inject - 

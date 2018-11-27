@@ -18,11 +18,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public DirectiveTokenDescriptor Descriptor { get; }
 
-        public override void Accept(ParserVisitor visitor, Span span)
-        {
-            visitor.VisitDirectiveToken(this, span);
-        }
-
         public override bool Equals(object obj)
         {
             var other = obj as DirectiveTokenChunkGenerator;

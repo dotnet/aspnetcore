@@ -1,5 +1,22 @@
-Markup block - Gen<None> - 31 - (0:0,0)
-    Tag block - Gen<TagHelper> - 31 - (0:0,0) - input - InputTagHelper3
-        SelfClosing - <input string-prefix-value=''/>
-        string-prefix-value - SingleQuotes
-            Markup block - Gen<None> - 0 - (0:0,0)
+RazorDocument - [0..31)::31 - [<input string-prefix-value=''/>]
+    MarkupBlock - [0..31)::31
+        MarkupTagHelperElement - [0..31)::31 - input[SelfClosing] - InputTagHelper3
+            MarkupTagHelperStartTag - [0..31)::31
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[input];
+                MarkupTagHelperAttribute - [6..29)::23 - string-prefix-value - SingleQuotes - Bound - [ string-prefix-value='']
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [7..26)::19 - [string-prefix-value] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[string-prefix-value];
+                    Equals;[=];
+                    MarkupTextLiteral - [27..28)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                    MarkupTagHelperAttributeValue - [28..28)::0
+                        MarkupTextLiteral - [28..28)::0 - []
+                    MarkupTextLiteral - [28..29)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];
+                MarkupTextLiteral - [29..31)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    ForwardSlash;[/];
+                    CloseAngle;[>];

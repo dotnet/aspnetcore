@@ -38,5 +38,14 @@ Document -
                 CSharpExpression - (323:14,2 [2] RazorComments.cshtml)
                     IntermediateToken - (323:14,2 [1] RazorComments.cshtml) - CSharp - a
                     IntermediateToken - (328:14,7 [1] RazorComments.cshtml) - CSharp - b
-                HtmlContent - (330:14,9 [2] RazorComments.cshtml)
-                    IntermediateToken - (330:14,9 [2] RazorComments.cshtml) - Html - \n
+                HtmlContent - (330:14,9 [85] RazorComments.cshtml)
+                    IntermediateToken - (330:14,9 [4] RazorComments.cshtml) - Html - \n\n
+                    IntermediateToken - (334:16,0 [6] RazorComments.cshtml) - Html - <input
+                    IntermediateToken - (340:16,6 [51] RazorComments.cshtml) - Html -  value="@*this razor comment is the actual value*@"
+                    IntermediateToken - (391:16,57 [12] RazorComments.cshtml) - Html -  type="text"
+                    IntermediateToken - (403:16,69 [3] RazorComments.cshtml) - Html -  />
+                    IntermediateToken - (406:16,72 [2] RazorComments.cshtml) - Html - \n
+                    IntermediateToken - (408:17,0 [7] RazorComments.cshtml) - Html - <input 
+                HtmlContent - (458:17,50 [17] RazorComments.cshtml)
+                    IntermediateToken - (458:17,50 [15] RazorComments.cshtml) - Html -  type="text" />
+                    IntermediateToken - (473:17,65 [2] RazorComments.cshtml) - Html - \n

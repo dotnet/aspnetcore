@@ -1,6 +1,10 @@
-Directive block - Gen<None> - 11 - (0:0,0)
-    Code span - Gen<Import: Foo;> - [using FooLF] - SpanEditHandler;Accepts:AnyExceptNewline - (0:0,0) - Tokens:4
-        CSharpTokenType.Keyword;[using];
-        CSharpTokenType.WhiteSpace;[ ];
-        CSharpTokenType.Identifier;[Foo];
-        CSharpTokenType.NewLine;[LF];
+CSharpCodeBlock - [0..11)::11 - [using FooLF]
+    RazorDirective - [0..11)::11
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        RazorDirectiveBody - [0..11)::11
+            CSharpStatementLiteral - [0..11)::11 - [using FooLF] - Gen<Import: Foo;> - SpanEditHandler;Accepts:AnyExceptNewline
+                Keyword;[using];
+                Whitespace;[ ];
+                Identifier;[Foo];
+                NewLine;[LF];

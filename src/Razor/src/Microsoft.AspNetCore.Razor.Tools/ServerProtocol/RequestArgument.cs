@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
     /// Strings are encoded via a length prefix as a signed
     /// 32-bit integer, followed by an array of characters.
     /// </summary>
-    internal struct RequestArgument
+    internal readonly struct RequestArgument
     {
         public readonly ArgumentId Id;
         public readonly int ArgumentIndex;
@@ -62,6 +62,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             // The directory to use for temporary operations.
             TempDirectory,
+        }
+
+        public override string ToString()
+        {
+            return $"{Id} {Value}";
         }
     }
 }

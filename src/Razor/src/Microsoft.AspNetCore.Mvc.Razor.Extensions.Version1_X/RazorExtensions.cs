@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             InjectDirective.Register(builder);
             ModelDirective.Register(builder);
 
-            FunctionsDirective.Register(builder);
             InheritsDirective.Register(builder);
 
             builder.Features.Add(new DefaultTagHelperDescriptorProvider());
