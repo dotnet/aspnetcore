@@ -14,7 +14,7 @@
   -->
   <Target Name="_GetUserSecretsAssemblyAttribute"
           BeforeTargets="GetAssemblyAttributes"
-          Condition="' $(UserSecretsId)' != '' AND '$(GenerateUserSecretsAttribute)' != 'false' AND '$(GeneratedUserSecretsAttributeFile)' == '' ">
+          Condition=" '$(UserSecretsId)' != '' AND '$(GenerateUserSecretsAttribute)' != 'false' AND '$(GeneratedUserSecretsAttributeFile)' == '' ">
 
     <!--
       If the Microsoft.Extensions.Configuration.UserSecrets package 2.2 or higher is referenced directly,
