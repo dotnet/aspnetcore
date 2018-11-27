@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <Description>Tests for users to verify their own implementations of SignalR types</Description>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <Compile Include="..\Common\DuplexPipe.cs" Link="DuplexPipe.cs" />
     <Compile Include="..\Common\MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
@@ -15,7 +15,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Common\Microsoft.AspNetCore.SignalR.Common.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Protocols.MessagePack\Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj" />
   </ItemGroup>
-  
+
 
   <ItemGroup>
     <PackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />

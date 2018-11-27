@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     return false;
                 }
                 return true;
-            }).Select(p => p.ParameterType).ToArray();
+            }).Select(GetParameterType).ToArray();
 
             if (HasSyntheticArguments)
             {
@@ -52,6 +53,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             Policies = policies.ToArray();
         }
+
+        public bool HasStreamingParameters { get; private set; }
 
         private Func<object, CancellationToken, IAsyncEnumerator<object>> _convertToEnumerator;
 
@@ -72,6 +75,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public IList<IAuthorizeData> Policies { get; }
 
         public bool HasSyntheticArguments { get; private set; }
+
+        private Type GetParameterType(ParameterInfo p)
+        {
+            var type = p.ParameterType;
+            if (ReflectionHelper.IsStreamingType(type))
+            {
+                HasStreamingParameters = true;
+                return typeof(StreamPlaceholder);
+            }
+            return type;
+        }
 
         private static bool IsChannelType(Type type, out Type payloadType)
         {

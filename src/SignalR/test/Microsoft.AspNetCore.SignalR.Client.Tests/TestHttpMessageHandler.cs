@@ -4,6 +4,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -13,6 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     {
         private List<HttpRequestMessage> _receivedRequests = new List<HttpRequestMessage>();
         private RequestDelegate _app;
+        private readonly ILogger _logger;
 
         private List<Func<RequestDelegate, RequestDelegate>> _middleware = new List<Func<RequestDelegate, RequestDelegate>>();
 
@@ -29,8 +32,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
-        public TestHttpMessageHandler(bool autoNegotiate = true, bool handleFirstPoll = true)
+        public TestHttpMessageHandler(ILoggerFactory loggerFactory, bool autoNegotiate = true, bool handleFirstPoll = true)
         {
+            _logger = loggerFactory?.CreateLogger<TestHttpMessageHandler>() ?? NullLoggerFactory.Instance.CreateLogger<TestHttpMessageHandler>();
+
             if (autoNegotiate)
             {
                 OnNegotiate((_, cancellationToken) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent()));
@@ -54,6 +59,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
+        public TestHttpMessageHandler(bool autoNegotiate = true, bool handleFirstPoll = true)
+            : this(NullLoggerFactory.Instance, autoNegotiate, handleFirstPoll)
+        {
+        }
+
         protected override void Dispose(bool disposing)
         {
             Disposed = true;
@@ -62,6 +72,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            _logger.LogDebug("Calling handlers for a '{Method}' going to '{Url}'.", request.Method, request.RequestUri);
             await Task.Yield();
 
             lock (_receivedRequests)

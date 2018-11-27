@@ -21,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.subjects.CompletableSubject;
-import io.reactivex.subjects.SingleSubject;
+import io.reactivex.subjects.*;
 
 /**
  * A connection used to invoke hub methods on a SignalR Server.
@@ -57,7 +57,6 @@ public class HubConnection {
     private CompletableSubject handshakeResponseSubject;
     private long handshakeResponseTimeout = 15*1000;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
-
 
     /**
      * Sets the server timeout interval for the connection.
@@ -202,8 +201,17 @@ public class HubConnection {
                         }
                         irq.complete(completionMessage);
                         break;
-                    case STREAM_INVOCATION:
                     case STREAM_ITEM:
+                        StreamItem streamItem = (StreamItem)message;
+                        InvocationRequest streamInvocationRequest = connectionState.getInvocation(streamItem.getInvocationId());
+                        if (streamInvocationRequest == null) {
+                            logger.warn("Dropped unsolicited Completion message for invocation '{}'.", streamItem.getInvocationId());
+                            continue;
+                        }
+
+                        streamInvocationRequest.addItem(streamItem);
+                        break;
+                    case STREAM_INVOCATION:
                     case CANCEL_INVOCATION:
                         logger.error("This client does not support {} messages.", message.getMessageType());
 
@@ -481,7 +489,7 @@ public class HubConnection {
 
         // forward the invocation result or error to the user
         // run continuations on a separate thread
-        Single<Object> pendingCall = irq.getPendingCall();
+        Subject<Object> pendingCall = irq.getPendingCall();
         pendingCall.subscribe(result -> {
             // Primitive types can't be cast with the Class cast function
             if (returnType.isPrimitive()) {
@@ -498,10 +506,54 @@ public class HubConnection {
         return subject;
     }
 
+    /**
+     * Invokes a streaming hub method on the server using the specified name and arguments.
+     *
+     * @param returnType The expected return type of the stream items.
+     * @param method The name of the server method to invoke.
+     * @param args The arguments used to invoke the server method.
+     * @param <T> The expected return type.
+     * @return An observable that yields the streaming results from the server.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Observable<T> stream(Class<T> returnType, String method, Object ... args) {
+        String invocationId = connectionState.getNextInvocationId();
+        AtomicInteger subscriptionCount = new AtomicInteger();
+        StreamInvocationMessage streamInvocationMessage = new StreamInvocationMessage(invocationId, method, args);
+        InvocationRequest irq = new InvocationRequest(returnType, invocationId);
+        connectionState.addInvocation(irq);
+        ReplaySubject<T> subject = ReplaySubject.create();
+
+        Subject<Object> pendingCall = irq.getPendingCall();
+        pendingCall.subscribe(result -> {
+            // Primitive types can't be cast with the Class cast function
+            if (returnType.isPrimitive()) {
+                subject.onNext((T)result);
+            } else {
+                subject.onNext(returnType.cast(result));
+            }
+        }, error -> subject.onError(error),
+                () -> subject.onComplete());
+
+        sendHubMessage(streamInvocationMessage);
+        Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
+
+        return observable.doOnDispose(() -> {
+            if (subscriptionCount.decrementAndGet() == 0) {
+                CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
+                sendHubMessage(cancelInvocationMessage);
+                connectionState.tryRemoveInvocation(invocationId);
+                subject.onComplete();
+            }
+        });
+    }
+
     private void sendHubMessage(HubMessage message) {
         String serializedMessage = protocol.writeMessage(message);
-        if (message.getMessageType() == HubMessageType.INVOCATION) {
+        if (message.getMessageType() == HubMessageType.INVOCATION ) {
             logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
+        } else  if (message.getMessageType() == HubMessageType.STREAM_INVOCATION) {
+            logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((StreamInvocationMessage)message).getInvocationId());
         } else {
             logger.debug("Sending {} message.", message.getMessageType().name());
         }

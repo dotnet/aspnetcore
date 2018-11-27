@@ -91,6 +91,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 name: "InvocationWithHeadersNoIdAndArrayOfCustomObjectArgs",
                 message: AddHeaders(TestHeaders, new InvocationMessage("method", new object[] { new CustomObject(), new CustomObject() })),
                 binary: "lQGDo0Zvb6NCYXKyS2V5V2l0aApOZXcNCkxpbmVzq1N0aWxsIFdvcmtzsVZhbHVlV2l0aE5ld0xpbmVzsEFsc28KV29ya3MNCkZpbmXApm1ldGhvZJKGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgOGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgM="),
+            new ProtocolTestData(
+                name: "InvocationWithStreamPlaceholderObject",
+                message: new InvocationMessage(null, "Target", new object[] { new StreamPlaceholder("__test_id__")}),
+                binary: "lQGAwKZUYXJnZXSRgahTdHJlYW1JZKtfX3Rlc3RfaWRfXw=="
+                ),
 
             // StreamItem Messages
             new ProtocolTestData(
@@ -228,6 +233,16 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 message: AddHeaders(TestHeaders, new CancelInvocationMessage("xyz")),
                 binary: "kwWDo0Zvb6NCYXKyS2V5V2l0aApOZXcNCkxpbmVzq1N0aWxsIFdvcmtzsVZhbHVlV2l0aE5ld0xpbmVzsEFsc28KV29ya3MNCkZpbmWjeHl6"),
 
+            // StreamComplete Messages
+            new ProtocolTestData(
+                name: "StreamComplete",
+                message: new StreamCompleteMessage("xyz"),
+                binary: "kwijeHl6wA=="),
+            new ProtocolTestData(
+                name: "StreamCompleteWithError",
+                message: new StreamCompleteMessage("xyz", "zoinks"),
+                binary: "kwijeHl6pnpvaW5rcw=="),
+
             // Ping Messages
             new ProtocolTestData(
                 name: "Ping",
@@ -259,7 +274,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var expectedMessage = new InvocationMessage("xyz", "method", Array.Empty<object>());
 
             // Verify that the input binary string decodes to the expected MsgPack primitives
-            var bytes = new byte[] { ArrayBytes(6), 1, 0x80, StringBytes(3), (byte)'x', (byte)'y', (byte)'z', StringBytes(6), (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d', ArrayBytes(0), StringBytes(2), (byte)'e', (byte)'x' };
+            var bytes = new byte[] { ArrayBytes(8),
+                1,
+                0x80,
+                StringBytes(3), (byte)'x', (byte)'y', (byte)'z',
+                StringBytes(6), (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d',
+                ArrayBytes(0),
+                0xc3,
+                StringBytes(2), (byte)'e', (byte)'x' };
 
             // Parse the input fully now.
             bytes = Frame(bytes);

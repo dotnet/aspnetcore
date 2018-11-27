@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private static readonly Task<string> _noAccessToken = Task.FromResult<string>(null);
 
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
-#if !NETCOREAPP2_2
+#if !NETCOREAPP3_0
         private static readonly Version Windows8Version = new Version(6, 2);
 #endif
 
@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
         private static bool IsWebSocketsSupported()
         {
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
             // .NET Core 2.1 and above has a managed implementation
             return true;
 #else

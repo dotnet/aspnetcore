@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             return this;
         }
 
-        public async Task<string> ReadHandshakeAndSendResponseAsync()
+        public async Task<string> ReadHandshakeAndSendResponseAsync(int minorVersion = 0)
         {
             var s = await ReadSentTextMessageAsync();
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var output = MemoryBufferWriter.Get();
             try
             {
-                HandshakeProtocol.WriteResponseMessage(HandshakeResponseMessage.Empty, output);
+                HandshakeProtocol.WriteResponseMessage(new HandshakeResponseMessage(minorVersion), output);
                 response = output.ToArray();
             }
             finally
@@ -161,6 +161,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Application.Input.AdvanceTo(consumed);
                 }
             }
+        }
+
+        public async Task<JObject> ReadSentJsonAsync()
+        {
+            return JObject.Parse(await ReadSentTextMessageAsync());
         }
 
         public async Task<IList<string>> ReadAllSentMessagesAsync(bool ignorePings = true)

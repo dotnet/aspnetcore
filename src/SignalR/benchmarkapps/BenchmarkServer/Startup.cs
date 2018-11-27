@@ -28,7 +28,7 @@ namespace BenchmarkServer
             var redisConnectionString = _config["SignalRRedis"];
             if (!string.IsNullOrEmpty(redisConnectionString))
             {
-                signalrBuilder.AddRedis(redisConnectionString);
+                signalrBuilder.AddStackExchangeRedis(redisConnectionString);
             }
         }
 

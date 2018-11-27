@@ -10,6 +10,7 @@
     <Compile Include="..\Common\AwaitableThreadPool.cs" Link="AwaitableThreadPool.cs" />
     <Compile Include="..\Common\ForceAsyncAwaiter.cs" Link="ForceAsyncAwaiter.cs" />
     <Compile Include="..\Common\PipeWriterStream.cs" Link="PipeWriterStream.cs" />
+    <Compile Include="..\Common\ReflectionHelper.cs" Link="ReflectionHelper.cs" />
     <Compile Include="..\Common\TimerAwaitable.cs" Link="Internal\TimerAwaitable.cs" />
   </ItemGroup>
 

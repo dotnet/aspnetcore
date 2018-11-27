@@ -64,6 +64,28 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            public async Task ClientIsOkayReceivingMinorVersionInHandshake()
+            {
+                // We're just testing that the client doesn't fail when a minor version is added to the handshake 
+                // The client doesn't actually use that version anywhere yet so there's nothing else to test at this time
+
+                var connection = new TestConnection(autoHandshake: false);
+                var hubConnection = CreateHubConnection(connection);
+                try
+                {
+                    var startTask = hubConnection.StartAsync();
+                    var message = await connection.ReadHandshakeAndSendResponseAsync(56);
+
+                    await startTask;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+
+            [Fact]
             public async Task InvokeSendsAnInvocationMessage()
             {
                 var connection = new TestConnection();

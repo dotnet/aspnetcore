@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -178,6 +179,78 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
 
             public SelfRef Self;
+        }
+
+        public async Task<string> StreamingConcat(ChannelReader<string> source)
+        {
+            var sb = new StringBuilder();
+
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    sb.Append(item);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public async Task<int> StreamingSum(ChannelReader<int> source)
+        {
+            var total = 0;
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    total += item;
+                }
+            }
+            return total;
+        }
+
+        public async Task<List<object>> UploadArray(ChannelReader<object> source)
+        {
+            var results = new List<object>();
+
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    results.Add(item);
+                }
+            }
+
+            return results;
+        }
+
+        public async Task<string> TestTypeCastingErrors(ChannelReader<int> source)
+        {
+            try
+            {
+                await source.WaitToReadAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return "error identified and caught";
+            }
+
+            return "wrong type accepted, this is bad";
+        }
+
+        public async Task<bool> TestCustomErrorPassing(ChannelReader<int> source)
+        {
+            try
+            {
+                await source.WaitToReadAsync();
+            }
+            catch (Exception ex)
+            {
+                return ex.Message == HubConnectionHandlerTests.CustomErrorMessage;
+            }
+
+            return false;
         }
     }
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
 
         private static int _id;
-        private readonly IHubProtocol _protocol;
+        private IHubProtocol _protocol;
         private readonly IInvocationBinder _invocationBinder;
         private readonly CancellationTokenSource _cts;
 
@@ -178,6 +178,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args));
         }
 
+        public Task<string> BeginUploadStreamAsync(string invocationId, string methodName, params object[] args)
+        {
+            var message = new InvocationMessage(invocationId, methodName, args);            
+            return SendHubMessageAsync(message);
+        } 
+
         public async Task<string> SendHubMessageAsync(HubMessage message)
         {
             var payload = _protocol.GetMessageBytes(message);
@@ -295,6 +301,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
         }
+
         private class DefaultInvocationBinder : IInvocationBinder
         {
             public IReadOnlyList<Type> GetParameterTypes(string methodName)
@@ -306,6 +313,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Type GetReturnType(string invocationId)
             {
                 return typeof(object);
+            }
+
+            public Type GetStreamItemType(string streamId)
+            {
+                throw new NotImplementedException();
             }
         }
     }

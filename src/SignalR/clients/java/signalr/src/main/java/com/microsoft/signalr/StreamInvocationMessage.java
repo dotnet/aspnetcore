@@ -3,11 +3,28 @@
 
 package com.microsoft.signalr;
 
-class StreamInvocationMessage extends InvocationMessage {
+final class StreamInvocationMessage extends HubMessage {
     private final int type = HubMessageType.STREAM_INVOCATION.value;
+    private final String invocationId;
+    private final String target;
+    private final Object[] arguments;
 
-    public StreamInvocationMessage(String invocationId, String target, Object[] arguments) {
-        super(invocationId, target, arguments);
+    public StreamInvocationMessage(String invocationId, String target, Object[] args) {
+        this.invocationId = invocationId;
+        this.target = target;
+        this.arguments = args;
+    }
+
+    public String getInvocationId() {
+        return invocationId;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public Object[] getArguments() {
+        return arguments;
     }
 
     @Override
