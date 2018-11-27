@@ -9,7 +9,7 @@
 
   <!-- Temporary: this target is used to gather version information to pass to submodule builds. This can be removed after we finish merging submodules. -->
   <Target Name="GetBaselineArtifactInfo"
-          Condition="'$(IsPackableInNonServicingBuild)' == 'true'"
+          Condition="'$(IsPackableInNonServicingBuild)' == 'true' AND '$(IsPackable)' != 'true' "
           Returns="@(ArtifactInfo)"
           BeforeTargets="GetArtifactInfo">
 
