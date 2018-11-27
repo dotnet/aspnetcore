@@ -5,7 +5,7 @@
          to include the new version in its upper bounds -->
     <IsFinalBuild>false</IsFinalBuild>
     <VersionPrefix>0.8.0</VersionPrefix>
-    <VersionSuffix>preview1</VersionSuffix>
+    <VersionSuffix>preview</VersionSuffix>
     <PackageVersion></PackageVersion> <!-- Override anything set at the repo level -->
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
