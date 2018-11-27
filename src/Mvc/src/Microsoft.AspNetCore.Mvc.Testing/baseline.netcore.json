@@ -1,0 +1,494 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Testing, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Finalize",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Server",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.TestHost.TestServer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Factories",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<T0>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ClientOptions",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithWebHostBuilder",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<T0>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetTestAssemblies",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.Reflection.Assembly>",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateWebHostBuilder",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateServer",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.TestHost.TestServer",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureWebHost",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateClient",
+          "Parameters": [],
+          "ReturnType": "System.Net.Http.HttpClient",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateClient",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions"
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpClient",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateDefaultClient",
+          "Parameters": [
+            {
+              "Name": "handlers",
+              "Type": "System.Net.Http.DelegatingHandler[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpClient",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureClient",
+          "Parameters": [
+            {
+              "Name": "client",
+              "Type": "System.Net.Http.HttpClient"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateDefaultClient",
+          "Parameters": [
+            {
+              "Name": "baseAddress",
+              "Type": "System.Uri"
+            },
+            {
+              "Name": "handlers",
+              "Type": "System.Net.Http.DelegatingHandler[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Net.Http.HttpClient",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [
+            {
+              "Name": "disposing",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TEntryPoint",
+          "ParameterPosition": 0,
+          "Class": true,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BaseAddress",
+          "Parameters": [],
+          "ReturnType": "System.Uri",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_BaseAddress",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Uri"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AllowAutoRedirect",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AllowAutoRedirect",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxAutomaticRedirections",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxAutomaticRedirections",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HandleCookies",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HandleCookies",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryContentRootAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Key",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ContentRootPath",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ContentRootTest",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Priority",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "contentRootPath",
+              "Type": "System.String"
+            },
+            {
+              "Name": "contentRootTest",
+              "Type": "System.String"
+            },
+            {
+              "Name": "priority",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Testing.Handlers.CookieContainerHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Net.Http.DelegatingHandler",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Container",
+          "Parameters": [],
+          "ReturnType": "System.Net.CookieContainer",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "cookieContainer",
+              "Type": "System.Net.CookieContainer"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Testing.Handlers.RedirectHandler",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Net.Http.DelegatingHandler",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MaxRedirects",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "System.Net.Http.HttpRequestMessage"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage>",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "maxRedirects",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

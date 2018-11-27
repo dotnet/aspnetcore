@@ -1,0 +1,37 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Image</title>
+
+</head>
+<body>
+
+    <h2>Image Tag Helper Test</h2>
+    <!-- Plain image tag -->
+    <img src="~/images/red.png" alt="Red block" title="&lt;the title>">
+
+    <!-- Plain image tag with file version -->
+    <img src="~/images/red.png" alt="Red versioned" title="Red versioned" asp-append-version="true" />
+
+    <!-- Plain image tag with file version set to false -->
+    <img src="~/images/red.png" alt="Red explicitly not versioned" title="Red versioned" asp-append-version="false">
+
+    <!-- Plain image tag with absolute path and file version -->
+    <img src="http://contoso.com/hello/world" alt="Absolute path versioned" asp-append-version="true">
+
+    <!-- Plain image tag with file version and path to file that does not exist -->
+    <img src="~/images/fake.png" alt="Path to non existing file" asp-append-version="true" />
+
+    <!-- Plain image tag with file version and path containing query string -->
+    <img src="~/images/red.png?abc=def" alt="Path with query string" asp-append-version="true">
+
+    <!-- Plain image tag with file version and path containing fragment -->
+    <img src="~/images/red.png#abc" alt="Path with query string" asp-append-version="true" />
+
+    <!-- Plain image tag with file version and path linking to some action -->
+    <img src="/controller/action" alt="Path linking to some action" asp-append-version="true">
+</body>
+</html>

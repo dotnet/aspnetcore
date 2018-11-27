@@ -1,0 +1,23 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersWithPrefix_Runtime -  - 
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.SingleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::InputTagHelper - __InputTagHelper
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (55:2,0 [12] TagHelpersWithPrefix.cshtml)
+                    IntermediateToken - (55:2,0 [6] TagHelpersWithPrefix.cshtml) - Html - <form>
+                    IntermediateToken - (61:2,6 [6] TagHelpersWithPrefix.cshtml) - Html - \n    
+                TagHelper - (67:3,4 [39] TagHelpersWithPrefix.cshtml) - input - TagMode.SelfClosing
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - InputTagHelper
+                    DefaultTagHelperProperty - (85:3,22 [6] TagHelpersWithPrefix.cshtml) - bound - string InputTagHelper.BoundProp - HtmlAttributeValueStyle.DoubleQuotes
+                        CSharpExpression - (86:3,23 [5] TagHelpersWithPrefix.cshtml)
+                            IntermediateToken - (86:3,23 [5] TagHelpersWithPrefix.cshtml) - CSharp - Hello
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    DefaultTagHelperExecute - 
+                HtmlContent - (106:3,43 [9] TagHelpersWithPrefix.cshtml)
+                    IntermediateToken - (106:3,43 [2] TagHelpersWithPrefix.cshtml) - Html - \n
+                    IntermediateToken - (108:4,0 [7] TagHelpersWithPrefix.cshtml) - Html - </form>

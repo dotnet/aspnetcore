@@ -1,0 +1,6 @@
+@page
+
+<form method="post" asp-page="./SubDirectoryLinks" asp-antiforgery="false"></form>
+<form method="post" asp-page="../../HelloWorld" asp-antiforgery="false"></form>
+<a asp-page="../Redirects/Index" asp-route-handler="RedirectToIndex" />
+<input type="image" asp-page="../Admin/Index" asp-fragment="my-fragment" />

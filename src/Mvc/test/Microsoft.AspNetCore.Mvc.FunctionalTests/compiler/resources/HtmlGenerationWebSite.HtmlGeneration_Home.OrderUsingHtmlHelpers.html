@@ -1,0 +1,114 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+<form action="/HtmlGeneration_Order/Submit" method="post">
+        <div>
+            <label class="order" for="Shipping">Shipping</label>
+            <input id="Shipping" name="Shipping" size="50" type="text" value="Your shipping method is UPSP" />
+        </div>
+        <div>
+            <label class="order" for="ShippingDateTime">ShippingDateTime</label>
+            <input data-val="true" data-val-required="The ShippingDateTime field is required." id="ShippingDateTime" name="ShippingDateTime" type="datetime-local" value="01/01/0001 00:00:00" />
+        </div>
+        <div>
+            <label class="order" for="Products">Products</label>
+            <select id="Products" multiple="multiple" name="Products"><option selected="selected" value="0">Product_0</option>
+<option selected="selected" value="1">Product_1</option>
+<option value="2">Product_2</option>
+</select>
+        </div>
+        <div>
+                <table>
+                    <tr>
+                        <th>
+                            <label for="Number">Number</label>
+                        </th>
+                        <th>
+                            <label for="ProductName">ProductName</label>
+                        </th>
+                    </tr>
+                        <tr>
+                            <td>
+                                <input data-val="true" data-val-required="The Number field is required." id="ProductDetails_0__Number" name="ProductDetails[0].Number" type="number" value="0" />
+                                <span class="field-validation-valid text-danger" data-valmsg-for="ProductDetails[0].Number" data-valmsg-replace="true" style=""></span>
+                            </td>
+                            <td>
+                                <input data-val="true" data-val-required="The ProductName field is required." id="ProductDetails_0__ProductName" name="ProductDetails[0].ProductName" type="text" value="Product_0" />
+                                <span class="field-validation-valid text-danger" data-valmsg-for="ProductDetails[0].ProductName" data-valmsg-replace="true" style=""></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input data-val="true" data-val-required="The Number field is required." id="ProductDetails_1__Number" name="ProductDetails[1].Number" type="number" value="1" />
+                                <span class="field-validation-valid text-danger" data-valmsg-for="ProductDetails[1].Number" data-valmsg-replace="true" style=""></span>
+                            </td>
+                            <td>
+                                <input data-val="true" data-val-required="The ProductName field is required." id="ProductDetails_1__ProductName" name="ProductDetails[1].ProductName" type="text" value="Product_1" />
+                                <span class="field-validation-valid text-danger" data-valmsg-for="ProductDetails[1].ProductName" data-valmsg-replace="true" style=""></span>
+                            </td>
+                        </tr>
+                </table>
+        </div>
+        <div>
+            <label class="order" for="SubstituteProducts">SubstituteProducts</label>
+            <select id="SubstituteProducts" multiple="multiple" name="SubstituteProducts"><option value="0">Product_0</option>
+<option value="1">Product_1</option>
+<option selected="selected" value="2">Product_2</option>
+</select>
+        </div>
+        <div>
+            <label class="order" for="OrderDate">OrderDate</label>
+            <input data-val="true" data-val-required="The OrderDate field is required." id="OrderDate" name="OrderDate" type="datetime" value="0001/01/01 00:00:00" />
+        </div>
+        <div>
+            <label class="order" for="NeedSpecialHandle">NeedSpecialHandle</label>
+            <input checked="checked" data-val="true" data-val-required="The NeedSpecialHandle field is required." id="NeedSpecialHandle" name="NeedSpecialHandle" type="checkbox" value="true" />
+        </div>
+        <div>
+            <label class="order" for="PaymentMethod">PaymentMethod</label>
+            <select id="PaymentMethod" multiple="multiple" name="PaymentMethod"><option value="Credit">Credit</option>
+<option selected="selected" value="Check">Check</option>
+</select>
+            <select>
+                <option value="Check">Check</option>
+            </select>
+        </div>
+        <div>
+            <label class="order" for="Customer_Number">Number</label>
+            <input class="form-control" data-val="true" data-val-range="The field Number must be between 1 and 100." data-val-range-max="100" data-val-range-min="1" data-val-required="The Number field is required." id="Customer_Number" name="Customer.Number" type="number" value="1" />
+            <span class="field-validation-valid" data-valmsg-for="Customer.Number" data-valmsg-replace="true"></span>
+        </div>
+        <div>
+            <label class="order" for="Customer_Name">Name</label>
+            <input id="Customer_Name" name="Customer.Name" type="text" value="NameStringValue" />
+        </div>
+        <div>
+            <label class="order" for="Customer_Email">Email</label>
+            <input id="Customer_Email" name="Customer.Email" type="email" value="" />
+            <span class="field-validation-valid" data-valmsg-for="Customer.Email" data-valmsg-replace="true"></span>
+        </div>
+        <div>
+            <label class="order" for="Customer_PhoneNumber">PhoneNumber</label>
+            <input id="Customer_PhoneNumber" name="Customer.PhoneNumber" type="tel" value="" />
+        </div>
+        <div>
+            <label class="order" for="Customer_Password">Password</label>
+            <input class="form-control" data-val="true" data-val-required="The Password field is required." id="Customer_Password" name="Customer.Password" type="password" />
+            <span class="field-validation-valid" data-valmsg-for="Customer.Password" data-valmsg-replace="true"></span>
+        </div>
+        <div>
+            <label class="order" for="Customer_Gender">Gender</label>
+            <input data-val="true" data-val-required="The Gender field is required." id="Customer_Gender" name="Customer.Gender" type="radio" value="Male" /> Male
+<input checked="checked" id="Customer_Gender" name="Customer.Gender" type="radio" value="Female" /> Female
+            <span class="field-validation-valid" data-valmsg-for="Customer.Gender" data-valmsg-replace="true"></span>
+        </div>
+        <div class="validation-summary-valid order" data-valmsg-summary="true"><ul><li style="display:none"></li>
+</ul></div>
+        <input id="Customer_Key" name="Customer.Key" type="hidden" value="KeyA" />
+        <input type="submit"/>
+    <input name="__RequestVerificationToken" type="hidden" value="{0}" /><input name="NeedSpecialHandle" type="hidden" value="false" /></form>
+</body>
+</html>

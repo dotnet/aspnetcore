@@ -10,18 +10,6 @@
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git
 	branch = master
-[submodule "modules/Mvc"]
-	path = modules/Mvc
-	url = https://github.com/aspnet/Mvc.git
-	branch = master
-[submodule "modules/Razor"]
-	path = modules/Razor
-	url = https://github.com/aspnet/Razor.git
-	branch = master
-[submodule "modules/SignalR"]
-	path = modules/SignalR
-	url = https://github.com/aspnet/SignalR.git
-	branch = master
 [submodule "src/IISIntegration/test/gtest/googletest"]
 	path = src/IISIntegration/test/gtest/googletest
 	url = https://github.com/google/googletest

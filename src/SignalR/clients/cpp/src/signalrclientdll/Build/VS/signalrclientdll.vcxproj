@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\..\Build\SignalRClient.Build.Settings" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{18377AE8-E372-40CE-94FD-7F65008D39A3}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>signalrclient</RootNamespace>
+    <ProjectName>signalrclientdll</ProjectName>
+    <TargetName>$(SignalrClientTargetName)</TargetName>
+    <SolutionDir Condition="$(SolutionDir) == '' Or '$(SolutionDir)' == '*Undefined*'">..\..\..\..\</SolutionDir>
+    <OutDir Condition="'$(OutDir)' == ''">$(SolutionDir)bin\$(SubSystem)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(OutDir)dll\</OutDir>
+    <IntDir>$(Configuration)\dll\</IntDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="..\..\..\..\Build\Config.Definitions.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions Condition="'$(SubSystem)' != 'UWP'">_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(SubSystem)' == 'UWP'">_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SIGNALRCLIENT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\signalrclient\connection.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\connection_state.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\hub_connection.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\hub_exception.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\hub_proxy.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\log_writer.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\trace_level.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\transport_type.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\web_exception.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\_exports.h" />
+    <ClInclude Include="..\..\..\signalrclient\case_insensitive_comparison_utils.h" />
+    <ClInclude Include="..\..\..\signalrclient\connection_impl.h" />
+    <ClInclude Include="..\..\..\signalrclient\constants.h" />
+    <ClInclude Include="..\..\..\signalrclient\default_websocket_client.h" />
+    <ClInclude Include="..\..\..\signalrclient\http_sender.h" />
+    <ClInclude Include="..\..\..\signalrclient\hub_connection_impl.h" />
+    <ClInclude Include="..\..\..\signalrclient\internal_hub_proxy.h" />
+    <ClInclude Include="..\..\..\signalrclient\callback_manager.h" />
+    <ClInclude Include="..\..\..\signalrclient\logger.h" />
+    <ClInclude Include="..\..\..\signalrclient\negotiation_response.h" />
+    <ClInclude Include="..\..\..\signalrclient\request_sender.h" />
+    <ClInclude Include="..\..\..\signalrclient\stdafx.h" />
+    <ClInclude Include="..\..\..\signalrclient\trace_log_writer.h" />
+    <ClInclude Include="..\..\..\signalrclient\transport.h" />
+    <ClInclude Include="..\..\..\signalrclient\transport_factory.h" />
+    <ClInclude Include="..\..\..\signalrclient\url_builder.h" />
+    <ClInclude Include="..\..\..\signalrclient\websocket_client.h" />
+    <ClInclude Include="..\..\..\signalrclient\websocket_transport.h" />
+    <ClInclude Include="..\..\..\signalrclient\web_request.h" />
+    <ClInclude Include="..\..\..\signalrclient\web_request_factory.h" />
+    <ClInclude Include="..\..\..\signalrclient\web_response.h" />
+    <ClInclude Include="..\..\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\signalrclient\connection.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\connection_impl.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\default_websocket_client.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\http_sender.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\hub_connection.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\hub_connection_impl.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\callback_manager.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\logger.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\request_sender.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\signalr_client_config.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\stdafx.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\..\signalrclient\transport.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\transport_factory.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\url_builder.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\trace_log_writer.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\websocket_transport.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\web_request.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\web_request_factory.cpp" />
+    <ClCompile Include="..\..\dllmain.cpp">
+      <CompileAsManaged>false</CompileAsManaged>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+    <Import Project="..\..\..\..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.targets')" />
+    <Import Project="..\..\..\..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.targets')" />
+    <Import Project="..\..\..\..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.targets')" />
+    <Import Project="..\..\..\..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.targets')" />
+    <Import Project="..\..\..\..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.targets')" />
+    <Import Project="..\..\..\..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.targets')" />
+    <Import Project="..\..\..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" />
+  </ImportGroup>
+  <Target Name="CreateVersionHeader" BeforeTargets="EnsureNuGetPackageBuildImports">
+    <PropertyGroup>
+      <Revision>$(build_number)</Revision>
+      <Revision Condition="'$(Revision)' == ''">0</Revision>
+    </PropertyGroup>
+    <ItemGroup>
+      <VersionHeaderContents Include="// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved." />
+      <VersionHeaderContents Include="// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information." />
+      <VersionHeaderContents Include="%0a" />
+      <VersionHeaderContents Include="// This file is auto-generated" />
+      <VersionHeaderContents Include="%0a" />
+      <VersionHeaderContents Include="#define FileVersion $(SignalRClientCppVersionMajor),$(SignalRClientCppVersionMinor),$(SignalRClientCppVersionPatch),$(Revision)" />
+      <VersionHeaderContents Include="#define FileVersionStr &quot;$(SignalRClientCppVersionMajor).$(SignalRClientCppVersionMinor).$(SignalRClientCppVersionPatch).$(Revision)\0&quot;" />
+      <VersionHeaderContents Include="#define ProductVersion $(SignalRClientCppVersionMajor),$(SignalRClientCppVersionMinor),$(SignalRClientCppVersionPatch),$(Revision)" />
+      <VersionHeaderContents Include="#define ProductVersionStr &quot;$(SignalRClientCppVersionString)\0&quot;" />
+      <VersionHeaderContents Include="#define PlatformToolset &quot;$(PlatformToolset)\0&quot;" />
+    </ItemGroup>
+    <WriteLinesToFile File="..\..\version.h" Lines="@(VersionHeaderContents)" OverWrite="true" />
+  </Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets'))" />
+  </Target>
+</Project>

@@ -1,0 +1,206 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+
+  <Target Name="_ResolveInputArguments">
+
+    <PropertyGroup>
+      <MvcRazorOutputPath Condition="'$(MvcRazorOutputPath)'==''">$(IntermediateOutputPath)</MvcRazorOutputPath>
+      <_MvcRazorOutputFullPath Condition="'$(_MvcRazorOutputFullPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))$(AssemblyName).PrecompiledViews.dll</_MvcRazorOutputFullPath>
+      <_MvcRazorResponseFilePath>$(IntermediateOutputPath)microsoft.aspnetcore.mvc.razor.viewcompilation.rsp</_MvcRazorResponseFilePath>
+
+      <MvcRazorContentRoot Condition="'$(MvcRazorContentRoot)'==''">$(MSBuildProjectDirectory)</MvcRazorContentRoot>
+      <MvcRazorExcludeViewFilesFromPublish Condition="'$(MvcRazorExcludeViewFilesFromPublish)'==''">true</MvcRazorExcludeViewFilesFromPublish>
+      <MvcRazorExcludeRefAssembliesFromPublish Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'==''">true</MvcRazorExcludeRefAssembliesFromPublish>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'@(MvcRazorFilesToCompile)' == ''">
+      <MvcRazorFilesToCompile Include="@(Content)" Condition="'%(Extension)'=='.cshtml'" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+    Name="MvcRazorPrecompile"
+    DependsOnTargets="_ResolveInputArguments"
+    Inputs="@(MvcRazorFilesToCompile);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects)"
+    Outputs="$(_MvcRazorOutputFullPath)">
+
+    <CallTarget Targets="_MvcRazorPrecompile" />
+  </Target>
+
+  <Target Name="_MvcRazorPrecompile" DependsOnTargets="_RunForCore;_RunForCoreWithRID;_RunForDesktop" />
+
+  <PropertyGroup>
+    <_MvcViewCompilationTasksPath Condition="'$(_MvcViewCompilationTasksPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName).Tasks.dll</_MvcViewCompilationTasksPath>
+  </PropertyGroup>
+
+  <UsingTask TaskName="GetDotNetHost" AssemblyFile="$(_MvcViewCompilationTasksPath)" />
+
+  <Target
+    Name="_RunForCore"
+    DependsOnTargets="_CreateResponseFileForMvcRazorPrecompile"
+    Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(RuntimeIdentifier)'==''">
+
+    <!--
+    GetDotNetHost attempts to locate the muxer path if the executing process is a .NET Core application i.e. dotnet msbuild.
+    If we know we're being launched from desktop MSBuild, avoid running the task. We'll use the dotnet that appears in the path.
+    -->
+    <GetDotNetHost Condition="'$(MSBuildRuntimeType)'=='Core' AND '$(MvcRazorRunCommand)'==''">
+      <Output TaskParameter="MuxerPath" PropertyName="MvcRazorRunCommand" />
+    </GetDotNetHost>
+
+    <PropertyGroup>
+      <MvcRazorRunCommand Condition="'$(MvcRazorRunCommand)'==''">dotnet</MvcRazorRunCommand>
+      <_MvcViewCompilationBinariesDir Condition="'$(_MvcViewCompilationBinariesDir)' == ''">$(MSBuildThisFileDirectory)</_MvcViewCompilationBinariesDir>
+      <_MvcViewCompilationBinaryPath>$(_MvcViewCompilationBinariesDir)netcoreapp2.0\$(MSBuildThisFileName).dll</_MvcViewCompilationBinaryPath>
+
+      <ExecArgs>&quot;$(MvcRazorRunCommand)&quot; exec</ExecArgs>
+      <ExecArgs>$(ExecArgs) --runtimeconfig &quot;$(ProjectRuntimeConfigFilePath)&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) --depsfile &quot;$(ProjectDepsFilePath)&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) &quot;$(_MvcViewCompilationBinaryPath)&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) @&quot;$(_MvcRazorResponseFilePath)&quot;</ExecArgs>
+    </PropertyGroup>
+
+    <Exec Command="$(ExecArgs)" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
+  <Target
+    Name="_RunForCoreWithRID"
+    DependsOnTargets="_ResolveInputArguments;_CreateResponseFileForMvcRazorPrecompile"
+    Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(RuntimeIdentifier)'!=''">
+
+    <ItemGroup>
+      <_RazorCompilationProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>RuntimeIdentifier=;MvcRazorOutputPath=$(MvcRazorOutputPath)</AdditionalProperties>
+      </_RazorCompilationProject>
+    </ItemGroup>
+
+    <MSBuild
+      Projects="@(_RazorCompilationProject)"
+      Targets="Build;MvcRazorPrecompile" />
+  </Target>
+
+  <Target Name="_ResolveBinaryPath">
+    <PropertyGroup>
+      <_MvcViewCompilationBinariesDir Condition="'$(_MvcViewCompilationBinariesDir)' == ''">$(MSBuildThisFileDirectory)</_MvcViewCompilationBinariesDir>
+
+      <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x86'">$(_MvcViewCompilationBinariesDir)net461\$(MSBuildThisFileName)-x86.exe</_MvcViewCompilationBinaryPath>
+      <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'!='x86'">$(_MvcViewCompilationBinariesDir)net461\$(MSBuildThisFileName).exe</_MvcViewCompilationBinaryPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target
+    Name="_AddDesktopReferences"
+    AfterTargets="ResolveLockFileReferences"
+    Condition="'$(MvcRazorCompileOnPublish)'=='true' AND '$(ResolvedRazorCompileToolset)'=='PrecompilationTool' AND '$(TargetFrameworkIdentifier)'=='.NETFramework'">
+
+    <ItemGroup Condition="'$(_MvcViewCompilationBinaryPath)'!=''">
+      <Reference Include="$(_MvcViewCompilationBinaryPath)" Private="false" Visible="false" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="_RunForDesktop"
+    DependsOnTargets="_ResolveBinaryPath;_AddDesktopReferences;_CreateResponseFileForMvcRazorPrecompile"
+    Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
+
+    <PropertyGroup>
+      <_MvcViewCompilationBinaryName>$([System.IO.Path]::GetFileName('$(_MvcViewCompilationBinaryPath)'))</_MvcViewCompilationBinaryName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_PreCompilationFilesToCopy
+        Include="$(OutputPath)$(AssemblyName).exe.config"
+        Destination="$(OutputPath)$(_MvcViewCompilationBinaryName).config" />
+
+      <_PreCompilationFilesToCopy
+        Include="$(_MvcViewCompilationBinaryPath)"
+        Destination="$(OutputPath)$(_MvcViewCompilationBinaryName)" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(MvcRazorRunCommand)'==''">
+      <MvcRazorRunCommand>$(OutputPath)$(_MvcViewCompilationBinaryName)</MvcRazorRunCommand>
+    </PropertyGroup>
+
+    <Copy
+      SourceFiles="@(_PreCompilationFilesToCopy)"
+      DestinationFiles="%(Destination)" />
+
+    <Exec
+      Command="&quot;$(MvcRazorRunCommand)&quot; @&quot;$(_MvcRazorResponseFilePath)&quot;"
+      WorkingDirectory="$(MSBuildProjectDirectory)"/>
+
+    <Delete Files="%(_PreCompilationFilesToCopy.Destination)" />
+  </Target>
+
+  <Target Name="_CreateResponseFileForMvcRazorPrecompile">
+    <ItemGroup>
+      <_ResponseFileLines Include="
+        $(MSBuildProjectDirectory);
+        --output-path=$(MvcRazorOutputPath);
+        --application-name=$(AssemblyName);
+        --content-root=$(MvcRazorContentRoot);" />
+
+      <_ResponseFileLines
+        Condition="'$(MvcRazorEmbedViewSources)'=='true'"
+        Include="--embed-view-sources" />
+
+      <_ResponseFileLines Include="--file=%(MvcRazorFilesToCompile.FullPath)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(SignAssembly)'=='true'">
+      <_ResponseFileLines
+        Condition="'$(DelaySign)'=='true'"
+        Include="--delay-sign" />
+      <_ResponseFileLines
+        Condition="'$(PublicSign)'=='true'"
+        Include="--public-sign" />
+      <_ResponseFileLines Include="--key-file=$(AssemblyOriginatorKeyFile)" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(_MvcRazorResponseFilePath)"
+      Lines="@(_ResponseFileLines)"
+      Overwrite="true"  />
+  </Target>
+
+  <Target
+     Name="_MvcRazorPrecompileOnPublish"
+     DependsOnTargets="MvcRazorPrecompile"
+     AfterTargets="PrepareForPublish"
+     Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool' and '$(MvcRazorCompileOnPublish)'=='true'" />
+
+  <Target Name="_MvcRazorResolveFilesToCompute"
+    AfterTargets="ComputeRefAssembliesToPublish"
+    Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool' and '$(MvcRazorCompileOnPublish)'=='true'">
+
+    <PropertyGroup>
+      <_MvcRazorOutputPdbFullPath>$([System.IO.Path]::ChangeExtension('$(_MvcRazorOutputFullPath)', '.pdb'))</_MvcRazorOutputPdbFullPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ResolvedFileToPublish
+          Remove="%(MvcRazorFilesToCompile.FullPath)"
+          Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='true'" />
+
+      <ResolvedFileToPublish Include="$(_MvcRazorOutputFullPath)"
+          CopyToPublishDirectory="Always"
+          Condition="'$(CopyBuildOutputToPublishDirectory)'=='true' AND Exists('$(_MvcRazorOutputFullPath)')">
+        <RelativePath>$([System.IO.Path]::GetFileName('$(_MvcRazorOutputFullPath)'))</RelativePath>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="$(_MvcRazorOutputPdbFullPath)"
+        CopyToPublishDirectory="Always"
+        Condition="'$(CopyOutputSymbolsToPublishDirectory)'=='true'AND Exists('$(_MvcRazorOutputPdbFullPath)')">
+        <RelativePath>$([System.IO.Path]::GetFileName('$(_MvcRazorOutputPdbFullPath)'))</RelativePath>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='true'">
+      <ResolvedFileToPublish
+        Remove="%(ResolvedFileToPublish.Identity)"
+        Condition="'%(ResolvedFileToPublish.RelativePath)'=='$(RefAssembliesFolderName)\%(Filename)%(Extension)'" />
+    </ItemGroup>
+  </Target>
+</Project>
+

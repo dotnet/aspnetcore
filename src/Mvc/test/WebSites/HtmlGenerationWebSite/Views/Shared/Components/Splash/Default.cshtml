@@ -1,0 +1,7 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model string
+Locations closest to your locale:
+<cache vary-by-header="Locale">
+@Model
+<div>CorrelationId in View Component: @ViewBag.CorrelationId</div>
+</cache>

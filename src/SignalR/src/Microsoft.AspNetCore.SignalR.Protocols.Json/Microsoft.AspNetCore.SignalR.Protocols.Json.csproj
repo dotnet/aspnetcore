@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Implements the SignalR Hub Protocol over JSON.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\JsonUtils.cs" Link="Internal\JsonUtils.cs" />
+    <Compile Include="..\Common\TextMessageFormatter.cs" Link="TextMessageFormatter.cs" />
+    <Compile Include="..\Common\TextMessageParser.cs" Link="TextMessageParser.cs" />
+    <Compile Include="..\Common\Utf8BufferTextReader.cs" Link="Utf8BufferTextReader.cs" />
+    <Compile Include="..\Common\Utf8BufferTextWriter.cs" Link="Utf8BufferTextWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Common\Microsoft.AspNetCore.SignalR.Common.csproj" />
+  </ItemGroup>
+
+</Project>

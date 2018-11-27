@@ -1,0 +1,14 @@
+{
+  "name": "client-ts",
+  "version": "0.0.0",
+  "description": "Provides a root to run npm scripts from. DO NOT PUBLISH",
+  "private": true,
+  "scripts": {
+    "build": "cd ./signalr && npm run build && cd ../signalr-protocol-msgpack && npm run build",
+    "pretest": "node ./common/node_modules/tslint/bin/tslint -c ./tslint.json -p ./signalr/tests/tsconfig.json && node ./common/node_modules/tslint/bin/tslint -c ./tslint.json -p ./signalr-protocol-msgpack/tests/tsconfig.json",
+    "test": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js",
+    "coverage": "node ./common/node_modules/jest/bin/jest.js --config ./jest.config.js --coverage"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,53 @@
+{
+  "name": "functionaltests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "@aspnet/signalr": "file:../signalr",
+    "@aspnet/signalr-protocol-msgpack": "file:../signalr-protocol-msgpack",
+    "msgpack5": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/debug": "0.0.30",
+    "@types/jasmine": "^2.8.8",
+    "@types/karma": "^1.7.5",
+    "@types/node": "^9.6.28",
+    "debug": "^3.1.0",
+    "es6-promise": "^4.2.4",
+    "jasmine": "^3.2.0",
+    "jasmine-core": "^3.2.1",
+    "karma": "^3.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-edge-launcher": "^0.4.2",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-jasmine": "^1.1.2",
+    "karma-junit-reporter": "^1.2.0",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-safari-launcher": "^1.0.0",
+    "karma-sauce-launcher": "^1.2.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-summary-reporter": "^1.5.0",
+    "ts-node": "^4.1.0",
+    "typescript": "^3.0.1",
+    "ws": " ^6.0.0"
+  },
+  "scripts": {
+    "clean": "node ../common/node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
+    "build": "npm run clean && npm run build:lint && npm run build:webpack",
+    "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
+    "build:webpack": "node ../common/node_modules/webpack-cli/bin/cli.js",
+    "build:parent": "cd .. && npm run build",
+    "pretest": "npm run build:parent && npm run build && dotnet build --no-restore",
+    "test": "tsc --noEmit && npm run test:local --",
+    "test:inner": "npm run build && dotnet build && npm run test:local --",
+    "test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
+    "test:all": "npm run pretest && ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --all-browsers",
+    "test:sauce": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts --sauce",
+    "sauce": "npm run pretest && npm run test:sauce"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

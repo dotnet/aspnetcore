@@ -1,0 +1,6 @@
+Markup block - Gen<None> - 67 - (0:0,0)
+    Tag block - Gen<TagHelper> - 67 - (0:0,0) - input - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
+        SelfClosing - <input bound-required-int unbound-required bound-required-string />
+        bound-required-int - Minimized
+        unbound-required - Minimized
+        bound-required-string - Minimized

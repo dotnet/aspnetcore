@@ -1,0 +1,15 @@
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.RazorPages\Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
+
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
+  </ItemGroup>
+
+</Project>

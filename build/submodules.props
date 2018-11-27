@@ -47,13 +47,13 @@
     <Repository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <Repository Include="Localization" />
     <Repository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
-    <Repository Include="Mvc" />
-    <Repository Include="Razor" />
+    <Repository Include="Mvc" RootPath="$(RepositoryRoot)src\Mvc\" />
+    <Repository Include="Razor" RootPath="$(RepositoryRoot)src\Razor\" />
     <Repository Include="ResponseCaching" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
     <Repository Include="Routing" RootPath="$(RepositoryRoot)src\Routing\" />
     <Repository Include="Security" RootPath="$(RepositoryRoot)src\Security\" />
     <Repository Include="Session" RootPath="$(RepositoryRoot)src\Session\" />
-    <Repository Include="SignalR" />
+    <Repository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
     <Repository Include="StaticFiles" RootPath="$(RepositoryRoot)src\StaticFiles\" />
     <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 

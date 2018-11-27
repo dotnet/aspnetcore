@@ -1,0 +1,52 @@
+@using TagHelpersWebSite.Models
+@using Microsoft.AspNetCore.Mvc.Razor
+
+@model WebsiteContext
+@{
+    ViewBag.Title = "Home Page";
+}
+
+@addTagHelper *, TagHelpersWebSite
+
+@section css {
+    <style condition="!Model.Approved">
+        h1 {
+            color:red;
+            font-size:2em;
+        }
+    </style>
+}
+
+@functions {
+    public void RenderTemplate(string title, Func<string, HelperResult> template)
+    {
+        Output.WriteLine("<br /><p><em>Rendering Template:</em></p>");
+        var helperResult = template(title);
+        helperResult.WriteTo(Output, HtmlEncoder);
+    }
+}
+
+<div condition="!Model.Approved">
+    <p>This website has <strong surround="em">not</strong> been approved yet. Visit www.contoso.com for <strong make-pretty="false">more</strong> information.</p>
+</div>
+
+<div>
+    <h3>Current Tag Cloud from Tag Helper</h3>
+    <tag-cloud count="Model.TagsToShow" surround="div" />
+    <h3>Current Tag Cloud from ViewComponentHelper:</h3>
+    <section bold>@await Component.InvokeAsync("Tags", new { count = 15 })</section>
+    @{
+        RenderTemplate(
+            "Tag Cloud from Template: ",
+            @<div condition="true"><h3>@item</h3><tag-cloud count="Model.TagsToShow"></tag-cloud></div>);
+    }
+</div>
+
+<div>
+    <h3>Dictionary Valued Model Expression</h3>
+    <div prefix-test1="@Model.TagsToShow" prefix-test2="@Model.Version.Build"></div>
+</div>
+
+@section footerContent {
+    <p condition="Model.Approved" bold surround="section">&copy; @Model.CopyrightYear - My ASP.NET Application</p>
+}

@@ -1,0 +1,156 @@
+﻿<Project>
+  <ItemGroup>
+    <NPMPackage Include="$(RepositoryRoot)clients/ts/signalr">
+      <TarName>aspnet-signalr</TarName>
+      <PackageId>@aspnet/signalr</PackageId>
+    </NPMPackage>
+    <NPMPackage Include="$(RepositoryRoot)clients/ts/signalr-protocol-msgpack">
+      <TarName>aspnet-signalr-protocol-msgpack</TarName>
+      <PackageId>@aspnet/signalr-protocol-msgpack</PackageId>
+    </NPMPackage>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Pass the Java Package Version down to Gradle -->
+    <GradleOptions>-PpackageVersion="$(JavaPackageVersion)"</GradleOptions>
+    <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
+    <GradleOptions Condition="'$(CI)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
+
+    <RequireJava Condition="'$(CI)' == 'true'">true</RequireJava>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
+  </PropertyGroup>
+  <Target Name="RestoreNpm" Condition="'$(PreflightRestore)' != 'True'">
+    <Message Text="Restoring NPM modules" Importance="high" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/common" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr" />
+    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr-protocol-msgpack" />
+  </Target>
+
+  <PropertyGroup>
+    <TestDependsOn>$(TestDependsOn);RunTSClientNodeTests;RunBrowserTests;RunJavaTests</TestDependsOn>
+  </PropertyGroup>
+
+  <Target Name="RunTSClientNodeTests">
+    <Message Text="Running JavaScript client Node tests" Importance="high" />
+    <Exec Command="npm test" WorkingDirectory="$(RepositoryRoot)clients/ts" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="RunBrowserTests">
+    <Message Text="Running JavaScript client Browser tests" Importance="high" />
+    <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="RunJavaTests" Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
+    <Message Text="Running Java client tests" Importance="high" />
+    <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
+    <Exec Command="./gradlew $(GradleOptions) test" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <PropertyGroup>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNpmArtifactInfo;GetJavaArtifactInfo</GetArtifactInfoDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetNpmArtifactInfo">
+    <ItemGroup>
+      <NPMPackage Update="%(NPMPackage)">
+        <PackageJson>$([System.IO.Path]::Combine(%(NPMPackage.FullPath), 'package.json'))</PackageJson>
+        <OutputTar>$([System.IO.Path]::Combine(%(NPMPackage.FullPath), '%(NPMPackage.TarName)-$(PackageVersion).tgz'))</OutputTar>
+        <ArtifactPath>$([System.IO.Path]::Combine($(BuildDir), '%(NPMPackage.TarName)-$(PackageVersion).tgz'))</ArtifactPath>
+      </NPMPackage>
+
+      <ArtifactInfo Include="%(NPMPackage.ArtifactPath)">
+        <ArtifactType>NpmPackage</ArtifactType>
+        <PackageId>%(NPMPackage.PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+        <Category>ship</Category>
+      </ArtifactInfo>
+    </ItemGroup>
+
+    <ItemGroup>
+      <FilesToExcludeFromSigning Include="%(NPMPackage.ArtifactPath);" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetJavaArtifactInfo" DependsOnTargets="DetectJava" Condition=" '$(SkipJavaClient)' != 'true' ">
+    <ItemGroup Condition="'$(HasJava)' == 'true'">
+      <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
+        <ArtifactType>JavaJar</ArtifactType>
+        <Version>$(JavaClientVersion)</Version>
+        <Category>ship</Category>
+      </ArtifactInfo>
+      <ArtifactInfo Include="$(BuildDir)\%(PomFile.Identity)">
+        <ArtifactType>MavenPOM</ArtifactType>
+        <Version>$(JavaClientVersion)</Version>
+        <Category>ship</Category>
+      </ArtifactInfo>
+
+      <FilesToSign Include="$(BuildDir)\%(Jars.Identity)" Certificate="$(JarSigningCertName)" />
+      <FilesToExcludeFromSigning Include="$(BuildDir)\%(PomFile.Identity)" />
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <PrepareDependsOn>DetectJava;$(PrepareDependsOn)</PrepareDependsOn>
+  </PropertyGroup>
+  <Target Name="DetectJava">
+    <Exec Command="./gradlew $(GradleOptions)" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true">
+      <Output TaskParameter="ExitCode" PropertyName="JavaDetectExitCode" />
+    </Exec>
+
+    <Error Text="Failed to detect Java Runtime Environment (JRE)" Condition="'$(JavaDetectExitCode)' != 0 And '$(RequireJava)' == 'true'" />
+    <Message Text="Failed to detect Java Runtime Environment (JRE). Skipping Java client build." Importance="high" Condition="'$(JavaDetectExitCode)' != 0 And '$(RequireJava)' != 'true'" />
+    <Message Text="Successfully detected Java Runtime Environment (JRE)" Importance="high" Condition="'$(JavaDetectExitCode)' == 0" />
+    <!-- The build could still fail if the JDK isn't installed, but we can't reliably detect that without a bunch more code -->
+
+    <PropertyGroup Condition="'$(JavaDetectExitCode)' == '0'">
+      <HasJava>true</HasJava>
+    </PropertyGroup>
+  </Target>
+
+  <PropertyGroup>
+    <CompileDependsOn>Restore;BuildNPMPackages;$(CompileDependsOn);BuildJavaClient</CompileDependsOn>
+  </PropertyGroup>
+  <Target Name="BuildNPMPackages" DependsOnTargets="RestoreNpm;GetNpmArtifactInfo">
+    <Message Text="Building %(NPMPackage.PackageId)..." Importance="high" />
+    <Exec Command="npm run build" WorkingDirectory="%(NPMPackage.FullPath)" />
+    <Message Text="Building Browser Functional Tests..." Importance="high" />
+    <Exec Command="npm run build" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="BuildJavaClient" Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true' " DependsOnTargets="GetJavaArtifactInfo">
+    <Message Text="Building Java client" Importance="high" />
+    <Message Text="> gradlew $(GradleOptions) compileJava" Importance="high" />
+    <Exec Command="./gradlew $(GradleOptions) compileJava" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
+  </Target>
+
+  <PropertyGroup>
+    <PackageDependsOn>Compile;PackNPMPackages;$(PackageDependsOn);PackJavaClient</PackageDependsOn>
+  </PropertyGroup>
+  <Target Name="PackNPMPackages" DependsOnTargets="BuildNPMPackages">
+    <Message Text="Packing %(NPMPackage.PackageId)..." Importance="high" />
+    <Copy SourceFiles="%(NPMPackage.PackageJson)" DestinationFiles="%(NPMPackage.PackageJson).bak" />
+    <Exec Command="npm --no-git-tag-version --allow-same-version version $(PackageVersion)" WorkingDirectory="%(NPMPackage.FullPath)" />
+    <Exec Command="npm pack" WorkingDirectory="%(NPMPackage.FullPath)" />
+    <Delete Files="%(NPMPackage.ArtifactPath)" Condition="Exists('%(NPMPackage.ArtifactPath)')" />
+    <Move SourceFiles="%(NPMPackage.OutputTar)" DestinationFiles="%(NPMPackage.ArtifactPath)" />
+    <Move SourceFiles="%(NPMPackage.PackageJson).bak" DestinationFiles="%(NPMPackage.PackageJson)" />
+  </Target>
+
+  <ItemGroup>
+    <Jars Include="signalr-$(JavaPackageVersion).jar;signalr-$(JavaPackageVersion)-javadoc.jar;signalr-$(JavaPackageVersion)-sources.jar;" />
+    <PomFile Include="signalr-$(JavaPackageVersion).pom" />
+    <JavaBuildFiles Include="@(Jars);@(PomFile)"/>
+  </ItemGroup>
+
+  <Target Name="PackJavaClient" Condition="'$(HasJava)' == 'true' AND '$(SkipJavaClient)' != 'true' ">
+    <Message Text="Packing Java client" Importance="high" />
+    <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
+    <Exec Command="./gradlew $(GradleOptions) createPackage" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
+    <Copy SourceFiles="$(RepositoryRoot)clients/java/signalr\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(BuildDir)" />
+  </Target>
+
+</Project>

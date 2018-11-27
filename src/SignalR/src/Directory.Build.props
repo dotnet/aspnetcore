@@ -1,0 +1,14 @@
+﻿<Project>
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;signalr</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" />
+  </ItemGroup>
+</Project>

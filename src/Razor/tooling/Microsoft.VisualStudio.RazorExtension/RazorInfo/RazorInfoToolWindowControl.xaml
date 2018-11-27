@@ -1,0 +1,360 @@
+﻿<UserControl
+  x:Class="Microsoft.VisualStudio.RazorExtension.RazorInfo.RazorInfoToolWindowControl"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Microsoft.VisualStudio.RazorExtension.RazorInfo"
+  xmlns:behaviors="clr-namespace:Microsoft.VisualStudio.RazorExtension.Behaviors"
+  Background="{DynamicResource VsBrush.Window}"
+  Foreground="{DynamicResource VsBrush.WindowText}"
+  mc:Ignorable="d"
+  d:DesignHeight="900"
+  d:DesignWidth="300"
+  Name="RazorInfoToolWindow">
+  <UserControl.Resources>
+    <local:NullToEnabledConverter x:Key="EnabledConverter"/>
+    <Style
+      x:Key="{x:Type Button}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+      <Setter
+        Property="Control.Padding"
+        Value="5 2 5 2" />
+    </Style>
+    <Style
+      x:Key="{x:Type GridSplitter}">
+      <Setter
+        Property="FrameworkElement.Height"
+        Value="5" />
+      <Setter
+        Property="FrameworkElement.HorizontalAlignment"
+        Value="Stretch" />
+      <Setter
+        Property="FrameworkElement.VerticalAlignment"
+        Value="Bottom" />
+      <Setter
+        Property="GridSplitter.ShowsPreview"
+        Value="True" />
+    </Style>
+    <Style
+      x:Key="{x:Type ComboBox}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+    </Style>
+    <Style
+      x:Key="{x:Type Label}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+    </Style>
+    <Style
+      x:Key="{x:Type ListBox}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+    </Style>
+    <Style
+      x:Key="{x:Type ListView}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+    </Style>
+  </UserControl.Resources>
+  <ScrollViewer
+    VerticalScrollBarVisibility="Visible">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid
+        Grid.Row="0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition
+            Width="Auto" />
+          <ColumnDefinition
+            Width="*" />
+          <ColumnDefinition
+            Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Label
+          Grid.Column="0"
+          Content="Select Project" />
+        <ComboBox
+          Grid.Column="1"
+          ItemsSource="{Binding Projects}"
+          SelectedValue="{Binding SelectedProject}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel
+                Orientation="Horizontal">
+                <Label
+                  Margin="0"
+                  Content="{Binding Name}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ComboBox>
+        <Button
+          Grid.Column="2"
+          Content="Update"
+          Command="{Binding UpdateCommand}" />
+      </Grid>
+      <GridSplitter
+        Grid.Row="1"
+        IsEnabled="False" />
+      <Grid
+        Grid.Row="2"
+        IsEnabled="{Binding ProjectProperties, Converter={StaticResource EnabledConverter}}"
+        Height="150">
+        <ListView
+          ItemsSource="{Binding ProjectProperties.Properties}">
+          <ListView.View>
+            <GridView
+              AllowsColumnReorder="False">
+              <GridViewColumn
+                Width="150">
+                <GridViewColumnHeader
+                  Content="Property Name" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=Name, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="Property Value" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=Value, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
+        </ListView>
+      </Grid>
+      <GridSplitter
+        Grid.Row="3" />
+      <Expander
+        Grid.Row="4"
+        IsEnabled="{Binding TagHelpers, Converter={StaticResource EnabledConverter}}">
+        <Expander.Header>
+          <!-- The complicated binding here makes the header stretch horizontally -->
+          <Grid
+            HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition
+                Width="Auto" />
+              <ColumnDefinition
+                Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label
+              Grid.Column="0"
+              Content="Tag Helpers" />
+            <ProgressBar
+              Grid.Column="1"
+              Width="Auto"
+              Height="20"
+              Margin="5"
+              Visibility="{Binding TagHelpers.ProgressVisibility, TargetNullValue=Hidden, FallbackValue=Hidden}"
+              IsIndeterminate="True" />
+          </Grid>
+        </Expander.Header>
+        <ListView
+          ItemsSource="{Binding TagHelpers.TagHelpers}">
+          <ListView.View>
+            <GridView
+              AllowsColumnReorder="False">
+              <GridViewColumn
+                Width="150">
+                <GridViewColumnHeader
+                  Content="Target Element" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=TargetElement, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="Type Name" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=TypeName, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="Assembly Name" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=AssemblyName, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
+        </ListView>
+      </Expander>
+      <GridSplitter
+        Grid.Row="5" />
+      <Expander
+        Grid.Row="6"
+        IsEnabled="{Binding Directives, Converter={StaticResource EnabledConverter}}">
+        <Expander.Header>
+          <Label
+            Content="Directives" />
+        </Expander.Header>
+        <ListView
+          ItemsSource="{Binding Directives.Directives}">
+          <ListView.View>
+            <GridView
+              AllowsColumnReorder="False">
+              <GridViewColumn
+                Width="150">
+                <GridViewColumnHeader
+                  Content="Directive" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=Name, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="Usage" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=DisplayText, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
+        </ListView>
+      </Expander>
+      <GridSplitter
+        Grid.Row="7" />
+      <Expander
+        Grid.Row="8"
+        IsEnabled="{Binding Documents, Converter={StaticResource EnabledConverter}}">
+        <Expander.Header>
+          <Label
+            Content="Documents" />
+        </Expander.Header>
+        <ListView
+          ItemsSource="{Binding Documents.Documents}">
+          <ListView.View>
+            <GridView
+              AllowsColumnReorder="False">
+              <GridViewColumn
+                Width="50">
+                <GridViewColumnHeader
+                  Content="Status" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <Grid
+                      HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+                      <ProgressBar
+                        Height="15"
+                        Width="40"
+                        IsIndeterminate="True"
+                        Visibility="{Binding Path=ProgressVisibility, FallbackValue=Hidden}" />
+                      <TextBlock
+                        TextWrapping="NoWrap"
+                        TextTrimming="CharacterEllipsis"
+                        Text="{Binding Path=StatusText, Mode=OneWay}" />
+                    </Grid>
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="150">
+                <GridViewColumnHeader
+                  Content="Target Path" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=TargetPath, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="File Path" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=FilePath, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
+        </ListView>
+      </Expander>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

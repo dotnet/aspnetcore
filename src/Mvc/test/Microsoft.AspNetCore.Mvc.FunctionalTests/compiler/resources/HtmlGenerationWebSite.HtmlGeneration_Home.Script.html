@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Script</title>
+</head>
+<body>
+    <h2>Script tag helper test</h2>
+    <script src="/styles/site.js" data-foo="foo-data1" title="&lt;the title>">
+        // Regular script with comment in body, and extra properties.
+    </script>
+
+    <script src="/blank.js?a=b&amp;c=d" data-foo="foo-data2" title="&lt;the title>">
+        // TagHelper script with comment in body, and extra properties.
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/site.js?a=b\u0026amp;c=d\u0022 data-foo=\u0022foo-data2\u0022 title=\u0022\u0026lt;the title\u003E\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/blank.js" title='"the" title'>
+        // Fallback to globbed src
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/site.js\u0022 title=\u0027\u0022the\u0022 title\u0027\u003E\u003C\/script\u003E"));</script>
+    
+    <script src="/styles/siteIntegrity.js?a=integrity" crossorigin="anonymous" integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+       // Script loading primary source, applied integrity hash to primary source.
+    </script>
+<script>(true||document.write("\u003Cscript src=\u0022\/styles\/sub\/site2.js?a=integrity\u0022 crossorigin=\u0022anonymous\u0022 integrity=\u0022sha256-tMQLOHBNPE829MHQPO8metegsGobA\/henDPOvtZOWhQ=\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/styles/siteIntegrity.js?a=integrity" crossorigin="anonymous" integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+
+       // Script uses fallback source, applies integrity hash to fallback.
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/sub\/siteIntegrity2.js?a=integrity\u0022 crossorigin=\u0022anonymous\u0022 integrity=\u0022sha256-tMQLOHBNPE829MHQPO8metegsGobA\/henDPOvtZOWhQ=\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/styles/siteIntegrity.js?a=integrity" crossorigin="anonymous" integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+       // Script uses fallback source, ignores integrity hash on fallback.
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/sub\/siteIntegrity3.js?a=integrity\u0022 crossorigin=\u0022anonymous\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/blank.js">
+        // Fallback to globbed src with exclude
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/site.js\u0022\u003E\u003C\/script\u003E\u003Cscript src=\u0022\/styles\/siteIntegrity.js\u0022\u003E\u003C\/script\u003E\u003Cscript src=\u0022\/styles\/sub\/site2.js\u0022\u003E\u003C\/script\u003E\u003Cscript src=\u0022\/styles\/sub\/siteIntegrity2.js\u0022\u003E\u003C\/script\u003E\u003Cscript src=\u0022\/styles\/sub\/siteIntegrity3.js\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/blank.js">
+        // Fallback to globbed and static src
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/site.js\u0022\u003E\u003C\/script\u003E\u003Cscript src=\u0022\/styles\/sub\/site2.js\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/blank.js">
+        // Fallback to globbed and static src should de-dupe
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/site.js\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/blank.js">
+        // Fallback to globbed src with missing include
+    </script>
+
+    <script src="/blank.js">
+        // Fallback to static and globbed src with missing include
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/site.js\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/blank.js">
+        // Fallback to globbed src outside of webroot
+    </script>
+
+    <script src="/blank.js">
+        // Fallback to globbed src outside of webroot
+    </script>
+
+    <script data-foo="foo-data3">
+        // Valid TagHelper (although no src is provided) script with comment in body, and extra properties.
+    </script>
+<script>(false||document.write("\u003Cscript data-foo=\u0022foo-data3\u0022 src=\u0022\/styles\/site.js\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/blank.js">
+        // Invalid TagHelper script with comment in body.
+    </script>
+
+    <!-- Globbed script tag with existing file -->
+    <script src="/styles/site.js"></script>
+
+    <!-- Globbed script tag with existing file and exclude -->
+    <script src="/styles/site.js"></script><script src="/styles/siteIntegrity.js"></script><script src="/styles/sub/site2.js"></script><script src="/styles/sub/siteIntegrity2.js"></script><script src="/styles/sub/siteIntegrity3.js"></script>
+
+    <script>
+        // Globbed script tag missing include
+    </script>
+
+    <script src="/styles/site.js">
+        // Globbed script tag missing include but with static src
+    </script>
+
+    <!-- Globbed script tag with comma separated include pattern -->
+    <script src="/styles/site.js"></script><script src="/styles/siteIntegrity.js"></script><script src="/styles/sub/site2.js"></script><script src="/styles/sub/site3.js"></script><script src="/styles/sub/siteIntegrity2.js"></script><script src="/styles/sub/siteIntegrity3.js"></script>
+
+    <!-- Globbed script tag with missing file -->
+    
+
+    <!-- Globbed script tag with file outside of webroot -->
+    
+
+    <!-- Globbed script tag with file outside of webroot -->
+    
+
+    <script src="/styles/site.js">
+        // Globbed script tag with existing file and static src
+    </script><script src="/styles/sub/site2.js"></script>
+
+    <script src="/styles/site.js">
+        // Globbed script tag with existing file and static src should dedupe
+    </script>
+
+    <script src="/blank.js">
+        // TagHelper script with comment in body, and file version.
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/blank.js">
+        // Fallback to globbed src with file version.
+    </script>
+<script>(false||document.write("\u003Cscript src=\u0022\/styles\/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I\u0022\u003E\u003C\/script\u003E"));</script>
+
+    <script src="/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I">
+        // Regular script with comment in body, and file version.
+    </script>
+
+    <!-- Globbed script tag with existing files and version -->
+    <script src="/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I"></script><script src="/styles/siteIntegrity.js?v=tMQLOHBNPE829MHQPO8metegsGobA_henDPOvtZOWhQ"></script><script src="/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0"></script><script src="/styles/sub/site3.js?v=lmeAMiqm76lnGyqHhu6PIBHAC0Vt46mgVB_KaG_gGdA"></script><script src="/styles/sub/siteIntegrity2.js?v=tMQLOHBNPE829MHQPO8metegsGobA_henDPOvtZOWhQ"></script><script src="/styles/sub/siteIntegrity3.js?v=6I1ncApSzTYytACF7244bg3a_sEnKrGH8nVudoaN984"></script>
+
+    <!-- Globbed script tag with existing file, exclude and version -->
+    <script src="/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I"></script><script src="/styles/siteIntegrity.js?v=tMQLOHBNPE829MHQPO8metegsGobA_henDPOvtZOWhQ"></script><script src="/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0"></script><script src="/styles/sub/siteIntegrity2.js?v=tMQLOHBNPE829MHQPO8metegsGobA_henDPOvtZOWhQ"></script><script src="/styles/sub/siteIntegrity3.js?v=6I1ncApSzTYytACF7244bg3a_sEnKrGH8nVudoaN984"></script>
+</body>
+</html>

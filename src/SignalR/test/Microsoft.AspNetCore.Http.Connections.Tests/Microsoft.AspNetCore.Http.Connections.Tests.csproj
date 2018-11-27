@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x86</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\xunit.runner.json" Link="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Http.Connections\Microsoft.AspNetCore.Http.Connections.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="$(MicrosoftAspNetCoreAuthenticationCorePackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Buffers.Testing.Sources" Version="$(MicrosoftExtensionsBuffersTestingSourcesPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+  </ItemGroup>
+
+</Project>

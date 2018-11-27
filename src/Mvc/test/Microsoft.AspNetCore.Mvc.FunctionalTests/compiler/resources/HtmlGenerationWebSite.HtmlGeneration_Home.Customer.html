@@ -1,0 +1,39 @@
+<html>
+<body>
+    <form action="/Customer/HtmlGeneration_Customer" method="post">
+        <div>
+            <label class="order" for="Number">Number</label>
+            <input type="number" class="form-control" data-val="true" data-val-range="The field Number must be between 1 and 100." data-val-range-max="100" data-val-range-min="1" data-val-required="The Number field is required." id="Number" name="Number" value="" />
+            <span class="field-validation-valid" data-valmsg-for="Number" data-valmsg-replace="true"></span>
+        </div>
+        <div>
+            <label class="order" for="Name">Name</label>
+            <input type="text" id="Name" name="Name" value="" />
+        </div>
+        <div>
+            <label class="order" for="Email">Email</label>
+            <input type="email" id="Email" name="Email" value="" />
+            <span class="field-validation-valid" data-valmsg-for="Email" data-valmsg-replace="true"></span>
+        </div>
+        <div>
+            <label class="order" for="PhoneNumber">PhoneNumber</label>
+            <input type="tel" id="PhoneNumber" name="PhoneNumber" value="" />
+        </div>
+        <div>
+            <label class="order" for="Password">Password</label>
+            <input type="password" class="form-control" data-val="true" data-val-required="The Password field is required." id="Password" name="Password" />
+            <span class="field-validation-valid" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+        </div>
+        <div>
+            <label class="order" for="Gender">Gender</label>
+            <input type="radio" value="Male" data-val="true" data-val-required="The Gender field is required." id="Gender" name="Gender" /> Male
+            <input type="radio" value="Female" id="Gender" name="Gender" /> Female
+            <span class="field-validation-valid" data-valmsg-for="Gender" data-valmsg-replace="true"></span>
+        </div>
+        <div class="order validation-summary-valid" data-valmsg-summary="true"><ul><li style="display:none"></li>
+</ul></div>
+        
+        <input type="submit"/>
+    <input name="__RequestVerificationToken" type="hidden" value="{0}" /></form>
+</body>
+</html>

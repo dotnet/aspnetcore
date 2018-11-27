@@ -1,0 +1,15 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SimpleUnspacedIf_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (1:0,1 [14] SimpleUnspacedIf.cshtml)
+                    IntermediateToken - (1:0,1 [14] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n
+                HtmlContent - (15:2,0 [14] SimpleUnspacedIf.cshtml)
+                    IntermediateToken - (15:2,0 [1] SimpleUnspacedIf.cshtml) - Html - 	
+                    IntermediateToken - (16:2,1 [5] SimpleUnspacedIf.cshtml) - Html - <div>
+                    IntermediateToken - (21:2,6 [6] SimpleUnspacedIf.cshtml) - Html - </div>
+                    IntermediateToken - (27:2,12 [2] SimpleUnspacedIf.cshtml) - Html - \n
+                CSharpCode - (29:3,0 [1] SimpleUnspacedIf.cshtml)
+                    IntermediateToken - (29:3,0 [1] SimpleUnspacedIf.cshtml) - CSharp - }

@@ -1,0 +1,26 @@
+@using HtmlGenerationWebSite.Models
+@model Folder
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>File Input</title>
+</head>
+<body>
+
+    <h2>Input Tag Helper Test</h2>
+
+    <input asp-for="InterfaceFile" name="InterfaceFile" />
+    <input asp-for="InterfaceFiles" name="InterfaceFiles" />
+    <input asp-for="ConcreteFile" name="ConcreteFile">
+    <input asp-for="ConcreteFiles" name="ConcreteFiles" />
+    <input asp-for="EnumerableFiles" name="EnumerableFiles">
+
+    @Html.EditorFor(m => m.InterfaceFile)
+    @Html.EditorFor(m => m.InterfaceFiles)
+    @Html.EditorFor(m => m.ConcreteFile)
+    @Html.EditorFor(m => m.ConcreteFiles)
+    @Html.EditorFor(m => m.EnumerableFiles)
+</body>
+</html>

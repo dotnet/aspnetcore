@@ -1,0 +1,23 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Razor
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - Template -  - 
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [36] HtmlWithDataDashAttribute.cshtml)
+                    IntermediateToken - (0:0,0 [6] HtmlWithDataDashAttribute.cshtml) - Html - <html>
+                    IntermediateToken - (6:0,6 [2] HtmlWithDataDashAttribute.cshtml) - Html - \n
+                    IntermediateToken - (8:1,0 [6] HtmlWithDataDashAttribute.cshtml) - Html - <body>
+                    IntermediateToken - (14:1,6 [6] HtmlWithDataDashAttribute.cshtml) - Html - \n    
+                    IntermediateToken - (20:2,4 [5] HtmlWithDataDashAttribute.cshtml) - Html - <span
+                    IntermediateToken - (25:2,9 [11] HtmlWithDataDashAttribute.cshtml) - Html -  data-val="
+                CSharpExpression - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml)
+                    IntermediateToken - (37:2,21 [5] HtmlWithDataDashAttribute.cshtml) - CSharp - Hello
+                HtmlContent - (42:2,26 [23] HtmlWithDataDashAttribute.cshtml)
+                    IntermediateToken - (42:2,26 [1] HtmlWithDataDashAttribute.cshtml) - Html - "
+                    IntermediateToken - (43:2,27 [3] HtmlWithDataDashAttribute.cshtml) - Html -  />
+                    IntermediateToken - (46:2,30 [2] HtmlWithDataDashAttribute.cshtml) - Html - \n
+                    IntermediateToken - (48:3,0 [7] HtmlWithDataDashAttribute.cshtml) - Html - </body>
+                    IntermediateToken - (55:3,7 [2] HtmlWithDataDashAttribute.cshtml) - Html - \n
+                    IntermediateToken - (57:4,0 [7] HtmlWithDataDashAttribute.cshtml) - Html - </html>
+                    IntermediateToken - (64:4,7 [1] HtmlWithDataDashAttribute.cshtml) - Html - "

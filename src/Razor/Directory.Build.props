@@ -1,0 +1,25 @@
+﻿<Project>
+  <Import
+    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
+    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
+
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
+  <Import Project="build\sources.props" />
+
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core</Product>
+    <RepositoryUrl>https://github.com/aspnet/Razor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
+
+</Project>

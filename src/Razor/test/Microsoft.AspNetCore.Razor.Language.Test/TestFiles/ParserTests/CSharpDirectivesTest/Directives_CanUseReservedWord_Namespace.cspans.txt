@@ -1,0 +1,2 @@
+Transition span at (0:0,0 [1] ) (Accepts:None) - Parent: Directive block at (0:0,0 [10] )
+MetaCode span at (1:0,1 [9] ) (Accepts:None) - Parent: Directive block at (0:0,0 [10] )

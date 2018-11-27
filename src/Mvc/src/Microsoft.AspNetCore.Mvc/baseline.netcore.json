@@ -1,0 +1,51 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.MvcServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddMvc",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddMvc",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.MvcOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

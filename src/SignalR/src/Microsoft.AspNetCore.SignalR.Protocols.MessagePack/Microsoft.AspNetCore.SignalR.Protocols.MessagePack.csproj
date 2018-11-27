@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Implements the SignalR Hub Protocol over MsgPack.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\BinaryMessageFormatter.cs" Link="BinaryMessageFormatter.cs" />
+    <Compile Include="..\Common\BinaryMessageParser.cs" Link="BinaryMessageParser.cs" />
+    <Compile Include="..\Common\MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Common\Microsoft.AspNetCore.SignalR.Common.csproj" />
+  </ItemGroup>
+
+</Project>

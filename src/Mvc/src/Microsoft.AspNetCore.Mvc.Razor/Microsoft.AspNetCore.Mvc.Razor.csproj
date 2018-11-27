@@ -1,0 +1,60 @@
+﻿<Project Sdk="Internal.AspNetCore.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core MVC Razor view engine for CSHTML files.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;aspnetcoremvc;cshtml;razor</PackageTags>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <Serviceable>true</Serviceable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="$(MicrosoftAspNetCoreRazorRuntimePackageVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorPackageVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="lib/$(TargetFramework)/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;DocumentationProjectOutputGroup">
+
+    <PropertyGroup>
+      <!-- Make sure we create a symbols.nupkg -->
+      <IncludeSymbols>true</IncludeSymbols>
+      <NuspecProperties>
+        id=$(MSBuildProjectName);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        copyright=$(Copyright);
+        description=$(Description);
+        tags=$([MSBuild]::Escape($(PackageTags)));
+        serviceable=$(Serviceable);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        targetframework=$(TargetFramework);
+        MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion=$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion);
+        MicrosoftAspNetCoreRazorRuntimePackageVersion=$(MicrosoftAspNetCoreRazorRuntimePackageVersion);
+        MicrosoftCodeAnalysisRazorPackageVersion=$(MicrosoftCodeAnalysisRazorPackageVersion);
+        MicrosoftCodeAnalysisCSharpPackageVersion=$(MicrosoftCodeAnalysisCSharpPackageVersion);
+        MicrosoftExtensionsCachingMemoryPackageVersion=$(MicrosoftExtensionsCachingMemoryPackageVersion);
+        MicrosoftExtensionsFileProvidersCompositePackageVersion=$(MicrosoftExtensionsFileProvidersCompositePackageVersion);
+        MicrosoftDiaSymReaderNativePackageVersion=$(MicrosoftDiaSymReaderNativePackageVersion);
+        OutputBinary=@(BuiltProjectOutputGroupOutput);
+        OutputDocumentation=@(DocumentationProjectOutputGroupOutput);
+        OutputSymbol=@(DebugSymbolsProjectOutputGroupOutput);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

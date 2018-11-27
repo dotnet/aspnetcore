@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Common primitives for ASP.NET Connection Handlers and clients</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.Http.Connections</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\JsonUtils.cs" Link="Internal\JsonUtils.cs" />
+    <Compile Include="..\Common\Utf8BufferTextWriter.cs" Link="Internal\Utf8BufferTextWriter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="$(MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="System.Buffers" Version="$(SystemBuffersPackageVersion)" />
+  </ItemGroup>
+</Project>

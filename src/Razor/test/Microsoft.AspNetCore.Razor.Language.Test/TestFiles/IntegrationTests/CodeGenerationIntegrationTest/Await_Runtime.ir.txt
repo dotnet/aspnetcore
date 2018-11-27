@@ -1,0 +1,125 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Await_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (91:6,0 [100] Await.cshtml)
+                    IntermediateToken - (91:6,0 [2] Await.cshtml) - Html - \n
+                    IntermediateToken - (93:7,0 [9] Await.cshtml) - Html - <section>
+                    IntermediateToken - (102:7,9 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (108:8,4 [4] Await.cshtml) - Html - <h1>
+                    IntermediateToken - (112:8,8 [34] Await.cshtml) - Html - Basic Asynchronous Expression Test
+                    IntermediateToken - (146:8,42 [5] Await.cshtml) - Html - </h1>
+                    IntermediateToken - (151:8,47 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (157:9,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (160:9,7 [31] Await.cshtml) - Html - Basic Asynchronous Expression: 
+                CSharpExpression - (192:9,39 [11] Await.cshtml)
+                    IntermediateToken - (192:9,39 [11] Await.cshtml) - CSharp - await Foo()
+                HtmlContent - (203:9,50 [42] Await.cshtml)
+                    IntermediateToken - (203:9,50 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (207:9,54 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (213:10,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (216:10,7 [29] Await.cshtml) - Html - Basic Asynchronous Template: 
+                CSharpExpression - (247:10,38 [11] Await.cshtml)
+                    IntermediateToken - (247:10,38 [11] Await.cshtml) - CSharp - await Foo()
+                HtmlContent - (259:10,50 [43] Await.cshtml)
+                    IntermediateToken - (259:10,50 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (263:10,54 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (269:11,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (272:11,7 [30] Await.cshtml) - Html - Basic Asynchronous Statement: 
+                CSharpCode - (304:11,39 [14] Await.cshtml)
+                    IntermediateToken - (304:11,39 [14] Await.cshtml) - CSharp -  await Foo(); 
+                HtmlContent - (319:11,54 [50] Await.cshtml)
+                    IntermediateToken - (319:11,54 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (323:11,58 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (329:12,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (332:12,7 [37] Await.cshtml) - Html - Basic Asynchronous Statement Nested: 
+                HtmlContent - (371:12,46 [4] Await.cshtml)
+                    IntermediateToken - (371:12,46 [1] Await.cshtml) - Html -  
+                    IntermediateToken - (372:12,47 [3] Await.cshtml) - Html - <b>
+                CSharpExpression - (376:12,51 [11] Await.cshtml)
+                    IntermediateToken - (376:12,51 [11] Await.cshtml) - CSharp - await Foo()
+                HtmlContent - (387:12,62 [5] Await.cshtml)
+                    IntermediateToken - (387:12,62 [4] Await.cshtml) - Html - </b>
+                    IntermediateToken - (391:12,66 [1] Await.cshtml) - Html -  
+                CSharpCode - (392:12,67 [0] Await.cshtml)
+                    IntermediateToken - (392:12,67 [0] Await.cshtml) - CSharp - 
+                HtmlContent - (393:12,68 [54] Await.cshtml)
+                    IntermediateToken - (393:12,68 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (397:12,72 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (403:13,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (406:13,7 [41] Await.cshtml) - Html - Basic Incomplete Asynchronous Statement: 
+                CSharpExpression - (448:13,49 [5] Await.cshtml)
+                    IntermediateToken - (448:13,49 [5] Await.cshtml) - CSharp - await
+                HtmlContent - (453:13,54 [124] Await.cshtml)
+                    IntermediateToken - (453:13,54 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (457:13,58 [2] Await.cshtml) - Html - \n
+                    IntermediateToken - (459:14,0 [10] Await.cshtml) - Html - </section>
+                    IntermediateToken - (469:14,10 [4] Await.cshtml) - Html - \n\n
+                    IntermediateToken - (473:16,0 [9] Await.cshtml) - Html - <section>
+                    IntermediateToken - (482:16,9 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (488:17,4 [4] Await.cshtml) - Html - <h1>
+                    IntermediateToken - (492:17,8 [37] Await.cshtml) - Html - Advanced Asynchronous Expression Test
+                    IntermediateToken - (529:17,45 [5] Await.cshtml) - Html - </h1>
+                    IntermediateToken - (534:17,50 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (540:18,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (543:18,7 [34] Await.cshtml) - Html - Advanced Asynchronous Expression: 
+                CSharpExpression - (578:18,42 [15] Await.cshtml)
+                    IntermediateToken - (578:18,42 [15] Await.cshtml) - CSharp - await Foo(1, 2)
+                HtmlContent - (593:18,57 [56] Await.cshtml)
+                    IntermediateToken - (593:18,57 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (597:18,61 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (603:19,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (606:19,7 [43] Await.cshtml) - Html - Advanced Asynchronous Expression Extended: 
+                CSharpExpression - (650:19,51 [19] Await.cshtml)
+                    IntermediateToken - (650:19,51 [19] Await.cshtml) - CSharp - await Foo.Bar(1, 2)
+                HtmlContent - (669:19,70 [45] Await.cshtml)
+                    IntermediateToken - (669:19,70 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (673:19,74 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (679:20,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (682:20,7 [32] Await.cshtml) - Html - Advanced Asynchronous Template: 
+                CSharpExpression - (716:20,41 [22] Await.cshtml)
+                    IntermediateToken - (716:20,41 [22] Await.cshtml) - CSharp - await Foo("bob", true)
+                HtmlContent - (739:20,64 [46] Await.cshtml)
+                    IntermediateToken - (739:20,64 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (743:20,68 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (749:21,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (752:21,7 [33] Await.cshtml) - Html - Advanced Asynchronous Statement: 
+                CSharpCode - (787:21,42 [39] Await.cshtml)
+                    IntermediateToken - (787:21,42 [39] Await.cshtml) - CSharp -  await Foo(something, hello: "world"); 
+                HtmlContent - (827:21,82 [55] Await.cshtml)
+                    IntermediateToken - (827:21,82 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (831:21,86 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (837:22,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (840:22,7 [42] Await.cshtml) - Html - Advanced Asynchronous Statement Extended: 
+                CSharpCode - (884:22,51 [21] Await.cshtml)
+                    IntermediateToken - (884:22,51 [21] Await.cshtml) - CSharp -  await Foo.Bar(1, 2) 
+                HtmlContent - (906:22,73 [53] Await.cshtml)
+                    IntermediateToken - (906:22,73 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (910:22,77 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (916:23,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (919:23,7 [40] Await.cshtml) - Html - Advanced Asynchronous Statement Nested: 
+                HtmlContent - (961:23,49 [4] Await.cshtml)
+                    IntermediateToken - (961:23,49 [1] Await.cshtml) - Html -  
+                    IntermediateToken - (962:23,50 [3] Await.cshtml) - Html - <b>
+                CSharpExpression - (966:23,54 [27] Await.cshtml)
+                    IntermediateToken - (966:23,54 [27] Await.cshtml) - CSharp - await Foo(boolValue: false)
+                HtmlContent - (993:23,81 [5] Await.cshtml)
+                    IntermediateToken - (993:23,81 [4] Await.cshtml) - Html - </b>
+                    IntermediateToken - (997:23,85 [1] Await.cshtml) - Html -  
+                CSharpCode - (998:23,86 [0] Await.cshtml)
+                    IntermediateToken - (998:23,86 [0] Await.cshtml) - CSharp - 
+                HtmlContent - (999:23,87 [57] Await.cshtml)
+                    IntermediateToken - (999:23,87 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (1003:23,91 [6] Await.cshtml) - Html - \n    
+                    IntermediateToken - (1009:24,4 [3] Await.cshtml) - Html - <p>
+                    IntermediateToken - (1012:24,7 [44] Await.cshtml) - Html - Advanced Incomplete Asynchronous Statement: 
+                CSharpExpression - (1057:24,52 [19] Await.cshtml)
+                    IntermediateToken - (1057:24,52 [19] Await.cshtml) - CSharp - await ("wrrronggg")
+                HtmlContent - (1076:24,71 [16] Await.cshtml)
+                    IntermediateToken - (1076:24,71 [4] Await.cshtml) - Html - </p>
+                    IntermediateToken - (1080:24,75 [2] Await.cshtml) - Html - \n
+                    IntermediateToken - (1082:25,0 [10] Await.cshtml) - Html - </section>
+            CSharpCode - (12:0,12 [76] Await.cshtml)
+                IntermediateToken - (12:0,12 [76] Await.cshtml) - CSharp - \n    public async Task<string> Foo()\n    {\n        return "Bar";\n    }\n

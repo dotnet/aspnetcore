@@ -1,0 +1,45 @@
+﻿<Project ToolsVersion="14.0" TreatAsLocalProperty="_RazorTaskFolder;_RazorTaskAssembly">
+  <PropertyGroup>
+    <!--
+      Used by the Web SDK if the Razor SDK can be used for compilation. This needs to live in a nuget package (not in the SDK)
+      so that it only shows up in supported versions.
+    -->
+    <IsRazorCompilerReferenced>true</IsRazorCompilerReferenced>
+
+    <!-- 
+      Location of the CodeGeneration targets. The SDK uses this to import the file ensuring deterministic import order.
+    -->
+    <RazorCodeGenerationTargetsPath>$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Razor.Design.CodeGeneration.targets</RazorCodeGenerationTargetsPath>
+
+    <!--
+      Configures the language version of Razor. Supported and default values differ depending on the version of
+      the packages in use.
+
+      Supported:
+        2.0
+        2.1
+        Latest = 2.1
+      
+      Default:
+        2.1
+    -->
+    <RazorLangVersion Condition="'$(RazorLangVersion)'==''">2.1</RazorLangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Override this to hijack the tasks and targets. Used by tests. -->
+    <_RazorMSBuildRoot Condition="'$(_RazorMSBuildRoot)'==''">$(MSBuildThisFileDirectory)..\..\</_RazorMSBuildRoot>
+    
+    <!-- Used to locate our tools -->
+    <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(_RazorMSBuildRoot)tools\rzc.dll</_RazorToolAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Defines the ability to understand the configuration for the Razor language service provided by
+      the runtime/toolset packages. Introduced in 2.1
+    -->
+    <ProjectCapability Include="DotNetCoreRazorConfiguration"/>
+  </ItemGroup>
+
+</Project>

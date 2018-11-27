@@ -1,0 +1,52 @@
+{
+  "name": "@aspnet/signalr-protocol-msgpack",
+  "version": "1.1.0-rtm-t000",
+  "description": "MsgPack Protocol support for ASP.NET Core SignalR",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "typings": "./dist/esm/index.d.ts",
+  "umd": "./dist/browser/signalr-protocol-msgpack.js",
+  "umd_name": "signalR.protocols.msgpack",
+  "directories": {
+    "test": "spec"
+  },
+  "scripts": {
+    "clean": "node ../common/node_modules/rimraf/bin.js ./dist",
+    "build": "npm run clean && npm run build:lint && npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
+    "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
+    "build:esm": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
+    "build:cjs": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
+    "build:browser": "node ../common/node_modules/webpack-cli/bin/cli.js",
+    "build:uglify": "node ../common/node_modules/uglify-js/bin/uglifyjs --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
+    "prepack": "node ../build/embed-version.js",
+    "test": "echo \"Run 'npm test' in the 'clients\\ts' folder to test this package\" && exit 1"
+  },
+  "keywords": [
+    "signalr",
+    "aspnetcore"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aspnet/SignalR.git"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/aspnet/SignalR/issues"
+  },
+  "homepage": "https://github.com/aspnet/SignalR#readme",
+  "files": [
+    "dist/**/*",
+    "src/**/*"
+  ],
+  "peerDependencies": {
+    "@aspnet/signalr": "^1.0.0-preview3"
+  },
+  "dependencies": {
+    "msgpack5": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/msgpack5": "^3.4.1",
+    "buffer": "^5.0.8"
+  }
+}
