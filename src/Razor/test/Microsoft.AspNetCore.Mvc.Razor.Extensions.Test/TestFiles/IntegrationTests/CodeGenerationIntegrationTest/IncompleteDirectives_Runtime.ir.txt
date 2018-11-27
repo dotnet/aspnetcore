@@ -1,0 +1,95 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    CSharpCode - 
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml", typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives), null)]
+    NamespaceDeclaration -  - AspNetCore
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(83, 4, true);
+                HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
+                    IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (94:3,0 [8] IncompleteDirectives.cshtml) - page
+                MalformedDirective - (102:4,0 [6] IncompleteDirectives.cshtml) - page
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(108, 5, true);
+                HtmlContent - (108:4,6 [5] IncompleteDirectives.cshtml)
+                    IntermediateToken - (108:4,6 [5] IncompleteDirectives.cshtml) - Html - "\n\n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (113:6,0 [6] IncompleteDirectives.cshtml) - model
+                    DirectiveToken - (119:6,6 [0] IncompleteDirectives.cshtml) - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(119, 2, true);
+                HtmlContent - (119:6,6 [2] IncompleteDirectives.cshtml)
+                    IntermediateToken - (119:6,6 [2] IncompleteDirectives.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (121:7,0 [7] IncompleteDirectives.cshtml) - model
+                    DirectiveToken - (128:7,7 [0] IncompleteDirectives.cshtml) - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(128, 4, true);
+                HtmlContent - (128:7,7 [4] IncompleteDirectives.cshtml)
+                    IntermediateToken - (128:7,7 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (132:9,0 [7] IncompleteDirectives.cshtml) - inject
+                    DirectiveToken - (139:9,7 [0] IncompleteDirectives.cshtml) - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(139, 2, true);
+                HtmlContent - (139:9,7 [2] IncompleteDirectives.cshtml)
+                    IntermediateToken - (139:9,7 [2] IncompleteDirectives.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (141:10,0 [8] IncompleteDirectives.cshtml) - inject
+                    DirectiveToken - (149:10,8 [0] IncompleteDirectives.cshtml) - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(149, 2, true);
+                HtmlContent - (149:10,8 [2] IncompleteDirectives.cshtml)
+                    IntermediateToken - (149:10,8 [2] IncompleteDirectives.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (151:11,0 [25] IncompleteDirectives.cshtml) - inject
+                    DirectiveToken - (159:11,8 [17] IncompleteDirectives.cshtml) - MyService<TModel>
+                    DirectiveToken - (176:11,25 [0] IncompleteDirectives.cshtml) - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(176, 4, true);
+                HtmlContent - (176:11,25 [4] IncompleteDirectives.cshtml)
+                    IntermediateToken - (176:11,25 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (180:13,0 [10] IncompleteDirectives.cshtml) - namespace
+                    DirectiveToken - (190:13,10 [0] IncompleteDirectives.cshtml) - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(190, 2, true);
+                HtmlContent - (190:13,10 [2] IncompleteDirectives.cshtml)
+                    IntermediateToken - (190:13,10 [2] IncompleteDirectives.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (192:14,0 [11] IncompleteDirectives.cshtml) - namespace
+                    DirectiveToken - (203:14,11 [0] IncompleteDirectives.cshtml) - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(203, 2, true);
+                HtmlContent - (203:14,11 [2] IncompleteDirectives.cshtml)
+                    IntermediateToken - (203:14,11 [2] IncompleteDirectives.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives>)PageContext?.ViewData;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives Model => ViewData.Model;

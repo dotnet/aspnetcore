@@ -1,0 +1,18 @@
+Document - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SimpleUnspacedIf_DesignTime -  - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (1:0,1 [15] SimpleUnspacedIf.cshtml)
+                    IntermediateToken - (1:0,1 [15] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n	
+                HtmlContent - (16:2,1 [11] SimpleUnspacedIf.cshtml)
+                    IntermediateToken - (16:2,1 [5] SimpleUnspacedIf.cshtml) - Html - <div>
+                    IntermediateToken - (21:2,6 [6] SimpleUnspacedIf.cshtml) - Html - </div>
+                CSharpCode - (27:2,12 [3] SimpleUnspacedIf.cshtml)
+                    IntermediateToken - (27:2,12 [3] SimpleUnspacedIf.cshtml) - CSharp - \n}

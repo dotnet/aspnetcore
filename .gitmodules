@@ -14,23 +14,7 @@
 	path = modules/Localization
 	url = https://github.com/aspnet/Localization.git
 	branch = release/2.1
-[submodule "modules/Mvc"]
-	path = modules/Mvc
-	url = https://github.com/aspnet/Mvc.git
-	branch = release/2.1
-[submodule "modules/MvcPrecompilation"]
-	path = modules/MvcPrecompilation
-	url = https://github.com/aspnet/MvcPrecompilation.git
-	branch = release/2.1
-[submodule "modules/Razor"]
-	path = modules/Razor
-	url = https://github.com/aspnet/Razor.git
-	branch = release/2.1
 [submodule "modules/Scaffolding"]
 	path = modules/Scaffolding
 	url = https://github.com/aspnet/Scaffolding.git
-	branch = release/2.1
-[submodule "modules/SignalR"]
-	path = modules/SignalR
-	url = https://github.com/aspnet/SignalR.git
 	branch = release/2.1

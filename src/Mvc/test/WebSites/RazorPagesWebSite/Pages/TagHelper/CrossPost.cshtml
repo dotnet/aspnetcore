@@ -1,0 +1,4 @@
+@page "{id:int?}"
+
+<form method="POST" asp-page="/TagHelper/SelfPost" asp-route-id="10" asp-antiforgery="false"></form>
+<form method="POST" asp-page="PostWithHandler" asp-page-handler="Delete"  asp-route-id="10" asp-antiforgery="false"></form>

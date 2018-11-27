@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <!-- Don't create a NuGet package -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

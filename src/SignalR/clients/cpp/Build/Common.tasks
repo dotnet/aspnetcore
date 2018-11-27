@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask TaskName="ExecAsync" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <Executable ParameterType="System.String" Required="true" />
+      <Arguments ParameterType="System.String" Required="false" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Diagnostics" />
+      <Code Type="Fragment" Language="cs">
+      <![CDATA[
+        Log.LogMessage("Executable {0}...", Executable);
+        var name = System.IO.Path.GetFileNameWithoutExtension(Executable);
+        Log.LogMessage("Starting {0}...", name);
+        var processStartInfo = new ProcessStartInfo(Executable, Arguments) { UseShellExecute = true  };
+        Process.Start(processStartInfo);
+        Log.LogMessage("Finished starting process {0}.", name);
+      ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  
+  <UsingTask TaskName="Sleep" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+      <TimeoutMs ParameterType="System.Int32" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+      <![CDATA[System.Threading.Thread.Sleep(TimeoutMs);]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  
+  <UsingTask TaskName="ZipDir" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+    <ParameterGroup>
+     <InputDir ParameterType="System.String" Required="true" />
+      <OutputFileName ParameterType="System.String" Required="true" />
+      <IncludeBaseDir ParameterType="System.Boolean" Required="false" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.IO.Compression.FileSystem" />
+      <Using Namespace="System.IO.Compression" />
+      <Code Type="Fragment" Language="cs">
+      <![CDATA[ ZipFile.CreateFromDirectory(InputDir, OutputFileName, CompressionLevel.Optimal, IncludeBaseDir); ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  
+  <UsingTask TaskName="RegexReplaceInFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
+   <ParameterGroup>
+     <InputFilename ParameterType="System.String" Required="true" />
+     <OutputFilename ParameterType="System.String" Required="true" />
+     <Pattern ParameterType="System.String" Required="true" />
+     <Replacement ParameterType="System.String" Required="true" />
+   </ParameterGroup>
+   <Task>
+     <Using Namespace="System.IO" />
+     <Using Namespace="System.Linq" />
+     <Using Namespace="System.Text.RegularExpressions" />
+     <Code Type="Fragment" Language="cs">
+       <![CDATA[
+       string contents;
+       using (var input = new StreamReader(InputFilename))
+       {
+           contents = input.ReadToEnd();
+       }
+
+       contents = new Regex(Pattern, RegexOptions.Compiled | RegexOptions.Multiline)
+                    .Replace(contents, Replacement);
+
+       using (var output = new StreamWriter(OutputFilename))
+       {
+           output.Write(contents);
+       }
+       ]]>
+     </Code>
+   </Task>
+ </UsingTask>
+
+</Project>

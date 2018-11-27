@@ -1,0 +1,28 @@
+﻿<Project>
+  <Target Name="_IntrospectRazorGenerateWithTargetPath">
+    <Message Text="RazorGenerateWithTargetPath: %(RazorGenerateWithTargetPath.Identity) %(RazorGenerateWithTargetPath.TargetPath) %(RazorGenerateWithTargetPath.GeneratedOutput)" Importance="High" />
+  </Target>
+
+  <Target Name="_IntrospectRazorEmbeddedResources">
+    <Message Text="CompileResource: %(_RazorCoreCompileResourceInputs.Identity) %(_RazorCoreCompileResourceInputs.LogicalName)" Importance="High" />
+  </Target>
+
+  <Target Name="_IntrospectUpToDateCheck">
+    <Message Text="UpToDateCheckInput: %(UpToDateCheckInput.Identity)" Importance="High" />
+    <Message Text="No UpToDateCheckInput input found" Importance="High" Condition="'@(UpToDateCheckInput->Count)' == '0'" />
+    <Message Text="UpToDateCheckBuilt: %(UpToDateCheckBuilt.Identity)" Importance="High" />
+    <Message Text="No UpToDateCheckBuilt input found" Importance="High" Condition="'@(UpToDateCheckBuilt->Count)' == '0'" />
+  </Target>
+
+  <Target Name="_IntrospectRazorCompileItems">
+    <Message Text="RazorCompile: %(RazorCompile.Identity)" Importance="High" />
+  </Target>
+
+  <Target Name="_IntrospectUseRazorBuildServer">
+    <Message Text="UseRazorBuildServer: $(UseRazorBuildServer)" Importance="High" />
+  </Target>
+
+  <Target Name="_IntrospectGetCopyToOutputDirectoryItems">
+    <Message Text="AllItemsFullPathWithTargetPath: %(AllItemsFullPathWithTargetPath.TargetPath)" Importance="High" />
+  </Target>
+</Project>

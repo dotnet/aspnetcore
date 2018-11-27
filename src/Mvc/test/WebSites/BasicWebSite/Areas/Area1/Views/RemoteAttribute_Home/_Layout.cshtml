@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+</head>
+<body>
+    <div>
+        <div>
+            <div>
+                @Html.ActionLink("Basic web site", "Details", "RemoteAttribute_Home", routeValues: new { area = (object)null })
+            </div>
+
+            <div>
+                <ul>
+                    <li>@Html.ActionLink("Home", "Details", "RemoteAttribute_Home", routeValues: new { area = string.Empty })</li>
+                    <li>@Html.ActionLink("Area1 Home", "Details", "RemoteAttribute_Home", routeValues: new { area = "Area1" })</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        @RenderBody()
+    </div>
+
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

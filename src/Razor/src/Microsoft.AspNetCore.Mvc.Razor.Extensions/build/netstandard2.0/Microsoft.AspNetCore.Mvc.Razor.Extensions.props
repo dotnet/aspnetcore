@@ -1,0 +1,40 @@
+<Project>
+  <!-- 
+      MSBuild support for Razor code generation that targets ASP.NET Core MVC 2.X
+
+      The properties and items here are designed to be read by CPS so they should be just simple evaluation-time values
+      and should not require targets to initialize. 
+  -->
+  <PropertyGroup>
+    <!-- 
+      Set the primary configuration supported by this pacakge as the default configuration for Razor. 
+    -->
+    <RazorDefaultConfiguration Condition="'$(RazorDefaultConfiguration)'==''">MVC-2.1</RazorDefaultConfiguration>
+
+    <!--
+      MVC uses a ProvideApplicationPartFactoryAttribute on the generated assembly to load compiled views from assembly. Set this to false, to prevent generating this attribute.
+    -->
+    <GenerateProvideApplicationPartFactoryAttribute>true</GenerateProvideApplicationPartFactoryAttribute>
+
+    <!-- Override for testing. This path is only correct inside a nuget package. -->
+    <_MvcExtensionAssemblyPath Condition="'$(_MvcExtensionAssemblyPath)'==''">$(MSBuildThisFileDirectory)..\..\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      While technically the assembly in this package can provide support for the MVC-2.0 configuration, don't declare
+      it here. The IDE is hardcoded to inject 2.0 support when needed. The settings flowing through MSBuild should reflect
+      the project's runtime.
+    -->
+    <RazorConfiguration Include="MVC-2.1">
+      <Extensions>MVC-2.1;$(CustomRazorExtension)</Extensions>
+    </RazorConfiguration>
+  </ItemGroup>
+
+  <ItemGroup>
+    <RazorExtension Include="MVC-2.1">
+      <AssemblyName>Microsoft.AspNetCore.Mvc.Razor.Extensions</AssemblyName>
+      <AssemblyFilePath>$(_MvcExtensionAssemblyPath)</AssemblyFilePath>
+    </RazorExtension>
+  </ItemGroup>
+</Project>

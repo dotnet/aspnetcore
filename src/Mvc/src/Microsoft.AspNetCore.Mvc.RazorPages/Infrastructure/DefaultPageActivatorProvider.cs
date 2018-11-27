@@ -1,0 +1,88 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
+{
+    /// <summary>
+    /// <see cref="IPageActivatorProvider"/> that uses type activation to create Pages.
+    /// </summary>
+    public class DefaultPageActivatorProvider : IPageActivatorProvider
+    {
+        private readonly Action<PageContext, ViewContext, object> _disposer = Dispose;
+
+        /// <inheritdoc />
+        public virtual Func<PageContext, ViewContext, object> CreateActivator(CompiledPageActionDescriptor actionDescriptor)
+        {
+            if (actionDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptor));
+            }
+
+            var pageTypeInfo = actionDescriptor.PageTypeInfo?.AsType();
+            if (pageTypeInfo == null)
+            {
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(actionDescriptor.PageTypeInfo),
+                    nameof(actionDescriptor)),
+                    nameof(actionDescriptor));
+            }
+
+            return CreatePageFactory(pageTypeInfo);
+        }
+
+        public virtual Action<PageContext, ViewContext, object> CreateReleaser(CompiledPageActionDescriptor actionDescriptor)
+        {
+            if (actionDescriptor == null)
+            {
+                throw new ArgumentNullException(nameof(actionDescriptor));
+            }
+
+            if (typeof(IDisposable).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
+            {
+                return _disposer;
+            }
+
+            return null;
+        }
+
+        private static Func<PageContext, ViewContext, object> CreatePageFactory(Type pageTypeInfo)
+        {
+            var parameter1 = Expression.Parameter(typeof(PageContext), "pageContext");
+            var parameter2 = Expression.Parameter(typeof(ViewContext), "viewContext");
+
+            // new Page();
+            var newExpression = Expression.New(pageTypeInfo);
+
+            // () => new Page();
+            var pageFactory = Expression
+                .Lambda<Func<PageContext, ViewContext, object>>(newExpression, parameter1, parameter2)
+                .Compile();
+            return pageFactory;
+        }
+
+        private static void Dispose(PageContext context, ViewContext viewContext, object page)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
+            if (page == null)
+            {
+                throw new ArgumentNullException(nameof(page));
+            }
+
+            ((IDisposable)page).Dispose();
+        }
+    }
+}

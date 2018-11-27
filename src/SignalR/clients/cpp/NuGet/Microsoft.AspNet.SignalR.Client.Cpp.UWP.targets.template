@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="signalrclient_uwp_inittarget">
+
+  <PropertyGroup Condition="'$(PlatformToolset)' != 'v140' Or '$(ApplicationType)' != 'Windows Store'">
+    <DisableUwp>True</DisableUwp>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition="'$(DisableUwp)' == ''">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Label="x64 and #Toolset# and Release" Condition="'$(DisableUwp)' == '' And '$(Platform)' == 'x64' And '$(PlatformToolset)' == '#Toolset#' And $(Configuration.ToLower().IndexOf('debug')) == -1">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)lib\x64\#Toolset#\Release\signalrclient.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and #Toolset# and Debug" Condition="'$(DisableUwp)' == '' And '$(Platform)' == 'x64' And '$(PlatformToolset)' == '#Toolset#' And $(Configuration.ToLower().IndexOf('debug')) &gt; -1">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)lib\x64\#Toolset#\Debug\signalrclient.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and #Toolset# and Release" Condition="'$(DisableUwp)' == '' And '$(Platform)' == 'Win32' And '$(PlatformToolset)' == '#Toolset#' And $(Configuration.ToLower().IndexOf('debug')) == -1">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)lib\Win32\#Toolset#\Release\signalrclient.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and #Toolset# and Debug" Condition="'$(DisableUwp)' == '' And '$(Platform)' == 'Win32' And '$(PlatformToolset)' == '#Toolset#' And $(Configuration.ToLower().IndexOf('debug')) &gt; -1">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)lib\Win32\#Toolset#\Debug\signalrclient.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <Target Name="signalrclient_uwp_AfterBuild" AfterTargets="AfterBuild" Condition="'$(DisableUwp)' == ''">
+    <PropertyGroup>
+      <UseHardlinksIfPossible Condition="'$(UseHardlinksIfPossible)' == ''">true</UseHardlinksIfPossible>
+    </PropertyGroup>
+
+    <Copy DestinationFolder="$(TargetDir)" SourceFiles="@(CopyToOutput)" SkipUnchangedFiles="true" UseHardlinksIfPossible="$(UseHardlinksIfPossible)">
+      <Output TaskParameter="DestinationFiles" PropertyName="DestinationFiles" />
+      <Output TaskParameter="DestinationFiles" ItemName="DestinationFiles" />
+      <Output TaskParameter="CopiedFiles" PropertyName="CopiedFiles" />
+      <Output TaskParameter="CopiedFiles" ItemName="CopiedFiles" />
+    </Copy>
+  </Target>
+
+  <Target Name="signalrclient_uwp_inittarget" Condition="'$(DisableUwp)' == ''">
+    <ItemGroup Label="x64 and #Toolset# and Debug" Condition="'$(Platform)' == 'x64' And '$(PlatformToolset)' == '#Toolset#' And $(Configuration.ToLower().IndexOf('debug')) &gt; -1">
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)dll\x64\#Toolset#\Debug\signalrclient.dll" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)dll\x64\#Toolset#\Debug\signalrclient.pdb" />
+    </ItemGroup>
+    <ItemGroup Label="x64 and #Toolset# and Release" Condition="'$(Platform)' == 'x64' And '$(PlatformToolset)' == '#Toolset#' And $(Configuration.ToLower().IndexOf('debug')) == -1">
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)dll\x64\#Toolset#\Release\signalrclient.dll" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)dll\x64\#Toolset#\Release\signalrclient.pdb" />
+    </ItemGroup>
+    <ItemGroup Label="Win32 and #Toolset# and Debug" Condition="'$(Platform)' == 'Win32' And '$(PlatformToolset)' == '#Toolset#' And $(Configuration.ToLower().IndexOf('debug')) &gt; -1">
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)dll\Win32\#Toolset#\Debug\signalrclient.dll" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)dll\Win32\#Toolset#\Debug\signalrclient.pdb" />
+    </ItemGroup>
+    <ItemGroup Label="Win32 and #Toolset# and Release" Condition="'$(Platform)' == 'Win32' And '$(PlatformToolset)' == '#Toolset#' And $(Configuration.ToLower().IndexOf('debug')) == -1">
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)dll\Win32\#Toolset#\Release\signalrclient.dll" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)dll\Win32\#Toolset#\Release\signalrclient.pdb" />
+    </ItemGroup>
+  </Target>
+</Project>
