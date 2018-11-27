@@ -49,6 +49,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{C0AB577F-0227-45E6-A3AC-E7ABEFC4ED60}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Libuv.BindTests", "Kestrel\test\Libuv.BindTests\Libuv.BindTests.csproj", "{B211AEE8-F28F-45A4-9C71-81691D7C99E1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sockets.BindTests", "Kestrel\test\Sockets.BindTests\Sockets.BindTests.csproj", "{94135813-EBCC-4E4E-8B12-8E5BD58E1350}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -299,6 +303,30 @@ Global
 		{C0AB577F-0227-45E6-A3AC-E7ABEFC4ED60}.Release|x64.Build.0 = Release|Any CPU
 		{C0AB577F-0227-45E6-A3AC-E7ABEFC4ED60}.Release|x86.ActiveCfg = Release|Any CPU
 		{C0AB577F-0227-45E6-A3AC-E7ABEFC4ED60}.Release|x86.Build.0 = Release|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Debug|x64.Build.0 = Debug|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Debug|x86.Build.0 = Debug|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Release|x64.ActiveCfg = Release|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Release|x64.Build.0 = Release|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Release|x86.ActiveCfg = Release|Any CPU
+		{B211AEE8-F28F-45A4-9C71-81691D7C99E1}.Release|x86.Build.0 = Release|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Debug|x64.Build.0 = Debug|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Debug|x86.Build.0 = Debug|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Release|x64.ActiveCfg = Release|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Release|x64.Build.0 = Release|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Release|x86.ActiveCfg = Release|Any CPU
+		{94135813-EBCC-4E4E-8B12-8E5BD58E1350}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
