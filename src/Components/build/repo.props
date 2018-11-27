@@ -48,8 +48,4 @@
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-   <AspNetCoreRuntime Include="$(AspNetCoreRuntimeVersion)" />
- </ItemGroup>
-
 </Project>
