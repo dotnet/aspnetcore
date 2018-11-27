@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             _jsonInputFormatterCrashed = LoggerMessage.Define(
                 LogLevel.Debug,
-                1,
+                new EventId(1, nameof(JsonInputException)),
                 "JSON input formatter threw an exception.");
 
             _jsonResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                1,
+                new EventId(1, nameof(JsonResultExecuting)),
                 "Executing JsonResult, writing value of type '{Type}'.");
         }
 
