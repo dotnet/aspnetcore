@@ -174,11 +174,23 @@ namespace Microsoft.AspNetCore.Routing.Template
                         ambientValueProcessedCount++;
                     }
 
-                    if (hasExplicitValue)
+                    // For now, only check ambient values with required values that don't have a parameter
+                    // Ambient values for parameters are processed below
+                    var hasParameter = _pattern.GetParameter(key) != null;
+                    if (!hasParameter)
                     {
-                        // Note that we don't increment valueProcessedCount here. We expect required values
-                        // to also be filters, which are tracked when we populate 'slots'.
-                        if (!RoutePartsEqual(value, ambientValue))
+                        if (!_pattern.RequiredValues.TryGetValue(key, out var requiredValue))
+                        {
+                            throw new InvalidOperationException($"Unable to find required value '{key}' on route pattern.");
+                        }
+
+                        if (!RoutePartsEqual(ambientValue, _pattern.RequiredValues[key]))
+                        {
+                            copyAmbientValues = false;
+                            break;
+                        }
+
+                        if (hasExplicitValue && !RoutePartsEqual(value, ambientValue))
                         {
                             copyAmbientValues = false;
                             break;

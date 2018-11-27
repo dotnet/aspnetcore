@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 updatedDefaults ?? original.Defaults,
                 original.ParameterPolicies,
                 requiredValues,
-                updatedParameters ?? original.Parameters, 
+                updatedParameters ?? original.Parameters,
                 updatedSegments ?? original.PathSegments);
         }
 

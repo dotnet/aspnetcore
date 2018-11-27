@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -22,6 +23,21 @@ namespace Microsoft.AspNetCore.Routing.Template
         {
             var parsed = RoutePatternFactory.Parse(template);
             return func(parsed);
+        }
+
+        [Fact]
+        public void InboundPrecedence_ParameterWithRequiredValue_HasPrecedence()
+        {
+            var parameterPrecedence = RoutePatternFactory.Parse(
+                "{controller}").InboundPrecedence;
+
+            var requiredValueParameterPrecedence = RoutePatternFactory.Parse(
+                "{controller}",
+                defaults: null,
+                parameterPolicies: null,
+                requiredValues: new { controller = "Home" }).InboundPrecedence;
+
+            Assert.True(requiredValueParameterPrecedence < parameterPrecedence);
         }
     }
 }

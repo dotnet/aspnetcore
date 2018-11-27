@@ -3,9 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -20,17 +24,22 @@ namespace Microsoft.AspNetCore.Routing
             string displayName = null,
             params object[] metadata)
         {
-            var d = new List<object>(metadata ?? Array.Empty<object>());
-            if (requiredValues != null)
-            {
-                d.Add(new RouteValuesAddressMetadata(new RouteValueDictionary(requiredValues)));
-            }
+            var routePattern = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
 
+            return CreateRouteEndpoint(routePattern, order, displayName, metadata);
+        }
+
+        public static RouteEndpoint CreateRouteEndpoint(
+            RoutePattern routePattern = null,
+            int order = 0,
+            string displayName = null,
+            IList<object> metadata = null)
+        {
             return new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
-                RoutePatternFactory.Parse(template, defaults, policies),
+                routePattern,
                 order,
-                new EndpointMetadataCollection(d),
+                new EndpointMetadataCollection(metadata ?? Array.Empty<object>()),
                 displayName);
         }
     }
