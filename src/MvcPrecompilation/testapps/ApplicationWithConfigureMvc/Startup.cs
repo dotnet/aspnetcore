@@ -9,7 +9,6 @@ namespace ApplicationWithConfigureStartup
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
             // Add framework services.
             var builder = services.AddMvc();
             ConfigureMvc(builder);
@@ -17,6 +16,7 @@ namespace ApplicationWithConfigureStartup
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

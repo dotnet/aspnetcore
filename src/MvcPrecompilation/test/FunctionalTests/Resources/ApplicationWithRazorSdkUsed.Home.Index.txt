@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html>
+<body>
+    
+ApplicationWithRazorSdkUsed.Views, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+Hello from Index!
+</body>
+</html>

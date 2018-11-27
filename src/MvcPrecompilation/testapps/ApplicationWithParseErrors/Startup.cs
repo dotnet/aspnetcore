@@ -8,12 +8,12 @@ namespace ApplicationWithParseErrors
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
             services.AddMvc();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole();
             app.UseMvcWithDefaultRoute();
         }
     }
