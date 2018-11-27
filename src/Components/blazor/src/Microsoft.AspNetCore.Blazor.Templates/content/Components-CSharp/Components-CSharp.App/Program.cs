@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Hosting;
 
-namespace BlazorServerSide_CSharp.App
+namespace Components_CSharp.App
 {
     public class Program
     {

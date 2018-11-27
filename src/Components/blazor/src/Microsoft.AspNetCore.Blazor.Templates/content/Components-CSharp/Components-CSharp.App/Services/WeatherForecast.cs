@@ -1,6 +1,6 @@
 using System;
 
-namespace BlazorServerSide_CSharp.App.Services
+namespace Components_CSharp.App.Services
 {
     public class WeatherForecast
     {

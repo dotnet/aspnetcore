@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Net.Mime;
 
-namespace BlazorServerSide_CSharp.Server
+namespace Components_CSharp.Server
 {
     public class Startup
     {
