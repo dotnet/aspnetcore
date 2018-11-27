@@ -1,0 +1,13 @@
+@using HtmlGenerationWebSite.Models
+@model ProductRecommendations
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<hr />
+<h2>You might also like these products!</h2>
+<ul>
+    @foreach (var product in Model.Products)
+    {
+        <li><a href="@product.HomePage">@product.ProductName</a></li>
+    }
+</ul>

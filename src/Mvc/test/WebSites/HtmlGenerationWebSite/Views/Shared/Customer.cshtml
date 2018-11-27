@@ -1,0 +1,46 @@
+@model HtmlGenerationWebSite.Models.Customer
+
+@{
+    ViewBag.Title = "Customer Page";
+}
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<body>
+    <form asp-route-area="Customer" asp-controller="HtmlGeneration_Customer" asp-action="Index" asp-antiforgery="true">
+        <div>
+            <label asp-for="Number" class="order"></label>
+            <input asp-for="Number" type="number" class="form-control" />
+            <span asp-validation-for="Number"></span>
+        </div>
+        <div>
+            <label asp-for="Name" class="order"></label>
+            <input asp-for="Name" type="text" />
+        </div>
+        <div>
+            <label asp-for="Email" class="order"></label>
+            <input asp-for="Email" type="email" />
+            <span asp-validation-for="Email"></span>
+        </div>
+        <div>
+            <label asp-for="PhoneNumber" class="order"></label>
+            <input asp-for="PhoneNumber" type="tel" />
+        </div>
+        <div>
+            <label asp-for="Password" class="order"></label>
+            <input asp-for="Password" type="password" class="form-control" />
+            <span asp-validation-for="Password"></span>
+        </div>
+        <div>
+            <label asp-for="Gender" class="order"></label>
+            <input asp-for="Gender" type="radio" value="Male" /> Male
+            <input asp-for="Gender" type="radio" value="Female" /> Female
+            <span asp-validation-for="Gender"></span>
+        </div>
+        <div asp-validation-summary="All" class="order"></div>
+        <div asp-validation-summary="ModelOnly" class="order"></div>
+        <input type="submit"/>
+    </form>
+</body>
+</html>

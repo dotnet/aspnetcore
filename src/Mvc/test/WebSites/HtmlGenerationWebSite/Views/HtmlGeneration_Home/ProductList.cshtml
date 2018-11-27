@@ -1,0 +1,29 @@
+@using HtmlGenerationWebSite.Models
+@model IEnumerable<Product>
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+    <meta charset="utf-8" />
+</head>
+<body>
+    @using (@Html.BeginForm("Index", "HtmlGeneration_Product", FormMethod.Post))
+    {
+        var index = 0;
+        var fieldPrefix = ViewData.TemplateInfo.HtmlFieldPrefix;
+        foreach (var model in Model)
+        {
+            @* Update HtmlFieldPrefix so generated for, id and name attribute values are correct. *@
+            ViewData.TemplateInfo.HtmlFieldPrefix = fieldPrefix + string.Format("[{0}]", index++);
+            <div>
+                <label asp-for="@(model.HomePage)" class="product"></label>
+                <input asp-for="@(model.HomePage)" type="url" size="50" disabled="disabled" readonly="readonly" />
+            </div>
+            @await Html.PartialAsync("_ProductPartial", model)
+            ViewData.TemplateInfo.HtmlFieldPrefix = fieldPrefix;
+        }
+        <input type="submit" />
+    }
+</body>
+</html>

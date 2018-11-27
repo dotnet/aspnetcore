@@ -1,0 +1,27 @@
+@model HtmlGenerationWebSite.Models.Warehouse
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewBag.Title = "Warehouse - Product";
+}
+
+<html>
+<body>
+    @using (Html.BeginForm("CreateWarehouse", "HtmlGeneration_Home"))
+    {
+        <div>
+            <label asp-for="City" class="warehouse"></label>
+            <input asp-for="City" type="text" size="50" />
+            <span asp-validation-for="City"></span>
+        </div>
+        <div>
+            <label asp-for="Product" class="warehouse"></label>
+            <select asp-for="Product" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items"></select>
+            <span asp-validation-for="Product"></span>
+        </div>
+        <div asp-validation-summary="All" class="warehouse"></div>
+        <input type="submit" />
+    }
+</body>
+</html>

@@ -1,0 +1,81 @@
+
+
+<!DOCTYPE html>
+
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Create</title>
+</head>
+<body>
+
+    <form action="/Employee/Create" method="post">
+
+        <div class="form-horizontal">
+            <h4>Employee</h4>
+            <hr />
+            <div class="text-danger validation-summary-errors" data-valmsg-summary="true">
+            <ul><li>The field Age must be between 10 and 100.</li>
+<li>The JoinDate field is required.</li>
+<li>The value &#x27;z&#x27; is not valid for Salary.</li>
+</ul></div>
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Age">Age</label>
+                <div class="col-md-10">
+                    <input class="form-control input-validation-error" type="number" data-val="true" data-val-range="The field Age must be between 10 and 100." data-val-range-max="100" data-val-range-min="10" data-val-required="The Age field is required." id="Age" name="Age" value="1000" />
+                    <span class="field-validation-error" data-valmsg-for="Age" data-valmsg-replace="true">The field Age must be between 10 and 100.</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Email">Email</label>
+                <div class="col-md-10">
+                    <input class="form-control" type="email" id="Email" name="Email" value="a@b.com" />
+                    <span class="field-validation-valid" data-valmsg-for="Email" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <input type="hidden" value="0" data-val="true" data-val-required="The EmployeeId field is required." id="EmployeeId" name="EmployeeId" />
+            <div class="form-group">
+                <label class="control-label col-md-2" for="FullName">Full Name</label>
+                <div class="col-md-10">
+                    <input class="form-control" type="text" id="FullName" name="FullName" value="Boo" />
+                    <span class="field-validation-valid" data-valmsg-for="FullName" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Gender">Gender</label>
+                <div class="col-md-10">
+                    <input type="radio" value="M" checked="checked" id="Gender" name="Gender" /> Male
+                    <input type="radio" value="F" id="Gender" name="Gender" /> Female
+                    <span class="field-validation-valid" data-valmsg-for="Gender" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-2" for="JoinDate">JoinDate</label>
+                <div class="col-md-10">
+                    <input class="form-control input-validation-error" type="date" data-val="true" data-val-required="The JoinDate field is required." id="JoinDate" name="JoinDate" value="" />
+                    <span class="field-validation-error" data-valmsg-for="JoinDate" data-valmsg-replace="true">The JoinDate field is required.</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-2" for="Salary">Salary</label>
+                <div class="col-md-10">
+                    <input class="form-control input-validation-error" type="number" id="Salary" name="Salary" value="z" />
+                    <span class="field-validation-error" data-valmsg-for="Salary" data-valmsg-replace="true">The value &#x27;z&#x27; is not valid for Salary.</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" value="Create" class="btn btn-default" />
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div>
+        <a href="/Employee">Back to List</a>
+    </div>
+</body>
+</html>
+

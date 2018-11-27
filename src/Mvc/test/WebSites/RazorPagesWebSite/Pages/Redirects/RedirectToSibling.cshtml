@@ -1,0 +1,13 @@
+@page "{handler?}"
+@functions
+{
+    public IActionResult OnGetRedirectToIndex() => RedirectToPage("Index");
+    
+    public IActionResult OnGetRedirectToRedirect() => RedirectToPage("Redirect", new { id = 10 });
+
+    public IActionResult OnGetRedirectToSubDir() => RedirectToPage("SubDir/SubDirPage");
+
+    public IActionResult OnGetRedirectToParent() => RedirectToPage("../Conventions/AuthFolder/Index");
+
+    public IActionResult OnGetRedirectToDotSlash() => RedirectToPage("./SubDir/SubDirPage");
+}

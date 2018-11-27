@@ -1,0 +1,7 @@
+@page "{handler?}"
+@functions
+{
+    public IActionResult OnGet() => RedirectToPage();
+
+    public IActionResult OnGetRedirectToIndex() => RedirectToPage("/Redirects/Index");
+}
