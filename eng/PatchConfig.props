@@ -7,6 +7,7 @@
     <PackagesInPatch>
       Microsoft.AspNetCore;
       Microsoft.AspNetCore.Server.IISIntegration;
+      Microsoft.AspNetCore.Server.Kestrel.Core;
     </PackagesInPatch>
   </PropertyGroup>
 
