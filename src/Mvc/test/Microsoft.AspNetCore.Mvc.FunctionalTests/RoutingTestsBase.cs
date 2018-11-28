@@ -1294,8 +1294,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/", result.Link);
         }
 
-
-
         [Fact]
         public virtual async Task AttributeRoutedAction_InArea_LinkToConventionalRoutedActionInArea()
         {

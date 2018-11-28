@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 "Home/Index",
                 defaults: new { controller = "Home", action = "Index" },
                 requiredValues: new { controller = "Home", action = "Index" },
-                metadataCollection: new EndpointMetadataCollection(new[] { new SuppressLinkGenerationMetadata() }));
+                metadata: new[] { new SuppressLinkGenerationMetadata() });
             var urlHelper = CreateUrlHelper(new[] { endpoint });
 
             // Act
@@ -273,19 +273,20 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             object requiredValues = null,
             int order = 0,
             string routeName = null,
-            EndpointMetadataCollection metadataCollection = null)
+            IList<object> metadata = null)
         {
-            if (metadataCollection == null)
+            metadata = metadata ?? new List<object>();
+
+            if (routeName != null)
             {
-                metadataCollection = new EndpointMetadataCollection(
-                    new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
+                metadata.Add(new RouteNameMetadata(routeName));
             }
 
             return new RouteEndpoint(
                 (httpContext) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null, requiredValues),
                 order,
-                metadataCollection,
+                new EndpointMetadataCollection(metadata),
                 null);
         }
 
