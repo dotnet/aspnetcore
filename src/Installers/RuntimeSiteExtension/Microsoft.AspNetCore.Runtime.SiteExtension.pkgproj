@@ -19,8 +19,6 @@
     <Content Include="scmApplicationHost.xdt" />
     <Content Include="install.cmd" />
     <Content Include="..\..\SiteExtensions\src\Microsoft.Web.Xdt.Extensions\bin\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
-
-    <Content Include="$(DotNetUnpackFolder)\**\*.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SharedFxArchitecture)' == 'x86'">
@@ -39,6 +37,12 @@
     <ProjectReference Include="..\Archive\Archive.Redist.zipproj" PrivateAssets="All" ReferenceOutputAssembly="False" />
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(PackageVersion)" />
   </ItemGroup>
+
+  <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <Content Include="$(DotNetUnpackFolder)\**\*.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="CopyFilesToOutputDirectory" />
   <Target Name="CoreCompile" />
