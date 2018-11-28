@@ -9,8 +9,11 @@ using System.Threading;
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     public class IOQueue : PipeScheduler
+#if NETCOREAPP3_0
+        , IThreadPoolWorkItem
+#endif
     {
-        private static readonly WaitCallback _doWorkCallback = s => ((IOQueue)s).DoWork();
+        private static readonly WaitCallback _doWorkCallback = s => ((IOQueue)s).Execute();
 
         private readonly object _workSync = new object();
         private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
@@ -30,13 +33,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 if (!_doingWork)
                 {
+#if NETCOREAPP3_0
+                    System.Threading.ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+#else
                     System.Threading.ThreadPool.UnsafeQueueUserWorkItem(_doWorkCallback, this);
+#endif
                     _doingWork = true;
                 }
             }
         }
 
-        private void DoWork()
+        public void Execute()
         {
             while (true)
             {
