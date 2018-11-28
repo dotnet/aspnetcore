@@ -117,6 +117,10 @@ On macOS/Linux:
 
 This repository is large. Look for `build.cmd`/`.sh` scripts in subfolders. These scripts can be used to invoke build and test on a smaller set of projects.
 
+#### Known issue: not every subfolder has a build.cmd script
+
+We'll be adding more. See https://github.com/aspnet/AspNetCore/issues/4247.
+
 #### Build properties
 
 Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
