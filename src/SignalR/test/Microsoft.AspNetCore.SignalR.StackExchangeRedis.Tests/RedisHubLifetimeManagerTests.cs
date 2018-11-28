@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 Options.Create(options),
                 new DefaultHubProtocolResolver(new IHubProtocol[]
                 {
-                    new JsonHubProtocol(Options.Create(jsonOptions)),
+                    new NewtonsoftJsonHubProtocol(Options.Create(jsonOptions)),
                     new MessagePackHubProtocol(Options.Create(messagePackOptions)),
                 }, NullLogger<DefaultHubProtocolResolver>.Instance));
         }

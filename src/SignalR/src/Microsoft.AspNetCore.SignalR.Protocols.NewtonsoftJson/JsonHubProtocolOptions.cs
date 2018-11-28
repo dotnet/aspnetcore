@@ -7,13 +7,13 @@ using Newtonsoft.Json;
 namespace Microsoft.AspNetCore.SignalR
 {
     /// <summary>
-    /// Options used to configure a <see cref="JsonHubProtocol"/> instance.
+    /// Options used to configure a <see cref="NewtonsoftJsonHubProtocol"/> instance.
     /// </summary>
     public class JsonHubProtocolOptions
     {
         /// <summary>
         /// Gets or sets the settings used to serialize invocation arguments and return values.
         /// </summary>
-        public JsonSerializerSettings PayloadSerializerSettings { get; set; } = JsonHubProtocol.CreateDefaultSerializerSettings();
+        public JsonSerializerSettings PayloadSerializerSettings { get; set; } = NewtonsoftJsonHubProtocol.CreateDefaultSerializerSettings();
     }
 }

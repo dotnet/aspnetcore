@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
         public void RegisteringMultipleHubProtocolsFails()
         {
             var exception = Assert.Throws<InvalidOperationException>(() => new DefaultHubProtocolResolver(new[] {
-                new JsonHubProtocol(),
-                new JsonHubProtocol()
+                new NewtonsoftJsonHubProtocol(),
+                new NewtonsoftJsonHubProtocol()
             }, NullLogger<DefaultHubProtocolResolver>.Instance));
 
             Assert.Equal($"Multiple Hub Protocols with the name 'json' were registered.", exception.Message);

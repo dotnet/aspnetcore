@@ -17,9 +17,9 @@ using Newtonsoft.Json.Serialization;
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
     /// <summary>
-    /// Implements the SignalR Hub Protocol using JSON.
+    /// Implements the SignalR Hub Protocol using JSON over Newtonsoft.Json.
     /// </summary>
-    public class JsonHubProtocol : IHubProtocol
+    public class NewtonsoftJsonHubProtocol : IHubProtocol
     {
         private const string ResultPropertyName = "result";
         private const string ItemPropertyName = "item";
@@ -41,17 +41,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         public JsonSerializer PayloadSerializer { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
+        /// Initializes a new instance of the <see cref="NewtonsoftJsonHubProtocol"/> class.
         /// </summary>
-        public JsonHubProtocol() : this(Options.Create(new JsonHubProtocolOptions()))
+        public NewtonsoftJsonHubProtocol() : this(Options.Create(new JsonHubProtocolOptions()))
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
+        /// Initializes a new instance of the <see cref="NewtonsoftJsonHubProtocol"/> class.
         /// </summary>
         /// <param name="options">The options used to initialize the protocol.</param>
-        public JsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
+        public NewtonsoftJsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
         {
             PayloadSerializer = JsonSerializer.Create(options.Value.PayloadSerializerSettings);
         }

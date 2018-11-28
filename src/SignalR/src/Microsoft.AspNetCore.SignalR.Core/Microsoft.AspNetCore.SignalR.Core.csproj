@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Common\Microsoft.AspNetCore.SignalR.Common.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Protocols.Json\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson\Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj" />
   </ItemGroup>
 
   <ItemGroup>
