@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 return SendAsync(buffers.First);
             }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP
             if (!_awaitableEventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
 #elif NETSTANDARD2_0
             if (_awaitableEventArgs.Buffer != null)
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 _awaitableEventArgs.BufferList = null;
             }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP
             _awaitableEventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
 #elif NETSTANDARD2_0
             var segment = memory.GetArray();

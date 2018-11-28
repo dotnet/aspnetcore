@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _requestStream.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             return _requestStream.ReadAsync(destination, cancellationToken);
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _responseStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETCOREAPP2_1
+#if NETCOREAPP
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             return _responseStream.WriteAsync(source, cancellationToken);
