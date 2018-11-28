@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         public ITaskItem[] Configuration { get; set; }
 
         [Required]
-        public ITaskItem[] Extensions { get;  set; }
+        public ITaskItem[] Extensions { get; set; }
 
         [Required]
         public ITaskItem[] Sources { get; set; }
@@ -90,6 +90,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             builder.AppendLine(Command);
 
+            // We might be talking to a downlevel version of the command line tool, which doesn't
+            // understand certain parameters. Assume 2.1 if we can't parse the version because 2.1
+            // 2.2 are the releases that have command line tool delivered by a package.
+            if (!System.Version.TryParse(Version, out var parsedVersion))
+            {
+                parsedVersion = new System.Version(2, 1);
+            }
+
             for (var i = 0; i < Sources.Length; i++)
             {
                 var input = Sources[i];
@@ -103,11 +111,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var outputPath = Path.Combine(ProjectRoot, input.GetMetadata(GeneratedOutput));
                 builder.AppendLine(outputPath);
 
-                var kind = input.GetMetadata(DocumentKind);
-                if (!string.IsNullOrEmpty(kind))
+                // Added in 3.0
+                if (parsedVersion.Major >= 3)
                 {
-                    builder.AppendLine("-k");
-                    builder.AppendLine(kind);
+                    var kind = input.GetMetadata(DocumentKind);
+                    if (!string.IsNullOrEmpty(kind))
+                    {
+                        builder.AppendLine("-k");
+                        builder.AppendLine(kind);
+                    }
                 }
             }
 
@@ -123,7 +135,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             builder.AppendLine("-c");
             builder.AppendLine(Configuration[0].GetMetadata(Identity));
 
-            if (GenerateDeclaration)
+            // Added in 3.0
+            if (parsedVersion.Major >= 3 && GenerateDeclaration)
             {
                 builder.AppendLine("--generate-declaration");
             }
