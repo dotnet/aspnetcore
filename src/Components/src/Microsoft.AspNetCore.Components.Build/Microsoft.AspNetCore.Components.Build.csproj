@@ -16,9 +16,35 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SignedPackageFile Include="$(PublishDir)\**\Microsoft.AspNetCore.Components.Build.exe" Certificate="3PartySHA2" />
-    <ExcludePackageFileFromSigning Include="$(PublishDir)\**\*.dll" Exclude="$(PublishDir)\**\Microsoft.AspNetCore.Components.dll;$(PublishDir)\**\Microsoft.AspNetCore.Components.Razor.Extensions.dll;" />
-    <ExcludePackageFileFromSigning Include="..\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.*.js" />
+    <!-- Assemblies built by this project -->
+    <SignedPackageFile Include="$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Components.TagHelperWorkaround.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Components.Browser.JS.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Components.Build.exe" Certificate="$(AssemblySigningCertName)" />
+
+    <!-- 3rd party assemblies we redistribute. -->
+    <SignedPackageFile Include="AngleSharp.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="Mono.Cecil.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="Mono.Cecil.Mdb.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="Mono.Cecil.Pdb.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="Mono.Cecil.Rocks.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+
+    <!-- Assemblies which should be signed by other build. -->
+    <ExcludePackageFileFromSigning Include="Microsoft.AspNetCore.Razor.Language.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.CSharp.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.Razor.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.CommandLineUtils.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Abstractions.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Composite.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Embedded.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Physical.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileSystemGlobbing.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.Primitives.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.JSInterop.dll" />
+    <ExcludePackageFileFromSigning Include="System.CodeDom.dll" />
+    <ExcludePackageFileFromSigning Include="System.Runtime.CompilerServices.Unsafe.dll" />
+    <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
   </ItemGroup>
 
   <!-- Executes /t:Publish for all target frameworks before packing-->
