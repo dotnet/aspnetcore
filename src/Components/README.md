@@ -1,51 +1,85 @@
-# Blazor
+# Components
 
-**An experimental .NET web framework using C#/Razor and HTML that runs in the browser via WebAssembly**
+**Build modern, interactive web-based UIs with C# and Razor.**
 
-[![Gitter](https://badges.gitter.im/aspnet/Blazor.svg)](https://gitter.im/aspnet/Blazor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+This repo contains the underlying *components* programming model that powers both server-side [Razor Components](#razor-components) and client-side [Blazor](#blazor) applications.
 
-Blazor is a .NET web framework that runs in any browser. You author Blazor apps using C#/Razor and HTML.
+Features of the components programming model include:
+
+- [A powerful model for building composable UI](https://blazor.net/docs/components/index.html)
+- [Routing](https://blazor.net/docs/routing.html)
+- [Layouts](https://blazor.net/docs/layouts.html)
+- Forms and validation
+- Dependency injection
+- [JavaScript interop](https://blazor.net/docs/javascript-interop.html)
+- Live reloading in the browser during development
+- Server-side rendering
+- Full .NET debugging
+- Rich IntelliSense and tooling
+
+## Razor Components
+
+Razor Components is a built-in feature of ASP.NET Core 3.0. It provides a convenient and powerful way to create sophisticated UIs that update in real-time, while keeping all your code in .NET running on the server.
+
+## Blazor
+
+Blazor is a project to run Razor Components truly client-side, in any browser, on WebAssembly. It's a full single-page application (SPA) framework inspired by the latest JavaScript SPA frameworks, featuring support for offline/PWA applications, app size trimming, and browser-based debugging.
 
 Blazor uses only the latest web standards. No plugins or transpilation needed. It runs in the browser on a real .NET runtime ([Mono](http://www.mono-project.com/news/2017/08/09/hello-webassembly/)) implemented in [WebAssembly](http://webassembly.org) that executes normal .NET assemblies.
 
-Blazor will have all the features of a modern web framework, including: 
-- [A component model for building composable UI](https://blazor.net/docs/components/index.html) 
-- [Routing](https://blazor.net/docs/routing.html) 
-- [Layouts](https://blazor.net/docs/layouts.html) 
-- Forms and validation 
-- Dependency injection 
-- [JavaScript interop](https://blazor.net/docs/javascript-interop.html) 
-- Live reloading in the browser during development 
-- Server-side rendering 
-- Full .NET debugging both in browsers and in the IDE
-- Rich IntelliSense and tooling
-- Publishing and app size trimming 
+[![Gitter](https://badges.gitter.im/aspnet/Blazor.svg)](https://gitter.im/aspnet/Blazor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-> Note: Blazor is an *experimental* project. It's not (yet) a committed product. This is to allow time to fully investigate the technical issues associated with running .NET in the browser and to ensure we can build something that developers love and can be productive with. During this experimental phase, we expect to engage deeply with early Blazor adopters like you to hear your feedback and suggestions.
+> Note: client-side Blazor is an *experimental* project. It's not yet a committed product . This is to allow time to fully investigate the technical issues associated with running .NET in the browser and to ensure we can build something that developers love and can be productive with. During this experimental phase, we expect to engage deeply with early Blazor adopters like you to hear your feedback and suggestions.
 
 To see Blazor in action, check out [Steve Sanderson's demo at NDC Minnesota](https://www.youtube.com/watch?v=JU-6pAxqAa4). You can also try out a [simple live Blazor app](https://blazor-demo.github.io/).
 
 ## Getting Started
 
-To get started with Blazor and build your first Blazor web app check out our [getting started guide](https://go.microsoft.com/fwlink/?linkid=870449).
+To get started and build your first web app check out our [getting started guide](https://go.microsoft.com/fwlink/?linkid=870449).
 
-## Building the Repo
+## Building from source
 
-Prerequisites:
-- [Node.js](https://nodejs.org/) (>8.3)
-- Restore Git submodules by running the following command at the repo root:
+You only need to do this if you want to contribute to this repo. You do not need to build from source if you just want to [build your own application](https://go.microsoft.com/fwlink/?linkid=870449).
 
-      git submodule update --init --recursive
+For general guidance on building ASP.NET Core sources, see the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source). **Please read this document and check your PATH setup if you have trouble building or using Visual Studio.**
 
-The Blazor repository uses the same set of build tools as the other ASP.NET Core projects. The [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source) for building is the authoritative guide. **Please read this document and check your PATH setup if you have trouble building or using Visual Studio.**
+### 1. Prerequisites
 
-To build at the command line, run `build.cmd` or `build.sh` from the solution directory.
+Ensure you have the following:
 
-If you get a build error similar to *The project file "(some path)\blazor\modules\jsinterop\src\Mono.WebAssembly.Interop\Mono.WebAssembly.Interop.csproj" was not found.*, it's because you didn't yet restore the Git submodules. Please see *Prerequisites* above.
+- [Node.js](https://nodejs.org/) (>10.0)
+
+
+### 2. Clone
+
+Clone this repo, and switch to its directory:
+
+```
+git clone https://github.com/aspnet/AspNetCore.git
+cd AspNetCore
+```
+
+### 3. Build
+
+Run `build.cmd` or `build.sh` from `src/Components`.
+
+Windows users:
+
+```
+cd src\Components
+build.cmd
+```
+
+Linux/Mac users:
+
+```
+cd src/Components
+./build.sh
+```
 
 ## Run unit tests
 
-Run `build.cmd /t:Test` or `build.sh /t:Test`
+While inside `src/Components`, run `build.cmd /t:Test` or `build.sh /t:Test`
 
 ## Run end-to-end tests
 
@@ -58,21 +92,19 @@ Prerequisites:
 
 Run `selenium-standalone start`
 
-Run `build.cmd /t:Test /p:BlazorAllTests=true` or `build.sh /t:Test /p:BlazorAllTests=true`
+In a separate command prompt, run `build.cmd /t:Test /p:BlazorAllTests=true` or `build.sh /t:Test /p:BlazorAllTests=true`
 
 ## Opening in Visual Studio
 
 Prerequisites:
-- Follow the steps [here](https://github.com/aspnet/Home/wiki/Building-from-source) to set up a local copy of dotnet
-- Visual Studio 2017 15.7 latest preview - [download](https://www.visualstudio.com/thank-you-downloading-visual-studio/?ch=pre&sku=Enterprise&rel=15)
+
+- Visual Studio 2017 15.9 - [download](https://www.visualstudio.com/thank-you-downloading-visual-studio/?ch=pre&sku=Enterprise&rel=15)
 
 When installing Visual Studio choose the following workloads:
 - ASP.NET and Web Development
 - Visual Studio extension development features
 
-Before attempting to open the Blazor repo in Visual Studio, restore Git submodules by running the following command at the repo root:
-
-    git submodule update --init --recursive
+Now open `src/Components/Component.sln` in Visual Studio.
 
 If you have problems using Visual Studio with `Components.sln` please refer to the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source).
 
@@ -108,7 +140,7 @@ Or in a NuGet.config in the same directory as the solution file:
 </configuration>
 ```
 
-You can browse https://dotnet.myget.org/gallery/blazor-dev to find the current versions of packages. We recommend picking a specific version of the packages and using it across your projects. 
+You can browse https://dotnet.myget.org/gallery/blazor-dev to find the current versions of packages. We recommend picking a specific version of the packages and using it across your projects.
 
 ```xml
 <ItemGroup>
