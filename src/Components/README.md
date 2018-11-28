@@ -41,7 +41,7 @@ To get started and build your first web app check out our [getting started guide
 
 You only need to do this if you want to contribute to this repo. You do not need to build from source if you just want to [build your own application](https://go.microsoft.com/fwlink/?linkid=870449).
 
-The Blazor repository uses the same set of build tools as the other ASP.NET Core projects. The [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source) for building is the authoritative guide. **Please read this document and check your PATH setup if you have trouble building or using Visual Studio.**
+For general guidance on building ASP.NET Core sources, see the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source). **Please read this document and check your PATH setup if you have trouble building or using Visual Studio.**
 
 ### 1. Prerequisites
 
