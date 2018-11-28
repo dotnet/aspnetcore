@@ -21,8 +21,8 @@ namespace Templates.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void RazorPagesTemplate_IndividualAuthImpl(bool useLocalDB)
-            => await RazorPagesBase(targetFrameworkOverride: null, auth: IndividualAuth);
+        public async Task RazorPagesTemplate_IndividualAuthImpl(bool useLocalDB)
+            => await RazorPagesBase(targetFrameworkOverride: null, auth: IndividualAuth, useLocalDb: useLocalDB);
 
         private async Task RazorPagesBase(
             string targetFrameworkOverride,
