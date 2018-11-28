@@ -16,7 +16,7 @@ module Program =
     let CreateWebHostBuilder args =
         WebHost
             .CreateDefaultBuilder(args)
-            .UseStartup<Startup>();            
+            .UseStartup<Startup>();
 
     [<EntryPoint>]
     let main args =
