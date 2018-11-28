@@ -30,15 +30,14 @@
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" />
 
-    <!-- Components is not shipping in Preview 1 -->
-    <PackageArtifact Include="Microsoft.AspNetCore.Blazor.Cli" Category="noship" />
+    <!-- <PackageArtifact Include="Microsoft.AspNetCore.Blazor.Cli" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Blazor.Templates" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Analyzers" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Browser" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Build" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Razor.Extensions" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Components.Server" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Components.Server" Category="noship" /> -->
 
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Category="ship" />

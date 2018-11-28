@@ -7,7 +7,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="Components" Order="6" RootPath="$(RepositoryRoot)src\Components\" />
     <RepositoryBuildOrder Include="Razor" Order="6" RootPath="$(RepositoryRoot)src\Razor\" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
@@ -30,6 +29,7 @@
     <RepositoryBuildOrder Include="MusicStore" Order="16" RootPath="$(RepositoryRoot)src\MusicStore\" />
     <RepositoryBuildOrder Include="SignalR" Order="16" RootPath="$(RepositoryRoot)src\SignalR\" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" RootPath="$(RepositoryRoot)src\AuthSamples\" />
+    <!-- <RepositoryBuildOrder Include="Components" Order="17 RootPath="$(RepositoryRoot)src\Components\" /> -->
     <RepositoryBuildOrder Include="Templating" Order="18" RootPath="$(RepositoryRoot)src\Templating\" />
   </ItemGroup>
 </Project>
