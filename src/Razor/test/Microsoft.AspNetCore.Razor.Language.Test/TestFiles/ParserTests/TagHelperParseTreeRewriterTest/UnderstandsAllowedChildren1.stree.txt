@@ -1,0 +1,5 @@
+Markup block - Gen<None> - 13 - (0:0,0)
+    Tag block - Gen<TagHelper> - 13 - (0:0,0) - p - PTagHelper
+        StartTagAndEndTag - <p> ... </p>
+        Tag block - Gen<TagHelper> - 6 - (3:0,3) - br - BRTagHelper
+            SelfClosing - <br />

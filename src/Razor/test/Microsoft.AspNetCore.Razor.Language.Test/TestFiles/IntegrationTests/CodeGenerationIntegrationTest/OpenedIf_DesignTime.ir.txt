@@ -1,0 +1,26 @@
+Document - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_OpenedIf_DesignTime -  - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [16] OpenedIf.cshtml)
+                    IntermediateToken - (0:0,0 [6] OpenedIf.cshtml) - Html - <html>
+                    IntermediateToken - (6:0,6 [2] OpenedIf.cshtml) - Html - \n
+                    IntermediateToken - (8:1,0 [6] OpenedIf.cshtml) - Html - <body>
+                    IntermediateToken - (14:1,6 [2] OpenedIf.cshtml) - Html - \n
+                CSharpCode - (17:2,1 [14] OpenedIf.cshtml)
+                    IntermediateToken - (17:2,1 [14] OpenedIf.cshtml) - CSharp - if (true) { \n
+                HtmlContent - (31:3,0 [7] OpenedIf.cshtml)
+                    IntermediateToken - (31:3,0 [7] OpenedIf.cshtml) - Html - </body>
+                CSharpCode - (38:3,7 [2] OpenedIf.cshtml)
+                    IntermediateToken - (38:3,7 [2] OpenedIf.cshtml) - CSharp - \n
+                HtmlContent - (40:4,0 [7] OpenedIf.cshtml)
+                    IntermediateToken - (40:4,0 [7] OpenedIf.cshtml) - Html - </html>
+                CSharpCode - (47:4,7 [0] OpenedIf.cshtml)
+                    IntermediateToken - (47:4,7 [0] OpenedIf.cshtml) - CSharp - 

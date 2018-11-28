@@ -1,0 +1,18 @@
+@page
+@{
+    Layout = "_Layout";
+}
+@functions
+{
+    [ViewData]
+    public string Title { get; set; } = "Default value";
+
+    [ViewData]
+    public string Description { get; set; }
+
+    public void OnGet()
+    {
+        Description = "Description set in page handler";
+    }
+}
+Sample that shows ViewData being set from a page without handler.

@@ -1,0 +1,3 @@
+﻿<Project ToolsVersion="14.0">
+  <Import Project="..\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
+</Project>

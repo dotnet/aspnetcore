@@ -1,0 +1,12 @@
+Markup block - Gen<None> - 47 - (0:0,0)
+    Tag block - Gen<TagHelper> - 47 - (0:0,0) - strong - catchAllTagHelper
+        StartTagAndEndTag - <strong catchAll="hi"> ... </strong>
+        catchAll - DoubleQuotes
+            Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
+                HtmlTokenType.Text;[hi];
+        Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (22:0,22) - Tokens:5
+            HtmlTokenType.Text;[words];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[and];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[spaces];

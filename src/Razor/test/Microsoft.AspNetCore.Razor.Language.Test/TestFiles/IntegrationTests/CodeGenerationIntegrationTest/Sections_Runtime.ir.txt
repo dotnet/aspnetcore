@@ -1,0 +1,53 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Sections_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (2:0,2 [44] Sections.cshtml)
+                    IntermediateToken - (2:0,2 [44] Sections.cshtml) - CSharp - \n    Layout = "_SectionTestLayout.cshtml"\n
+                HtmlContent - (49:3,0 [31] Sections.cshtml)
+                    IntermediateToken - (49:3,0 [2] Sections.cshtml) - Html - \n
+                    IntermediateToken - (51:4,0 [5] Sections.cshtml) - Html - <div>
+                    IntermediateToken - (56:4,5 [24] Sections.cshtml) - Html - This is in the Body>\n\n
+                Section -  - Section2
+                    HtmlContent - (99:6,19 [10] Sections.cshtml)
+                        IntermediateToken - (99:6,19 [6] Sections.cshtml) - Html - \n    
+                        IntermediateToken - (105:7,4 [4] Sections.cshtml) - Html - <div
+                    HtmlAttribute - (109:7,8 [20] Sections.cshtml) -  class=" - "
+                        HtmlAttributeValue - (117:7,16 [4] Sections.cshtml) - 
+                            IntermediateToken - (117:7,16 [4] Sections.cshtml) - Html - some
+                        CSharpExpressionAttributeValue - (121:7,20 [7] Sections.cshtml) -  
+                            IntermediateToken - (123:7,22 [5] Sections.cshtml) - CSharp - thing
+                    HtmlContent - (129:7,28 [29] Sections.cshtml)
+                        IntermediateToken - (129:7,28 [1] Sections.cshtml) - Html - >
+                        IntermediateToken - (130:7,29 [20] Sections.cshtml) - Html - This is in Section 2
+                        IntermediateToken - (150:7,49 [6] Sections.cshtml) - Html - </div>
+                        IntermediateToken - (156:7,55 [2] Sections.cshtml) - Html - \n
+                HtmlContent - (161:9,0 [2] Sections.cshtml)
+                    IntermediateToken - (161:9,0 [2] Sections.cshtml) - Html - \n
+                Section -  - Section1
+                    HtmlContent - (182:10,19 [39] Sections.cshtml)
+                        IntermediateToken - (182:10,19 [6] Sections.cshtml) - Html - \n    
+                        IntermediateToken - (188:11,4 [5] Sections.cshtml) - Html - <div>
+                        IntermediateToken - (193:11,9 [20] Sections.cshtml) - Html - This is in Section 1
+                        IntermediateToken - (213:11,29 [6] Sections.cshtml) - Html - </div>
+                        IntermediateToken - (219:11,35 [2] Sections.cshtml) - Html - \n
+                HtmlContent - (224:13,0 [2] Sections.cshtml)
+                    IntermediateToken - (224:13,0 [2] Sections.cshtml) - Html - \n
+                Section -  - NestedDelegates
+                    HtmlContent - (252:14,26 [2] Sections.cshtml)
+                        IntermediateToken - (252:14,26 [2] Sections.cshtml) - Html - \n
+                    CSharpCode - (254:15,0 [4] Sections.cshtml)
+                        IntermediateToken - (254:15,0 [4] Sections.cshtml) - CSharp -     
+                    CSharpCode - (260:15,6 [27] Sections.cshtml)
+                        IntermediateToken - (260:15,6 [27] Sections.cshtml) - CSharp -  Func<dynamic, object> f = 
+                    Template - (288:15,34 [17] Sections.cshtml)
+                        HtmlContent - (288:15,34 [6] Sections.cshtml)
+                            IntermediateToken - (288:15,34 [6] Sections.cshtml) - Html - <span>
+                        CSharpExpression - (295:15,41 [4] Sections.cshtml)
+                            IntermediateToken - (295:15,41 [4] Sections.cshtml) - CSharp - item
+                        HtmlContent - (299:15,45 [7] Sections.cshtml)
+                            IntermediateToken - (299:15,45 [7] Sections.cshtml) - Html - </span>
+                    CSharpCode - (306:15,52 [2] Sections.cshtml)
+                        IntermediateToken - (306:15,52 [2] Sections.cshtml) - CSharp - ; 

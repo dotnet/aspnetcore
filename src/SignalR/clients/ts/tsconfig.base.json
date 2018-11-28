@@ -1,0 +1,30 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "module": "es2015",
+        "target": "es5",
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "inlineSources": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "removeComments": false,
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "noEmitOnError": true,
+        "stripInternal": true,
+        "strict": true,
+        "lib": [ "es5", "es2015.promise", "es2015.iterable", "dom" ],
+        "baseUrl": ".",
+        "paths": {
+            "@aspnet/signalr": [
+                "./signalr"
+            ],
+            "@aspnet/signalr-protocol-msgpack": [
+                "./signalr-protocol-msgpack"
+            ]
+        }
+    }
+}

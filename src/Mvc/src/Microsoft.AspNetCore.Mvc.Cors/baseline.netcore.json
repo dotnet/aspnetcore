@@ -1,0 +1,165 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Cors, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddCors",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddCors",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureCors",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Cors.CorsAuthorizationFilter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Cors.Internal.ICorsAuthorizationFilter"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnAuthorizationAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IAsyncAuthorizationFilter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Order",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IOrderedFilter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PolicyName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PolicyName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "corsService",
+              "Type": "Microsoft.AspNetCore.Cors.Infrastructure.ICorsService"
+            },
+            {
+              "Name": "policyProvider",
+              "Type": "Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "corsService",
+              "Type": "Microsoft.AspNetCore.Cors.Infrastructure.ICorsService"
+            },
+            {
+              "Name": "policyProvider",
+              "Type": "Microsoft.AspNetCore.Cors.Infrastructure.ICorsPolicyProvider"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

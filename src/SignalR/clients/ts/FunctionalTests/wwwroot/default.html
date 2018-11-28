@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>SignalR Client End-to-End tests</title>
+    <link rel="stylesheet" href="lib/jasmine/jasmine.css" />
+</head>
+
+<body>
+
+    <script type="text/javascript" src="lib/jasmine/jasmine.js"></script>
+    <script type="text/javascript" src="lib/jasmine/jasmine-html.js"></script>
+    <script type="text/javascript" src="lib/jasmine/boot.js"></script>
+    <script type="text/javascript" src="lib/msgpack5/msgpack5.js"></script>
+    <script type="text/javascript">
+        function getParameterByName(name, url) {
+            if (!url) {
+                url = window.location.href;
+            }
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+
+        var minified = getParameterByName('release') === 'true' ? '.min' : '';
+        var cacheBust = getParameterByName('cacheBust') === 'true' ? ('?' + Math.random().toString().substring(2)) : '';
+        document.write(
+            '<script type="text/javascript" src="lib/signalr/signalr' + minified + '.js' + cacheBust + '"><\/script>' +
+            '<script type="text/javascript" src="lib/signalr/signalr-protocol-msgpack' + minified + '.js' + cacheBust + '"><\/script>' +
+            '<script type="text/javascript" src="dist/signalr-functional-tests.js' + cacheBust + '"><\/script>');
+    </script>
+</body>
+
+</html>

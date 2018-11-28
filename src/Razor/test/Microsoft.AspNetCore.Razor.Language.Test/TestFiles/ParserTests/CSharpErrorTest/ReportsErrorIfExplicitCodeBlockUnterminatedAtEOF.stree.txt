@@ -1,0 +1,32 @@
+Statement block - Gen<None> - 44 - (0:0,0)
+    MetaCode span - Gen<None> - [{] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.LeftBrace;[{];
+    Code span - Gen<Stmt> - [ var foo = bar; if(foo != null) { bar(); } ] - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[}];AtEOL - (1:0,1) - Tokens:28
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[var];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Assign;[=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[bar];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[if];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.NotEqual;[!=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[null];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[bar];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];

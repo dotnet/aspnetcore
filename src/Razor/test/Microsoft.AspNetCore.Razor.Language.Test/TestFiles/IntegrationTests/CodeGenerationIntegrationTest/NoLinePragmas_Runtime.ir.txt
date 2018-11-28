@@ -1,0 +1,113 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NoLinePragmas_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (2:0,2 [18] NoLinePragmas.cshtml)
+                    IntermediateToken - (2:0,2 [18] NoLinePragmas.cshtml) - CSharp - \n    int i = 1;\n
+                HtmlContent - (23:3,0 [2] NoLinePragmas.cshtml)
+                    IntermediateToken - (23:3,0 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (26:4,1 [18] NoLinePragmas.cshtml)
+                    IntermediateToken - (26:4,1 [18] NoLinePragmas.cshtml) - CSharp - while(i <= 10) {\n
+                HtmlContent - (44:5,0 [23] NoLinePragmas.cshtml)
+                    IntermediateToken - (44:5,0 [4] NoLinePragmas.cshtml) - Html -     
+                    IntermediateToken - (48:5,4 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (51:5,7 [16] NoLinePragmas.cshtml) - Html - Hello from C#, #
+                CSharpExpression - (69:5,25 [1] NoLinePragmas.cshtml)
+                    IntermediateToken - (69:5,25 [1] NoLinePragmas.cshtml) - CSharp - i
+                HtmlContent - (71:5,27 [6] NoLinePragmas.cshtml)
+                    IntermediateToken - (71:5,27 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (75:5,31 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (77:6,0 [16] NoLinePragmas.cshtml)
+                    IntermediateToken - (77:6,0 [16] NoLinePragmas.cshtml) - CSharp -     i += 1;\n}\n
+                HtmlContent - (93:8,0 [2] NoLinePragmas.cshtml)
+                    IntermediateToken - (93:8,0 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (96:9,1 [15] NoLinePragmas.cshtml)
+                    IntermediateToken - (96:9,1 [15] NoLinePragmas.cshtml) - CSharp - if(i == 11) {\n
+                HtmlContent - (111:10,0 [31] NoLinePragmas.cshtml)
+                    IntermediateToken - (111:10,0 [4] NoLinePragmas.cshtml) - Html -     
+                    IntermediateToken - (115:10,4 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (118:10,7 [18] NoLinePragmas.cshtml) - Html - We wrote 10 lines!
+                    IntermediateToken - (136:10,25 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (140:10,29 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (142:11,0 [3] NoLinePragmas.cshtml)
+                    IntermediateToken - (142:11,0 [3] NoLinePragmas.cshtml) - CSharp - }\n
+                HtmlContent - (145:12,0 [2] NoLinePragmas.cshtml)
+                    IntermediateToken - (145:12,0 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (148:13,1 [27] NoLinePragmas.cshtml)
+                    IntermediateToken - (148:13,1 [27] NoLinePragmas.cshtml) - CSharp - switch(i) {\n    case 11:\n
+                HtmlContent - (175:15,0 [46] NoLinePragmas.cshtml)
+                    IntermediateToken - (175:15,0 [8] NoLinePragmas.cshtml) - Html -         
+                    IntermediateToken - (183:15,8 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (186:15,11 [29] NoLinePragmas.cshtml) - Html - No really, we wrote 10 lines!
+                    IntermediateToken - (215:15,40 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (219:15,44 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (221:16,0 [30] NoLinePragmas.cshtml)
+                    IntermediateToken - (221:16,0 [30] NoLinePragmas.cshtml) - CSharp -         break;\n    default:\n
+                HtmlContent - (251:18,0 [39] NoLinePragmas.cshtml)
+                    IntermediateToken - (251:18,0 [8] NoLinePragmas.cshtml) - Html -         
+                    IntermediateToken - (259:18,8 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (262:18,11 [22] NoLinePragmas.cshtml) - Html - Actually, we didn't...
+                    IntermediateToken - (284:18,33 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (288:18,37 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (290:19,0 [19] NoLinePragmas.cshtml)
+                    IntermediateToken - (290:19,0 [19] NoLinePragmas.cshtml) - CSharp -         break;\n}\n
+                HtmlContent - (309:21,0 [2] NoLinePragmas.cshtml)
+                    IntermediateToken - (309:21,0 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (312:22,1 [35] NoLinePragmas.cshtml)
+                    IntermediateToken - (312:22,1 [35] NoLinePragmas.cshtml) - CSharp - for(int j = 1; j <= 10; j += 2) {\n
+                HtmlContent - (347:23,0 [29] NoLinePragmas.cshtml)
+                    IntermediateToken - (347:23,0 [4] NoLinePragmas.cshtml) - Html -     
+                    IntermediateToken - (351:23,4 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (354:23,7 [22] NoLinePragmas.cshtml) - Html - Hello again from C#, #
+                CSharpExpression - (378:23,31 [1] NoLinePragmas.cshtml)
+                    IntermediateToken - (378:23,31 [1] NoLinePragmas.cshtml) - CSharp - j
+                HtmlContent - (380:23,33 [6] NoLinePragmas.cshtml)
+                    IntermediateToken - (380:23,33 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (384:23,37 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (386:24,0 [3] NoLinePragmas.cshtml)
+                    IntermediateToken - (386:24,0 [3] NoLinePragmas.cshtml) - CSharp - }\n
+                HtmlContent - (389:25,0 [2] NoLinePragmas.cshtml)
+                    IntermediateToken - (389:25,0 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (392:26,1 [7] NoLinePragmas.cshtml)
+                    IntermediateToken - (392:26,1 [7] NoLinePragmas.cshtml) - CSharp - try {\n
+                HtmlContent - (399:27,0 [41] NoLinePragmas.cshtml)
+                    IntermediateToken - (399:27,0 [4] NoLinePragmas.cshtml) - Html -     
+                    IntermediateToken - (403:27,4 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (406:27,7 [28] NoLinePragmas.cshtml) - Html - That time, we wrote 5 lines!
+                    IntermediateToken - (434:27,35 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (438:27,39 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (440:28,0 [25] NoLinePragmas.cshtml)
+                    IntermediateToken - (440:28,0 [25] NoLinePragmas.cshtml) - CSharp - } catch(Exception ex) {\n
+                HtmlContent - (465:29,0 [33] NoLinePragmas.cshtml)
+                    IntermediateToken - (465:29,0 [4] NoLinePragmas.cshtml) - Html -     
+                    IntermediateToken - (469:29,4 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (472:29,7 [26] NoLinePragmas.cshtml) - Html - Oh no! An error occurred: 
+                CSharpExpression - (500:29,35 [10] NoLinePragmas.cshtml)
+                    IntermediateToken - (500:29,35 [10] NoLinePragmas.cshtml) - CSharp - ex.Message
+                HtmlContent - (511:29,46 [6] NoLinePragmas.cshtml)
+                    IntermediateToken - (511:29,46 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (515:29,50 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (517:30,0 [5] NoLinePragmas.cshtml)
+                    IntermediateToken - (517:30,0 [5] NoLinePragmas.cshtml) - CSharp - }\n\n
+                CSharpCode - (556:32,34 [2] NoLinePragmas.cshtml)
+                    IntermediateToken - (556:32,34 [2] NoLinePragmas.cshtml) - CSharp - \n
+                HtmlContent - (558:33,0 [12] NoLinePragmas.cshtml)
+                    IntermediateToken - (558:33,0 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (561:33,3 [9] NoLinePragmas.cshtml) - Html - i is now 
+                CSharpExpression - (571:33,13 [1] NoLinePragmas.cshtml)
+                    IntermediateToken - (571:33,13 [1] NoLinePragmas.cshtml) - CSharp - i
+                HtmlContent - (572:33,14 [8] NoLinePragmas.cshtml)
+                    IntermediateToken - (572:33,14 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (576:33,18 [4] NoLinePragmas.cshtml) - Html - \n\n
+                CSharpCode - (581:35,1 [22] NoLinePragmas.cshtml)
+                    IntermediateToken - (581:35,1 [22] NoLinePragmas.cshtml) - CSharp - lock(new object()) {\n
+                HtmlContent - (603:36,0 [53] NoLinePragmas.cshtml)
+                    IntermediateToken - (603:36,0 [4] NoLinePragmas.cshtml) - Html -     
+                    IntermediateToken - (607:36,4 [3] NoLinePragmas.cshtml) - Html - <p>
+                    IntermediateToken - (610:36,7 [40] NoLinePragmas.cshtml) - Html - This block is locked, for your security!
+                    IntermediateToken - (650:36,47 [4] NoLinePragmas.cshtml) - Html - </p>
+                    IntermediateToken - (654:36,51 [2] NoLinePragmas.cshtml) - Html - \n
+                CSharpCode - (656:37,0 [1] NoLinePragmas.cshtml)
+                    IntermediateToken - (656:37,0 [1] NoLinePragmas.cshtml) - CSharp - }

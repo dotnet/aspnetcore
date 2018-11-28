@@ -1,0 +1,91 @@
+@{
+    ViewBag.Title = "Home Page";
+}
+
+@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.AnchorTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<body>
+    <div>
+        <a asp-controller="HtmlGeneration_Product" title="&lt;the title>">Product Index</a>
+    </div>
+    <div>
+        <a asp-controller="HtmlGeneration_Product" asp-action="List" title='"the" title'>Product List</a>
+    </div>
+    <div>
+        <a id="HtmlGenerationWebSite_Index">HtmlGenerationWebSite Index</a>
+    </div>
+    <div>
+        <a asp-action="Index">Default Controller</a>
+    </div>
+    <div>
+        <a asp-fragment="fragment" asp-controller="HtmlGeneration_Product">Product Index Fragment</a>
+    </div>
+    <div>
+        <a asp-controller="HtmlGeneration_Product" asp-action="Submit" asp-fragment="fragment">Product Submit Fragment</a>
+    </div>
+    <div>
+        <a id="HtmlGenerationWebSite_IndexFragment" asp-fragment="fragment">
+            HtmlGenerationWebSite Index Fragment
+        </a>
+    </div>
+    <div>
+        <a asp-action="Index" asp-fragment="fragment" asp-protocol="ftp">
+            FTP HtmlGenerationWebSite Index Fragment
+        </a>
+    </div>
+    <div>
+        <a asp-controller="HtmlGeneration_Product" asp-protocol="unkonwn" asp-action="List">
+            Unknown Protocol Product List
+        </a>
+    </div>
+    <div>
+        <a id="HtmlGenerationWebSite_IndexProtocol" asp-protocol="">
+            Empty Protocol HtmlGenerationWebSite Index
+        </a>
+    </div>
+    <div>
+        <a asp-route="areaRoute" asp-route-area="Customer"
+           asp-route-controller="HtmlGeneration_Customer"
+           asp-route-action="Index"
+           asp-fragment="fragment">Customer Area Customer Index</a>
+    </div>
+    <div>
+        <a href="/Order/List">Href Order List</a>
+    </div>
+    <div>
+        <a asp-controller="NonExistentController">Non-existent Controller</a>
+    </div>
+    <div>
+        <a asp-controller="NonExistentController" asp-fragment="fragment">
+            Non-existent Controller Fragment
+        </a>
+    </div>
+    <div>
+        <a asp-controller="Order" asp-action="NonExistentAction">Non-existent Action</a>
+    </div>
+    <div>
+        <a id="Id" asp-host="somewhere">Some Where</a>
+    </div>
+    <div>
+        <a asp-protocol="unknown" asp-controller="NoControll" asp-fragment="fragment">
+            Unknown Protocol Non-existent Controller Fragment
+        </a>
+    </div>
+    <div>
+        <a asp-route="productRoute"
+           asp-fragment="fragment"
+           asp-route-action="Submit"
+           asp-route-area="NonExistentArea"
+           asp-route-id="1">Product Route Non-existent Area Parameter</a>
+    </div>
+    <div>
+        <a asp-route="areaRoute"
+           asp-route-area="NonExistentArea"
+           asp-route-controller="Customer"
+           asp-route-action="Index"
+           asp-protocol="http"
+           asp-fragment="fragment">Non-existent Area</a>
+    </div>
+</body>
+</html>

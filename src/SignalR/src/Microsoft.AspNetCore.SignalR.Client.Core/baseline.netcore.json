@@ -1,0 +1,3052 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.SignalR.Client.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Client.HubConnection",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "add_Closed",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<System.Exception, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "remove_Closed",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<System.Exception, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ServerTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ServerTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HandshakeTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HandshakeTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StopAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DisposeAsync",
+          "Parameters": [],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "On",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "parameterTypes",
+              "Type": "System.Type[]"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Func<System.Object[], System.Object, System.Threading.Tasks.Task>"
+            },
+            {
+              "Name": "state",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelCoreAsync",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "returnType",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<System.Object>>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeCoreAsync",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "returnType",
+              "Type": "System.Type"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Object>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendCoreAsync",
+          "Parameters": [
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "connectionFactory",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IConnectionFactory"
+            },
+            {
+              "Name": "protocol",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol"
+            },
+            {
+              "Name": "serviceProvider",
+              "Type": "System.IServiceProvider"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "connectionFactory",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IConnectionFactory"
+            },
+            {
+              "Name": "protocol",
+              "Type": "Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "DefaultServerTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "DefaultHandshakeTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Services",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.ISignalRBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.HubConnection",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ToString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "New": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ConfigureLogging",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "configureLogging",
+              "Type": "System.Action<Microsoft.Extensions.Logging.ILoggingBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Client.HubConnectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "On",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "On<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<T0>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T1",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "On<T0, T1>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<T0, T1>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T1",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T2",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "On<T0, T1, T2>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<T0, T1, T2>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T1",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T2",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T3",
+              "ParameterPosition": 2,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "On<T0, T1, T2, T3>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<T0, T1, T2, T3>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T1",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T2",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T3",
+              "ParameterPosition": 2,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T4",
+              "ParameterPosition": 3,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "On<T0, T1, T2, T3, T4>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<T0, T1, T2, T3, T4>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T1",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T2",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T3",
+              "ParameterPosition": 2,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T4",
+              "ParameterPosition": 3,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T5",
+              "ParameterPosition": 4,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "On<T0, T1, T2, T3, T4, T5>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<T0, T1, T2, T3, T4, T5>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T1",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T2",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T3",
+              "ParameterPosition": 2,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T4",
+              "ParameterPosition": 3,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T5",
+              "ParameterPosition": 4,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T6",
+              "ParameterPosition": 5,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "On<T0, T1, T2, T3, T4, T5, T6>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<T0, T1, T2, T3, T4, T5, T6>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T1",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T2",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T3",
+              "ParameterPosition": 2,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T4",
+              "ParameterPosition": 3,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T5",
+              "ParameterPosition": 4,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T6",
+              "ParameterPosition": 5,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T7",
+              "ParameterPosition": 6,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "On<T0, T1, T2, T3, T4, T5, T6, T7>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Action<T0, T1, T2, T3, T4, T5, T6, T7>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "T1",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T2",
+              "ParameterPosition": 1,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T3",
+              "ParameterPosition": 2,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T4",
+              "ParameterPosition": 3,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T5",
+              "ParameterPosition": 4,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T6",
+              "ParameterPosition": 5,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T7",
+              "ParameterPosition": 6,
+              "BaseTypeOrInterfaces": []
+            },
+            {
+              "ParameterName": "T8",
+              "ParameterPosition": 7,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "On",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "parameterTypes",
+              "Type": "System.Type[]"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Func<System.Object[], System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "System.IDisposable",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg10",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeCoreAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg10",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "InvokeCoreAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<T0>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SendAsync",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg10",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "arg1",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg2",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg3",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg4",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg5",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg6",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg7",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg8",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg9",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "arg10",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StreamAsChannelCoreAsync<T0>",
+          "Parameters": [
+            {
+              "Name": "hubConnection",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.HubConnection"
+            },
+            {
+              "Name": "methodName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "args",
+              "Type": "System.Object[]"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Threading.Channels.ChannelReader<T0>>",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TResult",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": []
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Client.IConnectionFactory",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ConnectAsync",
+          "Parameters": [
+            {
+              "Name": "transferFormat",
+              "Type": "Microsoft.AspNetCore.Connections.TransferFormat"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Connections.ConnectionContext>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DisposeAsync",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.Connections.ConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.ISignalRBuilder"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.HubConnection",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

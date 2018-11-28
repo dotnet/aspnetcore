@@ -1,0 +1,49 @@
+{
+  "name": "@aspnet/signalr",
+  "version": "1.1.0-rtm-t000",
+  "description": "ASP.NET Core SignalR Client",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "typings": "./dist/esm/index.d.ts",
+  "umd": "./dist/browser/signalr.js",
+  "umd_name": "signalR",
+  "directories": {
+    "test": "spec"
+  },
+  "scripts": {
+    "clean": "node ../common/node_modules/rimraf/bin.js ./dist",
+    "build": "npm run clean && npm run build:lint && npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
+    "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
+    "build:esm": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d && node ./build/process-dts.js",
+    "build:cjs": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
+    "build:browser": "node ../common/node_modules/webpack-cli/bin/cli.js",
+    "build:uglify": "node ../common/node_modules/uglify-js/bin/uglifyjs --source-map \"url='signalr.min.js.map',content='./dist/browser/signalr.js.map'\" --comments -o ./dist/browser/signalr.min.js ./dist/browser/signalr.js",
+    "prepack": "node ../build/embed-version.js",
+    "test": "echo \"Run 'npm test' in the 'clients\\ts' folder to test this package\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aspnet/SignalR.git"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/aspnet/SignalR/issues"
+  },
+  "homepage": "https://github.com/aspnet/SignalR#readme",
+  "files": [
+    "dist/**/*",
+    "src/**/*"
+  ],
+  "devDependencies": {
+    "es6-promise": "^4.2.2",
+    "@types/node": "^10.9.4",
+    "@types/eventsource": "^1.0.2",
+    "@types/request": "^2.47.1"
+  },
+  "dependencies": {
+    "ws": "^6.0.0",
+    "eventsource": "^1.0.7",
+    "request": "^2.88.0"
+  }
+}

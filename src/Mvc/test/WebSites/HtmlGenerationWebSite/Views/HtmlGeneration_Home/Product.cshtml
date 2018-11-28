@@ -1,0 +1,27 @@
+@model HtmlGenerationWebSite.Models.Product
+
+@{
+    ViewBag.Title = "Product Page";
+}
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <form asp-controller="HtmlGeneration_Home" asp-route-action="ProductSubmit" asp-antiforgery="false" method="get">
+        <div>
+            <label asp-for="HomePage" class="product"></label>
+            <input asp-for="HomePage" type="url" size="50" />
+        </div>
+        <div>
+            <label asp-for="Description" class="product"></label>
+            <textarea asp-for="Description" rows="4" cols="50" class="product"></textarea>
+        </div>
+        <input type="submit" />
+    </form>
+</body>
+</html>

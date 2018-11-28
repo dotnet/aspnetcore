@@ -1,0 +1,7 @@
+<Project>
+  <Import Project="..\Directory.Build.props" />
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" />
+  </ItemGroup>
+</Project>

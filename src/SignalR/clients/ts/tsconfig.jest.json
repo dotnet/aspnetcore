@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "module": "commonjs",
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "typeRoots": [
+            "./common/node_modules/@types"
+        ],
+        "allowJs": true
+    },
+    "include": [
+        "./*/tests/**/*"
+    ]
+}

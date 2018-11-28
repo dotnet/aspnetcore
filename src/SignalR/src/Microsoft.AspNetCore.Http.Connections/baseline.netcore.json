@@ -1,0 +1,469 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Connections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.ConnectionsRouteBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "MapConnections",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapConnections",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapConnectionHandler<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TConnectionHandler",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Connections.ConnectionHandler"
+              ]
+            }
+          ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapConnectionHandler<T0>",
+          "Parameters": [
+            {
+              "Name": "path",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": [
+            {
+              "ParameterName": "TConnectionHandler",
+              "ParameterPosition": 0,
+              "BaseTypeOrInterfaces": [
+                "Microsoft.AspNetCore.Connections.ConnectionHandler"
+              ]
+            }
+          ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.HttpConnectionContextExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetHttpContext",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.Connections.ConnectionContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AuthorizationData",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Authorization.IAuthorizeData>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Transports",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Connections.HttpTransportType",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Transports",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpTransportType"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_WebSockets",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Connections.WebSocketOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_LongPolling",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Connections.LongPollingOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TransportMaxBufferSize",
+          "Parameters": [],
+          "ReturnType": "System.Int64",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_TransportMaxBufferSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationMaxBufferSize",
+          "Parameters": [],
+          "ReturnType": "System.Int64",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ApplicationMaxBufferSize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.LongPollingOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_PollTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PollTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.WebSocketOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_CloseTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CloseTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SubProtocolSelector",
+          "Parameters": [],
+          "ReturnType": "System.Func<System.Collections.Generic.IList<System.String>, System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SubProtocolSelector",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Func<System.Collections.Generic.IList<System.String>, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.Features.IHttpContextFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HttpContext",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.HttpContext",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HttpContext",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.Features.IHttpTransportFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_TransportType",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Connections.HttpTransportType",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.ConnectionsAppBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseConnections",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.Connections.ConnectionsRouteBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.ConnectionsDependencyInjectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddConnections",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "System.IO.Pipelines.DuplexPipe+DuplexPipePair",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Transport",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Application",
+          "Parameters": [],
+          "ReturnType": "System.IO.Pipelines.IDuplexPipe",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "transport",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            },
+            {
+              "Name": "application",
+              "Type": "System.IO.Pipelines.IDuplexPipe"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

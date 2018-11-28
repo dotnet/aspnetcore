@@ -1,0 +1,14 @@
+﻿@addTagHelper "*, TagHelpersWebSite"
+@{ 
+    var year = 2016;
+    var dict = new Dictionary<string, List<string>>();
+    var items = new List<string>() { "One", "Two", "Three" };
+    dict.Add("Foo", items);
+}
+
+<vc:generic items="dict"></vc:generic>
+<vc:generic items-foo="items"></vc:generic>
+<vc:dan jacket-color="Green" /><br />
+<div>
+    <vc:copyright website="example.com" year="year" bold></vc:copyright>
+</div>
