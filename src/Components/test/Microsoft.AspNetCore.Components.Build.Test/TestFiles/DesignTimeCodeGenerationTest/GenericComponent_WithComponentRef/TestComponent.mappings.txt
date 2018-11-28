@@ -1,0 +1,31 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (503:15,38 [15] )
+|*, TestAssembly|
+
+Source Location: (50:1,19 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|int|
+Generated Location: (1031:29,19 [3] )
+|int|
+
+Source Location: (60:1,29 [1] x:\dir\subdir\Test\TestComponent.cshtml)
+|3|
+Generated Location: (1245:36,29 [1] )
+|3|
+
+Source Location: (68:1,37 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|_my|
+Generated Location: (1534:45,37 [3] )
+|_my|
+
+Source Location: (91:3,12 [90] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private MyComponent<int> _my;
+    public void Foo() { System.GC.KeepAlive(_my); }
+|
+Generated Location: (1716:52,12 [90] )
+|
+    private MyComponent<int> _my;
+    public void Foo() { System.GC.KeepAlive(_my); }
+|
+

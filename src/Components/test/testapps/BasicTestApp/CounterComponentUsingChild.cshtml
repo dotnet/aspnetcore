@@ -1,0 +1,15 @@
+﻿<h1>Counter</h1>
+
+<!-- Note: passing 'Message' parameter with lowercase name to show it's case insensitive -->
+<p>Current count: <MessageComponent message=@currentCount.ToString() /></p>
+
+<button onclick="@IncrementCount">Click me</button>
+
+@functions {
+    int currentCount = 0;
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+}

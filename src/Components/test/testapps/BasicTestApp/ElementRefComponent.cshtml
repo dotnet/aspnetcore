@@ -1,0 +1,36 @@
+@using Microsoft.JSInterop
+
+<h1>Element capture</h1>
+
+<p>
+    This shows how an element reference may be captured as a field value using 'ref' syntax and then
+    passed to JavaScript code, which receives the actual DOM element instance.
+</p>
+<p>
+    Note that 'ref' syntax is primarily intended for use with JavaScript interop. It is <strong>not</strong>
+    recommended to use it for mutating the DOM routinely. All DOM construction and mutation that can be
+    done declaratively is better, as it automatically happens at the correct time and with minimal diffs.
+    Plus, whenever you use 'ref', you will not be able to run the same code during unit tests or
+    server-side rendering. So it's always better to prefer declarative UI construction when possible.
+</p>
+
+@if (_toggleCapturedElementPresence)
+{
+    <input id="capturedElement" ref="_myInput" />
+}
+<button onclick="@MakeInteropCall">Click me</button>
+<label>
+    <input type="checkbox" bind="_toggleCapturedElementPresence" />
+    Toggle input
+</label>
+
+@functions {
+    int _count = 0;
+    bool _toggleCapturedElementPresence = true;
+    ElementRef _myInput;
+
+    async Task MakeInteropCall()
+    {
+        await JSRuntime.Current.InvokeAsync<object>("setElementValue", _myInput, $"Clicks: {++_count}");
+    }
+}

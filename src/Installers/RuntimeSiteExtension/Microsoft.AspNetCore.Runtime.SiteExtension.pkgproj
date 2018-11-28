@@ -20,7 +20,7 @@
     <Content Include="install.cmd" />
     <Content Include="..\..\SiteExtensions\src\Microsoft.Web.Xdt.Extensions\bin\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
 
-    <Content Include="$(DotNetUnpackFolder)\**\*.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Content Include="$(DotNetUnpackFolder)\**\*.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SharedFxArchitecture)' == 'x86'">

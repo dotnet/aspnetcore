@@ -1,0 +1,38 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
+                DirectiveToken - (14:0,14 [9] ) - "*, Test"
+                DirectiveToken - (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml) - *, TestAssembly
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                CSharpCode - (33:1,2 [46] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (33:1,2 [46] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderFragment<string> header = (context) => 
+                Template - (80:1,49 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+                    HtmlElement - (80:1,49 [38] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                        CSharpExpression - (86:1,55 [26] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (86:1,55 [26] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.ToLowerInvariant()
+                CSharpCode - (118:1,87 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (118:1,87 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ; 
+                ComponentExtensionNode - (123:2,0 [62] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                    ComponentChildContent -  - ChildContent
+                        HtmlContent - (151:2,28 [20] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (151:2,28 [20] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some Content\n
+                    ComponentAttributeExtensionNode - (143:2,20 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Header - Header
+                        CSharpExpression - (144:2,21 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (144:2,21 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - header

@@ -1,0 +1,29 @@
+<Project>
+  <Target Name="SetPackageProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <!-- Properties here are injected into the .nuspec file that is bundled into the package -->
+      <NuspecProperties>
+        $(NuspecProperties);
+        version=$(PackageVersion);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="SetTemplateJsonSymbolReplacements">
+    <PropertyGroup>
+      <IncludeCustomRestoreSourcesValue>true</IncludeCustomRestoreSourcesValue>
+      <IncludeCustomRestoreSourcesValue Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm-$(BuildNumber)'">false</IncludeCustomRestoreSourcesValue>
+
+      <!--
+        Properties here will be injected into the template config *.json files
+        during the build, replacing tokens of the form ${PropertyName}
+      -->
+      <GeneratedContentProperties>
+        IncludeCustomRestoreSources=$(IncludeCustomRestoreSourcesValue);
+        TemplateBlazorVersion=$(PackageVersion);
+        TemplateRazorDesignPackageVersion=$(TemplateRazorDesignPackageVersion);
+        RepositoryCommit=$(RepositoryCommit);
+      </GeneratedContentProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>library</OutputType>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- .js files will be referenced via <script> tags -->
+    <EmbeddedResource Include="content\**\*.js" LogicalName="blazor:js:%(RecursiveDir)%(Filename)%(Extension)" />
+
+    <!-- .css files will be referenced via <link rel='Stylesheet'> tags -->
+    <EmbeddedResource Include="content\**\*.css" LogicalName="blazor:css:%(RecursiveDir)%(Filename)%(Extension)" />
+    
+    <!-- Any other files will be included in the 'dist' output but without any tags referencing them -->
+    <EmbeddedResource Include="content\**" Exclude="**\*.js;**\*.css" LogicalName="blazor:file:%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- In real content packages, use a <PackageReference> to Microsoft.AspNetCore.Components.Browser instead. -->
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
+  </ItemGroup>
+
+  <!-- In real content packages, use a <PackageReference> to Microsoft.AspNetCore.Components.Build instead. -->
+  <Import Project="..\..\..\src\Microsoft.AspNetCore.Components.Build\ReferenceFromSource.props" />
+
+</Project>

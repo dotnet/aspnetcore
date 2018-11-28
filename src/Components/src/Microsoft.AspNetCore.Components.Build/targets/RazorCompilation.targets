@@ -1,0 +1,436 @@
+<Project>
+
+  <!-- Require rebuild if the targets change -->
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+
+  <PropertyGroup>
+    <!-- Passed to Razor tasks and loaded as a plugin -->
+    <_AngleSharpAssemblyPath>$(BlazorToolsDir)AngleSharp.dll</_AngleSharpAssemblyPath>
+    <_BlazorExtensionAssemblyPath>$(BlazorToolsDir)Microsoft.AspNetCore.Components.Razor.Extensions.dll</_BlazorExtensionAssemblyPath>
+
+    <!-- Deactivates the Razor SDK's build-time compilation. We do our own -->
+    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+
+    <RazorLangVersion>Experimental</RazorLangVersion>
+
+    <!--
+      This version is used to build our RazorConfiguration, and is hardcoded into the tools in VS. If you change
+      This to a value that doesn't match VS, then the Blazor Razor experience won't work for those documents.
+    -->
+    <BlazorLanguageVersion>0.1</BlazorLanguageVersion>
+    <BlazorDefinitionConfiguration>Blazor-$(BlazorLanguageVersion)</BlazorDefinitionConfiguration>
+    <BlazorDeclarationConfiguration>BlazorDeclaration-$(BlazorLanguageVersion)</BlazorDeclarationConfiguration>
+    <RazorDefaultConfiguration>$(BlazorDefinitionConfiguration)</RazorDefaultConfiguration>
+
+  </PropertyGroup>
+
+  <!-- Something quick for input/output tracking - the assumptions here should match what the CLI does -->
+  <ItemGroup>
+    <_BlazorGenerateDeclarationContent Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
+    <Content Update="@(_BlazorGenerateDeclarationContent)">
+      <Generator>MSBuild:BlazorGenerateDeclaration</Generator>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+
+    <ProjectCapability Include="Blazor" />
+    <ProjectCapability Include="DotNetCoreRazorConfiguration" />
+
+    <RazorConfiguration Include="$(BlazorDefinitionConfiguration)">
+      <Extensions>Blazor-$(BlazorLanguageVersion);Blazor.AngleSharp-$(BlazorLanguageVersion);$(CustomRazorExtension)</Extensions>
+    </RazorConfiguration>
+    <RazorConfiguration Include="$(BlazorDeclarationConfiguration)">
+      <Extensions>Blazor-$(BlazorLanguageVersion)Blazor.AngleSharp-$(BlazorLanguageVersion);$(CustomRazorExtension)</Extensions>
+    </RazorConfiguration>
+
+    <RazorExtension Include="Blazor.AngleSharp-$(BlazorLanguageVersion)">
+      <AssemblyName>AngleSharp</AssemblyName>
+      <AssemblyFilePath>$(_AngleSharpAssemblyPath)</AssemblyFilePath>
+    </RazorExtension>
+    <RazorExtension Include="Blazor-$(BlazorLanguageVersion)">
+      <AssemblyName>Microsoft.AspNetCore.Components.Razor.Extensions</AssemblyName>
+      <AssemblyFilePath>$(_BlazorExtensionAssemblyPath)</AssemblyFilePath>
+    </RazorExtension>
+
+    <!-- Path used for the temporary compilation we produce for component discovery -->
+    <_BlazorTempAssembly Include="$(IntermediateOutputPath)BlazorTemp\$(TargetName).dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Instruct VS to include html/cshtml files in its "fast up-to-date check". If we didn't, then
+         it will skip the build entirely if you only changed html/cshtml files. -->
+    <UpToDateCheckInput Include="$(ProjectDir)**\*.cshtml" />
+    <UpToDateCheckInput Include="$(ProjectDir)**\*.html" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BlazorGenerateDeclarationDependsOn>
+    _DefineBlazorPaths;
+    _ResolveBlazorInputs;
+    _AssignBlazorGenerateTargetPaths;
+    _HashBlazorGenerateInputs;
+    </BlazorGenerateDeclarationDependsOn>
+    <BlazorGenerateDefinitionDependsOn>
+    BlazorGenerateDeclaration;
+    BlazorResolveComponents;
+    </BlazorGenerateDefinitionDependsOn>
+  </PropertyGroup>
+
+  <!-- Defining properties that depend on import order in a target for resilience -->
+  <Target Name="_DefineBlazorPaths">
+    <PropertyGroup>
+      <!--
+        The Razor tasks require you to pass a tag helper manifest file. We don't need tag helpers for declarations
+        so that one is just a placeholder.
+      -->
+      <_BlazorGenerateDeclarationComponentManifest>$(IntermediateOutputPath)Blazor.declaration.components.json</_BlazorGenerateDeclarationComponentManifest>
+      <_BlazorGenerateDefinitionComponentManifest>$(IntermediateOutputPath)Blazor.definition.components.json</_BlazorGenerateDefinitionComponentManifest>
+      <_BlazorComponentInputCache>$(IntermediateOutputPath)Blazor.components.input.cache</_BlazorComponentInputCache>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_ResolveBlazorInputs">
+    <ItemGroup>
+      <BlazorGenerate Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Assigns each BlazorGenerate item a relative path based on where the directory structure. This accounts
+    for <Link> and also for files outside of the project's folder hierarchy. So this is needed to support
+    linked files.
+
+    This step also assigns each item an output path for both stages of code generation.
+  -->
+  <Target Name="_AssignBlazorGenerateTargetPaths">
+    <AssignTargetPath Files="@(BlazorGenerate)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="BlazorGenerateWithTargetPath" />
+    </AssignTargetPath>
+
+    <ItemGroup>
+      <BlazorGenerateWithTargetPath Condition="'%(BlazorGenerateWithTargetPath.GeneratedDeclaration)' == ''">
+        <GeneratedDeclaration>$(IntermediateOutputPath)$([System.IO.Path]::ChangeExtension('%(BlazorGenerateWithTargetPath.TargetPath)', 'g.i.cs'))</GeneratedDeclaration>
+      </BlazorGenerateWithTargetPath>
+      <BlazorGenerateWithTargetPath Condition="'%(BlazorGenerateWithTargetPath.GeneratedDefinition)' == ''">
+        <GeneratedDefinition>$(IntermediateOutputPath)$([System.IO.Path]::ChangeExtension('%(BlazorGenerateWithTargetPath.TargetPath)', 'g.cs'))</GeneratedDefinition>
+      </BlazorGenerateWithTargetPath>
+    </ItemGroup>
+
+    <!--
+      Instruct VS to re-run the target when input files change. Other IDEs may not honor this
+      and therefore developers may need to rebuild after changing cshtml files.
+    -->
+    <ItemGroup>
+      <BlazorDeclaration Include="@(BlazorGenerateWithTargetPath->'%(GeneratedDeclaration)')">
+        <DependentUpon>%(Identity)</DependentUpon>
+      </BlazorDeclaration>
+    </ItemGroup>
+    <ItemGroup>
+      <BlazorDefinition Include="@(BlazorGenerateWithTargetPath->'%(GeneratedDefinition)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_HashBlazorGenerateInputs">
+
+    <PropertyGroup>
+      <!-- Used for input tracking -->
+      <_BlazorGenerateInputsHash></_BlazorGenerateInputsHash>
+      <_BlazorGenerateInputsHashFile>$(IntermediateOutputPath)Blazor.inputs.txt</_BlazorGenerateInputsHashFile>
+    </PropertyGroup>
+
+    <Hash ItemsToHash="@(BlazorGenerateWithTargetPath)">
+      <Output TaskParameter="HashResult" PropertyName="_BlazorGenerateInputsHash" />
+    </Hash>
+
+    <MakeDir
+      Directories="$(IntermediateOutputPath)"
+      Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <WriteLinesToFile
+      Lines="$(_BlazorGenerateInputsHash)"
+      File="$(_BlazorGenerateInputsHashFile)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_BlazorGenerateInputsHashFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Generates 'declaration' files for each component, that only have that class and member declarations.
+
+    These files participate in the design-time-build for intellisense, and are used at build-time
+    when discovering components for a 'real' build.
+  -->
+  <Target
+    Name="BlazorGenerateDeclaration"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="$(BlazorGenerateDeclarationDependsOn)"
+    Inputs="$(MSBuildAllProjects);$(_BlazorExtensionAssemblyPath);$(_BlazorGenerateInputsHashFile);@(BlazorGenerate)"
+    Outputs="@(BlazorDeclaration)">
+
+    <ItemGroup>
+      <_BlazorGenerateDeclarationWithTargetPath Include="@(BlazorGenerateWithTargetPath)">
+        <GeneratedOutput>%(GeneratedDeclaration)</GeneratedOutput>
+      </_BlazorGenerateDeclarationWithTargetPath>
+      <_BlazorDeclarationConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(BlazorDeclarationConfiguration)'))" />
+    </ItemGroup>
+
+    <MakeDir Directories="%(BlazorDeclaration.RelativeDir)" />
+
+    <RazorGenerate
+      Debug="$(_RazorDebugGenerateCodeTask)"
+      DebugTool="$(_RazorDebugGenerateCodeTool)"
+      ToolAssembly="$(_RazorToolAssembly)"
+      UseServer="$(UseRazorBuildServer)"
+      ForceServer="$(_RazorForceBuildServer)"
+      PipeName="$(_RazorBuildServerPipeName)"
+      Version="$(RazorLangVersion)"
+      Configuration="@(_BlazorDeclarationConfiguration)"
+      Extensions="@(RazorExtension)"
+      Sources="@(_BlazorGenerateDeclarationWithTargetPath)"
+      ProjectRoot="$(MSBuildProjectDirectory)"
+      TagHelperManifest="$(_BlazorGenerateDeclarationComponentManifest)" />
+
+    <ItemGroup>
+      <FileWrites Include="@(BlazorDeclaration)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(DesignTimeBuild)'=='true'">
+      <Compile Include="@(BlazorDeclaration)" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="BlazorResolveComponents"
+    Inputs="$(MSBuildAllProjects);$(_BlazorExtensionAssemblyPath);@(ReferencePathWithRefAssemblies);@(_BlazorTempAssembly)"
+    Outputs="$(_RazorTagHelperInputCache)"
+    DependsOnTargets="_BlazorTempCompile">
+
+    <!-- Include the temp assembly as a reference so we can discover components from the app.-->
+    <ItemGroup>
+      <_BlazorReferencePathWithRefAssemblies Include="@(ReferencePathWithRefAssemblies)" />
+      <_BlazorReferencePathWithRefAssemblies Include="%(_BlazorTempAssembly.FullPath)" Condition="Exists('%(_BlazorTempAssembly.FullPath)')" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_BlazorDeclarationConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(BlazorDeclarationConfiguration)'))" />
+    </ItemGroup>
+
+    <!--
+      We're manipulating our output directly here because we want to separate the actual up-to-date check
+      of BlazorGenerateDefinition from the output of this target. Many times the set of components doesn't change
+      so we don't need to regenerate the code.
+    -->
+    <Touch
+      Files="$(_BlazorComponentInputCache)"
+      AlwaysCreate="true" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_BlazorComponentInputCache)" />
+    </ItemGroup>
+
+    <RazorTagHelper
+      Debug="$(_RazorDebugTagHelperTask)"
+      DebugTool="$(_RazorDebugTagHelperTool)"
+      ToolAssembly="$(_RazorToolAssembly)"
+      UseServer="$(UseRazorBuildServer)"
+      ForceServer="$(_RazorForceBuildServer)"
+      PipeName="$(_RazorBuildServerPipeName)"
+      Version="$(RazorLangVersion)"
+      Configuration="@(_BlazorDeclarationConfiguration)"
+      Extensions="@(RazorExtension)"
+      Assemblies="@(_BlazorReferencePathWithRefAssemblies)"
+      ProjectRoot="$(MSBuildProjectDirectory)"
+      TagHelperManifest="$(_BlazorGenerateDefinitionComponentManifest)">
+      <Output
+        TaskParameter="TagHelperManifest"
+        ItemName="FileWrites"/>
+    </RazorTagHelper>
+
+  </Target>
+
+  <!--
+    Generates 'definition' files for each component, using the temp-compiled assembly as an input.
+
+    These files are used in the real build and don't participate in design time builds.
+  -->
+  <Target
+    Name="BlazorGenerateDefinition"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="$(BlazorGenerateDefinitionDependsOn)"
+    Inputs="$(MSBuildAllProjects);$(_BlazorExtensionAssemblyPath);$(_BlazorGenerateInputsHashFile);$(_BlazorGenerateDefinitionComponentManifest);@(BlazorGenerate)"
+    Outputs="@(BlazorDefinition)"
+    Condition="'$(DesignTimeBuild)'!='true'">
+
+    <ItemGroup>
+      <_BlazorGenerateDefinitionWithTargetPath Include="@(BlazorGenerateWithTargetPath)">
+        <GeneratedOutput>%(GeneratedDefinition)</GeneratedOutput>
+      </_BlazorGenerateDefinitionWithTargetPath>
+      <_BlazorDefinitionConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(BlazorDefinitionConfiguration)'))" />
+    </ItemGroup>
+
+    <MakeDir Directories="%(BlazorDefinition.RelativeDir)" />
+
+    <RazorGenerate
+      Debug="$(_RazorDebugGenerateCodeTask)"
+      DebugTool="$(_RazorDebugGenerateCodeTool)"
+      ToolAssembly="$(_RazorToolAssembly)"
+      UseServer="$(UseRazorBuildServer)"
+      ForceServer="$(_RazorForceBuildServer)"
+      PipeName="$(_RazorBuildServerPipeName)"
+      Version="$(RazorLangVersion)"
+      Configuration="@(_BlazorDefinitionConfiguration)"
+      Extensions="@(RazorExtension)"
+      Sources="@(_BlazorGenerateDefinitionWithTargetPath)"
+      ProjectRoot="$(MSBuildProjectDirectory)"
+      TagHelperManifest="$(_BlazorGenerateDefinitionComponentManifest)" />
+
+    <ItemGroup>
+      <FileWrites Include="@(BlazorDefinition)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(DesignTimeBuild)'!='true'">
+      <Compile Include="@(BlazorDefinition)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Taken from the Razor SDK targets
+  -->
+ <Target
+    Name="_BlazorTempCompile"
+    DependsOnTargets="BlazorGenerateDeclaration;FindReferenceAssembliesForReferences"
+    Inputs="
+      $(MSBuildAllProjects);
+      @(BlazorDeclaration);
+      @(Compile);
+      $(AssemblyOriginatorKeyFile);
+      @(ReferencePathWithRefAssemblies);
+      @(CompiledLicenseFile);
+      @(LinkResource);
+      $(ResolvedCodeAnalysisRuleSet);
+      @(AdditionalFiles)"
+    Outputs="@(_BlazorTempAssembly);$(NonExistentFile)"
+    Condition="'$(DesignTimeBuild)'!='true' AND '$(Language)'=='C#' AND '@(BlazorDeclaration)' != ''">
+
+    <MakeDir Directories="%(_BlazorTempAssembly.RelativeDir)" />
+
+    <!-- These two compiler warnings are raised when a reference is bound to a different version
+             than specified in the assembly reference version number.  MSBuild raises the same warning in this case,
+             so the compiler warning would be redundant. -->
+    <PropertyGroup Condition="('$(TargetFrameworkVersion)' != 'v1.0') and ('$(TargetFrameworkVersion)' != 'v1.1')">
+      <NoWarn>$(NoWarn);1701;1702</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <!-- To match historical behavior, when inside VS11+ disable the warning from csc.exe indicating that no sources were passed in-->
+      <NoWarn Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(VisualStudioVersion)' != '' AND '$(VisualStudioVersion)' &gt; '10.0'">$(NoWarn);2008</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(TargetingClr2Framework)' == 'true'">
+      <ReferencePathWithRefAssemblies>
+        <EmbedInteropTypes />
+      </ReferencePathWithRefAssemblies>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- If the user has specified AppConfigForCompiler, we'll use it. If they have not, but they set UseAppConfigForCompiler,
+                 then we'll use AppConfig -->
+      <AppConfigForCompiler Condition="'$(AppConfigForCompiler)' == '' AND '$(UseAppConfigForCompiler)' == 'true'">$(AppConfig)</AppConfigForCompiler>
+    </PropertyGroup>
+
+    <!-- Prefer32Bit was introduced in .NET 4.5. Set it to false if we are targeting 4.0 -->
+    <PropertyGroup Condition="('$(TargetFrameworkVersion)' == 'v4.0')">
+      <Prefer32Bit>false</Prefer32Bit>
+    </PropertyGroup>
+
+    <!-- TODO: Remove this ItemGroup once it has been moved to "_GenerateCompileInputs" target in Microsoft.Common.CurrentVersion.targets.
+         https://github.com/dotnet/roslyn/issues/12223 -->
+    <ItemGroup Condition="('$(AdditionalFileItemNames)' != '')">
+      <AdditionalFileItems Include="$(AdditionalFileItemNames)" />
+      <AdditionalFiles Include="@(%(AdditionalFileItems.Identity))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(UseSharedCompilation)' == ''">
+      <UseSharedCompilation>true</UseSharedCompilation>
+    </PropertyGroup>
+
+    <Csc
+         AdditionalLibPaths="$(AdditionalLibPaths)"
+         AddModules="@(AddModules)"
+         AdditionalFiles="@(AdditionalFiles)"
+         AllowUnsafeBlocks="$(AllowUnsafeBlocks)"
+         Analyzers="@(Analyzer)"
+         ApplicationConfiguration="$(AppConfigForCompiler)"
+         BaseAddress="$(BaseAddress)"
+         CheckForOverflowUnderflow="$(CheckForOverflowUnderflow)"
+         ChecksumAlgorithm="$(ChecksumAlgorithm)"
+         CodeAnalysisRuleSet="$(ResolvedCodeAnalysisRuleSet)"
+         CodePage="$(CodePage)"
+         DebugType="$(DebugType)"
+         DefineConstants="$(DefineConstants)"
+         DelaySign="$(DelaySign)"
+         DisabledWarnings="$(NoWarn)"
+         EmitDebugInformation="$(DebugSymbols)"
+         EnvironmentVariables="$(CscEnvironment)"
+         ErrorEndLocation="$(ErrorEndLocation)"
+         ErrorLog="$(ErrorLog)"
+         ErrorReport="$(ErrorReport)"
+         Features="$(Features)"
+         FileAlignment="$(FileAlignment)"
+         GenerateFullPaths="$(GenerateFullPaths)"
+         HighEntropyVA="$(HighEntropyVA)"
+         Instrument="$(Instrument)"
+         KeyContainer="$(KeyContainerName)"
+         KeyFile="$(KeyOriginatorFile)"
+         LangVersion="$(LangVersion)"
+         LinkResources="@(LinkResource)"
+         MainEntryPoint="$(StartupObject)"
+         ModuleAssemblyName="$(ModuleAssemblyName)"
+         NoConfig="true"
+         NoLogo="$(NoLogo)"
+         NoStandardLib="$(NoCompilerStandardLib)"
+         NoWin32Manifest="$(NoWin32Manifest)"
+         Optimize="$(Optimize)"
+         Deterministic="$(Deterministic)"
+         PublicSign="$(PublicSign)"
+         OutputAssembly="@(_BlazorTempAssembly)"
+         Platform="$(PlatformTarget)"
+         Prefer32Bit="$(Prefer32Bit)"
+         PreferredUILang="$(PreferredUILang)"
+         ProvideCommandLineArgs="$(ProvideCommandLineArgs)"
+         References="@(ReferencePathWithRefAssemblies)"
+         ReportAnalyzer="$(ReportAnalyzer)"
+         Resources="@(CompiledLicenseFile)"
+         ResponseFiles="$(CompilerResponseFile)"
+         RuntimeMetadataVersion="$(RuntimeMetadataVersion)"
+         SharedCompilationId="$(SharedCompilationId)"
+         SkipCompilerExecution="$(SkipCompilerExecution)"
+         Sources="@(BlazorDeclaration);@(Compile)"
+         SubsystemVersion="$(SubsystemVersion)"
+         TargetType="$(OutputType)"
+         ToolExe="$(CscToolExe)"
+         ToolPath="$(CscToolPath)"
+         TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+         UseHostCompilerIfAvailable="$(UseHostCompilerIfAvailable)"
+         UseSharedCompilation="$(UseSharedCompilation)"
+         Utf8Output="$(Utf8Output)"
+         VsSessionGuid="$(VsSessionGuid)"
+         WarningLevel="$(WarningLevel)"
+         WarningsAsErrors="$(WarningsAsErrors)"
+         WarningsNotAsErrors="$(WarningsNotAsErrors)"
+         PathMap="$(PathMap)"
+         SourceLink="$(SourceLink)">
+      <Output TaskParameter="CommandLineArgs" ItemName="CscCommandLineArgs" />
+    </Csc>
+
+    <ItemGroup>
+      <FileWrites Include="@(_BlazorTempAssembly)" Condition="Exists('@(_BlazorTempAssembly)')" />
+    </ItemGroup>
+  </Target>
+
+</Project>

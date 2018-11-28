@@ -1,0 +1,20 @@
+Source Location: (14:0,14 [17] x:\dir\subdir\Test\TestComponent.cshtml)
+|"*, TestAssembly"|
+Generated Location: (502:15,37 [17] )
+|"*, TestAssembly"|
+
+Source Location: (35:1,2 [27] x:\dir\subdir\Test\TestComponent.cshtml)
+| RenderFragment template = |
+Generated Location: (987:28,2 [27] )
+| RenderFragment template = |
+
+Source Location: (78:1,45 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+|; |
+Generated Location: (1187:35,45 [2] )
+|; |
+
+Source Location: (105:2,22 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+|template|
+Generated Location: (1315:41,22 [8] )
+|template|
+

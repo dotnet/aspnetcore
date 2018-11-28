@@ -1,0 +1,21 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                ComponentExtensionNode - (31:1,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - global::Test.MyComponent<TItem>
+                    ComponentAttributeExtensionNode - (50:1,19 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                        CSharpExpression - (51:1,20 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (52:1,21 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hi"
+                    ComponentAttributeExtensionNode -  - Other - 
+                        CSharpExpression - (66:1,35 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (68:1,37 [2] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 17
+    NamespaceDeclaration -  - __Blazor.Test.TestComponent
+        ClassDeclaration -  - internal static - TypeInference -  - 
+            ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

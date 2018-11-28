@@ -1,0 +1,34 @@
+﻿@using System.Threading.Tasks
+
+<div>
+    <span id="state">@state</span>
+    <button id="tick" onclick="@Tick">Tick</button>
+    <button id="tock" onclick="@Tock">Tock</button>
+</div>
+
+@functions
+{
+    TaskCompletionSource<object> _tcs;
+    string state = "Stopped";
+    Task Tick(UIMouseEventArgs e)
+    {
+        if (_tcs == null)
+        {
+            _tcs = new TaskCompletionSource<object>();
+
+            state = "Started";
+            return _tcs.Task.ContinueWith((task) =>
+            {
+                state = "Stopped";
+                _tcs = null;
+            });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    void Tock(UIMouseEventArgs e)
+    {
+        _tcs.TrySetResult(null);
+    }
+}

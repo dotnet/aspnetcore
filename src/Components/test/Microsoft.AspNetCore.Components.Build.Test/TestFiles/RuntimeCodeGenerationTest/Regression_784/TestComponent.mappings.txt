@@ -1,0 +1,17 @@
+Source Location: (87:1,12 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    public string ParentBgColor { get; set; } = "#FFFFFF";
+
+    public void OnComponentHover(UIMouseEventArgs e)
+    {
+    }
+|
+Generated Location: (1019:23,12 [132] )
+|
+    public string ParentBgColor { get; set; } = "#FFFFFF";
+
+    public void OnComponentHover(UIMouseEventArgs e)
+    {
+    }
+|
+

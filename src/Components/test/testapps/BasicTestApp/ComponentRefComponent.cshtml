@@ -1,0 +1,35 @@
+﻿<h1>Component capture</h1>
+
+<p>
+    This shows how a component reference may be captured as a field value using 'ref' syntax.
+    This feature is intended only for cases where you're triggering an action on the child
+    instance. It should <strong>not</strong> be used as a way of mutating state in the child,
+    because that would bypass all the benefits of flowing parameters to children and re-rendering
+    automatically only when required.
+</p>
+
+@if (_toggleCapturedComponentPresence)
+{
+    <div id="child-component">
+        <CounterComponent ref="_myChildCounter" />
+    </div>
+}
+
+<fieldset>
+    <legend>External controls</legend>
+    <button id="reset-child" onclick="@ResetChildCounter">Reset</button>
+    <label>
+        <input id="toggle-child" type="checkbox" bind="_toggleCapturedComponentPresence" />
+        Toggle counter presence
+    </label>
+</fieldset>
+
+@functions {
+    bool _toggleCapturedComponentPresence = true;
+    CounterComponent _myChildCounter;
+
+    void ResetChildCounter()
+    {
+        _myChildCounter.Reset();
+    }
+}

@@ -1,0 +1,27 @@
+# All Files
+[*]
+charset = utf-8
+end_of_line = crlf
+indent_style = space
+indent_size = 4
+insert_final_newline = false
+trim_trailing_whitespace = true
+
+# Solution Files
+[*.sln]
+indent_style = tab
+
+# Markdown Files
+[*.md]
+trim_trailing_whitespace = false
+
+# Web Files
+[*.{htm,html,js,ts,css,scss,less}]
+insert_final_newline = true
+indent_size = 2
+
+[*.{yml,json}]
+indent_size = 2
+
+[*.{xml,csproj,config,*proj,targets,props}]
+indent_size = 2

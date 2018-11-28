@@ -1,0 +1,30 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                ComponentExtensionNode - (31:1,0 [60] x:\dir\subdir\Test\TestComponent.cshtml) - User - Test.User
+                    ComponentAttributeExtensionNode - (48:1,17 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Name - 
+                        CSharpExpression - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken - (49:1,18 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserName
+                            IntermediateToken -  - CSharp - )
+                    ComponentAttributeExtensionNode - (48:1,17 [9] x:\dir\subdir\Test\TestComponent.cshtml) - NameChanged - 
+                        CSharpExpression - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserName = __value, UserName)
+                    ComponentAttributeExtensionNode - (74:1,43 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActive - 
+                        CSharpExpression - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken - (75:1,44 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserIsActive
+                            IntermediateToken -  - CSharp - )
+                    ComponentAttributeExtensionNode - (74:1,43 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActiveChanged - 
+                        CSharpExpression - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.SetValueHandler(__value => UserIsActive = __value, UserIsActive)
+            CSharpCode - (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (107:3,12 [88] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string UserName { get; set; }\n    public bool UserIsActive { get; set; }\n

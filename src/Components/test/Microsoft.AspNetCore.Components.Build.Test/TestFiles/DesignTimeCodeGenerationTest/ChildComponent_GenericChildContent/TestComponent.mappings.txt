@@ -1,0 +1,20 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (503:15,38 [15] )
+|*, TestAssembly|
+
+Source Location: (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+|string|
+Generated Location: (1031:29,19 [6] )
+|string|
+
+Source Location: (65:1,34 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+|"hi"|
+Generated Location: (1256:36,34 [4] )
+|"hi"|
+
+Source Location: (82:2,8 [17] x:\dir\subdir\Test\TestComponent.cshtml)
+|context.ToLower()|
+Generated Location: (1508:43,8 [17] )
+|context.ToLower()|
+

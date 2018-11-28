@@ -1,0 +1,14 @@
+﻿<div class="supplied">You supplied: @SuppliedValue</div>
+<div class="computed">I computed: @computedValue</div>
+
+@functions {
+    [Parameter]
+    int SuppliedValue { get; set; }
+
+    private int computedValue;
+
+    protected override void OnParametersSet()
+    {
+        computedValue = SuppliedValue * 2;
+    }
+}

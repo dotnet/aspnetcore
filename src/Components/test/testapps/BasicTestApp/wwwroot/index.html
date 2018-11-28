@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Basic test app</title>
+    <base href="/subdir/" />
+</head>
+<body>
+  <root>Loading...</root>
+
+  <!-- Used for testing interop scenarios between JS and .NET -->
+  <script src="js/jsinteroptests.js"></script>
+
+  <script>
+    // Used by ElementRefComponent
+    function setElementValue(element, newValue) {
+      element.value = newValue;
+    }
+
+    (function () {
+      // Load either blazor.webassembly.js or blazor.server.js depending
+      // on the hash part of the URL. This is just to give a way for the
+      // test runner to make the selection.
+      var src = location.hash === '#server'
+        ? 'blazor.server.js'
+        : 'blazor.webassembly.js';
+      document.write('<script src="_framework/' + src + '"><' + '/script>');
+    })();
+  </script>
+</body>
+</html>

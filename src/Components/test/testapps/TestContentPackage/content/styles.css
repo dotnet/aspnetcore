@@ -1,0 +1,18 @@
+﻿.special-style {
+    background-image: url('./face.png');
+    padding: 50px;
+    background-repeat: repeat-x;
+    border: 5px dashed red;
+    font-family: "Comic Sans MS";
+    font-size: 20px;
+    font-weight: bold;
+    animation: hideous-rainbow 1s infinite;
+}
+
+@keyframes hideous-rainbow {
+    0% { color: red; }
+    20% { color: orange; }
+    40% { color: yellow; }
+    60% { color: green; }
+    80% { color: blue; }
+}

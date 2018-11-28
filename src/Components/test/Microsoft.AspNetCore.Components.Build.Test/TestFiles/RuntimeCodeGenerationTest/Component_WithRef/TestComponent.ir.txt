@@ -1,0 +1,21 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                ComponentExtensionNode - (31:1,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                    ComponentAttributeExtensionNode -  - ParamBefore - 
+                        HtmlContent - (57:1,26 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (57:1,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
+                    RefExtensionNode - (70:1,39 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
+                    ComponentAttributeExtensionNode -  - ParamAfter - 
+                        HtmlContent - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (94:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+            CSharpCode - (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (119:3,12 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n
