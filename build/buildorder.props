@@ -7,7 +7,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="Razor" Order="6" />
+    <RepositoryBuildOrder Include="Razor" Order="6" RootPath="$(RepositoryRoot)src\Razor\" />
     <RepositoryBuildOrder Include="HttpSysServer" Order="8" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
     <RepositoryBuildOrder Include="BasicMiddleware" Order="9" />
     <RepositoryBuildOrder Include="Antiforgery" Order="10" RootPath="$(RepositoryRoot)src\Antiforgery\" />
