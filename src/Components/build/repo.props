@@ -4,14 +4,6 @@
   <!-- Properties to make KoreBuild more like dotnet/arcade. -->
   <PropertyGroup>
     <SkipArtifactVerification>true</SkipArtifactVerification>
-    <EnableBenchmarkValidation>false</EnableBenchmarkValidation>
-    <SignCheckExclusionsFile>$(MSBuildThisFileDirectory)..\..\..\eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
-    <SignToolDataWorkingDir>$(ArtifactsDir)\$(Configuration)\</SignToolDataWorkingDir>
-    <OverridePackageOutputPath>false</OverridePackageOutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -44,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
   </ItemGroup>
 

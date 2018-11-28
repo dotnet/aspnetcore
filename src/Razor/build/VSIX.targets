@@ -18,8 +18,8 @@
     Condition="'$(OS)'=='Windows_NT'" />
 
   <!-- This target is required so KoreBuild can generate a bill of materials with relevant information about the VSIX. -->
-  <Target Name="GetVSIXArtifactInfo">
-    <ItemGroup>
+  <Target Name="GetVSIXArtifactInfo" DependsOnTargets="GetToolsets">
+    <ItemGroup Condition="'$(VisualStudioMSBuildx86Path)' != ''">
 
       <ArtifactInfo Include="$(VSIXOutputPath)">
         <ArtifactType>VsixPackage</ArtifactType>
