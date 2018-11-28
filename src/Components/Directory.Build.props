@@ -2,13 +2,10 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <Import Project="build\dependencies.props" />
-  <Import Project="build\sources.props" />
 
   <PropertyGroup>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <PackageTags>aspnetcore;components</PackageTags>
-    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
     <!-- So we can use the tool from source within the repo without having to pack -->
     <BlazorToolsDir>$(MSBuildThisFileDirectory)src\Microsoft.AspNetCore.Components.Build\bin\$(Configuration)\netcoreapp2.1\</BlazorToolsDir>

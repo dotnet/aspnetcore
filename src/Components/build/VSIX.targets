@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
+    <BuildVSIX Condition="'$(BuildVSIX)' ==''">false</BuildVSIX>
     <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
     <VSIXProject>$(RepositoryRoot)blazor\tooling\Microsoft.VisualStudio.BlazorExtension\Microsoft.VisualStudio.BlazorExtension.csproj</VSIXProject>
