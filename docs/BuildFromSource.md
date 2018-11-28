@@ -1,16 +1,11 @@
 Build ASP.NET Core from Source
 ==============================
 
-Building ASP.NET Core from source allows you tweak and customize ASP.NET Core, and
-to contribute your improvements back to the project.
+Building ASP.NET Core from source allows you tweak and customize ASP.NET Core, and to contribute your improvements back to the project.
 
-## :warning: Temporary instructions
+:warning: We are currently in the middle of restructing our source code. These instructions will likely change rapidly during November and December 2018.
 
-We are currently in the middle of restructing our repositories. While this work is being done, the following instructions will help you be more productive while working on this repo.
-
-1. Before opening a solution, run `build.cmd /p:_ProjectsOnly=true /p:SkipTests=true`. This will only build the projects which have merged into this repo, not the git submodules.
-2. Use (or create) a solution which is scoped to your project file. The build system does not use .sln files. These only exist for developer productivity in Visual Studio, so feel free to adjust the projects in .sln files to match your workload.
-3. Questions? Contact @aspnet for help.
+See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known issues and to track ongoing work.
 
 ## Install pre-requistes
 
@@ -58,11 +53,40 @@ git submodule update --init --recursive
 
 ## Building in Visual Studio / Code
 
-Before opening our .sln files in Visual Studio or VS Code, executing the following on command-line:
-```
-.\build.cmd /t:Restore
-```
-This will download required tools.
+Before opening our .sln files in Visual Studio or VS Code, you need to perform the following actions.
+
+1. Executing the following on command-line:
+   ```
+   .\build.cmd /p:SkipTests=true
+   ```
+   This will download required tools and build the entire repository once. At that point, you should be able to open .sln files to work on the projects you care about.
+   
+2. Update your `PATH` environment variable. (See [below for details](#path).)
+
+> :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. Visual Studio will only build projects in a solution file, and makes a best effort to use other files on disk. If you pull many changes, the files on disk may be stale and will need to re-build.
+
+### Solution files
+
+We don't have a single .sln file for all of ASP.NET Core because Visual Studio doesn't currently handle projects of this scale.
+Instead, we have many .sln files which include a sub-set of projects. These principles guide how we create and manage .slns:
+
+1. Solution files are not used by CI or command line build scripts. They are for meant for use by developers only.
+2. Solution files group together projects which are frequently edited at the same time.
+3. Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .sln file.
+
+> :bulb: Pro tip: `dotnet new sln` and `dotnet sln` are one of the easiest ways to create and modify solutions.
+
+### Known issue: NU1105
+
+Opening solution files may produce an error code NU1105 with a message such
+
+> Unable to find project information for 'C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj'. Inside Visual Studio, this may be because the project is unloaded or not part of current solution. Otherwise the project file may be invalid or missing targets required for restore.
+
+This is a known issue in NuGet (<https://github.com/NuGet/Home/issues/5820>) and we are working with them for a solution. See also <https://github.com/aspnet/AspNetCore/issues/4183> to track progress on this.
+
+**The workaround** for now is to disable NuGet restore in Visual Studio.
+
+![screenshot](https://i.imgur.com/cTKP381.png)
 
 #### PATH
 
@@ -89,6 +113,10 @@ On macOS/Linux:
 ./build.sh
 ```
 
+### Building a subset of the code
+
+This repository is large. Look for `build.cmd`/`.sh` scripts in subfolders. These scripts can be used to invoke build and test on a smaller set of projects.
+
 #### Build properties
 
 Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
@@ -99,8 +127,8 @@ Additional properties can be added as an argument in the form `/property:$name=$
 Common properties include:
 
 Property                 | Description
--------------------------|---------------------------------------------------------
-BuildNumber              | (string). A specific build number, typically from a CI counter
+-------------------------|-------------------------------------------------------------------------------------------------------------
+BuildNumberSuffix        | (string). A specific build number, typically from a CI counter, which is appended to the pre-release label.
 Configuration            | `Debug` or `Release`. Default = `Debug`.
 SkipTests                | `true` or `false`. When true, builds without running tests.
 NoBuild                  | `true` or `false`. Runs tests without rebuilding.
@@ -109,7 +137,7 @@ NoBuild                  | `true` or `false`. Runs tests without rebuilding.
 
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 
-- Run the installers produced in `artifacts/installers/` for your platform.
+- Run the installers produced in `artifacts/{Debug, Release}/installers/` for your platform.
 - Add a NuGet.Config to your project directory with the following content:
 
   ```xml
@@ -128,7 +156,7 @@ After building ASP.NET Core from source, you will need to install and use your l
 - Update the versions on `PackageReference` items in your .csproj project file to point to the version from your local build.
   ```xml
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="3.0.0-alpha1-t000" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.0.0-preview-0" />
   </ItemGroup>
   ```
 
