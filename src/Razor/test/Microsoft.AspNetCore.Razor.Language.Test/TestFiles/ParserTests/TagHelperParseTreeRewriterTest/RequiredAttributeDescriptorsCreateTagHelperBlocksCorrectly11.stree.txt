@@ -28,7 +28,9 @@ RazorDocument - [0..35)::35 - [<strong catchAll="@DateTime.Now" />]
                                                     Identifier;[Now];
                     MarkupTextLiteral - [31..32)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [32..35)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [32..33)::1
+                    MarkupTextLiteral - [32..33)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [33..35)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

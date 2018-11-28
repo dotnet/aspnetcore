@@ -23,7 +23,8 @@ RazorDocument - [0..26)::26 - [<input type='text'><input>]
                     CloseAngle;[>];
         MarkupTagHelperElement - [19..26)::7 - input[StartTagOnly] - InputTagHelper
             MarkupTagHelperStartTag - [19..26)::7
-                MarkupTextLiteral - [19..26)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [19..25)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[input];
+                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];

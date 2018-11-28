@@ -31,7 +31,9 @@ RazorDocument - [0..28)::28 - [<myth bound='    @true  ' />]
                             Whitespace;[  ];
                     MarkupTextLiteral - [24..25)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [25..28)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [25..26)::1
+                    MarkupTextLiteral - [25..26)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [26..28)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

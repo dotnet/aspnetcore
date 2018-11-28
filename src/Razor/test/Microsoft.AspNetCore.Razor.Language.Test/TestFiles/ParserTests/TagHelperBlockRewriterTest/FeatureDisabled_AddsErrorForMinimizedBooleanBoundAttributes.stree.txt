@@ -15,7 +15,9 @@ RazorDocument - [0..37)::37 - [<input boundbool boundbooldict-key />]
                         Whitespace;[ ];
                     MarkupTextLiteral - [17..34)::17 - [boundbooldict-key] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[boundbooldict-key];
-                MarkupTextLiteral - [34..37)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [34..35)::1
+                    MarkupTextLiteral - [34..35)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [35..37)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

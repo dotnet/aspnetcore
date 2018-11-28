@@ -178,8 +178,10 @@ CSharpCodeBlock - [0..120)::120 - [{<span foo='@@@(2+3)' bar='@(2+3)@@@DateTime.
                                                             Identifier;[Now];
                             MarkupTextLiteral - [115..116)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                                 SingleQuote;['];
-                        MarkupTextLiteral - [116..119)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-                            Whitespace;[ ];
+                        MarkupMiscAttributeContent - [116..117)::1
+                            MarkupTextLiteral - [116..117)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                        MarkupTextLiteral - [117..119)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
                             ForwardSlash;[/];
                             CloseAngle;[>];
                 CSharpStatementLiteral - [119..119)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any

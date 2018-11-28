@@ -17,7 +17,8 @@ RazorDocument - [0..13)::13 - [@{LF}LF<html>]
         MarkupEphemeralTextLiteral - [5..7)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupTagBlock - [7..13)::6 - [<html>]
-            MarkupTextLiteral - [7..13)::6 - [<html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [7..12)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[html];
+            MarkupTextLiteral - [12..13)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];

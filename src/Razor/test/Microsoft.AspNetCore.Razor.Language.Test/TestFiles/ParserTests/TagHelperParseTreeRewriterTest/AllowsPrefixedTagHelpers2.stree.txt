@@ -1,9 +1,10 @@
 RazorDocument - [0..27)::27 - [<th:>words and spaces</th:>]
     MarkupBlock - [0..27)::27
         MarkupTagBlock - [0..5)::5 - [<th:>]
-            MarkupTextLiteral - [0..5)::5 - [<th:>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [0..4)::4 - [<th:] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[th:];
+            MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupTextLiteral - [5..21)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[words];

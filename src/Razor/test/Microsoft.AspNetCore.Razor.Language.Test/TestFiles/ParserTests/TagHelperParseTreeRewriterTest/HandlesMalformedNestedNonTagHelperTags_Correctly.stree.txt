@@ -1,9 +1,10 @@
 RazorDocument - [0..14)::14 - [<div>@{</div>}]
     MarkupBlock - [0..14)::14
         MarkupTagBlock - [0..5)::5 - [<div>]
-            MarkupTextLiteral - [0..5)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[div];
+            MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         CSharpCodeBlock - [5..14)::9
             CSharpStatement - [5..14)::9

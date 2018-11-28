@@ -4,14 +4,16 @@ RazorDocument - [0..24)::24 - [Foo <div><p></p></p> Baz]
             Text;[Foo];
             Whitespace;[ ];
         MarkupTagBlock - [4..9)::5 - [<div>]
-            MarkupTextLiteral - [4..9)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [4..8)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[div];
+            MarkupTextLiteral - [8..9)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupTagBlock - [9..12)::3 - [<p>]
-            MarkupTextLiteral - [9..12)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [9..11)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [11..12)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupTagBlock - [12..16)::4 - [</p>]
             MarkupTextLiteral - [12..16)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

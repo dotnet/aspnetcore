@@ -14,7 +14,8 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_PageWithNamespace - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (34:2,0 [20] PageWithNamespace.cshtml)
-                    IntermediateToken - (34:2,0 [4] PageWithNamespace.cshtml) - Html - <h1>
+                    IntermediateToken - (34:2,0 [3] PageWithNamespace.cshtml) - Html - <h1
+                    IntermediateToken - (37:2,3 [1] PageWithNamespace.cshtml) - Html - >
                     IntermediateToken - (38:2,4 [9] PageWithNamespace.cshtml) - Html - Hi There!
                     IntermediateToken - (47:2,13 [5] PageWithNamespace.cshtml) - Html - </h1>
                     IntermediateToken - (52:2,18 [2] PageWithNamespace.cshtml) - Html - \n

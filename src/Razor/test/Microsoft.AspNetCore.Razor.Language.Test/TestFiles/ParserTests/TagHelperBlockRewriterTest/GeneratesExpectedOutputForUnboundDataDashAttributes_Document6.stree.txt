@@ -42,7 +42,9 @@ RazorDocument - [0..82)::82 - [<input pre-attribute data-required='prefix @DateT
                         Whitespace;[ ];
                     MarkupTextLiteral - [65..79)::14 - [post-attribute] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[post-attribute];
-                MarkupTextLiteral - [79..82)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [79..80)::1
+                    MarkupTextLiteral - [79..80)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [80..82)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

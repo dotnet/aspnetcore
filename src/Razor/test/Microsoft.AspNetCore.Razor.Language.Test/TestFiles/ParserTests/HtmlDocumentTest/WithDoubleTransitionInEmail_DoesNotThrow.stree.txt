@@ -39,8 +39,10 @@ RazorDocument - [0..44)::44 - [{<span foo='abc@def.com abc@@def.com @@' />}]
                             Transition;[@];
                 MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                     SingleQuote;['];
-            MarkupTextLiteral - [40..43)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Whitespace;[ ];
+            MarkupMiscAttributeContent - [40..41)::1
+                MarkupTextLiteral - [40..41)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+            MarkupTextLiteral - [41..43)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 ForwardSlash;[/];
                 CloseAngle;[>];
         MarkupTextLiteral - [43..44)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any

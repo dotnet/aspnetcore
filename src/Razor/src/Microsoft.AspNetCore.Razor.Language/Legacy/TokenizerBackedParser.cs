@@ -233,6 +233,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return !EndOfFile && CurrentToken != null && CurrentToken.Kind == type;
         }
 
+        protected bool TokenExistsAfterWhitespace(SyntaxKind kind, bool includeNewLines = true)
+        {
+            var tokenFound = false;
+            var whitespace = ReadWhile(token =>
+                token.Kind == SyntaxKind.Whitespace ||
+                (includeNewLines && token.Kind == SyntaxKind.NewLine));
+            tokenFound = At(kind);
+
+            PutCurrentBack();
+            PutBack(whitespace);
+            EnsureCurrent();
+
+            return tokenFound;
+        }
+
         protected bool EnsureCurrent()
         {
             if (CurrentToken == null)

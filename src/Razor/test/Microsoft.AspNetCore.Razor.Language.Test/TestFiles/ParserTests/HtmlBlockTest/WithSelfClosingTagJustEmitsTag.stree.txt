@@ -1,8 +1,11 @@
 MarkupBlock - [0..7)::7 - [<foo />]
     MarkupTagBlock - [0..7)::7 - [<foo />]
-        MarkupTextLiteral - [0..7)::7 - [<foo />] - Gen<Markup> - SpanEditHandler;Accepts:None
+        MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
             OpenAngle;[<];
             Text;[foo];
-            Whitespace;[ ];
+        MarkupMiscAttributeContent - [4..5)::1
+            MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+        MarkupTextLiteral - [5..7)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
             ForwardSlash;[/];
             CloseAngle;[>];

@@ -45,15 +45,18 @@ RazorDocument - [0..78)::78 - [<div style="" class="btn" catchAll="hi" >words<st
                                 Text;[hi];
                     MarkupTextLiteral - [38..39)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [39..41)::2 - [ >] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [39..40)::1
+                    MarkupTextLiteral - [39..40)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [40..41)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [41..46)::5 - [words] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[words];
             MarkupTagBlock - [46..54)::8 - [<strong>]
-                MarkupTextLiteral - [46..54)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [46..53)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [53..54)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [54..57)::3 - [and] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[and];

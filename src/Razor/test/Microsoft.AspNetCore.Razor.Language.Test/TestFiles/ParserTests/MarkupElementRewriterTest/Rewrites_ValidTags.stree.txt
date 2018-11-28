@@ -4,9 +4,10 @@ RazorDocument - [0..30)::30 - [LF<div>Foo</div>LF<p>Bar</p>LF]
             NewLine;[LF];
         MarkupElement - [2..16)::14
             MarkupTagBlock - [2..7)::5 - [<div>]
-                MarkupTextLiteral - [2..7)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [2..6)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[div];
+                MarkupTextLiteral - [6..7)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [7..10)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Foo];
@@ -20,9 +21,10 @@ RazorDocument - [0..30)::30 - [LF<div>Foo</div>LF<p>Bar</p>LF]
             NewLine;[LF];
         MarkupElement - [18..28)::10
             MarkupTagBlock - [18..21)::3 - [<p>]
-                MarkupTextLiteral - [18..21)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [18..20)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [21..24)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Bar];

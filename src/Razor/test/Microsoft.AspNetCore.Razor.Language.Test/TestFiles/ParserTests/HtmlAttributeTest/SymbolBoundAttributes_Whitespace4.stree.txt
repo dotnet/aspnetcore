@@ -34,7 +34,9 @@ MarkupBlock - [0..41)::41 - [<a LF  (^click)='Foo'	LF(^click)='Bar' />]
                         Text;[Bar];
             MarkupTextLiteral - [37..38)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                 SingleQuote;['];
-        MarkupTextLiteral - [38..41)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-            Whitespace;[ ];
+        MarkupMiscAttributeContent - [38..39)::1
+            MarkupTextLiteral - [38..39)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+        MarkupTextLiteral - [39..41)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
             ForwardSlash;[/];
             CloseAngle;[>];

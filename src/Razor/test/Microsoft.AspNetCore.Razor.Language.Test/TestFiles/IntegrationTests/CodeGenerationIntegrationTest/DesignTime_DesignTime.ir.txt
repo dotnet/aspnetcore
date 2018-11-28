@@ -11,12 +11,14 @@ Document -
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [19] DesignTime.cshtml)
-                    IntermediateToken - (0:0,0 [5] DesignTime.cshtml) - Html - <div>
+                    IntermediateToken - (0:0,0 [4] DesignTime.cshtml) - Html - <div
+                    IntermediateToken - (4:0,4 [1] DesignTime.cshtml) - Html - >
                     IntermediateToken - (5:0,5 [14] DesignTime.cshtml) - Html - \n            
                 CSharpCode - (20:1,13 [36] DesignTime.cshtml)
                     IntermediateToken - (20:1,13 [36] DesignTime.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
                 HtmlContent - (56:2,4 [17] DesignTime.cshtml)
-                    IntermediateToken - (56:2,4 [3] DesignTime.cshtml) - Html - <p>
+                    IntermediateToken - (56:2,4 [2] DesignTime.cshtml) - Html - <p
+                    IntermediateToken - (58:2,6 [1] DesignTime.cshtml) - Html - >
                     IntermediateToken - (59:2,7 [14] DesignTime.cshtml) - Html - This is item #
                 CSharpExpression - (74:2,22 [1] DesignTime.cshtml)
                     IntermediateToken - (74:2,22 [1] DesignTime.cshtml) - CSharp - i
@@ -28,7 +30,8 @@ Document -
                     IntermediateToken - (94:3,13 [2] DesignTime.cshtml) - Html - \n
                     IntermediateToken - (96:4,0 [6] DesignTime.cshtml) - Html - </div>
                     IntermediateToken - (102:4,6 [4] DesignTime.cshtml) - Html - \n\n
-                    IntermediateToken - (106:6,0 [3] DesignTime.cshtml) - Html - <p>
+                    IntermediateToken - (106:6,0 [2] DesignTime.cshtml) - Html - <p
+                    IntermediateToken - (108:6,2 [1] DesignTime.cshtml) - Html - >
                     IntermediateToken - (109:6,3 [2] DesignTime.cshtml) - Html - \n
                 CSharpExpression - (113:7,2 [12] DesignTime.cshtml)
                     IntermediateToken - (113:7,2 [12] DesignTime.cshtml) - CSharp - Foo(Bar.Baz)
@@ -38,7 +41,8 @@ Document -
                     IntermediateToken - (129:8,1 [4] DesignTime.cshtml) - CSharp - Foo(
                     Template - (134:8,6 [18] DesignTime.cshtml)
                         HtmlContent - (134:8,6 [7] DesignTime.cshtml)
-                            IntermediateToken - (134:8,6 [3] DesignTime.cshtml) - Html - <p>
+                            IntermediateToken - (134:8,6 [2] DesignTime.cshtml) - Html - <p
+                            IntermediateToken - (136:8,8 [1] DesignTime.cshtml) - Html - >
                             IntermediateToken - (137:8,9 [4] DesignTime.cshtml) - Html - Bar 
                         CSharpExpression - (142:8,14 [3] DesignTime.cshtml)
                             IntermediateToken - (142:8,14 [3] DesignTime.cshtml) - CSharp - baz
@@ -53,7 +57,8 @@ Document -
                 Section -  - Footer
                     HtmlContent - (181:11,17 [22] DesignTime.cshtml)
                         IntermediateToken - (181:11,17 [6] DesignTime.cshtml) - Html - \n    
-                        IntermediateToken - (187:12,4 [3] DesignTime.cshtml) - Html - <p>
+                        IntermediateToken - (187:12,4 [2] DesignTime.cshtml) - Html - <p
+                        IntermediateToken - (189:12,6 [1] DesignTime.cshtml) - Html - >
                         IntermediateToken - (190:12,7 [3] DesignTime.cshtml) - Html - Foo
                         IntermediateToken - (193:12,10 [4] DesignTime.cshtml) - Html - </p>
                         IntermediateToken - (197:12,14 [6] DesignTime.cshtml) - Html - \n    

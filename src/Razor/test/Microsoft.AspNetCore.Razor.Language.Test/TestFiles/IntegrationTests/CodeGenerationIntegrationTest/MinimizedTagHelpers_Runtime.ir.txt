@@ -23,7 +23,8 @@ Document -
                             IntermediateToken - (64:2,29 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                             IntermediateToken - (70:3,4 [6] MinimizedTagHelpers.cshtml) - Html - <input
                             IntermediateToken - (76:3,10 [13] MinimizedTagHelpers.cshtml) - Html -  nottaghelper
-                            IntermediateToken - (89:3,23 [3] MinimizedTagHelpers.cshtml) - Html -  />
+                            IntermediateToken - (89:3,23 [1] MinimizedTagHelpers.cshtml) - Html -  
+                            IntermediateToken - (90:3,24 [2] MinimizedTagHelpers.cshtml) - Html - />
                             IntermediateToken - (92:3,26 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (98:4,4 [59] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             DefaultTagHelperBody - 

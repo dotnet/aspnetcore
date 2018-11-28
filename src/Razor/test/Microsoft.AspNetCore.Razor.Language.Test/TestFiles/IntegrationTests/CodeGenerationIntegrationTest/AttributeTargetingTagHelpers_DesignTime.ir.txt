@@ -21,7 +21,8 @@ Document -
                     DefaultTagHelperBody - 
                         HtmlContent - (48:2,15 [9] AttributeTargetingTagHelpers.cshtml)
                             IntermediateToken - (48:2,15 [6] AttributeTargetingTagHelpers.cshtml) - Html - \n    
-                            IntermediateToken - (54:3,4 [3] AttributeTargetingTagHelpers.cshtml) - Html - <p>
+                            IntermediateToken - (54:3,4 [2] AttributeTargetingTagHelpers.cshtml) - Html - <p
+                            IntermediateToken - (56:3,6 [1] AttributeTargetingTagHelpers.cshtml) - Html - >
                         TagHelper - (57:3,7 [36] AttributeTargetingTagHelpers.cshtml) - strong - TagMode.StartTagAndEndTag
                             DefaultTagHelperBody - 
                                 HtmlContent - (79:3,29 [5] AttributeTargetingTagHelpers.cshtml)
@@ -32,14 +33,16 @@ Document -
                                     IntermediateToken - (75:3,25 [2] AttributeTargetingTagHelpers.cshtml) - Html - hi
                             DefaultTagHelperExecute - 
                         HtmlContent - (93:3,43 [62] AttributeTargetingTagHelpers.cshtml)
-                            IntermediateToken - (93:3,43 [8] AttributeTargetingTagHelpers.cshtml) - Html - <strong>
+                            IntermediateToken - (93:3,43 [7] AttributeTargetingTagHelpers.cshtml) - Html - <strong
+                            IntermediateToken - (100:3,50 [1] AttributeTargetingTagHelpers.cshtml) - Html - >
                             IntermediateToken - (101:3,51 [5] AttributeTargetingTagHelpers.cshtml) - Html - World
                             IntermediateToken - (106:3,56 [9] AttributeTargetingTagHelpers.cshtml) - Html - </strong>
                             IntermediateToken - (115:3,65 [4] AttributeTargetingTagHelpers.cshtml) - Html - </p>
                             IntermediateToken - (119:3,69 [6] AttributeTargetingTagHelpers.cshtml) - Html - \n    
                             IntermediateToken - (125:4,4 [6] AttributeTargetingTagHelpers.cshtml) - Html - <input
                             IntermediateToken - (131:4,10 [15] AttributeTargetingTagHelpers.cshtml) - Html -  checked="true"
-                            IntermediateToken - (146:4,25 [3] AttributeTargetingTagHelpers.cshtml) - Html -  />
+                            IntermediateToken - (146:4,25 [1] AttributeTargetingTagHelpers.cshtml) - Html -  
+                            IntermediateToken - (147:4,26 [2] AttributeTargetingTagHelpers.cshtml) - Html - />
                             IntermediateToken - (149:4,28 [6] AttributeTargetingTagHelpers.cshtml) - Html - \n    
                         TagHelper - (155:5,4 [40] AttributeTargetingTagHelpers.cshtml) - input - TagMode.SelfClosing
                             DefaultTagHelperBody - 

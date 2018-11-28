@@ -30,8 +30,10 @@ CSharpCodeBlock - [0..22)::22 - [{<span foo='@@def' />}]
                                         Text;[def];
                             MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                                 SingleQuote;['];
-                        MarkupTextLiteral - [18..21)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-                            Whitespace;[ ];
+                        MarkupMiscAttributeContent - [18..19)::1
+                            MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                        MarkupTextLiteral - [19..21)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
                             ForwardSlash;[/];
                             CloseAngle;[>];
                 CSharpStatementLiteral - [21..21)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any

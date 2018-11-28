@@ -36,7 +36,8 @@ Document -
                     IntermediateToken -  - CSharp - BeginContext(381, 75, true);
                 HtmlContent - (381:19,0 [75] RazorPagesWithoutModel.cshtml)
                     IntermediateToken - (381:19,0 [2] RazorPagesWithoutModel.cshtml) - Html - \n
-                    IntermediateToken - (383:20,0 [4] RazorPagesWithoutModel.cshtml) - Html - <h1>
+                    IntermediateToken - (383:20,0 [3] RazorPagesWithoutModel.cshtml) - Html - <h1
+                    IntermediateToken - (386:20,3 [1] RazorPagesWithoutModel.cshtml) - Html - >
                     IntermediateToken - (387:20,4 [12] RazorPagesWithoutModel.cshtml) - Html - New Customer
                     IntermediateToken - (399:20,16 [5] RazorPagesWithoutModel.cshtml) - Html - </h1>
                     IntermediateToken - (404:20,21 [2] RazorPagesWithoutModel.cshtml) - Html - \n
@@ -98,7 +99,8 @@ Document -
                                     IntermediateToken - (611:25,31 [14] RazorPagesWithoutModel.cshtml) - Html - \n            
                                     IntermediateToken - (625:26,12 [6] RazorPagesWithoutModel.cshtml) - Html - <input
                                     IntermediateToken - (631:26,18 [21] RazorPagesWithoutModel.cshtml) - Html -  class="form-control"
-                                    IntermediateToken - (652:26,39 [3] RazorPagesWithoutModel.cshtml) - Html -  />
+                                    IntermediateToken - (652:26,39 [1] RazorPagesWithoutModel.cshtml) - Html -  
+                                    IntermediateToken - (653:26,40 [2] RazorPagesWithoutModel.cshtml) - Html - />
                                     IntermediateToken - (655:26,42 [14] RazorPagesWithoutModel.cshtml) - Html - \n            
                                     IntermediateToken - (669:27,12 [5] RazorPagesWithoutModel.cshtml) - Html - <span
                                     IntermediateToken - (674:27,17 [20] RazorPagesWithoutModel.cshtml) - Html -  class="text-danger"

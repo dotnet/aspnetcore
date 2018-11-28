@@ -14,9 +14,10 @@ CSharpCodeBlock - [0..23)::23 - [if(foo) { @<p>Bar</p> }]
         MarkupTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
             Transition;[@];
         MarkupTagBlock - [11..14)::3 - [<p>]
-            MarkupTextLiteral - [11..14)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [11..13)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [13..14)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [14..17)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Bar];

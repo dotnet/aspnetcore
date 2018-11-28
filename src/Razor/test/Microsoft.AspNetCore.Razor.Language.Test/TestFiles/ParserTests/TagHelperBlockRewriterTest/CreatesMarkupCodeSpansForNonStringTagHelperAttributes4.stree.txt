@@ -33,7 +33,9 @@ RazorDocument - [0..36)::36 - [<person age=" @DateTime.Now.Year" />]
                                                 Identifier;[Year];
                     MarkupTextLiteral - [32..33)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [33..36)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [33..34)::1
+                    MarkupTextLiteral - [33..34)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [34..36)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

@@ -63,7 +63,9 @@ RazorDocument - [0..73)::73 - [<person age="12" birthday="DateTime.Now" name="Ti
                                                 Identifier;[Now];
                     MarkupTextLiteral - [69..70)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [70..73)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [70..71)::1
+                    MarkupTextLiteral - [70..71)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [71..73)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

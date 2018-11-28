@@ -24,7 +24,9 @@ RazorDocument - [0..38)::38 - [<input class='btn' unbound-required />]
                         Whitespace;[ ];
                     MarkupTextLiteral - [19..35)::16 - [unbound-required] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[unbound-required];
-                MarkupTextLiteral - [35..38)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [35..36)::1
+                    MarkupTextLiteral - [35..36)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [36..38)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

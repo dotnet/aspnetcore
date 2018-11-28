@@ -1,8 +1,9 @@
 MarkupBlock - [0..31)::31 - [<foo><?xml foo @bar baz?></foo>]
     MarkupTagBlock - [0..5)::5 - [<foo>]
-        MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+        MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:None
             OpenAngle;[<];
             Text;[foo];
+        MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
             CloseAngle;[>];
     MarkupTextLiteral - [5..15)::10 - [<?xml foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
         OpenAngle;[<];

@@ -24,10 +24,13 @@ RazorDocument - [0..43)::43 - [<script type='text/html'><input /></script>]
                 CloseAngle;[>];
         MarkupTagHelperElement - [25..34)::9 - input[SelfClosing] - inputtaghelper
             MarkupTagHelperStartTag - [25..34)::9
-                MarkupTextLiteral - [25..34)::9 - [<input />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [25..31)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[input];
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [31..32)::1
+                    MarkupTextLiteral - [31..32)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [32..34)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];
         MarkupTagBlock - [34..43)::9 - [</script>]

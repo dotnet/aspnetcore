@@ -2,9 +2,10 @@ RazorDocument - [0..55)::55 - [<p>Hello <p class="foo" style="color:red;" /> Wor
     MarkupBlock - [0..55)::55
         MarkupTagHelperElement - [0..55)::55 - p[StartTagAndEndTag] - ptaghelper
             MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [3..9)::6 - [Hello ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
@@ -42,8 +43,10 @@ RazorDocument - [0..55)::55 - [<p>Hello <p class="foo" style="color:red;" /> Wor
                                     Text;[color:red;];
                         MarkupTextLiteral - [41..42)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                             DoubleQuote;["];
-                    MarkupTextLiteral - [42..45)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                        Whitespace;[ ];
+                    MarkupMiscAttributeContent - [42..43)::1
+                        MarkupTextLiteral - [42..43)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                    MarkupTextLiteral - [43..45)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         ForwardSlash;[/];
                         CloseAngle;[>];
             MarkupTextLiteral - [45..51)::6 - [ World] - Gen<Markup> - SpanEditHandler;Accepts:Any

@@ -22,14 +22,16 @@ RazorDocument - [0..43)::43 - [<p class="btn"><strong><p></p></strong></p>]
                 MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagBlock - [15..23)::8 - [<strong>]
-                MarkupTextLiteral - [15..23)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [15..22)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [22..23)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagBlock - [23..26)::3 - [<p>]
-                MarkupTextLiteral - [23..26)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [23..25)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagBlock - [26..30)::4 - [</p>]
                 MarkupTextLiteral - [26..30)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

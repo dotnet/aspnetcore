@@ -15,23 +15,25 @@ RazorDocument - [0..38)::38 - [<p class=some=thing attr="@value"></p>]
                         MarkupLiteralAttributeValue - [9..13)::4 - [some]
                             MarkupTextLiteral - [9..13)::4 - [some] - Gen<None> - SpanEditHandler;Accepts:Any
                                 Text;[some];
-                MarkupTextLiteral - [13..26)::13 - [=thing attr="] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Equals;[=];
-                    Text;[thing];
-                    Whitespace;[ ];
-                    Text;[attr];
-                    Equals;[=];
-                    DoubleQuote;["];
-                CSharpCodeBlock - [26..32)::6
-                    CSharpImplicitExpression - [26..32)::6
-                        CSharpTransition - [26..27)::1 - Gen<None> - SpanEditHandler;Accepts:None
-                            Transition;[@];
-                        CSharpImplicitExpressionBody - [27..32)::5
-                            CSharpCodeBlock - [27..32)::5
-                                CSharpExpressionLiteral - [27..32)::5 - [value] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
-                                    Identifier;[value];
-                MarkupTextLiteral - [32..34)::2 - [">] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    DoubleQuote;["];
+                MarkupMiscAttributeContent - [13..33)::20
+                    MarkupTextLiteral - [13..26)::13 - [=thing attr="] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Equals;[=];
+                        Text;[thing];
+                        Whitespace;[ ];
+                        Text;[attr];
+                        Equals;[=];
+                        DoubleQuote;["];
+                    CSharpCodeBlock - [26..32)::6
+                        CSharpImplicitExpression - [26..32)::6
+                            CSharpTransition - [26..27)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                Transition;[@];
+                            CSharpImplicitExpressionBody - [27..32)::5
+                                CSharpCodeBlock - [27..32)::5
+                                    CSharpExpressionLiteral - [27..32)::5 - [value] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                        Identifier;[value];
+                    MarkupTextLiteral - [32..33)::1 - ["] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                MarkupTextLiteral - [33..34)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagHelperEndTag - [34..38)::4
                 MarkupTextLiteral - [34..38)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

@@ -14,7 +14,8 @@ Document -
                 CSharpCode - (9:1,5 [53] NestedCSharp.cshtml)
                     IntermediateToken - (9:1,5 [53] NestedCSharp.cshtml) - CSharp - foreach (var result in (dynamic)Url)\n    {\n        
                 HtmlContent - (62:3,8 [19] NestedCSharp.cshtml)
-                    IntermediateToken - (62:3,8 [5] NestedCSharp.cshtml) - Html - <div>
+                    IntermediateToken - (62:3,8 [4] NestedCSharp.cshtml) - Html - <div
+                    IntermediateToken - (66:3,12 [1] NestedCSharp.cshtml) - Html - >
                     IntermediateToken - (67:3,13 [14] NestedCSharp.cshtml) - Html - \n            
                 CSharpExpression - (82:4,13 [16] NestedCSharp.cshtml)
                     IntermediateToken - (82:4,13 [16] NestedCSharp.cshtml) - CSharp - result.SomeValue

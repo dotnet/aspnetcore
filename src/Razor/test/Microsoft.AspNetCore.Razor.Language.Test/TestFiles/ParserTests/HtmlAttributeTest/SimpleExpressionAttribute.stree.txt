@@ -24,7 +24,9 @@ MarkupBlock - [0..17)::17 - [<a href='@foo' />]
                                             Identifier;[foo];
             MarkupTextLiteral - [13..14)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                 SingleQuote;['];
-        MarkupTextLiteral - [14..17)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-            Whitespace;[ ];
+        MarkupMiscAttributeContent - [14..15)::1
+            MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+        MarkupTextLiteral - [15..17)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
             ForwardSlash;[/];
             CloseAngle;[>];

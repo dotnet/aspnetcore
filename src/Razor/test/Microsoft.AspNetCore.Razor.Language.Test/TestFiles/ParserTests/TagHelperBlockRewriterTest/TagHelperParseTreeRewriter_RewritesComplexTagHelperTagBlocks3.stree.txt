@@ -2,9 +2,10 @@ RazorDocument - [0..32)::32 - [<p>Hello World @DateTime.Now</p>]
     MarkupBlock - [0..32)::32
         MarkupTagHelperElement - [0..32)::32 - p[StartTagAndEndTag] - ptaghelper
             MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [3..15)::12 - [Hello World ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];

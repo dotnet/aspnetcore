@@ -9,9 +9,10 @@ CSharpCodeBlock - [0..58)::58 - [if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else
         Whitespace;[ ];
     MarkupBlock - [8..19)::11
         MarkupTagBlock - [8..11)::3 - [<p>]
-            MarkupTextLiteral - [8..11)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [8..10)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [10..11)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [11..14)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Bar];
@@ -33,9 +34,10 @@ CSharpCodeBlock - [0..58)::58 - [if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else
         Whitespace;[ ];
     MarkupBlock - [32..43)::11
         MarkupTagBlock - [32..35)::3 - [<p>]
-            MarkupTextLiteral - [32..35)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [32..34)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [34..35)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [35..38)::3 - [Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Baz];
@@ -52,9 +54,10 @@ CSharpCodeBlock - [0..58)::58 - [if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else
         Whitespace;[ ];
     MarkupBlock - [48..58)::10
         MarkupTagBlock - [48..51)::3 - [<p>]
-            MarkupTextLiteral - [48..51)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [48..50)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [50..51)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [51..54)::3 - [Boz] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Boz];

@@ -11,7 +11,8 @@ Document -
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (36:0,36 [17] RazorComments.cshtml)
                     IntermediateToken - (36:0,36 [2] RazorComments.cshtml) - Html - \n
-                    IntermediateToken - (38:1,0 [3] RazorComments.cshtml) - Html - <p>
+                    IntermediateToken - (38:1,0 [2] RazorComments.cshtml) - Html - <p
+                    IntermediateToken - (40:1,2 [1] RazorComments.cshtml) - Html - >
                     IntermediateToken - (41:1,3 [12] RazorComments.cshtml) - Html - This should 
                 HtmlContent - (62:1,24 [17] RazorComments.cshtml)
                     IntermediateToken - (62:1,24 [9] RazorComments.cshtml) - Html -  be shown
@@ -28,7 +29,8 @@ Document -
                 CSharpCode - (238:11,2 [24] RazorComments.cshtml)
                     IntermediateToken - (238:11,2 [24] RazorComments.cshtml) - CSharp -  var bar = "@* bar *@"; 
                 HtmlContent - (265:12,0 [44] RazorComments.cshtml)
-                    IntermediateToken - (265:12,0 [3] RazorComments.cshtml) - Html - <p>
+                    IntermediateToken - (265:12,0 [2] RazorComments.cshtml) - Html - <p
+                    IntermediateToken - (267:12,2 [1] RazorComments.cshtml) - Html - >
                     IntermediateToken - (268:12,3 [41] RazorComments.cshtml) - Html - But this should show the comment syntax: 
                 CSharpExpression - (310:12,45 [3] RazorComments.cshtml)
                     IntermediateToken - (310:12,45 [3] RazorComments.cshtml) - CSharp - bar
@@ -43,9 +45,12 @@ Document -
                     IntermediateToken - (334:16,0 [6] RazorComments.cshtml) - Html - <input
                     IntermediateToken - (340:16,6 [51] RazorComments.cshtml) - Html -  value="@*this razor comment is the actual value*@"
                     IntermediateToken - (391:16,57 [12] RazorComments.cshtml) - Html -  type="text"
-                    IntermediateToken - (403:16,69 [3] RazorComments.cshtml) - Html -  />
+                    IntermediateToken - (403:16,69 [1] RazorComments.cshtml) - Html -  
+                    IntermediateToken - (404:16,70 [2] RazorComments.cshtml) - Html - />
                     IntermediateToken - (406:16,72 [2] RazorComments.cshtml) - Html - \n
-                    IntermediateToken - (408:17,0 [7] RazorComments.cshtml) - Html - <input 
+                    IntermediateToken - (408:17,0 [6] RazorComments.cshtml) - Html - <input
+                    IntermediateToken - (414:17,6 [1] RazorComments.cshtml) - Html -  
                 HtmlContent - (458:17,50 [17] RazorComments.cshtml)
-                    IntermediateToken - (458:17,50 [15] RazorComments.cshtml) - Html -  type="text" />
+                    IntermediateToken - (458:17,50 [13] RazorComments.cshtml) - Html -  type="text" 
+                    IntermediateToken - (471:17,63 [2] RazorComments.cshtml) - Html - />
                     IntermediateToken - (473:17,65 [2] RazorComments.cshtml) - Html - \n

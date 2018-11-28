@@ -22,14 +22,16 @@ RazorDocument - [0..59)::59 - [<p class="btn"><p><p><p class="btn"><p></p></p></
                 MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagBlock - [15..18)::3 - [<p>]
-                MarkupTextLiteral - [15..18)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [15..17)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [17..18)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagBlock - [18..21)::3 - [<p>]
-                MarkupTextLiteral - [18..21)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [18..20)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagHelperElement - [21..47)::26 - p[StartTagAndEndTag] - pTagHelper
                 MarkupTagHelperStartTag - [21..36)::15
@@ -53,9 +55,10 @@ RazorDocument - [0..59)::59 - [<p class="btn"><p><p><p class="btn"><p></p></p></
                     MarkupTextLiteral - [35..36)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         CloseAngle;[>];
                 MarkupTagBlock - [36..39)::3 - [<p>]
-                    MarkupTextLiteral - [36..39)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [36..38)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[p];
+                    MarkupTextLiteral - [38..39)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         CloseAngle;[>];
                 MarkupTagBlock - [39..43)::4 - [</p>]
                     MarkupTextLiteral - [39..43)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

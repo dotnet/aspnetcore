@@ -28,8 +28,10 @@ RazorDocument - [0..32)::32 - [@{<input int-prefix-value='' />}]
                                             CSharpExpressionLiteral - [27..27)::0 - [] - Gen<None> - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14
                                         MarkupTextLiteral - [27..28)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
-                                    MarkupTextLiteral - [28..31)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        Whitespace;[ ];
+                                    MarkupMiscAttributeContent - [28..29)::1
+                                        MarkupTextLiteral - [28..29)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                    MarkupTextLiteral - [29..31)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         ForwardSlash;[/];
                                         CloseAngle;[>];
                         CSharpStatementLiteral - [31..31)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any

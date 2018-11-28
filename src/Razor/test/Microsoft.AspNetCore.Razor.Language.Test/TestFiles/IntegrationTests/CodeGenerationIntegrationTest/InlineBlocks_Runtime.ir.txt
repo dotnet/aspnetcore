@@ -19,5 +19,6 @@ Document -
                             IntermediateToken - (84:1,54 [1] InlineBlocks.cshtml) - Html - #
                         IntermediateToken - (92:1,62 [2] InlineBlocks.cshtml) - CSharp -  }
                 HtmlContent - (95:1,65 [6] InlineBlocks.cshtml)
-                    IntermediateToken - (95:1,65 [3] InlineBlocks.cshtml) - Html -  />
+                    IntermediateToken - (95:1,65 [1] InlineBlocks.cshtml) - Html -  
+                    IntermediateToken - (96:1,66 [2] InlineBlocks.cshtml) - Html - />
                     IntermediateToken - (98:1,68 [3] InlineBlocks.cshtml) - Html - \n}

@@ -31,7 +31,9 @@ MarkupBlock - [0..29)::29 - [<aLFhref='Foo'LFabcd='Bar' />]
                         Text;[Bar];
             MarkupTextLiteral - [25..26)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                 SingleQuote;['];
-        MarkupTextLiteral - [26..29)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-            Whitespace;[ ];
+        MarkupMiscAttributeContent - [26..27)::1
+            MarkupTextLiteral - [26..27)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+        MarkupTextLiteral - [27..29)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
             ForwardSlash;[/];
             CloseAngle;[>];

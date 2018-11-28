@@ -22,10 +22,12 @@ RazorDocument - [0..33)::33 - [@section s {LF<aLF<!--  > " '-->}]
                             MarkupTextLiteral - [12..14)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 NewLine;[LF];
                             MarkupTagBlock - [14..18)::4 - [<aLF]
-                                MarkupTextLiteral - [14..18)::4 - [<aLF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                MarkupTextLiteral - [14..16)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     OpenAngle;[<];
                                     Text;[a];
-                                    NewLine;[LF];
+                                MarkupMiscAttributeContent - [16..18)::2
+                                    MarkupTextLiteral - [16..18)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        NewLine;[LF];
                             MarkupCommentBlock - [18..32)::14
                                 MarkupTextLiteral - [18..22)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];

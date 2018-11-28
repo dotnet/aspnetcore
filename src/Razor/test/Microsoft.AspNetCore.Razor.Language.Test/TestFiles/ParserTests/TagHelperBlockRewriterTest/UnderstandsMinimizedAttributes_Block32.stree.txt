@@ -97,8 +97,10 @@ RazorDocument - [0..129)::129 - [@{<input    bound-required-int class='@DateTime
                                             Whitespace;[  ];
                                         MarkupTextLiteral - [108..124)::16 - [unbound-required] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[unbound-required];
-                                    MarkupTextLiteral - [124..128)::4 - [  />] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        Whitespace;[  ];
+                                    MarkupMiscAttributeContent - [124..126)::2
+                                        MarkupTextLiteral - [124..126)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[  ];
+                                    MarkupTextLiteral - [126..128)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         ForwardSlash;[/];
                                         CloseAngle;[>];
                         CSharpStatementLiteral - [128..128)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any

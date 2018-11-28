@@ -17,7 +17,9 @@ MarkupBlock - [0..18)::18 - [<a #local='Foo' />]
                         Text;[Foo];
             MarkupTextLiteral - [14..15)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                 SingleQuote;['];
-        MarkupTextLiteral - [15..18)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-            Whitespace;[ ];
+        MarkupMiscAttributeContent - [15..16)::1
+            MarkupTextLiteral - [15..16)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+        MarkupTextLiteral - [16..18)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
             ForwardSlash;[/];
             CloseAngle;[>];

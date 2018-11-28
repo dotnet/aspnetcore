@@ -18,7 +18,9 @@ RazorDocument - [0..19)::19 - [<div class="btn" />]
                             Text;[btn];
                 MarkupTextLiteral - [15..16)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                     DoubleQuote;["];
-            MarkupTextLiteral - [16..19)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Whitespace;[ ];
+            MarkupMiscAttributeContent - [16..17)::1
+                MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+            MarkupTextLiteral - [17..19)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 ForwardSlash;[/];
                 CloseAngle;[>];

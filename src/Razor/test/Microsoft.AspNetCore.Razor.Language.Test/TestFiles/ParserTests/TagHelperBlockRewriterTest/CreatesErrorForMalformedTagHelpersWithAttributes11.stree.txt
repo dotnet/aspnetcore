@@ -31,7 +31,8 @@ RazorDocument - [0..31)::31 - [<p class="btn bar="foo"<strong>]
                         DoubleQuote;["];
             MarkupTagHelperElement - [23..31)::8 - strong[StartTagAndEndTag] - strongtaghelper
                 MarkupTagHelperStartTag - [23..31)::8
-                    MarkupTextLiteral - [23..31)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [23..30)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[strong];
+                    MarkupTextLiteral - [30..31)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         CloseAngle;[>];

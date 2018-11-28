@@ -2,9 +2,10 @@ RazorDocument - [0..35)::35 - [<p><!--Hello-->asdf<!--World--></p>]
     MarkupBlock - [0..35)::35
         MarkupTagHelperElement - [0..35)::35 - p[StartTagAndEndTag] - PTagHelper
             MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupCommentBlock - [3..15)::12
                 MarkupTextLiteral - [3..7)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None

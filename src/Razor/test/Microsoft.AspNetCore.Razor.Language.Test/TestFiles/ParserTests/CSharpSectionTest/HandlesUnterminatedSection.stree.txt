@@ -22,9 +22,10 @@ RazorDocument - [0..27)::27 - [@section foo { <p>Foo{}</p>]
                             MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Whitespace;[ ];
                             MarkupTagBlock - [15..18)::3 - [<p>]
-                                MarkupTextLiteral - [15..18)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                MarkupTextLiteral - [15..17)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     OpenAngle;[<];
                                     Text;[p];
+                                MarkupTextLiteral - [17..18)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     CloseAngle;[>];
                             MarkupTextLiteral - [18..23)::5 - [Foo{}] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[Foo];

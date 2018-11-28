@@ -16,7 +16,8 @@ Document -
                     IntermediateToken - (86:6,8 [12] ExpressionsInCode.cshtml) - CSharp - \n} else {\n
                 HtmlContent - (98:8,0 [25] ExpressionsInCode.cshtml)
                     IntermediateToken - (98:8,0 [4] ExpressionsInCode.cshtml) - Html -     
-                    IntermediateToken - (102:8,4 [3] ExpressionsInCode.cshtml) - Html - <p>
+                    IntermediateToken - (102:8,4 [2] ExpressionsInCode.cshtml) - Html - <p
+                    IntermediateToken - (104:8,6 [1] ExpressionsInCode.cshtml) - Html - >
                     IntermediateToken - (105:8,7 [12] ExpressionsInCode.cshtml) - Html - Foo is Null!
                     IntermediateToken - (117:8,19 [4] ExpressionsInCode.cshtml) - Html - </p>
                     IntermediateToken - (121:8,23 [2] ExpressionsInCode.cshtml) - Html - \n
@@ -24,7 +25,8 @@ Document -
                     IntermediateToken - (123:9,0 [3] ExpressionsInCode.cshtml) - CSharp - }\n
                 HtmlContent - (126:10,0 [7] ExpressionsInCode.cshtml)
                     IntermediateToken - (126:10,0 [2] ExpressionsInCode.cshtml) - Html - \n
-                    IntermediateToken - (128:11,0 [3] ExpressionsInCode.cshtml) - Html - <p>
+                    IntermediateToken - (128:11,0 [2] ExpressionsInCode.cshtml) - Html - <p
+                    IntermediateToken - (130:11,2 [1] ExpressionsInCode.cshtml) - Html - >
                     IntermediateToken - (131:11,3 [2] ExpressionsInCode.cshtml) - Html - \n
                 CSharpCode - (134:12,1 [38] ExpressionsInCode.cshtml)
                     IntermediateToken - (134:12,1 [38] ExpressionsInCode.cshtml) - CSharp - if(!String.IsNullOrEmpty(bar)) {\n    

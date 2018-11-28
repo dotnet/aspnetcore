@@ -14,9 +14,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                             NewLine;[LF];
                         MarkupBlock - [4..25)::21
                             MarkupTagBlock - [4..10)::6 - [<area>]
-                                MarkupTextLiteral - [4..10)::6 - [<area>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [4..9)::5 - [<area] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[area];
+                                MarkupTextLiteral - [9..10)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [10..25)::15 - [</areaLF}LF@{LF]
                                 MarkupTextLiteral - [10..25)::15 - [</areaLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -31,9 +32,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [25..46)::21
                             MarkupTagBlock - [25..31)::6 - [<base>]
-                                MarkupTextLiteral - [25..31)::6 - [<base>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [25..30)::5 - [<base] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[base];
+                                MarkupTextLiteral - [30..31)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [31..46)::15 - [</baseLF}LF@{LF]
                                 MarkupTextLiteral - [31..46)::15 - [</baseLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -48,9 +50,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [46..63)::17
                             MarkupTagBlock - [46..50)::4 - [<br>]
-                                MarkupTextLiteral - [46..50)::4 - [<br>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [46..49)::3 - [<br] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[br];
+                                MarkupTextLiteral - [49..50)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [50..63)::13 - [</brLF}LF@{LF]
                                 MarkupTextLiteral - [50..63)::13 - [</brLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -65,9 +68,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [63..82)::19
                             MarkupTagBlock - [63..68)::5 - [<col>]
-                                MarkupTextLiteral - [63..68)::5 - [<col>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [63..67)::4 - [<col] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[col];
+                                MarkupTextLiteral - [67..68)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [68..82)::14 - [</colLF}LF@{LF]
                                 MarkupTextLiteral - [68..82)::14 - [</colLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -82,9 +86,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [82..109)::27
                             MarkupTagBlock - [82..91)::9 - [<command>]
-                                MarkupTextLiteral - [82..91)::9 - [<command>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [82..90)::8 - [<command] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[command];
+                                MarkupTextLiteral - [90..91)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [91..109)::18 - [</commandLF}LF@{LF]
                                 MarkupTextLiteral - [91..109)::18 - [</commandLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -99,9 +104,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [109..132)::23
                             MarkupTagBlock - [109..116)::7 - [<embed>]
-                                MarkupTextLiteral - [109..116)::7 - [<embed>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [109..115)::6 - [<embed] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[embed];
+                                MarkupTextLiteral - [115..116)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [116..132)::16 - [</embedLF}LF@{LF]
                                 MarkupTextLiteral - [116..132)::16 - [</embedLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -116,9 +122,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [132..149)::17
                             MarkupTagBlock - [132..136)::4 - [<hr>]
-                                MarkupTextLiteral - [132..136)::4 - [<hr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [132..135)::3 - [<hr] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[hr];
+                                MarkupTextLiteral - [135..136)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [136..149)::13 - [</hrLF}LF@{LF]
                                 MarkupTextLiteral - [136..149)::13 - [</hrLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -133,9 +140,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [149..168)::19
                             MarkupTagBlock - [149..154)::5 - [<img>]
-                                MarkupTextLiteral - [149..154)::5 - [<img>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [149..153)::4 - [<img] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[img];
+                                MarkupTextLiteral - [153..154)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [154..168)::14 - [</imgLF}LF@{LF]
                                 MarkupTextLiteral - [154..168)::14 - [</imgLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -150,9 +158,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [168..191)::23
                             MarkupTagBlock - [168..175)::7 - [<input>]
-                                MarkupTextLiteral - [168..175)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [168..174)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[input];
+                                MarkupTextLiteral - [174..175)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [175..191)::16 - [</inputLF}LF@{LF]
                                 MarkupTextLiteral - [175..191)::16 - [</inputLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -167,9 +176,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [191..216)::25
                             MarkupTagBlock - [191..199)::8 - [<keygen>]
-                                MarkupTextLiteral - [191..199)::8 - [<keygen>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [191..198)::7 - [<keygen] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[keygen];
+                                MarkupTextLiteral - [198..199)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [199..216)::17 - [</keygenLF}LF@{LF]
                                 MarkupTextLiteral - [199..216)::17 - [</keygenLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -184,9 +194,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [216..237)::21
                             MarkupTagBlock - [216..222)::6 - [<link>]
-                                MarkupTextLiteral - [216..222)::6 - [<link>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [216..221)::5 - [<link] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[link];
+                                MarkupTextLiteral - [221..222)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [222..237)::15 - [</linkLF}LF@{LF]
                                 MarkupTextLiteral - [222..237)::15 - [</linkLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -201,9 +212,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [237..258)::21
                             MarkupTagBlock - [237..243)::6 - [<meta>]
-                                MarkupTextLiteral - [237..243)::6 - [<meta>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [237..242)::5 - [<meta] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[meta];
+                                MarkupTextLiteral - [242..243)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [243..258)::15 - [</metaLF}LF@{LF]
                                 MarkupTextLiteral - [243..258)::15 - [</metaLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -218,9 +230,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [258..281)::23
                             MarkupTagBlock - [258..265)::7 - [<param>]
-                                MarkupTextLiteral - [258..265)::7 - [<param>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [258..264)::6 - [<param] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[param];
+                                MarkupTextLiteral - [264..265)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [265..281)::16 - [</paramLF}LF@{LF]
                                 MarkupTextLiteral - [265..281)::16 - [</paramLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -235,9 +248,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [281..306)::25
                             MarkupTagBlock - [281..289)::8 - [<source>]
-                                MarkupTextLiteral - [281..289)::8 - [<source>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [281..288)::7 - [<source] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[source];
+                                MarkupTextLiteral - [288..289)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [289..306)::17 - [</sourceLF}LF@{LF]
                                 MarkupTextLiteral - [289..306)::17 - [</sourceLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -252,9 +266,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [306..329)::23
                             MarkupTagBlock - [306..313)::7 - [<track>]
-                                MarkupTextLiteral - [306..313)::7 - [<track>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [306..312)::6 - [<track] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[track];
+                                MarkupTextLiteral - [312..313)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [313..329)::16 - [</trackLF}LF@{LF]
                                 MarkupTextLiteral - [313..329)::16 - [</trackLF}LF@{LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -269,9 +284,10 @@ RazorDocument - [0..344)::344 - [@{LF<area></areaLF}LF@{LF<base></baseLF}LF@{LF<
                                     NewLine;[LF];
                         MarkupBlock - [329..344)::15
                             MarkupTagBlock - [329..334)::5 - [<wbr>]
-                                MarkupTextLiteral - [329..334)::5 - [<wbr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [329..333)::4 - [<wbr] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[wbr];
+                                MarkupTextLiteral - [333..334)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagBlock - [334..344)::10 - [</wbrLF}LF]
                                 MarkupTextLiteral - [334..344)::10 - [</wbrLF}LF] - Gen<Markup> - SpanEditHandler;Accepts:Any

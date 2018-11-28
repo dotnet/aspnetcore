@@ -23,9 +23,10 @@ RazorDocument - [0..127)::127 - [@section foo {LF    <ul>LF        @foreach(var 
                                 NewLine;[LF];
                                 Whitespace;[    ];
                             MarkupTagBlock - [20..24)::4 - [<ul>]
-                                MarkupTextLiteral - [20..24)::4 - [<ul>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                MarkupTextLiteral - [20..23)::3 - [<ul] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     OpenAngle;[<];
                                     Text;[ul];
+                                MarkupTextLiteral - [23..24)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     CloseAngle;[>];
                             MarkupTextLiteral - [24..26)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 NewLine;[LF];
@@ -52,9 +53,10 @@ RazorDocument - [0..127)::127 - [@section foo {LF    <ul>LF        @foreach(var 
                                     MarkupTextLiteral - [65..77)::12 - [            ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         Whitespace;[            ];
                                     MarkupTagBlock - [77..81)::4 - [<li>]
-                                        MarkupTextLiteral - [77..81)::4 - [<li>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        MarkupTextLiteral - [77..80)::3 - [<li] - Gen<Markup> - SpanEditHandler;Accepts:None
                                             OpenAngle;[<];
                                             Text;[li];
+                                        MarkupTextLiteral - [80..81)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                             CloseAngle;[>];
                                     MarkupTextLiteral - [81..90)::9 - [Product: ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         Text;[Product:];

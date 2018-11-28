@@ -2,13 +2,15 @@ RazorDocument - [0..14)::14 - [<input><input>]
     MarkupBlock - [0..14)::14
         MarkupTagHelperElement - [0..7)::7 - input[StartTagOnly] - InputTagHelper1 - InputTagHelper2
             MarkupTagHelperStartTag - [0..7)::7
-                MarkupTextLiteral - [0..7)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[input];
+                MarkupTextLiteral - [6..7)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
         MarkupTagHelperElement - [7..14)::7 - input[StartTagOnly] - InputTagHelper1 - InputTagHelper2
             MarkupTagHelperStartTag - [7..14)::7
-                MarkupTextLiteral - [7..14)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [7..13)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[input];
+                MarkupTextLiteral - [13..14)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];

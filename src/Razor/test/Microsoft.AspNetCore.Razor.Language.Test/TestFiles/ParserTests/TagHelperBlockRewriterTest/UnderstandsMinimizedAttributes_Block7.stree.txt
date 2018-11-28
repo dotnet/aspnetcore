@@ -21,8 +21,10 @@ RazorDocument - [0..30)::30 - [@{<input string-dictionary />}]
                                             Whitespace;[ ];
                                         MarkupTextLiteral - [9..26)::17 - [string-dictionary] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[string-dictionary];
-                                    MarkupTextLiteral - [26..29)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        Whitespace;[ ];
+                                    MarkupMiscAttributeContent - [26..27)::1
+                                        MarkupTextLiteral - [26..27)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                    MarkupTextLiteral - [27..29)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         ForwardSlash;[/];
                                         CloseAngle;[>];
                         CSharpStatementLiteral - [29..29)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any

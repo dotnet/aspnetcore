@@ -240,7 +240,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         var scriptTag = At(SyntaxKind.Text) &&
                                         string.Equals(CurrentToken.Content, "script", StringComparison.OrdinalIgnoreCase);
                         TryAccept(SyntaxKind.Text);
-                        LegacyParseTagContent(tagBuilder); // Parse the tag, don't care about the content
+                        // Output open angle and tag name
+                        tagBuilder.Add(OutputAsMarkupLiteral());
+                        ParseAttributes(tagBuilder); // Parse the tag, don't care about the content
                         TryAccept(SyntaxKind.ForwardSlash);
                         TryAccept(SyntaxKind.CloseAngle);
 
@@ -275,372 +277,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var tagBlock = SyntaxFactory.MarkupTagBlock(tagBuilder.ToList());
                     builder.Add(tagBlock);
                 }
-            }
-        }
-
-        private void LegacyParseTagContent(in SyntaxListBuilder<RazorSyntaxNode> builder)
-        {
-            if (!At(SyntaxKind.Whitespace) && !At(SyntaxKind.NewLine))
-            {
-                // We should be right after the tag name, so if there's no whitespace or new line, something is wrong
-                RecoverToEndOfTag(builder);
-            }
-            else
-            {
-                // We are here ($): <tag$ foo="bar" biz="~/Baz" />
-                while (!EndOfFile && !IsEndOfTag())
-                {
-                    BeforeAttribute(builder);
-                }
-            }
-        }
-
-        private bool IsEndOfTag()
-        {
-            if (At(SyntaxKind.ForwardSlash))
-            {
-                if (NextIs(SyntaxKind.CloseAngle))
-                {
-                    return true;
-                }
-                else
-                {
-                    AcceptAndMoveNext();
-                }
-            }
-            return At(SyntaxKind.CloseAngle) || At(SyntaxKind.OpenAngle);
-        }
-
-        private void BeforeAttribute(in SyntaxListBuilder<RazorSyntaxNode> builder)
-        {
-            // http://dev.w3.org/html5/spec/tokenization.html#before-attribute-name-state
-            // Capture whitespace
-            var whitespace = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
-
-            if (At(SyntaxKind.Transition) || At(SyntaxKind.RazorCommentTransition))
-            {
-                // Transition outside of attribute value => Switch to recovery mode
-                Accept(whitespace);
-                RecoverToEndOfTag(builder);
-                return;
-            }
-
-            // http://dev.w3.org/html5/spec/tokenization.html#attribute-name-state
-            // Read the 'name' (i.e. read until the '=' or whitespace/newline)
-            var nameTokens = Enumerable.Empty<SyntaxToken>();
-            var whitespaceAfterAttributeName = Enumerable.Empty<SyntaxToken>();
-            if (IsValidAttributeNameToken(CurrentToken))
-            {
-                nameTokens = ReadWhile(token =>
-                                 token.Kind != SyntaxKind.Whitespace &&
-                                 token.Kind != SyntaxKind.NewLine &&
-                                 token.Kind != SyntaxKind.Equals &&
-                                 token.Kind != SyntaxKind.CloseAngle &&
-                                 token.Kind != SyntaxKind.OpenAngle &&
-                                 (token.Kind != SyntaxKind.ForwardSlash || !NextIs(SyntaxKind.CloseAngle)));
-
-                // capture whitespace after attribute name (if any)
-                whitespaceAfterAttributeName = ReadWhile(
-                    token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
-            }
-            else
-            {
-                // Unexpected character in tag, enter recovery
-                Accept(whitespace);
-                RecoverToEndOfTag(builder);
-                return;
-            }
-
-            if (!At(SyntaxKind.Equals))
-            {
-                // Minimized attribute
-
-                // We are at the prefix of the next attribute or the end of tag. Put it back so it is parsed later.
-                PutCurrentBack();
-                PutBack(whitespaceAfterAttributeName);
-
-                // Output anything prior to the attribute, in most cases this will be the tag name:
-                // |<input| checked />. If in-between other attributes this will noop or output malformed attribute
-                // content (if the previous attribute was malformed).
-                builder.Add(OutputAsMarkupLiteral());
-
-                Accept(whitespace);
-                var namePrefix = OutputAsMarkupLiteral();
-                Accept(nameTokens);
-                var name = OutputAsMarkupLiteral();
-
-                var minimizedAttributeBlock = SyntaxFactory.MarkupMinimizedAttributeBlock(namePrefix, name);
-                builder.Add(minimizedAttributeBlock);
-
-                return;
-            }
-
-            // Not a minimized attribute, parse as if it were well-formed (if attribute turns out to be malformed we
-            // will go into recovery).
-            builder.Add(OutputAsMarkupLiteral());
-
-            var attributeBlock = ParseAttributePrefix(whitespace, nameTokens, whitespaceAfterAttributeName);
-
-            builder.Add(attributeBlock);
-        }
-
-        private MarkupAttributeBlockSyntax ParseAttributePrefix(
-            IEnumerable<SyntaxToken> whitespace,
-            IEnumerable<SyntaxToken> nameTokens,
-            IEnumerable<SyntaxToken> whitespaceAfterAttributeName)
-        {
-            // First, determine if this is a 'data-' attribute (since those can't use conditional attributes)
-            var nameContent = string.Concat(nameTokens.Select(s => s.Content));
-            var attributeCanBeConditional =
-                Context.FeatureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes ||
-                !nameContent.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
-
-            // Accept the whitespace and name
-            Accept(whitespace);
-            var namePrefix = OutputAsMarkupLiteral();
-            Accept(nameTokens);
-            var name = OutputAsMarkupLiteral();
-
-            // Since this is not a minimized attribute, the whitespace after attribute name belongs to this attribute.
-            Accept(whitespaceAfterAttributeName);
-            var nameSuffix = OutputAsMarkupLiteral();
-            Assert(SyntaxKind.Equals); // We should be at "="
-            var equalsToken = EatCurrentToken();
-
-            var whitespaceAfterEquals = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
-            var quote = SyntaxKind.Marker;
-            if (At(SyntaxKind.SingleQuote) || At(SyntaxKind.DoubleQuote))
-            {
-                // Found a quote, the whitespace belongs to this attribute.
-                Accept(whitespaceAfterEquals);
-                quote = CurrentToken.Kind;
-                AcceptAndMoveNext();
-            }
-            else if (whitespaceAfterEquals.Any())
-            {
-                // No quotes found after the whitespace. Put it back so that it can be parsed later.
-                PutCurrentBack();
-                PutBack(whitespaceAfterEquals);
-            }
-
-            MarkupTextLiteralSyntax valuePrefix = null;
-            RazorBlockSyntax attributeValue = null;
-            MarkupTextLiteralSyntax valueSuffix = null;
-
-            if (attributeCanBeConditional)
-            {
-                SpanContext.ChunkGenerator = SpanChunkGenerator.Null; // The block chunk generator will render the prefix
-
-                // We now have the value prefix which is usually whitespace and/or a quote
-                valuePrefix = OutputAsMarkupLiteral();
-
-                // Read the attribute value only if the value is quoted
-                // or if there is no whitespace between '=' and the unquoted value.
-                if (quote != SyntaxKind.Marker || !whitespaceAfterEquals.Any())
-                {
-                    using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
-                    {
-                        var attributeValueBuilder = pooledResult.Builder;
-                        // Read the attribute value.
-                        while (!EndOfFile && !IsEndOfAttributeValue(quote, CurrentToken))
-                        {
-                            ParseAttributeValue(attributeValueBuilder, quote);
-                        }
-
-                        if (attributeValueBuilder.Count > 0)
-                        {
-                            attributeValue = SyntaxFactory.GenericBlock(attributeValueBuilder.ToList());
-                        }
-                    }
-                }
-
-                // Capture the suffix
-                if (quote != SyntaxKind.Marker && At(quote))
-                {
-                    AcceptAndMoveNext();
-                    // Again, block chunk generator will render the suffix
-                    SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                    valueSuffix = OutputAsMarkupLiteral();
-                }
-            }
-            else if (quote != SyntaxKind.Marker || !whitespaceAfterEquals.Any())
-            {
-                valuePrefix = OutputAsMarkupLiteral();
-
-                using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
-                {
-                    var attributeValueBuilder = pooledResult.Builder;
-                    // Not a "conditional" attribute, so just read the value
-                    SkipToAndParseCode(attributeValueBuilder, token => IsEndOfAttributeValue(quote, token));
-
-                    // Output already accepted tokens if any as markup literal
-                    var literalValue = OutputAsMarkupLiteral();
-                    attributeValueBuilder.Add(literalValue);
-
-                    // Capture the attribute value (will include everything in-between the attribute's quotes).
-                    attributeValue = SyntaxFactory.GenericBlock(attributeValueBuilder.ToList());
-                }
-
-                if (quote != SyntaxKind.Marker)
-                {
-                    TryAccept(quote);
-                    valueSuffix = OutputAsMarkupLiteral();
-                }
-            }
-            else
-            {
-                // There is no quote and there is whitespace after equals. There is no attribute value.
-            }
-
-            return SyntaxFactory.MarkupAttributeBlock(namePrefix, name, nameSuffix, equalsToken, valuePrefix, attributeValue, valueSuffix);
-        }
-
-        private void ParseAttributeValue(in SyntaxListBuilder<RazorSyntaxNode> builder, SyntaxKind quote)
-        {
-            var prefixStart = CurrentStart;
-            var prefixTokens = ReadWhile(token => token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.NewLine);
-
-            if (At(SyntaxKind.Transition))
-            {
-                if (NextIs(SyntaxKind.Transition))
-                {
-                    // Wrapping this in a block so that the ConditionalAttributeCollapser doesn't rewrite it.
-                    using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
-                    {
-                        var markupBuilder = pooledResult.Builder;
-                        Accept(prefixTokens);
-
-                        // Render a single "@" in place of "@@".
-                        SpanContext.ChunkGenerator = new LiteralAttributeChunkGenerator(
-                            new LocationTagged<string>(string.Concat(prefixTokens.Select(s => s.Content)), prefixStart),
-                            new LocationTagged<string>(CurrentToken.Content, CurrentStart));
-                        AcceptAndMoveNext();
-                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                        markupBuilder.Add(OutputAsMarkupLiteral());
-
-                        SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
-                        AcceptAndMoveNext();
-                        SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                        markupBuilder.Add(OutputAsMarkupEphemeralLiteral());
-
-                        var markupBlock = SyntaxFactory.MarkupBlock(markupBuilder.ToList());
-                        builder.Add(markupBlock);
-                    }
-                }
-                else
-                {
-                    Accept(prefixTokens);
-                    var valueStart = CurrentStart;
-                    PutCurrentBack();
-
-                    var prefix = OutputAsMarkupLiteral();
-
-                    // Dynamic value, start a new block and set the chunk generator
-                    using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
-                    {
-                        var dynamicAttributeValueBuilder = pooledResult.Builder;
-
-                        OtherParserBlock(dynamicAttributeValueBuilder);
-                        var value = SyntaxFactory.MarkupDynamicAttributeValue(prefix, SyntaxFactory.GenericBlock(dynamicAttributeValueBuilder.ToList()));
-                        builder.Add(value);
-                    }
-                }
-            }
-            else
-            {
-                Accept(prefixTokens);
-                var prefix = OutputAsMarkupLiteral();
-
-                // Literal value
-                // 'quote' should be "Unknown" if not quoted and tokens coming from the tokenizer should never have
-                // "Unknown" type.
-                var valueTokens = ReadWhile(token =>
-                    // These three conditions find separators which break the attribute value into portions
-                    token.Kind != SyntaxKind.Whitespace &&
-                    token.Kind != SyntaxKind.NewLine &&
-                    token.Kind != SyntaxKind.Transition &&
-                    // This condition checks for the end of the attribute value (it repeats some of the checks above
-                    // but for now that's ok)
-                    !IsEndOfAttributeValue(quote, token));
-                Accept(valueTokens);
-                var value = OutputAsMarkupLiteral();
-
-                var literalAttributeValue = SyntaxFactory.MarkupLiteralAttributeValue(prefix, value);
-                builder.Add(literalAttributeValue);
-            }
-        }
-
-        private void RecoverToEndOfTag(in SyntaxListBuilder<RazorSyntaxNode> builder)
-        {
-            // Accept until ">", "/" or "<", but parse code
-            while (!EndOfFile)
-            {
-                SkipToAndParseCode(builder, IsTagRecoveryStopPoint);
-                if (!EndOfFile)
-                {
-                    EnsureCurrent();
-                    switch (CurrentToken.Kind)
-                    {
-                        case SyntaxKind.SingleQuote:
-                        case SyntaxKind.DoubleQuote:
-                            ParseQuoted(builder);
-                            break;
-                        case SyntaxKind.OpenAngle:
-                        // Another "<" means this tag is invalid.
-                        case SyntaxKind.ForwardSlash:
-                        // Empty tag
-                        case SyntaxKind.CloseAngle:
-                            // End of tag
-                            return;
-                        default:
-                            AcceptAndMoveNext();
-                            break;
-                    }
-                }
-            }
-        }
-
-        private bool IsTagRecoveryStopPoint(SyntaxToken token)
-        {
-            return token.Kind == SyntaxKind.CloseAngle ||
-                   token.Kind == SyntaxKind.ForwardSlash ||
-                   token.Kind == SyntaxKind.OpenAngle ||
-                   token.Kind == SyntaxKind.SingleQuote ||
-                   token.Kind == SyntaxKind.DoubleQuote;
-        }
-
-        private bool IsEndOfAttributeValue(SyntaxKind quote, SyntaxToken token)
-        {
-            return EndOfFile || token == null ||
-                   (quote != SyntaxKind.Marker
-                        ? token.Kind == quote // If quoted, just wait for the quote
-                        : IsUnquotedEndOfAttributeValue(token));
-        }
-
-        private bool IsUnquotedEndOfAttributeValue(SyntaxToken token)
-        {
-            // If unquoted, we have a larger set of terminating characters:
-            // http://dev.w3.org/html5/spec/tokenization.html#attribute-value-unquoted-state
-            // Also we need to detect "/" and ">"
-            return token.Kind == SyntaxKind.DoubleQuote ||
-                   token.Kind == SyntaxKind.SingleQuote ||
-                   token.Kind == SyntaxKind.OpenAngle ||
-                   token.Kind == SyntaxKind.Equals ||
-                   (token.Kind == SyntaxKind.ForwardSlash && NextIs(SyntaxKind.CloseAngle)) ||
-                   token.Kind == SyntaxKind.CloseAngle ||
-                   token.Kind == SyntaxKind.Whitespace ||
-                   token.Kind == SyntaxKind.NewLine;
-        }
-
-        private void ParseQuoted(in SyntaxListBuilder<RazorSyntaxNode> builder)
-        {
-            var type = CurrentToken.Kind;
-            AcceptAndMoveNext();
-            SkipToAndParseCode(builder, type);
-            if (!EndOfFile)
-            {
-                Assert(type);
-                AcceptAndMoveNext();
             }
         }
 
@@ -1240,6 +876,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Accept(_bufferedOpenAngle);
             TryParseBangEscape(builder);
             TryAccept(SyntaxKind.Text);
+            
+            if (At(SyntaxKind.CloseAngle))
+            {
+                // Completed tags have no accepted characters inside of blocks.
+                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+            }
+            // Output open angle and tag name
+            builder.Add(OutputAsMarkupLiteral());
             return ParseRestOfTag(builder, parentBuilder, tag, tags);
         }
 
@@ -1250,7 +894,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Stack<Tuple<SyntaxToken, SourceLocation>> tags)
         {
             var blockAlreadyBuilt = false;
-            LegacyParseTagContent(builder);
+            ParseAttributes(builder);
 
             // We are now at a possible end of the tag
             // Found '<', so we just abort this tag.
@@ -1717,29 +1361,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             return last.Green;
-        }
-
-        internal static bool IsValidAttributeNameToken(SyntaxToken token)
-        {
-            if (token == null)
-            {
-                return false;
-            }
-
-            // These restrictions cover most of the spec defined: http://www.w3.org/TR/html5/syntax.html#attributes-0
-            // However, it's not all of it. For instance we don't special case control characters or allow OpenAngle.
-            // It also doesn't try to exclude Razor specific features such as the @ transition. This is based on the
-            // expectation that the parser handles such scenarios prior to falling through to name resolution.
-            var tokenType = token.Kind;
-            return tokenType != SyntaxKind.Whitespace &&
-                tokenType != SyntaxKind.NewLine &&
-                tokenType != SyntaxKind.CloseAngle &&
-                tokenType != SyntaxKind.OpenAngle &&
-                tokenType != SyntaxKind.ForwardSlash &&
-                tokenType != SyntaxKind.DoubleQuote &&
-                tokenType != SyntaxKind.SingleQuote &&
-                tokenType != SyntaxKind.Equals &&
-                tokenType != SyntaxKind.Marker;
         }
     }
 }

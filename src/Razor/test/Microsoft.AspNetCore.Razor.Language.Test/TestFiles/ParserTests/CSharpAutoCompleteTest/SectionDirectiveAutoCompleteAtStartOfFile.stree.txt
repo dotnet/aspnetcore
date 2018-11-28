@@ -18,9 +18,10 @@ CSharpCodeBlock - [0..29)::29 - [@section Header {LF<p>Foo</p>]
                     MarkupTextLiteral - [17..19)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         NewLine;[LF];
                     MarkupTagBlock - [19..22)::3 - [<p>]
-                        MarkupTextLiteral - [19..22)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        MarkupTextLiteral - [19..21)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             OpenAngle;[<];
                             Text;[p];
+                        MarkupTextLiteral - [21..22)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                             CloseAngle;[>];
                     MarkupTextLiteral - [22..25)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[Foo];

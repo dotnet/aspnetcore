@@ -19,8 +19,10 @@ RazorDocument - [0..28)::28 - [<span data-foo=@foo ></span>]
                                 CSharpCodeBlock - [16..19)::3
                                     CSharpExpressionLiteral - [16..19)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
                                         Identifier;[foo];
-            MarkupTextLiteral - [19..21)::2 - [ >] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Whitespace;[ ];
+            MarkupMiscAttributeContent - [19..20)::1
+                MarkupTextLiteral - [19..20)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+            MarkupTextLiteral - [20..21)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupTagBlock - [21..28)::7 - [</span>]
             MarkupTextLiteral - [21..28)::7 - [</span>] - Gen<Markup> - SpanEditHandler;Accepts:Any

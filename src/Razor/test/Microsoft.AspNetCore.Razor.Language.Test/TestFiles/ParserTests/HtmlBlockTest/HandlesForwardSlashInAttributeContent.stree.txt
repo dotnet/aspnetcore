@@ -1,0 +1,27 @@
+MarkupBlock - [0..17)::17 - [<p / class=foo />]
+    MarkupTagBlock - [0..17)::17 - [<p / class=foo />]
+        MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[p];
+        MarkupMiscAttributeContent - [2..3)::1
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+        MarkupMiscAttributeContent - [3..4)::1
+            MarkupTextLiteral - [3..4)::1 - [/] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                ForwardSlash;[/];
+        MarkupAttributeBlock - [4..14)::10 - [ class=foo]
+            MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [5..10)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[class];
+            Equals;[=];
+            GenericBlock - [11..14)::3
+                MarkupLiteralAttributeValue - [11..14)::3 - [foo]
+                    MarkupTextLiteral - [11..14)::3 - [foo] - Gen<None> - SpanEditHandler;Accepts:Any
+                        Text;[foo];
+        MarkupMiscAttributeContent - [14..15)::1
+            MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+        MarkupTextLiteral - [15..17)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            ForwardSlash;[/];
+            CloseAngle;[>];

@@ -14,7 +14,8 @@ Document -
                 HtmlContent - (50:3,4 [16] ConditionalAttributes.cshtml)
                     IntermediateToken - (50:3,4 [2] ConditionalAttributes.cshtml) - Html - <a
                     IntermediateToken - (52:3,6 [11] ConditionalAttributes.cshtml) - Html -  href="Foo"
-                    IntermediateToken - (63:3,17 [3] ConditionalAttributes.cshtml) - Html -  />
+                    IntermediateToken - (63:3,17 [1] ConditionalAttributes.cshtml) - Html -  
+                    IntermediateToken - (64:3,18 [2] ConditionalAttributes.cshtml) - Html - />
                 CSharpCode - (66:3,20 [6] ConditionalAttributes.cshtml)
                     IntermediateToken - (66:3,20 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (72:4,4 [2] ConditionalAttributes.cshtml)
@@ -23,7 +24,8 @@ Document -
                     CSharpExpressionAttributeValue - (82:4,14 [4] ConditionalAttributes.cshtml) - 
                         IntermediateToken - (83:4,15 [3] ConditionalAttributes.cshtml) - CSharp - cls
                 HtmlContent - (87:4,19 [3] ConditionalAttributes.cshtml)
-                    IntermediateToken - (87:4,19 [3] ConditionalAttributes.cshtml) - Html -  />
+                    IntermediateToken - (87:4,19 [1] ConditionalAttributes.cshtml) - Html -  
+                    IntermediateToken - (88:4,20 [2] ConditionalAttributes.cshtml) - Html - />
                 CSharpCode - (90:4,22 [6] ConditionalAttributes.cshtml)
                     IntermediateToken - (90:4,22 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (96:5,4 [2] ConditionalAttributes.cshtml)
@@ -34,7 +36,8 @@ Document -
                     CSharpExpressionAttributeValue - (109:5,17 [5] ConditionalAttributes.cshtml) -  
                         IntermediateToken - (111:5,19 [3] ConditionalAttributes.cshtml) - CSharp - cls
                 HtmlContent - (115:5,23 [3] ConditionalAttributes.cshtml)
-                    IntermediateToken - (115:5,23 [3] ConditionalAttributes.cshtml) - Html -  />
+                    IntermediateToken - (115:5,23 [1] ConditionalAttributes.cshtml) - Html -  
+                    IntermediateToken - (116:5,24 [2] ConditionalAttributes.cshtml) - Html - />
                 CSharpCode - (118:5,26 [6] ConditionalAttributes.cshtml)
                     IntermediateToken - (118:5,26 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (124:6,4 [2] ConditionalAttributes.cshtml)
@@ -45,7 +48,8 @@ Document -
                     HtmlAttributeValue - (138:6,18 [4] ConditionalAttributes.cshtml) -  
                         IntermediateToken - (139:6,19 [3] ConditionalAttributes.cshtml) - Html - foo
                 HtmlContent - (143:6,23 [3] ConditionalAttributes.cshtml)
-                    IntermediateToken - (143:6,23 [3] ConditionalAttributes.cshtml) - Html -  />
+                    IntermediateToken - (143:6,23 [1] ConditionalAttributes.cshtml) - Html -  
+                    IntermediateToken - (144:6,24 [2] ConditionalAttributes.cshtml) - Html - />
                 CSharpCode - (146:6,26 [6] ConditionalAttributes.cshtml)
                     IntermediateToken - (146:6,26 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (152:7,4 [22] ConditionalAttributes.cshtml)
@@ -55,7 +59,8 @@ Document -
                     CSharpExpressionAttributeValue - (184:7,36 [3] ConditionalAttributes.cshtml) - 
                         IntermediateToken - (185:7,37 [2] ConditionalAttributes.cshtml) - CSharp - ch
                 HtmlContent - (188:7,40 [3] ConditionalAttributes.cshtml)
-                    IntermediateToken - (188:7,40 [3] ConditionalAttributes.cshtml) - Html -  />
+                    IntermediateToken - (188:7,40 [1] ConditionalAttributes.cshtml) - Html -  
+                    IntermediateToken - (189:7,41 [2] ConditionalAttributes.cshtml) - Html - />
                 CSharpCode - (191:7,43 [6] ConditionalAttributes.cshtml)
                     IntermediateToken - (191:7,43 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (197:8,4 [22] ConditionalAttributes.cshtml)
@@ -67,7 +72,8 @@ Document -
                     CSharpExpressionAttributeValue - (232:8,39 [4] ConditionalAttributes.cshtml) -  
                         IntermediateToken - (234:8,41 [2] ConditionalAttributes.cshtml) - CSharp - ch
                 HtmlContent - (237:8,44 [3] ConditionalAttributes.cshtml)
-                    IntermediateToken - (237:8,44 [3] ConditionalAttributes.cshtml) - Html -  />
+                    IntermediateToken - (237:8,44 [1] ConditionalAttributes.cshtml) - Html -  
+                    IntermediateToken - (238:8,45 [2] ConditionalAttributes.cshtml) - Html - />
                 CSharpCode - (240:8,47 [6] ConditionalAttributes.cshtml)
                     IntermediateToken - (240:8,47 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (246:9,4 [2] ConditionalAttributes.cshtml)
@@ -79,13 +85,15 @@ Document -
                             IntermediateToken - (276:9,34 [3] ConditionalAttributes.cshtml) - CSharp - cls
                         IntermediateToken - (279:9,37 [2] ConditionalAttributes.cshtml) - CSharp -  }
                 HtmlContent - (282:9,40 [3] ConditionalAttributes.cshtml)
-                    IntermediateToken - (282:9,40 [3] ConditionalAttributes.cshtml) - Html -  />
+                    IntermediateToken - (282:9,40 [1] ConditionalAttributes.cshtml) - Html -  
+                    IntermediateToken - (283:9,41 [2] ConditionalAttributes.cshtml) - Html - />
                 CSharpCode - (285:9,43 [6] ConditionalAttributes.cshtml)
                     IntermediateToken - (285:9,43 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (291:10,4 [18] ConditionalAttributes.cshtml)
                     IntermediateToken - (291:10,4 [2] ConditionalAttributes.cshtml) - Html - <a
                     IntermediateToken - (293:10,6 [13] ConditionalAttributes.cshtml) - Html -  href="~/Foo"
-                    IntermediateToken - (306:10,19 [3] ConditionalAttributes.cshtml) - Html -  />
+                    IntermediateToken - (306:10,19 [1] ConditionalAttributes.cshtml) - Html -  
+                    IntermediateToken - (307:10,20 [2] ConditionalAttributes.cshtml) - Html - />
                 CSharpCode - (309:10,22 [6] ConditionalAttributes.cshtml)
                     IntermediateToken - (309:10,22 [6] ConditionalAttributes.cshtml) - CSharp - \n    
                 HtmlContent - (315:11,4 [7] ConditionalAttributes.cshtml)

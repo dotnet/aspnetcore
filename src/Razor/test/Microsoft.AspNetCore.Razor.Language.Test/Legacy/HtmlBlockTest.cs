@@ -269,5 +269,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest(@"<script>foo<bar baz='@boz'></script>");
         }
+
+        [Fact]
+        public void HandlesForwardSlashInAttributeContent()
+        {
+            ParseBlockTest(@"<p / class=foo />");
+        }
     }
 }

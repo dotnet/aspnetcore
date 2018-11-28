@@ -27,14 +27,16 @@ Document -
                     IntermediateToken - (120:5,28 [2] Usings.cshtml) - Html - \n
                 HtmlContent - (164:6,42 [32] Usings.cshtml)
                     IntermediateToken - (164:6,42 [4] Usings.cshtml) - Html - \n\n
-                    IntermediateToken - (168:8,0 [3] Usings.cshtml) - Html - <p>
+                    IntermediateToken - (168:8,0 [2] Usings.cshtml) - Html - <p
+                    IntermediateToken - (170:8,2 [1] Usings.cshtml) - Html - >
                     IntermediateToken - (171:8,3 [25] Usings.cshtml) - Html - Path's full type name is 
                 CSharpExpression - (197:8,29 [21] Usings.cshtml)
                     IntermediateToken - (197:8,29 [21] Usings.cshtml) - CSharp - typeof(Path).FullName
                 HtmlContent - (218:8,50 [40] Usings.cshtml)
                     IntermediateToken - (218:8,50 [4] Usings.cshtml) - Html - </p>
                     IntermediateToken - (222:8,54 [2] Usings.cshtml) - Html - \n
-                    IntermediateToken - (224:9,0 [3] Usings.cshtml) - Html - <p>
+                    IntermediateToken - (224:9,0 [2] Usings.cshtml) - Html - <p
+                    IntermediateToken - (226:9,2 [1] Usings.cshtml) - Html - >
                     IntermediateToken - (227:9,3 [31] Usings.cshtml) - Html - Foo's actual full type name is 
                 CSharpExpression - (259:9,35 [20] Usings.cshtml)
                     IntermediateToken - (259:9,35 [20] Usings.cshtml) - CSharp - typeof(Foo).FullName

@@ -18,7 +18,8 @@ RazorDocument - [0..15)::15 - [@{LF} 	LF<html>]
             Whitespace;[ 	];
             NewLine;[LF];
         MarkupTagBlock - [9..15)::6 - [<html>]
-            MarkupTextLiteral - [9..15)::6 - [<html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [9..14)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[html];
+            MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];

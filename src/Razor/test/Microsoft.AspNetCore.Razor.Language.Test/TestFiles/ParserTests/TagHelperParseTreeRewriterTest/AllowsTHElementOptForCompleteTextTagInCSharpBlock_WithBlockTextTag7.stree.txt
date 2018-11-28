@@ -16,14 +16,16 @@ RazorDocument - [0..31)::31 - [@{<!text><text></text></!text>}]
                                     OpenAngle;[<];
                                 RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
                                     Bang;[!];
-                                MarkupTextLiteral - [4..9)::5 - [text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [4..8)::4 - [text] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     Text;[text];
+                                MarkupTextLiteral - [8..9)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTagHelperElement - [9..22)::13 - text[StartTagAndEndTag] - texttaghelper
                                 MarkupTagHelperStartTag - [9..15)::6
-                                    MarkupTextLiteral - [9..15)::6 - [<text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    MarkupTextLiteral - [9..14)::5 - [<text] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         OpenAngle;[<];
                                         Text;[text];
+                                    MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
                                 MarkupTagHelperEndTag - [15..22)::7
                                     MarkupTextLiteral - [15..22)::7 - [</text>] - Gen<Markup> - SpanEditHandler;Accepts:None

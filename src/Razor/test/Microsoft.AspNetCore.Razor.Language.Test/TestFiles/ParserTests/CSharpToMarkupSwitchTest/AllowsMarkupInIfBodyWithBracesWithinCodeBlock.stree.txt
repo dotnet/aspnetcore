@@ -18,9 +18,10 @@ CSharpCodeBlock - [0..74)::74 - [{ if(foo) { <p>Bar</p> } else if(bar) { <p>Baz<
                     MarkupTextLiteral - [11..12)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
                     MarkupTagBlock - [12..15)::3 - [<p>]
-                        MarkupTextLiteral - [12..15)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        MarkupTextLiteral - [12..14)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                             OpenAngle;[<];
                             Text;[p];
+                        MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                             CloseAngle;[>];
                     MarkupTextLiteral - [15..18)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[Bar];
@@ -47,9 +48,10 @@ CSharpCodeBlock - [0..74)::74 - [{ if(foo) { <p>Bar</p> } else if(bar) { <p>Baz<
                     MarkupTextLiteral - [39..40)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
                     MarkupTagBlock - [40..43)::3 - [<p>]
-                        MarkupTextLiteral - [40..43)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        MarkupTextLiteral - [40..42)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                             OpenAngle;[<];
                             Text;[p];
+                        MarkupTextLiteral - [42..43)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                             CloseAngle;[>];
                     MarkupTextLiteral - [43..46)::3 - [Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[Baz];
@@ -71,9 +73,10 @@ CSharpCodeBlock - [0..74)::74 - [{ if(foo) { <p>Bar</p> } else if(bar) { <p>Baz<
                     MarkupTextLiteral - [59..60)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Whitespace;[ ];
                     MarkupTagBlock - [60..63)::3 - [<p>]
-                        MarkupTextLiteral - [60..63)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        MarkupTextLiteral - [60..62)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                             OpenAngle;[<];
                             Text;[p];
+                        MarkupTextLiteral - [62..63)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                             CloseAngle;[>];
                     MarkupTextLiteral - [63..66)::3 - [Boz] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[Boz];

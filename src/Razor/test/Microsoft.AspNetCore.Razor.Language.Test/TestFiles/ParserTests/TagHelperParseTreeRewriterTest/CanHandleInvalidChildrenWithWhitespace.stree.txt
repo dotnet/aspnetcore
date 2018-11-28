@@ -2,17 +2,19 @@ RazorDocument - [0..53)::53 - [<p>LF    <strong>LF        HelloLF    </strong>LF
     MarkupBlock - [0..53)::53
         MarkupTagHelperElement - [0..53)::53 - p[StartTagAndEndTag] - PTagHelper
             MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [3..9)::6 - [LF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 NewLine;[LF];
                 Whitespace;[    ];
             MarkupTagBlock - [9..17)::8 - [<strong>]
-                MarkupTextLiteral - [9..17)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [9..16)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [16..17)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [17..38)::21 - [LF        HelloLF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 NewLine;[LF];

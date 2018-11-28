@@ -10,7 +10,9 @@ RazorDocument - [0..29)::29 - [<input string-prefix-value />]
                         Whitespace;[ ];
                     MarkupTextLiteral - [7..26)::19 - [string-prefix-value] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[string-prefix-value];
-                MarkupTextLiteral - [26..29)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [26..27)::1
+                    MarkupTextLiteral - [26..27)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [27..29)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

@@ -5,8 +5,11 @@ RazorDocument - [0..12)::12 - [<!th:myth />]
                 OpenAngle;[<];
             RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
                 Bang;[!];
-            MarkupTextLiteral - [2..12)::10 - [th:myth />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [2..9)::7 - [th:myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[th:myth];
-                Whitespace;[ ];
+            MarkupMiscAttributeContent - [9..10)::1
+                MarkupTextLiteral - [9..10)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+            MarkupTextLiteral - [10..12)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 ForwardSlash;[/];
                 CloseAngle;[>];

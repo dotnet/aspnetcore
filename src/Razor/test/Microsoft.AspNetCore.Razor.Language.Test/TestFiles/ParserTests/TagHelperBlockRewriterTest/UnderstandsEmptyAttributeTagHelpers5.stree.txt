@@ -33,7 +33,9 @@ RazorDocument - [0..31)::31 - [<p class1=''class2=""class3= />]
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [28..28)::0
                         MarkupTextLiteral - [28..28)::0 - []
-                MarkupTextLiteral - [28..31)::3 - [ />] - Gen<None> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [28..29)::1
+                    MarkupTextLiteral - [28..29)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [29..31)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

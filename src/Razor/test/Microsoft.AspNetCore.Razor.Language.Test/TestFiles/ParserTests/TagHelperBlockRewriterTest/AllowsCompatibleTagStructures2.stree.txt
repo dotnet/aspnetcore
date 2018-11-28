@@ -2,9 +2,12 @@ RazorDocument - [0..9)::9 - [<input />]
     MarkupBlock - [0..9)::9
         MarkupTagHelperElement - [0..9)::9 - input[SelfClosing] - InputTagHelper1 - InputTagHelper2
             MarkupTagHelperStartTag - [0..9)::9
-                MarkupTextLiteral - [0..9)::9 - [<input />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..6)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[input];
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [6..7)::1
+                    MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [7..9)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

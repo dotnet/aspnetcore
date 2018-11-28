@@ -19,9 +19,10 @@ RazorDocument - [0..24)::24 - [<p bar="false"" <strong>]
                                 Text;[false];
                     MarkupTextLiteral - [13..14)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [14..24)::10 - [" <strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    DoubleQuote;["];
-                    Whitespace;[ ];
-                    OpenAngle;[<];
-                    Text;[strong];
-                    CloseAngle;[>];
+                MarkupMiscAttributeContent - [14..24)::10
+                    MarkupTextLiteral - [14..24)::10 - [" <strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                        Whitespace;[ ];
+                        OpenAngle;[<];
+                        Text;[strong];
+                        CloseAngle;[>];

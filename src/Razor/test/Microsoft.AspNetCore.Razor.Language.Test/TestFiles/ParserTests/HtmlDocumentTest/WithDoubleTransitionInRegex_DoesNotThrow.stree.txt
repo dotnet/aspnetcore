@@ -70,8 +70,10 @@ RazorDocument - [0..117)::117 - [{<span foo="/^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@@[
                             Text;[i];
                 MarkupTextLiteral - [112..113)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                     DoubleQuote;["];
-            MarkupTextLiteral - [113..116)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Whitespace;[ ];
+            MarkupMiscAttributeContent - [113..114)::1
+                MarkupTextLiteral - [113..114)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+            MarkupTextLiteral - [114..116)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 ForwardSlash;[/];
                 CloseAngle;[>];
         MarkupTextLiteral - [116..117)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any

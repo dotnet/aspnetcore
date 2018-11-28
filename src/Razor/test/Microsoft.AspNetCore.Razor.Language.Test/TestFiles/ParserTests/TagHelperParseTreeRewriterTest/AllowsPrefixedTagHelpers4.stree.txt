@@ -2,9 +2,10 @@ RazorDocument - [0..19)::19 - [<th:myth></th:myth>]
     MarkupBlock - [0..19)::19
         MarkupTagHelperElement - [0..19)::19 - th:myth[StartTagAndEndTag] - mythTagHelper
             MarkupTagHelperStartTag - [0..9)::9
-                MarkupTextLiteral - [0..9)::9 - [<th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..8)::8 - [<th:myth] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[th:myth];
+                MarkupTextLiteral - [8..9)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagHelperEndTag - [9..19)::10
                 MarkupTextLiteral - [9..19)::10 - [</th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any

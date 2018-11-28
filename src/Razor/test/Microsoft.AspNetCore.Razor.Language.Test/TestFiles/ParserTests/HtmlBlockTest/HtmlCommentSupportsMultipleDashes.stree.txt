@@ -1,9 +1,10 @@
 RazorDocument - [0..165)::165 - [<div><!--- Hello World ---></div>LF<div><!---- Hello World ----></div>LF<div><!----- Hello World -----></div>LF<div><!----- Hello < --- > World </div> -----></div>LF]
     MarkupBlock - [0..165)::165
         MarkupTagBlock - [0..5)::5 - [<div>]
-            MarkupTextLiteral - [0..5)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [0..4)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[div];
+            MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupCommentBlock - [5..27)::22
             MarkupTextLiteral - [5..9)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
@@ -30,9 +31,10 @@ RazorDocument - [0..165)::165 - [<div><!--- Hello World ---></div>LF<div><!---- 
         MarkupTextLiteral - [33..35)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupTagBlock - [35..40)::5 - [<div>]
-            MarkupTextLiteral - [35..40)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [35..39)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[div];
+            MarkupTextLiteral - [39..40)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupCommentBlock - [40..64)::24
             MarkupTextLiteral - [40..44)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
@@ -59,9 +61,10 @@ RazorDocument - [0..165)::165 - [<div><!--- Hello World ---></div>LF<div><!---- 
         MarkupTextLiteral - [70..72)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupTagBlock - [72..77)::5 - [<div>]
-            MarkupTextLiteral - [72..77)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [72..76)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[div];
+            MarkupTextLiteral - [76..77)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupCommentBlock - [77..103)::26
             MarkupTextLiteral - [77..81)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None
@@ -90,9 +93,10 @@ RazorDocument - [0..165)::165 - [<div><!--- Hello World ---></div>LF<div><!---- 
         MarkupTextLiteral - [109..111)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupTagBlock - [111..116)::5 - [<div>]
-            MarkupTextLiteral - [111..116)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [111..115)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[div];
+            MarkupTextLiteral - [115..116)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupCommentBlock - [116..157)::41
             MarkupTextLiteral - [116..120)::4 - [<!--] - Gen<Markup> - SpanEditHandler;Accepts:None

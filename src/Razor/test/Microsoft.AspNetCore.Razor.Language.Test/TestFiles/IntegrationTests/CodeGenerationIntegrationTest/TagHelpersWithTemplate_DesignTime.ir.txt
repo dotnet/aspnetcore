@@ -27,7 +27,8 @@ Document -
                             TagHelper - (400:15,13 [82] TagHelpersWithTemplate.cshtml) - div - TagMode.StartTagAndEndTag
                                 DefaultTagHelperBody - 
                                     HtmlContent - (422:15,35 [4] TagHelpersWithTemplate.cshtml)
-                                        IntermediateToken - (422:15,35 [4] TagHelpersWithTemplate.cshtml) - Html - <h3>
+                                        IntermediateToken - (422:15,35 [3] TagHelpersWithTemplate.cshtml) - Html - <h3
+                                        IntermediateToken - (425:15,38 [1] TagHelpersWithTemplate.cshtml) - Html - >
                                     CSharpExpression - (427:15,40 [4] TagHelpersWithTemplate.cshtml)
                                         IntermediateToken - (427:15,40 [4] TagHelpersWithTemplate.cshtml) - CSharp - item
                                     HtmlContent - (431:15,44 [5] TagHelpersWithTemplate.cshtml)

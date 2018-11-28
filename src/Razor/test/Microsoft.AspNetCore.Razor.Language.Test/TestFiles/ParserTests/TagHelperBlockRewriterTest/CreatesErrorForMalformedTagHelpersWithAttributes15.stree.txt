@@ -24,10 +24,11 @@ RazorDocument - [0..28)::28 - [<p class=@DateTime.Now"></p>]
                                                     Identifier;[DateTime];
                                                     Dot;[.];
                                                     Identifier;[Now];
-                MarkupTextLiteral - [22..28)::6 - ["></p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    DoubleQuote;["];
-                    CloseAngle;[>];
-                    OpenAngle;[<];
-                    ForwardSlash;[/];
-                    Text;[p];
-                    CloseAngle;[>];
+                MarkupMiscAttributeContent - [22..28)::6
+                    MarkupTextLiteral - [22..28)::6 - ["></p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                        CloseAngle;[>];
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[p];
+                        CloseAngle;[>];

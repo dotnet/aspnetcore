@@ -52,10 +52,13 @@ RazorDocument - [0..76)::76 - [<script id='scriptTag' type='text/html' class='so
                 CloseAngle;[>];
         MarkupTagHelperElement - [58..67)::9 - input[SelfClosing] - inputtaghelper
             MarkupTagHelperStartTag - [58..67)::9
-                MarkupTextLiteral - [58..67)::9 - [<input />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [58..64)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[input];
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [64..65)::1
+                    MarkupTextLiteral - [64..65)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [65..67)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];
         MarkupTagBlock - [67..76)::9 - [</script>]

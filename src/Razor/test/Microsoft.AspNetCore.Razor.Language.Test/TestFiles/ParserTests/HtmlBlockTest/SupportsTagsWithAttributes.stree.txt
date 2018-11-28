@@ -20,9 +20,10 @@ MarkupBlock - [0..48)::48 - [<foo bar="baz"><biz><boz zoop=zork/></biz></foo>]
         MarkupTextLiteral - [14..15)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
             CloseAngle;[>];
     MarkupTagBlock - [15..20)::5 - [<biz>]
-        MarkupTextLiteral - [15..20)::5 - [<biz>] - Gen<Markup> - SpanEditHandler;Accepts:None
+        MarkupTextLiteral - [15..19)::4 - [<biz] - Gen<Markup> - SpanEditHandler;Accepts:None
             OpenAngle;[<];
             Text;[biz];
+        MarkupTextLiteral - [19..20)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
             CloseAngle;[>];
     MarkupTagBlock - [20..36)::16 - [<boz zoop=zork/>]
         MarkupTextLiteral - [20..24)::4 - [<boz] - Gen<Markup> - SpanEditHandler;Accepts:Any

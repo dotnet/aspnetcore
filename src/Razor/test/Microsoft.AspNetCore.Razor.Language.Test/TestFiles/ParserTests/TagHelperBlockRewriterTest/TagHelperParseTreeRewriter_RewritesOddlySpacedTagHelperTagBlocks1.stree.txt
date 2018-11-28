@@ -55,8 +55,10 @@ RazorDocument - [0..66)::66 - [<p      class="     foo"    style="   color :  re
                                 Whitespace;[   ];
                     MarkupTextLiteral - [56..57)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [57..62)::5 - [    >] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[    ];
+                MarkupMiscAttributeContent - [57..61)::4
+                    MarkupTextLiteral - [57..61)::4 - [    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[    ];
+                MarkupTextLiteral - [61..62)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagHelperEndTag - [62..66)::4
                 MarkupTextLiteral - [62..66)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

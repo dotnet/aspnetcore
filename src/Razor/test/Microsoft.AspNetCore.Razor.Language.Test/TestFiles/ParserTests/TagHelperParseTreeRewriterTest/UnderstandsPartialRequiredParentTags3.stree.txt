@@ -2,15 +2,17 @@ RazorDocument - [0..23)::23 - [<p><strong></p><strong>]
     MarkupBlock - [0..23)::23
         MarkupTagHelperElement - [0..15)::15 - p[StartTagAndEndTag] - PTagHelper - CatchALlTagHelper
             MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagHelperElement - [3..11)::8 - strong[StartTagAndEndTag] - StrongTagHelper - CatchALlTagHelper
                 MarkupTagHelperStartTag - [3..11)::8
-                    MarkupTextLiteral - [3..11)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [3..10)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[strong];
+                    MarkupTextLiteral - [10..11)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         CloseAngle;[>];
             MarkupTagHelperEndTag - [11..15)::4
                 MarkupTextLiteral - [11..15)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
@@ -20,7 +22,8 @@ RazorDocument - [0..23)::23 - [<p><strong></p><strong>]
                     CloseAngle;[>];
         MarkupTagHelperElement - [15..23)::8 - strong[StartTagAndEndTag] - StrongTagHelper - CatchALlTagHelper
             MarkupTagHelperStartTag - [15..23)::8
-                MarkupTextLiteral - [15..23)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [15..22)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [22..23)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];

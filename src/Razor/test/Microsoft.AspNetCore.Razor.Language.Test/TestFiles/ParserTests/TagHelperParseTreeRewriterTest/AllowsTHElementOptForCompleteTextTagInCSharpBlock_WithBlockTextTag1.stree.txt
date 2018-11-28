@@ -16,8 +16,9 @@ RazorDocument - [0..10)::10 - [@{<!text>}]
                                     OpenAngle;[<];
                                 RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
                                     Bang;[!];
-                                MarkupTextLiteral - [4..9)::5 - [text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [4..8)::4 - [text] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     Text;[text];
+                                MarkupTextLiteral - [8..9)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                             MarkupTextLiteral - [9..10)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[}];

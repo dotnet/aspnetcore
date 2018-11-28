@@ -43,14 +43,16 @@ Document -
                     IntermediateToken - (96:4,42 [4] RazorPages.cshtml) - Html - \n\n
                 HtmlContent - (473:22,1 [78] RazorPages.cshtml)
                     IntermediateToken - (473:22,1 [4] RazorPages.cshtml) - Html - \n\n
-                    IntermediateToken - (477:24,0 [4] RazorPages.cshtml) - Html - <h1>
+                    IntermediateToken - (477:24,0 [3] RazorPages.cshtml) - Html - <h1
+                    IntermediateToken - (480:24,3 [1] RazorPages.cshtml) - Html - >
                     IntermediateToken - (481:24,4 [12] RazorPages.cshtml) - Html - New Customer
                     IntermediateToken - (493:24,16 [5] RazorPages.cshtml) - Html - </h1>
                     IntermediateToken - (498:24,21 [2] RazorPages.cshtml) - Html - \n
                     IntermediateToken - (500:25,0 [5] RazorPages.cshtml) - Html - <form
                     IntermediateToken - (505:25,5 [14] RazorPages.cshtml) - Html -  method="post"
                     IntermediateToken - (519:25,19 [24] RazorPages.cshtml) - Html -  class="form-horizontal"
-                    IntermediateToken - (543:25,43 [2] RazorPages.cshtml) - Html -  >
+                    IntermediateToken - (543:25,43 [1] RazorPages.cshtml) - Html -  
+                    IntermediateToken - (544:25,44 [1] RazorPages.cshtml) - Html - >
                     IntermediateToken - (545:25,45 [6] RazorPages.cshtml) - Html - \n    
                 TagHelper - (551:26,4 [31] RazorPages.cshtml) - div - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
@@ -79,7 +81,8 @@ Document -
                                     IntermediateToken - (712:29,31 [14] RazorPages.cshtml) - Html - \n            
                                     IntermediateToken - (726:30,12 [6] RazorPages.cshtml) - Html - <input
                                     IntermediateToken - (732:30,18 [21] RazorPages.cshtml) - Html -  class="form-control"
-                                    IntermediateToken - (753:30,39 [3] RazorPages.cshtml) - Html -  />
+                                    IntermediateToken - (753:30,39 [1] RazorPages.cshtml) - Html -  
+                                    IntermediateToken - (754:30,40 [2] RazorPages.cshtml) - Html - />
                                     IntermediateToken - (756:30,42 [14] RazorPages.cshtml) - Html - \n            
                                     IntermediateToken - (770:31,12 [5] RazorPages.cshtml) - Html - <span
                                     IntermediateToken - (775:31,17 [20] RazorPages.cshtml) - Html -  class="text-danger"

@@ -86,6 +86,10 @@
     <Field Name="Value" Type="RazorBlockSyntax" Optional="true" />
     <Field Name="ValueSuffix" Type="MarkupTextLiteralSyntax" Optional="true" />
   </Node>
+  <Node Name="MarkupMiscAttributeContentSyntax" Base="MarkupSyntaxNode">
+    <Kind Name="MarkupMiscAttributeContent" />
+    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" />
+  </Node>
   <Node Name="MarkupLiteralAttributeValueSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupLiteralAttributeValue" />
     <Field Name="Prefix" Type="MarkupTextLiteralSyntax" Optional="true" />
@@ -99,7 +103,7 @@
   <Node Name="MarkupElementSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupElement" />
     <Field Name="StartTag" Type="MarkupTagBlockSyntax" Optional="true" />
-    <Field Name="Body" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Optional="true" />
+    <Field Name="Body" Type="SyntaxList&lt;RazorSyntaxNode&gt;" />
     <Field Name="EndTag" Type="MarkupTagBlockSyntax" Optional="true" />
   </Node>
   <Node Name="MarkupTagHelperElementSyntax" Base="MarkupSyntaxNode">

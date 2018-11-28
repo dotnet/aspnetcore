@@ -9,9 +9,10 @@ RazorDocument - [0..34)::34 - [</<<p>@DateTime.Now/><strong></p>>]
                 OpenAngle;[<];
         MarkupTagHelperElement - [3..33)::30 - p[StartTagAndEndTag] - ptaghelper
             MarkupTagHelperStartTag - [3..6)::3
-                MarkupTextLiteral - [3..6)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [3..5)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [5..6)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             CSharpCodeBlock - [6..19)::13
                 CSharpImplicitExpression - [6..19)::13
@@ -27,9 +28,10 @@ RazorDocument - [0..34)::34 - [</<<p>@DateTime.Now/><strong></p>>]
                 ForwardSlash;[/];
                 CloseAngle;[>];
             MarkupTagBlock - [21..29)::8 - [<strong>]
-                MarkupTextLiteral - [21..29)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [21..28)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [28..29)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagHelperEndTag - [29..33)::4
                 MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

@@ -15,5 +15,6 @@ RazorDocument - [0..13)::13 - [<p bar=false']
                         MarkupLiteralAttributeValue - [7..12)::5 - [false]
                             MarkupTextLiteral - [7..12)::5 - [false] - Gen<None> - SpanEditHandler;Accepts:Any
                                 Text;[false];
-                MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    SingleQuote;['];
+                MarkupMiscAttributeContent - [12..13)::1
+                    MarkupTextLiteral - [12..13)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        SingleQuote;['];

@@ -25,8 +25,10 @@ RazorDocument - [0..22)::22 - [{<span foo='@@def' />}]
                             Text;[def];
                 MarkupTextLiteral - [17..18)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                     SingleQuote;['];
-            MarkupTextLiteral - [18..21)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                Whitespace;[ ];
+            MarkupMiscAttributeContent - [18..19)::1
+                MarkupTextLiteral - [18..19)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+            MarkupTextLiteral - [19..21)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 ForwardSlash;[/];
                 CloseAngle;[>];
         MarkupTextLiteral - [21..22)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any

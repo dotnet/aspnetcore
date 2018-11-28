@@ -16,7 +16,8 @@ Document -
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [15] EmptyAttributeTagHelpers.cshtml)
                     IntermediateToken - (29:0,29 [4] EmptyAttributeTagHelpers.cshtml) - Html - \n\n
-                    IntermediateToken - (33:2,0 [5] EmptyAttributeTagHelpers.cshtml) - Html - <div>
+                    IntermediateToken - (33:2,0 [4] EmptyAttributeTagHelpers.cshtml) - Html - <div
+                    IntermediateToken - (37:2,4 [1] EmptyAttributeTagHelpers.cshtml) - Html - >
                     IntermediateToken - (38:2,5 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
                 TagHelper - (44:3,4 [34] EmptyAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                     DefaultTagHelperBody - 

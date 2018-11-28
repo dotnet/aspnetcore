@@ -32,7 +32,9 @@ RazorDocument - [0..53)::53 - [<input data-required='prefix @DateTime.Now suffix
                             Text;[suffix];
                     MarkupTextLiteral - [49..50)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         SingleQuote;['];
-                MarkupTextLiteral - [50..53)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [50..51)::1
+                    MarkupTextLiteral - [50..51)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [51..53)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

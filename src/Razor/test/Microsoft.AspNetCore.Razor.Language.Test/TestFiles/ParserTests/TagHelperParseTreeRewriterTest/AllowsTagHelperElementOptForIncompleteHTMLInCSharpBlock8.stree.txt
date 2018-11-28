@@ -32,9 +32,12 @@ RazorDocument - [0..20)::20 - [@{<!p class="btn" /}]
                                                 Text;[btn];
                                     MarkupTextLiteral - [16..17)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                                         DoubleQuote;["];
-                                MarkupTextLiteral - [17..19)::2 - [ /] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    Whitespace;[ ];
-                                    ForwardSlash;[/];
+                                MarkupMiscAttributeContent - [17..18)::1
+                                    MarkupTextLiteral - [17..18)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Whitespace;[ ];
+                                MarkupMiscAttributeContent - [18..19)::1
+                                    MarkupTextLiteral - [18..19)::1 - [/] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        ForwardSlash;[/];
                                 MarkupMinimizedAttributeBlock - [19..20)::1 - [}]
                                     MarkupTextLiteral - [19..20)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         Text;[}];

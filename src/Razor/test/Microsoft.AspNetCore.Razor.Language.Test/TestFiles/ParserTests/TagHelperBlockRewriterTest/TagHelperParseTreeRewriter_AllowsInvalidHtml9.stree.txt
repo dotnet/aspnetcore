@@ -8,15 +8,19 @@ RazorDocument - [0..52)::52 - [</  /<  ><p>@DateTime.Now / ><strong></p></      
         MarkupTextLiteral - [4..5)::1 - [/] - Gen<Markup> - SpanEditHandler;Accepts:Any
             ForwardSlash;[/];
         MarkupTagBlock - [5..9)::4 - [<  >]
-            MarkupTextLiteral - [5..9)::4 - [<  >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [5..6)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
-                Whitespace;[  ];
+            MarkupMiscAttributeContent - [6..8)::2
+                MarkupTextLiteral - [6..8)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[  ];
+            MarkupTextLiteral - [8..9)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupTagHelperElement - [9..41)::32 - p[StartTagAndEndTag] - ptaghelper
             MarkupTagHelperStartTag - [9..12)::3
-                MarkupTextLiteral - [9..12)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [9..11)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [11..12)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             CSharpCodeBlock - [12..25)::13
                 CSharpImplicitExpression - [12..25)::13
@@ -34,9 +38,10 @@ RazorDocument - [0..52)::52 - [</  /<  ><p>@DateTime.Now / ><strong></p></      
                 Whitespace;[ ];
                 CloseAngle;[>];
             MarkupTagBlock - [29..37)::8 - [<strong>]
-                MarkupTextLiteral - [29..37)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [29..36)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [36..37)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagHelperEndTag - [37..41)::4
                 MarkupTextLiteral - [37..41)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

@@ -2,9 +2,10 @@ RazorDocument - [0..77)::77 - [<p>Hello @DateTime.Now<strong>inside of @DateTime
     MarkupBlock - [0..77)::77
         MarkupTagHelperElement - [0..77)::77 - p[StartTagAndEndTag] - ptaghelper
             MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [3..9)::6 - [Hello ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
@@ -20,9 +21,10 @@ RazorDocument - [0..77)::77 - [<p>Hello @DateTime.Now<strong>inside of @DateTime
                                 Dot;[.];
                                 Identifier;[Now];
             MarkupTagBlock - [22..30)::8 - [<strong>]
-                MarkupTextLiteral - [22..30)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [22..29)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [29..30)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [30..40)::10 - [inside of ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[inside];

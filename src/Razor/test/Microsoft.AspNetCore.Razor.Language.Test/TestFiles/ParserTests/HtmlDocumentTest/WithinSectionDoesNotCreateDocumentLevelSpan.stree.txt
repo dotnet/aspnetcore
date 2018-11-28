@@ -23,9 +23,10 @@ RazorDocument - [0..36)::36 - [@section Foo {LF    <html></html>LF}]
                                 NewLine;[LF];
                                 Whitespace;[    ];
                             MarkupTagBlock - [20..26)::6 - [<html>]
-                                MarkupTextLiteral - [20..26)::6 - [<html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                MarkupTextLiteral - [20..25)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     OpenAngle;[<];
                                     Text;[html];
+                                MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     CloseAngle;[>];
                             MarkupTagBlock - [26..33)::7 - [</html>]
                                 MarkupTextLiteral - [26..33)::7 - [</html>] - Gen<Markup> - SpanEditHandler;Accepts:Any

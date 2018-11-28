@@ -2,9 +2,10 @@ RazorDocument - [0..56)::56 - [<p>Hello World <strong>inside of strong tag</stro
     MarkupBlock - [0..56)::56
         MarkupTagHelperElement - [0..56)::56 - p[StartTagAndEndTag] - ptaghelper
             MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [3..15)::12 - [Hello World ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
@@ -12,9 +13,10 @@ RazorDocument - [0..56)::56 - [<p>Hello World <strong>inside of strong tag</stro
                 Text;[World];
                 Whitespace;[ ];
             MarkupTagBlock - [15..23)::8 - [<strong>]
-                MarkupTextLiteral - [15..23)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [15..22)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [22..23)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [23..43)::20 - [inside of strong tag] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[inside];

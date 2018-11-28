@@ -53,8 +53,10 @@ RazorDocument - [0..85)::85 - [@{<input pre-attribute data-required='prefix @Dat
                                             Whitespace;[ ];
                                         MarkupTextLiteral - [67..81)::14 - [post-attribute] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             Text;[post-attribute];
-                                    MarkupTextLiteral - [81..84)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        Whitespace;[ ];
+                                    MarkupMiscAttributeContent - [81..82)::1
+                                        MarkupTextLiteral - [81..82)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                    MarkupTextLiteral - [82..84)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         ForwardSlash;[/];
                                         CloseAngle;[>];
                         CSharpStatementLiteral - [84..84)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any

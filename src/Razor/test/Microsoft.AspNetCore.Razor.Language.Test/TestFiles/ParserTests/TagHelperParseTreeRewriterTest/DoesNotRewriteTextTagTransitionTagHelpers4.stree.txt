@@ -13,15 +13,17 @@ RazorDocument - [0..34)::34 - [@{<p><text>Hello World</text></p>}]
                         MarkupBlock - [2..33)::31
                             MarkupTagHelperElement - [2..33)::31 - p[StartTagAndEndTag] - ptaghelper
                                 MarkupTagHelperStartTag - [2..5)::3
-                                    MarkupTextLiteral - [2..5)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    MarkupTextLiteral - [2..4)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         OpenAngle;[<];
                                         Text;[p];
+                                    MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
                                 MarkupTagHelperElement - [5..29)::24 - text[StartTagAndEndTag] - texttaghelper
                                     MarkupTagHelperStartTag - [5..11)::6
-                                        MarkupTextLiteral - [5..11)::6 - [<text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                        MarkupTextLiteral - [5..10)::5 - [<text] - Gen<Markup> - SpanEditHandler;Accepts:None
                                             OpenAngle;[<];
                                             Text;[text];
+                                        MarkupTextLiteral - [10..11)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                             CloseAngle;[>];
                                     MarkupTextLiteral - [11..22)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         Text;[Hello];

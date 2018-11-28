@@ -16,7 +16,8 @@ Document -
                 Section -  - MySection
                     HtmlContent - (93:6,20 [21] TagHelpersInSection.cshtml)
                         IntermediateToken - (93:6,20 [6] TagHelpersInSection.cshtml) - Html - \n    
-                        IntermediateToken - (99:7,4 [5] TagHelpersInSection.cshtml) - Html - <div>
+                        IntermediateToken - (99:7,4 [4] TagHelpersInSection.cshtml) - Html - <div
+                        IntermediateToken - (103:7,8 [1] TagHelpersInSection.cshtml) - Html - >
                         IntermediateToken - (104:7,9 [10] TagHelpersInSection.cshtml) - Html - \n        
                     TagHelper - (114:8,8 [245] TagHelpersInSection.cshtml) - mytaghelper - TagMode.StartTagAndEndTag
                         DefaultTagHelperBody - 

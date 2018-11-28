@@ -10,7 +10,9 @@ RazorDocument - [0..31)::31 - [<input bound-required-string />]
                         Whitespace;[ ];
                     MarkupTextLiteral - [7..28)::21 - [bound-required-string] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[bound-required-string];
-                MarkupTextLiteral - [28..31)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [28..29)::1
+                    MarkupTextLiteral - [28..29)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [29..31)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

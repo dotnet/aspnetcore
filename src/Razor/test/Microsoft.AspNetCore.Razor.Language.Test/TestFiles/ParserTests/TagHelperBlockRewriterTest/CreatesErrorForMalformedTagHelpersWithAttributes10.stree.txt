@@ -15,14 +15,15 @@ RazorDocument - [0..31)::31 - [<p class=btn" bar="foo"<strong>]
                         MarkupLiteralAttributeValue - [9..12)::3 - [btn]
                             MarkupTextLiteral - [9..12)::3 - [btn] - Gen<None> - SpanEditHandler;Accepts:Any
                                 Text;[btn];
-                MarkupTextLiteral - [12..31)::19 - [" bar="foo"<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    DoubleQuote;["];
-                    Whitespace;[ ];
-                    Text;[bar];
-                    Equals;[=];
-                    DoubleQuote;["];
-                    Text;[foo];
-                    DoubleQuote;["];
-                    OpenAngle;[<];
-                    Text;[strong];
-                    CloseAngle;[>];
+                MarkupMiscAttributeContent - [12..31)::19
+                    MarkupTextLiteral - [12..31)::19 - [" bar="foo"<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        DoubleQuote;["];
+                        Whitespace;[ ];
+                        Text;[bar];
+                        Equals;[=];
+                        DoubleQuote;["];
+                        Text;[foo];
+                        DoubleQuote;["];
+                        OpenAngle;[<];
+                        Text;[strong];
+                        CloseAngle;[>];

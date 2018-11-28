@@ -24,9 +24,10 @@ RazorDocument - [0..50)::50 - [<p class="btn">words<strong>and</strong>spaces</p
             MarkupTextLiteral - [15..20)::5 - [words] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[words];
             MarkupTagBlock - [20..28)::8 - [<strong>]
-                MarkupTextLiteral - [20..28)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [20..27)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[strong];
+                MarkupTextLiteral - [27..28)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [28..31)::3 - [and] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[and];

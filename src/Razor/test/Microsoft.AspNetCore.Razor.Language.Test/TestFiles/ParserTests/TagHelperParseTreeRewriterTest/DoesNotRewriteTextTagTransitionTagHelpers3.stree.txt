@@ -18,9 +18,10 @@ RazorDocument - [0..34)::34 - [@{<text><p>Hello World</p></text>}]
                                     CloseAngle;[>];
                             MarkupTagHelperElement - [8..26)::18 - p[StartTagAndEndTag] - ptaghelper
                                 MarkupTagHelperStartTag - [8..11)::3
-                                    MarkupTextLiteral - [8..11)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    MarkupTextLiteral - [8..10)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         OpenAngle;[<];
                                         Text;[p];
+                                    MarkupTextLiteral - [10..11)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         CloseAngle;[>];
                                 MarkupTextLiteral - [11..22)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[Hello];

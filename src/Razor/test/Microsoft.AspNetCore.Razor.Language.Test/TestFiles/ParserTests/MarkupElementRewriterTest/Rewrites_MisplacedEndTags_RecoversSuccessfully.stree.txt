@@ -4,17 +4,19 @@ RazorDocument - [0..41)::41 - [LF<div>content<span>footer</div></span>LF]
             NewLine;[LF];
         MarkupElement - [2..32)::30
             MarkupTagBlock - [2..7)::5 - [<div>]
-                MarkupTextLiteral - [2..7)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [2..6)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[div];
+                MarkupTextLiteral - [6..7)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [7..14)::7 - [content] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[content];
             MarkupElement - [14..26)::12
                 MarkupTagBlock - [14..20)::6 - [<span>]
-                    MarkupTextLiteral - [14..20)::6 - [<span>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [14..19)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[span];
+                    MarkupTextLiteral - [19..20)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         CloseAngle;[>];
                 MarkupTextLiteral - [20..26)::6 - [footer] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     Text;[footer];

@@ -4,9 +4,10 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
             NewLine;[LF];
         MarkupElement - [2..64)::62
             MarkupTagBlock - [2..7)::5 - [<div>]
-                MarkupTextLiteral - [2..7)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [2..6)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[div];
+                MarkupTextLiteral - [6..7)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [7..22)::15 - [LF    FooLF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 NewLine;[LF];
@@ -16,9 +17,10 @@ RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x =
                 Whitespace;[    ];
             MarkupElement - [22..33)::11
                 MarkupTagBlock - [22..25)::3 - [<p>]
-                    MarkupTextLiteral - [22..25)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [22..24)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[p];
+                    MarkupTextLiteral - [24..25)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         CloseAngle;[>];
                 CSharpCodeBlock - [25..29)::4
                     CSharpImplicitExpression - [25..29)::4

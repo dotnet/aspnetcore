@@ -33,8 +33,9 @@ RazorDocument - [0..35)::35 - [<p notRequired="hi" class="btn" </p]
                                 Text;[btn];
                     MarkupTextLiteral - [30..31)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [31..32)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [31..32)::1
+                    MarkupTextLiteral - [31..32)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
             MarkupTagHelperEndTag - [32..35)::3
                 MarkupTextLiteral - [32..35)::3 - [</p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];

@@ -30,7 +30,8 @@ RazorDocument - [0..30)::30 - [@{<text>Blah</text>LFLF}<html>]
                     RazorMetaCode - [23..24)::1 - Gen<None> - SpanEditHandler;Accepts:None
                         RightBrace;[}];
         MarkupTagBlock - [24..30)::6 - [<html>]
-            MarkupTextLiteral - [24..30)::6 - [<html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [24..29)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[html];
+            MarkupTextLiteral - [29..30)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];

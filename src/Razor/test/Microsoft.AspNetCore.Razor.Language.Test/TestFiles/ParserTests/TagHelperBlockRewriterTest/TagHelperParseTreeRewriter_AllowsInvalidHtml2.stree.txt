@@ -5,9 +5,12 @@ RazorDocument - [0..6)::6 - [<<p />]
                 OpenAngle;[<];
         MarkupTagHelperElement - [1..6)::5 - p[SelfClosing] - ptaghelper
             MarkupTagHelperStartTag - [1..6)::5
-                MarkupTextLiteral - [1..6)::5 - [<p />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [1..3)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [3..4)::1
+                    MarkupTextLiteral - [3..4)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [4..6)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

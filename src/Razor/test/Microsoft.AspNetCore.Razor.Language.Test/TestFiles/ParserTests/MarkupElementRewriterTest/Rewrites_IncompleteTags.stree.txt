@@ -8,9 +8,10 @@ RazorDocument - [0..27)::27 - [LF<<div>>Foo</</div><   >LF]
                     OpenAngle;[<];
         MarkupElement - [3..20)::17
             MarkupTagBlock - [3..8)::5 - [<div>]
-                MarkupTextLiteral - [3..8)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [3..7)::4 - [<div] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[div];
+                MarkupTextLiteral - [7..8)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [8..12)::4 - [>Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
@@ -28,9 +29,12 @@ RazorDocument - [0..27)::27 - [LF<<div>>Foo</</div><   >LF]
                     CloseAngle;[>];
         MarkupElement - [20..25)::5
             MarkupTagBlock - [20..25)::5 - [<   >]
-                MarkupTextLiteral - [20..25)::5 - [<   >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [20..21)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
-                    Whitespace;[   ];
+                MarkupMiscAttributeContent - [21..24)::3
+                    MarkupTextLiteral - [21..24)::3 - [   ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[   ];
+                MarkupTextLiteral - [24..25)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
         MarkupTextLiteral - [25..27)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];

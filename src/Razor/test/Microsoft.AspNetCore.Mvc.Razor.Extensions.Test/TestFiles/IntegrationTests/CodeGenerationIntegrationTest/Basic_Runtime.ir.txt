@@ -39,7 +39,8 @@ Document -
                             IntermediateToken - (153:7,30 [3] Basic.cshtml) - CSharp - cls
                         IntermediateToken - (156:7,33 [2] Basic.cshtml) - CSharp -  }
                 HtmlContent - (159:7,36 [5] Basic.cshtml)
-                    IntermediateToken - (159:7,36 [3] Basic.cshtml) - Html -  />
+                    IntermediateToken - (159:7,36 [1] Basic.cshtml) - Html -  
+                    IntermediateToken - (160:7,37 [2] Basic.cshtml) - Html - />
                     IntermediateToken - (162:7,39 [2] Basic.cshtml) - Html - \n
             Inject - 
             Inject - 

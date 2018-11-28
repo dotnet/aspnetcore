@@ -17,7 +17,8 @@ Document -
                     IntermediateToken - (29:0,29 [2] TagHelpersWithPrefix.cshtml) - Html - \n
                 HtmlContent - (53:1,22 [14] TagHelpersWithPrefix.cshtml)
                     IntermediateToken - (53:1,22 [2] TagHelpersWithPrefix.cshtml) - Html - \n
-                    IntermediateToken - (55:2,0 [6] TagHelpersWithPrefix.cshtml) - Html - <form>
+                    IntermediateToken - (55:2,0 [5] TagHelpersWithPrefix.cshtml) - Html - <form
+                    IntermediateToken - (60:2,5 [1] TagHelpersWithPrefix.cshtml) - Html - >
                     IntermediateToken - (61:2,6 [6] TagHelpersWithPrefix.cshtml) - Html - \n    
                 TagHelper - (67:3,4 [39] TagHelpersWithPrefix.cshtml) - input - TagMode.SelfClosing
                     DefaultTagHelperBody - 

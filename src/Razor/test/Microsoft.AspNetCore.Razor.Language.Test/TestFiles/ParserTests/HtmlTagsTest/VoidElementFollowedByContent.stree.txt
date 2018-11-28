@@ -14,9 +14,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [4..10)::6
                             MarkupTagBlock - [4..10)::6 - [<area>]
-                                MarkupTextLiteral - [4..10)::6 - [<area>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [4..9)::5 - [<area] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[area];
+                                MarkupTextLiteral - [9..10)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [10..25)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -44,9 +45,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [32..38)::6
                             MarkupTagBlock - [32..38)::6 - [<base>]
-                                MarkupTextLiteral - [32..38)::6 - [<base>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [32..37)::5 - [<base] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[base];
+                                MarkupTextLiteral - [37..38)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [38..53)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -74,9 +76,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [60..64)::4
                             MarkupTagBlock - [60..64)::4 - [<br>]
-                                MarkupTextLiteral - [60..64)::4 - [<br>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [60..63)::3 - [<br] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[br];
+                                MarkupTextLiteral - [63..64)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [64..79)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -104,9 +107,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [86..91)::5
                             MarkupTagBlock - [86..91)::5 - [<col>]
-                                MarkupTextLiteral - [86..91)::5 - [<col>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [86..90)::4 - [<col] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[col];
+                                MarkupTextLiteral - [90..91)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [91..106)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -134,9 +138,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [113..122)::9
                             MarkupTagBlock - [113..122)::9 - [<command>]
-                                MarkupTextLiteral - [113..122)::9 - [<command>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [113..121)::8 - [<command] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[command];
+                                MarkupTextLiteral - [121..122)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [122..137)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -164,9 +169,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [144..151)::7
                             MarkupTagBlock - [144..151)::7 - [<embed>]
-                                MarkupTextLiteral - [144..151)::7 - [<embed>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [144..150)::6 - [<embed] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[embed];
+                                MarkupTextLiteral - [150..151)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [151..166)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -194,9 +200,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [173..177)::4
                             MarkupTagBlock - [173..177)::4 - [<hr>]
-                                MarkupTextLiteral - [173..177)::4 - [<hr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [173..176)::3 - [<hr] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[hr];
+                                MarkupTextLiteral - [176..177)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [177..192)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -224,9 +231,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [199..204)::5
                             MarkupTagBlock - [199..204)::5 - [<img>]
-                                MarkupTextLiteral - [199..204)::5 - [<img>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [199..203)::4 - [<img] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[img];
+                                MarkupTextLiteral - [203..204)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [204..219)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -254,9 +262,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [226..233)::7
                             MarkupTagBlock - [226..233)::7 - [<input>]
-                                MarkupTextLiteral - [226..233)::7 - [<input>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [226..232)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[input];
+                                MarkupTextLiteral - [232..233)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [233..248)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -284,9 +293,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [255..263)::8
                             MarkupTagBlock - [255..263)::8 - [<keygen>]
-                                MarkupTextLiteral - [255..263)::8 - [<keygen>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [255..262)::7 - [<keygen] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[keygen];
+                                MarkupTextLiteral - [262..263)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [263..278)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -314,9 +324,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [285..291)::6
                             MarkupTagBlock - [285..291)::6 - [<link>]
-                                MarkupTextLiteral - [285..291)::6 - [<link>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [285..290)::5 - [<link] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[link];
+                                MarkupTextLiteral - [290..291)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [291..306)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -344,9 +355,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [313..319)::6
                             MarkupTagBlock - [313..319)::6 - [<meta>]
-                                MarkupTextLiteral - [313..319)::6 - [<meta>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [313..318)::5 - [<meta] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[meta];
+                                MarkupTextLiteral - [318..319)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [319..334)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -374,9 +386,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [341..348)::7
                             MarkupTagBlock - [341..348)::7 - [<param>]
-                                MarkupTextLiteral - [341..348)::7 - [<param>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [341..347)::6 - [<param] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[param];
+                                MarkupTextLiteral - [347..348)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [348..363)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -404,9 +417,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [370..378)::8
                             MarkupTagBlock - [370..378)::8 - [<source>]
-                                MarkupTextLiteral - [370..378)::8 - [<source>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [370..377)::7 - [<source] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[source];
+                                MarkupTextLiteral - [377..378)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [378..393)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -434,9 +448,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [400..407)::7
                             MarkupTagBlock - [400..407)::7 - [<track>]
-                                MarkupTextLiteral - [400..407)::7 - [<track>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [400..406)::6 - [<track] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[track];
+                                MarkupTextLiteral - [406..407)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [407..422)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];
@@ -464,9 +479,10 @@ RazorDocument - [0..452)::452 - [@{LF<area>var x = true;LF}LF@{LF<base>var x = t
                             NewLine;[LF];
                         MarkupBlock - [429..434)::5
                             MarkupTagBlock - [429..434)::5 - [<wbr>]
-                                MarkupTextLiteral - [429..434)::5 - [<wbr>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [429..433)::4 - [<wbr] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     OpenAngle;[<];
                                     Text;[wbr];
+                                MarkupTextLiteral - [433..434)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     CloseAngle;[>];
                         CSharpStatementLiteral - [434..449)::15 - [var x = true;LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
                             Identifier;[var];

@@ -19,9 +19,10 @@ CSharpCodeBlock - [0..232)::232 - [switch(foo) {LF    case 0:LF        <p>Foo</p
         MarkupTextLiteral - [28..36)::8 - [        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Whitespace;[        ];
         MarkupTagBlock - [36..39)::3 - [<p>]
-            MarkupTextLiteral - [36..39)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [36..38)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [38..39)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [39..42)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Foo];
@@ -48,9 +49,10 @@ CSharpCodeBlock - [0..232)::232 - [switch(foo) {LF    case 0:LF        <p>Foo</p
         MarkupTextLiteral - [77..85)::8 - [        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Whitespace;[        ];
         MarkupTagBlock - [85..88)::3 - [<p>]
-            MarkupTextLiteral - [85..88)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [85..87)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [87..88)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [88..91)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Bar];
@@ -80,9 +82,10 @@ CSharpCodeBlock - [0..232)::232 - [switch(foo) {LF    case 0:LF        <p>Foo</p
         MarkupTextLiteral - [138..150)::12 - [            ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Whitespace;[            ];
         MarkupTagBlock - [150..153)::3 - [<p>]
-            MarkupTextLiteral - [150..153)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [150..152)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [152..153)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [153..156)::3 - [Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Baz];
@@ -98,9 +101,10 @@ CSharpCodeBlock - [0..232)::232 - [switch(foo) {LF    case 0:LF        <p>Foo</p
         MarkupTextLiteral - [162..174)::12 - [            ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Whitespace;[            ];
         MarkupTagBlock - [174..177)::3 - [<p>]
-            MarkupTextLiteral - [174..177)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [174..176)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [176..177)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [177..180)::3 - [Boz] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Boz];
@@ -124,9 +128,10 @@ CSharpCodeBlock - [0..232)::232 - [switch(foo) {LF    case 0:LF        <p>Foo</p
         MarkupTextLiteral - [211..219)::8 - [        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Whitespace;[        ];
         MarkupTagBlock - [219..222)::3 - [<p>]
-            MarkupTextLiteral - [219..222)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            MarkupTextLiteral - [219..221)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [221..222)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                 CloseAngle;[>];
         MarkupTextLiteral - [222..225)::3 - [Biz] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[Biz];

@@ -28,9 +28,10 @@ RazorDocument - [0..38)::38 - [@{<text>Blah</text>LF<input/>LF}<html>]
                                 NewLine;[LF];
                         MarkupBlock - [21..31)::10
                             MarkupTagBlock - [21..29)::8 - [<input/>]
-                                MarkupTextLiteral - [21..29)::8 - [<input/>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                MarkupTextLiteral - [21..27)::6 - [<input] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     OpenAngle;[<];
                                     Text;[input];
+                                MarkupTextLiteral - [27..29)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                     ForwardSlash;[/];
                                     CloseAngle;[>];
                             MarkupTextLiteral - [29..31)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
@@ -40,7 +41,8 @@ RazorDocument - [0..38)::38 - [@{<text>Blah</text>LF<input/>LF}<html>]
                     RazorMetaCode - [31..32)::1 - Gen<None> - SpanEditHandler;Accepts:None
                         RightBrace;[}];
         MarkupTagBlock - [32..38)::6 - [<html>]
-            MarkupTextLiteral - [32..38)::6 - [<html>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [32..37)::5 - [<html] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[html];
+            MarkupTextLiteral - [37..38)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];

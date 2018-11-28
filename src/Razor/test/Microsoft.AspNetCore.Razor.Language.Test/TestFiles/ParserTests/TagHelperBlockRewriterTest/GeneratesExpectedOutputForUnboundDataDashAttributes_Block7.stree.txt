@@ -51,8 +51,10 @@ RazorDocument - [0..63)::63 - [@{<input data-required='@DateTime.Now middle @Dat
                                                                 Identifier;[Now];
                                         MarkupTextLiteral - [58..59)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                             SingleQuote;['];
-                                    MarkupTextLiteral - [59..62)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
-                                        Whitespace;[ ];
+                                    MarkupMiscAttributeContent - [59..60)::1
+                                        MarkupTextLiteral - [59..60)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                            Whitespace;[ ];
+                                    MarkupTextLiteral - [60..62)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:None
                                         ForwardSlash;[/];
                                         CloseAngle;[>];
                         CSharpStatementLiteral - [62..62)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any

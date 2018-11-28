@@ -14,7 +14,8 @@ Document -
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [14] TagHelpersWithBoundAttributes.cshtml)
                     IntermediateToken - (29:0,29 [2] TagHelpersWithBoundAttributes.cshtml) - Html - \n
-                    IntermediateToken - (31:1,0 [6] TagHelpersWithBoundAttributes.cshtml) - Html - <form>
+                    IntermediateToken - (31:1,0 [5] TagHelpersWithBoundAttributes.cshtml) - Html - <form
+                    IntermediateToken - (36:1,5 [1] TagHelpersWithBoundAttributes.cshtml) - Html - >
                     IntermediateToken - (37:1,6 [6] TagHelpersWithBoundAttributes.cshtml) - Html - \n    
                 TagHelper - (43:2,4 [34] TagHelpersWithBoundAttributes.cshtml) - input - TagMode.SelfClosing
                     DefaultTagHelperBody - 

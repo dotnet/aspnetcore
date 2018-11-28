@@ -49,9 +49,10 @@ RazorDocument - [0..130)::130 - [@* There are two directives beneath this *@LF@c
         MarkupTextLiteral - [108..110)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
             NewLine;[LF];
         MarkupTagBlock - [110..113)::3 - [<p>]
-            MarkupTextLiteral - [110..113)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [110..112)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[p];
+            MarkupTextLiteral - [112..113)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupTextLiteral - [113..126)::13 - [This is extra] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[This];

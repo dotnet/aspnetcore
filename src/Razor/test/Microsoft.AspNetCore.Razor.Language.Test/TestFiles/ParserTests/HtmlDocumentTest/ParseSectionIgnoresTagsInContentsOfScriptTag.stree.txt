@@ -22,9 +22,10 @@ RazorDocument - [0..53)::53 - [@section Foo { <script>foo<bar baz='@boz'></scrip
                             MarkupTextLiteral - [14..15)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Whitespace;[ ];
                             MarkupTagBlock - [15..23)::8 - [<script>]
-                                MarkupTextLiteral - [15..23)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                MarkupTextLiteral - [15..22)::7 - [<script] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     OpenAngle;[<];
                                     Text;[script];
+                                MarkupTextLiteral - [22..23)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     CloseAngle;[>];
                             MarkupTextLiteral - [23..36)::13 - [foo<bar baz='] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                 Text;[foo];

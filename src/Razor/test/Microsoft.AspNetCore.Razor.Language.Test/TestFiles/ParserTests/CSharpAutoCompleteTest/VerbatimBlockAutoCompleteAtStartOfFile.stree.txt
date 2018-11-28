@@ -10,9 +10,10 @@ CSharpCodeBlock - [0..11)::11 - [@{LF<p></p>]
                     NewLine;[LF];
                 MarkupBlock - [4..11)::7
                     MarkupTagBlock - [4..7)::3 - [<p>]
-                        MarkupTextLiteral - [4..7)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        MarkupTextLiteral - [4..6)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:None
                             OpenAngle;[<];
                             Text;[p];
+                        MarkupTextLiteral - [6..7)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
                             CloseAngle;[>];
                     MarkupTagBlock - [7..11)::4 - [</p>]
                         MarkupTextLiteral - [7..11)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None

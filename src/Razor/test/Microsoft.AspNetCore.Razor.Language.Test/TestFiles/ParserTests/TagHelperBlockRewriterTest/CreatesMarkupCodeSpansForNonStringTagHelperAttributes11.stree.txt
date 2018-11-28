@@ -79,7 +79,9 @@ RazorDocument - [0..77)::77 - [<person age="@@@(11+1)" birthday="DateTime.Now" n
                                                 Identifier;[Now];
                     MarkupTextLiteral - [73..74)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [74..77)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [74..75)::1
+                    MarkupTextLiteral - [74..75)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [75..77)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

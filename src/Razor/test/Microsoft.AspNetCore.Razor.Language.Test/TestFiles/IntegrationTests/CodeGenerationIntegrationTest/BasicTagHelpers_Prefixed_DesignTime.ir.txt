@@ -27,7 +27,8 @@ Document -
                     DefaultTagHelperBody - 
                         HtmlContent - (135:4,30 [56] BasicTagHelpers_Prefixed.cshtml)
                             IntermediateToken - (135:4,30 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
-                            IntermediateToken - (145:5,8 [3] BasicTagHelpers_Prefixed.cshtml) - Html - <p>
+                            IntermediateToken - (145:5,8 [2] BasicTagHelpers_Prefixed.cshtml) - Html - <p
+                            IntermediateToken - (147:5,10 [1] BasicTagHelpers_Prefixed.cshtml) - Html - >
                             IntermediateToken - (148:5,11 [4] BasicTagHelpers_Prefixed.cshtml) - Html - </p>
                             IntermediateToken - (152:5,15 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
                             IntermediateToken - (162:6,8 [6] BasicTagHelpers_Prefixed.cshtml) - Html - <input

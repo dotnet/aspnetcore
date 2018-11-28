@@ -16,10 +16,14 @@ RazorDocument - [0..8)::8 - [@{<!p /}]
                                     OpenAngle;[<];
                                 RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
                                     Bang;[!];
-                                MarkupTextLiteral - [4..7)::3 - [p /] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                MarkupTextLiteral - [4..5)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     Text;[p];
-                                    Whitespace;[ ];
-                                    ForwardSlash;[/];
+                                MarkupMiscAttributeContent - [5..6)::1
+                                    MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Whitespace;[ ];
+                                MarkupMiscAttributeContent - [6..7)::1
+                                    MarkupTextLiteral - [6..7)::1 - [/] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        ForwardSlash;[/];
                                 MarkupMinimizedAttributeBlock - [7..8)::1 - [}]
                                     MarkupTextLiteral - [7..8)::1 - [}] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                         Text;[}];

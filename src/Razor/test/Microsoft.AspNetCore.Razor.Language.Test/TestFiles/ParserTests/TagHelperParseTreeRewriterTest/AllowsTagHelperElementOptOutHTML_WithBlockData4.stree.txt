@@ -5,8 +5,9 @@ RazorDocument - [0..25)::25 - [<!p>words and spaces</!p>]
                 OpenAngle;[<];
             RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
                 Bang;[!];
-            MarkupTextLiteral - [2..4)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [2..3)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[p];
+            MarkupTextLiteral - [3..4)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupTextLiteral - [4..20)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
             Text;[words];

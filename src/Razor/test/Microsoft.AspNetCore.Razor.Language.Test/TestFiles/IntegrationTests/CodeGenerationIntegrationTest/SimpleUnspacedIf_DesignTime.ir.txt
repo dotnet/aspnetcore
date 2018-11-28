@@ -12,7 +12,8 @@ Document -
                 CSharpCode - (1:0,1 [15] SimpleUnspacedIf.cshtml)
                     IntermediateToken - (1:0,1 [15] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n	
                 HtmlContent - (16:2,1 [11] SimpleUnspacedIf.cshtml)
-                    IntermediateToken - (16:2,1 [5] SimpleUnspacedIf.cshtml) - Html - <div>
+                    IntermediateToken - (16:2,1 [4] SimpleUnspacedIf.cshtml) - Html - <div
+                    IntermediateToken - (20:2,5 [1] SimpleUnspacedIf.cshtml) - Html - >
                     IntermediateToken - (21:2,6 [6] SimpleUnspacedIf.cshtml) - Html - </div>
                 CSharpCode - (27:2,12 [3] SimpleUnspacedIf.cshtml)
                     IntermediateToken - (27:2,12 [3] SimpleUnspacedIf.cshtml) - CSharp - \n}

@@ -71,7 +71,8 @@ Document -
                     IntermediateToken -  - CSharp - BeginContext(158, 31, true);
                 HtmlContent - (158:5,7 [31] BasicTest.cshtml)
                     IntermediateToken - (158:5,7 [4] BasicTest.cshtml) - Html - \n\n
-                    IntermediateToken - (162:7,0 [6] BasicTest.cshtml) - Html - <span>
+                    IntermediateToken - (162:7,0 [5] BasicTest.cshtml) - Html - <span
+                    IntermediateToken - (167:7,5 [1] BasicTest.cshtml) - Html - >
                     IntermediateToken - (168:7,6 [21] BasicTest.cshtml) - Html - Here is some content 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
@@ -90,7 +91,8 @@ Document -
                         CSharpCode - 
                             IntermediateToken -  - CSharp - BeginContext(222, 24, true);
                         HtmlContent - (222:8,6 [24] BasicTest.cshtml)
-                            IntermediateToken - (222:8,6 [6] BasicTest.cshtml) - Html - <span>
+                            IntermediateToken - (222:8,6 [5] BasicTest.cshtml) - Html - <span
+                            IntermediateToken - (227:8,11 [1] BasicTest.cshtml) - Html - >
                             IntermediateToken - (228:8,12 [11] BasicTest.cshtml) - Html - Hello world
                             IntermediateToken - (239:8,23 [7] BasicTest.cshtml) - Html - </span>
                         CSharpCode - 

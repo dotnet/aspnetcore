@@ -86,7 +86,9 @@ RazorDocument - [0..126)::126 - [<input    bound-required-int class='@DateTime.N
                         Whitespace;[  ];
                     MarkupTextLiteral - [106..122)::16 - [unbound-required] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         Text;[unbound-required];
-                MarkupTextLiteral - [122..126)::4 - [  />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[  ];
+                MarkupMiscAttributeContent - [122..124)::2
+                    MarkupTextLiteral - [122..124)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[  ];
+                MarkupTextLiteral - [124..126)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

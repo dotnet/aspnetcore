@@ -48,9 +48,10 @@ RazorDocument - [0..73)::73 - [<p class=foo dynamic=@DateTime.Now style=color:re
                     CloseAngle;[>];
             MarkupTagHelperElement - [52..60)::8 - strong[StartTagAndEndTag] - strongtaghelper
                 MarkupTagHelperStartTag - [52..60)::8
-                    MarkupTextLiteral - [52..60)::8 - [<strong>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [52..59)::7 - [<strong] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[strong];
+                    MarkupTextLiteral - [59..60)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         CloseAngle;[>];
             MarkupTagHelperEndTag - [60..64)::4
                 MarkupTextLiteral - [60..64)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any

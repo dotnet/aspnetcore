@@ -1,9 +1,10 @@
 RazorDocument - [0..27)::27 - [<foo><!DOCTYPE @foo ></foo>]
     MarkupBlock - [0..27)::27
         MarkupTagBlock - [0..5)::5 - [<foo>]
-            MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 OpenAngle;[<];
                 Text;[foo];
+            MarkupTextLiteral - [4..5)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 CloseAngle;[>];
         MarkupTextLiteral - [5..15)::10 - [<!DOCTYPE ] - Gen<Markup> - SpanEditHandler;Accepts:Any
             OpenAngle;[<];

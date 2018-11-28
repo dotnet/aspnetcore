@@ -24,8 +24,10 @@ RazorDocument - [0..73)::73 - [<p     class="   foo  " >Hello</p> <p    style=" 
                                 Whitespace;[  ];
                     MarkupTextLiteral - [22..23)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [23..25)::2 - [ >] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [23..24)::1
+                    MarkupTextLiteral - [23..24)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [24..25)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [25..30)::5 - [Hello] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[Hello];
@@ -61,8 +63,10 @@ RazorDocument - [0..73)::73 - [<p     class="   foo  " >Hello</p> <p    style=" 
                                 Whitespace;[ ];
                     MarkupTextLiteral - [61..62)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [62..64)::2 - [ >] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [62..63)::1
+                    MarkupTextLiteral - [62..63)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [63..64)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [64..69)::5 - [World] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[World];

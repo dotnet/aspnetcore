@@ -74,8 +74,10 @@ RazorDocument - [0..97)::97 - [<div style="@DateTime.Now" class="@DateTime.Now" 
                                                     Identifier;[Now];
                     MarkupTextLiteral - [72..73)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [73..75)::2 - [ >] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [73..74)::1
+                    MarkupTextLiteral - [73..74)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [74..75)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [75..91)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[words];

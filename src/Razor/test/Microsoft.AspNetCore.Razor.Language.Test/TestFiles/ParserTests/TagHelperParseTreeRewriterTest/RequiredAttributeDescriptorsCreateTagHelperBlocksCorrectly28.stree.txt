@@ -50,8 +50,10 @@ RazorDocument - [0..65)::65 - [<div style="" class="btn" catchAll="@@hi" >words 
                                 Text;[hi];
                     MarkupTextLiteral - [40..41)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
                         DoubleQuote;["];
-                MarkupTextLiteral - [41..43)::2 - [ >] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [41..42)::1
+                    MarkupTextLiteral - [41..42)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [42..43)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTextLiteral - [43..59)::16 - [words and spaces] - Gen<Markup> - SpanEditHandler;Accepts:Any
                 Text;[words];

@@ -29,11 +29,13 @@ Document -
                 HtmlContent - (131:4,10 [31] EscapedTagHelpers.cshtml)
                     IntermediateToken - (131:4,10 [5] EscapedTagHelpers.cshtml) - Html - input
                     IntermediateToken - (136:4,15 [12] EscapedTagHelpers.cshtml) - Html -  type="text"
-                    IntermediateToken - (148:4,27 [3] EscapedTagHelpers.cshtml) - Html -  />
+                    IntermediateToken - (148:4,27 [1] EscapedTagHelpers.cshtml) - Html -  
+                    IntermediateToken - (149:4,28 [2] EscapedTagHelpers.cshtml) - Html - />
                     IntermediateToken - (151:4,30 [10] EscapedTagHelpers.cshtml) - Html - \n        
                     IntermediateToken - (161:5,8 [1] EscapedTagHelpers.cshtml) - Html - <
                 HtmlContent - (163:5,10 [22] EscapedTagHelpers.cshtml)
-                    IntermediateToken - (163:5,10 [3] EscapedTagHelpers.cshtml) - Html - em>
+                    IntermediateToken - (163:5,10 [2] EscapedTagHelpers.cshtml) - Html - em
+                    IntermediateToken - (165:5,12 [1] EscapedTagHelpers.cshtml) - Html - >
                     IntermediateToken - (166:5,13 [17] EscapedTagHelpers.cshtml) - Html - Not a TagHelper: 
                     IntermediateToken - (183:5,30 [2] EscapedTagHelpers.cshtml) - Html - </
                 HtmlContent - (186:5,33 [4] EscapedTagHelpers.cshtml)

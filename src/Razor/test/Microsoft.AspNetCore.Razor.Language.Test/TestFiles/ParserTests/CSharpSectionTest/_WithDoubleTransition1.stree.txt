@@ -39,8 +39,10 @@ RazorDocument - [0..30)::30 - [@section s {<span foo='@@' />}]
                                                 Transition;[@];
                                     MarkupTextLiteral - [25..26)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
                                         SingleQuote;['];
-                                MarkupTextLiteral - [26..29)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:Any
-                                    Whitespace;[ ];
+                                MarkupMiscAttributeContent - [26..27)::1
+                                    MarkupTextLiteral - [26..27)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Whitespace;[ ];
+                                MarkupTextLiteral - [27..29)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                                     ForwardSlash;[/];
                                     CloseAngle;[>];
                         RazorMetaCode - [29..30)::1 - Gen<None> - SpanEditHandler;Accepts:None

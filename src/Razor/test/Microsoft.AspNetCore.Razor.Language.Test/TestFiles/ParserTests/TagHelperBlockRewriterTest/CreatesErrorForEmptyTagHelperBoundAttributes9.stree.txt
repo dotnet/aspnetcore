@@ -47,7 +47,9 @@ RazorDocument - [0..46)::46 - [<myth bound='true' name='john' bound= name= />]
                     Equals;[=];
                     MarkupTagHelperAttributeValue - [43..43)::0
                         MarkupTextLiteral - [43..43)::0 - []
-                MarkupTextLiteral - [43..46)::3 - [ />] - Gen<None> - SpanEditHandler;Accepts:Any
-                    Whitespace;[ ];
+                MarkupMiscAttributeContent - [43..44)::1
+                    MarkupTextLiteral - [43..44)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                MarkupTextLiteral - [44..46)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     ForwardSlash;[/];
                     CloseAngle;[>];

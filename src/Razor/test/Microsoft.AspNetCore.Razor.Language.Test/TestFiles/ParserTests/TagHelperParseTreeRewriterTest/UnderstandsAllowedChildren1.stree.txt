@@ -2,16 +2,20 @@ RazorDocument - [0..13)::13 - [<p><br /></p>]
     MarkupBlock - [0..13)::13
         MarkupTagHelperElement - [0..13)::13 - p[StartTagAndEndTag] - PTagHelper
             MarkupTagHelperStartTag - [0..3)::3
-                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                MarkupTextLiteral - [0..2)::2 - [<p] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     OpenAngle;[<];
                     Text;[p];
+                MarkupTextLiteral - [2..3)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                     CloseAngle;[>];
             MarkupTagHelperElement - [3..9)::6 - br[SelfClosing] - BRTagHelper
                 MarkupTagHelperStartTag - [3..9)::6
-                    MarkupTextLiteral - [3..9)::6 - [<br />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    MarkupTextLiteral - [3..6)::3 - [<br] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         OpenAngle;[<];
                         Text;[br];
-                        Whitespace;[ ];
+                    MarkupMiscAttributeContent - [6..7)::1
+                        MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Whitespace;[ ];
+                    MarkupTextLiteral - [7..9)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
                         ForwardSlash;[/];
                         CloseAngle;[>];
             MarkupTagHelperEndTag - [9..13)::4
