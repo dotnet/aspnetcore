@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,27 +53,36 @@ namespace StaticFilesAuth
                         {
                             return false;
                         }
-                        var userPath = Path.Combine(usersPath, userName);
-                        if (context.Resource is IFileInfo file)
+                        if (context.Resource is Endpoint endpoint)
                         {
-                            var path = Path.GetDirectoryName(file.PhysicalPath);
-                            return string.Equals(path, basePath, StringComparison.OrdinalIgnoreCase)
-                                || string.Equals(path, usersPath, StringComparison.OrdinalIgnoreCase)
-                                || string.Equals(path, userPath, StringComparison.OrdinalIgnoreCase)
-                                || path.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-                        }
-                        else if (context.Resource is IDirectoryContents dir)
-                        {
-                            // https://github.com/aspnet/Home/issues/3073
-                            // This won't work right if the directory is empty
-                            var path = Path.GetDirectoryName(dir.First().PhysicalPath);
-                            return string.Equals(path, basePath, StringComparison.OrdinalIgnoreCase)
-                                || string.Equals(path, usersPath, StringComparison.OrdinalIgnoreCase)
-                                || string.Equals(path, userPath, StringComparison.OrdinalIgnoreCase)
-                                || path.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+                            var userPath = Path.Combine(usersPath, userName);
+
+                            var file = endpoint.Metadata.GetMetadata<IFileInfo>();
+                            if (file != null)
+                            {
+                                var path = Path.GetDirectoryName(file.PhysicalPath);
+                                return string.Equals(path, basePath, StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(path, usersPath, StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(path, userPath, StringComparison.OrdinalIgnoreCase)
+                                    || path.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+                            }
+
+                            var dir = endpoint.Metadata.GetMetadata<IDirectoryContents>();
+                            if (dir != null)
+                            {
+                                // https://github.com/aspnet/Home/issues/3073
+                                // This won't work right if the directory is empty
+                                var path = Path.GetDirectoryName(dir.First().PhysicalPath);
+                                return string.Equals(path, basePath, StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(path, usersPath, StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(path, userPath, StringComparison.OrdinalIgnoreCase)
+                                    || path.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+                            }
+
+                            throw new InvalidOperationException($"Missing file system metadata.");
                         }
 
-                        throw new NotImplementedException($"Unknown resource type '{context.Resource.GetType()}'");
+                        throw new InvalidOperationException($"Unknown resource type '{context.Resource.GetType()}'");
                     });
                 });
             });
@@ -96,15 +109,26 @@ namespace StaticFilesAuth
             
             var files = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "PrivateFiles"));
 
-            app.Map("/MapAuthenticatedFiles", branch =>
+            app.Use(async (context, next) =>
             {
-                MapAuthenticatedFiles(branch, files);
+                // Set an endpoint for files inside PrivateFiles to run authorization
+                PathString remaining;
+                if (context.Request.Path.StartsWithSegments("/MapImperativeFiles", out remaining))
+                {
+                    SetFileEndpoint(context, files, remaining, "files");
+                }
+                else if (context.Request.Path.StartsWithSegments("/MapAuthenticatedFiles", out remaining))
+                {
+                    SetFileEndpoint(context, files, remaining, null);
+                }
+
+                await next();
             });
 
-            app.Map("/MapImperativeFiles", branch =>
-            {
-                MapImperativeFiles(authorizationService, branch, files);
-            });
+            app.UseAuthorization();
+
+            app.Map("/MapAuthenticatedFiles", branch => SetupFileServer(branch, files));
+            app.Map("/MapImperativeFiles", branch => SetupFileServer(branch, files));
 
             app.UseMvc(routes =>
             {
@@ -114,81 +138,61 @@ namespace StaticFilesAuth
             });
         }
 
-        // Blanket authorization, any authenticated user is allowed access to these resources.
-        private static void MapAuthenticatedFiles(IApplicationBuilder branch, PhysicalFileProvider files)
+        private void SetupFileServer(IApplicationBuilder builder, IFileProvider files)
         {
-            branch.Use(async (context, next) =>
-            {
-                if (!context.User.Identity.IsAuthenticated)
-                {
-                    await context.ChallengeAsync(new AuthenticationProperties()
-                    {
-                        // https://github.com/aspnet/Security/issues/1730
-                        // Return here after authenticating
-                        RedirectUri = context.Request.PathBase + context.Request.Path + context.Request.QueryString
-                    });
-                    return;
-                }
-
-                await next();
-            });
-            branch.UseFileServer(new FileServerOptions()
+            builder.UseFileServer(new FileServerOptions()
             {
                 EnableDirectoryBrowsing = true,
                 FileProvider = files
             });
         }
 
-        // Policy based authorization, requests must meet the policy criteria to be get access to the resources.
-        private static void MapImperativeFiles(IAuthorizationService authorizationService, IApplicationBuilder branch, PhysicalFileProvider files)
+        private static void SetFileEndpoint(HttpContext context, PhysicalFileProvider files, PathString filePath, string policy)
         {
-            branch.Use(async (context, next) =>
+            var fileSystemInfo = GetFileSystemInfo(files, filePath);
+            if (fileSystemInfo != null)
             {
-                var fileInfo = files.GetFileInfo(context.Request.Path);
-                AuthorizationResult result = null;
-                if (fileInfo.Exists)
-                {
-                    result = await authorizationService.AuthorizeAsync(context.User, fileInfo, "files");
-                }
-                else
-                {
-                    // https://github.com/aspnet/Home/issues/2537
-                    var dir = files.GetDirectoryContents(context.Request.Path);
-                    if (dir.Exists)
-                    {
-                        result = await authorizationService.AuthorizeAsync(context.User, dir, "files");
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        return;
-                    }
-                }
+                var metadata = new List<object>();
+                metadata.Add(fileSystemInfo);
+                metadata.Add(new AuthorizeAttribute(policy));
 
-                if (!result.Succeeded)
-                {
-                    if (!context.User.Identity.IsAuthenticated)
-                    {
-                        await context.ChallengeAsync(new AuthenticationProperties()
-                        {
-                            // https://github.com/aspnet/Security/issues/1730
-                            // Return here after authenticating
-                            RedirectUri = context.Request.PathBase + context.Request.Path + context.Request.QueryString
-                        });
-                        return;
-                    }
-                    // Authenticated but not authorized
-                    await context.ForbidAsync();
-                    return;
-                }
+                var endpoint = new Endpoint(
+                    c => Task.CompletedTask,
+                    new EndpointMetadataCollection(metadata),
+                    context.Request.Path);
 
-                await next();
-            });
-            branch.UseFileServer(new FileServerOptions()
+                context.Features.Set<IEndpointFeature>(new EndpointFeature(endpoint));
+            }
+        }
+
+        private static object GetFileSystemInfo(PhysicalFileProvider files, string path)
+        {
+            var fileInfo = files.GetFileInfo(path);
+            if (fileInfo.Exists)
             {
-                EnableDirectoryBrowsing = true,
-                FileProvider = files
-            });
+                return fileInfo;
+            }
+            else
+            {
+                // https://github.com/aspnet/Home/issues/2537
+                var dir = files.GetDirectoryContents(path);
+                if (dir.Exists)
+                {
+                    return dir;
+                }
+            }
+
+            return null;
+        }
+
+        private class EndpointFeature : IEndpointFeature
+        {
+            public Endpoint Endpoint { get; set; }
+
+            public EndpointFeature(Endpoint endpoint)
+            {
+                Endpoint = endpoint;
+            }
         }
     }
 }
