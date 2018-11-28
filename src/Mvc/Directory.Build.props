@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core MVC</Product>
-    <RepositoryUrl>https://github.com/aspnet/Mvc</RepositoryUrl>
+    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
