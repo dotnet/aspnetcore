@@ -85,7 +85,23 @@ namespace Microsoft.AspNetCore.Components.Hosting
                 configureServicesAction(_BrowserHostBuilderContext, services);
             }
 
-            _appServices = services.BuildServiceProvider();
+            _appServices = GetProviderFromFactory(services);
+
+            IServiceProvider GetProviderFromFactory(IServiceCollection collection)
+            {
+                var provider = collection.BuildServiceProvider();
+                var factory = provider.GetService<IServiceProviderFactory<IServiceCollection>>();
+
+                if (factory != null)
+                {
+                    using (provider)
+                    {
+                        return factory.CreateServiceProvider(factory.CreateBuilder(collection));
+                    }
+                }
+
+                return provider;
+            }
         }
     }
 }
