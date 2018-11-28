@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             var convention = Assert.Single(builder.Conventions);
 
-            var endpointModel = new RouteEndpointModel((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+            var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
             convention(endpointModel);
 
             Assert.Equal(metadata, Assert.Single(endpointModel.Metadata));
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             var convention = Assert.Single(builder.Conventions);
 
-            var endpointModel = new RouteEndpointModel((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+            var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
             convention(endpointModel);
 
             Assert.Equal("policy", Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata)).Policy);
@@ -52,9 +52,9 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
-            public IList<Action<EndpointModel>> Conventions { get; } = new List<Action<EndpointModel>>();
+            public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();
 
-            public void Apply(Action<EndpointModel> convention)
+            public void Add(Action<EndpointBuilder> convention)
             {
                 Conventions.Add(convention);
             }
