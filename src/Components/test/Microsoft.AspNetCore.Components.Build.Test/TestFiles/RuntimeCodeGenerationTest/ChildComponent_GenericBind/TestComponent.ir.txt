@@ -1,0 +1,24 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                ComponentExtensionNode - (31:1,0 [43] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent<string>
+                    ComponentTypeArgumentExtensionNode - (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
+                        IntermediateToken - (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
+                    ComponentAttributeExtensionNode - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                        CSharpExpression - 
+                            IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                            IntermediateToken - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
+                            IntermediateToken -  - CSharp - )
+                    ComponentAttributeExtensionNode - (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - ItemChanged
+                        CSharpExpression - 
+                            IntermediateToken -  - CSharp - __value => Value = __value
+            CSharpCode - (88:2,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (88:2,12 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n

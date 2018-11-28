@@ -1,0 +1,42 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
+                DirectiveToken - (14:0,14 [9] ) - "*, Test"
+                DirectiveToken - (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml) - *, TestAssembly
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                ComponentExtensionNode - (31:1,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - Test.MyComponent
+                    ComponentChildContent -  - ChildContent
+                        HtmlContent - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (76:1,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
+                        HtmlElement - (87:2,9 [16] x:\dir\subdir\Test\TestComponent.cshtml) - el
+                            HtmlContent - (91:2,13 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                                IntermediateToken - (91:2,13 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - further
+                        HtmlContent - (103:2,25 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (103:2,25 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  content\n
+                    RefExtensionNode - (49:1,18 [10] x:\dir\subdir\Test\TestComponent.cshtml) - myInstance - Test.MyComponent
+                    ComponentAttributeExtensionNode -  - SomeProp - 
+                        HtmlContent - (71:1,40 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (71:1,40 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
+                HtmlContent - (127:3,14 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (127:3,14 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                HtmlContent - (248:8,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (248:8,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (143:5,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (143:5,12 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n

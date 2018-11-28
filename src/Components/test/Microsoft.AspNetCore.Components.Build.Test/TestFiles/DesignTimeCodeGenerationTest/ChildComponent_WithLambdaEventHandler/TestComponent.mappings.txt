@@ -1,0 +1,25 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (503:15,38 [15] )
+|*, TestAssembly|
+
+Source Location: (55:1,24 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+|e => { Increment(); }|
+Generated Location: (1092:29,24 [21] )
+|e => { Increment(); }|
+
+Source Location: (96:3,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private int counter;
+    private void Increment() {
+        counter++;
+    }
+|
+Generated Location: (1425:40,12 [87] )
+|
+    private int counter;
+    private void Increment() {
+        counter++;
+    }
+|
+

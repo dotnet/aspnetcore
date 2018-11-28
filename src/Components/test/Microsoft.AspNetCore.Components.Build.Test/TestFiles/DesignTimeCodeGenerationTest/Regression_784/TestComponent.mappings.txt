@@ -1,0 +1,27 @@
+Source Location: (17:0,17 [16] x:\dir\subdir\Test\TestComponent.cshtml)
+|OnComponentHover|
+Generated Location: (950:23,133 [16] )
+|OnComponentHover|
+
+Source Location: (55:0,55 [13] x:\dir\subdir\Test\TestComponent.cshtml)
+|ParentBgColor|
+Generated Location: (1076:25,55 [13] )
+|ParentBgColor|
+
+Source Location: (87:1,12 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    public string ParentBgColor { get; set; } = "#FFFFFF";
+
+    public void OnComponentHover(UIMouseEventArgs e)
+    {
+    }
+|
+Generated Location: (1235:32,12 [132] )
+|
+    public string ParentBgColor { get; set; } = "#FFFFFF";
+
+    public void OnComponentHover(UIMouseEventArgs e)
+    {
+    }
+|
+

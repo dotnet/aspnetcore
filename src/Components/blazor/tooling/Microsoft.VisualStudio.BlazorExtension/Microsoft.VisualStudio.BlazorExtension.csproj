@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <UseCodebase>true</UseCodebase>
+    <!-- Don't import the directory props and targets, they aren't compatible with an old-style csproj -->
+    <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)..\..\..\</RepositoryRoot>
+  </PropertyGroup>
+  <Import Project="..\..\..\build\arcade.props" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\..\version.props" />
+  <!--
+    Since the VSSDK doeesn't support SDK-based projects, we have to use the long/verbose version.
+
+    This section has all of the things we need to customize to the VSIX correctly. Everything outside
+    this section is just standard "old-csproj" boilerplate.
+
+    BEGIN INTERESTING STUFF
+  -->
+  <PropertyGroup>
+    <!-- VSIXes are always signed. This is the same key that ASP.NET uses for OSS signing -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\..\build\Key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!--
+      Following VS convention of using the VS release # as a convention for the vsix version.
+
+      VS needs this build number to be parsable by System.Version, so it can't have any letters.
+    -->
+    <VsixVersion>15.7</VsixVersion>
+    <VsixVersion Condition="'$(BuildNumber)'!='' AND '$(BuildNumber)'!='t000'">$(VsixVersion).$(BuildNumber)</VsixVersion>
+    <VsixVersion Condition="'$(BuildNumber)'=='' AND '$(CI)'!='true'">$(VsixVersion).999999</VsixVersion>
+    <VsixVersion Condition="'$(BuildNumber)'=='' AND '$(CI)'=='true'">$(VsixVersion).ERROR-MISSING_BUILD_NUMBER</VsixVersion>
+  </PropertyGroup>
+  <!--
+    Used by the .vsixmanifest to insert the the VSIX version based on $(VsixVersion)
+  -->
+  <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
+  <PropertyGroup>
+    <!-- Use the same experimental hive as Roslyn and Razor. This makes it easy to mix private builds. -->
+    <StartAction>Program</StartAction>
+    <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix RoslynDev</StartArguments>
+    <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!--
+      Mark the VSIX as a per-computer install (not-per-user). Putting a component "in the box"
+      requires this, and trying to change it after doing a release has lot of problems.
+    -->
+    <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
+    <ExtensionInstallationFolder>Microsoft\Blazor</ExtensionInstallationFolder>
+    <!-- This should be set as true if we're ever building the VSIX for inclusion by the VS installer. -->
+    <IsProductComponent Condition="'$(IsProductComponent)'==''">false</IsProductComponent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!--
+      Include this assembly in the VSIX but not its symbols, except when installing it to the experimental
+      instance.
+    -->
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <!--
+      Always include assemblies and symbols in the output directory.
+    -->
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+  </PropertyGroup>
+  <Target Name="PreCreateVsixContainer" BeforeTargets="CreateVsixContainer">
+    <ItemGroup>
+      <VSIXSourceItem Include="$(PackageOutputPath)Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
+        <VSIXSubPath>ProjectTemplates\</VSIXSubPath>
+      </VSIXSourceItem>
+      <VSIXSourceItem Include="Templates.pkgdef" />
+    </ItemGroup>
+  </Target>
+  <!--
+    This is needed to support our infrastructure's automatic upload of symbols to the symbol server
+    for debugging.
+
+    The official build will set $(SymbolsPublishDir) and provide an additional place where the symbols
+    ought to be copied for publishing. This will noop otherwise.
+  -->
+  <Target Name="CopySymbolsToOutput" AfterTargets="Build" Condition="'$(SymbolsPublishDir)' != ''">
+    <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(SymbolsPublishDir)" />
+  </Target>
+  <!--
+    We should be really careful about what goes into the VSIX and what doesn't. Since we're using
+    P2P references and packages, there are some things we need to exclude.
+
+    We want everything that *we* don't own to be excluded, those dependencies need to be satisfied
+    by other VS components (Razor, Roslyn).
+
+    Ideally we could use an allow-list here, but I don't know how to do that.
+  -->
+  <ItemDefinitionGroup>
+    <SuppressFromVsix>
+      <Visible>false</Visible>
+    </SuppressFromVsix>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <SuppressFromVsix Include="Microsoft.AspNetCore.Razor.Language.dll" />
+    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.dll" />
+    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Let's continue our parade of gross workarounds.
+
+      Referencing a cross-targeting project using a P2P from a VSIX project doesn't work well. To work around
+      this problem, we're only using the P2P references to force build ordering. Then we include the build
+      output of those projects as content.
+    -->
+    <Content Include="CodeSnippets.pkgdef">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Templates.pkgdef" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Templates\Microsoft.AspNetCore.Blazor.Templates.csproj">
+      <Project>{edd21533-c6e6-4f85-be4f-10e06756e24c}</Project>
+      <Name>Microsoft.AspNetCore.Blazor.Templates</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Razor.Extensions\Microsoft.AspNetCore.Components.Razor.Extensions.csproj">
+      <Name>Microsoft.AspNetCore.Components.Razor.Extensions</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <Content Include="..\..\..\src\Microsoft.AspNetCore.Components.Razor.Extensions\bin\$(Configuration)\net461\Microsoft.AspNetCore.Components.Razor.Extensions.dll">
+      <Link>Microsoft.AspNetCore.Components.Razor.Extensions.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\Microsoft.VisualStudio.LanguageServices.Blazor.csproj">
+      <Project>{b9f7f502-6dd2-4e77-8fd1-cbd76f695b26}</Project>
+      <Name>Microsoft.VisualStudio.LanguageServices.Blazor</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <Content Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\bin\$(Configuration)\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
+      <Link>Microsoft.VisualStudio.LanguageServices.Blazor.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+    <!--
+      This is built as a P2P by Microsoft.VisualStudio.LanguageServices.Blazor. This is required, adding the P2P
+      to this project will cause a NU1201 error that doesn't have a workaround.
+    -->
+    <Content Include="$(TargetDir)AngleSharp.dll">
+      <Link>AngleSharp.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+  <!--
+    We need to generate the assembly attributes for our assembly using the version from the build, so
+    we can flow it to the about dialog.
+  -->
+  <ItemGroup>
+    <_VSIXAssemblyAttribute Include="System.Reflection.AssemblyInformationalVersionAttribute">
+      <_Parameter1>$(VersionPrefix)-$(VersionSuffix)</_Parameter1>
+    </_VSIXAssemblyAttribute>
+  </ItemGroup>
+  <Target Name="_GenerateVSIXAssemblyAttributesHash" DependsOnTargets="PrepareForBuild" Condition="'@(_VSIXAssemblyAttribute)' != ''">
+    <!-- We only use up to _Parameter1 for most attributes, but other targets may add additional assembly attributes with multiple parameters. -->
+    <Hash ItemsToHash="@(_VSIXAssemblyAttribute->'%(Identity)%(_Parameter1)%(_Parameter2)%(_Parameter3)%(_Parameter4)%(_Parameter5)%(_Parameter6)%(_Parameter7)%(_Parameter8)')">
+      <Output TaskParameter="HashResult" PropertyName="_VSIXAssemblyAttributesHash" />
+    </Hash>
+    <WriteLinesToFile Lines="$(_VSIXAssemblyAttributesHash)" File="$(_GeneratedVSIXAssemblyInfoInputsCacheFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedVSIXAssemblyInfoInputsCacheFile)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_GenerateVSIXAssemblyAttributes" DependsOnTargets="_GenerateVSIXAssemblyAttributesHash" Inputs="$(_GeneratedVSIXAssemblyInfoInputsCacheFile)" Outputs="$(_GeneratedVSIXAssemblyInfoFile)" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Include="$(_GeneratedVSIXAssemblyInfoFile)">
+        <Visible>false</Visible>
+      </Compile>
+    </ItemGroup>
+    <WriteCodeFragment AssemblyAttributes="@(_VSIXAssemblyAttribute)" Language="C#" OutputFile="$(_GeneratedVSIXAssemblyInfoFile)" />
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedVSIXAssemblyInfoFile)" />
+    </ItemGroup>
+  </Target>
+  <!--
+
+    END INTERESTING STUFF
+
+  -->
+  <PropertyGroup>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{9088E4E4-B855-457F-AE9E-D86709A5E1F4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.VisualStudio.BlazorExtension</RootNamespace>
+    <AssemblyName>Microsoft.VisualStudio.BlazorExtension</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.Imaging" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6071" />
+    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" Version="15.3.224" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.16" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Framework" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6072" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30320" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61031" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50728" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30730" />
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" Version="7.10.6071" />
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.8.0" Version="8.0.50728" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.6.46" />
+    <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="15.3.15" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.5.100" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AboutDialogInfoAttribute.cs" />
+    <Compile Include="AutoRebuild\AutoRebuildService.cs" />
+    <Compile Include="AutoRebuild\BuildEventsWatcher.cs" />
+    <Compile Include="AutoRebuild\StreamProtocolExtensions.cs" />
+    <Compile Include="BlazorPackage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="CodeSnippets\Blazor\para.snippet">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <None Include="Key.snk" />
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\..\THIRD-PARTY-NOTICES.txt">
+      <Link>Content\THIRD-PARTY-NOTICES.txt</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\LICENSE.txt">
+      <Link>Content\LICENSE.txt</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\WebConfiguration.png">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\BlazorPackage.ico">
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <MergeWithCTO>true</MergeWithCTO>
+      <ManifestResourceName>VSPackage</ManifestResourceName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="EnvDTE100, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="EnvDTE80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="EnvDTE90, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualStudio.CommandBars, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="stdole, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <!-- Must be defined after the CSharp.targets -->
+  <PropertyGroup>
+    <_GeneratedVSIXAssemblyInfoInputsCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).VSIXAssemblyInfo.cache.txt</_GeneratedVSIXAssemblyInfoInputsCacheFile>
+    <_GeneratedVSIXAssemblyInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).VSIXAssemblyInfo.cs</_GeneratedVSIXAssemblyInfoFile>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,25 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                HtmlElement - (0:0,0 [144] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    HtmlContent - (5:0,5 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (5:0,5 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
+                    HtmlElement - (11:1,4 [125] x:\dir\subdir\Test\TestComponent.cshtml) - script
+                        HtmlAttribute -  -  - 
+                            HtmlAttributeValue -  - 
+                                IntermediateToken -  - Html - some/url.js
+                        HtmlAttribute -  -  - 
+                            HtmlAttributeValue -  - 
+                                IntermediateToken -  - Html - 
+                        HtmlContent - (78:1,71 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (78:1,71 [49] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n        some text\n        some more text\n    
+                    HtmlContent - (136:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (136:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

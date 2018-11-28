@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <!-- When editing any version prefix here, remember also to update
+         tooling\Microsoft.VisualStudio.BlazorExtension\Properties\AssemblyInfo.cs
+         to include the new version in its upper bounds -->
+    <IsFinalBuild>false</IsFinalBuild>
+    <VersionPrefix>0.8.0</VersionPrefix>
+    <VersionSuffix>preview</VersionSuffix>
+    <PackageVersion></PackageVersion> <!-- Override anything set at the repo level -->
+    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
+    <!-- use the build number from VSTS -->
+    <BuildNumber Condition="'$(BuildNumber)' == '' and '$(BUILD_BUILDNUMBER)' != ''">$(BUILD_BUILDNUMBER)</BuildNumber>
+    <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
+    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+  </PropertyGroup>
+</Project>

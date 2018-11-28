@@ -1,0 +1,10 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (503:15,38 [15] )
+|*, TestAssembly|
+
+Source Location: (62:1,31 [13] x:\dir\subdir\Test\TestComponent.cshtml)
+|42.ToString()|
+Generated Location: (1108:29,31 [13] )
+|42.ToString()|
+

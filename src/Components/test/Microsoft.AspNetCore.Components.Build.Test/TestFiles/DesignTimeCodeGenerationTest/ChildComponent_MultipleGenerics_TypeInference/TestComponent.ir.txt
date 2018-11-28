@@ -1,0 +1,44 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
+                DirectiveToken - (14:0,14 [9] ) - "*, Test"
+                DirectiveToken - (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml) - *, TestAssembly
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
+                HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                ComponentExtensionNode - (31:1,0 [229] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent - global::Test.MyComponent<TItem1, TItem2>
+                    ComponentChildContent - (89:2,2 [58] x:\dir\subdir\Test\TestComponent.cshtml) - ChildContent
+                        HtmlElement - (103:2,16 [29] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                            CSharpExpression - (109:2,22 [17] x:\dir\subdir\Test\TestComponent.cshtml)
+                                IntermediateToken - (109:2,22 [17] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.ToLower()
+                    ComponentChildContent - (149:3,0 [95] x:\dir\subdir\Test\TestComponent.cshtml) - AnotherChildContent
+                        HtmlContent - (185:3,36 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (185:3,36 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
+                        CSharpExpression - (190:4,3 [29] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (190:4,3 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - System.Math.Max(0, item.Item)
+                        HtmlContent - (219:4,32 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (219:4,32 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;\n
+                    ComponentAttributeExtensionNode - (50:1,19 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item
+                        CSharpExpression - (51:1,20 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (52:1,21 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hi"
+                    ComponentAttributeExtensionNode - (65:1,34 [19] x:\dir\subdir\Test\TestComponent.cshtml) - Items - Items
+                        CSharpExpression - (66:1,35 [18] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (67:1,36 [16] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - new List<long>()
+    NamespaceDeclaration -  - __Blazor.Test.TestComponent
+        ClassDeclaration -  - internal static - TypeInference -  - 
+            ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

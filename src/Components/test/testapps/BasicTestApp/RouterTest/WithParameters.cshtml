@@ -1,0 +1,12 @@
+@page "/WithParameters/Name/{firstName}/LastName/{lastName}"
+<div id="test-info">Your full name is @FirstName @LastName.</div>
+<Links />
+
+@functions
+{
+    [Parameter]
+    string FirstName { get; set; }
+
+    [Parameter]
+    string LastName { get ; set; }
+}

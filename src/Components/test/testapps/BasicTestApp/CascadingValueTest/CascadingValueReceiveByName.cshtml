@@ -1,0 +1,16 @@
+@*
+    This component is to show that we can differentiate cascaded values
+    by name if they are of the same type.
+*@
+
+<p>
+    Flag 1: <strong id="flag-1">@MyFlag1</strong>
+</p>
+<p>
+    Flag 2: <strong id="flag-2">@MyFlag2</strong>
+</p>
+
+@functions {
+    [CascadingParameter(Name = "TestFlag1")] bool MyFlag1 { get; set; }
+    [CascadingParameter(Name = "TestFlag2")] bool MyFlag2 { get; set; }
+}

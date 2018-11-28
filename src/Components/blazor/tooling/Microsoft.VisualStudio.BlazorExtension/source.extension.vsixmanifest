@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+    <Metadata>
+        <Identity Id="Microsoft.VisualStudio.BlazorExtension" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft" />
+        <DisplayName>ASP.NET Core Blazor Language Services</DisplayName>
+        <Description xml:space="preserve">Provides Visual Studio support for ASP.NET Core Blazor</Description>
+        <License>Content\LICENSE.txt</License>
+        <PackageId>Microsoft.VisualStudio.BlazorExtension</PackageId>
+        <GettingStartedGuide>https://go.microsoft.com/fwlink/?linkid=870449</GettingStartedGuide>
+        <ReleaseNotes>https://go.microsoft.com/fwlink/?linkid=870448</ReleaseNotes>
+        <Icon>Content\WebConfiguration.png</Icon>
+        <PreviewImage>Content\WebConfiguration.png</PreviewImage>
+    </Metadata>
+    <Installation AllUsers="true">
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0.27617, 16.0)" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.6.1,)" />
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="Microsoft.VisualStudio.LanguageServices.Blazor.dll" />
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="AngleSharp.dll" />
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.AspNetCore.Components.Razor.Extensions.dll" />
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.VisualStudio.LanguageServices.Blazor.dll" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" Path="Templates.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="CodeSnippets.pkgdef" />
+    </Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.Web" Version="[15.7.27520.0,16.0)" DisplayName="ASP.NET and web development tools" />
+    </Prerequisites>
+</PackageManifest>

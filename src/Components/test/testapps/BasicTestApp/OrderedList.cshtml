@@ -1,0 +1,24 @@
+@typeparam TItem
+
+<ol>
+    @{
+        var index = 1;
+    }
+    @foreach (var item in Items)
+    {
+        @Template(new Context() { Index = index++, Item = item, });
+    }
+</ol>
+
+@functions{
+    [Parameter] IEnumerable<TItem> Items { get; set; }
+
+    [Parameter] RenderFragment<Context> Template { get; set; }
+
+    public class Context
+    {
+        public int Index { get; set; }
+
+        public TItem Item { get; set; }
+    }
+}

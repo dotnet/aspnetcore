@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- This assembly ships in Components.Build -->
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Description>Workaround for a temporary Razor compiler issue needed by ASP.NET Core Components.</Description>
+  </PropertyGroup>
+
+</Project>

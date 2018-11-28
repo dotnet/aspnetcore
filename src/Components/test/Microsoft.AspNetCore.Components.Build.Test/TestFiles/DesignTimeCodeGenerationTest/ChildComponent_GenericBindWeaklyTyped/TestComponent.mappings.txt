@@ -1,0 +1,24 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (503:15,38 [15] )
+|*, TestAssembly|
+
+Source Location: (50:1,19 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+|string|
+Generated Location: (1031:29,19 [6] )
+|string|
+
+Source Location: (67:1,36 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+|Value|
+Generated Location: (1246:36,36 [5] )
+|Value|
+
+Source Location: (88:2,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    string Value;
+|
+Generated Location: (1678:48,12 [21] )
+|
+    string Value;
+|
+

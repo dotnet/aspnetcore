@@ -1,0 +1,10 @@
+Source Location: (14:0,14 [15] x:\dir\subdir\Test\TestComponent.cshtml)
+|*, TestAssembly|
+Generated Location: (503:15,38 [15] )
+|*, TestAssembly|
+
+Source Location: (86:3,14 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+|"bye!"|
+Generated Location: (1257:32,14 [6] )
+|"bye!"|
+

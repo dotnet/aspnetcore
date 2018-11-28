@@ -1,0 +1,28 @@
+﻿@using System.Collections.Generic
+Child components follow.
+<button class="addChild" onclick="@AddChild">Add</button>
+<button class="removeChild" onclick="@RemoveChild">Remove</button>
+
+@foreach (var message in currentChildrenMessages)
+{
+    <p><MessageComponent Message=@message /></p>
+}
+
+@functions {
+    int numAdded = 0;
+    List<string> currentChildrenMessages = new List<string>();
+
+    void AddChild()
+    {
+        numAdded++;
+        currentChildrenMessages.Add($"Child {numAdded}");
+    }
+
+    void RemoveChild()
+    {
+        if (currentChildrenMessages.Count > 0)
+        {
+            currentChildrenMessages.RemoveAt(currentChildrenMessages.Count - 1);
+        }
+    }
+}
