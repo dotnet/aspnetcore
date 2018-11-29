@@ -81,9 +81,9 @@
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Localization" Category="ship" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />
-    <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="ship" />
 
     <!-- Packages for internal use only. -->
+    <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="noship" />
     <PackageArtifact Include="AspNetCoreRuntime.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86' " />
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" />
     <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
