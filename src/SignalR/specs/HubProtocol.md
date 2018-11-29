@@ -72,7 +72,7 @@ There are three kinds of interactions between the Caller and the Callee:
 
 In order to perform a single invocation, the Caller follows the following basic flow:
 
-1. Allocate a unique `Invocation ID` value (arbitrary string, chosen by the Caller) to represent the invocation
+1. Allocate a unique (per connection) `Invocation ID` value (arbitrary string, chosen by the Caller) to represent the invocation
 2. Send an `Invocation` or `StreamingInvocation` message containing the `Invocation ID`, the name of the `Target` being invoked, and the `Arguments` to provide to the method.
 3. If the `Invocation` is marked as non-blocking (see "Non-Blocking Invocations" below), stop here and immediately yield back to the application.
 4. Wait for a `StreamItem` or `Completion` message with a matching `Invocation ID`
