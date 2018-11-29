@@ -21,29 +21,20 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             get
             {
-                var values = new Dictionary<string, object>();
-
-                if (Version >= CompatibilityVersion.Version_2_1)
+                return new Dictionary<string, object>
                 {
-                    values[nameof(MvcOptions.AllowCombiningAuthorizeFilters)] = true;
-                    values[nameof(MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes)] = true;
-                    values[nameof(MvcOptions.AllowValidatingTopLevelNodes)] = true;
-                    values[nameof(MvcOptions.InputFormatterExceptionPolicy)] = InputFormatterExceptionPolicy.MalformedInputExceptions;
-                    values[nameof(MvcOptions.SuppressBindingUndefinedValueToEnumType)] = true;
-                }
-
-                if (Version >= CompatibilityVersion.Version_2_2)
-                {
-                    values[nameof(MvcOptions.EnableEndpointRouting)] = true;
+                    [nameof(MvcOptions.AllowCombiningAuthorizeFilters)] = true,
+                    [nameof(MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes)] = true,
+                    [nameof(MvcOptions.AllowValidatingTopLevelNodes)] = true,
+                    [nameof(MvcOptions.InputFormatterExceptionPolicy)] = InputFormatterExceptionPolicy.MalformedInputExceptions,
+                    [nameof(MvcOptions.SuppressBindingUndefinedValueToEnumType)] = true,
+                    [nameof(MvcOptions.EnableEndpointRouting)] = true,
 
                     // Matches JsonSerializerSettingsProvider.DefaultMaxDepth
-                    values[nameof(MvcOptions.MaxValidationDepth)] = 32;
+                    [nameof(MvcOptions.MaxValidationDepth)] = 32,
 
-                    values[nameof(MvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent)] = true;
-
-                }
-
-                return values;
+                    [nameof(MvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent)] = true,
+                };
             }
         }
     }

@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         public MvcJsonOptionsConfigureCompatibilityOptions(
             ILoggerFactory loggerFactory,
-            IOptions<MvcCompatibilityOptions> compatibilityOptions) 
+            IOptions<MvcCompatibilityOptions> compatibilityOptions)
             : base(loggerFactory, compatibilityOptions)
         {
         }
@@ -22,14 +22,10 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             get
             {
-                var values = new Dictionary<string, object>();
-
-                if (Version >= CompatibilityVersion.Version_2_1)
+                return new Dictionary<string, object>
                 {
-                    values[nameof(MvcJsonOptions.AllowInputFormatterExceptionMessages)] = true;
-                }
-
-                return values;
+                    [nameof(MvcJsonOptions.AllowInputFormatterExceptionMessages)] = true,
+                };
             }
         }
     }

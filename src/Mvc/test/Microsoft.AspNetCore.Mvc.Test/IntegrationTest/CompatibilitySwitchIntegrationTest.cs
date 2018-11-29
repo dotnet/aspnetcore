@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
     public class CompatibilitySwitchIntegrationTest
     {
         [Fact]
-        public void CompatibilitySwitches_Version_2_0()
+        public void CompatibilitySwitches_Version_3_0()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
@@ -30,83 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             serviceCollection
                 .AddMvc()
                 .AddXmlDataContractSerializerFormatters()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_0);
-
-            var services = serviceCollection.BuildServiceProvider();
-
-            // Act
-            var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
-            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
-            var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
-            var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
-            var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
-            var xmlOptions = services.GetRequiredService<IOptions<MvcXmlOptions>>().Value;
-
-            // Assert
-            Assert.False(mvcOptions.AllowCombiningAuthorizeFilters);
-            Assert.False(mvcOptions.AllowBindingHeaderValuesToNonStringModelTypes);
-            Assert.False(mvcOptions.SuppressBindingUndefinedValueToEnumType);
-            Assert.Equal(InputFormatterExceptionPolicy.AllExceptions, mvcOptions.InputFormatterExceptionPolicy);
-            Assert.False(jsonOptions.AllowInputFormatterExceptionMessages);
-            Assert.False(razorPagesOptions.AllowAreas);
-            Assert.False(mvcOptions.EnableEndpointRouting);
-            Assert.Null(mvcOptions.MaxValidationDepth);
-            Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
-            Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
-            Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
-            Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
-            Assert.False(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
-            Assert.True(apiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery);
-        }
-
-        [Fact]
-        public void CompatibilitySwitches_Version_2_1()
-        {
-            // Arrange
-            var serviceCollection = new ServiceCollection();
-            AddHostingServices(serviceCollection);
-            serviceCollection
-                .AddMvc()
-                .AddXmlDataContractSerializerFormatters()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
-            var services = serviceCollection.BuildServiceProvider();
-
-            // Act
-            var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
-            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
-            var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
-            var apiBehaviorOptions = services.GetRequiredService<IOptions<ApiBehaviorOptions>>().Value;
-            var razorViewEngineOptions = services.GetRequiredService<IOptions<RazorViewEngineOptions>>().Value;
-            var xmlOptions = services.GetRequiredService<IOptions<MvcXmlOptions>>().Value;
-
-            // Assert
-            Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
-            Assert.True(mvcOptions.AllowBindingHeaderValuesToNonStringModelTypes);
-            Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
-            Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
-            Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
-            Assert.True(razorPagesOptions.AllowAreas);
-            Assert.False(mvcOptions.EnableEndpointRouting);
-            Assert.Null(mvcOptions.MaxValidationDepth);
-            Assert.True(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
-            Assert.True(apiBehaviorOptions.SuppressMapClientErrors);
-            Assert.False(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
-            Assert.False(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
-            Assert.False(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
-            Assert.True(apiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery);
-        }
-
-        [Fact]
-        public void CompatibilitySwitches_Version_2_2()
-        {
-            // Arrange
-            var serviceCollection = new ServiceCollection();
-            AddHostingServices(serviceCollection);
-            serviceCollection
-                .AddMvc()
-                .AddXmlDataContractSerializerFormatters()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             var services = serviceCollection.BuildServiceProvider();
 

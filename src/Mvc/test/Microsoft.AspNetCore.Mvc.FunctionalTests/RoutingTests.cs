@@ -10,9 +10,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWith21Compat>
+    public class RoutingTests : RoutingTestsBase<RoutingWebSite.StartupWithoutEndpointRouting>
     {
-        public RoutingTests(MvcTestFixture<RoutingWebSite.StartupWith21Compat> fixture)
+        public RoutingTests(MvcTestFixture<RoutingWebSite.StartupWithoutEndpointRouting> fixture)
             : base(fixture)
         {
         }
