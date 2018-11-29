@@ -2,9 +2,9 @@
   "Default": {
     "Client": "SignalR",
     "Source": {
-      "Repository": "https://github.com/aspnet/SignalR.git",
+      "Repository": "https://github.com/aspnet/AspNetCore.git",
       "BranchOrCommit": "release/2.2",
-      "Project": "benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
+      "Project": "src/signalr/benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
     },
     "Connections": 10,
     "Duration": 20,
