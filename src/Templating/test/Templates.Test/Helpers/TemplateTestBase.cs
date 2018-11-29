@@ -54,6 +54,10 @@ $@"<Project>
             var directoryBuildTargetsContent =
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
+
+    <ItemGroup>
+       <PackageReference Include=""Microsoft.AspNetCore.App"" Version=""$(BundledAspNetCoreAppPackageVersion)"" IsImplicitlyDefined=""true"" />
+    </ItemGroup>
 </Project>";
 
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
@@ -183,7 +187,7 @@ $@"<Project>
         {
 
         }";
-            
+
             // This comparison can break depending on how GIT checked out newlines on different files.
             Assert.Contains(RemoveNewLines(emptyMigration), RemoveNewLines(contents));
         }

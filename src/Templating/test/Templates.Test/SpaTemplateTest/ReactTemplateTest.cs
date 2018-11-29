@@ -17,7 +17,7 @@ namespace Templates.Test.SpaTemplateTest
         }
 
         [Fact]
-        public async Task ReactTemplate_Works_NetCore()
+        public async Task ReactTemplate_Works()
             => await SpaTemplateImpl(targetFrameworkOverride: null, "react", _httpPort, _httpsPort);
     }
 }

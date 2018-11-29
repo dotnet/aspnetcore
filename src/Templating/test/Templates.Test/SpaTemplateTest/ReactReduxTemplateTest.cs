@@ -17,7 +17,7 @@ namespace Templates.Test.SpaTemplateTest
         }
 
         [Fact]
-        public async Task ReactReduxTemplate_Works_NetCore()
+        public async Task ReactReduxTemplate_Works()
             => await SpaTemplateImpl(targetFrameworkOverride: null, "reactredux", _httpPort, _httpsPort);
     }
 }

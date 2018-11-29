@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,19 +13,10 @@ namespace Templates.Test
         {
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public async Task WebApiTemplate_Works_NetFramework()
-            => await WebApiTemplateImpl("net461");
-
         [Fact]
-        public async Task WebApiTemplate_Works_NetCore()
-            => await WebApiTemplateImpl(null);
-
-        private async Task WebApiTemplateImpl(string targetFrameworkOverride)
+        public async Task WebApiTemplate_Works()
         {
-            await TemplateBase("webapi", targetFrameworkOverride, httpPort: 6050, httpsPort: 6051);
+            await TemplateBase("webapi", targetFrameworkOverride: null, httpPort: 6050, httpsPort: 6051);
         }
     }
 }
