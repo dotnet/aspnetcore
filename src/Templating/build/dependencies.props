@@ -11,6 +11,7 @@
     <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>3.0.0-preview-18606-0103</MicrosoftAspNetCoreComponentsPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreHttpsPolicyPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreIdentityUIPackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCoreIdentityUIPackageVersion>
     <MicrosoftAspNetCorePackageVersion>3.0.0-alpha1-10742</MicrosoftAspNetCorePackageVersion>

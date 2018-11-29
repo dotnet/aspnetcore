@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion}" Condition="'$(IndividualB2CAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
+    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="${MicrosoftAspNetCoreHttpsPolicyPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="${MicrosoftAspNetCoreIdentityUIPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqlitePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />
