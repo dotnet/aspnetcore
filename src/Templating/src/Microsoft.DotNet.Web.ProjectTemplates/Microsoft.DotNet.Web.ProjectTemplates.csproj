@@ -43,6 +43,9 @@
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
+    <GeneratedContent Include="RazorComponentsWeb-CSharp.Server.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.Server/Company.WebApplication1.Server.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
