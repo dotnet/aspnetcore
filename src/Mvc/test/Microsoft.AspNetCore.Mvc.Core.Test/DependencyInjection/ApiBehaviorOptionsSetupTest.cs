@@ -65,23 +65,6 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
-        public void PostConfigure_DoesNotSetProblemDetailsFactoryWithLegacyCompatBehavior()
-        {
-            // Arrange
-            var optionsSetup = new ApiBehaviorOptionsSetup(
-                NullLoggerFactory.Instance,
-                Options.Options.Create(new MvcCompatibilityOptions { CompatibilityVersion = CompatibilityVersion.Version_2_1 }));
-            var options = new ApiBehaviorOptions();
-
-            // Act
-            optionsSetup.Configure(options);
-            optionsSetup.PostConfigure(string.Empty, options);
-
-            // Assert
-            Assert.Same(ApiBehaviorOptionsSetup.DefaultFactory, options.InvalidModelStateResponseFactory);
-        }
-
-        [Fact]
         public void PostConfigure_DoesNotSetProblemDetailsFactory_IfValueWasModified()
         {
             // Arrange

@@ -15,9 +15,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
+    public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<Startup>>
     {
-        public XmlSerializerFormattersWrappingTest(MvcTestFixture<XmlFormattersWebSite.Startup> fixture)
+        public XmlSerializerFormattersWrappingTest(MvcTestFixture<Startup> fixture)
         {
             Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(builder => builder.UseStartup<Startup>());
             Client = Factory.CreateDefaultClient();
@@ -215,31 +215,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProblemDetails_With21Behavior()
-        {
-            // Arrange
-            var expected = "<ProblemDetails>" +
-            "<Instance>instance</Instance>" +
-            "<Status>404</Status>" +
-            "<Title>title</Title>" +
-            "<Correlation>correlation</Correlation>" +
-            "<Accounts>Account1 Account2</Accounts>" +
-            "</ProblemDetails>";
-
-            var client = Factory
-                .WithWebHostBuilder(builder => builder.UseStartup<StartupWith21Compat>())
-                .CreateDefaultClient();
-
-            // Act
-            var response = await client.GetAsync("/api/XmlSerializerApi/ActionReturningProblemDetails");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
-            var content = await response.Content.ReadAsStringAsync();
-            XmlAssert.Equal(expected, content);
-        }
-
-        [Fact]
         public async Task ProblemDetails_WithExtensionMembers_IsSerialized()
         {
             // Arrange
@@ -302,34 +277,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.GetAsync("/api/XmlSerializerApi/ActionReturningValidationDetailsWithMetadata");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
-            var content = await response.Content.ReadAsStringAsync();
-            XmlAssert.Equal(expected, content);
-        }
-
-        [Fact]
-        public async Task ValidationProblemDetails_With21Behavior()
-        {
-            // Arrange
-            var expected = "<ValidationProblemDetails>" +
-                "<Detail>some detail</Detail>" +
-                "<Status>400</Status>" +
-                "<Title>One or more validation errors occurred.</Title>" +
-                "<Type>some type</Type>" +
-                "<CorrelationId>correlation</CorrelationId>" +
-                "<MVC-Errors>" +
-                "<Error1>ErrorValue</Error1>" +
-                "</MVC-Errors>" +
-                "</ValidationProblemDetails>";
-
-            var client = Factory
-                .WithWebHostBuilder(builder => builder.UseStartup<StartupWith21Compat>())
-                .CreateDefaultClient();
-
-            // Act
-            var response = await client.GetAsync("/api/XmlSerializerApi/ActionReturningValidationDetailsWithMetadata");
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);

@@ -270,11 +270,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets a value indicating where the current metadata should be ordered relative to other properties
         /// in its containing type.
         /// </summary>
+        /// <value>The order value of the current metadata.</value>
         /// <remarks>
         /// <para>For example this property is used to order items in <see cref="Properties"/>.</para>
         /// <para>The default order is <c>10000</c>.</para>
         /// </remarks>
-        /// <value>The order value of the current metadata.</value>
         public abstract int Order { get; }
 
         /// <summary>

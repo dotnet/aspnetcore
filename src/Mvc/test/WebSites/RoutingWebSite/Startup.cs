@@ -21,13 +21,7 @@ namespace RoutingWebSite
             var pageRouteTransformerConvention = new PageRouteTransformerConvention(new SlugifyParameterTransformer());
 
             services
-                .AddMvc(options =>
-                {
-                    // Add route token transformer to one controller
-                    options.Conventions.Add(new ControllerRouteTokenTransformerConvention(
-                        typeof(ParameterTransformerController),
-                        new SlugifyParameterTransformer()));
-                })
+                .AddMvc(ConfigureMvcOptions)
                 .AddRazorPagesOptions(options =>
                 {
                     options.Conventions.AddPageRoute("/PageRouteTransformer/PageWithConfiguredRoute", "/PageRouteTransformer/NewConventionRoute/{id?}");
@@ -37,11 +31,8 @@ namespace RoutingWebSite
                     });
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
-            services
-                .AddRouting(options =>
-                {
-                    options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
-                });
+
+            ConfigureRoutingServices(services);
 
             services.AddScoped<TestResponseGenerator>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -58,11 +49,7 @@ namespace RoutingWebSite
                     constraints: new { controller = "DataTokens" },
                     dataTokens: new { hasDataTokens = true });
 
-                routes.MapRoute(
-                    "ConventionalTransformerRoute",
-                    "ConventionalTransformerRoute/{controller:slugify}/{action=Index}/{param:slugify?}",
-                    defaults: null,
-                    constraints: new { controller = "ConventionalTransformer" });
+                ConfigureConventionalTransformerRoute(routes);
 
                 routes.MapRoute(
                     "DefaultValuesRoute_OptionalParameter",
@@ -83,11 +70,7 @@ namespace RoutingWebSite
                     defaults: new { controller = "Home", action = "Index" },
                     constraints: new { area = "Travel" });
 
-                routes.MapRoute(
-                    "PageRoute",
-                    "{controller}/{action}/{page}",
-                    defaults: null,
-                    constraints: new { controller = "PageRoute" });
+                ConfigurePageRoute(routes);
 
                 routes.MapRoute(
                     "ActionAsMethod",
@@ -103,6 +86,37 @@ namespace RoutingWebSite
             {
                 return c.Response.WriteAsync("Hello from middleware after routing");
             }));
+        }
+
+        protected virtual void ConfigureMvcOptions(MvcOptions options)
+        {
+            // Add route token transformer to one controller
+            options.Conventions.Add(new ControllerRouteTokenTransformerConvention(
+                typeof(ParameterTransformerController),
+                new SlugifyParameterTransformer()));
+        }
+
+        protected virtual void ConfigureRoutingServices(IServiceCollection services)
+        {
+            services.AddRouting(options => options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer));
+        }
+
+        protected virtual void ConfigureConventionalTransformerRoute(IRouteBuilder routes)
+        {
+            routes.MapRoute(
+                "ConventionalTransformerRoute",
+                "ConventionalTransformerRoute/{controller:slugify}/{action=Index}/{param:slugify?}",
+                defaults: null,
+                constraints: new { controller = "ConventionalTransformer" });
+        }
+
+        protected virtual void ConfigurePageRoute(IRouteBuilder routes)
+        {
+            routes.MapRoute(
+                "PageRoute",
+                "{controller}/{action}/{page}",
+                defaults: null,
+                constraints: new { controller = "PageRoute" });
         }
     }
 }
