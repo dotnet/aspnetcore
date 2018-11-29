@@ -1,0 +1,6 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Server.Kestrel.Core.ServerAddress",
+    "Kind": "Removal"
+  }
+]
