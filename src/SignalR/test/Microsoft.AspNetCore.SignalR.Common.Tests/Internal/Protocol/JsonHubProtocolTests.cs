@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var expectedOutput = Frame(testData.Json);
 
-            var protocolOptions = new JsonHubProtocolOptions
+            var protocolOptions = new NewtonsoftJsonHubProtocolOptions
             {
                 PayloadSerializerSettings = new JsonSerializerSettings()
                 {
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var input = Frame(testData.Json);
 
-            var protocolOptions = new JsonHubProtocolOptions
+            var protocolOptions = new NewtonsoftJsonHubProtocolOptions
             {
                 PayloadSerializerSettings = new JsonSerializerSettings
                 {

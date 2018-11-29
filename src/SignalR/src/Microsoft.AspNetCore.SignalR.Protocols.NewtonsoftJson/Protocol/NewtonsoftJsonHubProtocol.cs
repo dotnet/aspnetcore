@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <summary>
         /// Initializes a new instance of the <see cref="NewtonsoftJsonHubProtocol"/> class.
         /// </summary>
-        public NewtonsoftJsonHubProtocol() : this(Options.Create(new JsonHubProtocolOptions()))
+        public NewtonsoftJsonHubProtocol() : this(Options.Create(new NewtonsoftJsonHubProtocolOptions()))
         {
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// Initializes a new instance of the <see cref="NewtonsoftJsonHubProtocol"/> class.
         /// </summary>
         /// <param name="options">The options used to initialize the protocol.</param>
-        public NewtonsoftJsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
+        public NewtonsoftJsonHubProtocol(IOptions<NewtonsoftJsonHubProtocolOptions> options)
         {
             PayloadSerializer = JsonSerializer.Create(options.Value.PayloadSerializerSettings);
         }
