@@ -152,7 +152,7 @@
 
     <Copy
       SourceFiles="@(RepositoryLogArtifacts)"
-      DestinationFolder="$(BuildDir)\$(RepositoryToBuild)\%(RecursiveDir)" />
+      DestinationFolder="$(ArtifactsDir)logs\$(RepositoryToBuild)\%(RecursiveDir)" />
 
     <Move
        SourceFiles="@(RepositoryMSBuildArtifacts)"
