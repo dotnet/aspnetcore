@@ -7,4 +7,12 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1.Server</RootNamespace>
   </PropertyGroup>
 
+  <!-- TODO: Remove this once it's included in the shared framework -->
+  <PropertyGroup>
+    <RestoreAdditionalProjectSources>https://dotnet.myget.org/f/blazor-dev/api/v3/index.json;$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Server" Version="0.8.0-preview1-20181126.4" />
+  </ItemGroup>
+
 </Project>
