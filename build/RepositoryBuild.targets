@@ -121,7 +121,6 @@
       <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts\</RepositoryArtifactsRoot>
       <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)build\</RepositoryArtifactsBuildDirectory>
       <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)msbuild\</RepositoryArtifactsMSBuildDirectory>
-      <RepositoryArtifactsLogsDirectory>$(RepositoryArtifactsRoot)logs\</RepositoryArtifactsLogsDirectory>
     </PropertyGroup>
 
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
@@ -141,18 +140,12 @@
     <Error Text="Building $(RepositoryToBuild) failed: $(_BuildScriptToExecute) exited code $(BuildExitCode)" Condition=" '$(BuildExitCode)' != '0' " />
 
     <ItemGroup>
-      <RepositoryBuildArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
-      <RepositoryLogArtifacts Include="$(RepositoryArtifactsLogsDirectory)**\*" />
-      <RepositoryMSBuildArtifacts Include="$(RepositoryArtifactsMSBuildDirectory)**\*" />
+      <RepositoryArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
     </ItemGroup>
 
     <Copy
-       SourceFiles="@(RepositoryBuildArtifacts)"
+       SourceFiles="@(RepositoryArtifacts)"
        DestinationFolder="$(BuildDir)/" />
-
-    <Copy
-      SourceFiles="@(RepositoryLogArtifacts)"
-      DestinationFolder="$(ArtifactsDir)logs\$(RepositoryToBuild)\%(RecursiveDir)" />
 
     <Move
        SourceFiles="@(RepositoryMSBuildArtifacts)"
