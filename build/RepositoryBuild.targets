@@ -141,11 +141,13 @@
 
     <ItemGroup>
       <RepositoryArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
+      <RepositoryMSBuildArtifacts Include="$(RepositoryArtifactsMSBuildDirectory)**\*" />
+
     </ItemGroup>
 
     <Copy
        SourceFiles="@(RepositoryArtifacts)"
-       DestinationFolder="$(BuildDir)/" />
+       DestinationFolder="$(BuildDir)" />
 
     <Move
        SourceFiles="@(RepositoryMSBuildArtifacts)"
