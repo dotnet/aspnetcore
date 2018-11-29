@@ -60,7 +60,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Common" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Specification.Tests" Category="ship" />
