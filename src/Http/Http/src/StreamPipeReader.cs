@@ -33,12 +33,26 @@ namespace Microsoft.AspNetCore.Http
         private BufferSegment _readTail;
         private long _bufferedBytes;
         private bool _examinedEverything;
+        private object _lock = new object();
 
         private CancellationTokenSource InternalTokenSource
         {
-            get => _internalTokenSource
-                            ?? Interlocked.CompareExchange(ref _internalTokenSource, new CancellationTokenSource(), null)
-                            ?? _internalTokenSource;
+            get
+            {
+                lock(_lock)
+                {
+                    if (_internalTokenSource == null)
+                    {
+                        _internalTokenSource = new CancellationTokenSource();
+                    }
+                    return _internalTokenSource;
+                }
+            }
+            set
+            {
+                _internalTokenSource = value;
+            }
+
         }
 
         /// <summary>
@@ -103,13 +117,12 @@ namespace Microsoft.AspNetCore.Http
             {
                 // If we examined everything, we force ReadAsync to actually read from the underlying stream
                 // instead of returning a ReadResult from TryRead.
-                // TODO do we care about covering if examinedSegment past end of sequence.
                 _examinedEverything = examinedIndex == _readTail.End - _readTail.Start;
             }
 
             // Three cases here:
-            // 1. All data is consumed. If so, we clear _readHead/_readTail and _readIndex/
-            //  returnEnd is set to null to free all memory between returnStart/End
+            // 1. All data is consumed. If so, we reset _readHead and _readTail to _readTail's original memory owner
+            //  SetMemory on a IMemoryOwner will reset the internal Memory<byte> to be an empty segment
             // 2. A segment is entirely consumed but there is still more data in nextSegments
             //  We are allowed to remove an extra segment. by setting returnEnd to be the next block.
             // 3. We are in the middle of a segment.
@@ -135,7 +148,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             // Remove all blocks that are freed (except the last one)
-            while (returnStart != null && returnStart != returnEnd)
+            while (returnStart != returnEnd)
             {
                 returnStart.ResetMemory();
                 returnStart = returnStart.NextSegment;
@@ -220,7 +233,7 @@ namespace Microsoft.AspNetCore.Http
                 }
                 catch (OperationCanceledException)
                 {
-                    ClearOutCancellation();
+                    ClearCancellationToken();
 
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -234,7 +247,13 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private void ClearOutCancellation() => Interlocked.Exchange(ref _internalTokenSource, null);
+        private void ClearCancellationToken()
+        {
+            lock(_lock)
+            {
+                _internalTokenSource = null;
+            }
+        }
 
         private void ThrowIfCompleted()
         {
@@ -262,7 +281,7 @@ namespace Microsoft.AspNetCore.Http
                 {
                     AllocateReadTail();
 
-                    ClearOutCancellation();
+                    ClearCancellationToken();
                 }
 
                 result = new ReadResult(
@@ -286,7 +305,7 @@ namespace Microsoft.AspNetCore.Http
             if (_readHead == null)
             {
                 Debug.Assert(_readTail == null);
-                _readHead = CreateSegmentUnsynchronized();
+                _readHead = CreateBufferSegment();
                 _readHead.SetMemory(_pool.Rent(GetSegmentSize()));
                 _readTail = _readHead;
             }
@@ -298,7 +317,7 @@ namespace Microsoft.AspNetCore.Http
 
         private void CreateNewTailSegment()
         {
-            var nextSegment = CreateSegmentUnsynchronized();
+            var nextSegment = CreateBufferSegment();
             nextSegment.SetMemory(_pool.Rent(GetSegmentSize()));
             _readTail.SetNext(nextSegment);
             _readTail = nextSegment;
@@ -306,7 +325,7 @@ namespace Microsoft.AspNetCore.Http
 
         private int GetSegmentSize() => Math.Min(_pool.MaxBufferSize, _minimumSegmentSize);
 
-        private BufferSegment CreateSegmentUnsynchronized()
+        private BufferSegment CreateBufferSegment()
         {
             // TODO this can pool buffer segment objects
             return new BufferSegment();
