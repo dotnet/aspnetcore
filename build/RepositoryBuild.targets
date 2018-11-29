@@ -142,7 +142,6 @@
     <ItemGroup>
       <RepositoryArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
       <RepositoryMSBuildArtifacts Include="$(RepositoryArtifactsMSBuildDirectory)**\*" />
-
     </ItemGroup>
 
     <Copy
