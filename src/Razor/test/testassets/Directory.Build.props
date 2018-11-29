@@ -1,0 +1,35 @@
+<Project>
+  <Import Project="Before.Directory.Build.props" Condition="Exists('Before.Directory.Build.props')" />
+
+  <PropertyGroup>
+    <SolutionRoot Condition="'$(SolutionRoot)' == ''">$(MSBuildThisFileDirectory)..\..\</SolutionRoot>
+    <SolutionRoot>$([MSBuild]::EnsureTrailingSlash('$(SolutionRoot)'))</SolutionRoot>
+
+    <!-- Retarget tests to use the copy of the Sdk from source -->
+    <RazorSdkProjectDirectory>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\</RazorSdkProjectDirectory>
+
+    <RazorSdkCurrentVersionProps>$(RazorSdkProjectDirectory)build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+    <RazorSdkCurrentVersionTargets>$(RazorSdkProjectDirectory)build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
+  </PropertyGroup>
+
+  <!-- Import solution dependencies.props when building in place -->
+  <Import Project="..\..\build\dependencies.props" Condition="'$(BinariesRoot)'==''"/>
+
+  <PropertyGroup>
+    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+
+    <NETStandardImplicitPackageVersion>$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+
+    <!-- Working around an issue in XDT transforms -->
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+  </PropertyGroup>
+
+  <!-- Don't use the server when building in place. This locks up rzc.dll -->
+  <PropertyGroup Condition="'$(BinariesRoot)'==''">
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
+
+</Project>

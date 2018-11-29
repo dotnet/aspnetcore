@@ -1,0 +1,77 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    CSharpCode - 
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml", typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Sections))]
+    NamespaceDeclaration -  - AspNetCore
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Sections - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime> - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::InputTestTagHelper - __InputTestTagHelper
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(17, 2, true);
+                HtmlContent - (17:1,0 [2] Sections.cshtml)
+                    IntermediateToken - (17:1,0 [2] Sections.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(64, 2, true);
+                HtmlContent - (64:3,0 [2] Sections.cshtml)
+                    IntermediateToken - (64:3,0 [2] Sections.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - (68:4,2 [46] Sections.cshtml)
+                    IntermediateToken - (68:4,2 [46] Sections.cshtml) - CSharp -  \n    Layout = "_SectionTestLayout.cshtml";\n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(117, 26, true);
+                HtmlContent - (117:7,0 [26] Sections.cshtml)
+                    IntermediateToken - (117:7,0 [2] Sections.cshtml) - Html - \n
+                    IntermediateToken - (119:8,0 [5] Sections.cshtml) - Html - <div>
+                    IntermediateToken - (124:8,5 [9] Sections.cshtml) - Html - Some body
+                    IntermediateToken - (133:8,14 [6] Sections.cshtml) - Html - </div>
+                    IntermediateToken - (139:8,20 [4] Sections.cshtml) - Html - \n\n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                Section -  - Section1
+                    CSharpCode - 
+                        IntermediateToken -  - CSharp - BeginContext(162, 43, true);
+                    HtmlContent - (162:10,19 [43] Sections.cshtml)
+                        IntermediateToken - (162:10,19 [6] Sections.cshtml) - Html - \n    
+                        IntermediateToken - (168:11,4 [5] Sections.cshtml) - Html - <div>
+                        IntermediateToken - (173:11,9 [20] Sections.cshtml) - Html - This is in Section 1
+                        IntermediateToken - (193:11,29 [6] Sections.cshtml) - Html - </div>
+                        IntermediateToken - (199:11,35 [6] Sections.cshtml) - Html - \n    
+                    CSharpCode - 
+                        IntermediateToken -  - CSharp - EndContext();
+                    CSharpCode - 
+                        IntermediateToken -  - CSharp - BeginContext(205, 25, false);
+                    TagHelper - (205:12,4 [25] Sections.cshtml) - input-test - TagMode.SelfClosing
+                        DefaultTagHelperBody - 
+                        DefaultTagHelperCreate -  - InputTestTagHelper
+                        DefaultTagHelperProperty - (222:12,21 [4] Sections.cshtml) - for - Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression InputTestTagHelper.For - HtmlAttributeValueStyle.DoubleQuotes
+                            CSharpExpression - 
+                                IntermediateToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
+                                IntermediateToken -  - CSharp - __model.
+                                IntermediateToken - (222:12,21 [4] Sections.cshtml) - CSharp - Date
+                                IntermediateToken -  - CSharp - )
+                        DefaultTagHelperExecute - 
+                    CSharpCode - 
+                        IntermediateToken -  - CSharp - EndContext();
+                    CSharpCode - 
+                        IntermediateToken -  - CSharp - BeginContext(230, 2, true);
+                    HtmlContent - (230:12,29 [2] Sections.cshtml)
+                        IntermediateToken - (230:12,29 [2] Sections.cshtml) - Html - \n
+                    CSharpCode - 
+                        IntermediateToken -  - CSharp - EndContext();
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 

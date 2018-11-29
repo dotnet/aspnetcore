@@ -1,0 +1,12 @@
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,1): Error RZ2001: The 'page' directive may only occur once per document.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(5,1): Error RZ2001: The 'page' directive may only occur once per document.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(5,7): Error RZ1016: The 'page' directive expects a string surrounded by double quotes.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,7): Error RZ1013: The 'model' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,1): Error RZ2001: The 'model' directive may only occur once per document.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,8): Error RZ1013: The 'model' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(10,8): Error RZ1013: The 'inject' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(11,9): Error RZ1013: The 'inject' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,26): Error RZ1015: The 'inject' directive expects an identifier.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(14,11): Error RZ1014: The 'namespace' directive expects a namespace name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(15,1): Error RZ2001: The 'namespace' directive may only occur once per document.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(15,12): Error RZ1014: The 'namespace' directive expects a namespace name.
