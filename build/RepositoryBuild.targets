@@ -146,7 +146,7 @@
 
     <Copy
        SourceFiles="@(RepositoryArtifacts)"
-       DestinationFolder="$(BuildDir)" />
+       DestinationFolder="$(BuildDir)/$(RepositoryToBuild)" />
 
     <Move
        SourceFiles="@(RepositoryMSBuildArtifacts)"
