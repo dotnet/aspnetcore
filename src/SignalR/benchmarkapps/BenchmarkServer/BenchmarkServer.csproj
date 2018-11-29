@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <!-- SignalR is versioned 1.0 alongside the 2.1 version of AspNetCore.All, this converts the .All version to the SignalR version -->
-    <MessagePackPackageVersion Condition=" '$(BenchmarksTargetFramework)' != '' ">$([System.String]::Copy($(MicrosoftAspNetCoreAllPackageVersion)).Replace('2.2', '1.1'))</MessagePackPackageVersion>
+    <!-- Protocols.MessagePack isn't part of the .All metapackage, so we need to manually add it -->
+    <MessagePackPackageVersion Condition=" '$(BenchmarksTargetFramework)' != '' ">1.1.0</MessagePackPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
