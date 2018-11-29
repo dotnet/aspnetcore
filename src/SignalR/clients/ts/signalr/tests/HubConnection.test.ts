@@ -273,7 +273,7 @@ describe("HubConnection", () => {
             });
         });
 
-        it.only("start completes if connection closes and handshake not received yet", async () => {
+        it("start completes if connection closes and handshake not received yet", async () => {
             await VerifyLogger.run(async (logger) => {
                 const mockProtocol = new TestProtocol(TransferFormat.Text);
 
