@@ -4,6 +4,7 @@
     <!-- MicrosoftNETCoreApp22PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
     <MicrosoftNETCoreAppPackageVersion>2.2.0</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.0</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.2</SystemNetWebSocketsWebSocketProtocolPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -226,7 +227,6 @@
     <SystemMemoryPackageVersion>4.5.1</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.1</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemNumericsVectorsPackageVersion>4.5.0</SystemNumericsVectorsPackageVersion>
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
