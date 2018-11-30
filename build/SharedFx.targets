@@ -33,7 +33,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_BuildMetapackage" DependsOnTargets="GetProjectArtifactInfo;ResolveRepoInfo">
+  <Target Name="_BuildMetapackage" DependsOnTargets="ResolveSharedSourcesPackageInfo;GetProjectArtifactInfo;ResolveRepoInfo">
     <PropertyGroup>
       <MetapackageSource>$(_MetapackageSrcRoot)$(MetapackageName)\</MetapackageSource>
       <MetapackageWorkDirectory>$(_WorkRoot)pkg\$(MetapackageName)\</MetapackageWorkDirectory>
