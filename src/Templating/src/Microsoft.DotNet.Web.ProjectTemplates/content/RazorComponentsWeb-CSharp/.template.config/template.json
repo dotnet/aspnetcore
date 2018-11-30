@@ -130,15 +130,15 @@
   "primaryOutputs": [
     {
       "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb-CSharp.sln"
+      "path": "RazorComponentsWeb.sln"
     },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb-CSharp.Server/RazorComponentsWeb-CSharp.Server.csproj"
+      "path": "RazorComponentsWeb.Server/RazorComponentsWeb.Server.csproj"
     },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb-CSharp.App/RazorComponentsWeb-CSharp.App.csproj"
+      "path": "RazorComponentsWeb.App/RazorComponentsWeb.App.csproj"
     }
   ],
   "defaultName": "WebApplication1",
