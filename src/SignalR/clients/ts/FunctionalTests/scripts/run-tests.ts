@@ -239,10 +239,10 @@ function runJest(httpsUrl: string, httpUrl: string) {
         debug(`Launching Functional Test Server: ${serverPath}`);
         let desiredServerUrl = "https://127.0.0.1:0;http://127.0.0.1:0";
 
-        if(sauce) {
+        if (sauce) {
             // SauceLabs can only proxy certain ports for Edge and Safari.
             // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS
-            desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";// Sauce Labs can only proxy certain 
+            desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";// Sauce Labs can only proxy certain
         }
 
         const dotnet = spawn("dotnet", [serverPath], {
@@ -308,8 +308,8 @@ function runJest(httpsUrl: string, httpUrl: string) {
             conf.colors = false;
         }
 
-        if(hostname) {
-            if(process.platform !== "win32") {
+        if (hostname) {
+            if (process.platform !== "win32") {
                 throw new Error("Can't use '--use-hostname' on non-Windows platform.");
             }
 
@@ -317,12 +317,6 @@ function runJest(httpsUrl: string, httpUrl: string) {
             // Used to work around issues in Sauce Labs
             debug(`Updating Hosts file (${HOSTSFILE_PATH}) to register host name '${hostname}'`);
             await fs.appendFile(HOSTSFILE_PATH, `${EOL}127.0.0.1 ${hostname}${EOL}`);
-
-            const hostsContent = await fs.readFile(HOSTSFILE_PATH);
-            debug('Hosts file contents:');
-            debug('-- START OF HOSTS FILE --');
-            debug(hostsContent.toString());
-            debug('-- END OF HOSTS FILE --');
 
             conf.hostname = hostname;
 
@@ -342,13 +336,13 @@ function runJest(httpsUrl: string, httpUrl: string) {
             // Don't use https, Safari and Edge don't trust the cert.
             httpsUrl = "";
 
-            conf.client.args = [ ...conf.client.args, '--sauce' ];
+            conf.client.args = [...conf.client.args, '--sauce'];
         }
 
         debug(`Using SignalR Servers: ${httpsUrl} (https) and ${httpUrl} (http)`);
 
         // Pass server URL to tests
-        conf.client.args = [ ...conf.client.args, "--server", `${httpUrl};${httpsUrl}`];
+        conf.client.args = [...conf.client.args, "--server", `${httpUrl};${httpsUrl}`];
         debug(`Passing client args: ${conf.client.args.join(" ")}`);
 
         const jestExit = await runJest(httpsUrl, httpUrl);
