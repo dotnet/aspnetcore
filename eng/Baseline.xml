@@ -31,6 +31,8 @@
   <Package Id="Microsoft.AspNetCore.HttpOverrides" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.HttpsPolicy" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.JsonPatch" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Localization.Routing" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Localization" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Owin" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.ResponseCompression" Version="2.1.1" />

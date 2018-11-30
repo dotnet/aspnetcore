@@ -6,10 +6,6 @@
 	path = modules/Identity
 	url = https://github.com/aspnet/Identity.git
 	branch = release/2.1
-[submodule "modules/Localization"]
-	path = modules/Localization
-	url = https://github.com/aspnet/Localization.git
-	branch = release/2.1
 [submodule "modules/Scaffolding"]
 	path = modules/Scaffolding
 	url = https://github.com/aspnet/Scaffolding.git

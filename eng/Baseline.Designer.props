@@ -282,6 +282,24 @@
     <BaselinePackageReference Include="Microsoft.CSharp" Version="[4.5.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Localization.Routing-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Localization.Routing' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Localization.Routing' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Localization" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Localization-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Localization' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Localization' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.MiddlewareAnalysis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>

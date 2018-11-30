@@ -18,7 +18,6 @@
     <RepositoryBuildOrder Include="ResponseCaching" Order="11" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
     <RepositoryBuildOrder Include="Session" Order="11" RootPath="$(RepositoryRoot)src\Session\" />
     <RepositoryBuildOrder Include="ServerTests" Order="11" RootPath="$(RepositoryRoot)src\ServerTests\" />
-    <RepositoryBuildOrder Include="Localization" Order="12" />
     <RepositoryBuildOrder Include="Security" Order="13" RootPath="$(RepositoryRoot)src\Security\" />
     <RepositoryBuildOrder Include="MetaPackages" Order="13" RootPath="$(RepositoryRoot)src\MetaPackages\" />
     <RepositoryBuildOrder Include="Mvc" Order="14" RootPath="$(RepositoryRoot)src\Mvc\" />
