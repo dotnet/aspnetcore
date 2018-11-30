@@ -1,0 +1,11 @@
+deb http://ports.ubuntu.com/ubuntu-ports/ vivid main restricted universe
+deb-src http://ports.ubuntu.com/ubuntu-ports/ vivid main restricted universe
+
+deb http://ports.ubuntu.com/ubuntu-ports/ vivid-updates main restricted universe
+deb-src http://ports.ubuntu.com/ubuntu-ports/ vivid-updates main restricted universe
+
+deb http://ports.ubuntu.com/ubuntu-ports/ vivid-backports main restricted
+deb-src http://ports.ubuntu.com/ubuntu-ports/ vivid-backports main restricted
+
+deb http://ports.ubuntu.com/ubuntu-ports/ vivid-security main restricted universe multiverse
+deb-src http://ports.ubuntu.com/ubuntu-ports/ vivid-security main restricted universe multiverse

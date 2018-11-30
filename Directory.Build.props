@@ -1,5 +1,9 @@
 <Project>
+  <PropertyGroup>
+    <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
+  </PropertyGroup>
   <Import Project="version.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>

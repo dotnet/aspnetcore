@@ -1,0 +1,51 @@
+parameters:
+  # Optional: dependencies of the job
+  dependsOn: ''
+
+  # Optional: A defined YAML pool - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#pool
+  pool: {}
+
+  configuration: 'Debug'
+
+  # Optional: condition for the job to run
+  condition: ''
+
+  # Optional: 'true' if future jobs should run even if this job fails
+  continueOnError: false
+
+  # Optional: should run as a public build even in the internal project
+  #           if 'true', the build won't run any of the internal only steps, even if it is running in non-public projects.
+  runAsPublic: false
+
+jobs:
+- job: Asset_Registry_Publish
+
+  dependsOn: ${{ parameters.dependsOn }}
+
+  displayName: Publish to Build Asset Registry
+
+  pool: ${{ parameters.pool }}
+
+  variables:
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - name: _BuildConfig
+      value: ${{ parameters.configuration }}
+    - group: Publish-Build-Assets
+
+  steps:
+  - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download artifact
+      inputs:
+        artifactName: AssetManifests
+        downloadPath: '$(Build.StagingDirectory)/Download'
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}
+    - script: eng\common\publishbuildassets.cmd
+        /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
+        /p:BuildAssetRegistryToken=$(MaestroAccessToken)
+        /p:MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com
+        /p:Configuration=$(_BuildConfig)
+      displayName: Publish Build Assets
+      condition: ${{ parameters.condition }}
+      continueOnError: ${{ parameters.continueOnError }}

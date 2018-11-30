@@ -1,0 +1,75 @@
+parameters:
+  # Optional: 'true' if failures in job.yml job should not fail the job
+  continueOnError: false
+
+  # Optional: Enable installing Microbuild plugin
+  #           if 'true', these "variables" must be specified in the variables object or as part of the queue matrix
+  #             _TeamName - the name of your team
+  #             _SignType - 'test' or 'real'
+  enableMicrobuild: false
+
+  # Optional: Include PublishBuildArtifacts task
+  enablePublishBuildArtifacts: false
+
+  # Optional: Enable publishing to the build asset registry
+  enablePublishBuildAssets: false
+
+  # Optional: Include PublishTestResults task
+  enablePublishTestResults: false
+
+  # Optional: enable sending telemetry
+  #           if 'true', these "variables" must be specified in the variables object or as part of the queue matrix
+  #             _HelixBuildConfig - differentiate between Debug, Release, other
+  #             _HelixSource - Example: build/product/
+  #             _HelixType - Example: official/dotnet/arcade/$(Build.SourceBranch)
+  enableTelemetry: false
+
+  # Required: A collection of jobs to run - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+  jobs: []
+
+  # Optional: If specified, then automatically derive "_HelixSource" variable for telemetry
+  helixRepo: ''
+
+  # Optional: Define the type for helix telemetry (must end in '/')
+  helixType: build/product/
+
+  # Optional: Override automatically derived dependsOn value for "publish build assets" job
+  publishBuildAssetsDependsOn: ''
+
+  # Optional: should run as a public build even in the internal project
+  #           if 'true', the build won't run any of the internal only steps, even if it is running in non-public projects.
+  runAsPublic: false
+
+# Internal resources (telemetry, microbuild) can only be accessed from non-public projects,
+# and some (Microbuild) should only be applied to non-PR cases for internal builds.
+
+jobs:
+- ${{ each job in parameters.jobs }}:
+  - template: ../job/job.yml
+    parameters: 
+      # pass along parameters
+      ${{ each parameter in parameters }}:
+        ${{ if ne(parameter.key, 'jobs') }}:
+          ${{ parameter.key }}: ${{ parameter.value }}
+
+      # pass along job properties
+      ${{ each property in job }}:
+        ${{ if ne(property.key, 'job') }}:
+          ${{ property.key }}: ${{ property.value }}
+
+      name: ${{ job.job }}
+
+- ${{ if and(eq(parameters.enablePublishBuildAssets, true), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: ../job/publish-build-assets.yml
+    parameters:
+      continueOnError: ${{ parameters.continueOnError }}
+      dependsOn:
+      - ${{ if ne(parameters.publishBuildAssetsDependsOn, '') }}:
+        - ${{ each job in parameters.publishBuildAssetsDependsOn }}:
+          - ${{ job.job }}
+      - ${{ if eq(parameters.publishBuildAssetsDependsOn, '') }}:
+        - ${{ each job in parameters.jobs }}:
+          - ${{ job.job }}
+      pool:
+        vmImage: vs2017-win2016
+      runAsPublic: ${{ parameters.runAsPublic }}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0">
+  <PropertyGroup>
+    <MicrosoftDotNetArcadeSdkPackageVersion>1.0.0-beta.18580.1</MicrosoftDotNetArcadeSdkPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
+    <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
+    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
+    <PreReleaseLabel>preview</PreReleaseLabel>
+    <PreReleaseVersionLabel>$(PreReleaseLabel)</PreReleaseVersionLabel>
+    <PreReleaseBrandingLabel>Preview</PreReleaseBrandingLabel>
+    <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
+    <!-- ANCM versioning is intentionally 10 + AspNetCoreMajorVersion because earlier versions of ANCM shipped as 8.x. -->
+    <AspNetCoreModuleVersionMajor>1$(AspNetCoreMajorVersion)</AspNetCoreModuleVersionMajor>
+    <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
+    <OfficialBuildId Condition="'$(OfficialBuildId)' == ''">$(BUILD_BUILDNUMBER)</OfficialBuildId>
+    <OfficialBuildId Condition="'$(OfficialBuildId)' == '' AND '$(TEAMCITY_VERSION)' != ''">$([System.DateTime]::Now.ToString('yyyyMMdd')).$(BUILD_NUMBER)</OfficialBuildId>
+  </PropertyGroup>
+</Project>

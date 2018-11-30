@@ -1,0 +1,63 @@
+steps:
+- bash: |
+    if [ "$AGENT_JOBSTATUS" = "Succeeded" ] || [ "$AGENT_JOBSTATUS" = "PartiallySucceeded" ]; then
+      errorCount=0
+    else
+      errorCount=1
+    fi
+    warningCount=0
+
+    # create a temporary file for curl output
+    res=`mktemp`
+
+    curlResult=`
+      curl --verbose --output $res --write-out "%{http_code}"\
+      -H 'Content-Type: application/json' \
+      -H "X-Helix-Job-Token: $Helix_JobToken" \
+      -H 'Content-Length: 0' \
+      -X POST -G "https://helix.dot.net/api/2018-03-14/telemetry/job/build/$Helix_WorkItemId/finish" \
+      --data-urlencode "errorCount=$errorCount" \
+      --data-urlencode "warningCount=$warningCount"`
+    curlStatus=$?
+
+    if [ $curlStatus -eq 0 ]; then
+      if [ $curlResult -gt 299 ] || [ $curlResult -lt 200 ]; then
+        curlStatus=$curlResult
+      fi
+    fi
+
+    if [ $curlStatus -ne 0 ]; then
+      echo "Failed to Send Build Finish information"
+      vstsLogOutput="vso[task.logissue type=error;sourcepath=templates/steps/telemetry-end.yml;code=1;]Failed to Send Build Finish information: $curlStatus"
+      echo "##$vstsLogOutput"
+      exit 1
+    fi
+  displayName: Send Unix Build End Telemetry
+  env:
+    # defined via VSTS variables in start-job.sh
+    Helix_JobToken: $(Helix_JobToken)
+    Helix_WorkItemId: $(Helix_WorkItemId)
+  condition: and(always(), ne(variables['Agent.Os'], 'Windows_NT'))
+- powershell: |
+    if (($env:Agent_JobStatus -eq 'Succeeded') -or ($env:Agent_JobStatus -eq 'PartiallySucceeded')) {
+      $ErrorCount = 0
+    } else {
+      $ErrorCount = 1
+    }
+    $WarningCount = 0
+
+    try {
+      Invoke-RestMethod -Uri "https://helix.dot.net/api/2018-03-14/telemetry/job/build/$env:Helix_WorkItemId/finish?errorCount=$ErrorCount&warningCount=$WarningCount" -Method Post -ContentType "application/json" -Body "" `
+        -Headers @{ 'X-Helix-Job-Token'=$env:Helix_JobToken }
+    }
+    catch {
+      Write-Error $_
+      Write-Error $_.Exception
+      exit 1
+    }
+  displayName: Send Windows Build End Telemetry
+  env:
+    # defined via VSTS variables in start-job.ps1
+    Helix_JobToken: $(Helix_JobToken)
+    Helix_WorkItemId: $(Helix_WorkItemId)
+  condition: and(always(),eq(variables['Agent.Os'], 'Windows_NT'))

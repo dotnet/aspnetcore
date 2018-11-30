@@ -1,0 +1,51 @@
+parameters:
+  HelixSource: 'pr/dotnet-github-anon-kaonashi-bot'
+  HelixType: ̓'tests/default'
+  HelixBuild: $(Build.BuildNumber)
+  HelixTargetQueues: ''
+  HelixAccessToken: ''
+  HelixPreCommands: ''
+  HelixPostCommands: ''
+  WorkItemDirectory: ''
+  WorkItemCommand: ''
+  CorrelationPayloadDirectory: ''
+  XUnitProjects: ''
+  XUnitTargetFramework: ''
+  XUnitRunnerVersion: ''
+  IncludeDotNetCli: false
+  DotNetCliPackageType: ''
+  DotNetCliVersion: ''
+  EnableXUnitReporter: false
+  WaitForWorkItemCompletion: true
+  condition: succeeded()
+  continueOnError: false
+
+steps:
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: custom
+      projects: eng/common/helixpublish.proj
+      custom: msbuild
+      arguments: '/bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/SendToHelix.binlog'
+    displayName: Send job to Helix
+    env:
+      HelixSource: ${{ parameters.HelixSource }}
+      HelixType: ${{ parameters.HelixType }}
+      HelixBuild: ${{ parameters.HelixBuild }}
+      HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
+      HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      HelixPreCommands: ${{ parameters.HelixPreCommands }}
+      HelixPostCommands: ${{ parameters.HelixPostCommands }}
+      WorkItemDirectory: ${{ parameters.WorkItemDirectory }}
+      WorkItemCommand: ${{ parameters.WorkItemCommand }}
+      CorrelationPayloadDirectory: ${{ parameters.CorrelationPayloadDirectory }}
+      XUnitProjects: ${{ parameters.XUnitProjects }}
+      XUnitTargetFramework: ${{ parameters.XUnitTargetFramework }}
+      XUnitRunnerVersion: ${{ parameters.XUnitRunnerVersion }}
+      IncludeDotNetCli: ${{ parameters.IncludeDotNetCli }}
+      DotNetCliPackageType: ${{ parameters.DotNetCliPackageType }}
+      DotNetCliVersion: ${{ parameters.DotNetCliVersion }}
+      EnableXUnitReporter: ${{ parameters.EnableXUnitReporter }}
+      WaitForWorkItemCompletion: ${{ parameters.WaitForWorkItemCompletion }}
+    condition: ${{ parameters.condition }}
+    continueOnError: ${{ parameters.continueOnError }}

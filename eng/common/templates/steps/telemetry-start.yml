@@ -1,0 +1,154 @@
+parameters:
+  helixSource: 'undefined_defaulted_in_telemetry.yml'
+  helixType: 'undefined_defaulted_in_telemetry.yml'
+  buildConfig: ''
+  runAsPublic: false
+
+steps:
+- ${{ if and(eq(parameters.runAsPublic, 'false'), not(eq(variables['System.TeamProject'], 'public'))) }}:
+  - task: AzureKeyVault@1
+    inputs:
+      azureSubscription: 'HelixProd_KeyVault'
+      KeyVaultName: HelixProdKV
+      SecretsFilter: 'HelixApiAccessToken'
+    condition: always()
+- bash: |
+    # create a temporary file
+    jobInfo=`mktemp`
+
+    # write job info content to temporary file
+    cat > $jobInfo <<JobListStuff
+    {
+      "QueueId": "$QueueId",
+      "Source": "$Source",
+      "Type": "$Type",
+      "Build": "$Build",
+      "Attempt": "$Attempt",
+      "Properties": {
+        "operatingSystem": "$OperatingSystem",
+        "configuration": "$Configuration"
+      }
+    }
+    JobListStuff
+    
+    cat $jobInfo
+
+    # create a temporary file for curl output
+    res=`mktemp`
+
+    accessTokenParameter="?access_token=$HelixApiAccessToken"
+
+    curlResult=`
+      cat $jobInfo |\
+      curl --trace - --verbose --output $res --write-out "%{http_code}" \
+      -H 'Content-Type: application/json' \
+      -X POST "https://helix.dot.net/api/2018-03-14/telemetry/job$accessTokenParameter" -d @-`
+    curlStatus=$?
+
+    if [ $curlStatus -eq 0 ]; then
+      if [ $curlResult -gt 299 ] || [ $curlResult -lt 200 ]; then
+        curlStatus=$curlResult
+      fi
+    fi
+
+    curlResult=`cat $res`
+    
+    # validate status of curl command
+    if [ $curlStatus -ne 0 ]; then
+      echo "Failed To Send Job Start information"
+      # We have to append the ## vso prefix or vso will pick up the command when it dumps the inline script into the shell
+      vstsLogOutput="vso[task.logissue type=error;sourcepath=telemetry/start-job.sh;code=1;]Failed to Send Job Start information: $curlStatus"
+      echo "##$vstsLogOutput"
+      exit 1
+    fi
+    
+    # Set the Helix_JobToken variable
+    export Helix_JobToken=`echo $curlResult | xargs echo` # Strip Quotes
+    echo "##vso[task.setvariable variable=Helix_JobToken;issecret=true;]$Helix_JobToken"
+  displayName: Send Unix Job Start Telemetry
+  env:
+    HelixApiAccessToken: $(HelixApiAccessToken)
+    Source: ${{ parameters.helixSource }}
+    Type: ${{ parameters.helixType }}
+    Build: $(Build.BuildNumber)
+    QueueId: $(Agent.Os)
+    Attempt: 1
+    OperatingSystem: $(Agent.Os)
+    Configuration: ${{ parameters.buildConfig }}
+  condition: and(always(), ne(variables['Agent.Os'], 'Windows_NT'))
+- bash: |
+    res=`mktemp`
+    curlResult=`
+      curl --verbose --output $res --write-out "%{http_code}"\
+      -H 'Content-Type: application/json' \
+      -H "X-Helix-Job-Token: $Helix_JobToken" \
+      -H 'Content-Length: 0' \
+      -X POST -G "https://helix.dot.net/api/2018-03-14/telemetry/job/build" \
+      --data-urlencode "buildUri=$BuildUri"`
+    curlStatus=$?
+
+    if [ $curlStatus -eq 0 ]; then
+      if [ $curlResult -gt 299 ] || [ $curlResult -lt 200 ]; then
+        curlStatus=$curlResult
+      fi
+    fi
+
+    curlResult=`cat $res`
+
+    # validate status of curl command
+    if [ $curlStatus -ne 0 ]; then
+      echo "Failed to Send Build Start information"
+      vstsLogOutput="vso[task.logissue type=error;sourcepath=telemetry/build/start.sh;code=1;]Failed to Send Build Start information: $curlStatus"
+      echo "##$vstsLogOutput"
+      exit 1
+    fi
+
+    export Helix_WorkItemId=`echo $curlResult | xargs echo` # Strip Quotes
+    echo "##vso[task.setvariable variable=Helix_WorkItemId]$Helix_WorkItemId"
+  displayName: Send Unix Build Start Telemetry
+  env:
+    BuildUri: $(System.TaskDefinitionsUri)$(System.TeamProject)/_build/index?buildId=$(Build.BuildId)&_a=summary
+    Helix_JobToken: $(Helix_JobToken)
+  condition: and(always(), ne(variables['Agent.Os'], 'Windows_NT'))
+  
+- powershell: |
+    $jobInfo = [pscustomobject]@{
+      QueueId=$env:QueueId;
+      Source=$env:Source;
+      Type=$env:Type;
+      Build=$env:Build;
+      Attempt=$env:Attempt;
+      Properties=[pscustomobject]@{ operatingSystem=$env:OperatingSystem; configuration=$env:Configuration };
+    }
+    
+    $jobInfoJson = $jobInfo | ConvertTo-Json
+
+    if ($env:HelixApiAccessToken) {
+      $accessTokenParameter="?access_token=$($env:HelixApiAccessToken)"
+    }
+    Write-Host "Job Info: $jobInfoJson"
+    $jobToken = Invoke-RestMethod -Uri "https://helix.dot.net/api/2018-03-14/telemetry/job$($accessTokenParameter)" -Method Post -ContentType "application/json" -Body $jobInfoJson
+    $env:Helix_JobToken = $jobToken
+    Write-Host "##vso[task.setvariable variable=Helix_JobToken;issecret=true;]$env:Helix_JobToken"
+  displayName: Send Windows Job Start Telemetry
+  env:
+    HelixApiAccessToken: $(HelixApiAccessToken)
+    Source: ${{ parameters.helixSource }}
+    Type: ${{ parameters.helixType }}
+    Build: $(Build.BuildNumber)
+    QueueId: $(Agent.Os)
+    Attempt: 1
+    OperatingSystem: $(Agent.Os)
+    Configuration: ${{ parameters.buildConfig }}
+  condition: and(always(), eq(variables['Agent.Os'], 'Windows_NT'))
+- powershell: |
+    $workItemId = Invoke-RestMethod -Uri "https://helix.dot.net/api/2018-03-14/telemetry/job/build?buildUri=$([Net.WebUtility]::UrlEncode($env:BuildUri))" -Method Post -ContentType "application/json" -Body "" `
+      -Headers @{ 'X-Helix-Job-Token'=$env:Helix_JobToken }
+  
+    $env:Helix_WorkItemId = $workItemId
+    Write-Host "##vso[task.setvariable variable=Helix_WorkItemId]$env:Helix_WorkItemId"
+  displayName: Send Windows Build Start Telemetry
+  env:
+    BuildUri: $(System.TaskDefinitionsUri)$(System.TeamProject)/_build/index?buildId=$(Build.BuildId)&_a=summary
+    Helix_JobToken: $(Helix_JobToken)
+  condition: and(always(), eq(variables['Agent.Os'], 'Windows_NT'))

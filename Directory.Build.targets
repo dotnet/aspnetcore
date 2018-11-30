@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
   <!-- Properties which should be set after the project has been evaluated -->
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
