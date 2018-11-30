@@ -16,7 +16,7 @@
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "RazorComponentsWeb",
+  "sourceName": "RazorComponentsWeb-CSharp",
   "preferNameDirectory": true,
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
@@ -130,15 +130,15 @@
   "primaryOutputs": [
     {
       "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb.sln"
+      "path": "RazorComponentsWeb-CSharp.sln"
     },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb.Server/RazorComponentsWeb.Server.csproj"
+      "path": "RazorComponentsWeb-CSharp.Server/RazorComponentsWeb-CSharp.Server.csproj"
     },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb.App/RazorComponentsWeb.App.csproj"
+      "path": "RazorComponentsWeb-CSharp.App/RazorComponentsWeb-CSharp.App.csproj"
     }
   ],
   "defaultName": "WebApplication1",

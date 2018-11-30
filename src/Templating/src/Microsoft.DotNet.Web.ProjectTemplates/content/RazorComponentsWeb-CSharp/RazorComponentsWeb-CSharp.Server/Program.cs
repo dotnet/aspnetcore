@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace RazorComponentsWeb.Server
+namespace RazorComponentsWeb_CSharp.Server
 {
     public class Program
     {

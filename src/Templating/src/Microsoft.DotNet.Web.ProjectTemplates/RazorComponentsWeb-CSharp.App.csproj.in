@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>7.3</LangVersion>
-    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb.App</RootNamespace>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb-CSharp.App</RootNamespace>
 
     <!-- The linker is not beneficial for server-side execution. Re-enable this if you switch to WebAssembly execution. -->
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>

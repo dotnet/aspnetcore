@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RazorComponentsWeb.App.Services
+namespace RazorComponentsWeb_CSharp.App.Services
 {
     public class WeatherForecastService
     {

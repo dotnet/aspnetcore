@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Hosting;
 
-namespace RazorComponentsWeb.App
+namespace RazorComponentsWeb_CSharp.App
 {
     public class Program
     {

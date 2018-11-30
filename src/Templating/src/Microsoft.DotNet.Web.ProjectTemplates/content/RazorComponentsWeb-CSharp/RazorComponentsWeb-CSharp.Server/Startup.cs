@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RazorComponentsWeb.Server
+namespace RazorComponentsWeb_CSharp.Server
 {
     public class Startup
     {

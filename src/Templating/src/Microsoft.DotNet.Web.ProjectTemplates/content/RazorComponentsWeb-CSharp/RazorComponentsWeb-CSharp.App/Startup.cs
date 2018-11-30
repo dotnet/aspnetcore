@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using RazorComponentsWeb.App.Services;
+using RazorComponentsWeb_CSharp.App.Services;
 
-namespace RazorComponentsWeb.App
+namespace RazorComponentsWeb_CSharp.App
 {
     public class Startup
     {

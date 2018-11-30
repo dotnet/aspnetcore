@@ -6,11 +6,11 @@
 
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb.Server</RootNamespace>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb-CSharp.Server</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RazorComponentsWeb.App\RazorComponentsWeb.App.csproj" />
+    <ProjectReference Include="..\RazorComponentsWeb-CSharp.App\RazorComponentsWeb-CSharp.App.csproj" />
 
     <!-- TODO: Remove this once we're on netcoreapp3.0 because we'll have the shared framework instead -->
     <PackageReference Include="Microsoft.AspNetCore.App" />
