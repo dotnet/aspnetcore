@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Config\test\Microsoft.Extensions.Configuration.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Extensions.Configuration.KeyPerFile" />
   </ItemGroup>
 
