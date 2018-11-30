@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Company.WebApplication1.Server
+namespace RazorComponentsWeb.Server
 {
     public class Startup
     {
