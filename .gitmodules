@@ -1,6 +1,6 @@
 [submodule "googletest"]
 	path = src/submodules/googletest
 	url = https://github.com/google/googletest
-[submodule "src/signalr/clients/cpp/test/gtest/googletest"]
-	path = src/signalr/clients/cpp/test/gtest/googletest
+[submodule "src/SignalR/clients/cpp/test/gtest/googletest"]
+	path = src/SignalR/clients/cpp/test/gtest/googletest
 	url = https://github.com/google/googletest
