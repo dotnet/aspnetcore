@@ -18,6 +18,7 @@
   <Package Id="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Diagnostics" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.HostFiltering" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.1.1" />
@@ -27,9 +28,13 @@
   <Package Id="Microsoft.AspNetCore.Http.Extensions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Http.Features" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Http" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.HttpOverrides" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.HttpsPolicy" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.JsonPatch" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Owin" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.ResponseCompression" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Rewrite" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.1.3" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.1.3" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="2.1.3" />

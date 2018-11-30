@@ -1,7 +1,3 @@
-[submodule "modules/BasicMiddleware"]
-	path = modules/BasicMiddleware
-	url = https://github.com/aspnet/BasicMiddleware.git
-	branch = release/2.1
 [submodule "modules/EntityFrameworkCore"]
 	path = modules/EntityFrameworkCore
 	url = https://github.com/aspnet/EntityFrameworkCore.git

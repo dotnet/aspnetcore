@@ -154,6 +154,16 @@
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
     <BaselinePackageReference Include="System.Reflection.Metadata" Version="[1.6.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.HostFiltering-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HostFiltering' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HostFiltering' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Hosting.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.Abstractions' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
@@ -244,6 +254,26 @@
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.HttpOverrides-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpOverrides' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpOverrides' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.HttpsPolicy-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpsPolicy' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpsPolicy' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
@@ -267,6 +297,30 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.ResponseCompression-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ResponseCompression' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ResponseCompression' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ResponseCompression' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Rewrite-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Rewrite' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Rewrite' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' ">
