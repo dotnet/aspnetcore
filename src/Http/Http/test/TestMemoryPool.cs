@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,14 +13,25 @@ namespace Microsoft.AspNetCore.Http.Tests
 {
     public class TestMemoryPool : MemoryPool<byte>
     {
-        private MemoryPool<byte> _pool = Shared;
+        private MemoryPool<byte> _pool;
 
         private bool _disposed;
+        private int _rentCount;
+        public TestMemoryPool()
+        {
+            _pool = new CustomMemoryPool<byte>();
+        }
 
         public override IMemoryOwner<byte> Rent(int minBufferSize = -1)
         {
             CheckDisposed();
+            _rentCount++;
             return new PooledMemory(_pool.Rent(minBufferSize), this);
+        }
+
+        public int GetRentCount()
+        {
+            return _rentCount;
         }
 
         protected override void Dispose(bool disposing)
@@ -65,6 +76,7 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             protected override void Dispose(bool disposing)
             {
+                _pool._rentCount--;
                 _pool.CheckDisposed();
             }
 
@@ -133,6 +145,59 @@ namespace Microsoft.AspNetCore.Http.Tests
             {
                 _pool.CheckDisposed();
                 return _owner.Memory.Span;
+            }
+        }
+
+        private class CustomMemoryPool<T> : MemoryPool<T>
+        {
+            public override int MaxBufferSize => int.MaxValue;
+
+            public override IMemoryOwner<T> Rent(int minimumBufferSize = -1)
+            {
+                if (minimumBufferSize == -1)
+                {
+                    minimumBufferSize = 4096;
+                }
+
+                return new ArrayMemoryPoolBuffer(minimumBufferSize);
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                throw new NotImplementedException();
+            }
+
+            private sealed class ArrayMemoryPoolBuffer : IMemoryOwner<T>
+            {
+                private T[] _array;
+
+                public ArrayMemoryPoolBuffer(int size)
+                {
+                    _array = new T[size];
+                }
+
+                public Memory<T> Memory
+                {
+                    get
+                    {
+                        T[] array = _array;
+                        if (array == null)
+                        {
+                            throw new ObjectDisposedException(nameof(array));
+                        }
+
+                        return new Memory<T>(array);
+                    }
+                }
+
+                public void Dispose()
+                {
+                    T[] array = _array;
+                    if (array != null)
+                    {
+                        _array = null;
+                    }
+                }
             }
         }
     }

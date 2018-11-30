@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,25 +11,42 @@ namespace Microsoft.AspNetCore.Http.Tests
     {
         protected const int MaximumSizeHigh = 65;
 
+        protected const int MinimumSegmentSize = 4096;
+
         public MemoryStream MemoryStream { get; set; }
 
         public PipeWriter Writer { get; set; }
 
+        public PipeReader Reader { get; set; }
+
         protected PipeTest()
         {
             MemoryStream = new MemoryStream();
-            Writer = new StreamPipeWriter(MemoryStream, 4096, new TestMemoryPool());
+            Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
+            Reader = new StreamPipeReader(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
         }
 
         public void Dispose()
         {
             Writer.Complete();
+            Reader.Complete();
         }
 
         public byte[] Read()
         {
             Writer.FlushAsync().GetAwaiter().GetResult();
             return ReadWithoutFlush();
+        }
+
+        public void Write(byte[] data)
+        {
+            MemoryStream.Write(data, 0, data.Length);
+            MemoryStream.Position = 0;
+        }
+
+        public void WriteWithoutPosition(byte[] data)
+        {
+            MemoryStream.Write(data, 0, data.Length);
         }
 
         public byte[] ReadWithoutFlush()

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         {
             var span = Writer.GetSpan(0);
 
-            var secondSpan = Writer.GetSpan(8000);
+            var secondSpan = Writer.GetSpan(10000);
 
             Assert.False(span.SequenceEqual(secondSpan));
         }

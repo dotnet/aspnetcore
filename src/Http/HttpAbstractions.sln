@@ -5,59 +5,61 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.Abstractions", "Authentication.Abstractions", "{587C3D55-6092-4B86-99F5-E9772C9C1ADB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Abstractions", "Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj", "{565B7B00-96A1-49B8-9753-9E045C6527A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Abstractions", "Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj", "{565B7B00-96A1-49B8-9753-9E045C6527A2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.Core", "Authentication.Core", "{B51F45A6-428F-40F4-897F-7C62C29EC39A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Core", "Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj", "{A3DEE5E8-FC9D-4135-8CDB-24E5BF954F96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Core", "Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj", "{A3DEE5E8-FC9D-4135-8CDB-24E5BF954F96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Core.Test", "Authentication.Core\test\Microsoft.AspNetCore.Authentication.Core.Test.csproj", "{21071749-4361-4CD0-B5ED-541C72326800}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Core.Test", "Authentication.Core\test\Microsoft.AspNetCore.Authentication.Core.Test.csproj", "{21071749-4361-4CD0-B5ED-541C72326800}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Headers", "Headers", "{FF334B62-1AE2-477C-B91B-B28F898DFC3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Net.Http.Headers", "Headers\src\Microsoft.Net.Http.Headers.csproj", "{D2B2E73E-A3A4-4996-906C-6647CD7D2634}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Http.Headers", "Headers\src\Microsoft.Net.Http.Headers.csproj", "{D2B2E73E-A3A4-4996-906C-6647CD7D2634}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Net.Http.Headers.Tests", "Headers\test\Microsoft.Net.Http.Headers.Tests.csproj", "{9CE486B4-0BC6-4C71-AA7C-BD66E78E11CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Http.Headers.Tests", "Headers\test\Microsoft.Net.Http.Headers.Tests.csproj", "{9CE486B4-0BC6-4C71-AA7C-BD66E78E11CF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{FB2DCA0F-EB9E-425B-ABBC-D543DBEC090F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http", "Http\src\Microsoft.AspNetCore.Http.csproj", "{E35F0A95-0016-4B4D-BB85-ADB4CFAD857F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http", "Http\src\Microsoft.AspNetCore.Http.csproj", "{E35F0A95-0016-4B4D-BB85-ADB4CFAD857F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Tests", "Http\test\Microsoft.AspNetCore.Http.Tests.csproj", "{D9155D31-0844-4ED6-AC7B-6C4C9DA6E891}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Tests", "Http\test\Microsoft.AspNetCore.Http.Tests.csproj", "{D9155D31-0844-4ED6-AC7B-6C4C9DA6E891}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Abstractions", "Http.Abstractions", "{28F3D5CC-1F8E-4E15-94C8-E432DFA0A702}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Abstractions", "Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj", "{D079CD1C-A18F-4457-91BC-432577D2FD37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Abstractions", "Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj", "{D079CD1C-A18F-4457-91BC-432577D2FD37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Abstractions.Tests", "Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj", "{C28045AC-FF16-468C-A1E8-EC192DA2EF19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Abstractions.Tests", "Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj", "{C28045AC-FF16-468C-A1E8-EC192DA2EF19}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Extensions", "Http.Extensions", "{CCC61332-7D63-4DDB-B604-884670157624}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Extensions", "Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj", "{C06F2A33-B887-46BB-8F51-2666EDBE5D38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Extensions", "Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj", "{C06F2A33-B887-46BB-8F51-2666EDBE5D38}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Extensions.Tests", "Http.Extensions\test\Microsoft.AspNetCore.Http.Extensions.Tests.csproj", "{BC50C116-2F25-4BC9-BDDC-7B3BA4A0BA07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Extensions.Tests", "Http.Extensions\test\Microsoft.AspNetCore.Http.Extensions.Tests.csproj", "{BC50C116-2F25-4BC9-BDDC-7B3BA4A0BA07}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Features", "Http.Features", "{0B1B3E58-DA37-46D6-B791-47739EF27790}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Features", "Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj", "{F6DEA0F5-79D0-4BC9-BFC9-CA6360B8B4E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Features", "Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj", "{F6DEA0F5-79D0-4BC9-BFC9-CA6360B8B4E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Features.Tests", "Http.Features\test\Microsoft.AspNetCore.Http.Features.Tests.csproj", "{5A64C915-7045-4100-B2CB-3A50BD854D2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Features.Tests", "Http.Features\test\Microsoft.AspNetCore.Http.Features.Tests.csproj", "{5A64C915-7045-4100-B2CB-3A50BD854D2D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Owin", "Owin", "{4D5C4F16-5DC5-4244-A10F-08545126F61B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Owin", "Owin\src\Microsoft.AspNetCore.Owin.csproj", "{21624719-422E-4621-A17A-C6F10436F1FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Owin", "Owin\src\Microsoft.AspNetCore.Owin.csproj", "{21624719-422E-4621-A17A-C6F10436F1FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Owin.Tests", "Owin\test\Microsoft.AspNetCore.Owin.Tests.csproj", "{38EA14B3-17BB-44F4-A9EA-A8675E9BF1E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Owin.Tests", "Owin\test\Microsoft.AspNetCore.Owin.Tests.csproj", "{38EA14B3-17BB-44F4-A9EA-A8675E9BF1E4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{391FBA36-BEEB-411A-A588-3F83901C0C1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp", "samples\SampleApp\SampleApp.csproj", "{2378049E-ABE9-4843-AAC7-A6C9E704463D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleApp", "samples\SampleApp\SampleApp.csproj", "{2378049E-ABE9-4843-AAC7-A6C9E704463D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebUtilities", "WebUtilities", "{80A090C8-ED02-4DE3-875A-30DCCDBD84BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebUtilities", "WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj", "{1A866315-5FD5-4F96-BFAC-1447E3CB4514}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities", "WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj", "{1A866315-5FD5-4F96-BFAC-1447E3CB4514}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebUtilities.Tests", "WebUtilities\test\Microsoft.AspNetCore.WebUtilities.Tests.csproj", "{068A1DA0-C7DF-4E3C-9933-4E79A141EFF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities.Tests", "WebUtilities\test\Microsoft.AspNetCore.WebUtilities.Tests.csproj", "{068A1DA0-C7DF-4E3C-9933-4E79A141EFF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Performance", "Http\perf\Microsoft.AspNetCore.Http.Performance.csproj", "{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -67,9 +69,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{565B7B00-96A1-49B8-9753-9E045C6527A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -288,6 +287,21 @@ Global
 		{068A1DA0-C7DF-4E3C-9933-4E79A141EFF8}.Release|x64.Build.0 = Release|Any CPU
 		{068A1DA0-C7DF-4E3C-9933-4E79A141EFF8}.Release|x86.ActiveCfg = Release|Any CPU
 		{068A1DA0-C7DF-4E3C-9933-4E79A141EFF8}.Release|x86.Build.0 = Release|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Debug|x64.Build.0 = Debug|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Debug|x86.Build.0 = Debug|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Release|x64.ActiveCfg = Release|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Release|x64.Build.0 = Release|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Release|x86.ActiveCfg = Release|Any CPU
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{565B7B00-96A1-49B8-9753-9E045C6527A2} = {587C3D55-6092-4B86-99F5-E9772C9C1ADB}
@@ -308,5 +322,9 @@ Global
 		{2378049E-ABE9-4843-AAC7-A6C9E704463D} = {391FBA36-BEEB-411A-A588-3F83901C0C1A}
 		{1A866315-5FD5-4F96-BFAC-1447E3CB4514} = {80A090C8-ED02-4DE3-875A-30DCCDBD84BA}
 		{068A1DA0-C7DF-4E3C-9933-4E79A141EFF8} = {80A090C8-ED02-4DE3-875A-30DCCDBD84BA}
+		{8C635944-51F0-4BB0-A89E-CA49A7D9BE7F} = {FB2DCA0F-EB9E-425B-ABBC-D543DBEC090F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {39F96525-F455-424F-ABDB-33DB59861EA6}
 	EndGlobalSection
 EndGlobal
