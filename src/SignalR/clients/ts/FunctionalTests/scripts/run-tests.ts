@@ -2,7 +2,6 @@ import { ChildProcess, exec, spawn } from "child_process";
 import { EOL } from "os";
 import { Readable } from "stream";
 
-import * as os from "os";
 import * as _fs from "fs";
 import * as path from "path";
 import { promisify } from "util";
@@ -242,7 +241,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
         if (sauce) {
             // SauceLabs can only proxy certain ports for Edge and Safari.
             // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS
-            desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";// Sauce Labs can only proxy certain
+            desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";
         }
 
         const dotnet = spawn("dotnet", [serverPath], {
@@ -331,7 +330,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
         if (sauce) {
             // Configure Sauce Connect logging
-            conf.sauceLabs.connectOptions.logfile = path.resolve(LOGS_DIR, "sc.log");
+            conf.sauceLabs.connectOptions.logfile = path.resolve(LOGS_DIR, "sauceConnect.log");
 
             // Don't use https, Safari and Edge don't trust the cert.
             httpsUrl = "";
@@ -342,7 +341,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
         debug(`Using SignalR Servers: ${httpsUrl} (https) and ${httpUrl} (http)`);
 
         // Pass server URL to tests
-        conf.client.args = [...conf.client.args, "--server", `${httpUrl};${httpsUrl}`];
+        conf.client.args = [...conf.client.args, "--server", `${httpsUrl};${httpUrl}`];
         debug(`Passing client args: ${conf.client.args.join(" ")}`);
 
         const jestExit = await runJest(httpsUrl, httpUrl);

@@ -21,8 +21,8 @@ if (typeof window !== "undefined" && (window as any).__karma__) {
             case "--server":
                 i += 1;
                 const urls = args[i].split(";");
-                httpServer = urls[0];
-                httpsServer = urls[1];
+                httpServer = urls[1];
+                httpsServer = urls[0];
                 break;
             case "--sauce":
                 sauce = true;
