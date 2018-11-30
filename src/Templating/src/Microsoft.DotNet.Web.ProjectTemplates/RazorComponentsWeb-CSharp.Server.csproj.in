@@ -4,8 +4,12 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1.Server</RootNamespace>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb.Server</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RazorComponentsWeb.App\RazorComponentsWeb.App.csproj" />
+  </ItemGroup>
 
   <!-- TODO: Remove this once it's included in the shared framework -->
   <PropertyGroup>
