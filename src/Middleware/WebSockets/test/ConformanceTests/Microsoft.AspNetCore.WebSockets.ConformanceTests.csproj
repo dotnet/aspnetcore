@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
     <TargetFrameworks Condition=" '$(DeveloperBuild)' != 'true' ">$(TargetFrameworks);netcoreapp2.0</TargetFrameworks>
+    <DefaultItemExcludes>$(DefaultItemExcludes);AutobahnTestApp\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +11,7 @@
 
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Content Include="AutobahnTestApp\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
