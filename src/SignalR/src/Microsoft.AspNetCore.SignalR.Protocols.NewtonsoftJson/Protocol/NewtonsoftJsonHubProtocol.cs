@@ -17,7 +17,7 @@ using Newtonsoft.Json.Serialization;
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
     /// <summary>
-    /// Implements the SignalR Hub Protocol using JSON over Newtonsoft.Json.
+    /// Implements the SignalR Hub Protocol using Newtonsoft.Json.
     /// </summary>
     public class NewtonsoftJsonHubProtocol : IHubProtocol
     {
