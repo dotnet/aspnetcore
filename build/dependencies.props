@@ -6,6 +6,13 @@
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.0</MicrosoftNETCoreDotNetAppHostPackageVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
+    <MicrosoftEntityFrameworkCorePackageVersion>2.2.0</MicrosoftEntityFrameworkCorePackageVersion>
+    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+  </PropertyGroup>
+
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
   <Import Project="dependencies.folderbuilds.props" Condition=" '$(IsUniverseBuild)' != 'true' AND '$(DotNetPackageVersionPropsPath)' == ''" />
 
@@ -31,10 +38,6 @@
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
     <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
-    <MicrosoftEntityFrameworkCorePackageVersion>2.2.0</MicrosoftEntityFrameworkCorePackageVersion>
-    <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.2.0</MicrosoftExtensionsCachingMemoryPackageVersion>
