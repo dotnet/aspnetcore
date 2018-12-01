@@ -1,8 +1,8 @@
 {
     "sdk": {
-        "version": "2.2.100-rtm-009578"
+        "version": "2.2.100"
     },
     "msbuild-sdks": {
-        "Internal.AspNetCore.Sdk": "2.2.1-build-20181114.3"
+        "Internal.AspNetCore.Sdk": "2.2.1-build-20181130.1"
     }
 }
