@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -109,26 +109,18 @@ namespace StaticFilesAuth
             
             var files = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "PrivateFiles"));
 
-            app.Use(async (context, next) =>
+            app.Map("/MapImperativeFiles", branch =>
             {
-                // Set an endpoint for files inside PrivateFiles to run authorization
-                PathString remaining;
-                if (context.Request.Path.StartsWithSegments("/MapImperativeFiles", out remaining))
-                {
-                    SetFileEndpoint(context, files, remaining, "files");
-                }
-                else if (context.Request.Path.StartsWithSegments("/MapAuthenticatedFiles", out remaining))
-                {
-                    SetFileEndpoint(context, files, remaining, null);
-                }
-
-                await next();
+                branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(); });
+                branch.UseAuthorization();
+                SetupFileServer(branch, files);
             });
-
-            app.UseAuthorization();
-
-            app.Map("/MapAuthenticatedFiles", branch => SetupFileServer(branch, files));
-            app.Map("/MapImperativeFiles", branch => SetupFileServer(branch, files));
+            app.Map("/MapAuthenticatedFiles", branch =>
+            {
+                branch.Use((context, next) => { SetFileEndpoint(context, files, null); return next(); });
+                branch.UseAuthorization();
+                SetupFileServer(branch, files);
+            });
 
             app.UseMvc(routes =>
             {
@@ -147,9 +139,9 @@ namespace StaticFilesAuth
             });
         }
 
-        private static void SetFileEndpoint(HttpContext context, PhysicalFileProvider files, PathString filePath, string policy)
+        private static void SetFileEndpoint(HttpContext context, PhysicalFileProvider files, string policy)
         {
-            var fileSystemInfo = GetFileSystemInfo(files, filePath);
+            var fileSystemInfo = GetFileSystemInfo(files, context.Request.Path);
             if (fileSystemInfo != null)
             {
                 var metadata = new List<object>();
@@ -157,7 +149,7 @@ namespace StaticFilesAuth
                 metadata.Add(new AuthorizeAttribute(policy));
 
                 var endpoint = new Endpoint(
-                    c => Task.CompletedTask,
+                    c => throw new InvalidOperationException("Static file middleware should return file request."),
                     new EndpointMetadataCollection(metadata),
                     context.Request.Path);
 
