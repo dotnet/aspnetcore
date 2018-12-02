@@ -13,7 +13,6 @@
     <!-- Copy references locally so that we can use them in the test. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <BuildVariablesGeneratedFile>$(MSBuildProjectDirectory)\obj\BuildVariables.generated.cs</BuildVariablesGeneratedFile>
-    <CompileDependsOn>EnsureBuildVariablesGeneratedFile;$(CompileDependsOn)</CompileDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,11 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 
   <!-- The test projects rely on these binaries being available -->
@@ -47,8 +44,57 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
   </ItemGroup>
 
-  <Target Name="EnsureBuildVariablesGeneratedFile">
-    <Error Text="BuildVariables.generated.cs was not found. Run .\build /t:Prepare from the root of the repository to generate it." Condition="!Exists('$(BuildVariablesGeneratedFile)')" />
+  <PropertyGroup>
+    <MSBuildLocationFileOutput>$(IntermediateOutputPath)BuildVariables.generated.cs</MSBuildLocationFileOutput>
+  </PropertyGroup>
+
+  <Target 
+    Name="GenerateMSBuildLocationFile"
+    Condition="'$(TargetFramework)'!=''"
+    AfterTargets="BeforeBuild"
+    Inputs="$(MSBuildAllProjects)"
+    Outputs="$(MSBuildLocationFileOutput)">
+
+    <Exec
+      Condition="'$(OS)' == 'Windows_NT'"
+      Command='"$(NuGetPackageRoot)vswhere\$(VSWhereVersion)\tools\vswhere.exe" -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild'
+      ConsoleToMsBuild="true"
+      StandardErrorImportance="high">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_VSInstallDir" />
+    </Exec>
+    <Error Condition="'$(OS)' == 'Windows_NT' and '$(_VSInstallDir)'==''" Text="Visual Studio not found on Windows." />
+
+    <PropertyGroup>
+      <_DesktopMSBuildPath Condition="'$(OS)' == 'Windows_NT' and Exists('$(_VSInstallDir)\MSBuild\Current\Bin\msbuild.exe')">$(_VSInstallDir)\MSBuild\Current\Bin\msbuild.exe</_DesktopMSBuildPath>
+      <_DesktopMSBuildPath Condition="'$(OS)' == 'Windows_NT' and Exists('$(_VSInstallDir)\MSBuild\15.0\Bin\msbuild.exe')">$(_VSInstallDir)\MSBuild\15.0\Bin\msbuild.exe</_DesktopMSBuildPath>
+      <_Content><![CDATA[
+namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
+{
+    internal static partial class BuildVariables
+    {
+        static partial void InitializeVariables()
+        {
+            _msBuildPath = @"$(_DesktopMSBuildPath)";
+            _microsoftNETCoreApp30PackageVersion = "$(MicrosoftNETCoreApp30PackageVersion)";
+            _netStandardLibrary20PackageVersion = "$(NETStandardLibrary20PackageVersion)";
+        }
+    }
+}
+]]>
+      </_Content>
+    </PropertyGroup>
+
+    <Error Condition="'$(OS)' == 'Windows_NT' and '$(_DesktopMSBuildPath)'==''" Text="MSBuild.exe not found on Windows." />
+
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <WriteLinesToFile Lines="$([MSBuild]::Escape($(_Content)))" File="$(MSBuildLocationFileOutput)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+    <ItemGroup>
+      <Compile Include="$(MSBuildLocationFileOutput)">
+        <Visible>false</Visible>
+      </Compile>
+      <FileWrites Include="$(MSBuildLocationFileOutput)" />
+    </ItemGroup>
+
   </Target>
 
 </Project>

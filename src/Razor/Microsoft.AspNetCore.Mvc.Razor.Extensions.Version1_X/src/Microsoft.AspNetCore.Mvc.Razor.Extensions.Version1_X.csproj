@@ -5,6 +5,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTags>$(PackageTags);aspnetcoremvc</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

@@ -22,10 +22,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +41,7 @@
 
   <Target Name="CopyDepsFromShims" AfterTargets="Build">
     <ItemGroup>
-      <MvcShim Condition="$(TargetFramework) != ''" Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\bin\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.deps.json" />
+      <MvcShim Condition="$(TargetFramework) != ''" Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.deps.json" />
     </ItemGroup>
 
     <Copy SourceFiles="@(MvcShim)" DestinationFolder="$(OutputPath)" />

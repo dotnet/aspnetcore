@@ -30,12 +30,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     throw new InvalidOperationException($"{destinationPath} should be empty");
                 }
 
-                var solutionRoot = TestPathUtilities.GetSolutionRootDirectory("Razor");
-                if (solutionRoot == null)
+                var repositoryRoot = SearchUp(AppContext.BaseDirectory, "global.json");
+                if (repositoryRoot == null)
                 {
-                    throw new InvalidOperationException("Could not find solution root.");
+                    throw new InvalidOperationException("Could not find repository root.");
                 }
 
+                var solutionRoot = Path.Combine(repositoryRoot, "src", "Razor");
                 var binariesRoot = Path.GetDirectoryName(typeof(ProjectDirectory).Assembly.Location);
 
                 foreach (var project in new string[] { originalProjectName, }.Concat(additionalProjects))
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 var newProjectFilePath = Path.Combine(directoryPath, targetProjectName + extension);
                 File.Move(oldProjectFilePath, newProjectFilePath);
 
-                CopyGlobalJson(solutionRoot, destinationPath);
+                CopyGlobalJson(repositoryRoot, destinationPath);
 
                 return new ProjectDirectory(
                     destinationPath,
@@ -126,9 +127,9 @@ $@"<Project>
                     });
             }
 
-            void CopyGlobalJson(string solutionRoot, string projectRoot)
+            void CopyGlobalJson(string repositoryRoot, string projectRoot)
             {
-                var srcGlobalJson = Path.Combine(solutionRoot, "global.json");
+                var srcGlobalJson = Path.Combine(repositoryRoot, "global.json");
                 if (!File.Exists(srcGlobalJson))
                 {
                     throw new InvalidOperationException("global.json at the root of the repository could not be found. Run './build /t:Noop' at the repository root and re-run these tests.");
@@ -182,6 +183,23 @@ $@"<Project>
                     Thread.Sleep(sleep);
                 }
             }
+        }
+
+        public static string SearchUp(string baseDirectory, string fileName)
+        {
+            var directoryInfo = new DirectoryInfo(baseDirectory);
+            do
+            {
+                var fileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, fileName));
+                if (fileInfo.Exists)
+                {
+                    return fileInfo.DirectoryName;
+                }
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo.Parent != null);
+
+            throw new Exception($"File {fileName} could not be found in {baseDirectory} or its parent directories.");
         }
     }
 }

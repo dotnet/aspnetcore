@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -11,18 +10,32 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public static string GetProjectDirectory(Type type)
         {
-            var solutionDir = TestPathUtilities.GetSolutionRootDirectory("Razor");
-
+            var repoRoot = SearchUp(AppContext.BaseDirectory, "global.json");
             var assemblyName = type.Assembly.GetName().Name;
-            var projectDirectory = Path.Combine(solutionDir, "test", assemblyName);
+            var projectDirectory = Path.Combine(repoRoot, "src", "Razor", "test", assemblyName);
             if (!Directory.Exists(projectDirectory))
             {
-                throw new InvalidOperationException(
-$@"Could not locate project directory for type {type.FullName}.
-Directory probe path: {projectDirectory}.");
+                throw new InvalidOperationException($@"Could not locate project directory for type {type.FullName}. Directory probe path: {projectDirectory}.");
             }
 
             return projectDirectory;
+        }
+
+        private static string SearchUp(string baseDirectory, string fileName)
+        {
+            var directoryInfo = new DirectoryInfo(baseDirectory);
+            do
+            {
+                var fileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, fileName));
+                if (fileInfo.Exists)
+                {
+                    return fileInfo.DirectoryName;
+                }
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo.Parent != null);
+
+            throw new Exception($"File {fileName} could not be found in {baseDirectory} or its parent directories.");
         }
     }
 }

@@ -6,8 +6,11 @@
     <TargetName>Microsoft.NET.Sdk.Razor.Tasks</TargetName>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <Serviceable>true</Serviceable>
-    <SdkOutputPath>bin\$(Configuration)\sdk-output\</SdkOutputPath>
-    <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks sicne they need to be backwards compatible. -->
+    <SdkOutputPath>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</SdkOutputPath>
+    <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks since they need to be backwards compatible. -->
+
+    <!-- Allow assemblies outside of lib in the package -->
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,18 +41,18 @@
     <!-- Layout tasks, compiler, and extensions in the sdk-output folder. The entire folder structure gets packaged as-is into the SDK -->
     <MSBuild
       Projects="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj"
-      Properties="PublishDir=$(MSBuildProjectDirectory)\$(SdkOutputPath)tools\netcoreapp3.0;TargetFramework=netcoreapp3.0"
+      Properties="PublishDir=$(SdkOutputPath)tools\netcoreapp3.0;TargetFramework=netcoreapp3.0"
       Targets="Publish" />
 
     <ItemGroup>
-      <MvcRazorExtenionOutput Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+      <MvcRazorExtenionOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     </ItemGroup>
 
     <Copy SourceFiles="@(MvcRazorExtenionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" />
 
     <ItemGroup>
-      <ProjectOutput Include="..\Microsoft.NET.Sdk.Razor\bin\$(Configuration)\net46*\Microsoft.NET.Sdk.Razor.Tasks.*" />
-      <ProjectOutput Include="..\Microsoft.NET.Sdk.Razor\bin\$(Configuration)\netstandard2.0*\Microsoft.NET.Sdk.Razor.Tasks.*" />
+      <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\net46*\Microsoft.NET.Sdk.Razor.Tasks.*" />
+      <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\netstandard2.0*\Microsoft.NET.Sdk.Razor.Tasks.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(ProjectOutput)" DestinationFiles="$(SdkOutputPath)tasks\%(RecursiveDir)%(FileName)%(Extension)" />
@@ -70,7 +73,7 @@
     <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\runtimes\win\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
   </ItemGroup>
 
-  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="LayoutDependencies">
+  <Target Name="PopulateNuspec" AfterTargets="InitializeStandardNuspecProperties" DependsOnTargets="LayoutDependencies">
 
     <PropertyGroup>
       <!-- Make sure we create a symbols.nupkg -->

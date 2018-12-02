@@ -6,10 +6,10 @@
     <SolutionRoot>$([MSBuild]::EnsureTrailingSlash('$(SolutionRoot)'))</SolutionRoot>
 
     <!-- Retarget tests to use the copy of the Sdk from source -->
-    <RazorSdkProjectDirectory>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\</RazorSdkProjectDirectory>
+    <RazorSdkArtifactsDirectory>$(SolutionRoot)..\..\artifacts\bin\Microsoft.NET.Sdk.Razor\</RazorSdkArtifactsDirectory>
 
-    <RazorSdkCurrentVersionProps>$(RazorSdkProjectDirectory)build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
-    <RazorSdkCurrentVersionTargets>$(RazorSdkProjectDirectory)build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
+    <RazorSdkCurrentVersionProps>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+    <RazorSdkCurrentVersionTargets>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
   </PropertyGroup>
 
   <!-- Import solution dependencies.props when building in place -->

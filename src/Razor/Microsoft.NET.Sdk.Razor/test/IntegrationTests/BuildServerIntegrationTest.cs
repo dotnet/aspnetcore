@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -150,7 +151,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // when we don't explicitly specify a pipe name.
 
             // Publish rzc tool to a temporary path. This is the location based on which the pipe name is generated.
-            var solutionRoot = TestPathUtilities.GetSolutionRootDirectory("Razor");
+            var repositoryRoot = ProjectDirectory.SearchUp(AppContext.BaseDirectory, "global.json");
+            var solutionRoot = Path.Combine(repositoryRoot, "src", "Razor");
             var toolAssemblyDirectory = Path.Combine(solutionRoot, "src", "Microsoft.AspNetCore.Razor.Tools");
             var toolAssemblyPath = Path.Combine(toolAssemblyDirectory, "Microsoft.AspNetCore.Razor.Tools.csproj");
             var projectDirectory = new TestProjectDirectory(solutionRoot, toolAssemblyDirectory, toolAssemblyPath);

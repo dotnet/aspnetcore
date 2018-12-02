@@ -23,11 +23,33 @@ namespace Microsoft.CodeAnalysis
             var dependencyContext = DependencyContext.Load(assembly);
 
             var metadataReferences = dependencyContext.CompileLibraries
-                .SelectMany(l => l.ResolveReferencePaths())
+                .SelectMany(l => ResolvePaths(l))
                 .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
                 .ToArray();
 
             return metadataReferences;
+        }
+
+        private static IEnumerable<string> ResolvePaths(CompilationLibrary library)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (var i = 0; i < assemblies.Length; i++)
+            {
+                if (assemblies[i].GetName().Name == library.Name)
+                {
+                    return new[] { assemblies[i].Location };
+                }
+            }
+
+            try
+            {
+                return library.ResolveReferencePaths();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            return Array.Empty<string>();
         }
 
         public static string AssemblyName => "TestAssembly";
