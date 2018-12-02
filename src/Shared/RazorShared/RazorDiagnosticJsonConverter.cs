@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -49,7 +50,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Serialization
             writer.WriteStartObject();
             WriteProperty(writer, nameof(RazorDiagnostic.Id), diagnostic.Id);
             WriteProperty(writer, nameof(RazorDiagnostic.Severity), (int)diagnostic.Severity);
-            WriteProperty(writer, RazorDiagnosticMessageKey, diagnostic.GetMessage());
+            WriteProperty(writer, RazorDiagnosticMessageKey, diagnostic.GetMessage(CultureInfo.CurrentCulture));
 
             writer.WritePropertyName(nameof(RazorDiagnostic.Span));
             serializer.Serialize(writer, diagnostic.Span);
