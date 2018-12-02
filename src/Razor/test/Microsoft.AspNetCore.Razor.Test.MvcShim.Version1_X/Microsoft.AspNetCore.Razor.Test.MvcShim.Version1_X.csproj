@@ -6,10 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="$(MicrosoftAspNetCoreHtmlAbstractionsPackageVersion)" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
   </ItemGroup>
 

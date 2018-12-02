@@ -25,13 +25,10 @@
   <ItemGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
   </ItemGroup>
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     {
         private static readonly Assembly _assembly = typeof(ViewComponentTypeVisitorTest).GetTypeInfo().Assembly;
 
-        private static Compilation Compilation { get; } = TestCompilation.Create(_assembly);
+        private static CSharpCompilation Compilation { get; } = TestCompilation.Create(_assembly);
 
         // In practice MVC will provide a marker attribute for ViewComponents. To prevent a circular reference between MVC and Razor
         // we can use a test class as a marker.
