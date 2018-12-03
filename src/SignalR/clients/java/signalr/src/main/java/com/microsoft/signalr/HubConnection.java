@@ -15,7 +15,9 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +42,7 @@ public class HubConnection {
     private HubProtocol protocol;
     private Boolean handshakeReceived = false;
     private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
-    private final Lock hubConnectionStateLock = new ReentrantLock();
+    private final ReadWriteLock hubConnectionStateLock = new ReentrantReadWriteLock();
     private List<OnClosedCallback> onClosedCallbackList;
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
@@ -266,7 +268,13 @@ public class HubConnection {
      * @return HubConnection state enum.
      */
     public HubConnectionState getConnectionState() {
-        return hubConnectionState;
+        hubConnectionStateLock.readLock().lock();
+        try {
+            return hubConnectionState;
+        } finally {
+            hubConnectionStateLock.readLock().unlock();
+        }
+
     }
 
     /**
@@ -275,7 +283,7 @@ public class HubConnection {
      * @return A Completable that completes when the connection has been established.
      */
     public Completable start() {
-        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
+        if (getConnectionState() != HubConnectionState.DISCONNECTED) {
             return Completable.complete();
         }
 
@@ -315,7 +323,7 @@ public class HubConnection {
                 return transport.send(handshake).andThen(Completable.defer(() -> {
                     timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
                     return handshakeResponseSubject.andThen(Completable.defer(() -> {
-                        hubConnectionStateLock.lock();
+                        hubConnectionStateLock.writeLock().lock();
                         try {
                             connectionState = new ConnectionState(this);
                             hubConnectionState = HubConnectionState.CONNECTED;
@@ -344,7 +352,7 @@ public class HubConnection {
                                 }
                             }, new Date(0), tickRate);
                         } finally {
-                            hubConnectionStateLock.unlock();
+                            hubConnectionStateLock.writeLock().unlock();
                         }
 
                         return Completable.complete();
@@ -358,7 +366,7 @@ public class HubConnection {
     }
 
     private Single<String> startNegotiate(String url, int negotiateAttempts) {
-        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
+        if (getConnectionState() != HubConnectionState.DISCONNECTED) {
             return Single.just(null);
         }
 
@@ -395,7 +403,7 @@ public class HubConnection {
      * @return A Completable that completes when the connection has been stopped.
      */
     private Completable stop(String errorMessage) {
-        hubConnectionStateLock.lock();
+        hubConnectionStateLock.writeLock().lock();
         try {
             if (hubConnectionState == HubConnectionState.DISCONNECTED) {
                 return Completable.complete();
@@ -408,7 +416,7 @@ public class HubConnection {
                 logger.debug("Stopping HubConnection.");
             }
         } finally {
-            hubConnectionStateLock.unlock();
+            hubConnectionStateLock.writeLock().unlock();
         }
 
         return transport.stop();
@@ -425,7 +433,7 @@ public class HubConnection {
 
     private void stopConnection(String errorMessage) {
         RuntimeException exception = null;
-        hubConnectionStateLock.lock();
+        hubConnectionStateLock.writeLock().lock();
         try {
             // errorMessage gets passed in from the transport. An already existing stopError value
             // should take precedence.
@@ -442,7 +450,7 @@ public class HubConnection {
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();
         } finally {
-            hubConnectionStateLock.unlock();
+            hubConnectionStateLock.writeLock().unlock();
         }
 
         // Do not run these callbacks inside the hubConnectionStateLock
