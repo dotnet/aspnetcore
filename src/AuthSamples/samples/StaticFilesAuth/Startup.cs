@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,26 +54,13 @@ namespace StaticFilesAuth
                         {
                             var userPath = Path.Combine(usersPath, userName);
 
-                            var file = endpoint.Metadata.GetMetadata<IFileInfo>();
-                            if (file != null)
+                            var directory = endpoint.Metadata.GetMetadata<DirectoryInfo>();
+                            if (directory != null)
                             {
-                                var path = Path.GetDirectoryName(file.PhysicalPath);
-                                return string.Equals(path, basePath, StringComparison.OrdinalIgnoreCase)
-                                    || string.Equals(path, usersPath, StringComparison.OrdinalIgnoreCase)
-                                    || string.Equals(path, userPath, StringComparison.OrdinalIgnoreCase)
-                                    || path.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
-                            }
-
-                            var dir = endpoint.Metadata.GetMetadata<IDirectoryContents>();
-                            if (dir != null)
-                            {
-                                // https://github.com/aspnet/Home/issues/3073
-                                // This won't work right if the directory is empty
-                                var path = Path.GetDirectoryName(dir.First().PhysicalPath);
-                                return string.Equals(path, basePath, StringComparison.OrdinalIgnoreCase)
-                                    || string.Equals(path, usersPath, StringComparison.OrdinalIgnoreCase)
-                                    || string.Equals(path, userPath, StringComparison.OrdinalIgnoreCase)
-                                    || path.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+                                return string.Equals(directory.FullName, basePath, StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(directory.FullName, usersPath, StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(directory.FullName, userPath, StringComparison.OrdinalIgnoreCase)
+                                    || directory.FullName.StartsWith(userPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
                             }
 
                             throw new InvalidOperationException($"Missing file system metadata.");
@@ -141,11 +125,11 @@ namespace StaticFilesAuth
 
         private static void SetFileEndpoint(HttpContext context, PhysicalFileProvider files, string policy)
         {
-            var fileSystemInfo = GetFileSystemInfo(files, context.Request.Path);
+            var fileSystemInfo = GetFileSystemPath(files, context.Request.Path);
             if (fileSystemInfo != null)
             {
                 var metadata = new List<object>();
-                metadata.Add(fileSystemInfo);
+                metadata.Add(new DirectoryInfo(Path.GetDirectoryName(fileSystemInfo)));
                 metadata.Add(new AuthorizeAttribute(policy));
 
                 var endpoint = new Endpoint(
@@ -153,16 +137,16 @@ namespace StaticFilesAuth
                     new EndpointMetadataCollection(metadata),
                     context.Request.Path);
 
-                context.Features.Set<IEndpointFeature>(new EndpointFeature(endpoint));
+                context.SetEndpoint(endpoint);
             }
         }
 
-        private static object GetFileSystemInfo(PhysicalFileProvider files, string path)
+        private static string GetFileSystemPath(PhysicalFileProvider files, string path)
         {
             var fileInfo = files.GetFileInfo(path);
             if (fileInfo.Exists)
             {
-                return fileInfo;
+                return Path.Join(files.Root, path);
             }
             else
             {
@@ -170,21 +154,11 @@ namespace StaticFilesAuth
                 var dir = files.GetDirectoryContents(path);
                 if (dir.Exists)
                 {
-                    return dir;
+                    return Path.Join(files.Root, path);
                 }
             }
 
             return null;
-        }
-
-        private class EndpointFeature : IEndpointFeature
-        {
-            public Endpoint Endpoint { get; set; }
-
-            public EndpointFeature(Endpoint endpoint)
-            {
-                Endpoint = endpoint;
-            }
         }
     }
 }
