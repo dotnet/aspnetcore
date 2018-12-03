@@ -1,9 +1,5 @@
 # JavaScriptServices
 
-AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/gprilrckx116vc9m/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/javascriptservices/branch/dev)
-
-This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [AspNetCore](https://github.com/aspnet/AspNetCore) repo.
-
 ## What is this?
 
 `JavaScriptServices` is a set of client-side technologies for ASP.NET Core. It provides infrastructure that you'll find useful if you:
