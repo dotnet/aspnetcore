@@ -115,7 +115,6 @@ namespace Microsoft.AspNetCore.Http
             {
                 _internalTokenSource = value;
             }
-
         }
 
         /// <inheritdoc />
@@ -357,10 +356,6 @@ namespace Microsoft.AspNetCore.Http
             nextSegment.SetMemory(_pool.Rent(GetSegmentSize()));
             _readTail.SetNext(nextSegment);
             _readTail = nextSegment;
-            if (_readTail.WritableBytes == 32)
-            {
-                Console.WriteLine("hmmm");
-            }
         }
 
         private int GetSegmentSize() => Math.Min(_pool.MaxBufferSize, _minimumSegmentSize);

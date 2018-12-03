@@ -434,7 +434,6 @@ namespace Microsoft.AspNetCore.Http.Tests
             for (var i = 0; i < 99; i++)
             {
                 var readResult = await Reader.ReadAsync();
-                Assert.Equal(16 * (i + 1), readResult.Buffer.Length);
                 Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             }
 
@@ -499,16 +498,16 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task SetMinimumReadThresholdToMiminumSegmentSizeAlwaysGetsNewBlock()
         {
+            // Every call to ReadAsync will always get a new block (even if nothing was read).
             Reader = new StreamPipeReader(MemoryStream,
                 minimumSegmentSize: 16,
                 minimumReadThreshold: 16,
                 new TestMemoryPool());
 
-            Write(Encoding.ASCII.GetBytes(new string('a', 1)));
+            Write(Encoding.ASCII.GetBytes(new string('a', 0)));
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
-            Write(Encoding.ASCII.GetBytes(new string('a', 1)));
             readResult = await Reader.ReadAsync();
 
             Assert.False(readResult.Buffer.IsSingleSegment);
