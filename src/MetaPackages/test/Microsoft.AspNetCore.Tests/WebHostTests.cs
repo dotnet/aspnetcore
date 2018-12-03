@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -52,6 +53,17 @@ namespace Microsoft.AspNetCore.Tests
             Assert.True(changed.WaitOne(TimeSpan.FromSeconds(10)));
             options = monitor.CurrentValue;
             Assert.Contains("NewHost", options.AllowedHosts);
+        }
+
+        [Fact]
+        public void CreateDefaultBuilder_RegistersRouting()
+        {
+            var host = WebHost.CreateDefaultBuilder()
+                .Configure(_ => { })
+                .Build();
+
+            var linkGenerator = host.Services.GetService(typeof(LinkGenerator));
+            Assert.NotNull(linkGenerator);
         }
 
         [Fact]
