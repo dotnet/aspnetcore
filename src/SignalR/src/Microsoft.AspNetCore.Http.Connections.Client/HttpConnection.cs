@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 }
                 else
                 {
-                    throw new InvalidOperationException("No transports are supported by the server.");
+                    throw new InvalidOperationException("None of the transports supported by the client are supported by the server.");
                 }
             }
         }

@@ -296,7 +296,7 @@ export class HttpConnection implements IConnection {
         if (transportExceptions.length > 0) {
             throw new Error(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`);
         }
-        throw new Error("No transports are supported by the server.");
+        throw new Error("None of the transports supported by the client are supported by the server.");
     }
 
     private constructTransport(transport: HttpTransportType) {
