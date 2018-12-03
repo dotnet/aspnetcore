@@ -469,7 +469,7 @@ public class HubConnection {
      * @param args   The arguments to be passed to the method.
      */
     public void send(String method, Object... args) {
-        if (hubConnectionState != HubConnectionState.CONNECTED) {
+        if (getConnectionState() != HubConnectionState.CONNECTED) {
             throw new RuntimeException("The 'send' method cannot be called if the connection is not active");
         }
 
