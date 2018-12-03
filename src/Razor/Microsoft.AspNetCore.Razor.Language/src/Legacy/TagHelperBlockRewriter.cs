@@ -107,29 +107,36 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         processedBoundAttributeNames);
                     tagHelperBuilder.Add(result.RewrittenAttribute);
                 }
-                else if (child is CSharpCodeBlockSyntax)
+                else if (child is MarkupMiscAttributeContentSyntax miscContent)
                 {
-                    // TODO: Accept more than just Markup attributes: https://github.com/aspnet/Razor/issues/96.
-                    // Something like:
-                    // <input @checked />
-                    var location = new SourceSpan(child.GetSourceLocation(source), child.FullWidth);
-                    var diagnostic = RazorDiagnosticFactory.CreateParsing_TagHelpersCannotHaveCSharpInTagDeclaration(location, tagName);
-                    errorSink.OnError(diagnostic);
-
-                    result = null;
-                }
-                else if (child is MarkupTextLiteralSyntax)
-                {
-                    // If the original span content was whitespace it ultimately means the tag
-                    // that owns this "attribute" is malformed and is expecting a user to type a new attribute.
-                    // ex: <myTH class="btn"| |
-                    var literalContent = child.GetContent();
-                    if (!string.IsNullOrWhiteSpace(literalContent))
+                    foreach (var contentChild in miscContent.Children)
                     {
-                        var location = child.GetSourceSpan(source);
-                        var diagnostic = RazorDiagnosticFactory.CreateParsing_TagHelperAttributeListMustBeWellFormed(location);
-                        errorSink.OnError(diagnostic);
+                        if (contentChild is CSharpCodeBlockSyntax codeBlock)
+                        {
+                            // TODO: Accept more than just Markup attributes: https://github.com/aspnet/Razor/issues/96.
+                            // Something like:
+                            // <input @checked />
+                            var location = new SourceSpan(codeBlock.GetSourceLocation(source), codeBlock.FullWidth);
+                            var diagnostic = RazorDiagnosticFactory.CreateParsing_TagHelpersCannotHaveCSharpInTagDeclaration(location, tagName);
+                            errorSink.OnError(diagnostic);
+                            break;
+                        }
+                        else
+                        {
+                            // If the original span content was whitespace it ultimately means the tag
+                            // that owns this "attribute" is malformed and is expecting a user to type a new attribute.
+                            // ex: <myTH class="btn"| |
+                            var literalContent = contentChild.GetContent();
+                            if (!string.IsNullOrWhiteSpace(literalContent))
+                            {
+                                var location = contentChild.GetSourceSpan(source);
+                                var diagnostic = RazorDiagnosticFactory.CreateParsing_TagHelperAttributeListMustBeWellFormed(location);
+                                errorSink.OnError(diagnostic);
+                                break;
+                            }
+                        }
                     }
+
                     result = null;
                 }
                 else

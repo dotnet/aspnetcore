@@ -1176,6 +1176,87 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
   }
 
+  internal sealed partial class MarkupMiscAttributeContentSyntax : MarkupSyntaxNode
+  {
+    private readonly GreenNode _children;
+
+    internal MarkupMiscAttributeContentSyntax(SyntaxKind kind, GreenNode children, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+        : base(kind, diagnostics, annotations)
+    {
+        SlotCount = 1;
+        if (children != null)
+        {
+            AdjustFlagsAndWidth(children);
+            _children = children;
+        }
+    }
+
+
+    internal MarkupMiscAttributeContentSyntax(SyntaxKind kind, GreenNode children)
+        : base(kind)
+    {
+        SlotCount = 1;
+        if (children != null)
+        {
+            AdjustFlagsAndWidth(children);
+            _children = children;
+        }
+    }
+
+    public SyntaxList<RazorSyntaxNode> Children { get { return new SyntaxList<RazorSyntaxNode>(_children); } }
+
+    internal override GreenNode GetSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return _children;
+            default: return null;
+        }
+    }
+
+    internal override SyntaxNode CreateRed(SyntaxNode parent, int position)
+    {
+      return new Syntax.MarkupMiscAttributeContentSyntax(this, parent, position);
+    }
+
+    public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+    {
+        return visitor.VisitMarkupMiscAttributeContent(this);
+    }
+
+    public override void Accept(SyntaxVisitor visitor)
+    {
+        visitor.VisitMarkupMiscAttributeContent(this);
+    }
+
+    public MarkupMiscAttributeContentSyntax Update(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    {
+        if (children != Children)
+        {
+            var newNode = SyntaxFactory.MarkupMiscAttributeContent(children);
+            var diags = GetDiagnostics();
+            if (diags != null && diags.Length > 0)
+               newNode = newNode.WithDiagnosticsGreen(diags);
+            var annotations = GetAnnotations();
+            if (annotations != null && annotations.Length > 0)
+               newNode = newNode.WithAnnotationsGreen(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
+    {
+         return new MarkupMiscAttributeContentSyntax(Kind, _children, diagnostics, GetAnnotations());
+    }
+
+    internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
+    {
+         return new MarkupMiscAttributeContentSyntax(Kind, _children, GetDiagnostics(), annotations);
+    }
+  }
+
   internal sealed partial class MarkupLiteralAttributeValueSyntax : MarkupSyntaxNode
   {
     private readonly MarkupTextLiteralSyntax _prefix;
@@ -3282,6 +3363,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return DefaultVisit(node);
     }
 
+    public virtual TResult VisitMarkupMiscAttributeContent(MarkupMiscAttributeContentSyntax node)
+    {
+      return DefaultVisit(node);
+    }
+
     public virtual TResult VisitMarkupLiteralAttributeValue(MarkupLiteralAttributeValueSyntax node)
     {
       return DefaultVisit(node);
@@ -3462,6 +3548,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
 
     public virtual void VisitMarkupAttributeBlock(MarkupAttributeBlockSyntax node)
+    {
+      DefaultVisit(node);
+    }
+
+    public virtual void VisitMarkupMiscAttributeContent(MarkupMiscAttributeContentSyntax node)
     {
       DefaultVisit(node);
     }
@@ -3671,6 +3762,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       var value = (RazorBlockSyntax)Visit(node.Value);
       var valueSuffix = (MarkupTextLiteralSyntax)Visit(node.ValueSuffix);
       return node.Update(namePrefix, name, nameSuffix, equalsToken, valuePrefix, value, valueSuffix);
+    }
+
+    public override GreenNode VisitMarkupMiscAttributeContent(MarkupMiscAttributeContentSyntax node)
+    {
+      var children = VisitList(node.Children);
+      return node.Update(children);
     }
 
     public override GreenNode VisitMarkupLiteralAttributeValue(MarkupLiteralAttributeValueSyntax node)
@@ -3987,6 +4084,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return new MarkupAttributeBlockSyntax(SyntaxKind.MarkupAttributeBlock, namePrefix, name, nameSuffix, equalsToken, valuePrefix, value, valueSuffix);
     }
 
+    public static MarkupMiscAttributeContentSyntax MarkupMiscAttributeContent(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    {
+      var result = new MarkupMiscAttributeContentSyntax(SyntaxKind.MarkupMiscAttributeContent, children.Node);
+
+      return result;
+    }
+
     public static MarkupLiteralAttributeValueSyntax MarkupLiteralAttributeValue(MarkupTextLiteralSyntax prefix, MarkupTextLiteralSyntax value)
     {
       var result = new MarkupLiteralAttributeValueSyntax(SyntaxKind.MarkupLiteralAttributeValue, prefix, value);
@@ -4235,6 +4339,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
            typeof(MarkupTagBlockSyntax),
            typeof(MarkupMinimizedAttributeBlockSyntax),
            typeof(MarkupAttributeBlockSyntax),
+           typeof(MarkupMiscAttributeContentSyntax),
            typeof(MarkupLiteralAttributeValueSyntax),
            typeof(MarkupDynamicAttributeValueSyntax),
            typeof(MarkupElementSyntax),

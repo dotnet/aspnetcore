@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         MarkupCommentBlock,
         MarkupAttributeBlock,
         MarkupMinimizedAttributeBlock,
+        MarkupMiscAttributeContent,
         MarkupLiteralAttributeValue,
         MarkupDynamicAttributeValue,
         MarkupTagHelperElement,

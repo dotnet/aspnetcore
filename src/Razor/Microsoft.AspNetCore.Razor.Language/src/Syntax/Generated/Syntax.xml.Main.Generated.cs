@@ -89,6 +89,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       return DefaultVisit(node);
     }
 
+    /// <summary>Called when the visitor visits a MarkupMiscAttributeContentSyntax node.</summary>
+    public virtual TResult VisitMarkupMiscAttributeContent(MarkupMiscAttributeContentSyntax node)
+    {
+      return DefaultVisit(node);
+    }
+
     /// <summary>Called when the visitor visits a MarkupLiteralAttributeValueSyntax node.</summary>
     public virtual TResult VisitMarkupLiteralAttributeValue(MarkupLiteralAttributeValueSyntax node)
     {
@@ -304,6 +310,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
     /// <summary>Called when the visitor visits a MarkupAttributeBlockSyntax node.</summary>
     public virtual void VisitMarkupAttributeBlock(MarkupAttributeBlockSyntax node)
+    {
+      DefaultVisit(node);
+    }
+
+    /// <summary>Called when the visitor visits a MarkupMiscAttributeContentSyntax node.</summary>
+    public virtual void VisitMarkupMiscAttributeContent(MarkupMiscAttributeContentSyntax node)
     {
       DefaultVisit(node);
     }
@@ -536,6 +548,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       var value = (RazorBlockSyntax)Visit(node.Value);
       var valueSuffix = (MarkupTextLiteralSyntax)Visit(node.ValueSuffix);
       return node.Update(namePrefix, name, nameSuffix, equalsToken, valuePrefix, value, valueSuffix);
+    }
+
+    public override SyntaxNode VisitMarkupMiscAttributeContent(MarkupMiscAttributeContentSyntax node)
+    {
+      var children = VisitList(node.Children);
+      return node.Update(children);
     }
 
     public override SyntaxNode VisitMarkupLiteralAttributeValue(MarkupLiteralAttributeValueSyntax node)
@@ -903,6 +921,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
     public static MarkupAttributeBlockSyntax MarkupAttributeBlock()
     {
       return SyntaxFactory.MarkupAttributeBlock(default(MarkupTextLiteralSyntax), SyntaxFactory.MarkupTextLiteral(), default(MarkupTextLiteralSyntax), SyntaxFactory.Token(SyntaxKind.Equals), default(MarkupTextLiteralSyntax), default(RazorBlockSyntax), default(MarkupTextLiteralSyntax));
+    }
+
+    /// <summary>Creates a new MarkupMiscAttributeContentSyntax instance.</summary>
+    public static MarkupMiscAttributeContentSyntax MarkupMiscAttributeContent(SyntaxList<RazorSyntaxNode> children)
+    {
+      return (MarkupMiscAttributeContentSyntax)InternalSyntax.SyntaxFactory.MarkupMiscAttributeContent(children.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>()).CreateRed();
+    }
+
+    /// <summary>Creates a new MarkupMiscAttributeContentSyntax instance.</summary>
+    public static MarkupMiscAttributeContentSyntax MarkupMiscAttributeContent()
+    {
+      return SyntaxFactory.MarkupMiscAttributeContent(default(SyntaxList<RazorSyntaxNode>));
     }
 
     /// <summary>Creates a new MarkupLiteralAttributeValueSyntax instance.</summary>

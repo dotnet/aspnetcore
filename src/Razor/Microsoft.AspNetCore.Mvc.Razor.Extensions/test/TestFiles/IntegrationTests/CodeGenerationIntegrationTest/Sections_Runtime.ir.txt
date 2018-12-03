@@ -23,14 +23,16 @@ Document -
                     IntermediateToken - (68:4,2 [46] Sections.cshtml) - CSharp -  \n    Layout = "_SectionTestLayout.cshtml";\n
                 HtmlContent - (117:7,0 [26] Sections.cshtml)
                     IntermediateToken - (117:7,0 [2] Sections.cshtml) - Html - \n
-                    IntermediateToken - (119:8,0 [5] Sections.cshtml) - Html - <div>
+                    IntermediateToken - (119:8,0 [4] Sections.cshtml) - Html - <div
+                    IntermediateToken - (123:8,4 [1] Sections.cshtml) - Html - >
                     IntermediateToken - (124:8,5 [9] Sections.cshtml) - Html - Some body
                     IntermediateToken - (133:8,14 [6] Sections.cshtml) - Html - </div>
                     IntermediateToken - (139:8,20 [4] Sections.cshtml) - Html - \n\n
                 Section -  - Section1
                     HtmlContent - (162:10,19 [43] Sections.cshtml)
                         IntermediateToken - (162:10,19 [6] Sections.cshtml) - Html - \n    
-                        IntermediateToken - (168:11,4 [5] Sections.cshtml) - Html - <div>
+                        IntermediateToken - (168:11,4 [4] Sections.cshtml) - Html - <div
+                        IntermediateToken - (172:11,8 [1] Sections.cshtml) - Html - >
                         IntermediateToken - (173:11,9 [20] Sections.cshtml) - Html - This is in Section 1
                         IntermediateToken - (193:11,29 [6] Sections.cshtml) - Html - </div>
                         IntermediateToken - (199:11,35 [6] Sections.cshtml) - Html - \n    

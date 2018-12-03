@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             WriteBlock(node, BlockKindInternal.Markup, n =>
             {
                 var equalsSyntax = SyntaxFactory.MarkupTextLiteral(new SyntaxList<SyntaxToken>(node.EqualsToken));
-                var mergedAttributePrefix = MergeTextLiteralSpans(node.NamePrefix, node.Name, node.NameSuffix, equalsSyntax, node.ValuePrefix);
+                var mergedAttributePrefix = SyntaxUtilities.MergeTextLiterals(node.NamePrefix, node.Name, node.NameSuffix, equalsSyntax, node.ValuePrefix);
                 Visit(mergedAttributePrefix);
                 Visit(node.Value);
                 Visit(node.ValueSuffix);
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             WriteBlock(node, BlockKindInternal.Markup, n =>
             {
-                var mergedAttributePrefix = MergeTextLiteralSpans(node.NamePrefix, node.Name);
+                var mergedAttributePrefix = SyntaxUtilities.MergeTextLiterals(node.NamePrefix, node.Name);
                 Visit(mergedAttributePrefix);
             });
         }
@@ -269,44 +269,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var span = new ClassifiedSpanInternal(spanSource, blockSource, kind, _currentBlockKind, acceptedCharacters.Value);
             _spans.Add(span);
-        }
-
-        private MarkupTextLiteralSyntax MergeTextLiteralSpans(params MarkupTextLiteralSyntax[] literalSyntaxes)
-        {
-            if (literalSyntaxes == null || literalSyntaxes.Length == 0)
-            {
-                return null;
-            }
-
-            SyntaxNode parent = null;
-            var position = 0;
-            var seenFirstLiteral = false;
-            var builder = Syntax.InternalSyntax.SyntaxListBuilder.Create();
-
-            foreach (var syntax in literalSyntaxes)
-            {
-                if (syntax == null)
-                {
-                    continue;
-                }
-                else if (!seenFirstLiteral)
-                {
-                    // Set the parent and position of the merged literal to the value of the first non-null literal.
-                    parent = syntax.Parent;
-                    position = syntax.Position;
-                    seenFirstLiteral = true;
-                }
-
-                foreach (var token in syntax.LiteralTokens)
-                {
-                    builder.Add(token.Green);
-                }
-            }
-
-            var mergedLiteralSyntax = Syntax.InternalSyntax.SyntaxFactory.MarkupTextLiteral(
-                builder.ToList<Syntax.InternalSyntax.SyntaxToken>());
-
-            return (MarkupTextLiteralSyntax)mergedLiteralSyntax.CreateRed(parent, position);
         }
     }
 }
