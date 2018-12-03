@@ -23,11 +23,15 @@
     <RestoreDependsOn>$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
   </PropertyGroup>
   <Target Name="RestoreNpm" Condition="'$(PreflightRestore)' != 'True'">
+    <PropertyGroup>
+      <NpmInstallCommand Condition="'$(CI)' == 'true'">ci</NpmInstallCommand>
+      <NpmInstallCommand Condition="'$(CI)' != 'true'">install --no-optional</NpmInstallCommand>
+    </PropertyGroup>
     <Message Text="Restoring NPM modules" Importance="high" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/common" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr" />
-    <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr-protocol-msgpack" />
+    <Exec Command="npm $(NpmInstallCommand)" WorkingDirectory="$(RepositoryRoot)clients/ts/common" />
+    <Exec Command="npm $(NpmInstallCommand)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" />
+    <Exec Command="npm $(NpmInstallCommand)" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr" />
+    <Exec Command="npm $(NpmInstallCommand)" WorkingDirectory="$(RepositoryRoot)clients/ts/signalr-protocol-msgpack" />
   </Target>
 
   <PropertyGroup>
