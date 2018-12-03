@@ -30,6 +30,11 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// assemblies, for components matching the URI.
         /// </summary>
         [Parameter] private Assembly AppAssembly { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the route that should be used when no components are found with the requested route.
+        /// </summary>
+        [Parameter] private string FallbackRoute { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -74,15 +79,21 @@ namespace Microsoft.AspNetCore.Components.Routing
             builder.CloseComponent();
         }
 
-        private void Refresh()
+        private void Refresh(bool useFallback = false)
         {
-            var locationPath = UriHelper.ToBaseRelativePath(_baseUri, _locationAbsolute);
+            var locationPath = useFallback ? FallbackRoute : UriHelper.ToBaseRelativePath(_baseUri, _locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
             Routes.Route(context);
             if (context.Handler == null)
             {
-                throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with a route for '/{locationPath}'.");
+                if (useFallback || FallbackRoute == null)
+                {
+                    throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with {(useFallback ? "the fallback route" : "a route for")} '/{locationPath}'.");
+                }
+                
+                Refresh(useFallback: true);
+                return;
             }
 
             if (!typeof(IComponent).IsAssignableFrom(context.Handler))
