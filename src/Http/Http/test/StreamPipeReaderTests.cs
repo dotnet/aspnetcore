@@ -478,6 +478,42 @@ namespace Microsoft.AspNetCore.Http.Tests
             Reader.AdvanceTo(readResult.Buffer.End);
         }
 
+        [Fact]
+        public async Task SetMinimumReadThresholdSegmentAdvancesCorrectly()
+        {
+            Reader = new StreamPipeReader(MemoryStream,
+                minimumSegmentSize: 16,
+                minimumReadThreshold: 8,
+                new TestMemoryPool());
+
+            Write(Encoding.ASCII.GetBytes(new string('a', 8)));
+            var readResult = await Reader.ReadAsync();
+            Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+
+            Write(Encoding.ASCII.GetBytes(new string('a', 16)));
+            readResult = await Reader.ReadAsync();
+
+            Assert.False(readResult.Buffer.IsSingleSegment);
+        }
+
+        [Fact]
+        public async Task SetMinimumReadThresholdToMiminumSegmentSizeAlwaysGetsNewBlock()
+        {
+            Reader = new StreamPipeReader(MemoryStream,
+                minimumSegmentSize: 16,
+                minimumReadThreshold: 16,
+                new TestMemoryPool());
+
+            Write(Encoding.ASCII.GetBytes(new string('a', 1)));
+            var readResult = await Reader.ReadAsync();
+            Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+
+            Write(Encoding.ASCII.GetBytes(new string('a', 1)));
+            readResult = await Reader.ReadAsync();
+
+            Assert.False(readResult.Buffer.IsSingleSegment);
+        }
+
         private bool IsTaskWithResult<T>(ValueTask<T> task)
         {
             return task == new ValueTask<T>(task.Result);

@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="minimumSegmentSize">The minimum segment size to return from ReadAsync.</param>
         /// <param name="pool">The MemoryPool to use</param>
         public StreamPipeReader(Stream readingStream, int minimumSegmentSize, MemoryPool<byte> pool)
-            : this(readingStream, minimumSegmentSize, minimumReadThreshold: 0, MemoryPool<byte>.Shared)
+            : this(readingStream, minimumSegmentSize, minimumReadThreshold: 0, pool)
         {
         }
 
