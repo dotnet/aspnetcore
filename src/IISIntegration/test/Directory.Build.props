@@ -1,15 +1,6 @@
 <Project>
   <Import Project="..\Directory.Build.props" />
 
-  <PropertyGroup>
-    <!-- These tests are remaining at netcoreapp2.2 because the Benchmarks and functional tests use the same websites.
-      We must leave the benchmarks at 2.1, and if you try to import a project that uses 22 to a 21 project it complains. -->
-    <DeveloperBuildTestTfms>netcoreapp2.2</DeveloperBuildTestTfms>
-    <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
-    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' ">$(StandardTestTfms)</StandardTestTfms>
-    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
