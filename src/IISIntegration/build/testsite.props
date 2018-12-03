@@ -54,16 +54,10 @@
   <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <PropertyGroup>
       <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\test\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
-      <InjectDepsApp Condition="'$(TargetFramework)' == 'net461'">$(InjectDepsAssembly)</InjectDepsApp>
       <InjectDepsArguments>"win7-$(NativePlatform)" "$(AncmInProcessRHPath)"</InjectDepsArguments>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net461'">
-      <InjectDepsAssembly>$(InjectDepsAssembly).exe</InjectDepsAssembly>
-      <InjectDepsApp>$(InjectDepsAssembly)</InjectDepsApp>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(TargetFramework)' != 'net461'">
+    <PropertyGroup>
       <InjectDepsAssembly>$(InjectDepsAssembly).dll</InjectDepsAssembly>
       <InjectDepsApp>dotnet</InjectDepsApp>
       <InjectDepsArguments>$(InjectDepsAssembly) $(InjectDepsArguments)</InjectDepsArguments>
