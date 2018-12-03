@@ -434,6 +434,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             for (var i = 0; i < 99; i++)
             {
                 var readResult = await Reader.ReadAsync();
+                Assert.Equal(16 * (i + 1), readResult.Buffer.Length);
                 Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
             }
 
