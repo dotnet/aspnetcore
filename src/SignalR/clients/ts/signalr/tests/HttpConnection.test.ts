@@ -171,9 +171,9 @@ describe("HttpConnection", () => {
 
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("No transports are supported by the server.");
+                .toThrow("None of the transports supported by the client are supported by the server.");
         },
-        "Failed to start the connection: Error: No transports are supported by the server.");
+        "Failed to start the connection: Error: None of the transports supported by the client are supported by the server.");
     });
 
     it("preserves user's query string", async () => {
@@ -381,9 +381,9 @@ describe("HttpConnection", () => {
             const connection = new HttpConnection("http://tempuri.org", options);
             await expect(connection.start(TransferFormat.Text))
                 .rejects
-                .toThrow("No transports are supported by the server.");
+                .toThrow("None of the transports supported by the client are supported by the server.");
         },
-        "Failed to start the connection: Error: No transports are supported by the server.");
+        "Failed to start the connection: Error: None of the transports supported by the client are supported by the server.");
     });
 
     it("does not send negotiate request if WebSockets transport requested explicitly and skipNegotiation is true", async () => {
