@@ -223,7 +223,6 @@ namespace Microsoft.AspNetCore
 
                 services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
 
-                // Add routing. The empty template uses routing to serve the response
                 services.AddRouting();
             })
             .UseIIS()
