@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
             Connection.Items["ConnectedTask"] = new TaskCompletionSource<bool>();
 
-            _protocol = protocol ?? new JsonHubProtocol();
+            _protocol = protocol ?? new NewtonsoftJsonHubProtocol();
             _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();
 
             _cts = new CancellationTokenSource();

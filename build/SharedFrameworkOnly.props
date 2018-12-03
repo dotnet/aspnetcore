@@ -17,7 +17,7 @@
     <!-- Assemblies required by the SignalR client. -->
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Http.Features" />
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
-    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
 
     <!-- Assemblies produced by this repo that will move to aspnet/Extensions after repo refactoring is done -->
     <SharedFrameworkAndPackage Include="Microsoft.Extensions.Identity.Core" />

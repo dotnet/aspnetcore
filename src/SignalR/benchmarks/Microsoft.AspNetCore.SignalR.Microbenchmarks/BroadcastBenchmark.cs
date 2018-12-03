@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             if (Protocol == "json")
             {
-                protocol = new JsonHubProtocol();
+                protocol = new NewtonsoftJsonHubProtocol();
             }
             else
             {

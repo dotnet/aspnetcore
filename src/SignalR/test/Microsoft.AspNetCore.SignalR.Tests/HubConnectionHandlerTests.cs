@@ -1842,7 +1842,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client1 = new TestClient(protocol: new JsonHubProtocol()))
+                using (var client1 = new TestClient(protocol: new NewtonsoftJsonHubProtocol()))
                 using (var client2 = new TestClient(protocol: new MessagePackHubProtocol()))
                 {
                     var firstConnectionHandlerTask = await client1.ConnectAsync(connectionHandler);
@@ -1973,7 +1973,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     services
                         .AddSignalR()
-                        .AddJsonProtocol(o =>
+                        .AddNewtonsoftJsonProtocol(o =>
                         {
                             o.PayloadSerializerSettings = new JsonSerializerSettings
                             {
@@ -2237,7 +2237,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
@@ -2266,7 +2266,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         options.KeepAliveInterval = TimeSpan.FromMilliseconds(100)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
@@ -2310,7 +2310,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         options.KeepAliveInterval = TimeSpan.FromMilliseconds(100)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
@@ -2371,7 +2371,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(100)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
@@ -2397,7 +2397,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(100)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
@@ -2424,7 +2424,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                          options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(300)), LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
@@ -2450,7 +2450,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
@@ -2493,7 +2493,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<OnConnectedThrowsHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
@@ -2522,7 +2522,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
 
-                using (var client = new TestClient(new JsonHubProtocol()))
+                using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 

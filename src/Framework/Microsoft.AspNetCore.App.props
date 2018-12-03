@@ -82,7 +82,7 @@
     <Dependency Include="Microsoft.AspNetCore.Session"                                 Version="$(MicrosoftAspNetCoreSessionPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.SignalR.Common"                          Version="$(MicrosoftAspNetCoreSignalRCommonPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.SignalR.Core"                            Version="$(MicrosoftAspNetCoreSignalRCorePackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.SignalR.Protocols.Json"                  Version="$(MicrosoftAspNetCoreSignalRProtocolsJsonPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson"        Version="$(MicrosoftAspNetCoreSignalRProtocolsNewtonsoftJsonPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.SignalR"                                 Version="$(MicrosoftAspNetCoreSignalRPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.StaticFiles"                             Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.WebSockets"                              Version="$(MicrosoftAspNetCoreWebSocketsPackageVersion)" />

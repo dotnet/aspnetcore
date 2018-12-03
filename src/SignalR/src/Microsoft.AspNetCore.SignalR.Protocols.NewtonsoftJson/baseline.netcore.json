@@ -1,8 +1,8 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.SignalR.Protocols.Json, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson, Version=3.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
-      "Name": "Microsoft.Extensions.DependencyInjection.JsonProtocolDependencyInjectionExtensions",
+      "Name": "Microsoft.Extensions.DependencyInjection.NewtonsoftJsonProtocolDependencyInjectionExtensions",
       "Visibility": "Public",
       "Kind": "Class",
       "Abstract": true,
@@ -12,7 +12,7 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "AddJsonProtocol<T0>",
+          "Name": "AddNewtonsoftJsonProtocol<T0>",
           "Parameters": [
             {
               "Name": "builder",
@@ -35,7 +35,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "AddJsonProtocol<T0>",
+          "Name": "AddNewtonsoftJsonProtocol<T0>",
           "Parameters": [
             {
               "Name": "builder",
@@ -43,7 +43,7 @@
             },
             {
               "Name": "configure",
-              "Type": "System.Action<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions>"
+              "Type": "System.Action<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions>"
             }
           ],
           "ReturnType": "T0",
@@ -64,7 +64,7 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions",
+      "Name": "Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions",
       "Visibility": "Public",
       "Kind": "Class",
       "ImplementedInterfaces": [],
@@ -101,7 +101,7 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol",
+      "Name": "Microsoft.AspNetCore.SignalR.Protocol.NewtonsoftJsonHubProtocol",
       "Visibility": "Public",
       "Kind": "Class",
       "ImplementedInterfaces": [
@@ -240,7 +240,7 @@
           "Parameters": [
             {
               "Name": "options",
-              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions>"
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions>"
             }
           ],
           "Visibility": "Public",
