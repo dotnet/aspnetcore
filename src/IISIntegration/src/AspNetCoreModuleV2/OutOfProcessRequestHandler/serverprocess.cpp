@@ -785,6 +785,7 @@ SERVER_PROCESS::StartProcess(
             m_fWindowsAuthEnabled,
             m_fBasicAuthEnabled,
             m_fAnonymousAuthEnabled,
+            m_struAppFullPath.QueryStr(),
             &pHashTable)))
         {
             pStrStage = L"InitEnvironmentVariablesTable";

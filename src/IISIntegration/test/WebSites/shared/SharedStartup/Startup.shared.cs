@@ -4,6 +4,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -21,14 +23,15 @@ namespace TestSite
             serviceCollection.AddResponseCompression();
         }
 
-        private async Task HostingEnvironment(HttpContext ctx)
-        {
-            var hostingEnv = ctx.RequestServices.GetService<IHostingEnvironment>();
+        private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IHostingEnvironment>().ContentRootPath);
 
-            await ctx.Response.WriteAsync("ContentRootPath " + hostingEnv.ContentRootPath + Environment.NewLine);
-            await ctx.Response.WriteAsync("WebRootPath " + hostingEnv.WebRootPath + Environment.NewLine);
-            await ctx.Response.WriteAsync("CurrentDirectory " + Environment.CurrentDirectory);
-        }
+        private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IHostingEnvironment>().WebRootPath);
+
+        private async Task CurrentDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.CurrentDirectory);
+
+        private async Task BaseDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(AppContext.BaseDirectory);
+
+        private async Task ASPNETCORE_IIS_PHYSICAL_PATH(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH"));
 
         private async Task ConsoleWrite(HttpContext ctx)
         {
@@ -112,6 +115,16 @@ namespace TestSite
                     context.Response.ContentType = "text/html";
                     await context.Response.Body.WriteAsync(new byte[100], 0, 100);
                 });
+        }
+
+        [DllImport("kernel32.dll")]
+        static extern uint GetDllDirectory(uint nBufferLength, [Out] StringBuilder lpBuffer);
+
+        private async Task DllDirectory(HttpContext context)
+        {
+            var builder = new StringBuilder(1024);
+            GetDllDirectory(1024, builder);
+            await context.Response.WriteAsync(builder.ToString());
         }
     }
 }
