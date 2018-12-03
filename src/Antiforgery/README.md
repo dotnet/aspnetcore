@@ -1,7 +1,5 @@
-Antiforgery [Archived]
+Antiforgery
 ======================
-
-**This GitHub project has been archived.** Ongoing development on this project can be found in <https://github.com/aspnet/AspNetCore>.
 
 Antiforgery system for generating secure tokens to prevent Cross-Site Request Forgery attacks.
 
