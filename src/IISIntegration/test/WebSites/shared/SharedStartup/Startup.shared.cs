@@ -30,7 +30,8 @@ namespace TestSite
             await ctx.Response.WriteAsync("ContentRootPath " + hostingEnv.ContentRootPath + Environment.NewLine);
             await ctx.Response.WriteAsync("WebRootPath " + hostingEnv.WebRootPath + Environment.NewLine);
             await ctx.Response.WriteAsync("CurrentDirectory " + Environment.CurrentDirectory + Environment.NewLine);
-            await ctx.Response.WriteAsync("BaseDirectory " + AppContext.BaseDirectory);
+            await ctx.Response.WriteAsync("BaseDirectory " + AppContext.BaseDirectory + Environment.NewLine);
+            await ctx.Response.WriteAsync("ASPNETCORE_IIS_PHYSICAL_PATH " + Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH"));
         }
 
         private async Task ConsoleWrite(HttpContext ctx)

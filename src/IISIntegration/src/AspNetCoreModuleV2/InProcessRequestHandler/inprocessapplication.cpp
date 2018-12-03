@@ -425,6 +425,7 @@ HRESULT
 IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
 {
     auto variables = m_pConfig->QueryEnvironmentVariables();
+
     auto inputTable = std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER>(new ENVIRONMENT_VAR_HASH());
     RETURN_IF_FAILED(inputTable->Initialize(37 /*prime*/));
     // Copy environment variables to old style hash table
@@ -442,6 +443,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
         m_pConfig->QueryWindowsAuthEnabled(),
         m_pConfig->QueryBasicAuthEnabled(),
         m_pConfig->QueryAnonymousAuthEnabled(),
+        QueryApplicationPhysicalPath().c_str(),
         &pHashTable));
 
     table.reset(pHashTable);

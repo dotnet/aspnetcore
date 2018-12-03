@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [RequiresNewHandler]
+        [RequiresNewShim]
         public async Task HelloWorld(TestVariant variant)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
@@ -71,7 +73,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(
                 $"ContentRootPath {deploymentResult.ContentRoot}" + Environment.NewLine +
                 $"WebRootPath {deploymentResult.ContentRoot}\\wwwroot" + Environment.NewLine +
-                $"CurrentDirectory {deploymentResult.ContentRoot}",
+                $"CurrentDirectory {deploymentResult.ContentRoot}"+ Environment.NewLine +
+                $"BaseDirectory {deploymentResult.ContentRoot}\\" + Environment.NewLine +
+                $"ASPNETCORE_IIS_PHYSICAL_PATH {deploymentResult.ContentRoot}\\",
                 await deploymentResult.HttpClient.GetStringAsync("/HostingEnvironment"));
 
             var expectedDll = variant.AncmVersion == AncmVersion.AspNetCoreModule ? "aspnetcore.dll" : "aspnetcorev2.dll";
