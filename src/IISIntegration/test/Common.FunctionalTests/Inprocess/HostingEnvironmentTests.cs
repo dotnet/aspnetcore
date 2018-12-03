@@ -20,14 +20,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [RequiresIIS(IISCapability.ShutdownToken)]
         public async Task HostingEnvironmentIsCorrect()
         {
             Assert.Equal(
                 $"ContentRootPath {_fixture.DeploymentResult.ContentRoot}" + Environment.NewLine +
                 $"WebRootPath {_fixture.DeploymentResult.ContentRoot}\\wwwroot" + Environment.NewLine +
-                $"CurrentDirectory {Path.GetDirectoryName(_fixture.DeploymentResult.HostProcess.MainModule.FileName)}",
+                $"CurrentDirectory {_fixture.DeploymentResult.ContentRoot}" + Environment.NewLine +
+                $"BaseDirectory {_fixture.DeploymentResult.ContentRoot}\\",
                 await _fixture.Client.GetStringAsync("/HostingEnvironment"));
+
+            Assert.Equal(Path.GetDirectoryName(_fixture.DeploymentResult.HostProcess.MainModule.FileName),
+                await _fixture.DeploymentResult.HttpClient.GetStringAsync("/DllDirectory"));
         }
     }
 }

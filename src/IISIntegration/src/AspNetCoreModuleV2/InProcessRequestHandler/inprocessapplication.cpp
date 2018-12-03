@@ -11,6 +11,7 @@
 #include "resources.h"
 #include "EventLog.h"
 #include "ModuleHelpers.h"
+#include "Environment.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
@@ -217,6 +218,25 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         // We set a static so that managed code can call back into this instance and
         // set the callbacks
         s_Application = this;
+
+        if (m_pConfig->QuerySetCurrentDirectory())
+        {
+            auto dllDirectory = Environment::GetDllDirectoryValue();
+            auto currentDirectory = Environment::GetCurrentDirectoryValue();
+
+            LOG_INFOF(L"Initial Dll directory: '%s', current directory: '%s'", dllDirectory.c_str(), currentDirectory.c_str());
+
+            // If DllDirectory wasn't set change it to previous current directory value
+            if (dllDirectory.empty())
+            {
+                LOG_LAST_ERROR_IF(!SetDllDirectory(currentDirectory.c_str()));
+                LOG_INFOF(L"Setting dll directory to %s", currentDirectory.c_str());
+            }
+
+            LOG_LAST_ERROR_IF(!SetCurrentDirectory(this->QueryApplicationPhysicalPath().c_str()));
+
+            LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
+        }
 
         //Start CLR thread
         m_clrThread = std::thread(ClrThreadEntryPoint, context);

@@ -449,6 +449,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return dictionary;
         }
 
+        [Fact]
+        public async Task SetCurrentDirectoryHandlerSettingWorks()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.HandlerSettings["SetCurrentDirectory"] = "false";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            Assert.Equal(
+                $"ContentRootPath {deploymentResult.ContentRoot}" + Environment.NewLine +
+                $"WebRootPath {deploymentResult.ContentRoot}\\wwwroot" + Environment.NewLine +
+                $"CurrentDirectory {Path.GetDirectoryName(deploymentResult.HostProcess.MainModule.FileName)}" + Environment.NewLine +
+                $"BaseDirectory {deploymentResult.ContentRoot}\\",
+                await deploymentResult.HttpClient.GetStringAsync("/HostingEnvironment"));
+        }
+
         private static void MoveApplication(
             IISDeploymentParameters parameters,
             string subdirectory)
