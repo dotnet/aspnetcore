@@ -93,15 +93,15 @@ namespace StaticFilesAuth
             
             var files = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "PrivateFiles"));
 
-            app.Map("/MapImperativeFiles", branch =>
-            {
-                branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(); });
-                branch.UseAuthorization();
-                SetupFileServer(branch, files);
-            });
             app.Map("/MapAuthenticatedFiles", branch =>
             {
                 branch.Use((context, next) => { SetFileEndpoint(context, files, null); return next(); });
+                branch.UseAuthorization();
+                SetupFileServer(branch, files);
+            });
+            app.Map("/MapImperativeFiles", branch =>
+            {
+                branch.Use((context, next) => { SetFileEndpoint(context, files, "files"); return next(); });
                 branch.UseAuthorization();
                 SetupFileServer(branch, files);
             });
@@ -125,11 +125,11 @@ namespace StaticFilesAuth
 
         private static void SetFileEndpoint(HttpContext context, PhysicalFileProvider files, string policy)
         {
-            var fileSystemInfo = GetFileSystemPath(files, context.Request.Path);
-            if (fileSystemInfo != null)
+            var fileSystemPath = GetFileSystemPath(files, context.Request.Path);
+            if (fileSystemPath != null)
             {
                 var metadata = new List<object>();
-                metadata.Add(new DirectoryInfo(Path.GetDirectoryName(fileSystemInfo)));
+                metadata.Add(new DirectoryInfo(Path.GetDirectoryName(fileSystemPath)));
                 metadata.Add(new AuthorizeAttribute(policy));
 
                 var endpoint = new Endpoint(
