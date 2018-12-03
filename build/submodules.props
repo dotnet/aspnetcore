@@ -54,7 +54,7 @@
     <ShippedRepository Include="CORS" RootPath="$(RepositoryRoot)src\CORS\" />
     <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="HttpSysServer" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
-    <ShippedRepository Include="Identity" />
+    <ShippedRepository Include="Identity" RootPath="$(RepositoryRoot)src\Identity\" />
     <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <ShippedRepository Include="JsonPatch" />
     <ShippedRepository Include="Mvc" RootPath="$(RepositoryRoot)src\Mvc\" />
