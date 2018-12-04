@@ -9,15 +9,15 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.ResponseCompression
 {
     /// <summary>
-    /// GZIP compression provider.
+    /// Brotli compression provider.
     /// </summary>
-    public class GzipCompressionProvider : ICompressionProvider
+    public class BrotliCompressionProvider : ICompressionProvider
     {
         /// <summary>
-        /// Creates a new instance of GzipCompressionProvider with options.
+        /// Creates a new instance of <see cref="BrotliCompressionProvider"/> with options.
         /// </summary>
         /// <param name="options"></param>
-        public GzipCompressionProvider(IOptions<GzipCompressionProviderOptions> options)
+        public BrotliCompressionProvider(IOptions<BrotliCompressionProviderOptions> options)
         {
             if (options == null)
             {
@@ -27,30 +27,25 @@ namespace Microsoft.AspNetCore.ResponseCompression
             Options = options.Value;
         }
 
-        private GzipCompressionProviderOptions Options { get; }
+        private BrotliCompressionProviderOptions Options { get; }
 
         /// <inheritdoc />
-        public string EncodingName => "gzip";
+        public string EncodingName => "br";
 
         /// <inheritdoc />
-        public bool SupportsFlush
-        {
-            get
-            {
-#if NET461
-                return false;
-#elif NETSTANDARD2_0 || NETCOREAPP2_1
-                return true;
-#else
-#error target frameworks need to be updated
-#endif
-            }
-        }
+        public bool SupportsFlush => true;
 
         /// <inheritdoc />
         public Stream CreateStream(Stream outputStream)
         {
-            return new GZipStream(outputStream, Options.Level, leaveOpen: true);
+#if NETCOREAPP2_1
+            return new BrotliStream(outputStream, Options.Level, leaveOpen: true);
+#elif NET461 || NETSTANDARD2_0
+            // Brotli is only supported in .NET Core 2.1+
+            throw new PlatformNotSupportedException();
+#else
+#error Target frameworks need to be updated.
+#endif
         }
     }
 }

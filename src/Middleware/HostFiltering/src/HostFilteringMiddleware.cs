@@ -102,7 +102,11 @@ namespace Microsoft.AspNetCore.HostFiltering
                 throw new InvalidOperationException("No allowed hosts were configured.");
             }
 
-            _logger.LogDebug("Allowed hosts: " + string.Join("; ", allowedHosts));
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                _logger.LogDebug("Allowed hosts: {Hosts}", string.Join("; ", allowedHosts));
+            }
+
             _allowedHosts = allowedHosts;
             return _allowedHosts;
         }
@@ -148,29 +152,26 @@ namespace Microsoft.AspNetCore.HostFiltering
                 // Http/1.1 requires the header but the value may be empty.
                 if (!_options.AllowEmptyHosts)
                 {
-                    _logger.LogInformation($"{context.Request.Protocol} request rejected due to missing or empty host header.");
+                    _logger.LogInformation("{Protocol} request rejected due to missing or empty host header.", context.Request.Protocol);
                     return false;
                 }
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug($"{context.Request.Protocol} request allowed with missing or empty host header.");
-                }
+                _logger.LogDebug("{Protocol} request allowed with missing or empty host header.", context.Request.Protocol);
                 return true;
             }
 
             if (_allowAnyNonEmptyHost == true)
             {
-                _logger.LogTrace($"All hosts are allowed.");
+                _logger.LogTrace("All hosts are allowed.");
                 return true;
             }
 
             if (HostString.MatchesAny(host, allowedHosts))
             {
-                _logger.LogTrace($"The host '{host}' matches an allowed host.");
+                _logger.LogTrace("The host '{Host}' matches an allowed host.", host);
                 return true;
             }
             
-            _logger.LogInformation($"The host '{host}' does not match an allowed host.");
+            _logger.LogInformation("The host '{Host}' does not match an allowed host.", host);
             return false;
         }
     }
