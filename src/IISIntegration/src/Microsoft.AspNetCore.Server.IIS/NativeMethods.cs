@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern unsafe int http_write_response_bytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected);
 
         [DllImport(AspNetCoreModuleDll)]
-        private static extern int http_flush_response_bytes(IntPtr pInProcessHandler, out bool fCompletionExpected);
+        private static extern int http_flush_response_bytes(IntPtr pInProcessHandler, bool fMoreData, out bool fCompletionExpected);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe HttpApiTypes.HTTP_REQUEST_V2* http_get_raw_request(IntPtr pInProcessHandler);
@@ -171,9 +171,9 @@ namespace Microsoft.AspNetCore.Server.IIS
             return http_write_response_bytes(pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
         }
 
-        public static int HttpFlushResponseBytes(IntPtr pInProcessHandler, out bool fCompletionExpected)
+        public static int HttpFlushResponseBytes(IntPtr pInProcessHandler, bool fMoreData, out bool fCompletionExpected)
         {
-            return http_flush_response_bytes(pInProcessHandler, out fCompletionExpected);
+            return http_flush_response_bytes(pInProcessHandler, fMoreData, out fCompletionExpected);
         }
 
         public static unsafe HttpApiTypes.HTTP_REQUEST_V2* HttpGetRawRequest(IntPtr pInProcessHandler)
