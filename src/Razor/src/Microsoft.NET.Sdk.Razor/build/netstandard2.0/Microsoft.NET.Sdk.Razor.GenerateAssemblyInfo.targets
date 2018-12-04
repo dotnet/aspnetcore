@@ -22,7 +22,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorTargetAssemblyInfoInputsCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorTargetAssemblyInfo.cache</_RazorTargetAssemblyInfoInputsCacheFile>
 
     <!-- AssemblyInfo that gets added to the project being compiled -->
-    <_RazorAssemblyInfo>$(IntermediateOutputPath)$(MSBuildProjectName).RazorAssemblyInfo.cs</_RazorAssemblyInfo>
+    <_RazorAssemblyInfo>$(IntermediateOutputPath)$(MSBuildProjectName).RazorAssemblyInfo$(DefaultLanguageSourceExtension)</_RazorAssemblyInfo>
     <_RazorAssemblyInfoInputsCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorAssemblyInfo.cache</_RazorAssemblyInfoInputsCacheFile>
   </PropertyGroup>
 
@@ -160,7 +160,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true'">
       <Compile Remove="$(_RazorAssemblyInfo)" />
-      <Compile Include="$(_RazorAssemblyInfo)" />
+      <CompileBefore Remove="$(_RazorAssemblyInfo)" />
+
+      <Compile Include="$(_RazorAssemblyInfo)" Condition="'$(Language)'=='VB' or '$(Language)'=='C#'" />
+      <CompileBefore Include="$(_RazorAssemblyInfo)" Condition="'$(Language)'=='F#'" />
     </ItemGroup>
 
     <WriteCodeFragment AssemblyAttributes="@(_RazorAssemblyAttribute)" Language="$(Language)" OutputFile="$(_RazorAssemblyInfo)" />
@@ -173,7 +176,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <!-- Generate attributes in the main assembly if we're targeting a C# project and using the Razor Sdk. -->
-    <CoreCompileDependsOn Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(Language)' == 'C#' and '$(GenerateRazorAssemblyInfo)' == 'true'">
+    <CoreCompileDependsOn Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(GenerateRazorAssemblyInfo)' == 'true'">
       $(CoreCompileDependsOn);_GenerateRazorAssemblyInfo
     </CoreCompileDependsOn>
 

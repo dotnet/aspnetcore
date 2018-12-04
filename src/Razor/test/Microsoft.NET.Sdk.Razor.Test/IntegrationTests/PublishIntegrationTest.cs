@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvcFSharp", language: "F#")]
-        public async Task Publish_SimpleMvcFSharp_NoopsWithoutFailing()
+        public async Task Publish_SimpleMvcFSharp()
         {
             var result = await DotnetMSBuild("Publish");
 
@@ -317,8 +317,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "SimpleMvcFSharp.dll");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvcFSharp.pdb");
 
-            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.dll");
-            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
+            Assert.FileExists(result, OutputPath, "SimpleMvcFSharp.Views.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
         }
 
         [Fact]

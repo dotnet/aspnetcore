@@ -469,8 +469,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvcFSharp", language: "F#")]
-        public async Task Build_SimpleMvcFSharp_NoopsWithoutFailing()
+        public async Task Build_SimpleMvcFSharp()
         {
+            var razorAssemblyInfo = Path.Combine(IntermediateOutputPath, "SimpleMvcFSharp.RazorAssemblyInfo.fs");
+            var razorTargetAssemblyInfo = Path.Combine(IntermediateOutputPath, "SimpleMvcFSharp.RazorTargetAssemblyInfo.cs");
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
@@ -480,10 +482,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvcFSharp.dll");
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvcFSharp.pdb");
 
-            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.dll");
-            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvcFSharp.RazorAssemblyInfo.cs");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvcFSharp.RazorAssemblyInfo.fs");
+            Assert.FileExists(result, OutputPath, "SimpleMvcFSharp.Views.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvcFSharp.Views.pdb");
+
+            Assert.FileExists(result, razorAssemblyInfo);
+            Assert.FileDoesNotExist(result, Path.ChangeExtension(razorAssemblyInfo, ".cs"));
+            Assert.FileContains(result, razorAssemblyInfo, "[<assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute(\"SimpleMvcFSharp.Views\")>]");
+
+            Assert.FileExists(result, razorTargetAssemblyInfo);
+            Assert.FileDoesNotExist(result, Path.ChangeExtension(razorTargetAssemblyInfo, ".fs"));
+            Assert.FileContains(result, razorTargetAssemblyInfo, "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(\"Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor\")]");
         }
 
         [Fact]
