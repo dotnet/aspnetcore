@@ -50,11 +50,11 @@ namespace PackageBaselineGenerator
             var tempDir = Path.Combine(Directory.GetCurrentDirectory(), "obj", "tmp");
             Directory.CreateDirectory(tempDir);
 
-            var input = XDocument.Load(Path.Combine(Directory.GetCurrentDirectory(), "baseline.xml"));
+            var input = XDocument.Load(Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml"));
 
             var output = _output.HasValue()
                 ? _output.Value()
-                : Path.Combine(Directory.GetCurrentDirectory(), "Baseline.props");
+                : Path.Combine(Directory.GetCurrentDirectory(), "Baseline.Designer.props");
 
             var baselineVersion = input.Root.Attribute("Version").Value;
 

@@ -51,12 +51,10 @@
     <ShippedRepository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <ShippedRepository Include="Antiforgery" RootPath="$(RepositoryRoot)src\Antiforgery\" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
-    <ShippedRepository Include="BasicMiddleware" />
     <ShippedRepository Include="CORS" RootPath="$(RepositoryRoot)src\CORS\" />
     <ShippedRepository Include="HttpSysServer" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
-    <ShippedRepository Include="Identity" />
+    <ShippedRepository Include="Identity" RootPath="$(RepositoryRoot)src\Identity\" />
     <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
-    <ShippedRepository Include="Localization" />
     <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="Mvc" RootPath="$(RepositoryRoot)src\Mvc\" />
     <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\" />
