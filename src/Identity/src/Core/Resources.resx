@@ -1,0 +1,320 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ConcurrencyFailure" xml:space="preserve">
+    <value>Optimistic concurrency failure, object has been modified.</value>
+    <comment>Error when optimistic concurrency fails</comment>
+  </data>
+  <data name="DefaultError" xml:space="preserve">
+    <value>An unknown failure has occurred.</value>
+    <comment>Default identity result error message</comment>
+  </data>
+  <data name="DuplicateEmail" xml:space="preserve">
+    <value>Email '{0}' is already taken.</value>
+    <comment>Error for duplicate emails</comment>
+  </data>
+  <data name="DuplicateRoleName" xml:space="preserve">
+    <value>Role name '{0}' is already taken.</value>
+    <comment>Error for duplicate roles</comment>
+  </data>
+  <data name="DuplicateUserName" xml:space="preserve">
+    <value>User name '{0}' is already taken.</value>
+    <comment>Error for duplicate user names</comment>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Email '{0}' is invalid.</value>
+    <comment>Invalid email</comment>
+  </data>
+  <data name="InvalidManagerType" xml:space="preserve">
+    <value>Type {0} must derive from {1}&lt;{2}&gt;.</value>
+    <comment>Error when the manager type is not derived correctly</comment>
+  </data>
+  <data name="InvalidPasswordHasherCompatibilityMode" xml:space="preserve">
+    <value>The provided PasswordHasherCompatibilityMode is invalid.</value>
+    <comment>Error when the password hasher doesn't understand the format it's being asked to produce.</comment>
+  </data>
+  <data name="InvalidPasswordHasherIterationCount" xml:space="preserve">
+    <value>The iteration count must be a positive integer.</value>
+    <comment>Error when the iteration count is &lt; 1.</comment>
+  </data>
+  <data name="InvalidRoleName" xml:space="preserve">
+    <value>Role name '{0}' is invalid.</value>
+    <comment>Error for invalid role names</comment>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Invalid token.</value>
+    <comment>Error when a token is not recognized</comment>
+  </data>
+  <data name="InvalidUserName" xml:space="preserve">
+    <value>User name '{0}' is invalid, can only contain letters or digits.</value>
+    <comment>User names can only contain letters or digits</comment>
+  </data>
+  <data name="LoginAlreadyAssociated" xml:space="preserve">
+    <value>A user with this login already exists.</value>
+    <comment>Error when a login already linked</comment>
+  </data>
+  <data name="MustCallAddIdentity" xml:space="preserve">
+    <value>AddIdentity must be called on the service collection.</value>
+    <comment>Error when AddIdentity is not called</comment>
+  </data>
+  <data name="NoTokenProvider" xml:space="preserve">
+    <value>No IUserTwoFactorTokenProvider&lt;{0}&gt; named '{1}' is registered.</value>
+    <comment>Error when there is no IUserTwoFactorTokenProvider</comment>
+  </data>
+  <data name="NullSecurityStamp" xml:space="preserve">
+    <value>User security stamp cannot be null.</value>
+    <comment>Error when a user's security stamp is null.</comment>
+  </data>
+  <data name="PasswordMismatch" xml:space="preserve">
+    <value>Incorrect password.</value>
+    <comment>Error when a password doesn't match</comment>
+  </data>
+  <data name="PasswordRequiresDigit" xml:space="preserve">
+    <value>Passwords must have at least one digit ('0'-'9').</value>
+    <comment>Error when passwords do not have a digit</comment>
+  </data>
+  <data name="PasswordRequiresLower" xml:space="preserve">
+    <value>Passwords must have at least one lowercase ('a'-'z').</value>
+    <comment>Error when passwords do not have a lowercase letter</comment>
+  </data>
+  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
+    <value>Passwords must have at least one non alphanumeric character.</value>
+    <comment>Error when password does not have enough non alphanumeric characters</comment>
+  </data>
+  <data name="PasswordRequiresUpper" xml:space="preserve">
+    <value>Passwords must have at least one uppercase ('A'-'Z').</value>
+    <comment>Error when passwords do not have an uppercase letter</comment>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Passwords must be at least {0} characters.</value>
+    <comment>Error message for passwords that are too short</comment>
+  </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Role {0} does not exist.</value>
+    <comment>Error when a role does not exist</comment>
+  </data>
+  <data name="StoreNotIQueryableRoleStore" xml:space="preserve">
+    <value>Store does not implement IQueryableRoleStore&lt;TRole&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIQueryableUserStore" xml:space="preserve">
+    <value>Store does not implement IQueryableUserStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIRoleClaimStore" xml:space="preserve">
+    <value>Store does not implement IRoleClaimStore&lt;TRole&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserAuthenticationTokenStore" xml:space="preserve">
+    <value>Store does not implement IUserAuthenticationTokenStore&lt;User&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserClaimStore" xml:space="preserve">
+    <value>Store does not implement IUserClaimStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserConfirmationStore" xml:space="preserve">
+    <value>Store does not implement IUserConfirmationStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserEmailStore" xml:space="preserve">
+    <value>Store does not implement IUserEmailStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserLockoutStore" xml:space="preserve">
+    <value>Store does not implement IUserLockoutStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserLoginStore" xml:space="preserve">
+    <value>Store does not implement IUserLoginStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserPasswordStore" xml:space="preserve">
+    <value>Store does not implement IUserPasswordStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserPhoneNumberStore" xml:space="preserve">
+    <value>Store does not implement IUserPhoneNumberStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserRoleStore" xml:space="preserve">
+    <value>Store does not implement IUserRoleStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserSecurityStampStore" xml:space="preserve">
+    <value>Store does not implement IUserSecurityStampStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserAuthenticatorKeyStore" xml:space="preserve">
+    <value>Store does not implement IUserAuthenticatorKeyStore&lt;User&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="StoreNotIUserTwoFactorStore" xml:space="preserve">
+    <value>Store does not implement IUserTwoFactorStore&lt;TUser&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="RecoveryCodeRedemptionFailed" xml:space="preserve">
+    <value>Recovery code redemption failed.</value>
+    <comment>Error when a recovery code is not redeemed.</comment>
+  </data>
+  <data name="UserAlreadyHasPassword" xml:space="preserve">
+    <value>User already has a password set.</value>
+    <comment>Error when AddPasswordAsync called when a user already has a password</comment>
+  </data>
+  <data name="UserAlreadyInRole" xml:space="preserve">
+    <value>User already in role '{0}'.</value>
+    <comment>Error when a user is already in a role</comment>
+  </data>
+  <data name="UserLockedOut" xml:space="preserve">
+    <value>User is locked out.</value>
+    <comment>Error when a user is locked out</comment>
+  </data>
+  <data name="UserLockoutNotEnabled" xml:space="preserve">
+    <value>Lockout is not enabled for this user.</value>
+    <comment>Error when lockout is not enabled</comment>
+  </data>
+  <data name="UserNameNotFound" xml:space="preserve">
+    <value>User {0} does not exist.</value>
+    <comment>Error when a user does not exist</comment>
+  </data>
+  <data name="UserNotInRole" xml:space="preserve">
+    <value>User is not in role '{0}'.</value>
+    <comment>Error when a user is not in the role</comment>
+  </data>
+  <data name="StoreNotIUserTwoFactorRecoveryCodeStore" xml:space="preserve">
+    <value>Store does not implement IUserTwoFactorRecoveryCodeStore&lt;User&gt;.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="PasswordRequiresUniqueChars" xml:space="preserve">
+    <value>Passwords must use at least {0} different characters.</value>
+    <comment>Error message for passwords that are based on similar characters</comment>
+  </data>
+  <data name="NoRoleType" xml:space="preserve">
+    <value>No RoleType was specified, try AddRoles&lt;TRole&gt;().</value>
+    <comment>Error when the IdentityBuilder.RoleType was not specified</comment>
+  </data>
+  <data name="StoreNotIProtectedUserStore" xml:space="preserve">
+    <value>Store does not implement IProtectedUserStore&lt;TUser&gt; which is required when ProtectPersonalData = true.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="NoPersonalDataProtector" xml:space="preserve">
+    <value>No IPersonalDataProtector service was registered, this is required when ProtectPersonalData = true.</value>
+    <comment>Error when there is no IPersonalDataProtector</comment>
+  </data>
+</root>

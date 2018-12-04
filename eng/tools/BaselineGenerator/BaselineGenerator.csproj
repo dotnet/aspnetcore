@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <StartArguments>-o "$(MSBuildThisFileDirectory)../../Baseline.props"</StartArguments>
-    <StartWorkingDirectory>$(MSBuildProjectDirectory)</StartWorkingDirectory>
+    <StartArguments>-o "$(MSBuildThisFileDirectory)../../Baseline.Designer.props"</StartArguments>
+    <StartWorkingDirectory>$(MSBuildThisFileDirectory)../../</StartWorkingDirectory>
   </PropertyGroup>
 
   <ItemGroup>
