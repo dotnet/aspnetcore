@@ -8,14 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-<<<<<<< HEAD:src/Microsoft.AspNetCore.ResponseCompression/Microsoft.AspNetCore.ResponseCompression.csproj
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(MicrosoftAspNetCoreHttpExtensionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
-=======
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.Extensions.Options" />
->>>>>>> m21:src/Middleware/ResponseCompression/src/Microsoft.AspNetCore.ResponseCompression.csproj
   </ItemGroup>
 
 </Project>

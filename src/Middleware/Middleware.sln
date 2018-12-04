@@ -13,143 +13,145 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServer", "WebSockets\sa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets", "WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj", "{BECAA6A1-1AA4-415E-ADF3-07C103333826}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutobahnTestApp", "WebSockets\test\AutobahnTestApp\AutobahnTestApp.csproj", "{76B25812-AAFB-45BA-A71A-24F0C654ADFB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets.ConformanceTests", "WebSockets\test\ConformanceTests\Microsoft.AspNetCore.WebSockets.ConformanceTests.csproj", "{88BDEE69-4DE3-40B5-A478-677EA355FB52}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets.Tests", "WebSockets\test\UnitTests\Microsoft.AspNetCore.WebSockets.Tests.csproj", "{93970702-1BDB-4A8C-B7F6-020294464BB6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics", "{BDA541A2-1C14-4E71-85C1-D970828453C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics", "Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj", "{D84EFF9A-8CB9-411C-A7E3-43AF9043221E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics", "Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj", "{D84EFF9A-8CB9-411C-A7E3-43AF9043221E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2C971E2A-540D-4026-ABE9-519656E9485E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diagnostics.FunctionalTests", "Diagnostics\test\FunctionalTests\Diagnostics.FunctionalTests.csproj", "{F7730746-125D-40D8-AA3D-FA9736121D44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diagnostics.FunctionalTests", "Diagnostics\test\FunctionalTests\Diagnostics.FunctionalTests.csproj", "{F7730746-125D-40D8-AA3D-FA9736121D44}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{48F74384-B082-4210-9F00-BA62830621DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibraryWithPortablePdbs", "Diagnostics\test\testassets\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.csproj", "{D301185E-BEEA-4CC7-95C8-5C07F330F977}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibraryWithPortablePdbs", "Diagnostics\test\testassets\ClassLibraryWithPortablePdbs\ClassLibraryWithPortablePdbs.csproj", "{D301185E-BEEA-4CC7-95C8-5C07F330F977}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseErrorPageSample", "Diagnostics\test\testassets\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj", "{7C6C524E-6C7A-4579-B984-7217E9A0E2B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseErrorPageSample", "Diagnostics\test\testassets\DatabaseErrorPageSample\DatabaseErrorPageSample.csproj", "{7C6C524E-6C7A-4579-B984-7217E9A0E2B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeveloperExceptionPageSample", "Diagnostics\test\testassets\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj", "{16FD80C3-D80D-4B46-92A8-6C43A8E54A46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeveloperExceptionPageSample", "Diagnostics\test\testassets\DeveloperExceptionPageSample\DeveloperExceptionPageSample.csproj", "{16FD80C3-D80D-4B46-92A8-6C43A8E54A46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExceptionHandlerSample", "Diagnostics\test\testassets\ExceptionHandlerSample\ExceptionHandlerSample.csproj", "{112AE83E-595C-4343-8205-8CD0BE4F7562}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExceptionHandlerSample", "Diagnostics\test\testassets\ExceptionHandlerSample\ExceptionHandlerSample.csproj", "{112AE83E-595C-4343-8205-8CD0BE4F7562}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatusCodePagesSample", "Diagnostics\test\testassets\StatusCodePagesSample\StatusCodePagesSample.csproj", "{28EE1B22-E57E-4006-8017-F36348245F08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StatusCodePagesSample", "Diagnostics\test\testassets\StatusCodePagesSample\StatusCodePagesSample.csproj", "{28EE1B22-E57E-4006-8017-F36348245F08}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WelcomePageSample", "Diagnostics\test\testassets\WelcomePageSample\WelcomePageSample.csproj", "{1709D0A6-D597-44F2-9657-873368066795}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WelcomePageSample", "Diagnostics\test\testassets\WelcomePageSample\WelcomePageSample.csproj", "{1709D0A6-D597-44F2-9657-873368066795}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Tests", "Diagnostics\test\UnitTests\Microsoft.AspNetCore.Diagnostics.Tests.csproj", "{70A402DC-5DEF-47B1-988F-9A0E7F2CAC43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Tests", "Diagnostics\test\UnitTests\Microsoft.AspNetCore.Diagnostics.Tests.csproj", "{70A402DC-5DEF-47B1-988F-9A0E7F2CAC43}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics.Abstractions", "Diagnostics.Abstractions", "{3E557C8B-504F-40C1-9ED5-03E5F4A05FB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj", "{F8BB4CDB-766A-4223-8699-3157CE8FDBDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj", "{F8BB4CDB-766A-4223-8699-3157CE8FDBDC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics.EntityFrameworkCore", "Diagnostics.EntityFrameworkCore", "{7FB67FE0-AC08-4C33-9904-8D33CE4D84F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj", "{DFF52006-A8FC-478E-A781-12255391C4A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj", "{DFF52006-A8FC-478E-A781-12255391C4A4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{26AE655E-C5B9-49AE-ACDB-92B429CC9582}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diagnostics.EFCore.FunctionalTests", "Diagnostics.EntityFrameworkCore\test\FunctionalTests\Diagnostics.EFCore.FunctionalTests.csproj", "{76DBAB75-DFAB-4676-BECA-B3E3F4A19E81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diagnostics.EFCore.FunctionalTests", "Diagnostics.EntityFrameworkCore\test\FunctionalTests\Diagnostics.EFCore.FunctionalTests.csproj", "{76DBAB75-DFAB-4676-BECA-B3E3F4A19E81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests", "Diagnostics.EntityFrameworkCore\test\UnitTests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.csproj", "{8D4E57C5-7A34-492C-AF22-BBAC6C06AEB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests", "Diagnostics.EntityFrameworkCore\test\UnitTests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.csproj", "{8D4E57C5-7A34-492C-AF22-BBAC6C06AEB4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MiddlewareAnalysis", "MiddlewareAnalysis", "{91CFB5DE-CE68-4156-9153-6C597D9F524E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8989BEC1-6D0A-4E11-A09C-B31FD6222748}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiddlewareAnalysisSample", "MiddlewareAnalysis\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj", "{18F82832-9164-434E-BAEF-6579B3CFCDF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiddlewareAnalysisSample", "MiddlewareAnalysis\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj", "{18F82832-9164-434E-BAEF-6579B3CFCDF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.MiddlewareAnalysis", "MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj", "{7E00616F-9D5C-4318-99CB-8F6ECFA82515}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.MiddlewareAnalysis", "MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj", "{7E00616F-9D5C-4318-99CB-8F6ECFA82515}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.MiddlewareAnalysis.Tests", "MiddlewareAnalysis\test\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj", "{009E3DE7-AFC7-4C66-852D-29BF73257176}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.MiddlewareAnalysis.Tests", "MiddlewareAnalysis\test\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj", "{009E3DE7-AFC7-4C66-852D-29BF73257176}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HealthChecks", "HealthChecks", "{C5393E56-AA5F-46BB-A552-ECFE2C92C83F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.HealthChecks", "HealthChecks\src\Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj", "{E4D35034-A705-4013-AC0F-40077B5F52D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.HealthChecks", "HealthChecks\src\Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj", "{E4D35034-A705-4013-AC0F-40077B5F52D2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{1859297F-585A-4B2E-A08C-35F9FDE6E38A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{2E8C6990-DD0F-4C1E-9DF4-D99D42A67582}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HealthChecksSample", "HealthChecks\test\testassets\HealthChecksSample\HealthChecksSample.csproj", "{12943699-52C8-498E-AA23-2C6BF22F2F74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HealthChecksSample", "HealthChecks\test\testassets\HealthChecksSample\HealthChecksSample.csproj", "{12943699-52C8-498E-AA23-2C6BF22F2F74}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests", "HealthChecks\test\UnitTests\Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests.csproj", "{3F1A1463-7951-48AC-85D6-B1CDBBBBE50F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests", "HealthChecks\test\UnitTests\Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests.csproj", "{3F1A1463-7951-48AC-85D6-B1CDBBBBE50F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HealthChecks.EntityFrameworkCore", "HealthChecks.EntityFrameworkCore", "{B1E18419-B9E8-4FF1-8A48-012FC01A9E3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore", "HealthChecks.EntityFrameworkCore\src\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj", "{DA051189-4133-4131-A8B4-0F63EE8552D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore", "HealthChecks.EntityFrameworkCore\src\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj", "{DA051189-4133-4131-A8B4-0F63EE8552D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests", "HealthChecks.EntityFrameworkCore\test\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests.csproj", "{7553B6FF-9EA0-4BC2-A720-783685CB2F8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests", "HealthChecks.EntityFrameworkCore\test\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests.csproj", "{7553B6FF-9EA0-4BC2-A720-783685CB2F8D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HostFiltering", "HostFiltering", "{9298FDED-65F9-4022-A747-FAEC3ADF3AD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostFilteringSample", "HostFiltering\sample\HostFilteringSample.csproj", "{9475AF28-CFBD-4C8E-A8E3-80646C514E4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostFilteringSample", "HostFiltering\sample\HostFilteringSample.csproj", "{9475AF28-CFBD-4C8E-A8E3-80646C514E4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HostFiltering", "HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj", "{E5DAC3F7-A648-489C-9064-7C744423C68B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFiltering", "HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj", "{E5DAC3F7-A648-489C-9064-7C744423C68B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HostFiltering.Tests", "HostFiltering\test\Microsoft.AspNetCore.HostFiltering.Tests.csproj", "{B5EC74C6-B242-4EDB-B5FC-DB43C0A47728}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFiltering.Tests", "HostFiltering\test\Microsoft.AspNetCore.HostFiltering.Tests.csproj", "{B5EC74C6-B242-4EDB-B5FC-DB43C0A47728}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HttpOverrides", "HttpOverrides", "{09F7106F-2C85-4356-8944-921564A7A7B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpOverridesSample", "HttpOverrides\sample\HttpOverridesSample.csproj", "{59A0E5E6-B133-4D27-A07B-BF440A4B45C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpOverridesSample", "HttpOverrides\sample\HttpOverridesSample.csproj", "{59A0E5E6-B133-4D27-A07B-BF440A4B45C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HttpOverrides", "HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj", "{B9BFF064-0B38-4177-893E-BF813D7AE5A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides", "HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj", "{B9BFF064-0B38-4177-893E-BF813D7AE5A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HttpOverrides.Tests", "HttpOverrides\test\Microsoft.AspNetCore.HttpOverrides.Tests.csproj", "{8F80CE33-5770-455C-8A0F-D3C1D9CBC781}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides.Tests", "HttpOverrides\test\Microsoft.AspNetCore.HttpOverrides.Tests.csproj", "{8F80CE33-5770-455C-8A0F-D3C1D9CBC781}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HttpsPolicy", "HttpsPolicy", "{3C781334-F0FA-4AD1-B72D-EA6028AA079D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpsPolicySample", "HttpsPolicy\sample\HttpsPolicySample.csproj", "{F897DB9B-AB2A-4074-9EEF-954FF9982407}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpsPolicySample", "HttpsPolicy\sample\HttpsPolicySample.csproj", "{F897DB9B-AB2A-4074-9EEF-954FF9982407}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HttpsPolicy", "HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj", "{3A9C4E2E-57A0-41EE-8F94-441E6A98F7E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy", "HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj", "{3A9C4E2E-57A0-41EE-8F94-441E6A98F7E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HttpsPolicy.Tests", "HttpsPolicy\test\Microsoft.AspNetCore.HttpsPolicy.Tests.csproj", "{A397501E-0FDE-4409-B14C-C6CC55C2DC4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy.Tests", "HttpsPolicy\test\Microsoft.AspNetCore.HttpsPolicy.Tests.csproj", "{A397501E-0FDE-4409-B14C-C6CC55C2DC4D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ResponseCompression", "ResponseCompression", "{AE0E9F81-00BE-4A07-9C7D-C17E2B050C5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResponseCompressionSample", "ResponseCompression\sample\ResponseCompressionSample.csproj", "{AB153240-3F22-4C3C-AD4D-283419617B54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResponseCompressionSample", "ResponseCompression\sample\ResponseCompressionSample.csproj", "{AB153240-3F22-4C3C-AD4D-283419617B54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCompression", "ResponseCompression\src\Microsoft.AspNetCore.ResponseCompression.csproj", "{4B880213-14C2-49CA-8B89-FB8A362085B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression", "ResponseCompression\src\Microsoft.AspNetCore.ResponseCompression.csproj", "{4B880213-14C2-49CA-8B89-FB8A362085B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCompression.Tests", "ResponseCompression\test\Microsoft.AspNetCore.ResponseCompression.Tests.csproj", "{1E9519F2-30D2-4119-85EA-5F473BF744CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression.Tests", "ResponseCompression\test\Microsoft.AspNetCore.ResponseCompression.Tests.csproj", "{1E9519F2-30D2-4119-85EA-5F473BF744CE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rewrite", "Rewrite", "{4150EBDB-57AB-4C69-A4F1-068152F4EFF5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RewriteSample", "Rewrite\sample\RewriteSample.csproj", "{B41776DE-6CB6-4B99-BBB5-323DF16BE07D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RewriteSample", "Rewrite\sample\RewriteSample.csproj", "{B41776DE-6CB6-4B99-BBB5-323DF16BE07D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Rewrite", "Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj", "{37E12A04-E80E-4C8C-A9EA-2C44AD340884}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Rewrite", "Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj", "{37E12A04-E80E-4C8C-A9EA-2C44AD340884}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Rewrite.Tests", "Rewrite\test\Microsoft.AspNetCore.Rewrite.Tests.csproj", "{11F435FE-0264-4465-A208-885ECBFADABF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Rewrite.Tests", "Rewrite\test\Microsoft.AspNetCore.Rewrite.Tests.csproj", "{11F435FE-0264-4465-A208-885ECBFADABF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization", "Localization", "{17871C77-BFDD-4728-B3FD-BA17B01D1D5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationSample", "Localization\sample\LocalizationSample.csproj", "{2448BF25-39D5-43A0-8FED-E25ECE8ED1C6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalizationSample", "Localization\sample\LocalizationSample.csproj", "{2448BF25-39D5-43A0-8FED-E25ECE8ED1C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization", "Localization\src\Microsoft.AspNetCore.Localization.csproj", "{01647DD9-C1BD-479F-8507-8E219EDBA899}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization", "Localization\src\Microsoft.AspNetCore.Localization.csproj", "{01647DD9-C1BD-479F-8507-8E219EDBA899}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{10E7800C-A3E3-4A9C-9F3A-3095D23FFD58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.FunctionalTests", "Localization\test\FunctionalTests\Microsoft.AspNetCore.Localization.FunctionalTests.csproj", "{96ECFAFA-1119-4301-81F6-66CBE0BD4C2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.FunctionalTests", "Localization\test\FunctionalTests\Microsoft.AspNetCore.Localization.FunctionalTests.csproj", "{96ECFAFA-1119-4301-81F6-66CBE0BD4C2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Tests", "Localization\test\UnitTests\Microsoft.AspNetCore.Localization.Tests.csproj", "{63A76741-BFDA-447A-ACA9-F7A4AA5D26DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.Tests", "Localization\test\UnitTests\Microsoft.AspNetCore.Localization.Tests.csproj", "{63A76741-BFDA-447A-ACA9-F7A4AA5D26DD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{38B6D9DD-F868-4B97-A258-A07A46CDF2F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationWebsite", "Localization\testassets\LocalizationWebsite\LocalizationWebsite.csproj", "{EC572E03-740A-4259-A2DD-2A68AFA3C080}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalizationWebsite", "Localization\testassets\LocalizationWebsite\LocalizationWebsite.csproj", "{EC572E03-740A-4259-A2DD-2A68AFA3C080}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesClassLibraryNoAttribute", "Localization\testassets\ResourcesClassLibraryNoAttribute\ResourcesClassLibraryNoAttribute.csproj", "{157B4019-EE10-4EC2-BA0D-933D513C673E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourcesClassLibraryNoAttribute", "Localization\testassets\ResourcesClassLibraryNoAttribute\ResourcesClassLibraryNoAttribute.csproj", "{157B4019-EE10-4EC2-BA0D-933D513C673E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourcesClassLibraryWithAttribute", "Localization\testassets\ResourcesClassLibraryWithAttribute\ResourcesClassLibraryWithAttribute.csproj", "{EEFA1A6F-3B7E-4A40-AF2A-EA2DBFC09501}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResourcesClassLibraryWithAttribute", "Localization\testassets\ResourcesClassLibraryWithAttribute\ResourcesClassLibraryWithAttribute.csproj", "{EEFA1A6F-3B7E-4A40-AF2A-EA2DBFC09501}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization.Routing", "Localization.Routing", "{650A4392-A1A3-495B-8AB9-3361CFB6A7C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Routing", "Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj", "{826E46DB-2801-450B-9B3F-D4CB473579E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.Routing", "Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj", "{826E46DB-2801-450B-9B3F-D4CB473579E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Routing.Tests", "Localization.Routing\test\Microsoft.AspNetCore.Localization.Routing.Tests.csproj", "{0233F7EB-B8A4-4B75-A8A7-F1FF87DBF779}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.Routing.Tests", "Localization.Routing\test\Microsoft.AspNetCore.Localization.Routing.Tests.csproj", "{0233F7EB-B8A4-4B75-A8A7-F1FF87DBF779}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression.Performance", "ResponseCompression\perf\Microsoft.AspNetCore.ResponseCompression.Performance.csproj", "{27E3DED6-A27C-4816-A6A1-B6E4783492F2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutobahnTestApp", "WebSockets\test\ConformanceTests\AutobahnTestApp\AutobahnTestApp.csproj", "{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -197,18 +199,6 @@ Global
 		{BECAA6A1-1AA4-415E-ADF3-07C103333826}.Release|x64.Build.0 = Release|Any CPU
 		{BECAA6A1-1AA4-415E-ADF3-07C103333826}.Release|x86.ActiveCfg = Release|Any CPU
 		{BECAA6A1-1AA4-415E-ADF3-07C103333826}.Release|x86.Build.0 = Release|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Debug|x64.Build.0 = Debug|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Debug|x86.Build.0 = Debug|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Release|x64.ActiveCfg = Release|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Release|x64.Build.0 = Release|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Release|x86.ActiveCfg = Release|Any CPU
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB}.Release|x86.Build.0 = Release|Any CPU
 		{88BDEE69-4DE3-40B5-A478-677EA355FB52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{88BDEE69-4DE3-40B5-A478-677EA355FB52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88BDEE69-4DE3-40B5-A478-677EA355FB52}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -773,6 +763,30 @@ Global
 		{0233F7EB-B8A4-4B75-A8A7-F1FF87DBF779}.Release|x64.Build.0 = Release|Any CPU
 		{0233F7EB-B8A4-4B75-A8A7-F1FF87DBF779}.Release|x86.ActiveCfg = Release|Any CPU
 		{0233F7EB-B8A4-4B75-A8A7-F1FF87DBF779}.Release|x86.Build.0 = Release|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Debug|x64.Build.0 = Debug|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Debug|x86.Build.0 = Debug|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Release|x64.ActiveCfg = Release|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Release|x64.Build.0 = Release|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Release|x86.ActiveCfg = Release|Any CPU
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2}.Release|x86.Build.0 = Release|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Debug|x64.Build.0 = Debug|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Debug|x86.Build.0 = Debug|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Release|x64.ActiveCfg = Release|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Release|x64.Build.0 = Release|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Release|x86.ActiveCfg = Release|Any CPU
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -782,7 +796,6 @@ Global
 		{0792C20B-1D18-4D7C-9C0F-A6F45A0F378E} = {A86EE055-ACD3-4BAC-A51D-1B3C71067AE0}
 		{4E5F5FCC-172C-44D9-BEA0-39098A79CD0B} = {A86EE055-ACD3-4BAC-A51D-1B3C71067AE0}
 		{BECAA6A1-1AA4-415E-ADF3-07C103333826} = {E0D9867D-C23D-43EB-8D9C-DE0398A25432}
-		{76B25812-AAFB-45BA-A71A-24F0C654ADFB} = {E0D9867D-C23D-43EB-8D9C-DE0398A25432}
 		{88BDEE69-4DE3-40B5-A478-677EA355FB52} = {E0D9867D-C23D-43EB-8D9C-DE0398A25432}
 		{93970702-1BDB-4A8C-B7F6-020294464BB6} = {E0D9867D-C23D-43EB-8D9C-DE0398A25432}
 		{D84EFF9A-8CB9-411C-A7E3-43AF9043221E} = {BDA541A2-1C14-4E71-85C1-D970828453C0}
@@ -838,6 +851,8 @@ Global
 		{EEFA1A6F-3B7E-4A40-AF2A-EA2DBFC09501} = {38B6D9DD-F868-4B97-A258-A07A46CDF2F2}
 		{826E46DB-2801-450B-9B3F-D4CB473579E2} = {650A4392-A1A3-495B-8AB9-3361CFB6A7C1}
 		{0233F7EB-B8A4-4B75-A8A7-F1FF87DBF779} = {650A4392-A1A3-495B-8AB9-3361CFB6A7C1}
+		{27E3DED6-A27C-4816-A6A1-B6E4783492F2} = {AE0E9F81-00BE-4A07-9C7D-C17E2B050C5F}
+		{A9866990-FDAD-4D58-99EE-3C8730B1F4B1} = {E0D9867D-C23D-43EB-8D9C-DE0398A25432}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83786312-A93B-4BB4-AB06-7C6913A59AFA}
