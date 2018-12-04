@@ -25,4 +25,8 @@
   <Target Name="_IntrospectGetCopyToOutputDirectoryItems">
     <Message Text="AllItemsFullPathWithTargetPath: %(AllItemsFullPathWithTargetPath.TargetPath)" Importance="High" />
   </Target>
+
+  <Target Name="_IntrospectProjectCapabilityItems">
+    <Message Text="ProjectCapability: %(ProjectCapability.Identity)" Importance="High" />
+  </Target>
 </Project>

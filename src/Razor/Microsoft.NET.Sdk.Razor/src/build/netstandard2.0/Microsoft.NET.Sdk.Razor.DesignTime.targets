@@ -26,7 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Defines the ability to understand the configuration for the Razor language service provided by
       the runtime/toolset packages. Introduced in 2.1
     -->
-    <ProjectCapability Include="DotNetCoreRazorConfiguration"/>
+    <ProjectCapability Include="DotNetCoreRazorConfiguration" Condition="'$(_TargetingNETCoreApp30OrLater)'=='true'"/>
   </ItemGroup>
 
   <!--

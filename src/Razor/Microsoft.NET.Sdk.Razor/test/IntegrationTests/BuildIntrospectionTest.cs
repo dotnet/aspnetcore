@@ -15,6 +15,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("SimpleMvc11")]
+        public async Task RazorSdk_DoesNotAddCoreRazorConfigurationTo11Projects()
+        {
+            var result = await DotnetMSBuild("_IntrospectProjectCapabilityItems");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "ProjectCapability: DotNetCoreRazor");
+            Assert.BuildOutputDoesNotContainLine(result, "ProjectCapability: DotNetCoreRazorConfiguration");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorSdk_AddsProjectCapabilities()
+        {
+            var result = await DotnetMSBuild("_IntrospectProjectCapabilityItems");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "ProjectCapability: DotNetCoreRazor");
+            Assert.BuildOutputContainsLine(result, "ProjectCapability: DotNetCoreRazorConfiguration");
+        }
+
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorSdk_AddsCshtmlFilesToUpToDateCheckInput()
         {
