@@ -473,23 +473,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ApplicationAssemblyPartIsListedAsFirstAssembly()
-        {
-            // Act
-            var response = await Client.GetStringAsync("Home/GetAssemblyPartData");
-            var assemblyParts = JsonConvert.DeserializeObject<IList<string>>(response);
-            var expected = new[]
-            {
-                "BasicWebSite",
-                "Microsoft.AspNetCore.Mvc.TagHelpers",
-                "Microsoft.AspNetCore.Mvc.Razor",
-            };
-
-            // Assert
-            Assert.Equal(expected, assemblyParts);
-        }
-
-        [Fact]
         public async Task ViewDataProperties_AreTransferredToViews()
         {
             // Act

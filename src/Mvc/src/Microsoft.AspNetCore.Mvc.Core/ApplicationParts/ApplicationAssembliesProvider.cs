@@ -147,134 +147,26 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             return new AssemblyItem(assembly, relatedAssemblies);
         }
 
-        // Returns a list of libraries that references the assemblies in <see cref="ReferenceAssemblies"/>.
-        // By default it returns all assemblies that reference any of the primary MVC assemblies
-        // while ignoring MVC assemblies.
+        // Returns a list of libraries are not the <see cref="ReferenceAssemblies"/>.
         // Internal for unit testing
         internal static IEnumerable<RuntimeLibrary> GetCandidateLibraries(DependencyContext dependencyContext)
         {
-            // When using the Microsoft.AspNetCore.App shared runtimes, entries in the RuntimeLibraries
-            // get "erased" and it is no longer accurate to query to determine a library's dependency closure.
-            // We'll use CompileLibraries to calculate the dependency graph and runtime library to resolve assemblies to inspect.
-            var candidatesResolver = new CandidateResolver(dependencyContext.CompileLibraries, ReferenceAssemblies);
+            var nonDuplicateLibraries = new Dictionary<string, RuntimeLibrary>(StringComparer.OrdinalIgnoreCase);
             foreach (var library in dependencyContext.RuntimeLibraries)
             {
-                if (candidatesResolver.IsCandidate(library))
+                if (!nonDuplicateLibraries.TryAdd(library.Name, library))
+                {
+                    throw new InvalidOperationException(Resources.FormatCandidateResolver_DifferentCasedReference(library.Name));
+                }
+            }
+
+            var candidateLibraries = nonDuplicateLibraries.Values;
+            foreach (var library in candidateLibraries)
+            {
+                if (!ReferenceAssemblies.Contains(library.Name))
                 {
                     yield return library;
                 }
-            }
-        }
-
-        private class CandidateResolver
-        {
-            private readonly IDictionary<string, Dependency> _compileLibraries;
-
-            public CandidateResolver(IReadOnlyList<Library> compileLibraries, ISet<string> referenceAssemblies)
-            {
-                var compileLibrariesWithNoDuplicates = new Dictionary<string, Dependency>(StringComparer.OrdinalIgnoreCase);
-                foreach (var library in compileLibraries)
-                {
-                    if (compileLibrariesWithNoDuplicates.ContainsKey(library.Name))
-                    {
-                        throw new InvalidOperationException(Resources.FormatCandidateResolver_DifferentCasedReference(library.Name));
-                    }
-
-                    compileLibrariesWithNoDuplicates.Add(library.Name, CreateDependency(library, referenceAssemblies));
-                }
-
-                _compileLibraries = compileLibrariesWithNoDuplicates;
-            }
-
-            public bool IsCandidate(Library library)
-            {
-                var classification = ComputeClassification(library.Name);
-                return classification == DependencyClassification.ReferencesMvc;
-            }
-
-            private Dependency CreateDependency(Library library, ISet<string> referenceAssemblies)
-            {
-                var classification = DependencyClassification.Unknown;
-                if (referenceAssemblies.Contains(library.Name))
-                {
-                    classification = DependencyClassification.MvcReference;
-                }
-
-                return new Dependency(library, classification);
-            }
-
-            private DependencyClassification ComputeClassification(string dependency)
-            {
-                if (!_compileLibraries.ContainsKey(dependency))
-                {
-                    // Library does not have runtime dependency. Since we can't infer
-                    // anything about it's references, we'll assume it does not have a reference to Mvc.
-                    return DependencyClassification.DoesNotReferenceMvc;
-                }
-
-                var candidateEntry = _compileLibraries[dependency];
-                if (candidateEntry.Classification != DependencyClassification.Unknown)
-                {
-                    return candidateEntry.Classification;
-                }
-                else
-                {
-                    var classification = DependencyClassification.DoesNotReferenceMvc;
-                    foreach (var candidateDependency in candidateEntry.Library.Dependencies)
-                    {
-                        var dependencyClassification = ComputeClassification(candidateDependency.Name);
-                        if (dependencyClassification == DependencyClassification.ReferencesMvc ||
-                            dependencyClassification == DependencyClassification.MvcReference)
-                        {
-                            classification = DependencyClassification.ReferencesMvc;
-                            break;
-                        }
-                    }
-
-                    candidateEntry.Classification = classification;
-
-                    return classification;
-                }
-            }
-
-            private class Dependency
-            {
-                public Dependency(Library library, DependencyClassification classification)
-                {
-                    Library = library;
-                    Classification = classification;
-                }
-
-                public Library Library { get; }
-
-                public DependencyClassification Classification { get; set; }
-
-                public override string ToString()
-                {
-                    return $"Library: {Library.Name}, Classification: {Classification}";
-                }
-            }
-
-            private enum DependencyClassification
-            {
-                Unknown = 0,
-
-                /// <summary>
-                /// References (directly or transitively) one of the Mvc packages listed in
-                /// <see cref="ReferenceAssemblies"/>.
-                /// </summary>
-                ReferencesMvc = 1,
-
-                /// <summary>
-                /// Does not reference (directly or transitively) one of the Mvc packages listed by
-                /// <see cref="ReferenceAssemblies"/>.
-                /// </summary>
-                DoesNotReferenceMvc = 2,
-
-                /// <summary>
-                /// One of the references listed in <see cref="ReferenceAssemblies"/>.
-                /// </summary>
-                MvcReference = 3,
             }
         }
 
