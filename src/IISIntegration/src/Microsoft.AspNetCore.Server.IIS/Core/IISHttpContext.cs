@@ -271,7 +271,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private bool StatusCodeCanHaveBody()
         {
             return StatusCode != 204
-                && StatusCode != 205
                 && StatusCode != 304;
         }
 

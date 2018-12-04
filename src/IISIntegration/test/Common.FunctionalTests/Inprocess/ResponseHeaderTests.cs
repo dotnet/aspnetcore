@@ -78,10 +78,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
+        [RequiresNewHandler]
         [InlineData(204, "GET")]
-        [InlineData(205, "GET")]
         [InlineData(304, "GET")]
-        public async Task ResponseCode(int code, string method)
+        public async Task TransferEncodingNotSetForStatusCodes(int code, string method)
         {
             var request = new HttpRequestMessage(new HttpMethod(method), _fixture.Client.BaseAddress + $"SetCustomErorCode?code={code}");
             var response = await _fixture.Client.SendAsync(request);
