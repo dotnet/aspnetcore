@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
-    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "></PlatformTarget>
+    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.2' "></PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,5 +24,24 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
     <PackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
   </ItemGroup>
+
+  <Target Name="CopyViews" AfterTargets="Build" Condition="$(TargetFramework) != ''">
+    <ItemGroup>
+      <_IdentityUIViewsAssemblies Include="$(MSBuildThisFileDirectory)..\..\src\UI\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_IdentityUIViewsAssemblies)"
+      DestinationFolder="$(OutputPath)" />
+  </Target>
+
+  <Target Name="VerifyBuildOutputs" AfterTargets="Build" Condition="$(TargetFramework) != ''">
+    <ItemGroup>
+      <ExpectedOutputFile Include="$(OutputPath)Microsoft.AspNetCore.Identity.UI.Views.V3.dll" />
+      <ExpectedOutputFile Include="$(OutputPath)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
+    </ItemGroup>
+
+    <Error Text="Unable to find precompiled view file %(ExpectedOutputFile.Identity)"
+           Condition="!Exists('%(ExpectedOutputFile.Identity)')" />
+  </Target>
 
 </Project>
