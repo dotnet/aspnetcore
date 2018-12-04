@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             SetResponseHeaders();
 
             EnsureIOInitialized();
-            var canHaveNonEmptyBody = ResponseCanHaveBody();
+            var canHaveNonEmptyBody = StatusCodeCanHaveBody();
             if (flushHeaders)
             {
                 try
@@ -268,12 +268,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private bool ResponseCanHaveBody()
+        private bool StatusCodeCanHaveBody()
         {
             return StatusCode != 204
                 && StatusCode != 205
-                && StatusCode != 304
-                && Method.Equals("HEAD", StringComparison.InvariantCultureIgnoreCase);
+                && StatusCode != 304;
         }
 
         private void InitializeRequestIO()

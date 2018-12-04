@@ -81,10 +81,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(204, "GET")]
         [InlineData(205, "GET")]
         [InlineData(304, "GET")]
-        [InlineData(200, "HEAD")]
-        [InlineData(204, "HEAD")]
-        [InlineData(205, "HEAD")]
-        [InlineData(304, "HEAD")]
         public async Task ResponseCode(int code, string method)
         {
             var request = new HttpRequestMessage(new HttpMethod(method), _fixture.Client.BaseAddress + $"SetCustomErorCode?code={code}");
