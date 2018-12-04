@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Net.Http.Headers;
@@ -73,6 +75,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             // ReadAsStringAsync returns empty string for empty results
             Assert.Equal(body ?? string.Empty, await response.Content.ReadAsStringAsync());
+        }
+
+        [ConditionalTheory]
+        [RequiresNewHandler]
+        [InlineData(204, "GET")]
+        [InlineData(304, "GET")]
+        public async Task TransferEncodingNotSetForStatusCodes(int code, string method)
+        {
+            var request = new HttpRequestMessage(new HttpMethod(method), _fixture.Client.BaseAddress + $"SetCustomErorCode?code={code}");
+            var response = await _fixture.Client.SendAsync(request);
+            Assert.Equal((HttpStatusCode)code, response.StatusCode);
+            Assert.DoesNotContain(response.Headers, h => h.Key.Equals("transfer-encoding", StringComparison.InvariantCultureIgnoreCase));
         }
 
         [ConditionalFact]
