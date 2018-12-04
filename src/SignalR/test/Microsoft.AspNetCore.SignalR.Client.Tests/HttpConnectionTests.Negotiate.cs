@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public Task ConnectionCannotBeStartedIfNoTransportProvidedByServer()
             {
-                return RunInvalidNegotiateResponseTest<InvalidOperationException>(ResponseUtils.CreateNegotiationContent(transportTypes: HttpTransportType.None), "None of the transports supported by the client are supported by the server.");
+                return RunInvalidNegotiateResponseTest<NoTransportSupportedException>(ResponseUtils.CreateNegotiationContent(transportTypes: HttpTransportType.None), "None of the transports supported by the client are supported by the server.");
             }
 
             [Theory]
