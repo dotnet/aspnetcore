@@ -9,6 +9,7 @@
       Microsoft.AspNetCore.Server.IISIntegration;
       Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
       Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+      Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
     </PackagesInPatch>
   </PropertyGroup>
 
