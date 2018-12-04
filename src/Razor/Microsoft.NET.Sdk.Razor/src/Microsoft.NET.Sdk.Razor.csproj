@@ -58,26 +58,8 @@
     <Copy SourceFiles="@(ProjectOutput)" DestinationFiles="$(SdkOutputPath)tasks\%(RecursiveDir)%(FileName)%(Extension)" />
   </Target>
 
-  <ItemGroup>
-    <SignedPackageFile Include="$(SdkOutputPath)tasks\net46\$(TargetName).dll" Certificate="$(AssemblySigningCertName)"  />
-    <SignedPackageFile Include="$(SdkOutputPath)tasks\netstandard2.0\$(TargetName).dll" Certificate="$(AssemblySigningCertName)"  />
-    <SignedPackageFile Include="$(SdkOutputPath)extensions\**\*.dll" Certificate="$(AssemblySigningCertName)"  />
-
-    <SignedPackageFile Include="$(SdkOutputPath)tools\netcoreapp3.0\rzc.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="$(SdkOutputPath)tools\netcoreapp3.0\Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
-
-    <!-- Binaries that should be signed by corefx/roslyn -->
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\Microsoft.CodeAnalysis.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\Microsoft.CodeAnalysis.CSharp.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\runtimes\unix\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
-    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\runtimes\win\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
-  </ItemGroup>
-
   <Target Name="PopulateNuspec" AfterTargets="InitializeStandardNuspecProperties" DependsOnTargets="LayoutDependencies">
-
     <PropertyGroup>
-      <!-- Make sure we create a symbols.nupkg -->
-      <IncludeSymbols>true</IncludeSymbols>
       <NuspecProperties>
         id=$(MSBuildProjectName);
         version=$(PackageVersion);
