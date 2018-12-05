@@ -37,12 +37,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             get
             {
                 yield return new EncodingTestData("gzip", expectedBodyLength: 24);
-#if NETCOREAPP2_2
                 yield return new EncodingTestData("br", expectedBodyLength: 20);
-#elif NET461
-#else
-#error Target frameworks need to be updated.
-#endif
             }
         }
 
@@ -77,14 +72,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "br" }, responseType: TextPlain);
 
-#if NET461
-            CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
-#elif NETCOREAPP2_2
             CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
             AssertCompressedWithLog(logMessages, "br");
-#else
-#error Target frameworks need to be updated.
-#endif
         }
 
         [Theory]
@@ -94,18 +83,10 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain);
 
-#if NET461
-            CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
-            AssertCompressedWithLog(logMessages, "gzip");
-#elif NETCOREAPP2_2
             CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
             AssertCompressedWithLog(logMessages, "br");
-#else
-#error Target frameworks need to be updated.
-#endif
         }
 
-#if NETCOREAPP2_2
         [Theory]
         [InlineData("gzip", "br")]
         [InlineData("br", "gzip")]
@@ -122,10 +103,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
             AssertCompressedWithLog(logMessages, "gzip");
         }
-#elif NET461
-#else
-#error Target frameworks need to be updated.
-#endif
 
         [Fact]
         public async Task Request_AcceptUnknown_NotCompressed()
@@ -339,15 +316,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
 
-#if NET461
-            CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
-            AssertCompressedWithLog(logMessages, "gzip");
-#elif NETCOREAPP2_2
             CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
             AssertCompressedWithLog(logMessages, "br");
-#else
-#error Target frameworks need to be updated.
-#endif
         }
 
         [Fact]
@@ -699,16 +669,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             request.Headers.AcceptEncoding.ParseAdd(encoding);
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
-#if NET461 // Flush not supported, compression disabled
-            Assert.NotNull(response.Content.Headers.GetValues(HeaderNames.ContentMD5));
-            Assert.Empty(response.Content.Headers.ContentEncoding);
-#elif NETCOREAPP2_2 // Flush supported, compression enabled
             Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out _));
             Assert.Single(response.Content.Headers.ContentEncoding, encoding);
-#else
-#error Target frameworks need to be updated.
-#endif
 
             var body = await response.Content.ReadAsStreamAsync();
 
@@ -764,16 +726,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             request.Headers.AcceptEncoding.ParseAdd(encoding);
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-
-#if NET461 // Flush not supported, compression disabled
-            Assert.NotNull(response.Content.Headers.GetValues(HeaderNames.ContentMD5));
-            Assert.Empty(response.Content.Headers.ContentEncoding);
-#elif NETCOREAPP2_2 // Flush supported, compression enabled
             Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out _));
             Assert.Single(response.Content.Headers.ContentEncoding, encoding);
-#else
-#error Target framework needs to be updated
-#endif
 
             var body = await response.Content.ReadAsStreamAsync();
 

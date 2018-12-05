@@ -30,22 +30,13 @@ namespace Microsoft.AspNetCore.ResponseCompression
         private BrotliCompressionProviderOptions Options { get; }
 
         /// <inheritdoc />
-        public string EncodingName => "br";
+        public string EncodingName { get; } = "br";
 
         /// <inheritdoc />
-        public bool SupportsFlush => true;
+        public bool SupportsFlush { get; } = true;
 
         /// <inheritdoc />
         public Stream CreateStream(Stream outputStream)
-        {
-#if NETCOREAPP2_1
-            return new BrotliStream(outputStream, Options.Level, leaveOpen: true);
-#elif NET461 || NETSTANDARD2_0
-            // Brotli is only supported in .NET Core 2.1+
-            throw new PlatformNotSupportedException();
-#else
-#error Target frameworks need to be updated.
-#endif
-        }
+            => new BrotliStream(outputStream, Options.Level, leaveOpen: true);
     }
 }

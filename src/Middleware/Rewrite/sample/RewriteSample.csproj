@@ -7,7 +7,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Rewrite" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
   </ItemGroup>
 
 </Project>

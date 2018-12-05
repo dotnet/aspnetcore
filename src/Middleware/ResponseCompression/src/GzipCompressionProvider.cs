@@ -30,27 +30,13 @@ namespace Microsoft.AspNetCore.ResponseCompression
         private GzipCompressionProviderOptions Options { get; }
 
         /// <inheritdoc />
-        public string EncodingName => "gzip";
+        public string EncodingName { get; } = "gzip";
 
         /// <inheritdoc />
-        public bool SupportsFlush
-        {
-            get
-            {
-#if NET461
-                return false;
-#elif NETSTANDARD2_0 || NETCOREAPP2_1
-                return true;
-#else
-#error target frameworks need to be updated
-#endif
-            }
-        }
+        public bool SupportsFlush { get; } = true;
 
         /// <inheritdoc />
         public Stream CreateStream(Stream outputStream)
-        {
-            return new GZipStream(outputStream, Options.Level, leaveOpen: true);
-        }
+            => new GZipStream(outputStream, Options.Level, leaveOpen: true);
     }
 }
