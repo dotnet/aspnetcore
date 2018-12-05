@@ -1,0 +1,6 @@
+MarkupBlock - [0..4)::4 - [<br/]
+    MarkupTagBlock - [0..4)::4 - [<br/]
+        MarkupTextLiteral - [0..4)::4 - [<br/] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[br];
+            ForwardSlash;[/];

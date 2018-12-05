@@ -1,0 +1,21 @@
+RazorDocument - [0..33)::33 - [<text></text @* razor comment *@>]
+    MarkupBlock - [0..33)::33
+        MarkupTagBlock - [0..6)::6 - [<text>]
+            MarkupTextLiteral - [0..6)::6 - [<text>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[text];
+                CloseAngle;[>];
+        MarkupTagBlock - [6..13)::7 - [</text ]
+            MarkupTextLiteral - [6..13)::7 - [</text ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[text];
+                Whitespace;[ ];
+        RazorComment - [13..32)::19
+            RazorCommentTransition;[@];
+            RazorCommentStar;[*];
+            RazorCommentLiteral;[ razor comment ];
+            RazorCommentStar;[*];
+            RazorCommentTransition;[@];
+        MarkupTextLiteral - [32..33)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            CloseAngle;[>];

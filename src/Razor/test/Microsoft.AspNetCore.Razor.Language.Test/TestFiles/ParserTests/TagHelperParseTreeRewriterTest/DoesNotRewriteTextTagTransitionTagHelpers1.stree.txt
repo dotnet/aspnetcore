@@ -1,0 +1,18 @@
+RazorDocument - [0..24)::24 - [<text>Hello World</text>]
+    MarkupBlock - [0..24)::24
+        MarkupTagHelperElement - [0..24)::24 - text[StartTagAndEndTag] - texttaghelper
+            MarkupTagHelperStartTag - [0..6)::6
+                MarkupTextLiteral - [0..6)::6 - [<text>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[text];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [6..17)::11 - [Hello World] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[Hello];
+                Whitespace;[ ];
+                Text;[World];
+            MarkupTagHelperEndTag - [17..24)::7
+                MarkupTextLiteral - [17..24)::7 - [</text>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[text];
+                    CloseAngle;[>];

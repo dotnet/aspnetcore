@@ -1,0 +1,16 @@
+CSharpCodeBlock - [0..14)::14 - [@val?[abc]?[2]]
+    CSharpImplicitExpression - [0..14)::14
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpImplicitExpressionBody - [1..14)::13
+            CSharpCodeBlock - [1..14)::13
+                CSharpExpressionLiteral - [1..14)::13 - [val?[abc]?[2]] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    Identifier;[val];
+                    QuestionMark;[?];
+                    LeftBracket;[[];
+                    Identifier;[abc];
+                    RightBracket;[]];
+                    QuestionMark;[?];
+                    LeftBracket;[[];
+                    IntegerLiteral;[2];
+                    RightBracket;[]];

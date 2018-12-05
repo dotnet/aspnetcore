@@ -5,12 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Razor\src\Microsoft.AspNetCore.Razor\TagHelpers\CaseSensitiveBoundAttributeComparer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+
+    <PackageReference Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion)" />
   </ItemGroup>
 
 </Project>

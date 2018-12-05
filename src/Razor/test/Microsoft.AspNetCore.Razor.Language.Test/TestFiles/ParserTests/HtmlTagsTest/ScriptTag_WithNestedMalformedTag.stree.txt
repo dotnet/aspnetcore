@@ -1,0 +1,30 @@
+RazorDocument - [0..39)::39 - [<script>var four = 4; /* </ */</script>]
+    MarkupBlock - [0..39)::39
+        MarkupTagBlock - [0..8)::8 - [<script>]
+            MarkupTextLiteral - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
+        MarkupTextLiteral - [8..30)::22 - [var four = 4; /* </ */] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[var];
+            Whitespace;[ ];
+            Text;[four];
+            Whitespace;[ ];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[4;];
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            Text;[*];
+            Whitespace;[ ];
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Whitespace;[ ];
+            Text;[*];
+            ForwardSlash;[/];
+        MarkupTagBlock - [30..39)::9 - [</script>]
+            MarkupTextLiteral - [30..39)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

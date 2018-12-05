@@ -1,0 +1,100 @@
+﻿<Project>
+  <PropertyGroup>
+    <PackageDependsOn>$(PackageDependsOn);GenerateMPack</PackageDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetMPackArtifactInfo</GetArtifactInfoDependsOn>
+    <AddinName>Microsoft.VisualStudio.Mac.RazorAddin</AddinName>
+    <AddinDirectory>$(RepositoryRoot)tooling\$(AddinName)\</AddinDirectory>
+    <MPackArtifactCategory>shipoob</MPackArtifactCategory>
+
+    <MPackIntermediateOutputPath>$(IntermediateDir)mpack\</MPackIntermediateOutputPath>
+    <AddinOutputPath>$(AddinDirectory)bin\$(Configuration)\net472\</AddinOutputPath>
+    <LanguageServiceName>Microsoft.VisualStudio.Mac.LanguageServices.Razor</LanguageServiceName>
+    <LanguageServiceOutputPath>$(RepositoryRoot)src\$(LanguageServiceName)\bin\$(Configuration)\net472\</LanguageServiceOutputPath>
+    <MPackName>$(AddinName)_$(AddinVersion)</MPackName>
+    <MPackFileName>$(MPackName).mpack</MPackFileName>
+    <MPackOutputPath>$(BuildDir)$(MPackFileName)</MPackOutputPath>
+    <MPackZipFile>$(BuildDir)$(MPackName).zip</MPackZipFile>
+    <MPackManifest>$(AddinDirectory)Properties\_Manifest.addin.xml</MPackManifest>
+    <AddinInfoFilePath>$(MPackIntermediateOutputPath)addin.info</AddinInfoFilePath>
+  </PropertyGroup>
+
+  <Import Project="$(AddinDirectory)AddinMetadata.props" />
+
+  <!-- This target is required so KoreBuild can generate a bill of materials with relevant information about the .mpack files. -->
+  <Target Name="GetMPackArtifactInfo">
+    <ItemGroup>
+      <ArtifactInfo Include="$(MPackOutputPath)">
+        <ArtifactType>MPackFile</ArtifactType>
+        <PackageId>$(AddinName)</PackageId>
+        <Version>$(AddinVersion)</Version>
+        <Category>$(MPackArtifactCategory)</Category>
+      </ArtifactInfo>
+
+      <!-- Certificate=None means don't sign the .mpack file itself, but sign its contents. -->
+      <FilesToSign Include="$(MPackOutputPath)" Certificate="None" />
+      <FilesToSign Include="Microsoft.VisualStudio.Mac.RazorAddin.dll" Certificate="$(AssemblySigningCertName)" Container="$(MPackOutputPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateMPack">
+    <!--
+      In our case the mpack archive requires the following:
+      1. An addin.info
+      2. An addin binary (Microsoft.VisualStudio.Mac.RazorAddin.dll)
+        a. _Manifest.addin.xml embedded
+        b. Addin assembly attributes for metadata 
+      3. All language service binaries
+    -->
+
+    <MakeDir Directories="$(MPackIntermediateOutputPath)" Condition="!Exists('$(MPackIntermediateOutputPath)')" />
+    <Delete Files="$(MPackOutputPath)" Condition="Exists('$(MPackOutputPath)')" />
+
+    <!-- We need to resolve the language service assemblies to generate an addin.info for the mpack -->
+    <XmlPeek XmlInputPath="$(MPackManifest)" Query="/ExtensionModel/Runtime/Import/@assembly">
+      <Output TaskParameter="Result" ItemName="LanguageServiceAssemblyNames" />
+    </XmlPeek>
+
+    <!-- We need to resolve the addin dependencies to generate an addin.info for the mpack -->
+    <XmlPeek XmlInputPath="$(MPackManifest)" Query="/ExtensionModel/Dependencies/Addin">
+      <Output TaskParameter="Result" ItemName="AddinDependencies" />
+    </XmlPeek>
+
+    <ItemGroup>
+      <AddinInfoLine Include="&lt;Addin id=&quot;$(AddinId)&quot; namespace=&quot;$(AddinNamespace)&quot; version=&quot;$(AddinVersion)&quot; name=&quot;$(AddinDetailedName)&quot; author=&quot;$(Authors)&quot; description=&quot;$(Description)&quot; category=&quot;$(AddinCategory)&quot;&gt;" />
+      <AddinInfoLine Include="  &lt;Runtime&gt;" />
+      <AddinInfoLine Include="    &lt;Import assembly=&quot;%(LanguageServiceAssemblyNames.Identity)&quot; /&gt;" />
+      <AddinInfoLine Include="    &lt;Import assembly=&quot;$(AddinName).dll&quot; /&gt;" />
+      <AddinInfoLine Include="  &lt;/Runtime&gt;" />
+      <AddinInfoLine Include="  &lt;Dependencies&gt;" />
+      <AddinInfoLine Include="    %(AddinDependencies.Identity)" />
+      <AddinInfoLine Include="  &lt;/Dependencies&gt;" />
+      <AddinInfoLine Include="&lt;/Addin&gt;" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+      <LanguageServiceAssembly Include="$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)" Condition="Exists('$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)')" />
+      <LanguageServiceAssembly Include="%(LanguageServiceExtensionAssembly.Identity)" />
+      <LanguageServicePDB Include="%(LanguageServiceAssembly.RootDir)%(Directory)%(FileName).pdb" Condition="Exists('%(LanguageServiceAssembly.RootDir)%(Directory)%(FileName).pdb')" />
+    </ItemGroup>
+
+    <!-- Generate the addin.info and gather sources for mpack zipping-->
+    <WriteLinesToFile File="$(AddinInfoFilePath)" Lines="@(AddinInfoLine)" Overwrite="true" />
+    <Copy SourceFiles="%(LanguageServiceAssembly.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <Copy SourceFiles="%(LanguageServicePDB.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <Copy SourceFiles="$(AddinOutputPath)$(AddinName).dll" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <Copy SourceFiles="$(AddinOutputPath)$(AddinName).pdb" DestinationFolder="$(MPackIntermediateOutputPath)" />
+
+    <ItemGroup>
+      <MPackFile Include="$(MPackIntermediateOutputPath)\*" />
+    </ItemGroup>
+
+    <ZipArchive
+      File="$(MPackOutputPath)"
+      SourceFiles="@(MPackFile)"
+      WorkingDirectory="$(MPackIntermediateOutputPath)" />
+  </Target>
+
+</Project>

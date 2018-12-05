@@ -1,0 +1,14 @@
+RazorDocument - [0..13)::13 - [LFFoo</div>LF]
+    MarkupBlock - [0..13)::13
+        MarkupTextLiteral - [0..5)::5 - [LFFoo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+            Text;[Foo];
+        MarkupElement - [5..11)::6
+            MarkupTagBlock - [5..11)::6 - [</div>]
+                MarkupTextLiteral - [5..11)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[div];
+                    CloseAngle;[>];
+        MarkupTextLiteral - [11..13)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];

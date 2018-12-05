@@ -1,0 +1,18 @@
+MarkupBlock - [0..12)::12 - [<foo @bar />]
+    MarkupTagBlock - [0..12)::12 - [<foo @bar />]
+        MarkupTextLiteral - [0..5)::5 - [<foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[foo];
+            Whitespace;[ ];
+        CSharpCodeBlock - [5..9)::4
+            CSharpImplicitExpression - [5..9)::4
+                CSharpTransition - [5..6)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [6..9)::3
+                    CSharpCodeBlock - [6..9)::3
+                        CSharpExpressionLiteral - [6..9)::3 - [bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                            Identifier;[bar];
+        MarkupTextLiteral - [9..12)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

@@ -1,0 +1,17 @@
+MarkupBlock - [0..18)::18 - [<foo></!-- bar -->]
+    MarkupTagBlock - [0..5)::5 - [<foo>]
+        MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+    MarkupTagBlock - [5..18)::13 - [</!-- bar -->]
+        MarkupTextLiteral - [5..18)::13 - [</!-- bar -->] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Bang;[!];
+            DoubleHyphen;[--];
+            Whitespace;[ ];
+            Text;[bar];
+            Whitespace;[ ];
+            DoubleHyphen;[--];
+            CloseAngle;[>];

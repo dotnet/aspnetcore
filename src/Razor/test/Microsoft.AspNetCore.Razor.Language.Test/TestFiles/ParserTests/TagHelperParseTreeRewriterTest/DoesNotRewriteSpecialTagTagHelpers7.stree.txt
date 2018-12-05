@@ -1,0 +1,27 @@
+RazorDocument - [0..36)::36 - [<foo><![CDATA[ Hello World ]]></foo>]
+    MarkupBlock - [0..36)::36
+        MarkupTagBlock - [0..5)::5 - [<foo>]
+            MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[foo];
+                CloseAngle;[>];
+        MarkupTextLiteral - [5..30)::25 - [<![CDATA[ Hello World ]]>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Bang;[!];
+            LeftBracket;[[];
+            Text;[CDATA];
+            LeftBracket;[[];
+            Whitespace;[ ];
+            Text;[Hello];
+            Whitespace;[ ];
+            Text;[World];
+            Whitespace;[ ];
+            RightBracket;[]];
+            RightBracket;[]];
+            CloseAngle;[>];
+        MarkupTagBlock - [30..36)::6 - [</foo>]
+            MarkupTextLiteral - [30..36)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[foo];
+                CloseAngle;[>];

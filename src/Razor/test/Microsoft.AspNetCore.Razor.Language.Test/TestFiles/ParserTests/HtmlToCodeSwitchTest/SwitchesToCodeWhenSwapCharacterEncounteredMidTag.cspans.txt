@@ -1,0 +1,4 @@
+Markup span at (0:0,0 [5] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [12] )
+Transition span at (5:0,5 [1] ) (Accepts:None) - Parent: Expression block at (5:0,5 [4] )
+Code span at (6:0,6 [3] ) (Accepts:NonWhitespace) - Parent: Expression block at (5:0,5 [4] )
+Markup span at (9:0,9 [3] ) (Accepts:None) - Parent: Tag block at (0:0,0 [12] )

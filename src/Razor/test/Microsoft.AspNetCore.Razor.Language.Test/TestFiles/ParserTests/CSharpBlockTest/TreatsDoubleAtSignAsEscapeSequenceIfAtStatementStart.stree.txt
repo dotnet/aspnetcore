@@ -1,0 +1,22 @@
+CSharpCodeBlock - [0..25)::25 - [if(foo) { @@class.Foo() }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..10)::10 - [if(foo) { ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+    CSharpEphemeralTextLiteral - [10..11)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:Any
+        Transition;[@];
+    CSharpStatementLiteral - [11..25)::14 - [@class.Foo() }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Transition;[@];
+        Keyword;[class];
+        Dot;[.];
+        Identifier;[Foo];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        RightBrace;[}];

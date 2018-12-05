@@ -1,0 +1,19 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MarkupInCodeBlock_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (2:0,2 [38] MarkupInCodeBlock.cshtml)
+                    IntermediateToken - (2:0,2 [38] MarkupInCodeBlock.cshtml) - CSharp - \n    for(int i = 1; i <= 10; i++) {\n
+                HtmlContent - (40:2,0 [27] MarkupInCodeBlock.cshtml)
+                    IntermediateToken - (40:2,0 [8] MarkupInCodeBlock.cshtml) - Html -         
+                    IntermediateToken - (48:2,8 [3] MarkupInCodeBlock.cshtml) - Html - <p>
+                    IntermediateToken - (51:2,11 [16] MarkupInCodeBlock.cshtml) - Html - Hello from C#, #
+                CSharpExpression - (69:2,29 [12] MarkupInCodeBlock.cshtml)
+                    IntermediateToken - (69:2,29 [12] MarkupInCodeBlock.cshtml) - CSharp - i.ToString()
+                HtmlContent - (82:2,42 [6] MarkupInCodeBlock.cshtml)
+                    IntermediateToken - (82:2,42 [4] MarkupInCodeBlock.cshtml) - Html - </p>
+                    IntermediateToken - (86:2,46 [2] MarkupInCodeBlock.cshtml) - Html - \n
+                CSharpCode - (88:3,0 [7] MarkupInCodeBlock.cshtml)
+                    IntermediateToken - (88:3,0 [7] MarkupInCodeBlock.cshtml) - CSharp -     }\n

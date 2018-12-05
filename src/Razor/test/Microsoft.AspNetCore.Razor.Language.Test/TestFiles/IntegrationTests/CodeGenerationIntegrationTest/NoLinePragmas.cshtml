@@ -1,0 +1,38 @@
+﻿@{
+    int i = 1;
+}
+
+@while(i <= 10) {
+    <p>Hello from C#, #@(i)</p>
+    i += 1;
+}
+
+@if(i == 11) {
+    <p>We wrote 10 lines!</p>
+}
+
+@switch(i) {
+    case 11:
+        <p>No really, we wrote 10 lines!</p>
+        break;
+    default:
+        <p>Actually, we didn't...</p>
+        break;
+}
+
+@for(int j = 1; j <= 10; j += 2) {
+    <p>Hello again from C#, #@(j)</p>
+}
+
+@try {
+    <p>That time, we wrote 5 lines!</p>
+} catch(Exception ex) {
+    <p>Oh no! An error occurred: @(ex.Message)</p>
+}
+
+@* With has no equivalent in C# *@
+<p>i is now @i</p>
+
+@lock(new object()) {
+    <p>This block is locked, for your security!</p>
+}

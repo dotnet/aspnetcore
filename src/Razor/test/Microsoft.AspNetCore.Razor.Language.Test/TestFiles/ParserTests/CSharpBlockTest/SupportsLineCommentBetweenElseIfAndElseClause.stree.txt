@@ -1,0 +1,48 @@
+CSharpCodeBlock - [0..75)::75 - [if(foo) { bar(); } else if(bar) { baz(); }LF// FooLF// BarLFelse { biz(); }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..75)::75 - [if(foo) { bar(); } else if(bar) { baz(); }LF// FooLF// BarLFelse { biz(); }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[bar];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[else];
+        Whitespace;[ ];
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[bar];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[baz];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        NewLine;[LF];
+        CSharpComment;[// Foo];
+        NewLine;[LF];
+        CSharpComment;[// Bar];
+        NewLine;[LF];
+        Keyword;[else];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[biz];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

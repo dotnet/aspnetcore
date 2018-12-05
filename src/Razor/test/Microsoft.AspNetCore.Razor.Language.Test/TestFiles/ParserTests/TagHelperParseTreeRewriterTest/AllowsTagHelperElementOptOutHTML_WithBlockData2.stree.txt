@@ -1,0 +1,11 @@
+RazorDocument - [0..5)::5 - [</!p>]
+    MarkupBlock - [0..5)::5
+        MarkupTagBlock - [0..5)::5 - [</!p>]
+            MarkupTextLiteral - [0..2)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+            RazorMetaCode - [2..3)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [3..5)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[p];
+                CloseAngle;[>];

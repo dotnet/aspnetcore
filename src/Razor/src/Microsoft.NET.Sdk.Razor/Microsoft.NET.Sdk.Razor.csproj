@@ -1,0 +1,96 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
+    <TargetFrameworks>netcoreapp3.0;netstandard2.0;net46</TargetFrameworks>
+
+    <TargetName>Microsoft.NET.Sdk.Razor.Tasks</TargetName>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <Serviceable>true</Serviceable>
+    <SdkOutputPath>bin\$(Configuration)\sdk-output\</SdkOutputPath>
+    <!-- Do not disable ApiCheck. We need to be aware of when we make changes to the Tasks sicne they need to be backwards compatible. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netstandard2.0'" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='netcoreapp3.0'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\ServerProtocol\*.cs">
+      <Link>Shared\ServerProtocol\%(FileName)</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\PipeName.cs">
+      <Link>Shared\PipeName.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\MutexName.cs">
+      <Link>Shared\MutexName.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Client.cs">
+      <Link>Shared\Client.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <Target Name="LayoutDependencies" BeforeTargets="Build" Condition="'$(IsInnerBuild)' != 'true'">
+    <!-- Layout tasks, compiler, and extensions in the sdk-output folder. The entire folder structure gets packaged as-is into the SDK -->
+    <MSBuild
+      Projects="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj"
+      Properties="PublishDir=$(MSBuildProjectDirectory)\$(SdkOutputPath)tools\netcoreapp3.0;TargetFramework=netcoreapp3.0"
+      Targets="Publish" />
+
+    <ItemGroup>
+      <MvcRazorExtenionOutput Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(MvcRazorExtenionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" />
+
+    <ItemGroup>
+      <ProjectOutput Include="..\Microsoft.NET.Sdk.Razor\bin\$(Configuration)\net46*\Microsoft.NET.Sdk.Razor.Tasks.*" />
+      <ProjectOutput Include="..\Microsoft.NET.Sdk.Razor\bin\$(Configuration)\netstandard2.0*\Microsoft.NET.Sdk.Razor.Tasks.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ProjectOutput)" DestinationFiles="$(SdkOutputPath)tasks\%(RecursiveDir)%(FileName)%(Extension)" />
+  </Target>
+
+  <ItemGroup>
+    <SignedPackageFile Include="$(SdkOutputPath)tasks\net46\$(TargetName).dll" Certificate="$(AssemblySigningCertName)"  />
+    <SignedPackageFile Include="$(SdkOutputPath)tasks\netstandard2.0\$(TargetName).dll" Certificate="$(AssemblySigningCertName)"  />
+    <SignedPackageFile Include="$(SdkOutputPath)extensions\**\*.dll" Certificate="$(AssemblySigningCertName)"  />
+
+    <SignedPackageFile Include="$(SdkOutputPath)tools\netcoreapp3.0\rzc.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(SdkOutputPath)tools\netcoreapp3.0\Newtonsoft.Json.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+
+    <!-- Binaries that should be signed by corefx/roslyn -->
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\Microsoft.CodeAnalysis.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\Microsoft.CodeAnalysis.CSharp.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\runtimes\unix\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(SdkOutputPath)tools\netcoreapp3.0\runtimes\win\lib\netstandard1.3\System.Text.Encoding.CodePages.dll" />
+  </ItemGroup>
+
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="LayoutDependencies">
+
+    <PropertyGroup>
+      <!-- Make sure we create a symbols.nupkg -->
+      <IncludeSymbols>true</IncludeSymbols>
+      <NuspecProperties>
+        id=$(MSBuildProjectName);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        licenseUrl=$(PackageLicenseUrl);
+        projectUrl=$(PackageProjectUrl);
+        iconUrl=$(PackageIconUrl);
+        copyright=$(Copyright);
+        description=$(Description);
+        tags=$([MSBuild]::Escape($(PackageTags)));
+        serviceable=$(Serviceable);
+        repositoryUrl=$(RepositoryUrl);
+        repositoryCommit=$(RepositoryCommit);
+        targetframework=$(TargetFramework);
+        outputpath=$(OutputPath)\sdk-output;
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

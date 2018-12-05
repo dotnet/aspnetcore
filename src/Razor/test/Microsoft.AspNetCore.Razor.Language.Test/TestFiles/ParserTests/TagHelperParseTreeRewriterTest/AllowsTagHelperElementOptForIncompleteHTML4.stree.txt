@@ -1,0 +1,15 @@
+RazorDocument - [0..10)::10 - [<!p class=]
+    MarkupBlock - [0..10)::10
+        MarkupTagBlock - [0..10)::10 - [<!p class=]
+            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [2..3)::1 - [p] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[p];
+            MarkupAttributeBlock - [3..10)::7 - [ class=]
+                MarkupTextLiteral - [3..4)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                MarkupTextLiteral - [4..9)::5 - [class] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[class];
+                Equals;[=];

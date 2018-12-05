@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  
+  <PropertyGroup>
+    <RazorSdkDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
+    <Copyright>© Microsoft</Copyright>
+    <Product>Razor Test</Product>
+    <Company>Microsoft</Company>
+    <Description>ClassLibrary Description</Description>
+
+    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
+    <RazorLangVersion>3.0</RazorLangVersion>
+    <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RunningAsTest)' == ''">
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'==''">
+    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'!=''">
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
+  </ItemGroup>
+
+  <!-- Test Placeholder -->
+
+</Project>

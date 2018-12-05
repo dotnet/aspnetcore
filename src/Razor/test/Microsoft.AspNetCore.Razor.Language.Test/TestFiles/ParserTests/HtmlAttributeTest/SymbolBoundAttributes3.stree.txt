@@ -1,0 +1,23 @@
+MarkupBlock - [0..19)::19 - [<a (click)='Foo' />]
+    MarkupTagBlock - [0..19)::19 - [<a (click)='Foo' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..16)::14 - [ (click)='Foo']
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..10)::7 - [(click)] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[(click)];
+            Equals;[=];
+            MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+            GenericBlock - [12..15)::3
+                MarkupLiteralAttributeValue - [12..15)::3 - [Foo]
+                    MarkupTextLiteral - [12..15)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Foo];
+            MarkupTextLiteral - [15..16)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [16..19)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

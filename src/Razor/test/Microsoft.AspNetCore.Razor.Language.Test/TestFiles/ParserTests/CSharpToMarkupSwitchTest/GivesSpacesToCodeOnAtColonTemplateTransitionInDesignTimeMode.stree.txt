@@ -1,0 +1,30 @@
+CSharpCodeBlock - [0..29)::29 - [Foo(    LF@:<p>Foo</p>    LF)]
+    CSharpImplicitExpression - [0..29)::29
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpImplicitExpressionBody - [0..29)::29
+            CSharpCodeBlock - [0..29)::29
+                CSharpExpressionLiteral - [0..10)::10 - [Foo(    LF] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14
+                    Identifier;[Foo];
+                    LeftParenthesis;[(];
+                    Whitespace;[    ];
+                    NewLine;[LF];
+                CSharpTemplateBlock - [10..28)::18
+                    MarkupBlock - [10..28)::18
+                        MarkupTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        RazorMetaCode - [11..12)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+                            Colon;[:];
+                        MarkupTextLiteral - [12..28)::16 - [<p>Foo</p>    LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
+                            Text;[Foo];
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
+                            Whitespace;[    ];
+                            NewLine;[LF];
+                CSharpExpressionLiteral - [28..29)::1 - [)] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    RightParenthesis;[)];

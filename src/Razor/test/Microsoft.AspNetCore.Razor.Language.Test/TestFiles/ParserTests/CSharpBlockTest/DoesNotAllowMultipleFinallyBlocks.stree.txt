@@ -1,0 +1,39 @@
+CSharpCodeBlock - [0..55)::55 - [try { var foo = new { } } finally { var foo = new { } }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..55)::55 - [try { var foo = new { } } finally { var foo = new { } }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[try];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Keyword;[new];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        Keyword;[finally];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Keyword;[new];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        RightBrace;[}];

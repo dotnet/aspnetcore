@@ -1,0 +1,18 @@
+RazorDocument - [0..17)::17 - [@addTagHelper Foo]
+    MarkupBlock - [0..17)::17
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..17)::17
+            RazorDirective - [0..17)::17
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..17)::16
+                    RazorMetaCode - [1..13)::12 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[addTagHelper];
+                    CSharpCodeBlock - [13..17)::4
+                        MarkupTextLiteral - [13..14)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:None
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [14..17)::3 - [Foo] - Gen<AddTagHelper:{Foo;Foo;;} [RZ1036(14:0,14 [3] )]> - SpanEditHandler;Accepts:AnyExceptNewline
+                            Identifier;[Foo];
+        MarkupTextLiteral - [17..17)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

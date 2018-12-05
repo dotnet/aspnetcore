@@ -1,0 +1,29 @@
+CSharpCodeBlock - [0..53)::53 - [try { bar(); } /* Foo */ /* Bar */ finally { baz(); }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..53)::53 - [try { bar(); } /* Foo */ /* Bar */ finally { baz(); }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[try];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[bar];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];
+        Whitespace;[ ];
+        CSharpComment;[/* Foo */];
+        Whitespace;[ ];
+        CSharpComment;[/* Bar */];
+        Whitespace;[ ];
+        Keyword;[finally];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[baz];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

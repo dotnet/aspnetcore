@@ -1,0 +1,345 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Current">
+  <PropertyGroup>
+    <VsixVersion>16.0</VsixVersion>
+    <!-- VS does not like letters in package versions -->
+    <VSIXBuildNumber Condition="'$(BuildNumber)' == 't000'">99999</VSIXBuildNumber>
+    <VSIXBuildNumber Condition="'$(VSIXBuildNumber)' == ''">$(BuildNumber)</VSIXBuildNumber>
+    <VsixVersion Condition="'$(VSIXBuildNumber)'!=''">$(VsixVersion).$(VSIXBuildNumber)</VsixVersion>
+    <VsixVersion Condition="'$(VSIXBuildNumber)'==''">$(VsixVersion).999999</VsixVersion>
+    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <UseCodebase>true</UseCodebase>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>
+    <!-- Use the RoslynDev Experimental instance so we can mingle with local builds of Roslyn -->
+    <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
+    <!-- Make sure debug launches the RoslynDev instance as well. -->
+    <StartAction>Program</StartAction>
+    <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix RoslynDev /log</StartArguments>
+    <!-- Required to place the vsix in the right location by WTE MSI -->
+    <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
+    <ExtensionInstallationFolder>Microsoft\RazorLanguageServices</ExtensionInstallationFolder>
+    <IsProductComponent>true</IsProductComponent>
+    <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <IncludePackageReferencesInVSIXContainer>false</IncludePackageReferencesInVSIXContainer>
+  </PropertyGroup>
+  <Import Project="..\..\version.props" />
+  <Import Project="..\..\build\sources.props" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{D66B45B5-CBFD-4947-81F1-F30AB80EA992}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.VisualStudio.RazorExtension</RootNamespace>
+    <AssemblyName>Microsoft.VisualStudio.RazorExtension</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;RAZOR_EXTENSION_DEVELOPER_MODE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AboutDialogInfoAttribute.cs" />
+    <Compile Include="DocumentInfo\RazorDocumentInfoViewModel.cs" />
+    <Compile Include="DocumentInfo\RazorDocumentInfoWindow.cs" />
+    <Compile Include="DocumentInfo\RazorDocumentInfoWindowCommand.cs" />
+    <Compile Include="DocumentInfo\RazorDocumentInfoWindowControl.xaml.cs">
+      <DependentUpon>RazorDocumentInfoWindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Behaviors\ItemSelectedBehavior.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RazorInfo\DirectiveCollectionViewModel.cs" />
+    <Compile Include="RazorInfo\DirectiveItemViewModel.cs" />
+    <Compile Include="RazorInfo\DocumentCollectionViewModel.cs" />
+    <Compile Include="RazorInfo\DocumentItemViewModel.cs" />
+    <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="RazorInfo\NullToEnabledConverter.cs" />
+    <Compile Include="RazorInfo\ProjectViewModel.cs" />
+    <Compile Include="RazorInfo\ProjectPropertyItemViewModel.cs" />
+    <Compile Include="RazorInfo\RazorInfoToolWindow.cs" />
+    <Compile Include="RazorInfo\RazorInfoToolWindowCommand.cs" />
+    <Compile Include="RazorInfo\RazorInfoViewModel.cs" />
+    <Compile Include="RazorInfo\TagHelperCollectionViewModel.cs" />
+    <Compile Include="RazorPackage.cs" />
+    <Compile Include="RazorInfo\ProjectPropertyCollectionViewModel.cs" />
+    <Compile Include="RelayCommand.cs" />
+    <Compile Include="RazorInfo\TagHelperItemViewModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="razorLanguageService.servicehub.service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="razorLanguageService64.servicehub.service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="WebConfiguration.png">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="EnvDTE100, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="EnvDTE80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="EnvDTE90, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <VSCTCompile Include="RazorPackage.vsct">
+      <ResourceName>Menus.ctmenu</ResourceName>
+    </VSCTCompile>
+    <Content Include="Resources\RazorInfoToolWindowCommand.png" />
+    <Content Include="Resources\RazorPackage.ico" />
+    <Page Include="RazorInfo\RazorInfoToolWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DocumentInfo\RazorDocumentInfoWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Include="RazorInfo\RazorInfoToolWindowControl.xaml.cs">
+      <DependentUpon>RazorInfoToolWindowControl.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="VSPackage.resx">
+      <MergeWithCTO>true</MergeWithCTO>
+      <ManifestResourceName>VSPackage</ManifestResourceName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj">
+      <Name>Microsoft.AspNetCore.Mvc.Razor.Extensions</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj">
+      <Name>Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj">
+      <Project>{0693ca32-bb75-401e-bc08-72d6deeb4c99}</Project>
+      <Name>Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj">
+      <Project>{932f3c9c-a6c0-40d3-ba50-9309886242fc}</Project>
+      <Name>Microsoft.AspNetCore.Razor.Language</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj">
+      <Name>Microsoft.CodeAnalysis.Razor</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj">
+      <Project>{0f265874-c592-448b-bc4f-3430ab03e0dc}</Project>
+      <Name>Microsoft.CodeAnalysis.Razor.Workspaces</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\Microsoft.CodeAnalysis.Remote.Razor.csproj">
+      <Project>{1840aad6-e26b-43ce-a2b1-7e74ad512888}</Project>
+      <Name>Microsoft.CodeAnalysis.Remote.Razor</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj">
+      <Project>{0bcde75a-a438-46c7-95e9-391f029d07c5}</Project>
+      <Name>Microsoft.VisualStudio.Editor.Razor</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\Microsoft.VisualStudio.LanguageServices.Razor.csproj">
+      <Project>{92114fe9-cb07-4712-9aa4-afab65ca28e1}</Project>
+      <Name>Microsoft.VisualStudio.LanguageServices.Razor</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Versions must be written here instead of being set as MSBuild variable.
+      See https://github.com/dotnet/project-system/issues/2129.
+    -->
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.8.525" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.8.28010" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.8.3252" />
+  </ItemGroup>
+  <Target Name="CopySymbolsToOutput" AfterTargets="Build" Condition="'$(SymbolsPublishDir)' != ''">
+    <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(SymbolsPublishDir)" />
+  </Target>
+  <!-- Include Razor SDK design time assets in the VSIX -->
+  <ItemGroup>
+    <Content Include="..\..\src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Microsoft.NET.Sdk.Razor.DesignTime.targets">
+      <IncludeInVsix>true</IncludeInVsix>
+      <InstallRoot>MSBuild</InstallRoot>
+      <VSIXSubPath>Microsoft\VisualStudio\Razor\</VSIXSubPath>
+    </Content>
+    <Content Include="..\..\src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\*.xaml">
+      <IncludeInVsix>true</IncludeInVsix>
+      <InstallRoot>MSBuild</InstallRoot>
+      <VSIXSubPath>Microsoft\VisualStudio\Razor\Rules\</VSIXSubPath>
+    </Content>
+  </ItemGroup>
+  <!--
+    Begin workaround for https://github.com/dotnet/sdk/issues/433
+
+    The VS SDK doesn't understand the new SDK-style of projects, so  we need to manually add our project
+    references as VSIXSourceItems.
+  -->
+  <ItemDefinitionGroup>
+    <VSIXSourceItem>
+      <Visible>false</Visible>
+    </VSIXSourceItem>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <VSIXSourceItem Include="..\..\src\Microsoft.CodeAnalysis.Remote.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Remote.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.AspNetCore.Razor.Language.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.VisualStudio.Editor.Razor.dll" />
+    <VSIXSourceItem Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\bin\$(Configuration)\net472\Microsoft.VisualStudio.LanguageServices.Razor.dll" />
+    <Content Include="@(VSIXSourceItem)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <!-- End workaround for https://github.com/dotnet/sdk/issues/433 -->
+  <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
+  <!-- Must be defined after the CSharp.targets -->
+  <PropertyGroup>
+    <_GeneratedVSIXAssemblyInfoInputsCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).VSIXAssemblyInfo.cache.txt</_GeneratedVSIXAssemblyInfoInputsCacheFile>
+    <_GeneratedVSIXAssemblyInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).VSIXAssemblyInfo.cs</_GeneratedVSIXAssemblyInfoFile>
+    <_GeneratedVSIXBindingRedirectFile>$(IntermediateOutputPath)$(MSBuildProjectName).BindingRedirects.cs</_GeneratedVSIXBindingRedirectFile>
+  </PropertyGroup>
+  <!--
+    We need to generate the assembly attributes for our assembly using the version from the build, so
+    we can flow it to the about dialog.
+  -->
+  <ItemGroup>
+    <_VSIXAssemblyAttribute Include="System.Reflection.AssemblyInformationalVersionAttribute">
+      <_Parameter1>$(VsixVersion)</_Parameter1>
+    </_VSIXAssemblyAttribute>
+  </ItemGroup>
+  <Target Name="_GenerateVSIXBindingRedirects" DependsOnTargets="PrepareForBuild" BeforeTargets="CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(_GeneratedVSIXBindingRedirectFile)">
+    <PropertyGroup>
+      <_GeneratedVSIXBindingRedirectContent><![CDATA[
+// <auto-generated />
+using Microsoft.VisualStudio.Shell;
+
+@(ProjectReference->'[assembly: ProvideBindingRedirection(AssemblyName = "%(Name)", GenerateCodeBase = true, PublicKeyToken = "adb9793829ddae60", OldVersionLowerBound = "0.0.0.0", OldVersionUpperBound = "$(VersionPrefix).0", NewVersion = "$(VersionPrefix).0")]', '%0A')
+]]></_GeneratedVSIXBindingRedirectContent>
+    </PropertyGroup>
+    <WriteLinesToFile Lines="$([MSBuild]::Escape($(_GeneratedVSIXBindingRedirectContent)))" File="$(_GeneratedVSIXBindingRedirectFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+    <ItemGroup>
+      <Compile Include="$(_GeneratedVSIXBindingRedirectFile)">
+        <Visible>false</Visible>
+      </Compile>
+      <FileWrites Include="$(_GeneratedVSIXBindingRedirectFile)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_GenerateVSIXAssemblyAttributesHash" DependsOnTargets="PrepareForBuild" Condition="'@(_VSIXAssemblyAttribute)' != ''">
+    <!-- We only use up to _Parameter1 for most attributes, but other targets may add additional assembly attributes with multiple parameters. -->
+    <Hash ItemsToHash="@(_VSIXAssemblyAttribute->'%(Identity)%(_Parameter1)%(_Parameter2)%(_Parameter3)%(_Parameter4)%(_Parameter5)%(_Parameter6)%(_Parameter7)%(_Parameter8)')">
+      <Output TaskParameter="HashResult" PropertyName="_VSIXAssemblyAttributesHash" />
+    </Hash>
+    <WriteLinesToFile Lines="$(_VSIXAssemblyAttributesHash)" File="$(_GeneratedVSIXAssemblyInfoInputsCacheFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedVSIXAssemblyInfoInputsCacheFile)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_GenerateVSIXAssemblyAttributes" DependsOnTargets="_GenerateVSIXAssemblyAttributesHash" Inputs="$(_GeneratedVSIXAssemblyInfoInputsCacheFile)" Outputs="$(_GeneratedVSIXAssemblyInfoFile)" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Include="$(_GeneratedVSIXAssemblyInfoFile)">
+        <Visible>false</Visible>
+      </Compile>
+    </ItemGroup>
+    <WriteCodeFragment AssemblyAttributes="@(_VSIXAssemblyAttribute)" Language="C#" OutputFile="$(_GeneratedVSIXAssemblyInfoFile)" />
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedVSIXAssemblyInfoFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

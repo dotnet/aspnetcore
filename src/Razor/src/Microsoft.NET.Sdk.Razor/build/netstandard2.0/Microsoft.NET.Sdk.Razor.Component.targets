@@ -1,0 +1,285 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Razor.Component.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="14.0">
+
+  <PropertyGroup>
+    <!-- Used for tracking inputs to component generation -->
+    <_RazorComponentInputHash></_RazorComponentInputHash>
+    <_RazorComponentInputCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorComponent.input.cache</_RazorComponentInputCacheFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Path used for the temporary compilation we produce for component discovery -->
+    <_RazorComponentDeclarationAssembly Include="$(_RazorComponentDeclarationOutputPath)$(TargetName).dll" />
+  </ItemGroup>
+
+  <Target Name="_HashRazorComponentInputs" Condition="'@(RazorComponentWithTargetPath->Count())'!='0'">
+    <Hash ItemsToHash="@(RazorComponentWithTargetPath)">
+      <Output TaskParameter="HashResult" PropertyName="_RazorComponentInputHash" />
+    </Hash>
+
+    <MakeDir
+      Directories="$(IntermediateOutputPath)"
+      Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <WriteLinesToFile
+      Lines="$(_RazorComponentInputHash)"
+      File="$(_RazorComponentInputCacheFile)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_RazorComponentInputCacheFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ResolveRazorComponentOutputs" Condition="'@(RazorComponentWithTargetPath->Count())'!='0'">
+    <Error
+      Text="RazorComponentWithTargetPath item '%(RazorComponentWithTargetPath.Identity)' does not specify required metadata 'GeneratedDeclaration'."
+      Condition="'%(RazorComponentWithTargetPath.GeneratedDeclaration)' == ''" />
+
+    <ItemGroup>
+      <_RazorComponentDeclaration Include="%(RazorComponentWithTargetPath.GeneratedDeclaration)" />
+      <_RazorComponentDefinition Include="%(RazorComponentWithTargetPath.GeneratedOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <RazorGenerateComponentDeclarationDependsOn>
+      _HashRazorComponentInputs;
+      _ResolveRazorComponentOutputs;
+    </RazorGenerateComponentDeclarationDependsOn>
+  </PropertyGroup>
+
+  <!--
+    Generates 'declaration' files for each component, that only have that class and member declarations.
+    These files participate in the design-time-build for intellisense, and are used at build-time
+    when discovering components for a 'real' build.
+  -->
+  <Target
+    Name="RazorGenerateComponentDeclaration"
+    DependsOnTargets="$(RazorGenerateComponentDeclarationDependsOn)"
+    Inputs="$(MSBuildAllProjects);@(RazorComponentWithTargetPath);$(_RazorComponentInputCacheFile)"
+    Outputs="@(_RazorComponentDeclaration)"
+    Condition="'@(RazorComponentWithTargetPath->Count())'!='0'">
+
+    <ItemGroup>
+      <_RazorComponentDeclarationSources Include="@(RazorComponentWithTargetPath)">
+        <GeneratedOutput>%(RazorComponentWithTargetPath.GeneratedDeclaration)</GeneratedOutput>
+      </_RazorComponentDeclarationSources>
+    </ItemGroup>
+
+    <MakeDir
+      Directories="%(_RazorComponentDeclaration.RelativeDir)"
+      Condition="!Exists('%(_RazorComponentDeclaration.RelativeDir)')" />
+
+    <PropertyGroup>
+      <!-- This file will not exist, but we need some value -->
+      <_RazorComponentDeclarationManifest>$(IntermediateOutputPath)$(MSBuildProjectName).RazorComponents.declaration.json</_RazorComponentDeclarationManifest>
+    </PropertyGroup>
+
+    <RazorGenerate
+      Debug="$(_RazorDebugGenerateCodeTask)"
+      DebugTool="$(_RazorDebugGenerateCodeTool)"
+      ToolAssembly="$(_RazorToolAssembly)"
+      UseServer="$(UseRazorBuildServer)"
+      ForceServer="$(_RazorForceBuildServer)"
+      PipeName="$(_RazorBuildServerPipeName)"
+      Version="$(RazorLangVersion)"
+      Configuration="@(ResolvedRazorConfiguration)"
+      Extensions="@(ResolvedRazorExtension)"
+      Sources="@(_RazorComponentDeclarationSources)"
+      ProjectRoot="$(MSBuildProjectDirectory)"
+      TagHelperManifest="$(_RazorComponentDeclarationManifest)"
+      GenerateDeclaration="true" />
+
+    <ItemGroup>
+      <FileWrites Include="@(_RazorComponentDeclaration)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(DesignTimeBuild)'=='true'">
+      <Compile Include="@(_RazorComponentDeclaration)" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="RazorCompileComponentDeclaration"
+    Inputs="
+      $(MSBuildAllProjects);
+      @(_RazorComponentDeclaration);
+      @(Compile);
+      $(AssemblyOriginatorKeyFile);
+      @(ReferencePathWithRefAssemblies);
+      @(CompiledLicenseFile);
+      @(LinkResource);
+      $(ResolvedCodeAnalysisRuleSet);
+      @(AdditionalFiles)"
+    Outputs="@(_RazorComponentDeclarationAssembly);$(NonExistentFile)"
+    Condition="'$(DesignTimeBuild)'!='true' AND '$(Language)'=='C#' AND '@(_RazorComponentDeclaration)' != ''">
+
+    <MakeDir Directories="%(_RazorComponentDeclarationAssembly.RelativeDir)" />
+
+    <!-- These two compiler warnings are raised when a reference is bound to a different version
+             than specified in the assembly reference version number.  MSBuild raises the same warning in this case,
+             so the compiler warning would be redundant. -->
+    <PropertyGroup Condition="('$(TargetFrameworkVersion)' != 'v1.0') and ('$(TargetFrameworkVersion)' != 'v1.1')">
+      <NoWarn>$(NoWarn);1701;1702</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <!-- To match historical behavior, when inside VS11+ disable the warning from csc.exe indicating that no sources were passed in-->
+      <NoWarn Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(VisualStudioVersion)' != '' AND '$(VisualStudioVersion)' &gt; '10.0'">$(NoWarn);2008</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(TargetingClr2Framework)' == 'true'">
+      <ReferencePathWithRefAssemblies>
+        <EmbedInteropTypes />
+      </ReferencePathWithRefAssemblies>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- If the user has specified AppConfigForCompiler, we'll use it. If they have not, but they set UseAppConfigForCompiler,
+                 then we'll use AppConfig -->
+      <AppConfigForCompiler Condition="'$(AppConfigForCompiler)' == '' AND '$(UseAppConfigForCompiler)' == 'true'">$(AppConfig)</AppConfigForCompiler>
+    </PropertyGroup>
+
+    <!-- Prefer32Bit was introduced in .NET 4.5. Set it to false if we are targeting 4.0 -->
+    <PropertyGroup Condition="('$(TargetFrameworkVersion)' == 'v4.0')">
+      <Prefer32Bit>false</Prefer32Bit>
+    </PropertyGroup>
+
+    <!-- TODO: Remove this ItemGroup once it has been moved to "_GenerateCompileInputs" target in Microsoft.Common.CurrentVersion.targets.
+         https://github.com/dotnet/roslyn/issues/12223 -->
+    <ItemGroup Condition="('$(AdditionalFileItemNames)' != '')">
+      <AdditionalFileItems Include="$(AdditionalFileItemNames)" />
+      <AdditionalFiles Include="@(%(AdditionalFileItems.Identity))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(UseSharedCompilation)' == ''">
+      <UseSharedCompilation>true</UseSharedCompilation>
+    </PropertyGroup>
+
+    <Csc
+         AdditionalLibPaths="$(AdditionalLibPaths)"
+         AddModules="@(AddModules)"
+         AdditionalFiles="@(AdditionalFiles)"
+         AllowUnsafeBlocks="$(AllowUnsafeBlocks)"
+         Analyzers="@(Analyzer)"
+         ApplicationConfiguration="$(AppConfigForCompiler)"
+         BaseAddress="$(BaseAddress)"
+         CheckForOverflowUnderflow="$(CheckForOverflowUnderflow)"
+         ChecksumAlgorithm="$(ChecksumAlgorithm)"
+         CodeAnalysisRuleSet="$(ResolvedCodeAnalysisRuleSet)"
+         CodePage="$(CodePage)"
+         DebugType="$(DebugType)"
+         DefineConstants="$(DefineConstants)"
+         DelaySign="$(DelaySign)"
+         DisabledWarnings="$(NoWarn)"
+         EmitDebugInformation="$(DebugSymbols)"
+         EnvironmentVariables="$(CscEnvironment)"
+         ErrorEndLocation="$(ErrorEndLocation)"
+         ErrorLog="$(ErrorLog)"
+         ErrorReport="$(ErrorReport)"
+         Features="$(Features)"
+         FileAlignment="$(FileAlignment)"
+         GenerateFullPaths="$(GenerateFullPaths)"
+         HighEntropyVA="$(HighEntropyVA)"
+         Instrument="$(Instrument)"
+         KeyContainer="$(KeyContainerName)"
+         KeyFile="$(KeyOriginatorFile)"
+         LangVersion="$(LangVersion)"
+         LinkResources="@(LinkResource)"
+         MainEntryPoint="$(StartupObject)"
+         ModuleAssemblyName="$(ModuleAssemblyName)"
+         NoConfig="true"
+         NoLogo="$(NoLogo)"
+         NoStandardLib="$(NoCompilerStandardLib)"
+         NoWin32Manifest="$(NoWin32Manifest)"
+         Optimize="$(Optimize)"
+         Deterministic="$(Deterministic)"
+         PublicSign="$(PublicSign)"
+         OutputAssembly="@(_RazorComponentDeclarationAssembly)"
+         Platform="$(PlatformTarget)"
+         Prefer32Bit="$(Prefer32Bit)"
+         PreferredUILang="$(PreferredUILang)"
+         ProvideCommandLineArgs="$(ProvideCommandLineArgs)"
+         References="@(ReferencePathWithRefAssemblies)"
+         ReportAnalyzer="$(ReportAnalyzer)"
+         Resources="@(CompiledLicenseFile)"
+         ResponseFiles="$(CompilerResponseFile)"
+         RuntimeMetadataVersion="$(RuntimeMetadataVersion)"
+         SharedCompilationId="$(SharedCompilationId)"
+         SkipCompilerExecution="$(SkipCompilerExecution)"
+         Sources="@(_RazorComponentDeclaration);@(Compile)"
+         SubsystemVersion="$(SubsystemVersion)"
+         TargetType="$(OutputType)"
+         ToolExe="$(CscToolExe)"
+         ToolPath="$(CscToolPath)"
+         TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+         UseHostCompilerIfAvailable="$(UseHostCompilerIfAvailable)"
+         UseSharedCompilation="$(UseSharedCompilation)"
+         Utf8Output="$(Utf8Output)"
+         VsSessionGuid="$(VsSessionGuid)"
+         WarningLevel="$(WarningLevel)"
+         WarningsAsErrors="$(WarningsAsErrors)"
+         WarningsNotAsErrors="$(WarningsNotAsErrors)"
+         PathMap="$(PathMap)"
+         SourceLink="$(SourceLink)">
+      <Output TaskParameter="CommandLineArgs" ItemName="CscCommandLineArgs" />
+    </Csc>
+
+    <ItemGroup>
+      <FileWrites Include="@(_RazorComponentDeclarationAssembly)" Condition="Exists('@(_RazorComponentDeclarationAssembly)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ResolveComponentRazorGenerateInputs">
+    <ItemGroup>
+      <!-- Add RazorComponent files to the set of files to be code-gened. -->
+      <RazorGenerateWithTargetPath Include="@(RazorComponentWithTargetPath)" />
+    </ItemGroup>
+
+    <!-- Point to the declaration assembly to perform taghelper discovery -->
+    <PropertyGroup>
+      <_RazorGenerateTargetReferenceAssembly>@(_RazorComponentDeclarationAssembly->Metadata('FullPath'))</_RazorGenerateTargetReferenceAssembly>
+    </PropertyGroup>
+  </Target>
+
+  <!-- 
+    Once RazorCompileComponentDeclaration is completed, we have all the inputs required for code generation of
+    RazorComponents and RazorGenerate items. We'll initialize the inputs for RazorGenerate and invoke it.
+    This should result in RazorGenerate \ RazorTagHelper targets no-oping when it get invoked as 
+    part of PrepareForRun \ PrepareForPublish for non-components (.cshtml) files.
+   -->
+  <Target
+    Name="RazorGenerateComponentDefinition"
+    DependsOnTargets="_ResolveComponentRazorGenerateInputs;RazorGenerate"
+    Condition="'$(DesignTimeBuild)' != 'true' AND '@(_RazorComponentDefinition->Count())' != '0' AND Exists('@(_RazorComponentDeclarationAssembly)')">
+
+    <ItemGroup Condition="'$(DesignTimeBuild)' != 'true'">
+      <Compile Include="@(_RazorComponentDefinition)" />
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <RazorComponentGenerateCoreDependsOn>
+      RazorGenerateComponentDeclaration;
+      RazorCompileComponentDeclaration;
+      RazorGenerateComponentDefinition;
+    </RazorComponentGenerateCoreDependsOn>
+  </PropertyGroup>
+
+  <Target Name="RazorComponentGenerateCore" DependsOnTargets="$(RazorComponentGenerateCoreDependsOn)">
+  </Target>
+
+</Project>

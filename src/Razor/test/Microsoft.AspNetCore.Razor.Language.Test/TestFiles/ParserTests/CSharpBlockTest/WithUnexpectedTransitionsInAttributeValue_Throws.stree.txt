@@ -1,0 +1,54 @@
+CSharpCodeBlock - [0..20)::20 - [{<span foo='@ @' />}]
+    CSharpStatement - [0..20)::20
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..20)::20
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..19)::18
+                MarkupBlock - [1..19)::18
+                    MarkupTagBlock - [1..19)::18 - [<span foo='@ @' />]
+                        MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            OpenAngle;[<];
+                            Text;[span];
+                        MarkupAttributeBlock - [6..16)::10 - [ foo='@ @']
+                            MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                            MarkupTextLiteral - [7..10)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[foo];
+                            Equals;[=];
+                            MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                SingleQuote;['];
+                            GenericBlock - [12..15)::3
+                                MarkupDynamicAttributeValue - [12..13)::1 - [@]
+                                    GenericBlock - [12..13)::1
+                                        CSharpCodeBlock - [12..13)::1
+                                            CSharpImplicitExpression - [12..13)::1
+                                                CSharpTransition - [12..13)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                                    Transition;[@];
+                                                CSharpImplicitExpressionBody - [13..13)::0
+                                                    CSharpCodeBlock - [13..13)::0
+                                                        CSharpExpressionLiteral - [13..13)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                            Marker;[];
+                                MarkupDynamicAttributeValue - [13..15)::2 - [ @]
+                                    MarkupTextLiteral - [13..14)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                        Whitespace;[ ];
+                                    GenericBlock - [14..15)::1
+                                        CSharpCodeBlock - [14..15)::1
+                                            CSharpImplicitExpression - [14..15)::1
+                                                CSharpTransition - [14..15)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                                    Transition;[@];
+                                                CSharpImplicitExpressionBody - [15..15)::0
+                                                    CSharpCodeBlock - [15..15)::0
+                                                        CSharpExpressionLiteral - [15..15)::0 - [] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                                            Marker;[];
+                            MarkupTextLiteral - [15..16)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                SingleQuote;['];
+                        MarkupTextLiteral - [16..19)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            Whitespace;[ ];
+                            ForwardSlash;[/];
+                            CloseAngle;[>];
+                CSharpStatementLiteral - [19..19)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Marker;[];
+            RazorMetaCode - [19..20)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

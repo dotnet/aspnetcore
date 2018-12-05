@@ -1,0 +1,13 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ExplicitExpressionWithMarkup_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [5] ExplicitExpressionWithMarkup.cshtml)
+                    IntermediateToken - (0:0,0 [5] ExplicitExpressionWithMarkup.cshtml) - Html - <div>
+                CSharpExpression - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml)
+                    Template - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml)
+                        HtmlContent - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml)
+                            IntermediateToken - (8:0,8 [6] ExplicitExpressionWithMarkup.cshtml) - Html - </div>
+                    IntermediateToken - (14:0,14 [0] ExplicitExpressionWithMarkup.cshtml) - CSharp - 

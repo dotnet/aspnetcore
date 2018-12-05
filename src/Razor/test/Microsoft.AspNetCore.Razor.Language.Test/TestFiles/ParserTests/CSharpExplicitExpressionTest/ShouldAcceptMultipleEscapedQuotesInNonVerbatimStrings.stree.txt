@@ -1,0 +1,12 @@
+CSharpCodeBlock - [0..21)::21 - [@("\"hello, world\"")]
+    CSharpExplicitExpression - [0..21)::21
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpExplicitExpressionBody - [1..21)::20
+            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftParenthesis;[(];
+            CSharpCodeBlock - [2..20)::18
+                CSharpExpressionLiteral - [2..20)::18 - ["\"hello, world\""] - Gen<Expr> - SpanEditHandler;Accepts:Any
+                    StringLiteral;["\"hello, world\""];
+            RazorMetaCode - [20..21)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightParenthesis;[)];

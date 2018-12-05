@@ -1,0 +1,29 @@
+RazorDocument - [0..68)::68 - [<script>foo < bar && quantity.toString() !== orderQty.val()</script>]
+    MarkupBlock - [0..68)::68
+        MarkupTagBlock - [0..8)::8 - [<script>]
+            MarkupTextLiteral - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
+        MarkupTextLiteral - [8..59)::51 - [foo < bar && quantity.toString() !== orderQty.val()] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[foo];
+            Whitespace;[ ];
+            OpenAngle;[<];
+            Whitespace;[ ];
+            Text;[bar];
+            Whitespace;[ ];
+            Text;[&&];
+            Whitespace;[ ];
+            Text;[quantity.toString()];
+            Whitespace;[ ];
+            Bang;[!];
+            Equals;[=];
+            Equals;[=];
+            Whitespace;[ ];
+            Text;[orderQty.val()];
+        MarkupTagBlock - [59..68)::9 - [</script>]
+            MarkupTextLiteral - [59..68)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[script];
+                CloseAngle;[>];

@@ -1,0 +1,15 @@
+CSharpCodeBlock - [0..36)::36 - [@using static global::System.Console]
+    RazorDirective - [0..36)::36
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        RazorDirectiveBody - [1..36)::35
+            CSharpStatementLiteral - [1..36)::35 - [using static global::System.Console] - Gen<Import: static global::System.Console;> - SpanEditHandler;Accepts:AnyExceptNewline
+                Keyword;[using];
+                Whitespace;[ ];
+                Keyword;[static];
+                Whitespace;[ ];
+                Identifier;[global];
+                DoubleColon;[::];
+                Identifier;[System];
+                Dot;[.];
+                Identifier;[Console];

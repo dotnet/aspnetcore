@@ -1,0 +1,22 @@
+RazorDocument - [0..31)::31 - [<script><script></foo></script>]
+    MarkupBlock - [0..31)::31
+        MarkupTagHelperElement - [0..31)::31 - script[StartTagAndEndTag] - scripttaghelper
+            MarkupTagHelperStartTag - [0..8)::8
+                MarkupTextLiteral - [0..8)::8 - [<script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[script];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [8..22)::14 - [<script></foo>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[script];
+                CloseAngle;[>];
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[foo];
+                CloseAngle;[>];
+            MarkupTagHelperEndTag - [22..31)::9
+                MarkupTextLiteral - [22..31)::9 - [</script>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[script];
+                    CloseAngle;[>];

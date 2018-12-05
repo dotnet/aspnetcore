@@ -1,0 +1,9 @@
+CSharpCodeBlock - [0..13)::13 - [@using static]
+    RazorDirective - [0..13)::13
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        RazorDirectiveBody - [1..13)::12
+            CSharpStatementLiteral - [1..13)::12 - [using static] - Gen<Import: static;> - SpanEditHandler;Accepts:AnyExceptNewline
+                Keyword;[using];
+                Whitespace;[ ];
+                Keyword;[static];

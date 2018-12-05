@@ -1,0 +1,33 @@
+MarkupBlock - [0..24)::24 - [<a href='Foo Bar Baz' />]
+    MarkupTagBlock - [0..24)::24 - [<a href='Foo Bar Baz' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..21)::19 - [ href='Foo Bar Baz']
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..7)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[href];
+            Equals;[=];
+            MarkupTextLiteral - [8..9)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+            GenericBlock - [9..20)::11
+                MarkupLiteralAttributeValue - [9..12)::3 - [Foo]
+                    MarkupTextLiteral - [9..12)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Foo];
+                MarkupLiteralAttributeValue - [12..16)::4 - [ Bar]
+                    MarkupTextLiteral - [12..13)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [13..16)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Bar];
+                MarkupLiteralAttributeValue - [16..20)::4 - [ Baz]
+                    MarkupTextLiteral - [16..17)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[ ];
+                    MarkupTextLiteral - [17..20)::3 - [Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Baz];
+            MarkupTextLiteral - [20..21)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [21..24)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

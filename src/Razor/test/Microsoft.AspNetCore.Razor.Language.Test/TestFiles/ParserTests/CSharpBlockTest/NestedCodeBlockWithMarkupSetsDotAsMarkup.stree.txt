@@ -1,0 +1,55 @@
+CSharpCodeBlock - [0..51)::51 - [if (true) { @if(false) { <div>@something.</div> } }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..12)::12 - [if (true) { ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        Whitespace;[ ];
+        LeftParenthesis;[(];
+        Keyword;[true];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+    CSharpCodeBlock - [12..49)::37
+        CSharpTransition - [12..13)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpStatementLiteral - [13..24)::11 - [if(false) {] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+            Keyword;[if];
+            LeftParenthesis;[(];
+            Keyword;[false];
+            RightParenthesis;[)];
+            Whitespace;[ ];
+            LeftBrace;[{];
+        MarkupBlock - [24..48)::24
+            MarkupTextLiteral - [24..25)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTagBlock - [25..30)::5 - [<div>]
+                MarkupTextLiteral - [25..30)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    Text;[div];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [30..30)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Marker;[];
+            CSharpCodeBlock - [30..40)::10
+                CSharpImplicitExpression - [30..40)::10
+                    CSharpTransition - [30..31)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    CSharpImplicitExpressionBody - [31..40)::9
+                        CSharpCodeBlock - [31..40)::9
+                            CSharpExpressionLiteral - [31..40)::9 - [something] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                Identifier;[something];
+            MarkupTextLiteral - [40..41)::1 - [.] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[.];
+            MarkupTagBlock - [41..47)::6 - [</div>]
+                MarkupTextLiteral - [41..47)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[div];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [47..48)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+                Whitespace;[ ];
+        CSharpStatementLiteral - [48..49)::1 - [}] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+            RightBrace;[}];
+    CSharpStatementLiteral - [49..51)::2 - [ }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Whitespace;[ ];
+        RightBrace;[}];

@@ -1,0 +1,46 @@
+CSharpCodeBlock - [0..49)::49 - [{ if (true) { var val = @x; if (val != 3) { } } }]
+    CSharpStatement - [0..49)::49
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..49)::49
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..48)::47
+                CSharpStatementLiteral - [1..48)::47 - [ if (true) { var val = @x; if (val != 3) { } } ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Whitespace;[ ];
+                    Keyword;[if];
+                    Whitespace;[ ];
+                    LeftParenthesis;[(];
+                    Keyword;[true];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    Whitespace;[ ];
+                    Identifier;[var];
+                    Whitespace;[ ];
+                    Identifier;[val];
+                    Whitespace;[ ];
+                    Assign;[=];
+                    Whitespace;[ ];
+                    Transition;[@];
+                    Identifier;[x];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+                    Keyword;[if];
+                    Whitespace;[ ];
+                    LeftParenthesis;[(];
+                    Identifier;[val];
+                    Whitespace;[ ];
+                    NotEqual;[!=];
+                    Whitespace;[ ];
+                    IntegerLiteral;[3];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    Whitespace;[ ];
+                    RightBrace;[}];
+                    Whitespace;[ ];
+                    RightBrace;[}];
+                    Whitespace;[ ];
+            RazorMetaCode - [48..49)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

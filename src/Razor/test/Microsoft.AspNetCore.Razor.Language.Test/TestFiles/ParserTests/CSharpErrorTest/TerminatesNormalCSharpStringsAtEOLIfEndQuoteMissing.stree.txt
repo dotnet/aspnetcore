@@ -1,0 +1,23 @@
+CSharpCodeBlock - [0..41)::41 - [if(foo) {LF    var p = "foo bar bazLF;LF}]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..41)::41 - [if(foo) {LF    var p = "foo bar bazLF;LF}] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        NewLine;[LF];
+        Whitespace;[    ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[p];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        StringLiteral;["foo bar baz];RZ1000(23:1,12 [1] )
+        NewLine;[LF];
+        Semicolon;[;];
+        NewLine;[LF];
+        RightBrace;[}];

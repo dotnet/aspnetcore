@@ -1,0 +1,12 @@
+CSharpCodeBlock - [0..12)::12 - [@foo.bar.baz]
+    CSharpImplicitExpression - [0..12)::12
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpImplicitExpressionBody - [1..12)::11
+            CSharpCodeBlock - [1..12)::11
+                CSharpExpressionLiteral - [1..12)::11 - [foo.bar.baz] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    Identifier;[foo];
+                    Dot;[.];
+                    Identifier;[bar];
+                    Dot;[.];
+                    Identifier;[baz];

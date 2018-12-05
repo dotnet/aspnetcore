@@ -1,0 +1,18 @@
+CSharpCodeBlock - [0..21)::21 - [do { var foo = bar; }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..21)::21 - [do { var foo = bar; }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[do];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Identifier;[bar];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

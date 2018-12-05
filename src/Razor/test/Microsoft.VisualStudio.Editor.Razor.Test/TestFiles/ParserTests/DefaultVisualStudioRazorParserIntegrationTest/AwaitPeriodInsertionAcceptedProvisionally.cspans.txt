@@ -1,0 +1,4 @@
+Markup span at (0:0,0 [4] C:\This\Path\Is\Just\For\Line\Pragmas.cshtml) (Accepts:Any) - Parent: Markup block at (0:0,0 [20] C:\This\Path\Is\Just\For\Line\Pragmas.cshtml)
+Transition span at (4:0,4 [1] C:\This\Path\Is\Just\For\Line\Pragmas.cshtml) (Accepts:None) - Parent: Expression block at (4:0,4 [11] C:\This\Path\Is\Just\For\Line\Pragmas.cshtml)
+Code span at (5:0,5 [10] C:\This\Path\Is\Just\For\Line\Pragmas.cshtml) (Accepts:AnyExceptNewline) - Parent: Expression block at (4:0,4 [11] C:\This\Path\Is\Just\For\Line\Pragmas.cshtml)
+Markup span at (15:0,15 [5] C:\This\Path\Is\Just\For\Line\Pragmas.cshtml) (Accepts:Any) - Parent: Markup block at (0:0,0 [20] C:\This\Path\Is\Just\For\Line\Pragmas.cshtml)

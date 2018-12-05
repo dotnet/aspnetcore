@@ -1,0 +1,28 @@
+MarkupBlock - [0..28)::28 - [<foo><text><bar></bar></foo>]
+    MarkupTagBlock - [0..5)::5 - [<foo>]
+        MarkupTextLiteral - [0..5)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+    MarkupTagBlock - [5..11)::6 - [<text>]
+        MarkupTextLiteral - [5..11)::6 - [<text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[text];
+            CloseAngle;[>];
+    MarkupTagBlock - [11..16)::5 - [<bar>]
+        MarkupTextLiteral - [11..16)::5 - [<bar>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[bar];
+            CloseAngle;[>];
+    MarkupTagBlock - [16..22)::6 - [</bar>]
+        MarkupTextLiteral - [16..22)::6 - [</bar>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[bar];
+            CloseAngle;[>];
+    MarkupTagBlock - [22..28)::6 - [</foo>]
+        MarkupTextLiteral - [22..28)::6 - [</foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[foo];
+            CloseAngle;[>];

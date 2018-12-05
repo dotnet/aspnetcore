@@ -1,0 +1,89 @@
+CSharpCodeBlock - [0..85)::85 - [{ var foo = bar; Html.ExecuteTemplate(foo, @<p>Foo #@item</p>, @<p>Foo #@item</p>); }]
+    CSharpStatement - [0..85)::85
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..85)::85
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..84)::83
+                CSharpStatementLiteral - [1..43)::42 - [ var foo = bar; Html.ExecuteTemplate(foo, ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Whitespace;[ ];
+                    Identifier;[var];
+                    Whitespace;[ ];
+                    Identifier;[foo];
+                    Whitespace;[ ];
+                    Assign;[=];
+                    Whitespace;[ ];
+                    Identifier;[bar];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+                    Identifier;[Html];
+                    Dot;[.];
+                    Identifier;[ExecuteTemplate];
+                    LeftParenthesis;[(];
+                    Identifier;[foo];
+                    Comma;[,];
+                    Whitespace;[ ];
+                CSharpTemplateBlock - [43..61)::18
+                    MarkupBlock - [43..61)::18
+                        MarkupTransition - [43..44)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        MarkupTagBlock - [44..47)::3 - [<p>]
+                            MarkupTextLiteral - [44..47)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                OpenAngle;[<];
+                                Text;[p];
+                                CloseAngle;[>];
+                        MarkupTextLiteral - [47..52)::5 - [Foo #] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[Foo];
+                            Whitespace;[ ];
+                            Text;[#];
+                        CSharpCodeBlock - [52..57)::5
+                            CSharpImplicitExpression - [52..57)::5
+                                CSharpTransition - [52..53)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [53..57)::4
+                                    CSharpCodeBlock - [53..57)::4
+                                        CSharpExpressionLiteral - [53..57)::4 - [item] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                            Identifier;[item];
+                        MarkupTagBlock - [57..61)::4 - [</p>]
+                            MarkupTextLiteral - [57..61)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                OpenAngle;[<];
+                                ForwardSlash;[/];
+                                Text;[p];
+                                CloseAngle;[>];
+                CSharpStatementLiteral - [61..63)::2 - [, ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Comma;[,];
+                    Whitespace;[ ];
+                CSharpTemplateBlock - [63..81)::18
+                    MarkupBlock - [63..81)::18
+                        MarkupTransition - [63..64)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        MarkupTagBlock - [64..67)::3 - [<p>]
+                            MarkupTextLiteral - [64..67)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                OpenAngle;[<];
+                                Text;[p];
+                                CloseAngle;[>];
+                        MarkupTextLiteral - [67..72)::5 - [Foo #] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            Text;[Foo];
+                            Whitespace;[ ];
+                            Text;[#];
+                        CSharpCodeBlock - [72..77)::5
+                            CSharpImplicitExpression - [72..77)::5
+                                CSharpTransition - [72..73)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [73..77)::4
+                                    CSharpCodeBlock - [73..77)::4
+                                        CSharpExpressionLiteral - [73..77)::4 - [item] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                            Identifier;[item];
+                        MarkupTagBlock - [77..81)::4 - [</p>]
+                            MarkupTextLiteral - [77..81)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                OpenAngle;[<];
+                                ForwardSlash;[/];
+                                Text;[p];
+                                CloseAngle;[>];
+                CSharpStatementLiteral - [81..84)::3 - [); ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    RightParenthesis;[)];
+                    Semicolon;[;];
+                    Whitespace;[ ];
+            RazorMetaCode - [84..85)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

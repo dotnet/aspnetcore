@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="AddinMetadata.props" />
+  
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Mono.Addins.AddinAttribute">
+      <_Parameter1>$(AddinId)</_Parameter1>
+      <Namespace>$(AddinNamespace)</Namespace>
+      <Version>$(AddinVersion)</Version>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinNameAttribute">
+      <_Parameter1>$(AddinDetailedName)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinCategoryAttribute">
+      <_Parameter1>$(AddinCategory)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinDescriptionAttribute">
+      <_Parameter1>$(Description)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinAuthorAttribute">
+      <_Parameter1>$(Authors)</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinDependencyAttribute">
+      <_Parameter1>::MonoDevelop.Ide</_Parameter1>
+      <_Parameter2>7.4</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinDependencyAttribute">
+      <_Parameter1>::MonoDevelop.Core</_Parameter1>
+      <_Parameter2>7.4</_Parameter2>
+    </AssemblyAttribute>
+    </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\_Manifest.addin.xml" LogicalName="_Manifest.addin.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssemblies)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Mac.LanguageServices.Razor\Microsoft.VisualStudio.Mac.LanguageServices.Razor.csproj" />
+  </ItemGroup>
+</Project>

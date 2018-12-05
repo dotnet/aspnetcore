@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Builds Razor pages for views in a project. For internal use only.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AssemblyName>dotnet-razorpagegenerator</AssemblyName>
+    <PackageId>RazorPageGenerator</PackageId>
+    <OutputType>Exe</OutputType>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj" />
+  </ItemGroup>
+
+</Project>

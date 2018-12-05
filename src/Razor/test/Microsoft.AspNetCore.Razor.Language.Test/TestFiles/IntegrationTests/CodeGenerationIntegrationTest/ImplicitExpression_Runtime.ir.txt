@@ -1,0 +1,19 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ImplicitExpression_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (1:0,1 [32] ImplicitExpression.cshtml)
+                    IntermediateToken - (1:0,1 [32] ImplicitExpression.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n
+                HtmlContent - (33:1,0 [21] ImplicitExpression.cshtml)
+                    IntermediateToken - (33:1,0 [4] ImplicitExpression.cshtml) - Html -     
+                    IntermediateToken - (37:1,4 [3] ImplicitExpression.cshtml) - Html - <p>
+                    IntermediateToken - (40:1,7 [14] ImplicitExpression.cshtml) - Html - This is item #
+                CSharpExpression - (55:1,22 [1] ImplicitExpression.cshtml)
+                    IntermediateToken - (55:1,22 [1] ImplicitExpression.cshtml) - CSharp - i
+                HtmlContent - (56:1,23 [6] ImplicitExpression.cshtml)
+                    IntermediateToken - (56:1,23 [4] ImplicitExpression.cshtml) - Html - </p>
+                    IntermediateToken - (60:1,27 [2] ImplicitExpression.cshtml) - Html - \n
+                CSharpCode - (62:2,0 [1] ImplicitExpression.cshtml)
+                    IntermediateToken - (62:2,0 [1] ImplicitExpression.cshtml) - CSharp - }

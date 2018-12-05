@@ -1,0 +1,41 @@
+RazorDocument - [0..30)::30 - [<p><p><br /></p><strong /></p>]
+    MarkupBlock - [0..30)::30
+        MarkupTagHelperElement - [0..30)::30 - p[StartTagAndEndTag] - PTagHelper
+            MarkupTagHelperStartTag - [0..3)::3
+                MarkupTextLiteral - [0..3)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTagHelperElement - [3..16)::13 - p[StartTagAndEndTag] - PTagHelper
+                MarkupTagHelperStartTag - [3..6)::3
+                    MarkupTextLiteral - [3..6)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[p];
+                        CloseAngle;[>];
+                MarkupTagBlock - [6..12)::6 - [<br />]
+                    MarkupTextLiteral - [6..12)::6 - [<br />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[br];
+                        Whitespace;[ ];
+                        ForwardSlash;[/];
+                        CloseAngle;[>];
+                MarkupTagHelperEndTag - [12..16)::4
+                    MarkupTextLiteral - [12..16)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[p];
+                        CloseAngle;[>];
+            MarkupTagHelperElement - [16..26)::10 - strong[SelfClosing] - StrongTagHelper
+                MarkupTagHelperStartTag - [16..26)::10
+                    MarkupTextLiteral - [16..26)::10 - [<strong />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[strong];
+                        Whitespace;[ ];
+                        ForwardSlash;[/];
+                        CloseAngle;[>];
+            MarkupTagHelperEndTag - [26..30)::4
+                MarkupTextLiteral - [26..30)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];

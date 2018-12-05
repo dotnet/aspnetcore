@@ -1,0 +1,30 @@
+MarkupBlock - [0..18)::18 - [<foo bar="@baz" />]
+    MarkupTagBlock - [0..18)::18 - [<foo bar="@baz" />]
+        MarkupTextLiteral - [0..4)::4 - [<foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[foo];
+        MarkupAttributeBlock - [4..15)::11 - [ bar="@baz"]
+            MarkupTextLiteral - [4..5)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [5..8)::3 - [bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[bar];
+            Equals;[=];
+            MarkupTextLiteral - [9..10)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                DoubleQuote;["];
+            GenericBlock - [10..14)::4
+                MarkupDynamicAttributeValue - [10..14)::4 - [@baz]
+                    GenericBlock - [10..14)::4
+                        CSharpCodeBlock - [10..14)::4
+                            CSharpImplicitExpression - [10..14)::4
+                                CSharpTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [11..14)::3
+                                    CSharpCodeBlock - [11..14)::3
+                                        CSharpExpressionLiteral - [11..14)::3 - [baz] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                            Identifier;[baz];
+            MarkupTextLiteral - [14..15)::1 - ["] - Gen<None> - SpanEditHandler;Accepts:Any
+                DoubleQuote;["];
+        MarkupTextLiteral - [15..18)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

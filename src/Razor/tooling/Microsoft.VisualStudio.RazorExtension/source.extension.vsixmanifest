@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="Microsoft.VisualStudio.RazorExtension" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft" />
+    <DisplayName>Razor Language Services</DisplayName>
+    <Description xml:space="preserve">Language services for ASP.NET Core Razor</Description>
+    <Icon>WebConfiguration.png</Icon>
+    <PreviewIcon>WebConfiguration.png</PreviewIcon>
+    <PackageId>Microsoft.VisualStudio.RazorExtension</PackageId>
+  </Metadata>
+  <Installation AllUsers="true">
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0.26228.04,)" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.6,)" />
+    <Dependency Id="Microsoft.VisualStudio.MPF.15.0" DisplayName="Visual Studio MPF 15.0" d:Source="Installed" Version="[15.0,)" />
+  </Dependencies>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,)" DisplayName="Visual Studio core editor" />
+    <Prerequisite Id="Microsoft.VisualStudio.Component.Roslyn.LanguageServices" Version="[15.0,)" DisplayName="Roslyn Language Services" />
+  </Prerequisites>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService.servicehub.service.json" />
+    <Asset Type="Microsoft.ServiceHub.Service" d:Source="File" Path="razorLanguageService64.servicehub.service.json" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.AspNetCore.Razor.Language.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.AspNetCore.Razor.Language.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.CodeAnalysis.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.CodeAnalysis.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" Path="Microsoft.CodeAnalysis.Remote.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="Microsoft.CodeAnalysis.Remote.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly"  Path="Microsoft.VisualStudio.LanguageServices.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.LanguageServices.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly"  Path="Microsoft.VisualStudio.Editor.Razor.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent"  Path="Microsoft.VisualStudio.Editor.Razor.dll" />
+  </Assets>
+</PackageManifest>

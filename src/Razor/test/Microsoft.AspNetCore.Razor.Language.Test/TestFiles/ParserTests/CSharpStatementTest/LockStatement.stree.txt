@@ -1,0 +1,17 @@
+CSharpCodeBlock - [0..21)::21 - [@lock(baz) { foo(); }]
+    CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    CSharpStatementLiteral - [1..21)::20 - [lock(baz) { foo(); }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[lock];
+        LeftParenthesis;[(];
+        Identifier;[baz];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[foo];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

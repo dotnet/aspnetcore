@@ -1,0 +1,30 @@
+RazorDocument - [0..28)::28 - [<span data-foo=@foo ></span>]
+    MarkupBlock - [0..28)::28
+        MarkupTagBlock - [0..21)::21 - [<span data-foo=@foo >]
+            MarkupTextLiteral - [0..5)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[span];
+            MarkupAttributeBlock - [5..19)::14 - [ data-foo=@foo]
+                MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                MarkupTextLiteral - [6..14)::8 - [data-foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[data-foo];
+                Equals;[=];
+                GenericBlock - [15..19)::4
+                    CSharpCodeBlock - [15..19)::4
+                        CSharpImplicitExpression - [15..19)::4
+                            CSharpTransition - [15..16)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                Transition;[@];
+                            CSharpImplicitExpressionBody - [16..19)::3
+                                CSharpCodeBlock - [16..19)::3
+                                    CSharpExpressionLiteral - [16..19)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                        Identifier;[foo];
+            MarkupTextLiteral - [19..21)::2 - [ >] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                CloseAngle;[>];
+        MarkupTagBlock - [21..28)::7 - [</span>]
+            MarkupTextLiteral - [21..28)::7 - [</span>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[span];
+                CloseAngle;[>];
