@@ -1,0 +1,71 @@
+RazorDocument - [0..66)::66 - [LF<div>LF    FooLF    <p>@Bar</p>LF    @{ var x = Bar; }LF</div>LF]
+    MarkupBlock - [0..66)::66
+        MarkupTextLiteral - [0..2)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];
+        MarkupElement - [2..64)::62
+            MarkupTagBlock - [2..7)::5 - [<div>]
+                MarkupTextLiteral - [2..7)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[div];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [7..22)::15 - [LF    FooLF    ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+                Whitespace;[    ];
+                Text;[Foo];
+                NewLine;[LF];
+                Whitespace;[    ];
+            MarkupElement - [22..33)::11
+                MarkupTagBlock - [22..25)::3 - [<p>]
+                    MarkupTextLiteral - [22..25)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        Text;[p];
+                        CloseAngle;[>];
+                CSharpCodeBlock - [25..29)::4
+                    CSharpImplicitExpression - [25..29)::4
+                        CSharpTransition - [25..26)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        CSharpImplicitExpressionBody - [26..29)::3
+                            CSharpCodeBlock - [26..29)::3
+                                CSharpExpressionLiteral - [26..29)::3 - [Bar] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                    Identifier;[Bar];
+                MarkupTagBlock - [29..33)::4 - [</p>]
+                    MarkupTextLiteral - [29..33)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[p];
+                        CloseAngle;[>];
+            MarkupTextLiteral - [33..35)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+            CSharpCodeBlock - [35..56)::21
+                CSharpStatementLiteral - [35..39)::4 - [    ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Whitespace;[    ];
+                CSharpStatement - [39..56)::17
+                    CSharpTransition - [39..40)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    CSharpStatementBody - [40..56)::16
+                        RazorMetaCode - [40..41)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            LeftBrace;[{];
+                        CSharpCodeBlock - [41..55)::14
+                            CSharpStatementLiteral - [41..55)::14 - [ var x = Bar; ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                                Whitespace;[ ];
+                                Identifier;[var];
+                                Whitespace;[ ];
+                                Identifier;[x];
+                                Whitespace;[ ];
+                                Assign;[=];
+                                Whitespace;[ ];
+                                Identifier;[Bar];
+                                Semicolon;[;];
+                                Whitespace;[ ];
+                        RazorMetaCode - [55..56)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            RightBrace;[}];
+            MarkupEphemeralTextLiteral - [56..58)::2 - [LF] - Gen<None> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+            MarkupTagBlock - [58..64)::6 - [</div>]
+                MarkupTextLiteral - [58..64)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[div];
+                    CloseAngle;[>];
+        MarkupTextLiteral - [64..66)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            NewLine;[LF];

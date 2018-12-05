@@ -1,0 +1,36 @@
+MarkupBlock - [0..43)::43 - [<text><text>Foo Bar <foo> Baz</text></text>]
+    MarkupTagBlock - [0..6)::6 - [<text>]
+        MarkupTransition - [0..6)::6 - Gen<None> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[text];
+            CloseAngle;[>];
+    MarkupTagBlock - [6..12)::6 - [<text>]
+        MarkupTextLiteral - [6..12)::6 - [<text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[text];
+            CloseAngle;[>];
+    MarkupTextLiteral - [12..20)::8 - [Foo Bar ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        Text;[Foo];
+        Whitespace;[ ];
+        Text;[Bar];
+        Whitespace;[ ];
+    MarkupTagBlock - [20..25)::5 - [<foo>]
+        MarkupTextLiteral - [20..25)::5 - [<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[foo];
+            CloseAngle;[>];
+    MarkupTextLiteral - [25..29)::4 - [ Baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        Whitespace;[ ];
+        Text;[Baz];
+    MarkupTagBlock - [29..36)::7 - [</text>]
+        MarkupTextLiteral - [29..36)::7 - [</text>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[text];
+            CloseAngle;[>];
+    MarkupTagBlock - [36..43)::7 - [</text>]
+        MarkupTransition - [36..43)::7 - Gen<None> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[text];
+            CloseAngle;[>];

@@ -1,0 +1,8 @@
+CSharpCodeBlock - [0..8)::8 - [@हळूँजद॔]
+    CSharpImplicitExpression - [0..8)::8
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpImplicitExpressionBody - [1..8)::7
+            CSharpCodeBlock - [1..8)::7
+                CSharpExpressionLiteral - [1..8)::7 - [हळूँजद॔] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                    Identifier;[हळूँजद॔];

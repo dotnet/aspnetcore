@@ -1,0 +1,25 @@
+RazorDocument - [0..40)::40 - [<th:myth><th:my2th></th:my2th></th:myth>]
+    MarkupBlock - [0..40)::40
+        MarkupTagHelperElement - [0..40)::40 - th:myth[StartTagAndEndTag] - mythTagHelper
+            MarkupTagHelperStartTag - [0..9)::9
+                MarkupTextLiteral - [0..9)::9 - [<th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[th:myth];
+                    CloseAngle;[>];
+            MarkupTagBlock - [9..19)::10 - [<th:my2th>]
+                MarkupTextLiteral - [9..19)::10 - [<th:my2th>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[th:my2th];
+                    CloseAngle;[>];
+            MarkupTagBlock - [19..30)::11 - [</th:my2th>]
+                MarkupTextLiteral - [19..30)::11 - [</th:my2th>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[th:my2th];
+                    CloseAngle;[>];
+            MarkupTagHelperEndTag - [30..40)::10
+                MarkupTextLiteral - [30..40)::10 - [</th:myth>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[th:myth];
+                    CloseAngle;[>];

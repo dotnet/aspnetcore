@@ -1,0 +1,35 @@
+MarkupBlock - [0..33)::33 - [<span data-foo  =  '@foo'></span>]
+    MarkupTagBlock - [0..26)::26 - [<span data-foo  =  '@foo'>]
+        MarkupTextLiteral - [0..5)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[span];
+        MarkupAttributeBlock - [5..25)::20 - [ data-foo  =  '@foo']
+            MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [6..14)::8 - [data-foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[data-foo];
+            MarkupTextLiteral - [14..16)::2 - [  ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[  ];
+            Equals;[=];
+            MarkupTextLiteral - [17..20)::3 - [  '] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[  ];
+                SingleQuote;['];
+            GenericBlock - [20..24)::4
+                CSharpCodeBlock - [20..24)::4
+                    CSharpImplicitExpression - [20..24)::4
+                        CSharpTransition - [20..21)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        CSharpImplicitExpressionBody - [21..24)::3
+                            CSharpCodeBlock - [21..24)::3
+                                CSharpExpressionLiteral - [21..24)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                    Identifier;[foo];
+            MarkupTextLiteral - [24..25)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [25..26)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            CloseAngle;[>];
+    MarkupTagBlock - [26..33)::7 - [</span>]
+        MarkupTextLiteral - [26..33)::7 - [</span>] - Gen<Markup> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[span];
+            CloseAngle;[>];

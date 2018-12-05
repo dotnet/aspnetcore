@@ -1,0 +1,15 @@
+CSharpCodeBlock - [0..41)::41 - [@using System.Text.Encoding.ASCIIEncoding]
+    RazorDirective - [0..41)::41
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        RazorDirectiveBody - [1..41)::40
+            CSharpStatementLiteral - [1..41)::40 - [using System.Text.Encoding.ASCIIEncoding] - Gen<Import: System.Text.Encoding.ASCIIEncoding;> - SpanEditHandler;Accepts:AnyExceptNewline
+                Keyword;[using];
+                Whitespace;[ ];
+                Identifier;[System];
+                Dot;[.];
+                Identifier;[Text];
+                Dot;[.];
+                Identifier;[Encoding];
+                Dot;[.];
+                Identifier;[ASCIIEncoding];

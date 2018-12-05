@@ -1,0 +1,12 @@
+CSharpCodeBlock - [0..9)::9 - [@("\"\"")]
+    CSharpExplicitExpression - [0..9)::9
+        CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpExplicitExpressionBody - [1..9)::8
+            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftParenthesis;[(];
+            CSharpCodeBlock - [2..8)::6
+                CSharpExpressionLiteral - [2..8)::6 - ["\"\""] - Gen<Expr> - SpanEditHandler;Accepts:Any
+                    StringLiteral;["\"\""];
+            RazorMetaCode - [8..9)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightParenthesis;[)];

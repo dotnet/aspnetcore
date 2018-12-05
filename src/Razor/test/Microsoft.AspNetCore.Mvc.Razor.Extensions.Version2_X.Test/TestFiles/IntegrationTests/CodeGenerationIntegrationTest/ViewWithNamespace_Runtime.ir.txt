@@ -1,0 +1,29 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    CSharpCode - 
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewWithNamespace.cshtml", typeof(Test.Namespace.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewWithNamespace))]
+    NamespaceDeclaration -  - Test.Namespace
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewWithNamespace - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(27, 20, true);
+                HtmlContent - (27:1,0 [20] ViewWithNamespace.cshtml)
+                    IntermediateToken - (27:1,0 [4] ViewWithNamespace.cshtml) - Html - <h1>
+                    IntermediateToken - (31:1,4 [9] ViewWithNamespace.cshtml) - Html - Hi There!
+                    IntermediateToken - (40:1,13 [5] ViewWithNamespace.cshtml) - Html - </h1>
+                    IntermediateToken - (45:1,18 [2] ViewWithNamespace.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 

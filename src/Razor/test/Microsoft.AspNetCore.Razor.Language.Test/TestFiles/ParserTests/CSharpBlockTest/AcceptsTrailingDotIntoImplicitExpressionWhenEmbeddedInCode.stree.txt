@@ -1,0 +1,23 @@
+CSharpCodeBlock - [0..17)::17 - [if(foo) { @foo. }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..10)::10 - [if(foo) { ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+    CSharpCodeBlock - [10..15)::5
+        CSharpImplicitExpression - [10..15)::5
+            CSharpTransition - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Transition;[@];
+            CSharpImplicitExpressionBody - [11..15)::4
+                CSharpCodeBlock - [11..15)::4
+                    CSharpExpressionLiteral - [11..15)::4 - [foo.] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K14
+                        Identifier;[foo];
+                        Dot;[.];
+    CSharpStatementLiteral - [15..17)::2 - [ }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Whitespace;[ ];
+        RightBrace;[}];

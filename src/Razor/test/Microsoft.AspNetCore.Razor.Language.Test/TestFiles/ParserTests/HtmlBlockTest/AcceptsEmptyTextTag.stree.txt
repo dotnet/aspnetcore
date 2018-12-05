@@ -1,0 +1,7 @@
+MarkupBlock - [0..7)::7 - [<text/>]
+    MarkupTagBlock - [0..7)::7 - [<text/>]
+        MarkupTransition - [0..7)::7 - Gen<None> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[text];
+            ForwardSlash;[/];
+            CloseAngle;[>];

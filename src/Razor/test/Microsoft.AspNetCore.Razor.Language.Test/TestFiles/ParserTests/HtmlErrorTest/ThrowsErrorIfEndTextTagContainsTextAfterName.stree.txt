@@ -1,0 +1,16 @@
+MarkupBlock - [0..21)::21 - [<text></text foo bar>]
+    MarkupTagBlock - [0..6)::6 - [<text>]
+        MarkupTransition - [0..6)::6 - Gen<None> - SpanEditHandler;Accepts:None
+            OpenAngle;[<];
+            Text;[text];
+            CloseAngle;[>];
+    MarkupTagBlock - [6..21)::15 - [</text foo bar>]
+        MarkupTransition - [6..21)::15 - Gen<None> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            ForwardSlash;[/];
+            Text;[text];
+            Whitespace;[ ];
+            Text;[foo];
+            Whitespace;[ ];
+            Text;[bar];
+            CloseAngle;[>];

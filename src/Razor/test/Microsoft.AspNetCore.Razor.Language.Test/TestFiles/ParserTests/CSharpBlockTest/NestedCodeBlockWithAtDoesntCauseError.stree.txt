@@ -1,0 +1,27 @@
+CSharpCodeBlock - [0..28)::28 - [if (true) { @if(false) { } }]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..12)::12 - [if (true) { ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        Whitespace;[ ];
+        LeftParenthesis;[(];
+        Keyword;[true];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+    CSharpCodeBlock - [12..26)::14
+        CSharpTransition - [12..13)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpStatementLiteral - [13..26)::13 - [if(false) { }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+            Keyword;[if];
+            LeftParenthesis;[(];
+            Keyword;[false];
+            RightParenthesis;[)];
+            Whitespace;[ ];
+            LeftBrace;[{];
+            Whitespace;[ ];
+            RightBrace;[}];
+    CSharpStatementLiteral - [26..28)::2 - [ }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Whitespace;[ ];
+        RightBrace;[}];

@@ -1,0 +1,31 @@
+CSharpCodeBlock - [0..26)::26 - [{LF    @:<p>Foo</p>    LF}]
+    CSharpStatement - [0..26)::26
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..26)::26
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..25)::24
+                CSharpStatementLiteral - [1..7)::6 - [LF    ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                MarkupBlock - [7..25)::18
+                    MarkupTransition - [7..8)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    RazorMetaCode - [8..9)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+                        Colon;[:];
+                    MarkupTextLiteral - [9..25)::16 - [<p>Foo</p>    LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        OpenAngle;[<];
+                        Text;[p];
+                        CloseAngle;[>];
+                        Text;[Foo];
+                        OpenAngle;[<];
+                        ForwardSlash;[/];
+                        Text;[p];
+                        CloseAngle;[>];
+                        Whitespace;[    ];
+                        NewLine;[LF];
+                CSharpStatementLiteral - [25..25)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Marker;[];
+            RazorMetaCode - [25..26)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

@@ -1,0 +1,19 @@
+RazorDocument - [0..22)::22 - [foo @DateTime..Now baz]
+    MarkupBlock - [0..22)::22
+        MarkupTextLiteral - [0..4)::4 - [foo ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[foo];
+            Whitespace;[ ];
+        CSharpCodeBlock - [4..18)::14
+            CSharpImplicitExpression - [4..18)::14
+                CSharpTransition - [4..5)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [5..18)::13
+                    CSharpCodeBlock - [5..18)::13
+                        CSharpExpressionLiteral - [5..18)::13 - [DateTime..Now] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K20
+                            Identifier;[DateTime];
+                            Dot;[.];
+                            Dot;[.];
+                            Identifier;[Now];
+        MarkupTextLiteral - [18..22)::4 - [ baz] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Whitespace;[ ];
+            Text;[baz];

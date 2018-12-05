@@ -1,0 +1,35 @@
+MarkupBlock - [0..23)::23 - [<a href LF= LF'@Foo' />]
+    MarkupTagBlock - [0..23)::23 - [<a href LF= LF'@Foo' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..20)::18 - [ href LF= LF'@Foo']
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..7)::4 - [href] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[href];
+            MarkupTextLiteral - [7..10)::3 - [ LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                NewLine;[LF];
+            Equals;[=];
+            MarkupTextLiteral - [11..15)::4 - [ LF'] - Gen<None> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+                NewLine;[LF];
+                SingleQuote;['];
+            GenericBlock - [15..19)::4
+                MarkupDynamicAttributeValue - [15..19)::4 - [@Foo]
+                    GenericBlock - [15..19)::4
+                        CSharpCodeBlock - [15..19)::4
+                            CSharpImplicitExpression - [15..19)::4
+                                CSharpTransition - [15..16)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [16..19)::3
+                                    CSharpCodeBlock - [16..19)::3
+                                        CSharpExpressionLiteral - [16..19)::3 - [Foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                            Identifier;[Foo];
+            MarkupTextLiteral - [19..20)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [20..23)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

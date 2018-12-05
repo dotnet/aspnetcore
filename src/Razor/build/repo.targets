@@ -1,0 +1,38 @@
+﻿<Project>
+  <Import Project="VSIX.targets" />
+  <Import Project="MPack.targets" />
+
+  <ItemGroup>
+    <Solutions Update="$(RepositoryRoot)Razor.sln">
+      <!-- the 'DebugNoVSIX' and 'ReleaseNoVSIX' configurations exclude the VSIX project, which doesn't build with Microsoft.NET.Sdk yet. -->
+      <AdditionalProperties>Configuration=$(Configuration)NoVSIX</AdditionalProperties>
+    </Solutions>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <PrepareDependsOn>$(PrepareDependsOn);GenerateMSBuildLocationFile</PrepareDependsOn>
+    <RazorSdkTestProject>$(RepositoryRoot)test\Microsoft.NET.Sdk.Razor.Test\</RazorSdkTestProject>
+    <MSBuildLocationFileTemplate>$(RazorSdkTestProject)BuildVariables.cs.template</MSBuildLocationFileTemplate>
+    <MSBuildLocationFileOutput>$(RazorSdkTestProject)obj\BuildVariables.generated.cs</MSBuildLocationFileOutput>
+  </PropertyGroup>
+
+  <Target Name="GenerateMSBuildLocationFile"
+      DependsOnTargets="GetToolsets"
+      Inputs="$(MSBuildLocationFileTemplate);$(VisualStudioMSBuildx86Path)"
+      Outputs="$(MSBuildLocationFileOutput)">
+
+    <PropertyGroup>
+      <TemplateProperties>
+        MSBuildLocation=$(VisualStudioMSBuildx86Path);
+        MicrosoftNETCoreApp30PackageVersion=$(MicrosoftNETCoreApp30PackageVersion);
+        NETStandardLibrary20PackageVersion=$(NETStandardLibrary20PackageVersion)
+      </TemplateProperties>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="$(MSBuildLocationFileTemplate)"
+      Properties="$(TemplateProperties)"
+      OutputPath="$(MSBuildLocationFileOutput)" />
+
+  </Target>
+</Project>

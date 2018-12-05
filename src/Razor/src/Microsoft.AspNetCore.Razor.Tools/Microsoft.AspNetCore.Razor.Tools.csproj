@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This assembly contains infrastructure supporting Razor MSBuild integration.</Description>
+
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>rzc</AssemblyName>
+
+    <!-- This is not a package, it is part of Razor SDK. -->
+    <IsPackable>false</IsPackable>
+    <EnableApiCheck>false</EnableApiCheck>
+
+    <!-- Don't produce rzc.exe -->
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\TagHelperDescriptorJsonConverter.cs">
+      <Link>Shared\TagHelperDescriptorJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\RazorDiagnosticJsonConverter.cs">
+      <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor\Microsoft.CodeAnalysis.Razor.csproj" />
+  </ItemGroup>
+
+  <!-- This makes it so that the runtimeconfig.json is included as part of the build output of the project that references this project. -->
+  <Target Name="PreserveRuntimeConfig" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <AllItemsFullPathWithTargetPath Include="$(ProjectRuntimeConfigFilePath)">
+        <TargetPath>$(ProjectRuntimeConfigFileName)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AllItemsFullPathWithTargetPath>
+    </ItemGroup>
+  </Target>
+</Project>

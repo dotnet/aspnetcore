@@ -1,0 +1,8 @@
+MarkupBlock - [0..9)::9 - [<!--<foo>]
+    MarkupTextLiteral - [0..9)::9 - [<!--<foo>] - Gen<Markup> - SpanEditHandler;Accepts:None
+        OpenAngle;[<];
+        Bang;[!];
+        DoubleHyphen;[--];
+        OpenAngle;[<];
+        Text;[foo];
+        CloseAngle;[>];

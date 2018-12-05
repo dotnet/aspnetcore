@@ -1,0 +1,29 @@
+CSharpCodeBlock - [0..42)::42 - [@using(var foo = new Foo()) { foo.Bar(); }]
+    CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    CSharpStatementLiteral - [1..42)::41 - [using(var foo = new Foo()) { foo.Bar(); }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[using];
+        LeftParenthesis;[(];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        Keyword;[new];
+        Whitespace;[ ];
+        Identifier;[Foo];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Dot;[.];
+        Identifier;[Bar];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

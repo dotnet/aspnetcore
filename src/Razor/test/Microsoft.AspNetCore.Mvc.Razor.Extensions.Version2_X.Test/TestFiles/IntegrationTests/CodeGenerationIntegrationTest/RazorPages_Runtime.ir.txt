@@ -1,0 +1,193 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    CSharpCode - 
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml", typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages), null)]
+    NamespaceDeclaration -  - AspNetCore
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        UsingDirective - (55:4,1 [43] RazorPages.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - class - text-danger - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - class - col-md-10 - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - class - form-group - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_3 - class - col-md-offset-2 col-md-10 - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(7, 2, true);
+                HtmlContent - (7:1,0 [2] RazorPages.cshtml)
+                    IntermediateToken - (7:1,0 [2] RazorPages.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(98, 2, true);
+                HtmlContent - (98:5,0 [2] RazorPages.cshtml)
+                    IntermediateToken - (98:5,0 [2] RazorPages.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(475, 76, true);
+                HtmlContent - (475:23,0 [76] RazorPages.cshtml)
+                    IntermediateToken - (475:23,0 [2] RazorPages.cshtml) - Html - \n
+                    IntermediateToken - (477:24,0 [4] RazorPages.cshtml) - Html - <h1>
+                    IntermediateToken - (481:24,4 [12] RazorPages.cshtml) - Html - New Customer
+                    IntermediateToken - (493:24,16 [5] RazorPages.cshtml) - Html - </h1>
+                    IntermediateToken - (498:24,21 [2] RazorPages.cshtml) - Html - \n
+                    IntermediateToken - (500:25,0 [5] RazorPages.cshtml) - Html - <form
+                    IntermediateToken - (505:25,5 [14] RazorPages.cshtml) - Html -  method="post"
+                    IntermediateToken - (519:25,19 [24] RazorPages.cshtml) - Html -  class="form-horizontal"
+                    IntermediateToken - (543:25,43 [2] RazorPages.cshtml) - Html -  >
+                    IntermediateToken - (545:25,45 [6] RazorPages.cshtml) - Html - \n    
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(551, 31, false);
+                TagHelper - (551:26,4 [31] RazorPages.cshtml) - div - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - DivTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    DefaultTagHelperExecute - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(582, 6, true);
+                HtmlContent - (582:26,35 [6] RazorPages.cshtml)
+                    IntermediateToken - (582:26,35 [6] RazorPages.cshtml) - Html - \n    
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(588, 243, false);
+                TagHelper - (588:27,4 [243] RazorPages.cshtml) - div - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - BeginContext(612, 48, true);
+                        HtmlContent - (612:27,28 [48] RazorPages.cshtml)
+                            IntermediateToken - (612:27,28 [10] RazorPages.cshtml) - Html - \n        
+                            IntermediateToken - (622:28,8 [6] RazorPages.cshtml) - Html - <label
+                            IntermediateToken - (628:28,14 [31] RazorPages.cshtml) - Html -  class="col-md-2 control-label"
+                            IntermediateToken - (659:28,45 [1] RazorPages.cshtml) - Html - >
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - EndContext();
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - BeginContext(661, 10, false);
+                        CSharpExpression - (661:28,47 [10] RazorPages.cshtml)
+                            IntermediateToken - (661:28,47 [10] RazorPages.cshtml) - CSharp - Model.Name
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - EndContext();
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - BeginContext(671, 18, true);
+                        HtmlContent - (671:28,57 [18] RazorPages.cshtml)
+                            IntermediateToken - (671:28,57 [8] RazorPages.cshtml) - Html - </label>
+                            IntermediateToken - (679:28,65 [10] RazorPages.cshtml) - Html - \n        
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - EndContext();
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - BeginContext(689, 130, false);
+                        TagHelper - (689:29,8 [130] RazorPages.cshtml) - div - TagMode.StartTagAndEndTag
+                            DefaultTagHelperBody - 
+                                CSharpCode - 
+                                    IntermediateToken -  - CSharp - BeginContext(712, 101, true);
+                                HtmlContent - (712:29,31 [101] RazorPages.cshtml)
+                                    IntermediateToken - (712:29,31 [14] RazorPages.cshtml) - Html - \n            
+                                    IntermediateToken - (726:30,12 [6] RazorPages.cshtml) - Html - <input
+                                    IntermediateToken - (732:30,18 [21] RazorPages.cshtml) - Html -  class="form-control"
+                                    IntermediateToken - (753:30,39 [3] RazorPages.cshtml) - Html -  />
+                                    IntermediateToken - (756:30,42 [14] RazorPages.cshtml) - Html - \n            
+                                    IntermediateToken - (770:31,12 [5] RazorPages.cshtml) - Html - <span
+                                    IntermediateToken - (775:31,17 [20] RazorPages.cshtml) - Html -  class="text-danger"
+                                    IntermediateToken - (795:31,37 [1] RazorPages.cshtml) - Html - >
+                                    IntermediateToken - (796:31,38 [7] RazorPages.cshtml) - Html - </span>
+                                    IntermediateToken - (803:31,45 [10] RazorPages.cshtml) - Html - \n        
+                                CSharpCode - 
+                                    IntermediateToken -  - CSharp - EndContext();
+                            DefaultTagHelperCreate -  - DivTagHelper
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            DefaultTagHelperExecute - 
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - EndContext();
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - BeginContext(819, 6, true);
+                        HtmlContent - (819:32,14 [6] RazorPages.cshtml)
+                            IntermediateToken - (819:32,14 [6] RazorPages.cshtml) - Html - \n    
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - EndContext();
+                    DefaultTagHelperCreate -  - DivTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(831, 6, true);
+                HtmlContent - (831:33,10 [6] RazorPages.cshtml)
+                    IntermediateToken - (831:33,10 [6] RazorPages.cshtml) - Html - \n    
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(837, 174, false);
+                TagHelper - (837:34,4 [174] RazorPages.cshtml) - div - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - BeginContext(861, 10, true);
+                        HtmlContent - (861:34,28 [10] RazorPages.cshtml)
+                            IntermediateToken - (861:34,28 [10] RazorPages.cshtml) - Html - \n        
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - EndContext();
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - BeginContext(871, 128, false);
+                        TagHelper - (871:35,8 [128] RazorPages.cshtml) - div - TagMode.StartTagAndEndTag
+                            DefaultTagHelperBody - 
+                                CSharpCode - 
+                                    IntermediateToken -  - CSharp - BeginContext(910, 83, true);
+                                HtmlContent - (910:35,47 [83] RazorPages.cshtml)
+                                    IntermediateToken - (910:35,47 [14] RazorPages.cshtml) - Html - \n            
+                                    IntermediateToken - (924:36,12 [7] RazorPages.cshtml) - Html - <button
+                                    IntermediateToken - (931:36,19 [14] RazorPages.cshtml) - Html -  type="submit"
+                                    IntermediateToken - (945:36,33 [24] RazorPages.cshtml) - Html -  class="btn btn-primary"
+                                    IntermediateToken - (969:36,57 [1] RazorPages.cshtml) - Html - >
+                                    IntermediateToken - (970:36,58 [4] RazorPages.cshtml) - Html - Save
+                                    IntermediateToken - (974:36,62 [9] RazorPages.cshtml) - Html - </button>
+                                    IntermediateToken - (983:36,71 [10] RazorPages.cshtml) - Html - \n        
+                                CSharpCode - 
+                                    IntermediateToken -  - CSharp - EndContext();
+                            DefaultTagHelperCreate -  - DivTagHelper
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
+                            DefaultTagHelperExecute - 
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - EndContext();
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - BeginContext(999, 6, true);
+                        HtmlContent - (999:37,14 [6] RazorPages.cshtml)
+                            IntermediateToken - (999:37,14 [6] RazorPages.cshtml) - Html - \n    
+                        CSharpCode - 
+                            IntermediateToken -  - CSharp - EndContext();
+                    DefaultTagHelperCreate -  - DivTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(1011, 11, true);
+                HtmlContent - (1011:38,10 [11] RazorPages.cshtml)
+                    IntermediateToken - (1011:38,10 [2] RazorPages.cshtml) - Html - \n
+                    IntermediateToken - (1013:39,0 [7] RazorPages.cshtml) - Html - </form>
+                    IntermediateToken - (1020:39,7 [2] RazorPages.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+            CSharpCode - (112:6,12 [360] RazorPages.cshtml)
+                IntermediateToken - (112:6,12 [360] RazorPages.cshtml) - CSharp - \n    public class NewModel : PageModel\n    {\n        public IActionResult OnPost(Customer customer)\n        {\n            Name = customer.Name;\n            return Redirect("~/customers/inlinepagemodels/");\n        }\n\n        public string Name { get; set; }\n    }\n\n    public class Customer\n    {\n        public string Name { get; set; }\n    }\n
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<NewModel> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<NewModel>)PageContext?.ViewData;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - public NewModel Model => ViewData.Model;

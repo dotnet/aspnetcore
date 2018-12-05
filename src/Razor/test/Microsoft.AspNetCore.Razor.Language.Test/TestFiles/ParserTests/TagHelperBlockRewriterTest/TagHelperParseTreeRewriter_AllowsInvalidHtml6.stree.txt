@@ -1,0 +1,26 @@
+RazorDocument - [0..13)::13 - [</<<p>/></p>>]
+    MarkupBlock - [0..13)::13
+        MarkupTagBlock - [0..2)::2 - [</]
+            MarkupTextLiteral - [0..2)::2 - [</] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+        MarkupTagBlock - [2..3)::1 - [<]
+            MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+        MarkupTagHelperElement - [3..12)::9 - p[StartTagAndEndTag] - ptaghelper
+            MarkupTagHelperStartTag - [3..6)::3
+                MarkupTextLiteral - [3..6)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    Text;[p];
+                    CloseAngle;[>];
+            MarkupTextLiteral - [6..8)::2 - [/>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                ForwardSlash;[/];
+                CloseAngle;[>];
+            MarkupTagHelperEndTag - [8..12)::4
+                MarkupTextLiteral - [8..12)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    OpenAngle;[<];
+                    ForwardSlash;[/];
+                    Text;[p];
+                    CloseAngle;[>];
+        MarkupTextLiteral - [12..13)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            CloseAngle;[>];

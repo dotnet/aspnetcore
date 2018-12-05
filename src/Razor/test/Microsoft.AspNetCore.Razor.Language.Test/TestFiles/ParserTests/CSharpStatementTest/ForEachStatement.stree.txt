@@ -1,0 +1,23 @@
+CSharpCodeBlock - [0..35)::35 - [@foreach(var foo in bar) { foo(); }]
+    CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    CSharpStatementLiteral - [1..35)::34 - [foreach(var foo in bar) { foo(); }] - Gen<Stmt> - SpanEditHandler;Accepts:None
+        Keyword;[foreach];
+        LeftParenthesis;[(];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Keyword;[in];
+        Whitespace;[ ];
+        Identifier;[bar];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[foo];
+        LeftParenthesis;[(];
+        RightParenthesis;[)];
+        Semicolon;[;];
+        Whitespace;[ ];
+        RightBrace;[}];

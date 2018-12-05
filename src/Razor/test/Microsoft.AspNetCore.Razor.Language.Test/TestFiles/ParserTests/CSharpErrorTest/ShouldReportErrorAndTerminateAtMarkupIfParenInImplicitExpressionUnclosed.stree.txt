@@ -1,0 +1,16 @@
+CSharpCodeBlock - [0..19)::19 - [Foo(Bar(Baz)LFBizLF]
+    CSharpImplicitExpression - [0..19)::19
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpImplicitExpressionBody - [0..19)::19
+            CSharpCodeBlock - [0..19)::19
+                CSharpExpressionLiteral - [0..19)::19 - [Foo(Bar(Baz)LFBizLF] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:Any;ImplicitExpression[RTD];K14
+                    Identifier;[Foo];
+                    LeftParenthesis;[(];
+                    Identifier;[Bar];
+                    LeftParenthesis;[(];
+                    Identifier;[Baz];
+                    RightParenthesis;[)];
+                    NewLine;[LF];
+                    Identifier;[Biz];
+                    NewLine;[LF];

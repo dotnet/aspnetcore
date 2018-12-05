@@ -1,0 +1,15 @@
+CSharpCodeBlock - [0..10)::10 - [(foo barLF]
+    CSharpExplicitExpression - [0..10)::10
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpExplicitExpressionBody - [0..10)::10
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftParenthesis;[(];
+            CSharpCodeBlock - [1..10)::9
+                CSharpExpressionLiteral - [1..10)::9 - [foo barLF] - Gen<Expr> - SpanEditHandler;Accepts:Any
+                    Identifier;[foo];
+                    Whitespace;[ ];
+                    Identifier;[bar];
+                    NewLine;[LF];
+            RazorMetaCode - [10..10)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                RightParenthesis;[<Missing>];

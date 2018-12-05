@@ -1,0 +1,33 @@
+RazorDocument - [0..29)::29 - [<span data-foo='@foo'></span>]
+    MarkupBlock - [0..29)::29
+        MarkupTagBlock - [0..22)::22 - [<span data-foo='@foo'>]
+            MarkupTextLiteral - [0..5)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[span];
+            MarkupAttributeBlock - [5..21)::16 - [ data-foo='@foo']
+                MarkupTextLiteral - [5..6)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Whitespace;[ ];
+                MarkupTextLiteral - [6..14)::8 - [data-foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    Text;[data-foo];
+                Equals;[=];
+                MarkupTextLiteral - [15..16)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+                GenericBlock - [16..20)::4
+                    CSharpCodeBlock - [16..20)::4
+                        CSharpImplicitExpression - [16..20)::4
+                            CSharpTransition - [16..17)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                Transition;[@];
+                            CSharpImplicitExpressionBody - [17..20)::3
+                                CSharpCodeBlock - [17..20)::3
+                                    CSharpExpressionLiteral - [17..20)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                        Identifier;[foo];
+                MarkupTextLiteral - [20..21)::1 - ['] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                    SingleQuote;['];
+            MarkupTextLiteral - [21..22)::1 - [>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                CloseAngle;[>];
+        MarkupTagBlock - [22..29)::7 - [</span>]
+            MarkupTextLiteral - [22..29)::7 - [</span>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[span];
+                CloseAngle;[>];

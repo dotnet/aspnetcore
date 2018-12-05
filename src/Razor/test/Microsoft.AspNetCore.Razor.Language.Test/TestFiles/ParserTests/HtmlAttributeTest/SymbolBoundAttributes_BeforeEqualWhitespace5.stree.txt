@@ -1,0 +1,40 @@
+MarkupBlock - [0..43)::43 - [<a *somethingLF='Foo'	*something=LF'Bar' />]
+    MarkupTagBlock - [0..43)::43 - [<a *somethingLF='Foo'	*something=LF'Bar' />]
+        MarkupTextLiteral - [0..2)::2 - [<a] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            OpenAngle;[<];
+            Text;[a];
+        MarkupAttributeBlock - [2..21)::19 - [ *somethingLF='Foo']
+            MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[ ];
+            MarkupTextLiteral - [3..13)::10 - [*something] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[*something];
+            MarkupTextLiteral - [13..15)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+            Equals;[=];
+            MarkupTextLiteral - [16..17)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+            GenericBlock - [17..20)::3
+                MarkupLiteralAttributeValue - [17..20)::3 - [Foo]
+                    MarkupTextLiteral - [17..20)::3 - [Foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Foo];
+            MarkupTextLiteral - [20..21)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupAttributeBlock - [21..40)::19 - [	*something=LF'Bar']
+            MarkupTextLiteral - [21..22)::1 - [	] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Whitespace;[	];
+            MarkupTextLiteral - [22..32)::10 - [*something] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[*something];
+            Equals;[=];
+            MarkupTextLiteral - [33..36)::3 - [LF'] - Gen<None> - SpanEditHandler;Accepts:Any
+                NewLine;[LF];
+                SingleQuote;['];
+            GenericBlock - [36..39)::3
+                MarkupLiteralAttributeValue - [36..39)::3 - [Bar]
+                    MarkupTextLiteral - [36..39)::3 - [Bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[Bar];
+            MarkupTextLiteral - [39..40)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                SingleQuote;['];
+        MarkupTextLiteral - [40..43)::3 - [ />] - Gen<Markup> - SpanEditHandler;Accepts:None
+            Whitespace;[ ];
+            ForwardSlash;[/];
+            CloseAngle;[>];

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RazorSdkDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RunningAsTest)' == ''">
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'==''">
+    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'!=''">
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
+  </ItemGroup>
+
+  <!-- Test Placeholder -->
+
+</Project>

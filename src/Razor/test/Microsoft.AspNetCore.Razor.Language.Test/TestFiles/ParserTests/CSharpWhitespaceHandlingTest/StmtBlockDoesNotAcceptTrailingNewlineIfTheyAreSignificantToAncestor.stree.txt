@@ -1,0 +1,22 @@
+MarkupBlock - [0..19)::19 - [@: @if (true) { }LF]
+    MarkupTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+        Colon;[:];
+    MarkupTextLiteral - [2..3)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        Whitespace;[ ];
+    CSharpCodeBlock - [3..17)::14
+        CSharpTransition - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[@];
+        CSharpStatementLiteral - [4..17)::13 - [if (true) { }] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+            Keyword;[if];
+            Whitespace;[ ];
+            LeftParenthesis;[(];
+            Keyword;[true];
+            RightParenthesis;[)];
+            Whitespace;[ ];
+            LeftBrace;[{];
+            Whitespace;[ ];
+            RightBrace;[}];
+    MarkupTextLiteral - [17..19)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+        NewLine;[LF];

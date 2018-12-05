@@ -1,0 +1,29 @@
+RazorDocument - [0..8)::8 - [@{@foo.}]
+    MarkupBlock - [0..8)::8
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..8)::8
+            CSharpStatement - [0..8)::8
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..8)::7
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..7)::5
+                        CSharpStatementLiteral - [2..2)::0 - [] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            Marker;[];
+                        CSharpCodeBlock - [2..7)::5
+                            CSharpImplicitExpression - [2..7)::5
+                                CSharpTransition - [2..3)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [3..7)::4
+                                    CSharpCodeBlock - [3..7)::4
+                                        CSharpExpressionLiteral - [3..7)::4 - [foo.] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K20
+                                            Identifier;[foo];
+                                            Dot;[.];
+                        CSharpStatementLiteral - [7..7)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [7..8)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [8..8)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

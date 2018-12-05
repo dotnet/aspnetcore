@@ -1,0 +1,50 @@
+CSharpCodeBlock - [0..64)::64 - [if(foo) {LF    var foo = "foo bar bazLF    <p>Foo is @foo</p>LF}]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..43)::43 - [if(foo) {LF    var foo = "foo bar bazLF    ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        NewLine;[LF];
+        Whitespace;[    ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        StringLiteral;["foo bar baz];RZ1000(25:1,14 [1] )
+        NewLine;[LF];
+        Whitespace;[    ];
+    MarkupBlock - [43..63)::20
+        MarkupTagBlock - [43..46)::3 - [<p>]
+            MarkupTextLiteral - [43..46)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [46..53)::7 - [Foo is ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[Foo];
+            Whitespace;[ ];
+            Text;[is];
+            Whitespace;[ ];
+        CSharpCodeBlock - [53..57)::4
+            CSharpImplicitExpression - [53..57)::4
+                CSharpTransition - [53..54)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpImplicitExpressionBody - [54..57)::3
+                    CSharpCodeBlock - [54..57)::3
+                        CSharpExpressionLiteral - [54..57)::3 - [foo] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                            Identifier;[foo];
+        MarkupTagBlock - [57..61)::4 - [</p>]
+            MarkupTextLiteral - [57..61)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[p];
+                CloseAngle;[>];
+        MarkupTextLiteral - [61..63)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+            NewLine;[LF];
+    CSharpStatementLiteral - [63..64)::1 - [}] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        RightBrace;[}];

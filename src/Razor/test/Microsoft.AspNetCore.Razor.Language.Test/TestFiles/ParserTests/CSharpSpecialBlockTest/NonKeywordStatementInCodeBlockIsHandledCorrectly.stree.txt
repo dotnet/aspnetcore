@@ -1,0 +1,31 @@
+CSharpCodeBlock - [0..56)::56 - [{LF    List<dynamic> photos = gallery.Photo.ToList();LF}]
+    CSharpStatement - [0..56)::56
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..56)::56
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..55)::54
+                CSharpStatementLiteral - [1..55)::54 - [LF    List<dynamic> photos = gallery.Photo.ToList();LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Identifier;[List];
+                    LessThan;[<];
+                    Identifier;[dynamic];
+                    GreaterThan;[>];
+                    Whitespace;[ ];
+                    Identifier;[photos];
+                    Whitespace;[ ];
+                    Assign;[=];
+                    Whitespace;[ ];
+                    Identifier;[gallery];
+                    Dot;[.];
+                    Identifier;[Photo];
+                    Dot;[.];
+                    Identifier;[ToList];
+                    LeftParenthesis;[(];
+                    RightParenthesis;[)];
+                    Semicolon;[;];
+                    NewLine;[LF];
+            RazorMetaCode - [55..56)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

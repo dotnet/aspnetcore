@@ -1,0 +1,13 @@
+RazorDocument - [0..11)::11 - [<div></div>]
+    MarkupBlock - [0..11)::11
+        MarkupTagBlock - [0..5)::5 - [<div>]
+            MarkupTextLiteral - [0..5)::5 - [<div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[div];
+                CloseAngle;[>];
+        MarkupTagBlock - [5..11)::6 - [</div>]
+            MarkupTextLiteral - [5..11)::6 - [</div>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[div];
+                CloseAngle;[>];

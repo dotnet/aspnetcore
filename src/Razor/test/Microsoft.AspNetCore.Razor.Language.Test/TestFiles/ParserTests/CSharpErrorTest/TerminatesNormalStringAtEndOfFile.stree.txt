@@ -1,0 +1,18 @@
+CSharpCodeBlock - [0..45)::45 - [if(foo) { var foo = "blah blah blah blah blah]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..45)::45 - [if(foo) { var foo = "blah blah blah blah blah] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        RightParenthesis;[)];
+        Whitespace;[ ];
+        LeftBrace;[{];
+        Whitespace;[ ];
+        Identifier;[var];
+        Whitespace;[ ];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Assign;[=];
+        Whitespace;[ ];
+        StringLiteral;["blah blah blah blah blah];RZ1000(20:0,20 [1] )

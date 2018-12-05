@@ -1,0 +1,8 @@
+RazorDocument - [0..8)::8 - [</input>]
+    MarkupBlock - [0..8)::8
+        MarkupTagBlock - [0..8)::8 - [</input>]
+            MarkupTextLiteral - [0..8)::8 - [</input>] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                ForwardSlash;[/];
+                Text;[input];
+                CloseAngle;[>];

@@ -1,0 +1,12 @@
+RazorDocument - [0..12)::12 - [<!th:myth />]
+    MarkupBlock - [0..12)::12
+        MarkupTagBlock - [0..12)::12 - [<!th:myth />]
+            MarkupTextLiteral - [0..1)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+            RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                Bang;[!];
+            MarkupTextLiteral - [2..12)::10 - [th:myth />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                Text;[th:myth];
+                Whitespace;[ ];
+                ForwardSlash;[/];
+                CloseAngle;[>];

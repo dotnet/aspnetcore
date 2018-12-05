@@ -1,0 +1,29 @@
+RazorDocument - [0..16)::16 - [@{LF    @foodLF}]
+    MarkupBlock - [0..16)::16
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..16)::16
+            CSharpStatement - [0..16)::16
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..16)::15
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..15)::13
+                        CSharpStatementLiteral - [2..8)::6 - [LF    ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            NewLine;[LF];
+                            Whitespace;[    ];
+                        CSharpCodeBlock - [8..13)::5
+                            CSharpImplicitExpression - [8..13)::5
+                                CSharpTransition - [8..9)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [9..13)::4
+                                    CSharpCodeBlock - [9..13)::4
+                                        CSharpExpressionLiteral - [9..13)::4 - [food] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K20
+                                            Identifier;[food];
+                        CSharpStatementLiteral - [13..15)::2 - [LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            NewLine;[LF];
+                    RazorMetaCode - [15..16)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [16..16)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

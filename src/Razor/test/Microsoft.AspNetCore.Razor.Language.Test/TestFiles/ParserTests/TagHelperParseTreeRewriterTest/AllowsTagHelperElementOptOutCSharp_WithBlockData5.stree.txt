@@ -1,0 +1,33 @@
+RazorDocument - [0..11)::11 - [@{<!p></p>}]
+    MarkupBlock - [0..11)::11
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..11)::11
+            CSharpStatement - [0..11)::11
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..11)::10
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..10)::8
+                        MarkupBlock - [2..10)::8
+                            MarkupTagBlock - [2..6)::4 - [<!p>]
+                                MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Bang;[!];
+                                MarkupTextLiteral - [4..6)::2 - [p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    Text;[p];
+                                    CloseAngle;[>];
+                            MarkupTagBlock - [6..10)::4 - [</p>]
+                                MarkupTextLiteral - [6..10)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                                    OpenAngle;[<];
+                                    ForwardSlash;[/];
+                                    Text;[p];
+                                    CloseAngle;[>];
+                        CSharpStatementLiteral - [10..10)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            Marker;[];
+                    RazorMetaCode - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [11..11)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

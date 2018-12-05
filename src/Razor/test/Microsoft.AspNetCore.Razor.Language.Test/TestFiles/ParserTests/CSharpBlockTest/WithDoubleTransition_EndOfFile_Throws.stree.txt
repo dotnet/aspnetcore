@@ -1,0 +1,31 @@
+CSharpCodeBlock - [0..14)::14 - [{<span foo='@@]
+    CSharpStatement - [0..14)::14
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..14)::14
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..14)::13
+                MarkupBlock - [1..14)::13
+                    MarkupTagBlock - [1..14)::13 - [<span foo='@@]
+                        MarkupTextLiteral - [1..6)::5 - [<span] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                            OpenAngle;[<];
+                            Text;[span];
+                        MarkupAttributeBlock - [6..14)::8 - [ foo='@@]
+                            MarkupTextLiteral - [6..7)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Whitespace;[ ];
+                            MarkupTextLiteral - [7..10)::3 - [foo] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                Text;[foo];
+                            Equals;[=];
+                            MarkupTextLiteral - [11..12)::1 - ['] - Gen<None> - SpanEditHandler;Accepts:Any
+                                SingleQuote;['];
+                            GenericBlock - [12..14)::2
+                                MarkupBlock - [12..14)::2
+                                    MarkupTextLiteral - [12..13)::1 - [@] - Gen<LitAttr:@(12:0,12)> - SpanEditHandler;Accepts:None
+                                        Transition;[@];
+                                    MarkupEphemeralTextLiteral - [13..14)::1 - [@] - Gen<None> - SpanEditHandler;Accepts:None
+                                        Transition;[@];
+                    MarkupTextLiteral - [14..14)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Marker;[];
+            RazorMetaCode - [14..14)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                RightBrace;[<Missing>];

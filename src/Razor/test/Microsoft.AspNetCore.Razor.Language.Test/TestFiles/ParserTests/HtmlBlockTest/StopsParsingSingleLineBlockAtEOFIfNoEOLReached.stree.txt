@@ -1,0 +1,9 @@
+MarkupBlock - [0..9)::9 - [@:foo bar]
+    MarkupTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[@];
+    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+        Colon;[:];
+    MarkupTextLiteral - [2..9)::7 - [foo bar] - Gen<Markup> - SpanEditHandler;Accepts:Any
+        Text;[foo];
+        Whitespace;[ ];
+        Text;[bar];

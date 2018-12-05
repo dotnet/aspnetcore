@@ -1,0 +1,9 @@
+RazorDocument - [0..7)::7 - [<th: />]
+    MarkupBlock - [0..7)::7
+        MarkupTagBlock - [0..7)::7 - [<th: />]
+            MarkupTextLiteral - [0..7)::7 - [<th: />] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                OpenAngle;[<];
+                Text;[th:];
+                Whitespace;[ ];
+                ForwardSlash;[/];
+                CloseAngle;[>];

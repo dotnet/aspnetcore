@@ -1,0 +1,80 @@
+RazorDocument - [0..176)::176 - [@custom string? string?[] global::System.Int32? KeyValuePair<string, string>? KeyValuePair<string, string>?[] global::System.Collections.Generic.KeyValuePair<string, string>?[]]
+    MarkupBlock - [0..176)::176
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..176)::176
+            RazorDirective - [0..176)::176 - Directive:{custom;SingleLine;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..176)::175
+                    RazorMetaCode - [1..7)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[custom];
+                    CSharpCodeBlock - [7..176)::169
+                        CSharpStatementLiteral - [7..8)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [8..15)::7 - [string?] - Gen<DirectiveToken {;Type;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Keyword;[string];
+                            QuestionMark;[?];
+                        CSharpStatementLiteral - [15..16)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [16..25)::9 - [string?[]] - Gen<DirectiveToken {;Type;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Keyword;[string];
+                            QuestionMark;[?];
+                            LeftBracket;[[];
+                            RightBracket;[]];
+                        CSharpStatementLiteral - [25..26)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [26..47)::21 - [global::System.Int32?] - Gen<DirectiveToken {;Type;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[global];
+                            DoubleColon;[::];
+                            Identifier;[System];
+                            Dot;[.];
+                            Identifier;[Int32];
+                            QuestionMark;[?];
+                        CSharpStatementLiteral - [47..48)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [48..77)::29 - [KeyValuePair<string, string>?] - Gen<DirectiveToken {;Type;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[KeyValuePair];
+                            LessThan;[<];
+                            Keyword;[string];
+                            Comma;[,];
+                            Whitespace;[ ];
+                            Keyword;[string];
+                            GreaterThan;[>];
+                            QuestionMark;[?];
+                        CSharpStatementLiteral - [77..78)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [78..109)::31 - [KeyValuePair<string, string>?[]] - Gen<DirectiveToken {;Type;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[KeyValuePair];
+                            LessThan;[<];
+                            Keyword;[string];
+                            Comma;[,];
+                            Whitespace;[ ];
+                            Keyword;[string];
+                            GreaterThan;[>];
+                            QuestionMark;[?];
+                            LeftBracket;[[];
+                            RightBracket;[]];
+                        CSharpStatementLiteral - [109..110)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [110..176)::66 - [global::System.Collections.Generic.KeyValuePair<string, string>?[]] - Gen<DirectiveToken {;Type;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[global];
+                            DoubleColon;[::];
+                            Identifier;[System];
+                            Dot;[.];
+                            Identifier;[Collections];
+                            Dot;[.];
+                            Identifier;[Generic];
+                            Dot;[.];
+                            Identifier;[KeyValuePair];
+                            LessThan;[<];
+                            Keyword;[string];
+                            Comma;[,];
+                            Whitespace;[ ];
+                            Keyword;[string];
+                            GreaterThan;[>];
+                            QuestionMark;[?];
+                            LeftBracket;[[];
+                            RightBracket;[]];
+        MarkupTextLiteral - [176..176)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

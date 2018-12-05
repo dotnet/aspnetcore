@@ -1,0 +1,32 @@
+RazorDocument - [0..25)::25 - [@{LF    @DateTime.Now.LF}]
+    MarkupBlock - [0..25)::25
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..25)::25
+            CSharpStatement - [0..25)::25
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..25)::24
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..24)::22
+                        CSharpStatementLiteral - [2..8)::6 - [LF    ] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                            NewLine;[LF];
+                            Whitespace;[    ];
+                        CSharpCodeBlock - [8..22)::14
+                            CSharpImplicitExpression - [8..22)::14
+                                CSharpTransition - [8..9)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Transition;[@];
+                                CSharpImplicitExpressionBody - [9..22)::13
+                                    CSharpCodeBlock - [9..22)::13
+                                        CSharpExpressionLiteral - [9..22)::13 - [DateTime.Now.] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[ATD];K20
+                                            Identifier;[DateTime];
+                                            Dot;[.];
+                                            Identifier;[Now];
+                                            Dot;[.];
+                        CSharpStatementLiteral - [22..24)::2 - [LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                            NewLine;[LF];
+                    RazorMetaCode - [24..25)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        RightBrace;[}];
+        MarkupTextLiteral - [25..25)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

@@ -1,0 +1,10 @@
+CSharpCodeBlock - [0..12)::12 - [if(foo barLF]
+    CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+        Transition;[<Missing>];
+    CSharpStatementLiteral - [0..12)::12 - [if(foo barLF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+        Keyword;[if];
+        LeftParenthesis;[(];
+        Identifier;[foo];
+        Whitespace;[ ];
+        Identifier;[bar];
+        NewLine;[LF];

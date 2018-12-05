@@ -1,0 +1,22 @@
+RazorDocument - [0..6)::6 - [@{<!p}]
+    MarkupBlock - [0..6)::6
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..6)::6
+            CSharpStatement - [0..6)::6
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                CSharpStatementBody - [1..6)::5
+                    RazorMetaCode - [1..2)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        LeftBrace;[{];
+                    CSharpCodeBlock - [2..6)::4
+                        MarkupBlock - [2..6)::4
+                            MarkupTagBlock - [2..6)::4 - [<!p}]
+                                MarkupTextLiteral - [2..3)::1 - [<] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    OpenAngle;[<];
+                                RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                    Bang;[!];
+                                MarkupTextLiteral - [4..6)::2 - [p}] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                                    Text;[p}];
+                    RazorMetaCode - [6..6)::0 - Gen<None> - SpanEditHandler;Accepts:Any
+                        RightBrace;[<Missing>];

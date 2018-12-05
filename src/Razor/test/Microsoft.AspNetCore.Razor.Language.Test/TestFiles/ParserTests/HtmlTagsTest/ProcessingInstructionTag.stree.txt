@@ -1,0 +1,16 @@
+MarkupBlock - [0..23)::23 - [<?xml version="1.0" ?> ]
+    MarkupTextLiteral - [0..22)::22 - [<?xml version="1.0" ?>] - Gen<Markup> - SpanEditHandler;Accepts:None
+        OpenAngle;[<];
+        QuestionMark;[?];
+        Text;[xml];
+        Whitespace;[ ];
+        Text;[version];
+        Equals;[=];
+        DoubleQuote;["];
+        Text;[1.0];
+        DoubleQuote;["];
+        Whitespace;[ ];
+        QuestionMark;[?];
+        CloseAngle;[>];
+    MarkupTextLiteral - [22..23)::1 - [ ] - Gen<Markup> - SpanEditHandler;Accepts:None
+        Whitespace;[ ];

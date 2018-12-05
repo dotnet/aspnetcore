@@ -1,0 +1,130 @@
+CSharpCodeBlock - [0..206)::206 - [{LF    if(true) {LF        @:Single Line MarkupLF    }LF    foreach (var p in Enumerable.Range(1, 10)) {LF        <text>The number is @p</text>LF    }LF    if(!false) {LF        <p>A real tag!</p>LF    }LF}]
+    CSharpStatement - [0..206)::206
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..206)::206
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..205)::204
+                CSharpStatementLiteral - [1..19)::18 - [LF    if(true) {LF] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Keyword;[if];
+                    LeftParenthesis;[(];
+                    Keyword;[true];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    NewLine;[LF];
+                MarkupBlock - [19..49)::30
+                    MarkupTextLiteral - [19..27)::8 - [        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[        ];
+                    MarkupTransition - [27..28)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                        Transition;[@];
+                    RazorMetaCode - [28..29)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+                        Colon;[:];
+                    MarkupTextLiteral - [29..49)::20 - [Single Line MarkupLF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        Text;[Single];
+                        Whitespace;[ ];
+                        Text;[Line];
+                        Whitespace;[ ];
+                        Text;[Markup];
+                        NewLine;[LF];
+                CSharpStatementLiteral - [49..114)::65 - [    }LF    foreach (var p in Enumerable.Range(1, 10)) {LF        ] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Whitespace;[    ];
+                    RightBrace;[}];
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Keyword;[foreach];
+                    Whitespace;[ ];
+                    LeftParenthesis;[(];
+                    Identifier;[var];
+                    Whitespace;[ ];
+                    Identifier;[p];
+                    Whitespace;[ ];
+                    Keyword;[in];
+                    Whitespace;[ ];
+                    Identifier;[Enumerable];
+                    Dot;[.];
+                    Identifier;[Range];
+                    LeftParenthesis;[(];
+                    IntegerLiteral;[1];
+                    Comma;[,];
+                    Whitespace;[ ];
+                    IntegerLiteral;[10];
+                    RightParenthesis;[)];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    NewLine;[LF];
+                    Whitespace;[        ];
+                MarkupBlock - [114..143)::29
+                    MarkupTagBlock - [114..120)::6 - [<text>]
+                        MarkupTransition - [114..120)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[text];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [120..134)::14 - [The number is ] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        Text;[The];
+                        Whitespace;[ ];
+                        Text;[number];
+                        Whitespace;[ ];
+                        Text;[is];
+                        Whitespace;[ ];
+                    CSharpCodeBlock - [134..136)::2
+                        CSharpImplicitExpression - [134..136)::2
+                            CSharpTransition - [134..135)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                                Transition;[@];
+                            CSharpImplicitExpressionBody - [135..136)::1
+                                CSharpCodeBlock - [135..136)::1
+                                    CSharpExpressionLiteral - [135..136)::1 - [p] - Gen<Expr> - ImplicitExpressionEditHandler;Accepts:NonWhitespace;ImplicitExpression[RTD];K14
+                                        Identifier;[p];
+                    MarkupTagBlock - [136..143)::7 - [</text>]
+                        MarkupTransition - [136..143)::7 - Gen<None> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[text];
+                            CloseAngle;[>];
+                CSharpStatementLiteral - [143..170)::27 - [LF    }LF    if(!false) {LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    RightBrace;[}];
+                    NewLine;[LF];
+                    Whitespace;[    ];
+                    Keyword;[if];
+                    LeftParenthesis;[(];
+                    Not;[!];
+                    Keyword;[false];
+                    RightParenthesis;[)];
+                    Whitespace;[ ];
+                    LeftBrace;[{];
+                    NewLine;[LF];
+                MarkupBlock - [170..198)::28
+                    MarkupTextLiteral - [170..178)::8 - [        ] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Whitespace;[        ];
+                    MarkupTagBlock - [178..181)::3 - [<p>]
+                        MarkupTextLiteral - [178..181)::3 - [<p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [181..192)::11 - [A real tag!] - Gen<Markup> - SpanEditHandler;Accepts:Any
+                        Text;[A];
+                        Whitespace;[ ];
+                        Text;[real];
+                        Whitespace;[ ];
+                        Text;[tag];
+                        Bang;[!];
+                    MarkupTagBlock - [192..196)::4 - [</p>]
+                        MarkupTextLiteral - [192..196)::4 - [</p>] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            OpenAngle;[<];
+                            ForwardSlash;[/];
+                            Text;[p];
+                            CloseAngle;[>];
+                    MarkupTextLiteral - [196..198)::2 - [LF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                        NewLine;[LF];
+                CSharpStatementLiteral - [198..205)::7 - [    }LF] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Whitespace;[    ];
+                    RightBrace;[}];
+                    NewLine;[LF];
+            RazorMetaCode - [205..206)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];

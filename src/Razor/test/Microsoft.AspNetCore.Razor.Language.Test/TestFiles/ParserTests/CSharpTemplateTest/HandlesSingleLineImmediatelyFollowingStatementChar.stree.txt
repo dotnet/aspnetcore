@@ -1,0 +1,24 @@
+CSharpCodeBlock - [0..11)::11 - [{i@: barLF}]
+    CSharpStatement - [0..11)::11
+        CSharpTransition - [0..0)::0 - Gen<None> - SpanEditHandler;Accepts:None
+            Transition;[<Missing>];
+        CSharpStatementBody - [0..11)::11
+            RazorMetaCode - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                LeftBrace;[{];
+            CSharpCodeBlock - [1..10)::9
+                CSharpStatementLiteral - [1..2)::1 - [i] - Gen<Stmt> - AutoCompleteEditHandler;Accepts:Any,AutoComplete:[<null>];AtEOL
+                    Identifier;[i];
+                CSharpTemplateBlock - [2..10)::8
+                    MarkupBlock - [2..10)::8
+                        MarkupTransition - [2..3)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                            Transition;[@];
+                        RazorMetaCode - [3..4)::1 - Gen<None> - SpanEditHandler;Accepts:Any
+                            Colon;[:];
+                        MarkupTextLiteral - [4..10)::6 - [ barLF] - Gen<Markup> - SpanEditHandler;Accepts:None
+                            Whitespace;[ ];
+                            Text;[bar];
+                            NewLine;[LF];
+                CSharpStatementLiteral - [10..10)::0 - [] - Gen<Stmt> - SpanEditHandler;Accepts:Any
+                    Marker;[];
+            RazorMetaCode - [10..11)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                RightBrace;[}];
