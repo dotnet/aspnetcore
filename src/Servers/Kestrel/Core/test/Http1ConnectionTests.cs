@@ -741,6 +741,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
 #if NETCOREAPP2_2
             Assert.Equal(originalToken, originalRegistration.Token);
+#elif NET461
+#else
+#error Target framework needs to be updated
 #endif
         }
 
