@@ -15,12 +15,20 @@ const debug = _debug("signalr-functional-tests:run");
 const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "artifacts");
 const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
 
+const HOSTSFILE_PATH = process.platform === "win32" ? `${process.env.SystemRoot}\\System32\\drivers\\etc\\hosts` : null;
+
 // Promisify things from fs we want to use.
 const fs = {
     createWriteStream: _fs.createWriteStream,
     exists: promisify(_fs.exists),
     mkdir: promisify(_fs.mkdir),
+    appendFile: promisify(_fs.appendFile),
+    readFile: promisify(_fs.readFile),
 };
+
+if (!_fs.existsSync(LOGS_DIR)) {
+    _fs.mkdirSync(LOGS_DIR);
+}
 
 process.on("unhandledRejection", (reason) => {
     console.error(`Unhandled promise rejection: ${reason}`);
@@ -96,6 +104,11 @@ let spec: string;
 let sauce = false;
 let allBrowsers = false;
 let noColor = false;
+let skipNode = false;
+let sauceUser = null;
+let sauceKey = null;
+let publicIp = false;
+let hostname = null;
 
 for (let i = 2; i < process.argv.length; i += 1) {
     switch (process.argv[i]) {
@@ -119,6 +132,10 @@ for (let i = 2; i < process.argv.length; i += 1) {
             sauce = true;
             console.log("Running on SauceLabs.");
             break;
+        case "--skip-node":
+            skipNode = true;
+            console.log("Running on SauceLabs.");
+            break;
         case "-a":
         case "--all-browsers":
             allBrowsers = true;
@@ -126,7 +143,27 @@ for (let i = 2; i < process.argv.length; i += 1) {
         case "--no-color":
             noColor = true;
             break;
+        case "--sauce-user":
+            i += 1;
+            sauceUser = process.argv[i];
+            break;
+        case "--sauce-key":
+            i += 1;
+            sauceKey = process.argv[i];
+            break;
+        case "--use-hostname":
+            i += 1;
+            hostname = process.argv[i];
+            break;
     }
+}
+
+if (sauceUser && !process.env.SAUCE_USERNAME) {
+    process.env.SAUCE_USERNAME = sauceUser;
+}
+
+if (sauceKey && !process.env.SAUCE_ACCESS_KEY) {
+    process.env.SAUCE_ACCESS_KEY = sauceKey;
 }
 
 const configFile = sauce ?
@@ -168,12 +205,17 @@ function runKarma(karmaConfig) {
 }
 
 function runJest(httpsUrl: string, httpUrl: string) {
+    if (skipNode) {
+        console.log("Skipping NodeJS tests because '--skip-node' was specified.");
+        return 0;
+    }
+
     const jestPath = path.resolve(__dirname, "..", "..", "common", "node_modules", "jest", "bin", "jest.js");
     const configPath = path.resolve(__dirname, "..", "func.jest.config.js");
 
     console.log("Starting Node tests using Jest.");
     return new Promise<number>((resolve, reject) => {
-        const logStream = fs.createWriteStream(path.resolve(__dirname, "..", "..", "..", "..", "artifacts", "logs", "node.functionaltests.log"));
+        const logStream = fs.createWriteStream(path.resolve(LOGS_DIR, "node.functionaltests.log"));
         // Use NODE_TLS_REJECT_UNAUTHORIZED to allow our test cert to be used by the Node tests (NEVER use this environment variable outside of testing)
         const p = exec(`"${process.execPath}" "${jestPath}" --config "${configPath}"`, { env: { SERVER_URL: `${httpsUrl};${httpUrl}`, NODE_TLS_REJECT_UNAUTHORIZED: 0 }, timeout: 200000, maxBuffer: 10 * 1024 * 1024 },
             (error: any, stdout, stderr) => {
@@ -199,7 +241,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
         if (sauce) {
             // SauceLabs can only proxy certain ports for Edge and Safari.
             // https://wiki.saucelabs.com/display/DOCS/Sauce+Connect+Proxy+FAQS
-            desiredServerUrl = "http://127.0.0.1:9000";
+            desiredServerUrl = "http://127.0.0.1:9000;https://127.0.0.1:9001";
         }
 
         const dotnet = spawn("dotnet", [serverPath], {
@@ -216,7 +258,7 @@ function runJest(httpsUrl: string, httpUrl: string) {
             }
         }
 
-        const logStream = fs.createWriteStream(path.resolve(__dirname, "..", "..", "..", "..", "artifacts", "logs", "ts.functionaltests.dotnet.log"));
+        const logStream = fs.createWriteStream(path.resolve(LOGS_DIR, "ts.functionaltests.dotnet.log"));
         dotnet.stdout.pipe(logStream);
 
         process.on("SIGINT", cleanup);
@@ -224,11 +266,27 @@ function runJest(httpsUrl: string, httpUrl: string) {
 
         debug("Waiting for Functional Test Server to start");
         const matches = await waitForMatches("dotnet", dotnet, /Now listening on: (https?:\/\/[^\/]+:[\d]+)/, 2);
-        const httpsUrl = matches[1];
-        const httpUrl = matches[3];
-        debug(`Functional Test Server has started at ${httpsUrl} and ${httpUrl}`);
 
-        debug(`Using SignalR Server: ${httpsUrl} and ${httpUrl}`);
+        // The order of HTTP and HTTPS isn't guaranteed
+        let httpsUrl;
+        let httpUrl;
+        if (matches[1].indexOf("https://") == 0) {
+            httpsUrl = matches[1];
+        } else if (matches[3].indexOf("https://") == 0) {
+            httpsUrl = matches[3];
+        }
+        if (matches[1].indexOf("http://") == 0) {
+            httpUrl = matches[1];
+        } else if (matches[3].indexOf("http://") == 0) {
+            httpUrl = matches[3];
+        }
+
+        if (!httpUrl || !httpsUrl) {
+            console.error("Unable to identify URLs");
+            process.exit(1);
+        }
+
+        debug(`Functional Test Server has started at ${httpsUrl} and ${httpUrl}`);
 
         // Start karma server
         const conf = {
@@ -243,14 +301,48 @@ function runJest(httpsUrl: string, httpUrl: string) {
         if (!await fs.exists(LOGS_DIR)) {
             await fs.mkdir(LOGS_DIR);
         }
-        conf.browserConsoleLogOptions.path = path.resolve(LOGS_DIR, `browserlogs.console.${new Date().toISOString().replace(/:|\./g, "-")}`);
+        conf.browserConsoleLogOptions.path = path.resolve(LOGS_DIR, `browserlogs.console.log`);
 
         if (noColor) {
             conf.colors = false;
         }
 
+        if (hostname) {
+            if (process.platform !== "win32") {
+                throw new Error("Can't use '--use-hostname' on non-Windows platform.");
+            }
+
+            // Register a custom hostname in the hosts file (requires Admin, but AzDO agents run as Admin)
+            // Used to work around issues in Sauce Labs
+            debug(`Updating Hosts file (${HOSTSFILE_PATH}) to register host name '${hostname}'`);
+            await fs.appendFile(HOSTSFILE_PATH, `${EOL}127.0.0.1 ${hostname}${EOL}`);
+
+            conf.hostname = hostname;
+
+            // Rewrite the URL. Try with the host name and the IP address just to make sure
+            httpUrl = httpUrl.replace(/localhost/g, hostname);
+            httpsUrl = httpsUrl.replace(/localhost/g, hostname);
+            httpUrl = httpUrl.replace(/\d+\.\d+\.\d+\.\d+/g, hostname);
+            httpsUrl = httpsUrl.replace(/\d+\.\d+\.\d+\.\d+/g, hostname);
+        }
+
+        conf.client.args = [];
+
+        if (sauce) {
+            // Configure Sauce Connect logging
+            conf.sauceLabs.connectOptions.logfile = path.resolve(LOGS_DIR, "sauceConnect.log");
+
+            // Don't use https, Safari and Edge don't trust the cert.
+            httpsUrl = "";
+
+            conf.client.args = [...conf.client.args, '--sauce'];
+        }
+
+        debug(`Using SignalR Servers: ${httpsUrl} (https) and ${httpUrl} (http)`);
+
         // Pass server URL to tests
-        conf.client.args = ["--server", `${httpsUrl};${httpUrl}`];
+        conf.client.args = [...conf.client.args, "--server", `${httpsUrl};${httpUrl}`];
+        debug(`Passing client args: ${conf.client.args.join(" ")}`);
 
         const jestExit = await runJest(httpsUrl, httpUrl);
 

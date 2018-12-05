@@ -16,7 +16,7 @@ try {
             base: "SauceLabs",
             browserName: "safari",
             version: "latest",
-            platform: "OS X 10.13",
+            platform: "macOS 10.13",
         },
 
         // Google Chrome Latest, any OS.
@@ -46,8 +46,25 @@ try {
     };
 
     // Mobile Browsers
-    // TODO: Fill this in.
-    var mobileBrowsers = {};
+    // These are a bit too slow and cause Karma to time out trying to "capture" the browser.
+    var mobileBrowsers = {
+        // // Latest iOS
+        // sl_ios_safari: {
+        //     base: "SauceLabs",
+        //     browserName: "Safari",
+        //     deviceName: "iPhone XS Simulator",
+        //     platformName: "iOS",
+        //     platformVersion: "12.0",
+        // },
+        // // Latest Android Chrome
+        // sl_android_chrome: {
+        //     base: "SauceLabs",
+        //     browserName: "Chrome",
+        //     platformName: "Android",
+        //     platformVersion: "6.0",
+        //     deviceName: "Android Emulator"
+        // }
+    };
 
     var customLaunchers = {
         ...evergreenBrowsers,
@@ -64,7 +81,11 @@ try {
             connectOptions: {
                 // Required to enable WebSockets through the Sauce Connect proxy.
                 noSslBumpDomains: ["all"]
-            }
+            },
+            build: process.env.BUILD_BUILDNUMBER,
+            tags: ["aspnet-SignalR", "daily-tests"],
+            username: process.env.SAUCE_USERNAME,
+            accessKey: process.env.SAUCE_ACCESS_KEY
         },
     });
 } catch (e) {
