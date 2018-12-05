@@ -182,6 +182,7 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Category="noship"/>
     <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship"/>
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" />
