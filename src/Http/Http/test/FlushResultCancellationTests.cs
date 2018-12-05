@@ -20,20 +20,20 @@ namespace Microsoft.AspNetCore.Http.Tests
 
             PipeWriter buffer = Writer.WriteEmpty(MaximumSizeHigh);
 
-            var e = new ManualResetEventSlim();
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             ValueTaskAwaiter<FlushResult> awaiter = buffer.FlushAsync(cts.Token).GetAwaiter();
             awaiter.OnCompleted(
-                () => {
+                async () => {
                     // We are on cancellation thread and need to wait until another FlushAsync call
                     // takes pipe state lock
-                    e.Wait();
+                    await tcs.Task;
 
                     // Make sure we had enough time to reach _cancellationTokenRegistration.Dispose
                     Thread.Sleep(100);
 
                     // Try to take pipe state lock
-                    buffer.FlushAsync();
+                    await buffer.FlushAsync();
                 });
 
             // Start a thread that would run cancellation callbacks
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             // and block on _cancellationTokenRegistration.Dispose
             Task blockingTask = Task.Run(
                 () => {
-                    e.Set();
+                    tcs.SetResult(0);
                     buffer.FlushAsync(cts2.Token);
                 });
 
