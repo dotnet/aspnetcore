@@ -4,7 +4,7 @@
     "Source": {
       "Repository": "https://github.com/aspnet/aspnetcore.git",
       "BranchOrCommit": "master",
-      "Project": "src/signalr/benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
+      "Project": "src/SignalR/benchmarkapps/BenchmarkServer/BenchmarkServer.csproj"
     },
     "Connections": 10,
     "Duration": 20,
