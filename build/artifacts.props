@@ -125,7 +125,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.ResponseCompression" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Rewrite" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" AllMetapackage="true" AppMetapackage="true" Category="ship" />

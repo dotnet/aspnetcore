@@ -12,7 +12,7 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(MicrosoftAspNetCoreHttpAbstractionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" />
   </ItemGroup>
 </Project>
