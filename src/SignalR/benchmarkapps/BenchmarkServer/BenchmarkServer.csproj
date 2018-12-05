@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -21,9 +21,13 @@
 
   <!-- These references are used when running on the Benchmarks Server -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+
+    <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
+      DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
+      LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
+      TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
