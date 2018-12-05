@@ -1,3 +1,0 @@
-(1,6): Error RZ2008: Attribute 'bound-int' on tag helper element 'p' requires a value. Tag helper bound attributes of type 'System.Int32' cannot be empty or contain only whitespace.
-(1,16): Error RZ2008: Attribute 'bound-string' on tag helper element 'p' requires a value. Tag helper bound attributes of type 'System.String' cannot be empty or contain only whitespace.
-(1,29): Error RZ2008: Attribute 'bound-string' on tag helper element 'p' requires a value. Tag helper bound attributes of type 'System.String' cannot be empty or contain only whitespace.
