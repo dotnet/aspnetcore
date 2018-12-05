@@ -243,12 +243,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             SetResponseHeaders();
 
             EnsureIOInitialized();
-
+            var canHaveNonEmptyBody = StatusCodeCanHaveBody();
             if (flushHeaders)
             {
                 try
                 {
-                    await AsyncIO.FlushAsync();
+                    await AsyncIO.FlushAsync(canHaveNonEmptyBody);
                 }
                 // Client might be disconnected at this point
                 // don't leak the exception
@@ -258,7 +258,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
 
-            _writeBodyTask = WriteBody(!flushHeaders);
+            if (!canHaveNonEmptyBody)
+            {
+                _bodyOutput.Dispose();
+            }
+            else
+            {
+                _writeBodyTask = WriteBody(!flushHeaders);
+            }
+        }
+
+        private bool StatusCodeCanHaveBody()
+        {
+            return StatusCode != 204
+                && StatusCode != 304;
         }
 
         private void InitializeRequestIO()
