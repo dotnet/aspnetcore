@@ -134,10 +134,10 @@
       "Microsoft.AspNetCore.Blazor.Cli": {
         "Exclusions": {
           "SIGN_STRONGNAME": {
-            "lib/netcoreapp2.1/dotnet-blazor.dll": "See comments in Microsoft.AspNetCore.Blazor.Cli.csproj"
+            "lib/netcoreapp3.0/dotnet-blazor.dll": "See comments in Microsoft.AspNetCore.Blazor.Cli.csproj"
           },
           "WRONG_PUBLICKEYTOKEN": {
-            "lib/netcoreapp2.1/dotnet-blazor.dll": "See comments in Microsoft.AspNetCore.Blazor.Cli.csproj"
+            "lib/netcoreapp3.0/dotnet-blazor.dll": "See comments in Microsoft.AspNetCore.Blazor.Cli.csproj"
           }
         }
       },
