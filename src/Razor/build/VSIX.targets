@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
+    <BuildVSIX Condition="'$(BuildVSIX)' ==''">false</BuildVSIX>
     <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
     <GetArtifactInfoDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(GetArtifactInfoDependsOn);GetVSIXArtifactInfo</GetArtifactInfoDependsOn>
@@ -18,7 +18,7 @@
     Condition="'$(OS)'=='Windows_NT'" />
 
   <!-- This target is required so KoreBuild can generate a bill of materials with relevant information about the VSIX. -->
-  <Target Name="GetVSIXArtifactInfo">
+  <Target Name="GetVSIXArtifactInfo" Condition=" '$(BuildVSIX)' == 'true' ">
     <ItemGroup>
 
       <ArtifactInfo Include="$(VSIXOutputPath)">

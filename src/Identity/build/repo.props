@@ -5,12 +5,6 @@
     <ExcludeSolutions Include="$(RepositoryRoot)IdentityCore.sln" />
     <ExcludeSolutions Include="$(RepositoryRoot)Identity.Samples.sln" />
   </ItemGroup>
-  <PropertyGroup>
-    <!-- These properties are use by the automation that updates dependencies.props -->
-    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageVersion>2.1.0-rc1-*</LineupPackageVersion>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
-  </PropertyGroup>
 
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
