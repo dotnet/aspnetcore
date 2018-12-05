@@ -34,10 +34,13 @@
 
   <!--
     These references are used when running on the Benchmarks Server.
-    Use All meta-package and not App to include Microsoft.EntityFrameworkCore.Sqlite.
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <KnownFrameworkReference 
+      Update="Microsoft.AspNetCore.App"
+      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+      TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftAspNetCoreAppPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>
