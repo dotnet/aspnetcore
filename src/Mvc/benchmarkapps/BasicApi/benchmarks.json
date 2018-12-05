@@ -7,9 +7,9 @@
     "PresetHeaders": "Json",
     "ReadyStateText": "Application started.",
     "Source": {
+      "Repository": "https://github.com/aspnet/AspNetCore.git",
       "BranchOrCommit": "master",
-      "Project": "benchmarkapps/BasicApi/BasicApi.csproj",
-      "Repository": "https://github.com/aspnet/mvc.git"
+      "Project": "src/Mvc/benchmarkapps/BasicApi/BasicApi.csproj"
     }
   },
   "BasicApi.GetToken": {

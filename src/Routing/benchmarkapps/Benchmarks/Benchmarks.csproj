@@ -15,8 +15,12 @@
   </ItemGroup>
 
    <!--These references are used when running on the Benchmarks Server--> 
-  <ItemGroup Condition="'$(UseP2PReferences)'!='true'">
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+  <ItemGroup Condition="'$(BenchmarksTargetFramework)'!=''">
+    <KnownFrameworkReference 
+      Update="Microsoft.AspNetCore.App"
+      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+      TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
   </ItemGroup>
 
 </Project>

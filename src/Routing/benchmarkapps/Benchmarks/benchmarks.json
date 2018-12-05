@@ -7,9 +7,9 @@
       "PipelineDepth": 16
     },
     "Source": {
-      "Repository": "https://github.com/aspnet/routing.git",
+      "Repository": "https://github.com/aspnet/AspNetCore.git",
       "BranchOrCommit": "master",
-      "Project": "benchmarkapps/Benchmarks/Benchmarks.csproj"
+      "Project": "src/Routing/benchmarkapps/Benchmarks/Benchmarks.csproj"
     },
     "Port": 8080
   },
