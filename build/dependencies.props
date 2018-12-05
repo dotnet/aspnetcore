@@ -74,6 +74,8 @@
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsHostingPackageVersion>2.2.0</MicrosoftExtensionsHostingPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>2.2.0</MicrosoftExtensionsHttpPackageVersion>
+    <MicrosoftExtensionsLocalizationAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsLocalizationAbstractionsPackageVersion>
+    <MicrosoftExtensionsLocalizationPackageVersion>2.2.0</MicrosoftExtensionsLocalizationPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>2.2.0</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
     <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0</MicrosoftExtensionsLoggingConfigurationPackageVersion>

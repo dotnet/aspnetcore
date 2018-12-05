@@ -10,6 +10,7 @@
       Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
       Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
       Microsoft.AspNetCore.WebSockets;
+      Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
     </PackagesInPatch>
   </PropertyGroup>
 

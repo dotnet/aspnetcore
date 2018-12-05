@@ -51,6 +51,8 @@
     <ExternalDependency Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Localization.Abstractions" Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" />
+    <ExternalDependency Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)" />

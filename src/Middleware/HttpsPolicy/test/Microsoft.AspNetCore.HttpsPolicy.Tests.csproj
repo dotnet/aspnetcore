@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+  </ItemGroup>
+
+</Project>
