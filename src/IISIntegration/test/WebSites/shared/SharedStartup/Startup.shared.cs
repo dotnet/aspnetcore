@@ -23,16 +23,15 @@ namespace TestSite
             serviceCollection.AddResponseCompression();
         }
 
-        private async Task HostingEnvironment(HttpContext ctx)
-        {
-            var hostingEnv = ctx.RequestServices.GetService<IHostingEnvironment>();
+        private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IHostingEnvironment>().ContentRootPath);
 
-            await ctx.Response.WriteAsync("ContentRootPath " + hostingEnv.ContentRootPath + Environment.NewLine);
-            await ctx.Response.WriteAsync("WebRootPath " + hostingEnv.WebRootPath + Environment.NewLine);
-            await ctx.Response.WriteAsync("CurrentDirectory " + Environment.CurrentDirectory + Environment.NewLine);
-            await ctx.Response.WriteAsync("BaseDirectory " + AppContext.BaseDirectory + Environment.NewLine);
-            await ctx.Response.WriteAsync("ASPNETCORE_IIS_PHYSICAL_PATH " + Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH"));
-        }
+        private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IHostingEnvironment>().WebRootPath);
+
+        private async Task CurrentDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.CurrentDirectory);
+
+        private async Task BaseDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(AppContext.BaseDirectory);
+
+        private async Task ASPNETCORE_IIS_PHYSICAL_PATH(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.GetEnvironmentVariable("ASPNETCORE_IIS_PHYSICAL_PATH"));
 
         private async Task ConsoleWrite(HttpContext ctx)
         {
