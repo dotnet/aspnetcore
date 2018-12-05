@@ -45,14 +45,7 @@ namespace Identity.DefaultUI.WebSite
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<TContext>();
 
-            services.AddMvc()
-                .AddRazorOptions(ro =>
-                {
-                    // We do this to avoid file descriptor exhaustion in our functional tests
-                    // due to Razor Pages using a file watcher.
-                    ro.FileProviders.Clear();
-                    ro.FileProviders.Add(new CompositeFileProvider(new[] { new NullFileProvider() }));
-                });
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- This package is going to ship out of band with 2.2 RTM, so this ensures we don't build a "2.2.0" package with the rest of the runtime. -->
-    <PackageVersion>2.2.0-preview-$(BuildNumber)</PackageVersion>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>ASP.NET Core API Authorization package powered by Identity Server.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;apiauth;identity</PackageTags>
