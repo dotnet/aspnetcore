@@ -269,29 +269,34 @@ export class HttpConnection implements IConnection {
             return;
         }
 
+        const transportExceptions: any[] = [];
         const transports = negotiateResponse.availableTransports || [];
         for (const endpoint of transports) {
-            this.connectionState = ConnectionState.Connecting;
-            const transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
-            if (typeof transport === "number") {
-                this.transport = this.constructTransport(transport);
-                if (!negotiateResponse.connectionId) {
-                    negotiateResponse = await this.getNegotiationResponse(url);
-                    connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
-                }
-                try {
+            try {
+                this.connectionState = ConnectionState.Connecting;
+                const transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
+                if (typeof transport === "number") {
+                    this.transport = this.constructTransport(transport);
+                    if (!negotiateResponse.connectionId) {
+                        negotiateResponse = await this.getNegotiationResponse(url);
+                        connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+                    }
                     await this.transport!.connect(connectUrl, requestedTransferFormat);
                     this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
                     return;
-                } catch (ex) {
-                    this.logger.log(LogLevel.Error, `Failed to start the transport '${HttpTransportType[transport]}': ${ex}`);
-                    this.connectionState = ConnectionState.Disconnected;
-                    negotiateResponse.connectionId = undefined;
                 }
+            } catch (ex) {
+                this.logger.log(LogLevel.Error, `Failed to start the transport '${endpoint.transport}': ${ex}`);
+                this.connectionState = ConnectionState.Disconnected;
+                negotiateResponse.connectionId = undefined;
+                transportExceptions.push(`${endpoint.transport} failed: ${ex}`);
             }
         }
 
-        throw new Error("Unable to initialize any of the available transports.");
+        if (transportExceptions.length > 0) {
+            throw new Error(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`);
+        }
+        throw new Error("None of the transports supported by the client are supported by the server.");
     }
 
     private constructTransport(transport: HttpTransportType) {
@@ -324,15 +329,18 @@ export class HttpConnection implements IConnection {
                     if ((transport === HttpTransportType.WebSockets && !this.options.WebSocket) ||
                         (transport === HttpTransportType.ServerSentEvents && !this.options.EventSource)) {
                         this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it is not supported in your environment.'`);
+                        throw new Error(`'${HttpTransportType[transport]}' is not supported in your environment.`);
                     } else {
                         this.logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         return transport;
                     }
                 } else {
                     this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it does not support the requested transfer format '${TransferFormat[requestedTransferFormat]}'.`);
+                    throw new Error(`'${HttpTransportType[transport]}' does not support ${TransferFormat[requestedTransferFormat]}.`);
                 }
             } else {
                 this.logger.log(LogLevel.Debug, `Skipping transport '${HttpTransportType[transport]}' because it was disabled by the client.`);
+                throw new Error(`'${HttpTransportType[transport]}' is disabled by the client.`);
             }
         }
         return null;

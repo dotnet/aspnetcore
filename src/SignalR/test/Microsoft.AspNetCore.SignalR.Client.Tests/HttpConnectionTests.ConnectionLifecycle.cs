@@ -154,8 +154,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
                         async (connection) =>
                         {
-                            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text));
-                            Assert.Equal("Unable to connect to the server with any of the available transports.", ex.Message);
+                            var ex = await Assert.ThrowsAsync<AggregateException>(() => connection.StartAsync(TransferFormat.Text));
+                            Assert.Equal("Unable to connect to the server with any of the available transports. " +
+                                "(WebSockets failed: Transport failed to start) (ServerSentEvents failed: Transport failed to start) (LongPolling failed: Transport failed to start)",
+                                ex.Message);
 
                             // If websockets aren't supported then we expect one less attmept to start.
                             if (!TestHelpers.IsWebSocketsSupported())
@@ -343,7 +345,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse),
                         async (connection) =>
                         {
-                            await Assert.ThrowsAsync<InvalidOperationException>(
+                            await Assert.ThrowsAsync<AggregateException>(
                                 () => connection.StartAsync(TransferFormat.Text).OrTimeout());
                         });
                 }
