@@ -49,6 +49,13 @@ namespace Microsoft.AspNetCore.Http.Tests
             MemoryStream.Write(data, 0, data.Length);
         }
 
+        public void Append(byte[] data)
+        {
+            var originalPosition = MemoryStream.Position;
+            MemoryStream.Write(data, 0, data.Length);
+            MemoryStream.Position = originalPosition;
+        }
+
         public byte[] ReadWithoutFlush()
         {
             MemoryStream.Position = 0;

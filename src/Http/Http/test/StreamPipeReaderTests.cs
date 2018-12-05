@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
-            MemoryStream.Position = 0;
+            AppendByteArray(9);
             readResult = await Reader.ReadAsync();
 
             foreach (var segment in readResult.Buffer)
@@ -507,8 +507,6 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task SetMinimumReadThresholdToMiminumSegmentSizeOnlyGetNewBlockWhenDataIsWritten()
         {
-            // Every call to ReadAsync will always get a new block (even if nothing was read)
-            // because the minimumReadThreshold is equal to the minimum segment size.
             CreateReader(minimumReadThreshold: 16);
             WriteByteArray(0);
 
@@ -552,6 +550,11 @@ namespace Microsoft.AspNetCore.Http.Tests
         private void WriteByteArray(int size)
         {
             Write(new byte[size]);
+        }
+
+        private void AppendByteArray(int size)
+        {
+            Append(new byte[size]);
         }
 
         private class AsyncStream : MemoryStream
