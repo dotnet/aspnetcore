@@ -1,7 +1,0 @@
-Markup span at (3:0,3 [4] ) (Accepts:None) - Parent: HtmlComment block at (3:0,3 [12] )
-Markup span at (7:0,7 [5] ) (Accepts:Whitespace) - Parent: HtmlComment block at (3:0,3 [12] )
-Markup span at (12:0,12 [3] ) (Accepts:None) - Parent: HtmlComment block at (3:0,3 [12] )
-Markup span at (15:0,15 [4] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [35] )
-Markup span at (19:0,19 [4] ) (Accepts:None) - Parent: HtmlComment block at (19:0,19 [12] )
-Markup span at (23:0,23 [5] ) (Accepts:Whitespace) - Parent: HtmlComment block at (19:0,19 [12] )
-Markup span at (28:0,28 [3] ) (Accepts:None) - Parent: HtmlComment block at (19:0,19 [12] )

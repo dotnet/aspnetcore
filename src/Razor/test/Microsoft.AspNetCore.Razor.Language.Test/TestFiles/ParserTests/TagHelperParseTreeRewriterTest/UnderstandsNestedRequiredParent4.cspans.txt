@@ -1,4 +1,0 @@
-Markup span at (0:0,0 [8] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [8] )
-Markup span at (8:0,8 [8] ) (Accepts:Any) - Parent: Tag block at (8:0,8 [8] )
-Markup span at (16:0,16 [9] ) (Accepts:Any) - Parent: Tag block at (16:0,16 [9] )
-Markup span at (25:0,25 [9] ) (Accepts:Any) - Parent: Tag block at (25:0,25 [9] )
