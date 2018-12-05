@@ -91,8 +91,6 @@
     <ExtensionsDependency Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
 
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
-    <ExtensionsDependency Include="Microsoft.Extensions.Buffers.Testing.Sources" Version="$(MicrosoftExtensionsBuffersTestingSourcesPackageVersion)" />
-    <ExtensionsDependency Include="Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources" Version="$(MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion)" />
     <ExtensionsDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
   </ItemGroup>
 

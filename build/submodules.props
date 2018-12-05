@@ -53,7 +53,6 @@
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="CORS" RootPath="$(RepositoryRoot)src\CORS\" />
     <ShippedRepository Include="EntityFrameworkCore" />
-    <ShippedRepository Include="HttpSysServer" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
     <ShippedRepository Include="Identity" RootPath="$(RepositoryRoot)src\Identity\" />
     <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <ShippedRepository Include="JsonPatch" />

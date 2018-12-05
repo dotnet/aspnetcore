@@ -13,7 +13,12 @@
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
+    <SharedSourcesFolder>$(RepositoryRoot)src\Shared\</SharedSourcesFolder>
   </PropertyGroup>
+
+  <ItemGroup>
+    <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
+  </ItemGroup>
 
   <ItemGroup>
     <IntermediateInstaller Include="win-x86" FileExt=".zip" />
