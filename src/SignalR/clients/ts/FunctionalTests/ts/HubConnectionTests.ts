@@ -12,7 +12,8 @@ import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
 
 const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
-const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL + "/testhub";
+const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL ? (ENDPOINT_BASE_HTTPS_URL + "/testhub") : undefined;
+
 const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub-nowebsockets";
 
 // On slower CI machines, these tests sometimes take longer than 5s
@@ -21,6 +22,17 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
 const commonOptions: IHttpConnectionOptions = {
     logMessageContent: true,
 };
+
+// Run test in Node or Chrome, but not on macOS
+const shouldRunHttpsTests =
+    // Need to have an HTTPS URL
+    !!TESTHUBENDPOINT_HTTPS_URL &&
+
+    // Run on Node, unless macOS
+    (process && process.platform !== "darwin") &&
+
+    // Only run under Chrome browser
+    (typeof navigator === "undefined" || navigator.userAgent.search("Chrome") !== -1);
 
 function getConnectionBuilder(transportType?: HttpTransportType, url?: string, options?: IHttpConnectionOptions): HubConnectionBuilder {
     let actualOptions: IHttpConnectionOptions = options || {};
@@ -63,8 +75,7 @@ describe("hubConnection", () => {
                 });
             });
 
-            // Run test in Node or Chrome, but not on macOS
-            if ((process && process.platform !== "darwin") && (typeof navigator === "undefined" || navigator.userAgent.search("Chrome") !== -1)) {
+            if (shouldRunHttpsTests) {
                 it("using https, can invoke server method and receive result", (done) => {
                     const message = "你好，世界！";
 
