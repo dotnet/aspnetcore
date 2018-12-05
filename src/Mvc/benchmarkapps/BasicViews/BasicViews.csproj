@@ -37,7 +37,8 @@
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     
-    <!-- Fixed public Nuget version -->
+    <!-- Fixed public Nuget versions as they are not part of .App anymore -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0-preview.18572.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.0.0-preview.18572.1" />
     
     <KnownFrameworkReference 
