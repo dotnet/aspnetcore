@@ -53,7 +53,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var connectionFeatures = new FeatureCollection();
             connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
 
-            _serviceContext = new TestServiceContext();
+            _serviceContext = new TestServiceContext()
+            {
+                Scheduler = PipeScheduler.Inline
+            };
+
             _timeoutControl = new Mock<ITimeoutControl>();
             _http1ConnectionContext = new HttpConnectionContext
             {
@@ -722,6 +726,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.False(original.IsCancellationRequested);
             Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
+        }
+
+        [Fact]
+        public void RequestAbortedTokenIsFullyUsableAfterCancellation()
+        {
+            var originalToken = _http1Connection.RequestAborted;
+            var originalRegistration = originalToken.Register(() => { });
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+            Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+
+#if NETCOREAPP2_2
+            Assert.Equal(originalToken, originalRegistration.Token);
+#endif
         }
 
         [Fact]
