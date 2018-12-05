@@ -3,15 +3,15 @@
 namespace Test
 {
     #line hidden
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 using System;
 
 #line default
 #line hidden
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Components;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219
