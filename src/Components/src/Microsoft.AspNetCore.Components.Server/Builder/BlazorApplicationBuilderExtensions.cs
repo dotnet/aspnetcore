@@ -165,16 +165,23 @@ namespace Microsoft.AspNetCore.Builder
         private static IContentTypeProvider CreateContentTypeProvider(bool enableDebugging)
         {
             var result = new FileExtensionContentTypeProvider();
-            result.Mappings.Add(".dll", MediaTypeNames.Application.Octet);
-            result.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
-            result.Mappings.Add(".wasm", WasmMediaTypeNames.Application.Wasm);
+            AddMapping(result, ".dll", MediaTypeNames.Application.Octet);
+            AddMapping(result, ".wasm", WasmMediaTypeNames.Application.Wasm);
 
             if (enableDebugging)
             {
-                result.Mappings.Add(".pdb", MediaTypeNames.Application.Octet);
+                AddMapping(result, ".pdb", MediaTypeNames.Application.Octet);
             }
 
             return result;
+        }
+
+        private static void AddMapping(FileExtensionContentTypeProvider provider, string name, string mimeType)
+        {
+            if (!provider.Mappings.ContainsKey(name))
+            {
+                provider.Mappings.Add(name, mimeType);
+            }
         }
     }
 }
