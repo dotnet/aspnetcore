@@ -288,13 +288,13 @@ EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
 http_flush_response_bytes(
     _In_ IN_PROCESS_HANDLER* pInProcessHandler,
+    _In_ BOOL fMoreData,
     _Out_ BOOL* pfCompletionExpected
 )
 {
     IHttpResponse *pHttpResponse = (IHttpResponse*)pInProcessHandler->QueryHttpContext()->GetResponse();
 
     BOOL fAsync = TRUE;
-    BOOL fMoreData = TRUE;
     DWORD dwBytesSent = 0;
 
     HRESULT hr = pHttpResponse->Flush(

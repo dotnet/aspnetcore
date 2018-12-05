@@ -90,10 +90,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
         }
 
 
-        public ValueTask FlushAsync()
+        public ValueTask FlushAsync(bool moreData)
         {
             var flush = GetFlushOperation();
-            flush.Initialize(_handler);
+            flush.Initialize(_handler, moreData);
             Run(flush);
             return new ValueTask(flush, 0);
         }
