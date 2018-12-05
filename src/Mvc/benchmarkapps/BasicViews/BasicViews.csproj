@@ -36,6 +36,10 @@
     These references are used when running on the Benchmarks Server.
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
+    
+    <!-- Fixed public Nuget version -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.0.0-preview.18572.1" />
+    
     <KnownFrameworkReference 
       Update="Microsoft.AspNetCore.App"
       DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
