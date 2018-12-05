@@ -36,32 +36,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
-    <Repository Include="Antiforgery" RootPath="$(RepositoryRoot)src\Antiforgery\" />
-    <Repository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
-    <Repository Include="BasicMiddleware" />
-    <Repository Include="Components" RootPath="$(RepositoryRoot)src\Components\" />
-    <Repository Include="CORS" RootPath="$(RepositoryRoot)src\CORS\" />
-    <Repository Include="HttpSysServer" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
+    <Repository Include="AADIntegration" />
+    <Repository Include="Antiforgery" />
+    <Repository Include="AzureIntegration" />
+    <Repository Include="Components" />
+    <Repository Include="CORS" />
+    <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
-    <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <Repository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
-    <Repository Include="Localization" />
-    <Repository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
-    <Repository Include="Mvc" RootPath="$(RepositoryRoot)src\Mvc\" />
-    <Repository Include="Razor" RootPath="$(RepositoryRoot)src\Razor\" />
-    <Repository Include="ResponseCaching" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
-    <Repository Include="Routing" RootPath="$(RepositoryRoot)src\Routing\" />
-    <Repository Include="Security" RootPath="$(RepositoryRoot)src\Security\" />
-    <Repository Include="Session" RootPath="$(RepositoryRoot)src\Session\" />
-    <Repository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
-    <Repository Include="StaticFiles" RootPath="$(RepositoryRoot)src\StaticFiles\" />
-    <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="EntityFrameworkCore" />
+    <Repository Include="IISIntegration" />
+    <Repository Include="JavaScriptServices" />
+    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
+    <Repository Include="Mvc" />
+    <Repository Include="Razor" />
+    <Repository Include="ResponseCaching" />
+    <Repository Include="Routing" />
+    <Repository Include="Security" />
+    <Repository Include="Session" />
+    <Repository Include="SignalR" />
+    <Repository Include="StaticFiles" />
+    <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
     <!-- Test-only repos -->
-    <Repository Include="AuthSamples" RootPath="$(RepositoryRoot)src\AuthSamples\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="MusicStore"  RootPath="$(RepositoryRoot)src\MusicStore\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="ServerTests" RootPath="$(RepositoryRoot)src\ServerTests\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="MusicStore"  PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="ServerTests" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
 </Project>

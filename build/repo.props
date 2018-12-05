@@ -12,7 +12,7 @@
     <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
 
-    <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
+    <SubmoduleRoot>$(RepositoryRoot)src\</SubmoduleRoot>
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
