@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
         public void ApplyForwarders(HttpContext context)
         {
-            // Gather expected headers. Enabled headers must have the same number of entries.
+            // Gather expected headers.
             string[] forwardedFor = null, forwardedProto = null, forwardedHost = null;
             bool checkFor = false, checkProto = false, checkHost = false;
             int entryCount = 0;
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     }
                     else if (_options.RequireHeaderSymmetry)
                     {
-                        _logger.LogWarning(4, $"Incorrect number of x-forwarded-proto header values, see {nameof(_options.RequireHeaderSymmetry)}.");
+                        _logger.LogWarning(4, $"Incorrect number of x-forwarded-host header values, see {nameof(_options.RequireHeaderSymmetry)}.");
                         return;
                     }
                 }
