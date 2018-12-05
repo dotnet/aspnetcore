@@ -10,12 +10,12 @@
   
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
-    <BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>2.1.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>
-    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>2.1.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <BenchmarksOnlyMySqlConnectorPackageVersion>0.43.0</BenchmarksOnlyMySqlConnectorPackageVersion>
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>3.0.0-preview.18572.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>3.0.0-preview.18572.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.0.0-preview.18572.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <BenchmarksOnlyMySqlConnectorPackageVersion>0.47.1</BenchmarksOnlyMySqlConnectorPackageVersion>
     <BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>2.1.1.1</BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion>
-    <BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>2.1.1</BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>
+    <BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>2.1.4</BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion>
     <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-preview.18572.1</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.0.0-preview.18572.1</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftAspNetCoreAntiforgeryPackageVersion>3.0.0-preview-18604-0074</MicrosoftAspNetCoreAntiforgeryPackageVersion>
