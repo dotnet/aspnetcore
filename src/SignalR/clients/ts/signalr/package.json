@@ -23,14 +23,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aspnet/SignalR.git"
+    "url": "git+https://github.com/aspnet/AspNetCore.git"
   },
   "author": "Microsoft",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/aspnet/SignalR/issues"
+    "url": "https://github.com/aspnet/AspNetCore/issues"
   },
-  "homepage": "https://github.com/aspnet/SignalR#readme",
+  "homepage": "https://github.com/aspnet/AspNetCore/tree/master/src/SignalR#readme",
   "files": [
     "dist/**/*",
     "src/**/*"
