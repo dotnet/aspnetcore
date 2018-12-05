@@ -37,6 +37,11 @@
     Use All meta-package and not App to include Microsoft.EntityFrameworkCore.Sqlite.
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
+
+    <!-- Fixed public Nuget versions as they are not part of .App anymore -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0-preview.18572.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.0.0-preview.18572.1" />
+
     <KnownFrameworkReference 
       Update="Microsoft.AspNetCore.App"
       DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
