@@ -57,6 +57,7 @@
     <Repository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
     <Repository Include="StaticFiles" RootPath="$(RepositoryRoot)src\StaticFiles\" />
     <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
+    <Repository Include="EntityFrameworkCore" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" RootPath="$(RepositoryRoot)src\AuthSamples\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />

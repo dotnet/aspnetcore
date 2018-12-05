@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
+    <TestGroupName>InMemory.FunctionalTests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>

@@ -47,7 +47,14 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics" ProjectPath="$(RepositoryRoot)src\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" ProjectPath="$(RepositoryRoot)src\Middleware\HealthChecks.EntityFrameworkCore\src\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" ProjectPath="$(RepositoryRoot)src\Middleware\HealthChecks\src\Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.HostFiltering" ProjectPath="$(RepositoryRoot)src\Middleware\HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpOverrides" ProjectPath="$(RepositoryRoot)src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpsPolicy" ProjectPath="$(RepositoryRoot)src\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization.Routing" ProjectPath="$(RepositoryRoot)src\Middleware\Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization" ProjectPath="$(RepositoryRoot)src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.MiddlewareAnalysis" ProjectPath="$(RepositoryRoot)src\Middleware\MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.ResponseCompression" ProjectPath="$(RepositoryRoot)src\Middleware\ResponseCompression\src\Microsoft.AspNetCore.ResponseCompression.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Rewrite" ProjectPath="$(RepositoryRoot)src\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepositoryRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
   </ItemGroup>
 </Project>

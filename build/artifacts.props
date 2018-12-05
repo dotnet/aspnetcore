@@ -78,8 +78,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Localization" Category="ship" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />
 
     <!-- Packages for internal use only. -->
