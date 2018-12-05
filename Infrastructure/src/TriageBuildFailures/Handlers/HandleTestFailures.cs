@@ -131,8 +131,6 @@ CC {GetOwnerMentions(failureArea)}";
                     Reporter.Output($"Creating new issue for test failure {failure.Name}...");
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
-                    Reporter.Output($"Adding new issue to project '{GHClient.Config.FlakyProjectColumn}'");
-                    await GHClient.AddIssueToProject(issue, GHClient.Config.FlakyProjectColumn);
                     Reporter.Output($"Adding workflow comment to issue {issue.HtmlUrl}");
                     await GHClient.CreateComment(issue, WorkFlowComment);
                 }

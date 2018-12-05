@@ -8,7 +8,6 @@ namespace TriageBuildFailures.GitHub
     public class GitHubConfig
     {
         public string AccessToken { get; set; }
-        public int FlakyProjectColumn { get; set; }
         public string BuildBuddyUsername { get; set; }
         public string BotUsername { get; set; }
         public IEnumerable<GitHubAreaConfig> IssueAreas { get; set; }
