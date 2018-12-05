@@ -23,6 +23,7 @@
 
   <!-- These references are used when running on the Benchmarks Server -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" version="2.2.0" />
     <KnownFrameworkReference 
       Update="Microsoft.AspNetCore.App"
       DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
