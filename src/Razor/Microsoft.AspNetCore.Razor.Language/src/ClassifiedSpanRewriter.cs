@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class ClassifiedSpanRewriter : SyntaxRewriter
     {
-        public override SyntaxNode VisitMarkupTagBlock(MarkupTagBlockSyntax node)
+        public override SyntaxNode VisitMarkupStartTag(MarkupStartTagSyntax node)
         {
             SpanContext latestSpanContext = null;
             var newChildren = SyntaxListBuilder<RazorSyntaxNode>.Create();
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             AddLiteralIfExists();
 
-            return SyntaxFactory.MarkupTagBlock(newChildren.ToList()).Green.CreateRed(node.Parent, node.Position);
+            return SyntaxFactory.MarkupStartTag(newChildren.ToList()).Green.CreateRed(node.Parent, node.Position);
 
             void AddLiteralIfExists()
             {

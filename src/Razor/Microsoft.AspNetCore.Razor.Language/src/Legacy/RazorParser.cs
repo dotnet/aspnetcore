@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -41,7 +42,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var diagnostics = context.ErrorSink.Errors;
 
             var root = markupParser.ParseDocument().CreateRed();
-            return RazorSyntaxTree.Create(root, source, diagnostics, Options);
+
+            var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, Options);
+
+            // Group markup elements
+            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
+            return syntaxTree;
         }
     }
 }

@@ -13,6 +13,7 @@ using System.Text;
 using Xunit;
 using Xunit.Sdk;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -240,6 +241,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
             codeDocument.SetSyntaxTree(syntaxTree);
 
+            // Group markup elements
+            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
+
             var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
             syntaxTree = defaultDirectivePass.Execute(codeDocument, syntaxTree);
 
@@ -266,6 +270,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var diagnostics = context.ErrorSink.Errors;
 
             var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
+
+            // Group markup elements
+            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
 
             return syntaxTree;
         }
@@ -299,6 +306,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var diagnostics = context.ErrorSink.Errors;
 
             var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
+
+            // Group markup elements
+            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
 
             return syntaxTree;
         }

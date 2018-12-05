@@ -102,9 +102,17 @@
   </Node>
   <Node Name="MarkupElementSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupElement" />
-    <Field Name="StartTag" Type="MarkupTagBlockSyntax" Optional="true" />
+    <Field Name="StartTag" Type="MarkupStartTagSyntax" Optional="true" />
     <Field Name="Body" Type="SyntaxList&lt;RazorSyntaxNode&gt;" />
-    <Field Name="EndTag" Type="MarkupTagBlockSyntax" Optional="true" />
+    <Field Name="EndTag" Type="MarkupEndTagSyntax" Optional="true" />
+  </Node>
+  <Node Name="MarkupStartTagSyntax" Base="RazorBlockSyntax">
+    <Kind Name="MarkupStartTag" />
+    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
+  </Node>
+  <Node Name="MarkupEndTagSyntax" Base="RazorBlockSyntax">
+    <Kind Name="MarkupEndTag" />
+    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
   </Node>
   <Node Name="MarkupTagHelperElementSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupTagHelperElement" />

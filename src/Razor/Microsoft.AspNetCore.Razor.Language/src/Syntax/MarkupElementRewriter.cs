@@ -19,15 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return newSyntaxTree;
         }
 
-        public static RazorSyntaxTree RemoveMarkupElements(RazorSyntaxTree syntaxTree)
-        {
-            var rewriter = new RemoveMarkupElementRewriter();
-            var rewrittenRoot = rewriter.Visit(syntaxTree.Root);
-
-            var newSyntaxTree = RazorSyntaxTree.Create(rewrittenRoot, syntaxTree.Source, syntaxTree.Diagnostics, syntaxTree.Options);
-            return newSyntaxTree;
-        }
-
         private class AddMarkupElementRewriter : SyntaxRewriter
         {
             private readonly Stack<TagBlockTracker> _startTagTracker = new Stack<TagBlockTracker>();
@@ -38,10 +29,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
             public override SyntaxNode Visit(SyntaxNode node)
             {
-                node = base.Visit(node);
-                
                 if (node != null)
                 {
+                    var diagnostics = node.GetDiagnostics();
+                    node = base.Visit(node);
+                    if (diagnostics.Length > 0)
+                    {
+                        // Persist node diagnostics.
+                        node = node.WithDiagnostics(diagnostics);
+                    }
+
                     node = RewriteNode(node);
                 }
 
@@ -71,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                     var tagName = tagBlock.GetTagName();
                     if (string.IsNullOrWhiteSpace(tagName) || tagBlock.IsSelfClosing())
                     {
-                        // Don't want to track incomplete, invalid (Eg. </>, <  >), void or self-closing tags.
+                        // Don't want to track incomplete, invalid (Eg. </>, <  >) or self-closing tags.
                         // Simply wrap it in a block with no body or start/end tag.
                         if (IsEndTag(tagBlock))
                         {
@@ -102,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                             if (!TryRecoverStartTag(rewrittenChildren, tagName, tagBlock))
                             {
                                 // Could not recover. The end tag doesn't have a corresponding start tag. Wrap it in a block and move on.
-                                var rewritten = SyntaxFactory.MarkupElement(startTag: null, body: new SyntaxList<RazorSyntaxNode>(), endTag: tagBlock);
+                                var rewritten = SyntaxFactory.MarkupElement(startTag: null, body: new SyntaxList<RazorSyntaxNode>(), endTag: GetEndTagSyntax(tagBlock));
                                 TrackChild(rewritten, rewrittenChildren);
                             }
                         }
@@ -149,7 +146,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 // The call to SyntaxNode.ReplaceNodes() later will take care removing the nodes whose replacement is null.
 
                 var body = tagChildren.Where(t => t != null).ToList();
-                var rewritten = SyntaxFactory.MarkupElement(startTag, new SyntaxList<RazorSyntaxNode>(body), endTag);
+                var rewritten = SyntaxFactory.MarkupElement(
+                    GetStartTagSyntax(startTag),
+                    new SyntaxList<RazorSyntaxNode>(body),
+                    GetEndTagSyntax(endTag));
+
                 if (startTag != null)
                 {
                     // If there was a start tag, that is where we want to put our new element.
@@ -232,6 +233,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 return childContent.StartsWith("</") || childContent.StartsWith("/");
             }
 
+            private static MarkupStartTagSyntax GetStartTagSyntax(MarkupTagBlockSyntax tagBlock)
+            {
+                if (tagBlock == null)
+                {
+                    return null;
+                }
+
+                return SyntaxFactory.MarkupStartTag(tagBlock.Children);
+            }
+
+            private static MarkupEndTagSyntax GetEndTagSyntax(MarkupTagBlockSyntax tagBlock)
+            {
+                if (tagBlock == null)
+                {
+                    return null;
+                }
+
+                return SyntaxFactory.MarkupEndTag(tagBlock.Children);
+            }
+
             private class TagBlockTracker
             {
                 public TagBlockTracker(MarkupTagBlockSyntax tagBlock)
@@ -246,44 +267,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 public List<RazorSyntaxNode> Children { get; }
 
                 public string TagName { get; }
-            }
-        }
-
-        private class RemoveMarkupElementRewriter : SyntaxRewriter
-        {
-            public override SyntaxNode Visit(SyntaxNode node)
-            {
-                if (node != null)
-                {
-                    node = RewriteNode(node);
-                }
-
-                return base.Visit(node);
-            }
-
-            private SyntaxNode RewriteNode(SyntaxNode node)
-            {
-                if (node.IsToken)
-                {
-                    return node;
-                }
-
-                var children = node.ChildNodes();
-                for (var i = 0; i < children.Count; i++)
-                {
-                    var child = children[i];
-                    if (!(child is MarkupElementSyntax tagElement))
-                    {
-                        continue;
-                    }
-
-                    node = node.ReplaceNode(tagElement, tagElement.ChildNodes());
-
-                    // Since we rewrote 'node', it's children are different. Update our collection.
-                    children = node.ChildNodes();
-                }
-
-                return node;
             }
         }
     }

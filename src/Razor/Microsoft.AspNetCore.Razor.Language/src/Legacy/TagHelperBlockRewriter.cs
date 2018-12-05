@@ -10,13 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal static class TagHelperBlockRewriter
     {
-        private static readonly string StringTypeName = typeof(string).FullName;
-
         public static MarkupTagHelperStartTagSyntax Rewrite(
             string tagName,
             bool validStructure,
             RazorParserFeatureFlags featureFlags,
-            MarkupTagBlockSyntax tag,
+            MarkupStartTagSyntax tag,
             TagHelperBinding bindingResult,
             ErrorSink errorSink,
             RazorSourceDocument source)
@@ -28,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         public static TagMode GetTagMode(
-            MarkupTagBlockSyntax tagBlock,
+            MarkupStartTagSyntax tagBlock,
             TagHelperBinding bindingResult,
             ErrorSink errorSink)
         {
@@ -57,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static SyntaxList<RazorSyntaxNode> GetRewrittenChildren(
             string tagName,
             bool validStructure,
-            MarkupTagBlockSyntax tagBlock,
+            MarkupStartTagSyntax tagBlock,
             TagHelperBinding bindingResult,
             RazorParserFeatureFlags featureFlags,
             ErrorSink errorSink,

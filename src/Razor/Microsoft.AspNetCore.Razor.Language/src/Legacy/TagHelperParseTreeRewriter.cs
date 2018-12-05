@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public static RazorSyntaxTree Rewrite(RazorSyntaxTree syntaxTree, string tagHelperPrefix, IEnumerable<TagHelperDescriptor> descriptors)
         {
             var errorSink = new ErrorSink();
-            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
 
             var rewriter = new Rewriter(
                 syntaxTree.Source,
@@ -33,8 +32,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var diagnostics = CombineErrors(syntaxTree.Diagnostics, errorList).OrderBy(error => error.Span.AbsoluteIndex);
 
             var newSyntaxTree = RazorSyntaxTree.Create(rewritten, syntaxTree.Source, diagnostics, syntaxTree.Options);
-            newSyntaxTree = MarkupElementRewriter.RemoveMarkupElements(newSyntaxTree);
-
             return newSyntaxTree;
         }
 
@@ -103,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 TagHelperInfo tagHelperInfo = null;
 
                 // Visit the start tag.
-                var startTag = (MarkupTagBlockSyntax)Visit(node.StartTag);
+                var startTag = (MarkupStartTagSyntax)Visit(node.StartTag);
                 if (startTag != null)
                 {
                     var tagName = startTag.GetTagName();
@@ -145,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     else
                     {
                         // Non-TagHelper tag.
-                        ValidateParentAllowsPlainTag(startTag);
+                        ValidateParentAllowsPlainStartTag(startTag);
 
                         if (!startTag.IsSelfClosing() && !startTag.IsVoidElement())
                         {
@@ -159,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var body = VisitList(node.Body);
 
                 // Visit end tag.
-                var endTag = (MarkupTagBlockSyntax)Visit(node.EndTag);
+                var endTag = (MarkupEndTagSyntax)Visit(node.EndTag);
                 if (endTag != null)
                 {
                     var tagName = endTag.GetTagName();
@@ -181,9 +178,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             // Standalone end tag. We may need to error if it is not supposed to be here.
                             // If there was a corresponding start tag, we would have already added this error.
-                            ValidateParentAllowsPlainTag(endTag);
+                            ValidateParentAllowsPlainEndTag(endTag);
                         }
-                        else if (!endTag.IsVoidElement())
+                        else
                         {
                             // Since a start tag exists, we must already be tracking it.
                             // Pop the stack as we're done with the end tag.
@@ -205,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             public override SyntaxNode VisitMarkupTextLiteral(MarkupTextLiteralSyntax node)
             {
-                var tagParent = node.FirstAncestorOrSelf<SyntaxNode>(n => n is MarkupTagBlockSyntax);
+                var tagParent = node.FirstAncestorOrSelf<SyntaxNode>(n => n is MarkupStartTagSyntax || n is MarkupEndTagSyntax);
                 var isPartofTagBlock = tagParent != null;
                 if (!isPartofTagBlock)
                 {
@@ -215,13 +212,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return base.VisitMarkupTextLiteral(node);
             }
 
-            private bool TryRewriteTagHelperStart(MarkupTagBlockSyntax tagBlock, out MarkupTagHelperStartTagSyntax rewritten, out TagHelperInfo tagHelperInfo)
+            private bool TryRewriteTagHelperStart(MarkupStartTagSyntax startTag, out MarkupTagHelperStartTagSyntax rewritten, out TagHelperInfo tagHelperInfo)
             {
                 rewritten = null;
                 tagHelperInfo = null;
 
                 // Get tag name of the current block
-                var tagName = tagBlock.GetTagName();
+                var tagName = startTag.GetTagName();
 
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
                 if (tagName == null)
@@ -231,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 TagHelperBinding tagHelperBinding;
 
-                if (!IsPotentialTagHelper(tagName, tagBlock))
+                if (!IsPotentialTagHelperStart(tagName, startTag))
                 {
                     return false;
                 }
@@ -240,7 +237,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var tagNameScope = tracker?.TagName ?? string.Empty;
 
                 // We're now in a start tag block, we first need to see if the tag block is a tag helper.
-                var elementAttributes = GetAttributeNameValuePairs(tagBlock);
+                var elementAttributes = GetAttributeNameValuePairs(startTag);
 
                 tagHelperBinding = _tagHelperBinder.GetBinding(
                     tagName,
@@ -264,29 +261,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return false;
                 }
 
-                ValidateParentAllowsTagHelper(tagName, tagBlock);
-                ValidateBinding(tagHelperBinding, tagName, tagBlock);
+                ValidateParentAllowsTagHelper(tagName, startTag);
+                ValidateBinding(tagHelperBinding, tagName, startTag);
 
                 // We're in a start TagHelper block.
-                var validTagStructure = ValidateTagSyntax(tagName, tagBlock);
+                var validTagStructure = ValidateStartTagSyntax(tagName, startTag);
 
-                var startTag = TagHelperBlockRewriter.Rewrite(
+                var rewrittenStartTag = TagHelperBlockRewriter.Rewrite(
                     tagName,
                     validTagStructure,
                     _featureFlags,
-                    tagBlock,
+                    startTag,
                     tagHelperBinding,
                     _errorSink,
                     _source);
 
-                var tagMode = TagHelperBlockRewriter.GetTagMode(tagBlock, tagHelperBinding, _errorSink);
+                var tagMode = TagHelperBlockRewriter.GetTagMode(startTag, tagHelperBinding, _errorSink);
                 tagHelperInfo = new TagHelperInfo(tagName, tagMode, tagHelperBinding);
-                rewritten = startTag;
+                rewritten = rewrittenStartTag;
 
                 return true;
             }
 
-            private bool TryRewriteTagHelperEnd(MarkupTagBlockSyntax tagBlock, out MarkupTagHelperEndTagSyntax rewritten)
+            private bool TryRewriteTagHelperEnd(MarkupEndTagSyntax tagBlock, out MarkupTagHelperEndTagSyntax rewritten)
             {
                 rewritten = null;
                 var tagName = tagBlock.GetTagName();
@@ -298,7 +295,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 var tracker = CurrentTagHelperTracker;
                 var tagNameScope = tracker?.TagName ?? string.Empty;
-                if (!IsPotentialTagHelper(tagName, tagBlock))
+                if (!IsPotentialTagHelperEnd(tagName, tagBlock))
                 {
                     return false;
                 }
@@ -315,7 +312,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         return false;
                     }
 
-                    ValidateTagSyntax(tagName, tagBlock);
+                    ValidateEndTagSyntax(tagName, tagBlock);
 
                     _trackerStack.Pop();
                 }
@@ -360,10 +357,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Internal for testing
-            internal IReadOnlyList<KeyValuePair<string, string>> GetAttributeNameValuePairs(MarkupTagBlockSyntax tagBlock)
+            internal IReadOnlyList<KeyValuePair<string, string>> GetAttributeNameValuePairs(MarkupStartTagSyntax tagBlock)
             {
                 // Need to calculate how many children we should take that represent the attributes.
-                var childrenOffset = IsPartialTag(tagBlock) ? 0 : 1;
+                var childrenOffset = IsPartialStartTag(tagBlock) ? 0 : 1;
                 var childCount = tagBlock.Children.Count - childrenOffset;
 
                 if (childCount <= 1)
@@ -436,19 +433,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return attributes;
             }
 
-            private void ValidateParentAllowsTagHelper(string tagName, MarkupTagBlockSyntax tagBlock)
+            private void ValidateParentAllowsTagHelper(string tagName, MarkupStartTagSyntax tagBlock)
             {
                 if (HasAllowedChildren() &&
                     !CurrentTagHelperTracker.PrefixedAllowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
                 {
-                    OnAllowedChildrenTagError(CurrentTagHelperTracker, tagName, tagBlock, _errorSink, _source);
+                    OnAllowedChildrenStartTagError(CurrentTagHelperTracker, tagName, tagBlock, _errorSink, _source);
                 }
             }
 
             private void ValidateBinding(
                 TagHelperBinding bindingResult,
                 string tagName,
-                MarkupTagBlockSyntax tagBlock)
+                MarkupStartTagSyntax tagBlock)
             {
                 // Ensure that all descriptors associated with this tag have appropriate TagStructures. Cannot have
                 // multiple descriptors that expect different TagStructures (other than TagStructure.Unspecified).
@@ -479,12 +476,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            private bool ValidateTagSyntax(string tagName, MarkupTagBlockSyntax tag)
+            private bool ValidateStartTagSyntax(string tagName, MarkupStartTagSyntax tag)
             {
                 // We assume an invalid syntax until we verify that the tag meets all of our "valid syntax" criteria.
-                if (IsPartialTag(tag))
+                if (IsPartialStartTag(tag))
                 {
-                    var errorStart = GetTagDeclarationErrorStart(tag);
+                    var errorStart = GetStartTagDeclarationErrorStart(tag, _source);
 
                     _errorSink.OnError(
                         RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
@@ -496,7 +493,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return true;
             }
 
-            private bool IsPotentialTagHelper(string tagName, MarkupTagBlockSyntax childBlock)
+            private bool ValidateEndTagSyntax(string tagName, MarkupEndTagSyntax tag)
+            {
+                // We assume an invalid syntax until we verify that the tag meets all of our "valid syntax" criteria.
+                if (IsPartialEndTag(tag))
+                {
+                    var errorStart = GetEndTagDeclarationErrorStart(tag, _source);
+
+                    _errorSink.OnError(
+                        RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                            new SourceSpan(errorStart, tagName.Length), tagName));
+
+                    return false;
+                }
+
+                return true;
+            }
+
+            private bool IsPotentialTagHelperStart(string tagName, MarkupStartTagSyntax childBlock)
             {
                 Debug.Assert(childBlock.Children.Count > 0);
                 var child = childBlock.Children[0];
@@ -505,14 +519,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                        child.Kind != SyntaxKind.MarkupTransition;
             }
 
-            private SourceLocation GetTagDeclarationErrorStart(MarkupTagBlockSyntax tagBlock)
+            private bool IsPotentialTagHelperEnd(string tagName, MarkupEndTagSyntax childBlock)
             {
-                var advanceBy = IsEndTag(tagBlock) ? "</" : "<";
+                Debug.Assert(childBlock.Children.Count > 0);
+                var child = childBlock.Children[0];
 
-                return SourceLocationTracker.Advance(tagBlock.GetSourceLocation(_source), advanceBy);
+                return !string.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) ||
+                       child.Kind != SyntaxKind.MarkupTransition;
             }
 
-            private static bool IsPartialTag(MarkupTagBlockSyntax tagBlock)
+            private static bool IsPartialStartTag(MarkupStartTagSyntax tagBlock)
+            {
+                // No need to validate the tag end because in order to be a tag block it must start with '<'.
+                var tagEnd = tagBlock.Children[tagBlock.Children.Count - 1];
+
+                // If our tag end is not a markup span it means it's some sort of code SyntaxTreeNode (not a valid format)
+                if (tagEnd != null && tagEnd is MarkupTextLiteralSyntax tagEndLiteral)
+                {
+                    var endToken = tagEndLiteral.LiteralTokens.Count > 0 ?
+                        tagEndLiteral.LiteralTokens[tagEndLiteral.LiteralTokens.Count - 1] :
+                        null;
+
+                    if (endToken != null && endToken.Kind == SyntaxKind.CloseAngle)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            private static bool IsPartialEndTag(MarkupEndTagSyntax tagBlock)
             {
                 // No need to validate the tag end because in order to be a tag block it must start with '<'.
                 var tagEnd = tagBlock.Children[tagBlock.Children.Count - 1];
@@ -566,7 +603,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            private void ValidateParentAllowsPlainTag(MarkupTagBlockSyntax tagBlock)
+            private void ValidateParentAllowsPlainStartTag(MarkupStartTagSyntax tagBlock)
             {
                 var tagName = tagBlock.GetTagName();
 
@@ -595,7 +632,40 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var allowedChildren = tagHelperBinding != null ? CurrentTagHelperTracker.PrefixedAllowedChildren : CurrentTagHelperTracker.AllowedChildren;
                 if (!allowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
                 {
-                    OnAllowedChildrenTagError(CurrentTagHelperTracker, tagName, tagBlock, _errorSink, _source);
+                    OnAllowedChildrenStartTagError(CurrentTagHelperTracker, tagName, tagBlock, _errorSink, _source);
+                }
+            }
+
+            private void ValidateParentAllowsPlainEndTag(MarkupEndTagSyntax tagBlock)
+            {
+                var tagName = tagBlock.GetTagName();
+
+                // Treat partial tags such as '</' which have no tag names as content.
+                if (string.IsNullOrEmpty(tagName))
+                {
+                    var firstChild = tagBlock.Children.First();
+                    Debug.Assert(firstChild is MarkupTextLiteralSyntax || firstChild is MarkupTransitionSyntax);
+
+                    ValidateParentAllowsContent(tagBlock.Children.First());
+                    return;
+                }
+
+                if (!HasAllowedChildren())
+                {
+                    return;
+                }
+
+                var tagHelperBinding = _tagHelperBinder.GetBinding(
+                    tagName,
+                    attributes: Array.Empty<KeyValuePair<string, string>>(),
+                    parentTagName: CurrentParentTagName,
+                    parentIsTagHelper: CurrentParentIsTagHelper);
+
+                // If we found a binding for the current tag, then it is a tag helper. Use the prefixed allowed children to compare.
+                var allowedChildren = tagHelperBinding != null ? CurrentTagHelperTracker.PrefixedAllowedChildren : CurrentTagHelperTracker.AllowedChildren;
+                if (!allowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
+                {
+                    OnAllowedChildrenEndTagError(CurrentTagHelperTracker, tagName, tagBlock, _errorSink, _source);
                 }
             }
 
@@ -632,15 +702,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return commentParent != null;
             }
 
-            private static void OnAllowedChildrenTagError(
+            private static void OnAllowedChildrenStartTagError(
                 TagHelperTracker tracker,
                 string tagName,
-                MarkupTagBlockSyntax tagBlock,
+                MarkupStartTagSyntax tagBlock,
                 ErrorSink errorSink,
                 RazorSourceDocument source)
             {
                 var allowedChildrenString = string.Join(", ", tracker.AllowedChildren);
-                var errorStart = GetTagDeclarationErrorStart(tagBlock, source);
+                var errorStart = GetStartTagDeclarationErrorStart(tagBlock, source);
 
                 errorSink.OnError(
                     RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
@@ -650,21 +720,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         allowedChildrenString));
             }
 
-            private static SourceLocation GetTagDeclarationErrorStart(MarkupTagBlockSyntax tagBlock, RazorSourceDocument source)
+            private static void OnAllowedChildrenEndTagError(
+                TagHelperTracker tracker,
+                string tagName,
+                MarkupEndTagSyntax tagBlock,
+                ErrorSink errorSink,
+                RazorSourceDocument source)
             {
-                var advanceBy = IsEndTag(tagBlock) ? "</" : "<";
+                var allowedChildrenString = string.Join(", ", tracker.AllowedChildren);
+                var errorStart = GetEndTagDeclarationErrorStart(tagBlock, source);
 
-                return SourceLocationTracker.Advance(tagBlock.GetSourceLocation(source), advanceBy);
+                errorSink.OnError(
+                    RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
+                        new SourceSpan(errorStart, tagName.Length),
+                        tagName,
+                        tracker.TagName,
+                        allowedChildrenString));
             }
 
-            private static bool IsEndTag(MarkupTagBlockSyntax tagBlock)
+            private static SourceLocation GetStartTagDeclarationErrorStart(MarkupStartTagSyntax tagBlock, RazorSourceDocument source)
             {
-                var childSpan = (MarkupTextLiteralSyntax)tagBlock.Children.First();
+                return SourceLocationTracker.Advance(tagBlock.GetSourceLocation(source), "<");
+            }
 
-                // We grab the token that could be forward slash
-                var relevantToken = childSpan.LiteralTokens[childSpan.LiteralTokens.Count == 1 ? 0 : 1];
-
-                return relevantToken.Kind == SyntaxKind.ForwardSlash;
+            private static SourceLocation GetEndTagDeclarationErrorStart(MarkupEndTagSyntax tagBlock, RazorSourceDocument source)
+            {
+                return SourceLocationTracker.Advance(tagBlock.GetSourceLocation(source), "</");
             }
 
             private class TagTracker

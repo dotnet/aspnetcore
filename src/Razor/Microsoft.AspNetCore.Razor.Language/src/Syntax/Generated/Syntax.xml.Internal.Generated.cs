@@ -1441,11 +1441,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
   internal sealed partial class MarkupElementSyntax : MarkupSyntaxNode
   {
-    private readonly MarkupTagBlockSyntax _startTag;
+    private readonly MarkupStartTagSyntax _startTag;
     private readonly GreenNode _body;
-    private readonly MarkupTagBlockSyntax _endTag;
+    private readonly MarkupEndTagSyntax _endTag;
 
-    internal MarkupElementSyntax(SyntaxKind kind, MarkupTagBlockSyntax startTag, GreenNode body, MarkupTagBlockSyntax endTag, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+    internal MarkupElementSyntax(SyntaxKind kind, MarkupStartTagSyntax startTag, GreenNode body, MarkupEndTagSyntax endTag, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
         : base(kind, diagnostics, annotations)
     {
         SlotCount = 3;
@@ -1467,7 +1467,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
 
 
-    internal MarkupElementSyntax(SyntaxKind kind, MarkupTagBlockSyntax startTag, GreenNode body, MarkupTagBlockSyntax endTag)
+    internal MarkupElementSyntax(SyntaxKind kind, MarkupStartTagSyntax startTag, GreenNode body, MarkupEndTagSyntax endTag)
         : base(kind)
     {
         SlotCount = 3;
@@ -1488,9 +1488,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         }
     }
 
-    public MarkupTagBlockSyntax StartTag { get { return _startTag; } }
+    public MarkupStartTagSyntax StartTag { get { return _startTag; } }
     public SyntaxList<RazorSyntaxNode> Body { get { return new SyntaxList<RazorSyntaxNode>(_body); } }
-    public MarkupTagBlockSyntax EndTag { get { return _endTag; } }
+    public MarkupEndTagSyntax EndTag { get { return _endTag; } }
 
     internal override GreenNode GetSlot(int index)
     {
@@ -1518,7 +1518,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         visitor.VisitMarkupElement(this);
     }
 
-    public MarkupElementSyntax Update(MarkupTagBlockSyntax startTag, Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> body, MarkupTagBlockSyntax endTag)
+    public MarkupElementSyntax Update(MarkupStartTagSyntax startTag, Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> body, MarkupEndTagSyntax endTag)
     {
         if (startTag != StartTag || body != Body || endTag != EndTag)
         {
@@ -1543,6 +1543,168 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
     {
          return new MarkupElementSyntax(Kind, _startTag, _body, _endTag, GetDiagnostics(), annotations);
+    }
+  }
+
+  internal sealed partial class MarkupStartTagSyntax : RazorBlockSyntax
+  {
+    private readonly GreenNode _children;
+
+    internal MarkupStartTagSyntax(SyntaxKind kind, GreenNode children, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+        : base(kind, diagnostics, annotations)
+    {
+        SlotCount = 1;
+        if (children != null)
+        {
+            AdjustFlagsAndWidth(children);
+            _children = children;
+        }
+    }
+
+
+    internal MarkupStartTagSyntax(SyntaxKind kind, GreenNode children)
+        : base(kind)
+    {
+        SlotCount = 1;
+        if (children != null)
+        {
+            AdjustFlagsAndWidth(children);
+            _children = children;
+        }
+    }
+
+    public override SyntaxList<RazorSyntaxNode> Children { get { return new SyntaxList<RazorSyntaxNode>(_children); } }
+
+    internal override GreenNode GetSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return _children;
+            default: return null;
+        }
+    }
+
+    internal override SyntaxNode CreateRed(SyntaxNode parent, int position)
+    {
+      return new Syntax.MarkupStartTagSyntax(this, parent, position);
+    }
+
+    public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+    {
+        return visitor.VisitMarkupStartTag(this);
+    }
+
+    public override void Accept(SyntaxVisitor visitor)
+    {
+        visitor.VisitMarkupStartTag(this);
+    }
+
+    public MarkupStartTagSyntax Update(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    {
+        if (children != Children)
+        {
+            var newNode = SyntaxFactory.MarkupStartTag(children);
+            var diags = GetDiagnostics();
+            if (diags != null && diags.Length > 0)
+               newNode = newNode.WithDiagnosticsGreen(diags);
+            var annotations = GetAnnotations();
+            if (annotations != null && annotations.Length > 0)
+               newNode = newNode.WithAnnotationsGreen(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
+    {
+         return new MarkupStartTagSyntax(Kind, _children, diagnostics, GetAnnotations());
+    }
+
+    internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
+    {
+         return new MarkupStartTagSyntax(Kind, _children, GetDiagnostics(), annotations);
+    }
+  }
+
+  internal sealed partial class MarkupEndTagSyntax : RazorBlockSyntax
+  {
+    private readonly GreenNode _children;
+
+    internal MarkupEndTagSyntax(SyntaxKind kind, GreenNode children, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+        : base(kind, diagnostics, annotations)
+    {
+        SlotCount = 1;
+        if (children != null)
+        {
+            AdjustFlagsAndWidth(children);
+            _children = children;
+        }
+    }
+
+
+    internal MarkupEndTagSyntax(SyntaxKind kind, GreenNode children)
+        : base(kind)
+    {
+        SlotCount = 1;
+        if (children != null)
+        {
+            AdjustFlagsAndWidth(children);
+            _children = children;
+        }
+    }
+
+    public override SyntaxList<RazorSyntaxNode> Children { get { return new SyntaxList<RazorSyntaxNode>(_children); } }
+
+    internal override GreenNode GetSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return _children;
+            default: return null;
+        }
+    }
+
+    internal override SyntaxNode CreateRed(SyntaxNode parent, int position)
+    {
+      return new Syntax.MarkupEndTagSyntax(this, parent, position);
+    }
+
+    public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+    {
+        return visitor.VisitMarkupEndTag(this);
+    }
+
+    public override void Accept(SyntaxVisitor visitor)
+    {
+        visitor.VisitMarkupEndTag(this);
+    }
+
+    public MarkupEndTagSyntax Update(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    {
+        if (children != Children)
+        {
+            var newNode = SyntaxFactory.MarkupEndTag(children);
+            var diags = GetDiagnostics();
+            if (diags != null && diags.Length > 0)
+               newNode = newNode.WithDiagnosticsGreen(diags);
+            var annotations = GetAnnotations();
+            if (annotations != null && annotations.Length > 0)
+               newNode = newNode.WithAnnotationsGreen(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
+    {
+         return new MarkupEndTagSyntax(Kind, _children, diagnostics, GetAnnotations());
+    }
+
+    internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
+    {
+         return new MarkupEndTagSyntax(Kind, _children, GetDiagnostics(), annotations);
     }
   }
 
@@ -3383,6 +3545,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return DefaultVisit(node);
     }
 
+    public virtual TResult VisitMarkupStartTag(MarkupStartTagSyntax node)
+    {
+      return DefaultVisit(node);
+    }
+
+    public virtual TResult VisitMarkupEndTag(MarkupEndTagSyntax node)
+    {
+      return DefaultVisit(node);
+    }
+
     public virtual TResult VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
     {
       return DefaultVisit(node);
@@ -3568,6 +3740,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
 
     public virtual void VisitMarkupElement(MarkupElementSyntax node)
+    {
+      DefaultVisit(node);
+    }
+
+    public virtual void VisitMarkupStartTag(MarkupStartTagSyntax node)
+    {
+      DefaultVisit(node);
+    }
+
+    public virtual void VisitMarkupEndTag(MarkupEndTagSyntax node)
     {
       DefaultVisit(node);
     }
@@ -3786,10 +3968,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
     public override GreenNode VisitMarkupElement(MarkupElementSyntax node)
     {
-      var startTag = (MarkupTagBlockSyntax)Visit(node.StartTag);
+      var startTag = (MarkupStartTagSyntax)Visit(node.StartTag);
       var body = VisitList(node.Body);
-      var endTag = (MarkupTagBlockSyntax)Visit(node.EndTag);
+      var endTag = (MarkupEndTagSyntax)Visit(node.EndTag);
       return node.Update(startTag, body, endTag);
+    }
+
+    public override GreenNode VisitMarkupStartTag(MarkupStartTagSyntax node)
+    {
+      var children = VisitList(node.Children);
+      return node.Update(children);
+    }
+
+    public override GreenNode VisitMarkupEndTag(MarkupEndTagSyntax node)
+    {
+      var children = VisitList(node.Children);
+      return node.Update(children);
     }
 
     public override GreenNode VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
@@ -4108,9 +4302,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return result;
     }
 
-    public static MarkupElementSyntax MarkupElement(MarkupTagBlockSyntax startTag, Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> body, MarkupTagBlockSyntax endTag)
+    public static MarkupElementSyntax MarkupElement(MarkupStartTagSyntax startTag, Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> body, MarkupEndTagSyntax endTag)
     {
       var result = new MarkupElementSyntax(SyntaxKind.MarkupElement, startTag, body.Node, endTag);
+
+      return result;
+    }
+
+    public static MarkupStartTagSyntax MarkupStartTag(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    {
+      var result = new MarkupStartTagSyntax(SyntaxKind.MarkupStartTag, children.Node);
+
+      return result;
+    }
+
+    public static MarkupEndTagSyntax MarkupEndTag(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    {
+      var result = new MarkupEndTagSyntax(SyntaxKind.MarkupEndTag, children.Node);
 
       return result;
     }
@@ -4343,6 +4551,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
            typeof(MarkupLiteralAttributeValueSyntax),
            typeof(MarkupDynamicAttributeValueSyntax),
            typeof(MarkupElementSyntax),
+           typeof(MarkupStartTagSyntax),
+           typeof(MarkupEndTagSyntax),
            typeof(MarkupTagHelperElementSyntax),
            typeof(MarkupTagHelperStartTagSyntax),
            typeof(MarkupTagHelperEndTagSyntax),

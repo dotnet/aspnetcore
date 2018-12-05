@@ -106,9 +106,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             base.VisitMarkupTagHelperAttributeValue(node);
         }
 
-        public override void VisitMarkupTagBlock(MarkupTagBlockSyntax node)
+        public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Tag, base.VisitMarkupTagBlock);
+            WriteBlock(node, BlockKindInternal.Tag, base.VisitMarkupStartTag);
+        }
+
+        public override void VisitMarkupEndTag(MarkupEndTagSyntax node)
+        {
+            WriteBlock(node, BlockKindInternal.Tag, base.VisitMarkupEndTag);
         }
 
         public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)

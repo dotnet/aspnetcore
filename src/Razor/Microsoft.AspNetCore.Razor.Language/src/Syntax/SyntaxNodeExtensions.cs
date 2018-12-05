@@ -223,55 +223,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public static string GetTagName(this MarkupTagBlockSyntax tagBlock)
         {
-            if (tagBlock == null)
-            {
-                throw new ArgumentNullException(nameof(tagBlock));
-            }
-
-            var child = tagBlock.Children[0];
-
-            if (tagBlock.Children.Count == 0 || !(child is MarkupTextLiteralSyntax))
-            {
-                return null;
-            }
-
-            var childLiteral = (MarkupTextLiteralSyntax)child;
-            SyntaxToken textToken = null;
-            for (var i = 0; i < childLiteral.LiteralTokens.Count; i++)
-            {
-                var token = childLiteral.LiteralTokens[i];
-
-                if (token != null &&
-                    (token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.Text))
-                {
-                    textToken = token;
-                    break;
-                }
-            }
-
-            if (textToken == null)
-            {
-                return null;
-            }
-
-            return textToken.Kind == SyntaxKind.Whitespace ? null : textToken.Content;
+            return GetTagNameCore(tagBlock);
         }
 
-        public static string GetTagName(this MarkupTagHelperStartTagSyntax tagBlock)
+        public static string GetTagName(this MarkupStartTagSyntax startTag)
+        {
+            return GetTagNameCore(startTag);
+        }
+
+        public static string GetTagName(this MarkupEndTagSyntax endTag)
+        {
+            return GetTagNameCore(endTag);
+        }
+
+        private static string GetTagNameCore(RazorBlockSyntax tagBlock)
         {
             if (tagBlock == null)
             {
                 throw new ArgumentNullException(nameof(tagBlock));
             }
 
-            var child = tagBlock.Children[0];
-
-            if (tagBlock.Children.Count == 0 || !(child is MarkupTextLiteralSyntax))
+            if (tagBlock.Children.Count == 0 || !(tagBlock.Children[0] is MarkupTextLiteralSyntax childLiteral))
             {
                 return null;
             }
 
-            var childLiteral = (MarkupTextLiteralSyntax)child;
             SyntaxToken textToken = null;
             for (var i = 0; i < childLiteral.LiteralTokens.Count; i++)
             {
@@ -295,6 +271,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public static bool IsSelfClosing(this MarkupTagBlockSyntax tagBlock)
         {
+            return IsSelfClosingCore(tagBlock);
+        }
+
+        public static bool IsSelfClosing(this MarkupStartTagSyntax startTag)
+        {
+            return IsSelfClosingCore(startTag);
+        }
+
+        private static bool IsSelfClosingCore(RazorBlockSyntax tagBlock)
+        {
             if (tagBlock == null)
             {
                 throw new ArgumentNullException(nameof(tagBlock));
@@ -305,14 +291,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return lastChild?.GetContent().EndsWith("/>", StringComparison.Ordinal) ?? false;
         }
 
-        public static bool IsVoidElement(this MarkupTagBlockSyntax tagBlock)
+        public static bool IsVoidElement(this MarkupStartTagSyntax startTag)
         {
-            if (tagBlock == null)
+            if (startTag == null)
             {
-                throw new ArgumentNullException(nameof(tagBlock));
+                throw new ArgumentNullException(nameof(startTag));
             }
 
-            return ParserHelpers.VoidElements.Contains(tagBlock.GetTagName());
+            return ParserHelpers.VoidElements.Contains(startTag.GetTagName());
         }
     }
 }

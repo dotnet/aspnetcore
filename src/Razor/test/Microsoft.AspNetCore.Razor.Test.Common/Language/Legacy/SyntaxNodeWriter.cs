@@ -203,7 +203,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         {
             return node.Kind == SyntaxKind.MarkupTextLiteral ||
                 node.Kind == SyntaxKind.MarkupEphemeralTextLiteral ||
-                node.Kind == SyntaxKind.MarkupTagBlock ||
+                node.Kind == SyntaxKind.MarkupStartTag ||
+                node.Kind == SyntaxKind.MarkupEndTag ||
                 node.Kind == SyntaxKind.MarkupAttributeBlock ||
                 node.Kind == SyntaxKind.MarkupMinimizedAttributeBlock ||
                 node.Kind == SyntaxKind.MarkupTagHelperAttribute ||

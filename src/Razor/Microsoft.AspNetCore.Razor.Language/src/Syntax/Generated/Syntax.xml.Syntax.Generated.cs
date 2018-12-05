@@ -1382,16 +1382,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
   internal sealed partial class MarkupElementSyntax : MarkupSyntaxNode
   {
-    private MarkupTagBlockSyntax _startTag;
+    private MarkupStartTagSyntax _startTag;
     private SyntaxNode _body;
-    private MarkupTagBlockSyntax _endTag;
+    private MarkupEndTagSyntax _endTag;
 
     internal MarkupElementSyntax(GreenNode green, SyntaxNode parent, int position)
         : base(green, parent, position)
     {
     }
 
-    public MarkupTagBlockSyntax StartTag 
+    public MarkupStartTagSyntax StartTag 
     {
         get
         {
@@ -1407,7 +1407,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         }
     }
 
-    public MarkupTagBlockSyntax EndTag 
+    public MarkupEndTagSyntax EndTag 
     {
         get
         {
@@ -1446,7 +1446,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         visitor.VisitMarkupElement(this);
     }
 
-    public MarkupElementSyntax Update(MarkupTagBlockSyntax startTag, SyntaxList<RazorSyntaxNode> body, MarkupTagBlockSyntax endTag)
+    public MarkupElementSyntax Update(MarkupStartTagSyntax startTag, SyntaxList<RazorSyntaxNode> body, MarkupEndTagSyntax endTag)
     {
         if (startTag != StartTag || body != Body || endTag != EndTag)
         {
@@ -1460,7 +1460,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         return this;
     }
 
-    public MarkupElementSyntax WithStartTag(MarkupTagBlockSyntax startTag)
+    public MarkupElementSyntax WithStartTag(MarkupStartTagSyntax startTag)
     {
         return Update(startTag, Body, EndTag);
     }
@@ -1470,14 +1470,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         return Update(StartTag, body, EndTag);
     }
 
-    public MarkupElementSyntax WithEndTag(MarkupTagBlockSyntax endTag)
+    public MarkupElementSyntax WithEndTag(MarkupEndTagSyntax endTag)
     {
         return Update(StartTag, Body, endTag);
     }
 
     public MarkupElementSyntax AddStartTagChildren(params RazorSyntaxNode[] items)
     {
-        var _startTag = this.StartTag ?? SyntaxFactory.MarkupTagBlock();
+        var _startTag = this.StartTag ?? SyntaxFactory.MarkupStartTag();
         return this.WithStartTag(_startTag.WithChildren(_startTag.Children.AddRange(items)));
     }
 
@@ -1488,8 +1488,150 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
     public MarkupElementSyntax AddEndTagChildren(params RazorSyntaxNode[] items)
     {
-        var _endTag = this.EndTag ?? SyntaxFactory.MarkupTagBlock();
+        var _endTag = this.EndTag ?? SyntaxFactory.MarkupEndTag();
         return this.WithEndTag(_endTag.WithChildren(_endTag.Children.AddRange(items)));
+    }
+  }
+
+  internal sealed partial class MarkupStartTagSyntax : RazorBlockSyntax
+  {
+    private SyntaxNode _children;
+
+    internal MarkupStartTagSyntax(GreenNode green, SyntaxNode parent, int position)
+        : base(green, parent, position)
+    {
+    }
+
+    public override SyntaxList<RazorSyntaxNode> Children 
+    {
+        get
+        {
+            return new SyntaxList<RazorSyntaxNode>(GetRed(ref _children, 0));
+        }
+    }
+
+    internal override SyntaxNode GetNodeSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return GetRedAtZero(ref _children);
+            default: return null;
+        }
+    }
+    internal override SyntaxNode GetCachedSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return _children;
+            default: return null;
+        }
+    }
+
+    public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+    {
+        return visitor.VisitMarkupStartTag(this);
+    }
+
+    public override void Accept(SyntaxVisitor visitor)
+    {
+        visitor.VisitMarkupStartTag(this);
+    }
+
+    public MarkupStartTagSyntax Update(SyntaxList<RazorSyntaxNode> children)
+    {
+        if (children != Children)
+        {
+            var newNode = SyntaxFactory.MarkupStartTag(children);
+            var annotations = GetAnnotations();
+            if (annotations != null && annotations.Length > 0)
+               return newNode.WithAnnotations(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override RazorBlockSyntax WithChildrenCore(SyntaxList<RazorSyntaxNode> children) => WithChildren(children);
+    public new MarkupStartTagSyntax WithChildren(SyntaxList<RazorSyntaxNode> children)
+    {
+        return Update(children);
+    }
+    internal override RazorBlockSyntax AddChildrenCore(params RazorSyntaxNode[] items) => AddChildren(items);
+
+    public new MarkupStartTagSyntax AddChildren(params RazorSyntaxNode[] items)
+    {
+        return WithChildren(this.Children.AddRange(items));
+    }
+  }
+
+  internal sealed partial class MarkupEndTagSyntax : RazorBlockSyntax
+  {
+    private SyntaxNode _children;
+
+    internal MarkupEndTagSyntax(GreenNode green, SyntaxNode parent, int position)
+        : base(green, parent, position)
+    {
+    }
+
+    public override SyntaxList<RazorSyntaxNode> Children 
+    {
+        get
+        {
+            return new SyntaxList<RazorSyntaxNode>(GetRed(ref _children, 0));
+        }
+    }
+
+    internal override SyntaxNode GetNodeSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return GetRedAtZero(ref _children);
+            default: return null;
+        }
+    }
+    internal override SyntaxNode GetCachedSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return _children;
+            default: return null;
+        }
+    }
+
+    public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+    {
+        return visitor.VisitMarkupEndTag(this);
+    }
+
+    public override void Accept(SyntaxVisitor visitor)
+    {
+        visitor.VisitMarkupEndTag(this);
+    }
+
+    public MarkupEndTagSyntax Update(SyntaxList<RazorSyntaxNode> children)
+    {
+        if (children != Children)
+        {
+            var newNode = SyntaxFactory.MarkupEndTag(children);
+            var annotations = GetAnnotations();
+            if (annotations != null && annotations.Length > 0)
+               return newNode.WithAnnotations(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override RazorBlockSyntax WithChildrenCore(SyntaxList<RazorSyntaxNode> children) => WithChildren(children);
+    public new MarkupEndTagSyntax WithChildren(SyntaxList<RazorSyntaxNode> children)
+    {
+        return Update(children);
+    }
+    internal override RazorBlockSyntax AddChildrenCore(params RazorSyntaxNode[] items) => AddChildren(items);
+
+    public new MarkupEndTagSyntax AddChildren(params RazorSyntaxNode[] items)
+    {
+        return WithChildren(this.Children.AddRange(items));
     }
   }
 

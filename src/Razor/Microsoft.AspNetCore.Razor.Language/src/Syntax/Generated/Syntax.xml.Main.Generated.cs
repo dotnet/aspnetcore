@@ -113,6 +113,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       return DefaultVisit(node);
     }
 
+    /// <summary>Called when the visitor visits a MarkupStartTagSyntax node.</summary>
+    public virtual TResult VisitMarkupStartTag(MarkupStartTagSyntax node)
+    {
+      return DefaultVisit(node);
+    }
+
+    /// <summary>Called when the visitor visits a MarkupEndTagSyntax node.</summary>
+    public virtual TResult VisitMarkupEndTag(MarkupEndTagSyntax node)
+    {
+      return DefaultVisit(node);
+    }
+
     /// <summary>Called when the visitor visits a MarkupTagHelperElementSyntax node.</summary>
     public virtual TResult VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
     {
@@ -334,6 +346,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
     /// <summary>Called when the visitor visits a MarkupElementSyntax node.</summary>
     public virtual void VisitMarkupElement(MarkupElementSyntax node)
+    {
+      DefaultVisit(node);
+    }
+
+    /// <summary>Called when the visitor visits a MarkupStartTagSyntax node.</summary>
+    public virtual void VisitMarkupStartTag(MarkupStartTagSyntax node)
+    {
+      DefaultVisit(node);
+    }
+
+    /// <summary>Called when the visitor visits a MarkupEndTagSyntax node.</summary>
+    public virtual void VisitMarkupEndTag(MarkupEndTagSyntax node)
     {
       DefaultVisit(node);
     }
@@ -572,10 +596,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
     public override SyntaxNode VisitMarkupElement(MarkupElementSyntax node)
     {
-      var startTag = (MarkupTagBlockSyntax)Visit(node.StartTag);
+      var startTag = (MarkupStartTagSyntax)Visit(node.StartTag);
       var body = VisitList(node.Body);
-      var endTag = (MarkupTagBlockSyntax)Visit(node.EndTag);
+      var endTag = (MarkupEndTagSyntax)Visit(node.EndTag);
       return node.Update(startTag, body, endTag);
+    }
+
+    public override SyntaxNode VisitMarkupStartTag(MarkupStartTagSyntax node)
+    {
+      var children = VisitList(node.Children);
+      return node.Update(children);
+    }
+
+    public override SyntaxNode VisitMarkupEndTag(MarkupEndTagSyntax node)
+    {
+      var children = VisitList(node.Children);
+      return node.Update(children);
     }
 
     public override SyntaxNode VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
@@ -962,15 +998,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
     }
 
     /// <summary>Creates a new MarkupElementSyntax instance.</summary>
-    public static MarkupElementSyntax MarkupElement(MarkupTagBlockSyntax startTag, SyntaxList<RazorSyntaxNode> body, MarkupTagBlockSyntax endTag)
+    public static MarkupElementSyntax MarkupElement(MarkupStartTagSyntax startTag, SyntaxList<RazorSyntaxNode> body, MarkupEndTagSyntax endTag)
     {
-      return (MarkupElementSyntax)InternalSyntax.SyntaxFactory.MarkupElement(startTag == null ? null : (InternalSyntax.MarkupTagBlockSyntax)startTag.Green, body.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>(), endTag == null ? null : (InternalSyntax.MarkupTagBlockSyntax)endTag.Green).CreateRed();
+      return (MarkupElementSyntax)InternalSyntax.SyntaxFactory.MarkupElement(startTag == null ? null : (InternalSyntax.MarkupStartTagSyntax)startTag.Green, body.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>(), endTag == null ? null : (InternalSyntax.MarkupEndTagSyntax)endTag.Green).CreateRed();
     }
 
     /// <summary>Creates a new MarkupElementSyntax instance.</summary>
     public static MarkupElementSyntax MarkupElement(SyntaxList<RazorSyntaxNode> body = default(SyntaxList<RazorSyntaxNode>))
     {
-      return SyntaxFactory.MarkupElement(default(MarkupTagBlockSyntax), body, default(MarkupTagBlockSyntax));
+      return SyntaxFactory.MarkupElement(default(MarkupStartTagSyntax), body, default(MarkupEndTagSyntax));
+    }
+
+    /// <summary>Creates a new MarkupStartTagSyntax instance.</summary>
+    public static MarkupStartTagSyntax MarkupStartTag(SyntaxList<RazorSyntaxNode> children)
+    {
+      return (MarkupStartTagSyntax)InternalSyntax.SyntaxFactory.MarkupStartTag(children.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>()).CreateRed();
+    }
+
+    /// <summary>Creates a new MarkupStartTagSyntax instance.</summary>
+    public static MarkupStartTagSyntax MarkupStartTag()
+    {
+      return SyntaxFactory.MarkupStartTag(default(SyntaxList<RazorSyntaxNode>));
+    }
+
+    /// <summary>Creates a new MarkupEndTagSyntax instance.</summary>
+    public static MarkupEndTagSyntax MarkupEndTag(SyntaxList<RazorSyntaxNode> children)
+    {
+      return (MarkupEndTagSyntax)InternalSyntax.SyntaxFactory.MarkupEndTag(children.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>()).CreateRed();
+    }
+
+    /// <summary>Creates a new MarkupEndTagSyntax instance.</summary>
+    public static MarkupEndTagSyntax MarkupEndTag()
+    {
+      return SyntaxFactory.MarkupEndTag(default(SyntaxList<RazorSyntaxNode>));
     }
 
     /// <summary>Creates a new MarkupTagHelperElementSyntax instance.</summary>
