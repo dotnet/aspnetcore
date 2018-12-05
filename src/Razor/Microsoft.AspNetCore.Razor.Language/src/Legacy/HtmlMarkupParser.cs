@@ -798,6 +798,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ParseRazorCommentWithLeadingAndTrailingWhitespace(in SyntaxListBuilder<RazorSyntaxNode> builder)
         {
+            if (Context.NullGenerateWhitespaceAndNewLine)
+            {
+                // Usually this is set to true when a Code block ends and there is whitespace left after it.
+                // We don't want to write it to output.
+                Context.NullGenerateWhitespaceAndNewLine = false;
+                SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
+                AcceptWhile(IsSpacingToken(includeNewLines: false));
+                if (At(SyntaxKind.NewLine))
+                {
+                    AcceptAndMoveNext();
+                }
+
+                builder.Add(OutputAsMarkupEphemeralLiteral());
+            }
+
             var shouldRenderWhitespace = true;
             var lastWhitespace = AcceptWhitespaceInLines();
             var startOfLine = Context.StartOfLine;
