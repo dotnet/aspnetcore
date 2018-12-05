@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     // Matching middleware has not been registered yet
                     // For back-compat register middleware so an endpoint is matched and then immediately used
-                    app.UseEndpointRouting(routerBuilder =>
+                    app.UseRouting(routerBuilder =>
                     {
                         routerBuilder.DataSources.Add(mvcEndpointDataSource);
                     });

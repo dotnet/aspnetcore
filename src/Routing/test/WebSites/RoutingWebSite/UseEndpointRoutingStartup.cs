@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,7 +35,7 @@ namespace RoutingWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseEndpointRouting(routes =>
+            app.UseRouting(routes =>
             {
                 routes.MapHello("/helloworld", "World");
 
@@ -126,7 +126,7 @@ namespace RoutingWebSite
 
         private void SetupBranch(IApplicationBuilder app, string name)
         {
-            app.UseEndpointRouting(routes =>
+            app.UseRouting(routes =>
             {
                 routes.MapGet("api/get/{id}", (context) => context.Response.WriteAsync($"{name} - API Get {context.GetRouteData().Values["id"]}"));
             });
