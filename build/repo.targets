@@ -19,7 +19,7 @@
     <PrepareDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
-    <CompileDependsOn>$(CompileDependsOn);BuildProjects</CompileDependsOn>
+    <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
     <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
     <PackageDependsOn Condition=" '$(_ProjectsOnly)' == 'true'">$(PackageDependsOn);PackProjects</PackageDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);CheckExpectedPackagesExist</PackageDependsOn>
@@ -27,6 +27,7 @@
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
     <TestDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(TestDependsOn);_TestRepositories</TestDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetProjectArtifactInfo</GetArtifactInfoDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveSharedSourcesPackageInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn  Condition="'$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
@@ -281,7 +282,7 @@
     <WriteLinesToFile File="$(RepositoryRoot)artifacts\packages.csv" Lines="PackageId,Version;@(ArtifactInfo->WithMetadataValue('ArtifactType', 'NuGetPackage')->'%(PackageId),%(Version)')" Overwrite="true" />
   </Target>
 
-  <Target Name="ComputeGraph" DependsOnTargets="GetProjectArtifactInfo;GetFxProjectArtifactInfo;ResolveRepoInfo;GeneratePropsFiles">
+  <Target Name="ComputeGraph" DependsOnTargets="ResolveSharedSourcesPackageInfo;GetProjectArtifactInfo;GetFxProjectArtifactInfo;ResolveRepoInfo;GeneratePropsFiles">
     <ItemGroup>
       <_UndeclaredPackageArtifact Include="%(ArtifactInfo.PackageId)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
       <_UndeclaredPackageArtifact Remove="@(PackageArtifact)" />

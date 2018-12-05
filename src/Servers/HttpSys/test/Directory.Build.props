@@ -1,5 +1,5 @@
 <Project>
-  <Import Project="..\Directory.Build.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
     <DeveloperBuildTestTfms>netcoreapp2.2</DeveloperBuildTestTfms>
@@ -10,10 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' ">

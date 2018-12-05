@@ -9,7 +9,6 @@
   <ItemGroup>
     <RepositoryBuildOrder Include="Razor" Order="6" RootPath="$(RepositoryRoot)src\Razor\" />
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
-    <RepositoryBuildOrder Include="HttpSysServer" Order="8" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
     <RepositoryBuildOrder Include="Antiforgery" Order="9" RootPath="$(RepositoryRoot)src\Antiforgery\" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <RepositoryBuildOrder Include="CORS" Order="11" RootPath="$(RepositoryRoot)src\CORS\" />

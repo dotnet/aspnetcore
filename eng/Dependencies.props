@@ -48,6 +48,7 @@
     <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
     <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
+    <LatestPackageReference Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
     <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />

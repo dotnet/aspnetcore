@@ -433,6 +433,17 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Server.HttpSys-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.HttpSys' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.HttpSys' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.TestHost-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>

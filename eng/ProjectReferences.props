@@ -29,6 +29,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebUtilities" ProjectPath="$(RepositoryRoot)src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Html.Abstractions" ProjectPath="$(RepositoryRoot)src\Html\Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Connections.Abstractions" ProjectPath="$(RepositoryRoot)src\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.HttpSys" ProjectPath="$(RepositoryRoot)src\Servers\HttpSys\src\Microsoft.AspNetCore.Server.HttpSys.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Core" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Https" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Https\src\Microsoft.AspNetCore.Server.Kestrel.Https.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />

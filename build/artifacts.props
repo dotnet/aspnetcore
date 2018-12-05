@@ -82,7 +82,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Http" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.HttpOverrides" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.HttpsPolicy" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.HttpSys.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.UI" Category="ship" />
@@ -201,5 +200,8 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
+
+    <PackageArtifact Include="Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources" Category="noship"/>
+    <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship"/>
   </ItemGroup>
 </Project>

@@ -18,7 +18,12 @@
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
     <!-- This creates false-positives on many of the native .dll's we produce or re-distribute from other teams. -->
     <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
+    <SharedSourcesFolder>$(RepositoryRoot)src\Shared\</SharedSourcesFolder>
   </PropertyGroup>
+
+  <ItemGroup>
+    <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
+  </ItemGroup>
 
   <ItemGroup>
     <IntermediateInstaller Include="win-x86" FileExt=".zip" />
