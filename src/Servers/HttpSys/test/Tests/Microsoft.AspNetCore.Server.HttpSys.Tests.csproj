@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.HttpSys\Microsoft.AspNetCore.Server.HttpSys.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
   </ItemGroup>
 
 </Project>
