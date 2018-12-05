@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         {
             MemoryStream = new MemoryStream();
             Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
-            Reader = new StreamPipeReader(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
+            Reader = new StreamPipeReader(MemoryStream, new StreamPipeReaderOptions(MinimumSegmentSize, minimumReadThreshold: 256, new TestMemoryPool()));
         }
 
         public void Dispose()

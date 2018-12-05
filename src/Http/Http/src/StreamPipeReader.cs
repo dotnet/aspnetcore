@@ -41,55 +41,33 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="readingStream">The stream to read from.</param>
         public StreamPipeReader(Stream readingStream)
-            : this(readingStream, minimumSegmentSize: 4096, minimumReadThreshold: 0, MemoryPool<byte>.Shared)
+            : this(readingStream, StreamPipeReaderOptions.DefaultOptions)
         {
         }
+
 
         /// <summary>
         /// Creates a new StreamPipeReader.
         /// </summary>
         /// <param name="readingStream">The stream to read from.</param>
-        /// <param name="minimumSegmentSize">The minimum segment size to return from ReadAsync.</param>
-        public StreamPipeReader(Stream readingStream, int minimumSegmentSize)
-             : this(readingStream, minimumSegmentSize, minimumReadThreshold: 0, MemoryPool<byte>.Shared)
+        /// <param name="options">The options to use.</param>
+        public StreamPipeReader(Stream readingStream, StreamPipeReaderOptions options)
         {
-        }
+            _readingStream = readingStream ?? throw new ArgumentNullException(nameof(readingStream));
 
-        /// <summary>
-        /// Creates a new StreamPipeReader.
-        /// </summary>
-        /// <param name="readingStream">The stream to read from.</param>
-        /// <param name="minimumSegmentSize">The minimum segment size to return from ReadAsync.</param>
-        /// <param name="minimumReadThreshold"></param>
-        public StreamPipeReader(Stream readingStream, int minimumSegmentSize, int minimumReadThreshold)
-            : this(readingStream, minimumSegmentSize, minimumReadThreshold, MemoryPool<byte>.Shared)
-        {
-        }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
-        /// <summary>
-        /// Creates a new StreamPipeReader.
-        /// </summary>
-        /// <param name="readingStream">The stream to read from.</param>
-        /// <param name="minimumSegmentSize">The minimum segment size to return from ReadAsync.</param>
-        /// <param name="pool">The MemoryPool to use</param>
-        public StreamPipeReader(Stream readingStream, int minimumSegmentSize, MemoryPool<byte> pool)
-            : this(readingStream, minimumSegmentSize, minimumReadThreshold: 0, pool)
-        {
-        }
+            if (options.MinimumReadThreshold <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(options.MinimumReadThreshold));
+            }
 
-        /// <summary>
-        /// Creates a new StreamPipeReader.
-        /// </summary>
-        /// <param name="readingStream">The stream to read from.</param>
-        /// <param name="minimumSegmentSize">The minimum segment size to return from ReadAsync.</param>
-        /// <param name="minimumReadThreshold">The threshold for obtaining a new block of memory to call ReadAsync on.</param>
-        /// <param name="pool">The MemoryPool to use</param>
-        public StreamPipeReader(Stream readingStream, int minimumSegmentSize, int minimumReadThreshold, MemoryPool<byte> pool)
-        {
-            _minimumSegmentSize = minimumSegmentSize;
-            _readingStream = readingStream;
-            _minimumReadThreshold = minimumReadThreshold;
-            _pool = pool;
+            _minimumSegmentSize = options.MinimumSegmentSize;
+            _minimumReadThreshold = Math.Min(options.MinimumReadThreshold, options.MinimumSegmentSize);
+            _pool = options.MemoryPool;
         }
 
         /// <inheritdoc />
@@ -344,7 +322,7 @@ namespace Microsoft.AspNetCore.Http
                 _readHead.SetMemory(_pool.Rent(GetSegmentSize()));
                 _readTail = _readHead;
             }
-            else if (_readTail.WritableBytes <= _minimumReadThreshold)
+            else if (_readTail.WritableBytes < _minimumReadThreshold)
             {
                 CreateNewTailSegment();
             }
