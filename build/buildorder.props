@@ -13,7 +13,6 @@
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <RepositoryBuildOrder Include="CORS" Order="11" RootPath="$(RepositoryRoot)src\CORS\" />
     <RepositoryBuildOrder Include="StaticFiles" Order="11" RootPath="$(RepositoryRoot)src\StaticFiles\" />
-    <RepositoryBuildOrder Include="Routing" Order="11" RootPath="$(RepositoryRoot)src\Routing\" />
     <RepositoryBuildOrder Include="ResponseCaching" Order="11" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
     <RepositoryBuildOrder Include="Session" Order="11" RootPath="$(RepositoryRoot)src\Session\" />
     <RepositoryBuildOrder Include="ServerTests" Order="11" RootPath="$(RepositoryRoot)src\ServerTests\" />
