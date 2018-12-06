@@ -4,9 +4,9 @@
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
-    /// An interface which can be used to identify a type which provides metdata to disable cors for a resource.
+    /// A marker interface which can be used to identify CORS metdata.
     /// </summary>
-    public interface IDisableCorsAttribute : ICorsMetadata
+    public interface ICorsMetadata
     {
     }
 }
