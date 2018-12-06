@@ -15,9 +15,10 @@
     <FxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
     <FxProjectToBuild Include="$(UnitTestFxProject)" />
     <FxProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
-    <ProjectToBuild Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Include="$(RepositoryRoot)src\Installers\RuntimeSiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
+
     <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
     <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
+
     <ProjectToBuild Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
     <ProjectToBuild Condition=" '$(SharedFxRid)' == 'win-x64' " Include="$(RepositoryRoot)src\SiteExtensions\LoggingBranch\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
   </ItemGroup>
