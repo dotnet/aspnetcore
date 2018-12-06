@@ -243,15 +243,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 throw new ArgumentNullException(nameof(tagBlock));
             }
 
-            if (tagBlock.Children.Count == 0 || !(tagBlock.Children[0] is MarkupTextLiteralSyntax childLiteral))
+            MarkupTextLiteralSyntax nameLiteral = null;
+            var isBangTag = false;
+            if (tagBlock.Children.Count > 0 && tagBlock.Children[0] is MarkupTextLiteralSyntax firstChild)
+            {
+                if (firstChild.GetContent().StartsWith("<") &&
+                    tagBlock.Children.Count >= 3 &&
+                    tagBlock.Children[1] is RazorMetaCodeSyntax &&
+                    tagBlock.Children[2] is MarkupTextLiteralSyntax potentialBangTagName)
+                {
+                    isBangTag = true;
+                    nameLiteral = potentialBangTagName;
+                }
+                else
+                {
+                    nameLiteral = firstChild;
+                }
+            }
+
+            if (nameLiteral == null)
             {
                 return null;
             }
 
             SyntaxToken textToken = null;
-            for (var i = 0; i < childLiteral.LiteralTokens.Count; i++)
+            for (var i = 0; i < nameLiteral.LiteralTokens.Count; i++)
             {
-                var token = childLiteral.LiteralTokens[i];
+                var token = nameLiteral.LiteralTokens[i];
 
                 if (token != null &&
                     (token.Kind == SyntaxKind.Whitespace || token.Kind == SyntaxKind.Text))
@@ -266,7 +284,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 return null;
             }
 
-            return textToken.Kind == SyntaxKind.Whitespace ? null : textToken.Content;
+            var name = textToken.Kind == SyntaxKind.Whitespace ? null : textToken.Content;
+            if (name != null && isBangTag)
+            {
+                name = "!" + name;
+            }
+
+            return name;
         }
 
         public static bool IsSelfClosing(this MarkupTagBlockSyntax tagBlock)

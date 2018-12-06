@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var tagName = startTag.GetTagName();
 
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                if (tagName == null)
+                if (tagName == null || tagName.StartsWith("!"))
                 {
                     return false;
                 }
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 rewritten = null;
                 var tagName = tagBlock.GetTagName();
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                if (tagName == null)
+                if (tagName == null || tagName.StartsWith("!"))
                 {
                     return false;
                 }
