@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
+    <SharedSourceDirectories Include="$(SharedSourcesFolder)/Buffers.MemoryPool/;$(SharedSourcesFolder)/Buffers.Testing/;$(SharedSourcesFolder)/Hosting.WebHostBuilderFactory/" />
   </ItemGroup>
 
   <ItemGroup>
