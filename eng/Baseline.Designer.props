@@ -345,6 +345,42 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Routing.Abstractions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing.Abstractions' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Routing-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' AND '$(TargetFramework)' == 'netcoreapp2.2' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Server.HttpSys-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.HttpSys' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.HttpSys' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>

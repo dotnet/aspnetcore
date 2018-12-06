@@ -16,8 +16,9 @@
   <Import Project="..\..\build\assets.props" />
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.HttpSys.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreHttpSysSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Buffers.MemoryPool.Sources" Version="$(MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion)" PrivateAssets="All" />
+    <!-- TODO use SharedSourceRoot instead of hard coded path. Issues with including Directory.Build.props -->
+    <Compile Include="$(RepositoryRoot)..\Shared\Buffers.MemoryPool\**\*.cs" />
+    <Compile Include="$(RepositoryRoot)..\Shared\HttpSys\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildServerIIS21)' != 'true'">

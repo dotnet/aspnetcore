@@ -9,12 +9,10 @@
   <ItemGroup>
     <RepositoryBuildOrder Include="Razor" Order="6" RootPath="$(RepositoryRoot)src\Razor\" />
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
-    <RepositoryBuildOrder Include="HttpSysServer" Order="8" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
     <RepositoryBuildOrder Include="Antiforgery" Order="9" RootPath="$(RepositoryRoot)src\Antiforgery\" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <RepositoryBuildOrder Include="CORS" Order="11" RootPath="$(RepositoryRoot)src\CORS\" />
     <RepositoryBuildOrder Include="StaticFiles" Order="11" RootPath="$(RepositoryRoot)src\StaticFiles\" />
-    <RepositoryBuildOrder Include="Routing" Order="11" RootPath="$(RepositoryRoot)src\Routing\" />
     <RepositoryBuildOrder Include="ResponseCaching" Order="11" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
     <RepositoryBuildOrder Include="Session" Order="11" RootPath="$(RepositoryRoot)src\Session\" />
     <RepositoryBuildOrder Include="ServerTests" Order="11" RootPath="$(RepositoryRoot)src\ServerTests\" />

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\RoutingWebSite\RoutingWebSite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">
+    <ProjectReference Include="..\testassets\Benchmarks\Benchmarks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+  </ItemGroup>
+
+</Project>

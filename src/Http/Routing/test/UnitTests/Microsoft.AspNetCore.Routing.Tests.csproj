@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <RootNamespace>Microsoft.AspNetCore.Routing</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      RefEmit is supported in netcoreapp. We test on .NET Framework, but we don't support RefEmit in the product
+      on .NET Framework.
+    -->
+    <ILEmit Condition="'$(TargetFramework)'=='netcoreapp2.2'">true</ILEmit>
+    <DefineConstants Condition="'$(ILEmit)'=='true'">IL_EMIT;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.WebEncoders" />
+  </ItemGroup>
+
+</Project>

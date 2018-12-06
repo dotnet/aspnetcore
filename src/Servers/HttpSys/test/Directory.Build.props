@@ -1,0 +1,15 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <DeveloperBuildTestTfms>netcoreapp2.2</DeveloperBuildTestTfms>
+    <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' ">$(StandardTestTfms)</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net472</StandardTestTfms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
+
+</Project>
