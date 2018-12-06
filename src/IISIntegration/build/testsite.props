@@ -44,13 +44,6 @@
     <Copy SourceFiles="$(MSBuildThisFileDirectory)launchSettings.json" DestinationFolder="$(MSBuildProjectDirectory)\Properties" SkipUnchangedFiles="true" />
   </Target>
 
-  <!-- Deps file injection-->
-  <!--<ItemGroup Condition="('$(InProcessTestSite)' == 'true') AND ('$(ReferenceTestTasks)' != 'false')">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\test\TestTasks\TestTasks.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>-->
-
   <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <PropertyGroup>
       <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\test\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
