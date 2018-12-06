@@ -3553,7 +3553,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _connection.Abort(new ConnectionAbortedException());
             await _closedStateReached.Task.DefaultTimeout();
 
-            VerifyGoAway(await ReceiveFrameAsync(), 0, Http2ErrorCode.INTERNAL_ERROR);
+            VerifyGoAway(await ReceiveFrameAsync(), int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
         }
 
         [Fact]
