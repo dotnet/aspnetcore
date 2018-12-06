@@ -76,7 +76,10 @@ namespace Microsoft.AspNetCore.Mvc
 
                 // Confirm the request's content type is more specific than a media type this action supports e.g. OK
                 // if client sent "text/plain" data and this action supports "text/*".
-                if (requestContentType == null || !IsSubsetOfAnyContentType(requestContentType))
+                //
+                // Requests without a content type do not return a 415. It is a common pattern to place [Consumes] on
+                // a controller and have GET actions
+                if (requestContentType != null && !IsSubsetOfAnyContentType(requestContentType))
                 {
                     context.Result = new UnsupportedMediaTypeResult();
                 }
