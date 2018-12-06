@@ -71,7 +71,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
         private int _gracefulCloseInitiator;
         private int _isClosed;
-        private long _now;
 
         public Http2Connection(HttpConnectionContext context)
         {
@@ -79,8 +78,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var http2Limits = httpLimits.Http2;
 
             _context = context;
-
-            _now = context.ServiceContext.SystemClock.UtcNowTicks;
 
             _frameWriter = new Http2FrameWriter(
                 context.Transport.Output,
@@ -108,6 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public PipeReader Input => _context.Transport.Input;
         public IKestrelTrace Log => _context.ServiceContext.Log;
         public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
+        public ISystemClock SystemClock => _context.ServiceContext.SystemClock;
         public ITimeoutControl TimeoutControl => _context.TimeoutControl;
         public KestrelServerLimits Limits => _context.ServiceContext.ServerOptions.Limits;
 
@@ -123,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (TryClose())
             {
-                _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, Http2ErrorCode.INTERNAL_ERROR);
+                _frameWriter.WriteGoAwayAsync(int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
             }
 
             _frameWriter.Abort(ex);
@@ -148,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             var initiator = serverInitiated ? GracefulCloseInitiator.Server : GracefulCloseInitiator.Client;
 
-            if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, 0) == 0)
+            if (Interlocked.CompareExchange(ref _gracefulCloseInitiator, initiator, GracefulCloseInitiator.None) == GracefulCloseInitiator.None)
             {
                 Input.CancelPendingRead();
             }
@@ -191,6 +189,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     var consumed = readableBuffer.Start;
                     var examined = readableBuffer.Start;
 
+                    // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceded their drain timeouts.
+                    UpdateCompletedStreams();
+
                     try
                     {
                         if (!readableBuffer.IsEmpty)
@@ -223,7 +224,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         Input.AdvanceTo(consumed, examined);
 
-                        UpdateCompletedStreams();
                         UpdateConnectionState();
                     }
                 }
@@ -976,6 +976,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private void UpdateCompletedStreams()
         {
             Http2Stream firstRequedStream = null;
+            var now = SystemClock.UtcNowTicks;
 
             while (_completedStreams.TryDequeue(out var stream))
             {
@@ -991,10 +992,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     // This is our first time checking this stream.
                     _activeStreamCount--;
-                    stream.DrainExpirationTicks = Volatile.Read(ref _now) + Constants.RequestBodyDrainTimeout.Ticks;
+                    stream.DrainExpirationTicks = now + Constants.RequestBodyDrainTimeout.Ticks;
                 }
 
-                if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTicks < Volatile.Read(ref _now))
+                if (stream.EndStreamReceived || stream.RstStreamReceived || stream.DrainExpirationTicks < now)
                 {
                     if (stream == _currentHeadersStream)
                     {
@@ -1057,12 +1058,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         TimeoutControl.TimerReason == TimeoutReason.KeepAlive);
                 }
             }
-        }
-
-        void IRequestProcessor.Tick(DateTimeOffset now)
-        {
-            Volatile.Write(ref _now, now.Ticks);
-            Input.CancelPendingRead();
         }
 
         // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
