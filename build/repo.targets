@@ -15,7 +15,7 @@
     <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcesPropsPath>
     <GeneratedBrandingPropsPath>$(IntermediateDir)branding.g.props</GeneratedBrandingPropsPath>
 
-    <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn)</PrepareDependsOn>
+    <PrepareDependsOn>SetTeamCityBuildNumberToVersion;GetToolsets;$(PrepareDependsOn)</PrepareDependsOn>
     <PrepareDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
