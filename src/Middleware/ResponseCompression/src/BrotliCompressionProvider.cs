@@ -37,6 +37,15 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         /// <inheritdoc />
         public Stream CreateStream(Stream outputStream)
-            => new BrotliStream(outputStream, Options.Level, leaveOpen: true);
+        {
+#if NETCOREAPP2_1
+            return new BrotliStream(outputStream, Options.Level, leaveOpen: true);
+#elif NET461 || NETSTANDARD2_0
+            // Brotli is only supported in .NET Core 2.1+
+            throw new PlatformNotSupportedException();
+#else
+#error Target frameworks need to be updated.
+#endif
+        }
     }
 }

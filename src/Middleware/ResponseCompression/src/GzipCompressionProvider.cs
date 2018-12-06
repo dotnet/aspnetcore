@@ -33,7 +33,19 @@ namespace Microsoft.AspNetCore.ResponseCompression
         public string EncodingName { get; } = "gzip";
 
         /// <inheritdoc />
-        public bool SupportsFlush { get; } = true;
+        public bool SupportsFlush
+        {
+            get
+            {
+#if NET461
+                return false;
+#elif NETSTANDARD2_0 || NETCOREAPP2_1
+                return true;
+#else
+#error target frameworks need to be updated
+#endif
+            }
+        }
 
         /// <inheritdoc />
         public Stream CreateStream(Stream outputStream)
