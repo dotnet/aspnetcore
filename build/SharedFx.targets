@@ -402,26 +402,19 @@
       <SymbolsPackageId>runtime.$(SharedFxRID).$(SymbolsNuspecIdSuffix)</SymbolsPackageId>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_SymbolFiles Include="$(SymbolsWorkDir)**\*.pdb;$(SymbolsWorkDir)**\*.map;$(SymbolsWorkDir)**\*.dll" />
-      <SymbolFiles Include="@(_SymbolFiles)">
-        <PackagePath>%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
-      </SymbolFiles>
-    </ItemGroup>
-
     <!-- Create Layout -->
     <Copy
-      SourceFiles="$(_TemplatesDir)SharedFxSymbols\SharedFrameworkSymbols.nuspec"
-      DestinationFiles="$(SymbolsWorkDir)$(SymbolsPackageId).nuspec"
+      SourceFiles="$(_TemplatesDir)SharedFxSymbols\SharedFrameworkSymbols.csproj"
+      DestinationFiles="$(SymbolsWorkDir)$(SymbolsPackageId).csproj"
       OverwriteReadOnlyFiles="True" />
 
     <!-- Produce symbols nupkg -->
-    <PackNuspec NuspecPath="$(SymbolsWorkDir)$(SymbolsPackageId).nuspec"
-      OutputPath="$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))symbols\$(SymbolsPackageId).$(PackageVersion).symbols.nupkg"
-      Properties="version=$(PackageVersion);id=$(SymbolsPackageId);description=$(Description);Configuration=$(Configuration)"
-      Overwrite="true"
-      PackageFiles="@(SymbolFiles)"
-      BasePath="$(SymbolsWorkDir)" />
+    <MSBuild Projects="$(SymbolsWorkDir)$(SymbolsPackageId).csproj"
+                Targets="Restore;Pack"
+                Properties="SymbolsWorkDir=$(SymbolsWorkDir);PackageId=$(SymbolsPackageId);PackageVersion=$(PackageVersion);PackageOutputPath=$(IntermediateDir);PackageDescription=$(Description)" />
+    <Copy
+      SourceFiles="$(IntermediateDir)$(SymbolsPackageId).$(PackageVersion).symbols.nupkg"
+      DestinationFolder="$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))symbols\" />
   </Target>
 
   <Target Name="PackSharedFx" DependsOnTargets="DefineSharedFxPrerequisites" >
