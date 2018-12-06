@@ -21,7 +21,7 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseEndpointRouting(builder =>
+            app.UseRouting(builder =>
             {
                 var endpointDataSource = new DefaultEndpointDataSource(new[]
                 {

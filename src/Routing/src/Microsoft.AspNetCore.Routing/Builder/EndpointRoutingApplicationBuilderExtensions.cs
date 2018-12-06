@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,8 +14,20 @@ namespace Microsoft.AspNetCore.Builder
         // Property key is used by MVC package to check that routing is registered
         private const string EndpointRoutingRegisteredKey = "__EndpointRoutingMiddlewareRegistered";
 
-        public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder, Action<IEndpointRouteBuilder> configure)
+        /// <summary>
+        /// Adds a <see cref="EndpointRoutingMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>
+        /// with the <see cref="EndpointDataSource"/> instances built from configured <see cref="IEndpointRouteBuilder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="configure">An <see cref="Action{IEndpointRouteBuilder}"/> to configure the provided <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static IApplicationBuilder UseRouting(this IApplicationBuilder builder, Action<IEndpointRouteBuilder> configure)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
@@ -46,14 +58,24 @@ namespace Microsoft.AspNetCore.Builder
             return builder.UseMiddleware<EndpointRoutingMiddleware>(middlewareEndpointDataSource);
         }
 
+        /// <summary>
+        /// Adds a <see cref="EndpointMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IApplicationBuilder UseEndpoint(this IApplicationBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             VerifyRoutingIsRegistered(builder);
 
             if (!builder.Properties.TryGetValue(EndpointRoutingRegisteredKey, out _))
             {
                 var message = $"{nameof(EndpointRoutingMiddleware)} must be added to the request execution pipeline before {nameof(EndpointMiddleware)}. " +
-                    $"Please add {nameof(EndpointRoutingMiddleware)} by calling '{nameof(IApplicationBuilder)}.{nameof(UseEndpointRouting)}' inside the call to 'Configure(...)' in the application startup code.";
+                    $"Please add {nameof(EndpointRoutingMiddleware)} by calling '{nameof(IApplicationBuilder)}.{nameof(UseRouting)}' inside the call to 'Configure(...)' in the application startup code.";
 
                 throw new InvalidOperationException(message);
             }

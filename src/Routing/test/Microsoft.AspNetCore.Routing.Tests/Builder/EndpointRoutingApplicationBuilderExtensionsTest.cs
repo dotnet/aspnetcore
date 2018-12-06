@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,13 +21,13 @@ namespace Microsoft.AspNetCore.Builder
     public class EndpointRoutingApplicationBuilderExtensionsTest
     {
         [Fact]
-        public void UseEndpointRouting_ServicesNotRegistered_Throws()
+        public void UseRouting_ServicesNotRegistered_Throws()
         {
             // Arrange
             var app = new ApplicationBuilder(Mock.Of<IServiceProvider>());
 
             // Act
-            var ex = Assert.Throws<InvalidOperationException>(() => app.UseEndpointRouting(builder => { }));
+            var ex = Assert.Throws<InvalidOperationException>(() => app.UseRouting(builder => { }));
 
             // Assert
             Assert.Equal(
@@ -55,14 +55,14 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public async Task UseEndpointRouting_ServicesRegistered_NoMatch_DoesNotSetFeature()
+        public async Task UseRouting_ServicesRegistered_NoMatch_DoesNotSetFeature()
         {
             // Arrange
             var services = CreateServices();
 
             var app = new ApplicationBuilder(services);
 
-            app.UseEndpointRouting(builder => { });
+            app.UseRouting(builder => { });
 
             var appFunc = app.Build();
             var httpContext = new DefaultHttpContext();
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public async Task UseEndpointRouting_ServicesRegistered_Match_DoesNotSetsFeature()
+        public async Task UseRouting_ServicesRegistered_Match_DoesNotSetsFeature()
         {
             // Arrange
             var endpoint = new RouteEndpoint(
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Builder
 
             var app = new ApplicationBuilder(services);
 
-            app.UseEndpointRouting(builder =>
+            app.UseRouting(builder =>
             {
                 builder.DataSources.Add(new DefaultEndpointDataSource(endpoint));
             });
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Builder
 
             var app = new ApplicationBuilder(services);
 
-            app.UseEndpointRouting(builder => { });
+            app.UseRouting(builder => { });
             app.UseEndpoint();
 
             var appFunc = app.Build();
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
-        public void UseEndpointRouting_CallWithBuilder_SetsEndpointDataSource()
+        public void UseRouting_CallWithBuilder_SetsEndpointDataSource()
         {
             // Arrange
             var matcherEndpointDataSources = new List<EndpointDataSource>();
@@ -165,13 +165,13 @@ namespace Microsoft.AspNetCore.Builder
             var app = new ApplicationBuilder(services);
 
             // Act
-            app.UseEndpointRouting(builder =>
+            app.UseRouting(builder =>
             {
                 builder.Map("/1", "Test endpoint 1", d => null);
                 builder.Map("/2", "Test endpoint 2", d => null);
             });
 
-            app.UseEndpointRouting(builder =>
+            app.UseRouting(builder =>
             {
                 builder.Map("/3", "Test endpoint 3", d => null);
                 builder.Map("/4", "Test endpoint 4", d => null);
