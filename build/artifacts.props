@@ -77,11 +77,9 @@
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
 
     <!-- Packages for internal use only. -->
-    <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="noship" />
     <PackageArtifact Include="AspNetCoreRuntime.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86' " />
     <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" />
     <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
