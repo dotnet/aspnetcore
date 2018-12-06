@@ -27,7 +27,6 @@
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
@@ -53,7 +52,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.CookiePolicy" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Cors" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Cryptography.Internal" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -113,14 +111,11 @@
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Owin" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.RangeHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Design" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Language" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Runtime" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ResponseCaching" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ResponseCompression" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Rewrite" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
@@ -144,7 +139,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.StaticFiles" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.TestHost" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" AllMetapackage="true" AppMetapackage="true" Category="ship" />
