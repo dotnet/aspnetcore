@@ -60,7 +60,7 @@
     <ProjectToBuild Include="
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                       $(RepositoryRoot)src\DataProtection\**\*.*proj;
-                      $(RepositoryRoot)src\Mvc\AntiForgery\**\*.*proj;
+                      $(RepositoryRoot)src\AntiForgery\**\*.*proj;
                       $(RepositoryRoot)src\Hosting\**\*.*proj;
                       $(RepositoryRoot)src\Http\**\*.*proj;
                       $(RepositoryRoot)src\Html\**\*.*proj;
