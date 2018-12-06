@@ -449,6 +449,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return dictionary;
         }
 
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task SetCurrentDirectoryHandlerSettingWorks()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.HandlerSettings["SetCurrentDirectory"] = "true";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
+            Assert.Equal(deploymentResult.ContentRoot + "\\wwwroot", await deploymentResult.HttpClient.GetStringAsync("/WebRootPath"));
+            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
+            Assert.Equal(deploymentResult.ContentRoot + "\\", await deploymentResult.HttpClient.GetStringAsync("/BaseDirectory"));
+            Assert.Equal(deploymentResult.ContentRoot + "\\", await deploymentResult.HttpClient.GetStringAsync("/ASPNETCORE_IIS_PHYSICAL_PATH"));
+            Assert.Equal(Path.GetDirectoryName(deploymentResult.HostProcess.MainModule.FileName), await deploymentResult.HttpClient.GetStringAsync("/DllDirectory"));
+        }
+
         private static void MoveApplication(
             IISDeploymentParameters parameters,
             string subdirectory)
