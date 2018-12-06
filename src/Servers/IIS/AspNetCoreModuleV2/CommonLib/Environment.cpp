@@ -60,3 +60,52 @@ Environment::GetEnvironmentVariableValue(const std::wstring & str)
 
     return expandedStr;
 }
+
+std::wstring Environment::GetCurrentDirectoryValue()
+{
+    DWORD requestedSize = GetCurrentDirectory(0, nullptr);
+    if (requestedSize == 0)
+    {
+        throw std::system_error(GetLastError(), std::system_category(), "GetCurrentDirectory");
+    }
+
+    std::wstring expandedStr;
+    do
+    {
+        expandedStr.resize(requestedSize);
+        requestedSize = GetCurrentDirectory(requestedSize, expandedStr.data());
+        if (requestedSize == 0)
+        {
+            throw std::system_error(GetLastError(), std::system_category(), "GetCurrentDirectory");
+        }
+    } while (expandedStr.size() != requestedSize + 1);
+
+    expandedStr.resize(requestedSize);
+
+    return expandedStr;
+}
+
+std::wstring Environment::GetDllDirectoryValue()
+{
+    DWORD requestedSize = GetDllDirectory(0, nullptr);
+    if (requestedSize == 0)
+    {
+        throw std::system_error(GetLastError(), std::system_category(), "GetDllDirectory");
+    }
+
+    std::wstring expandedStr;
+    do
+    {
+        expandedStr.resize(requestedSize);
+        requestedSize = GetDllDirectory(requestedSize, expandedStr.data());
+        // 0 might be returned if GetDllDirectory is empty
+        if (requestedSize == 0 && GetLastError() != 0)
+        {
+            throw std::system_error(GetLastError(), std::system_category(), "GetDllDirectory");
+        }
+    } while (expandedStr.size() != requestedSize + 1);
+
+    expandedStr.resize(requestedSize);
+
+    return expandedStr;
+}
