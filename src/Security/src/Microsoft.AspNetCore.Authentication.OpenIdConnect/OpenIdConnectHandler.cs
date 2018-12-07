@@ -527,7 +527,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     // Visit https://tools.ietf.org/html/rfc6749#section-4.1.2.1 for more information.
                     if (string.Equals(authorizationResponse.Error, "access_denied", StringComparison.Ordinal))
                     {
-                        return await HandleAccessDeniedErrorAsync(properties);
+                        var result = await HandleAccessDeniedErrorAsync(properties);
+                        if (!result.None)
+                        {
+                            return result;
+                        }
                     }
 
                     return HandleRequestResult.Fail(CreateOpenIdConnectProtocolException(authorizationResponse, response: null), properties);

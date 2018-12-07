@@ -62,7 +62,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 // approve the authorization demand requested by the remote authorization server.
                 // Since it's a frequent scenario (that is not caused by incorrect configuration),
                 // denied errors are handled differently using HandleAccessDeniedErrorAsync().
-                return await HandleAccessDeniedErrorAsync(properties);
+                var result = await HandleAccessDeniedErrorAsync(properties);
+                return !result.None ? result
+                    : HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
             }
 
             var returnedToken = query["oauth_token"];
