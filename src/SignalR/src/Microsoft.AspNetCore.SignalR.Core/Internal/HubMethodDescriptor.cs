@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private Type GetParameterType(ParameterInfo p)
         {
             var type = p.ParameterType;
-            if (ReflectionHelper.IsStreamingType(type))
+            if (ReflectionHelper.IsStreamingType(type, mustBeDirectType: true))
             {
                 HasStreamingParameters = true;
                 return typeof(StreamPlaceholder);

@@ -1,3 +1,0 @@
-(1,2): Error RZ1006: The code block is missing a closing "}" character.  Make sure you have a matching "}" character for all the "{" characters within this block, and that none of the "}" characters are being interpreted as markup.
-(1,4): Error RZ1025: The "p" element was not closed.  All elements must be either self-closing or have a matching end tag.
-(1,4): Error RZ1034: Found a malformed 'p' tag helper. Tag helpers must have a start and end tag or be self closing.

@@ -1,1 +1,0 @@
-(1,12): Error RZ1027: An opening "[" is missing the corresponding closing "]".

@@ -20,14 +20,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [RequiresIIS(IISCapability.ShutdownToken)]
+        [RequiresNewHandler]
         public async Task HostingEnvironmentIsCorrect()
         {
-            Assert.Equal(
-                $"ContentRootPath {_fixture.DeploymentResult.ContentRoot}" + Environment.NewLine +
-                $"WebRootPath {_fixture.DeploymentResult.ContentRoot}\\wwwroot" + Environment.NewLine +
-                $"CurrentDirectory {Path.GetDirectoryName(_fixture.DeploymentResult.HostProcess.MainModule.FileName)}",
-                await _fixture.Client.GetStringAsync("/HostingEnvironment"));
+            Assert.Equal(_fixture.DeploymentResult.ContentRoot, await _fixture.Client.GetStringAsync("/ContentRootPath"));
+            Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\wwwroot", await _fixture.Client.GetStringAsync("/WebRootPath"));
+            Assert.Equal(Path.GetDirectoryName(_fixture.DeploymentResult.HostProcess.MainModule.FileName), await _fixture.Client.GetStringAsync("/CurrentDirectory"));
+            Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\", await _fixture.Client.GetStringAsync("/BaseDirectory"));
+            Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\", await _fixture.Client.GetStringAsync("/ASPNETCORE_IIS_PHYSICAL_PATH"));
         }
     }
 }

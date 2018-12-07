@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                     return string.Equals(closeMessage.Error, ((CloseMessage) y).Error);
                 case StreamCompleteMessage streamCompleteMessage:
                     return StreamCompleteMessagesEqual(streamCompleteMessage, (StreamCompleteMessage)y);
+                case StreamDataMessage streamDataMessage:
+                    return StreamDataMessagesEqual(streamDataMessage, (StreamDataMessage)y);
                 default:
                     throw new InvalidOperationException($"Unknown message type: {x.GetType().FullName}");
             }
@@ -81,7 +83,13 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         private bool StreamCompleteMessagesEqual(StreamCompleteMessage x, StreamCompleteMessage y)
         {
             return x.StreamId == y.StreamId
-                && y.Error == y.Error;
+                && x.Error == y.Error;
+        }
+
+        private bool StreamDataMessagesEqual(StreamDataMessage x, StreamDataMessage y)
+        {
+            return x.StreamId == y.StreamId
+                && (Equals(x.Item, y.Item) || SequenceEqual(x.Item, y.Item));
         }
 
         private bool ArgumentListsEqual(object[] left, object[] right)

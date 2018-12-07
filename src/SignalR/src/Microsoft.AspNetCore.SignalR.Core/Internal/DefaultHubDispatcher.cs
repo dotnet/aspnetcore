@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private Task ProcessStreamBindingFailure(HubConnectionContext connection, StreamBindingFailureMessage bindingFailureMessage)
         {
             var errorString = ErrorMessageHelper.BuildErrorMessage(
-                $"Failed to bind Stream Item arguments to proper type.",
+                "Failed to bind Stream message.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
 
             var message = new StreamCompleteMessage(bindingFailureMessage.Id, errorString);
@@ -160,7 +160,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             Log.ReceivedStreamItem(_logger, message);
             return connection.StreamTracker.ProcessItem(message);
-
         }
 
         private Task ProcessInvocation(HubConnectionContext connection,
@@ -176,10 +175,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             else
             {
                 bool isStreamCall = descriptor.HasStreamingParameters;
-                if (isStreamResponse && isStreamCall)
-                {
-                    throw new NotSupportedException("Streaming responses for streaming uploads are not supported.");
-                }
                 return Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamResponse, isStreamCall);
             }
         }
@@ -295,8 +290,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         // Invoke Async, one reponse expected
                         async Task ExecuteInvocation()
                         {
-                            var result = await ExecuteHubMethod(methodExecutor, hub, arguments);
-                            Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
+                            object result;
+                            try
+                            {
+                                result = await ExecuteHubMethod(methodExecutor, hub, arguments);
+                                Log.SendingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
+                            }
+                            catch (Exception ex)
+                            {
+                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                    ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
+                                return;
+                            }
+
                             await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
                         }
                         invocation = ExecuteInvocation();

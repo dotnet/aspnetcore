@@ -248,6 +248,12 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 name: "Ping",
                 message: PingMessage.Instance,
                 binary: "kQY="),
+
+            // StreamData Messages
+            new ProtocolTestData(
+                name: "StreamData",
+                message: new StreamDataMessage("xyz", new CustomObject()),
+                binary: "kwmjeHl6hqpTdHJpbmdQcm9wqFNpZ25hbFIhqkRvdWJsZVByb3DLQBkh+1RCzxKnSW50UHJvcCqsRGF0ZVRpbWVQcm9w1v9Y7ByAqE51bGxQcm9wwKtCeXRlQXJyUHJvcMQDAQID"),
         }.ToDictionary(t => t.Name);
 
         [Theory]

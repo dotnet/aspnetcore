@@ -4,7 +4,7 @@
 import { Buffer } from "buffer";
 import * as msgpack5 from "msgpack5";
 
-import { CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage, LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
+import { CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage, LogLevel, MessageHeaders, MessageType, NullLogger, StreamCompleteMessage, StreamDataMessage, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
 
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
 import { isArrayBuffer } from "./Utils";
@@ -65,11 +65,15 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 return this.writeInvocation(message as InvocationMessage);
             case MessageType.StreamInvocation:
                 return this.writeStreamInvocation(message as StreamInvocationMessage);
+            case MessageType.StreamData:
+                return this.writeStreamData(message as StreamDataMessage);
             case MessageType.StreamItem:
             case MessageType.Completion:
                 throw new Error(`Writing messages of type '${message.type}' is not supported.`);
             case MessageType.Ping:
                 return BinaryMessageFormat.write(SERIALIZED_PING_MESSAGE);
+            case MessageType.StreamComplete:
+                return this.writeStreamComplete(message as StreamCompleteMessage);
             default:
                 throw new Error("Invalid message type.");
         }
@@ -222,6 +226,22 @@ export class MessagePackHubProtocol implements IHubProtocol {
         const msgpack = msgpack5();
         const payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
         streamInvocationMessage.target, streamInvocationMessage.arguments]);
+
+        return BinaryMessageFormat.write(payload.slice());
+    }
+
+    private writeStreamData(streamDataMessage: StreamDataMessage): ArrayBuffer {
+        const msgpack = msgpack5();
+        const payload = msgpack.encode([MessageType.StreamData, streamDataMessage.streamId,
+            streamDataMessage.item]);
+
+        return BinaryMessageFormat.write(payload.slice());
+    }
+
+    private writeStreamComplete(streamCompleteMessage: StreamCompleteMessage): ArrayBuffer {
+        const msgpack = msgpack5();
+        const payload = msgpack.encode([MessageType.StreamComplete, streamCompleteMessage.streamId,
+            streamCompleteMessage.error || null]);
 
         return BinaryMessageFormat.write(payload.slice());
     }

@@ -9,6 +9,7 @@ import { TransferFormat } from "../src/ITransport";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
 import { NullLogger } from "../src/Loggers";
 import { IStreamSubscriber } from "../src/Stream";
+import { Subject } from "../src/Subject";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
 import { VerifyLogger } from "./Common";
@@ -324,6 +325,121 @@ describe("HubConnection", () => {
                     connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
 
                     expect(await invokePromise).toBe("foo");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("is able to send stream items to server with invoke", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const subject = new Subject();
+                    const invokePromise = hubConnection.invoke("testMethod", "arg", subject);
+
+                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                        arguments: ["arg", {StreamId: "1"}],
+                        invocationId: "0",
+                        target: "testMethod",
+                        type: MessageType.Invocation,
+                    });
+
+                    subject.next("item numero uno");
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        item: "item numero uno",
+                        streamId: "1",
+                        type: MessageType.StreamData,
+                    });
+
+                    connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
+
+                    expect(await invokePromise).toBe("foo");
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("is able to send stream items to server with send", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    const subject = new Subject();
+                    await hubConnection.send("testMethod", "arg", subject);
+
+                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                        arguments: ["arg", { StreamId: "1" }],
+                        target: "testMethod",
+                        type: MessageType.Invocation,
+                    });
+
+                    subject.next("item numero uno");
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        item: "item numero uno",
+                        streamId: "1",
+                        type: MessageType.StreamData,
+                    });
+                } finally {
+                    await hubConnection.stop();
+                }
+            });
+        });
+
+        it("is able to send stream items to server with stream", async () => {
+            await VerifyLogger.run(async (logger) => {
+                const connection = new TestConnection();
+                const hubConnection = createHubConnection(connection, logger);
+                try {
+                    await hubConnection.start();
+
+                    let streamItem = "";
+                    let streamError: any = null;
+                    const subject = new Subject();
+                    hubConnection.stream("testMethod", "arg", subject).subscribe({
+                        complete: () => {
+                        },
+                        error: (e) => {
+                            streamError = e;
+                        },
+                        next: (item) => {
+                            streamItem = item;
+                        },
+                    });
+
+                    expect(JSON.parse(connection.sentData[1])).toEqual({
+                        arguments: ["arg", { StreamId: "1" }],
+                        invocationId: "0",
+                        target: "testMethod",
+                        type: MessageType.StreamInvocation,
+                    });
+
+                    subject.next("item numero uno");
+                    await new Promise<void>((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+                    expect(JSON.parse(connection.sentData[2])).toEqual({
+                        item: "item numero uno",
+                        streamId: "1",
+                        type: MessageType.StreamData,
+                    });
+
+                    connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: "foo" });
+                    expect(streamItem).toEqual("foo");
+
+                    expect(streamError).toBe(null);
                 } finally {
                     await hubConnection.stop();
                 }

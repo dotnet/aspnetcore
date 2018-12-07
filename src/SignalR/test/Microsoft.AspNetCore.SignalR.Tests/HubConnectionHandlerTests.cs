@@ -2809,111 +2809,138 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task UploadStreamItemInvalidTypeAutoCasts()
         {
-            // NOTE -- json.net is flexible here, and casts for us
-
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-            using (var client = new TestClient())
+            using (StartVerifiableLog())
             {
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), new StreamPlaceholder("id")).OrTimeout();
+                // NOTE -- json.net is flexible here, and casts for us
 
-                // send integers that are then cast to strings
-                await client.SendHubMessageAsync(new StreamDataMessage("id", 5)).OrTimeout();
-                await client.SendHubMessageAsync(new StreamDataMessage("id", 10)).OrTimeout();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                await client.SendHubMessageAsync(new StreamCompleteMessage("id")).OrTimeout();
-                var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
-                
-                Assert.Equal("510", response.Result);
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), new StreamPlaceholder("id")).OrTimeout();
+
+                    // send integers that are then cast to strings
+                    await client.SendHubMessageAsync(new StreamDataMessage("id", 5)).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamDataMessage("id", 10)).OrTimeout();
+
+                    await client.SendHubMessageAsync(new StreamCompleteMessage("id")).OrTimeout();
+                    var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
+
+                    Assert.Equal("510", response.Result);
+                }
             }
         }
         
         [Fact]
         public async Task ServerReportsProtocolMinorVersion()
         {
-            var testProtocol = new Mock<IHubProtocol>();
-            testProtocol.Setup(m => m.Name).Returns("CustomProtocol");
-            testProtocol.Setup(m => m.MinorVersion).Returns(112);
-            testProtocol.Setup(m => m.IsVersionSupported(It.IsAny<int>())).Returns(true);
-            testProtocol.Setup(m => m.TransferFormat).Returns(TransferFormat.Binary);
-            
-            var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT),
-                (services) => services.AddSingleton<IHubProtocol>(testProtocol.Object));
-
-            using (var client = new TestClient(protocol: testProtocol.Object))
+            using (StartVerifiableLog())
             {
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                var testProtocol = new Mock<IHubProtocol>();
+                testProtocol.Setup(m => m.Name).Returns("CustomProtocol");
+                testProtocol.Setup(m => m.MinorVersion).Returns(112);
+                testProtocol.Setup(m => m.IsVersionSupported(It.IsAny<int>())).Returns(true);
+                testProtocol.Setup(m => m.TransferFormat).Returns(TransferFormat.Binary);
 
-                Assert.NotNull(client.HandshakeResponseMessage);
-                Assert.Equal(112, client.HandshakeResponseMessage.MinorVersion);
+                var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT),
+                    (services) => services.AddSingleton<IHubProtocol>(testProtocol.Object), LoggerFactory);
 
-                client.Dispose();
-                await connectionHandlerTask.OrTimeout();
+                using (var client = new TestClient(protocol: testProtocol.Object))
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    Assert.NotNull(client.HandshakeResponseMessage);
+                    Assert.Equal(112, client.HandshakeResponseMessage.MinorVersion);
+
+                    client.Dispose();
+                    await connectionHandlerTask.OrTimeout();
+                }
             }
         }
 
         [Fact]
         public async Task UploadStreamItemInvalidType()
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-            using (var client = new TestClient())
+            using (StartVerifiableLog())
             {
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                await client.BeginUploadStreamAsync("invocationId", nameof(MethodHub.TestTypeCastingErrors), new StreamPlaceholder("channelId")).OrTimeout();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                // client is running wild, sending strings not ints. 
-                // this error should be propogated to the user's HubMethod code
-                await client.SendHubMessageAsync(new StreamItemMessage("channelId", "not a number")).OrTimeout();
-                var response = await client.ReadAsync().OrTimeout();
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocationId", nameof(MethodHub.TestTypeCastingErrors), new StreamPlaceholder("channelId")).OrTimeout();
 
-                Assert.Equal(typeof(CompletionMessage), response.GetType());
-                Assert.Equal("error identified and caught", (string)((CompletionMessage)response).Result);
+                    // client is running wild, sending strings not ints.
+                    // this error should be propogated to the user's HubMethod code
+                    await client.SendHubMessageAsync(new StreamItemMessage("channelId", "not a number")).OrTimeout();
+                    var response = await client.ReadAsync().OrTimeout();
+
+                    Assert.Equal(typeof(CompletionMessage), response.GetType());
+                    Assert.Equal("error identified and caught", (string)((CompletionMessage)response).Result);
+                }
             }
         }
 
         [Fact]
         public async Task UploadStreamItemInvalidId()
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            bool ExpectedErrors(WriteContext writeContext)
             {
-                services.AddSignalR(options => options.EnableDetailedErrors = true);
-            });
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
+                       writeContext.EventId.Name == "ErrorProcessingRequest";
+            }
 
-            using (var client = new TestClient())
+            using (StartVerifiableLog(ExpectedErrors))
             {
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                await client.SendHubMessageAsync(new StreamItemMessage("fake_id", "not a number")).OrTimeout();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options => options.EnableDetailedErrors = true);
+                }, loggerFactory: LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                // Client is breaking protocol by sending an invalid id, and should be closed.
-                var message = client.TryRead();
-                Assert.IsType<CloseMessage>(message);
-                Assert.Equal("Connection closed with an error. KeyNotFoundException: No stream with id 'fake_id' could be found.", ((CloseMessage)message).Error);
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage("fake_id", "not a number")).OrTimeout();
+
+                    // Client is breaking protocol by sending an invalid id, and should be closed.
+                    var message = client.TryRead();
+                    Assert.IsType<CloseMessage>(message);
+                    Assert.Equal("Connection closed with an error. KeyNotFoundException: No stream with id 'fake_id' could be found.", ((CloseMessage)message).Error);
+                }
             }
         }
 
         [Fact]
         public async Task UploadStreamCompleteInvalidId()
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            bool ExpectedErrors(WriteContext writeContext)
             {
-                services.AddSignalR(options => options.EnableDetailedErrors = true);
-            });
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
+                       writeContext.EventId.Name == "ErrorProcessingRequest";
+            }
 
-            using (var client = new TestClient())
+            using (StartVerifiableLog(ExpectedErrors))
             {
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                await client.SendHubMessageAsync(new StreamCompleteMessage("fake_id")).OrTimeout();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options => options.EnableDetailedErrors = true);
+                }, loggerFactory: LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                // Client is breaking protocol by sending an invalid id, and should be closed.
-                var message = client.TryRead();
-                Assert.IsType<CloseMessage>(message);
-                Assert.Equal("Connection closed with an error. KeyNotFoundException: No stream with id 'fake_id' could be found.", ((CloseMessage)message).Error);
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamCompleteMessage("fake_id")).OrTimeout();
+
+                    // Client is breaking protocol by sending an invalid id, and should be closed.
+                    var message = client.TryRead();
+                    Assert.IsType<CloseMessage>(message);
+                    Assert.Equal("Connection closed with an error. KeyNotFoundException: No stream with id 'fake_id' could be found.", ((CloseMessage)message).Error);
+                }
             }
         }
 
@@ -2922,18 +2949,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task UploadStreamCompleteWithError()
         {
-
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
-
-            using (var client = new TestClient())
+            using (StartVerifiableLog())
             {
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.TestCustomErrorPassing), new StreamPlaceholder("id")).OrTimeout();
-                await client.SendHubMessageAsync(new StreamCompleteMessage("id", CustomErrorMessage)).OrTimeout();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
-                var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
-                Assert.True((bool)response.Result);
+                using (var client = new TestClient())
+                {
+                    await client.ConnectAsync(connectionHandler).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.TestCustomErrorPassing), new StreamPlaceholder("id")).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamCompleteMessage("id", CustomErrorMessage)).OrTimeout();
+
+                    var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
+                    Assert.True((bool)response.Result);
+                }
             }
         }
 
@@ -3033,6 +3062,49 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().OrTimeout());
 
                     Assert.Equal("Failed to invoke 'InvalidArgument' due to an error on the server.", completion.Error);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanPassStreamingParameterToStreamHubMethod()
+        {
+            using (StartVerifiableLog())
+            {
+                IServiceProvider serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+                HubConnectionHandler<StreamingHub> connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+                Mock<IInvocationBinder> invocationBinder = new Mock<IInvocationBinder>();
+                invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(string));
+
+                using (TestClient client = new TestClient(invocationBinder: invocationBinder.Object))
+                {
+                    Task connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // Wait for a connection, or for the endpoint to fail.
+                    await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).OrTimeout();
+
+                    var streamId = "sample_id";
+                    var messagePromise = client.StreamAsync(nameof(StreamingHub.StreamEcho), new StreamPlaceholder(streamId)).OrTimeout();
+
+                    var phrases = new[] { "asdf", "qwer", "zxcv" };
+                    foreach (var phrase in phrases)
+                    {
+                        await client.SendHubMessageAsync(new StreamDataMessage(streamId, phrase));
+                    }
+                    await client.SendHubMessageAsync(new StreamCompleteMessage(streamId));
+
+                    var messages = await messagePromise;
+
+                    // add one because this includes the completion
+                    Assert.Equal(phrases.Count() + 1, messages.Count);
+                    for (var i = 0; i < phrases.Count(); i++)
+                    {
+                        Assert.Equal("echo:" + phrases[i], ((StreamItemMessage)messages[i]).Item);
+                    }
 
                     client.Dispose();
 
