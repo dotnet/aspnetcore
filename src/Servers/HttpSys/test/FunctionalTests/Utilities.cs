@@ -23,6 +23,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private const int MaxPort = 8000;
         private static int NextPort = BasePort;
         private static object PortLock = new object();
+        // Minimum support for Windows 7 is assumed.
+        internal static readonly bool IsWin8orLater;
+
+        static Utilities()
+        {
+            var win8Version = new Version(6, 2);
+            IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
+        }
 
         internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
         {
