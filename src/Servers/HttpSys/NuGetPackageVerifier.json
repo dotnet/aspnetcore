@@ -1,10 +1,4 @@
 {
-    "adx-nonshipping": {
-        "rules": [],
-        "packages": {
-          "Microsoft.AspNetCore.HttpSys.Sources": {}
-        }
-    },
     "Default": {
         "rules": [
             "DefaultCompositeRule"

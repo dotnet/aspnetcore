@@ -7,8 +7,8 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers.Testing\*.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\*.cs" LinkBase="shared" />
-    <Compile Include="$(RepositoryRoot)\src\Shared\Buffers.Testing\*.cs" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

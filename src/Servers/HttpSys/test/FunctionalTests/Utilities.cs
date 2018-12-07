@@ -27,6 +27,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
         internal static readonly int WriteRetryLimit = 1000;
 
+        // Minimum support for Windows 7 is assumed.
+        internal static readonly bool IsWin8orLater;
+
+        static Utilities()
+        {
+            var win8Version = new Version(6, 2);
+            IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
+        }
+
         internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
         {
             string root;
