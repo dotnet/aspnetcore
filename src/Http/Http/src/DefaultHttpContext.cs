@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Authentication.Internal;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Http.Internal;
@@ -28,10 +26,6 @@ namespace Microsoft.AspNetCore.Http
 
         private HttpRequest _request;
         private HttpResponse _response;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-        private AuthenticationManager _authenticationManager;
-#pragma warning restore CS0618 // Type or member is obsolete
 
         private ConnectionInfo _connection;
         private WebSocketManager _websockets;
@@ -67,13 +61,6 @@ namespace Microsoft.AspNetCore.Http
             {
                 UninitializeHttpResponse(_response);
                 _response = null;
-            }
-            if (_authenticationManager != null)
-            {
-#pragma warning disable CS0618 // Type or member is obsolete
-                UninitializeAuthenticationManager(_authenticationManager);
-#pragma warning restore CS0618 // Type or member is obsolete
-                _authenticationManager = null;
             }
             if (_connection != null)
             {
@@ -116,14 +103,6 @@ namespace Microsoft.AspNetCore.Http
         public override HttpResponse Response => _response;
 
         public override ConnectionInfo Connection => _connection ?? (_connection = InitializeConnectionInfo());
-
-        /// <summary>
-        /// This is obsolete and will be removed in a future version. 
-        /// The recommended alternative is to use Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.
-        /// See https://go.microsoft.com/fwlink/?linkid=845470.
-        /// </summary>
-        [Obsolete("This is obsolete and will be removed in a future version. The recommended alternative is to use Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions. See https://go.microsoft.com/fwlink/?linkid=845470.")]
-        public override AuthenticationManager Authentication => _authenticationManager ?? (_authenticationManager = InitializeAuthenticationManager());
 
         public override WebSocketManager WebSockets => _websockets ?? (_websockets = InitializeWebSocketManager());
 
@@ -201,11 +180,6 @@ namespace Microsoft.AspNetCore.Http
 
         protected virtual ConnectionInfo InitializeConnectionInfo() => new DefaultConnectionInfo(Features);
         protected virtual void UninitializeConnectionInfo(ConnectionInfo instance) { }
-
-        [Obsolete("This is obsolete and will be removed in a future version. See https://go.microsoft.com/fwlink/?linkid=845470.")]
-        protected virtual AuthenticationManager InitializeAuthenticationManager() => new DefaultAuthenticationManager(this);
-        [Obsolete("This is obsolete and will be removed in a future version. See https://go.microsoft.com/fwlink/?linkid=845470.")]
-        protected virtual void UninitializeAuthenticationManager(AuthenticationManager instance) { }
 
         protected virtual WebSocketManager InitializeWebSocketManager() => new DefaultWebSocketManager(Features);
         protected virtual void UninitializeWebSocketManager(WebSocketManager instance) { }
