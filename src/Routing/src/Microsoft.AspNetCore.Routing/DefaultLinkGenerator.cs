@@ -396,13 +396,13 @@ namespace Microsoft.AspNetCore.Routing
                 LogLevel.Debug,
                 EventIds.TemplateFailedRequiredValues,
                 "Failed to process the template {Template} for {Endpoint}. " +
-                "A required route value is missing, or has a different value from the required default values." +
+                "A required route value is missing, or has a different value from the required default values. " +
                 "Supplied ambient values {AmbientValues} and {Values} with default values {Defaults}");
 
             private static readonly Action<ILogger, string, string, IRouteConstraint, string, string, Exception> _templateFailedConstraint = LoggerMessage.Define<string, string, IRouteConstraint, string, string>(
                 LogLevel.Debug,
                 EventIds.TemplateFailedConstraint,
-                "Failed to process the template {Template} for {Endpoint}. " + 
+                "Failed to process the template {Template} for {Endpoint}. " +
                 "The constraint {Constraint} for parameter {ParameterName} failed with values {Values}");
 
             private static readonly Action<ILogger, string, string, string, Exception> _templateFailedExpansion = LoggerMessage.Define<string, string, string>(
