@@ -1,0 +1,34 @@
+{
+    "AssemblyIdentity": "Microsoft.AspNetCore.ResponseCaching.Abstractions, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+    "Types": [
+        {
+            "Name": "Microsoft.AspNetCore.ResponseCaching.IResponseCachingFeature",
+            "Visibility": "Public",
+            "Kind": "Interface",
+            "Abstract": true,
+            "ImplementedInterfaces": [],
+            "Members": [
+                {
+                    "Kind": "Method",
+                    "Name": "get_VaryByQueryKeys",
+                    "Parameters": [],
+                    "ReturnType": "System.String[]",
+                    "GenericParameter": []
+                },
+                {
+                    "Kind": "Method",
+                    "Name": "set_VaryByQueryKeys",
+                    "Parameters": [
+                        {
+                            "Name": "value",
+                            "Type": "System.String[]"
+                        }
+                    ],
+                    "ReturnType": "System.Void",
+                    "GenericParameter": []
+                }
+            ],
+            "GenericParameters": []
+        }
+    ]
+}
