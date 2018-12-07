@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
+    <SharedSourceDirectories Include="$(SharedSourcesFolder)Hosting.WebHostBuilderFactory\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,8 +70,7 @@
                     Exclude="
                       @(ProjectToExclude);
                       $(RepositoryRoot)**\bin\**\*;
-                      $(RepositoryRoot)**\obj\**\*;
-                      $(RepositoryRoot)**\AutobahnTestApp\**\*;" />
+                      $(RepositoryRoot)**\obj\**\*;" />
   </ItemGroup>
 
   <!-- Properties for publishing -->
