@@ -14,6 +14,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="xunit" />
   </ItemGroup>
 
 </Project>

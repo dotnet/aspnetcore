@@ -25,18 +25,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Theory]
-        [InlineData("V1")]
+        [Fact]
         public Task Https_HelloWorld_CLR_X64(string ancmVersion)
         {
-            return HttpsHelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44396, ancmVersion);
+            return HttpsHelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44396, "V1");
         }
 
-        [Theory]
-        [InlineData("V1")]
-        public Task Https_HelloWorld_CoreCLR_X64_Portable(string ancmVersion)
+        [Fact]
+        public Task Https_HelloWorld_CoreCLR_X64_Portable()
         {
-            return HttpsHelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44394, ancmVersion);
+            return HttpsHelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44394, "V1");
         }
 
         private async Task HttpsHelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, string ancmVersion)
@@ -97,36 +95,32 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData("V1")]
+        [Fact]
         public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable(string ancmVersion)
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44397, sendClientCert: false, ancmVersion);
+            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44397, sendClientCert: false, "V1");
         }
 
-        [Theory]
-        [InlineData("V1")]
+        [Fact]
         public Task Https_HelloWorld_NoClientCert_Clr_X64(string ancmVersion)
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44398, sendClientCert: false, ancmVersion);
+            return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44398, sendClientCert: false, "V1");
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Theory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [InlineData("V1")]
+        [Fact(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public Task Https_HelloWorld_ClientCert_Clr_X64(string ancmVersion)
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44301, sendClientCert: true, ancmVersion);
+            return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44301, sendClientCert: true, "V1");
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Theory(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
-        [InlineData("V1")]
+        [Fact(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public Task Https_HelloWorld_ClientCert_CoreCLR_X64_Portable(string ancmVersion)
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44302, sendClientCert: true, ancmVersion);
+            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44302, sendClientCert: true, "V1");
         }
 
         private async Task HttpsHelloWorldCerts(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, bool sendClientCert, string ancmVersion)

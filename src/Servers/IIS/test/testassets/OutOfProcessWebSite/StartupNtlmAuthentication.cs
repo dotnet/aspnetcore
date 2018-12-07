@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace TestSites
 {
@@ -46,6 +47,7 @@ namespace TestSites
                 {
                     if (context.User.Identity.IsAuthenticated)
                     {
+                        Assert.IsType<WindowsPrincipal>(context.User);
                         return context.Response.WriteAsync(context.User.Identity.AuthenticationType);
                     }
                     else
