@@ -18,4 +18,6 @@ type Startup() =
         if env.IsDevelopment() then 
             app.UseDeveloperExceptionPage() |> ignore
 
-        app.Run(fun context -> context.Response.WriteAsync("Hello World!")) |> ignore
+        app.UseRouting(fun routing ->
+            routing.MapGet("/", fun context -> context.Response.WriteAsync("Hello World!")) |> ignore
+            ) |> ignore
