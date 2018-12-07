@@ -39,10 +39,8 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 {
                     return;
                 }
-                else
-                {
-                    throw new DirectoryNotFoundException("A non-null file provider for the directory is required when this source is not optional.");
-                }
+
+                throw new DirectoryNotFoundException("A non-null file provider for the directory is required when this source is not optional.");
             }
 
             var directory = Source.FileProvider.GetDirectoryContents("/");
@@ -68,5 +66,15 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 }
             }
         }
+
+        private string GetDirectoryName()
+            => Source.FileProvider?.GetFileInfo("/")?.PhysicalPath ?? "<Unknown>";
+
+        /// <summary>
+        /// Generates a string representing this provider name and relevant details.
+        /// </summary>
+        /// <returns> The configuration name. </returns>
+        public override string ToString()
+            => $"{GetType().Name} for files in '{GetDirectoryName()}' ({(Source.Optional ? "Optional" : "Required")})";
     }
 }

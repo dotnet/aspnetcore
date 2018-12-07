@@ -190,20 +190,11 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
             _contents = new TestDirectoryContents(files);
         }
 
-        public IDirectoryContents GetDirectoryContents(string subpath)
-        {
-            return _contents;
-        }
+        public IDirectoryContents GetDirectoryContents(string subpath) => _contents;
 
-        public IFileInfo GetFileInfo(string subpath)
-        {
-            throw new NotImplementedException();
-        }
+        public IFileInfo GetFileInfo(string subpath) => new TestFile("TestDirectory");
 
-        public IChangeToken Watch(string filter)
-        {
-            throw new NotImplementedException();
-        }
+        public IChangeToken Watch(string filter) => throw new NotImplementedException();
     }
 
     class TestDirectoryContents : IDirectoryContents
@@ -215,75 +206,33 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
             _list = new List<IFileInfo>(files);
         }
 
-        public bool Exists
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool Exists => true;
 
-        public IEnumerator<IFileInfo> GetEnumerator()
-        {
-            return _list.GetEnumerator();
-        }
+        public IEnumerator<IFileInfo> GetEnumerator() => _list.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
     //TODO: Probably need a directory and file type.
     class TestFile : IFileInfo
     {
-        private string _name;
-        private string _contents;
+        private readonly string _name;
+        private readonly string _contents;
 
-        public bool Exists
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public bool Exists => true;
 
         public bool IsDirectory
         {
             get;
         }
 
-        public DateTimeOffset LastModified
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public DateTimeOffset LastModified => throw new NotImplementedException();
 
-        public long Length
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public long Length => throw new NotImplementedException();
 
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
-        }
+        public string Name => _name;
 
-        public string PhysicalPath
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public string PhysicalPath => "Root/" + Name;
 
         public TestFile(string name)
         {
@@ -304,7 +253,9 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
                 throw new InvalidOperationException("Cannot create stream from directory");
             }
 
-            return new MemoryStream(Encoding.UTF8.GetBytes(_contents));
+            return _contents == null
+                ? new MemoryStream()
+                : new MemoryStream(Encoding.UTF8.GetBytes(_contents));
         }
     }
 }

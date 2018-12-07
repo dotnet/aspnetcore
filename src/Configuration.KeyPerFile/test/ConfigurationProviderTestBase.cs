@@ -14,7 +14,39 @@ namespace Microsoft.Extensions.Configuration.Test
         [Fact]
         public virtual void Load_from_single_provider()
         {
-            AssertConfig(BuildConfigRoot(LoadThroughProvider(TestSection.TestConfig)));
+            var configRoot = BuildConfigRoot(LoadThroughProvider(TestSection.TestConfig));
+
+            AssertConfig(configRoot);
+        }
+
+        [Fact]
+        public virtual void Has_debug_view()
+        {
+            var configRoot = BuildConfigRoot(LoadThroughProvider(TestSection.TestConfig));
+            var providerTag = configRoot.Providers.Single().ToString();
+
+            var expected =
+                $@"Key1=Value1 ({providerTag})
+Section1:
+  Key2=Value12 ({providerTag})
+  Section2:
+    Key3=Value123 ({providerTag})
+    Key3a:
+      0=ArrayValue0 ({providerTag})
+      1=ArrayValue1 ({providerTag})
+      2=ArrayValue2 ({providerTag})
+Section3:
+  Section4:
+    Key4=Value344 ({providerTag})
+";
+
+            AssertDebugView(configRoot, expected);
+        }
+
+        [Fact]
+        public virtual void Null_values_are_included_in_the_config()
+        {
+            AssertConfig(BuildConfigRoot(LoadThroughProvider(TestSection.NullsTestConfig)), expectNulls: true, nullValue: "");
         }
 
         [Fact]
@@ -22,8 +54,13 @@ namespace Microsoft.Extensions.Configuration.Test
         {
             AssertConfig(
                 BuildConfigRoot(
-                    LoadUsingMemoryProvider(TestSection.MissingSection2Config),
+                    LoadUsingMemoryProvider(TestSection.MissingSection2ValuesConfig),
                     LoadThroughProvider(TestSection.MissingSection4Config)));
+
+            AssertConfig(
+                BuildConfigRoot(
+                    LoadUsingMemoryProvider(TestSection.MissingSection4Config),
+                    LoadThroughProvider(TestSection.MissingSection2ValuesConfig)));
         }
 
         [Fact]
@@ -31,8 +68,13 @@ namespace Microsoft.Extensions.Configuration.Test
         {
             AssertConfig(
                 BuildConfigRoot(
-                    LoadThroughProvider(TestSection.MissingSection2Config),
+                    LoadThroughProvider(TestSection.MissingSection2ValuesConfig),
                     LoadUsingMemoryProvider(TestSection.MissingSection4Config)));
+
+            AssertConfig(
+                BuildConfigRoot(
+                    LoadThroughProvider(TestSection.MissingSection4Config),
+                    LoadUsingMemoryProvider(TestSection.MissingSection2ValuesConfig)));
         }
 
         [Fact]
@@ -128,48 +170,83 @@ namespace Microsoft.Extensions.Configuration.Test
             public string Key4 { get; set; }
         }
 
-        protected virtual void AssertConfig(IConfigurationRoot config)
+        protected virtual void AssertDebugView(
+            IConfigurationRoot config,
+            string expected)
         {
-            Assert.Equal("Value1", config["Key1"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("Value12", config["Section1:Key2"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("Value123", config["Section1:Section2:Key3"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue0", config["Section1:Section2:Key3a:0"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue1", config["Section1:Section2:Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue2", config["Section1:Section2:Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("Value344", config["Section3:Section4:Key4"], StringComparer.InvariantCultureIgnoreCase);
+            string RemoveLineEnds(string source) => source.Replace("\n", "").Replace("\r", "");
+
+            var actual = config.GetDebugView();
+
+            Assert.Equal(
+                RemoveLineEnds(expected),
+                RemoveLineEnds(actual));
+        }
+
+        protected virtual void AssertConfig(
+            IConfigurationRoot config,
+            bool expectNulls = false,
+            string nullValue = null)
+        {
+            var value1 = expectNulls ? nullValue : "Value1";
+            var value12 = expectNulls ? nullValue : "Value12";
+            var value123 = expectNulls ? nullValue : "Value123";
+            var arrayvalue0 = expectNulls ? nullValue : "ArrayValue0";
+            var arrayvalue1 = expectNulls ? nullValue : "ArrayValue1";
+            var arrayvalue2 = expectNulls ? nullValue : "ArrayValue2";
+            var value344 = expectNulls ? nullValue : "Value344";
+
+            Assert.Equal(value1, config["Key1"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value12, config["Section1:Key2"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value123, config["Section1:Section2:Key3"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue0, config["Section1:Section2:Key3a:0"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue1, config["Section1:Section2:Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue2, config["Section1:Section2:Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value344, config["Section3:Section4:Key4"], StringComparer.InvariantCultureIgnoreCase);
 
             var section1 = config.GetSection("Section1");
-            Assert.Equal("Value12", section1["Key2"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("Value123", section1["Section2:Key3"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue0", section1["Section2:Key3a:0"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue1", section1["Section2:Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue2", section1["Section2:Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value12, section1["Key2"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value123, section1["Section2:Key3"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue0, section1["Section2:Key3a:0"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue1, section1["Section2:Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue2, section1["Section2:Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section1", section1.Path, StringComparer.InvariantCultureIgnoreCase);
             Assert.Null(section1.Value);
 
             var section2 = config.GetSection("Section1:Section2");
-            Assert.Equal("Value123", section2["Key3"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue0", section2["Key3a:0"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue1", section2["Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue2", section2["Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value123, section2["Key3"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue0, section2["Key3a:0"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue1, section2["Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue2, section2["Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section1:Section2", section2.Path, StringComparer.InvariantCultureIgnoreCase);
             Assert.Null(section2.Value);
 
             section2 = section1.GetSection("Section2");
-            Assert.Equal("Value123", section2["Key3"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue0", section2["Key3a:0"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue1", section2["Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("ArrayValue2", section2["Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value123, section2["Key3"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue0, section2["Key3a:0"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue1, section2["Key3a:1"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue2, section2["Key3a:2"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section1:Section2", section2.Path, StringComparer.InvariantCultureIgnoreCase);
             Assert.Null(section2.Value);
 
+            var section3a = section2.GetSection("Key3a");
+            Assert.Equal(arrayvalue0, section3a["0"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue1, section3a["1"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue2, section3a["2"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal("Section1:Section2:Key3a", section3a.Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Null(section3a.Value);
+
+            var section3 = config.GetSection("Section3");
+            Assert.Equal("Section3", section3.Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Null(section3.Value);
+            
             var section4 = config.GetSection("Section3:Section4");
-            Assert.Equal("Value344", section4["Key4"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value344, section4["Key4"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section3:Section4", section4.Path, StringComparer.InvariantCultureIgnoreCase);
             Assert.Null(section4.Value);
 
             section4 = config.GetSection("Section3").GetSection("Section4");
-            Assert.Equal("Value344", section4["Key4"], StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value344, section4["Key4"], StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section3:Section4", section4.Path, StringComparer.InvariantCultureIgnoreCase);
             Assert.Null(section4.Value);
 
@@ -179,7 +256,7 @@ namespace Microsoft.Extensions.Configuration.Test
 
             Assert.Equal("Key1", sections[0].Key, StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Key1", sections[0].Path, StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("Value1", sections[0].Value, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value1, sections[0].Value, StringComparer.InvariantCultureIgnoreCase);
 
             Assert.Equal("Section1", sections[1].Key, StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section1", sections[1].Path, StringComparer.InvariantCultureIgnoreCase);
@@ -195,11 +272,55 @@ namespace Microsoft.Extensions.Configuration.Test
 
             Assert.Equal("Key2", sections[0].Key, StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section1:Key2", sections[0].Path, StringComparer.InvariantCultureIgnoreCase);
-            Assert.Equal("Value12", sections[0].Value, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value12, sections[0].Value, StringComparer.InvariantCultureIgnoreCase);
 
             Assert.Equal("Section2", sections[1].Key, StringComparer.InvariantCultureIgnoreCase);
             Assert.Equal("Section1:Section2", sections[1].Path, StringComparer.InvariantCultureIgnoreCase);
             Assert.Null(sections[1].Value);
+
+            sections = section2.GetChildren().ToList();
+
+            Assert.Equal(2, sections.Count);
+
+            Assert.Equal("Key3", sections[0].Key, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal("Section1:Section2:Key3", sections[0].Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value123, sections[0].Value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.Equal("Key3a", sections[1].Key, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal("Section1:Section2:Key3a", sections[1].Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Null(sections[1].Value);
+
+            sections = section3a.GetChildren().ToList();
+
+            Assert.Equal(3, sections.Count);
+
+            Assert.Equal("0", sections[0].Key, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal("Section1:Section2:Key3a:0", sections[0].Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue0, sections[0].Value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.Equal("1", sections[1].Key, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal("Section1:Section2:Key3a:1", sections[1].Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue1, sections[1].Value, StringComparer.InvariantCultureIgnoreCase);
+
+            Assert.Equal("2", sections[2].Key, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal("Section1:Section2:Key3a:2", sections[2].Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(arrayvalue2, sections[2].Value, StringComparer.InvariantCultureIgnoreCase);
+
+            sections = section3.GetChildren().ToList();
+
+            Assert.Single(sections);
+
+            Assert.Equal("Section4", sections[0].Key, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal("Section3:Section4", sections[0].Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Null(sections[0].Value);
+
+            sections = section4.GetChildren().ToList();
+
+            Assert.Single(sections);
+
+            Assert.Equal("Key4", sections[0].Key, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal("Section3:Section4:Key4", sections[0].Path, StringComparer.InvariantCultureIgnoreCase);
+            Assert.Equal(value344, sections[0].Value, StringComparer.InvariantCultureIgnoreCase);
         }
 
         protected abstract (IConfigurationProvider Provider, Action Initializer) LoadThroughProvider(TestSection testConfig);
@@ -272,7 +393,7 @@ namespace Microsoft.Extensions.Configuration.Test
 
             public IEnumerable<(string Key, string Value)> Expand(string key)
             {
-                if (AsString != null)
+                if (AsArray == null)
                 {
                     yield return (key, AsString);
                 }
@@ -310,7 +431,7 @@ namespace Microsoft.Extensions.Configuration.Test
                                     Values = new[]
                                     {
                                         ("Key3", (TestKeyValue)"Value123"),
-                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"}),
+                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"})
                                     },
                                 })
                             }
@@ -321,11 +442,10 @@ namespace Microsoft.Extensions.Configuration.Test
                             {
                                 ("Section4", new TestSection
                                 {
-                                    Values = new[] {("Key4", (TestKeyValue)"Value344")},
+                                    Values = new[] {("Key4", (TestKeyValue)"Value344")}
                                 })
                             }
-                        }),
-
+                        })
                     }
                 };
 
@@ -345,7 +465,7 @@ namespace Microsoft.Extensions.Configuration.Test
                                     Values = new[]
                                     {
                                         ("Key3", (TestKeyValue)"-----"),
-                                        ("Key3a", (TestKeyValue)new[] {"-----------", "-----------", "-----------"}),
+                                        ("Key3a", (TestKeyValue)new[] {"-----------", "-----------", "-----------"})
                                     },
                                 })
                             }
@@ -356,15 +476,14 @@ namespace Microsoft.Extensions.Configuration.Test
                             {
                                 ("Section4", new TestSection
                                 {
-                                    Values = new[] {("Key4", (TestKeyValue)"--------")},
+                                    Values = new[] {("Key4", (TestKeyValue)"--------")}
                                 })
                             }
-                        }),
-
+                        })
                     }
                 };
 
-            public static TestSection MissingSection2Config { get; }
+            public static TestSection MissingSection2ValuesConfig { get; }
                 = new TestSection
                 {
                     Values = new[] { ("Key1", (TestKeyValue)"Value1") },
@@ -373,6 +492,16 @@ namespace Microsoft.Extensions.Configuration.Test
                         ("Section1", new TestSection
                         {
                             Values = new[] {("Key2", (TestKeyValue)"Value12")},
+                            Sections = new[]
+                            {
+                                ("Section2", new TestSection
+                                {
+                                    Values = new[]
+                                    {
+                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0"})
+                                    },
+                                })
+                            }
                         }),
                         ("Section3", new TestSection
                         {
@@ -380,11 +509,10 @@ namespace Microsoft.Extensions.Configuration.Test
                             {
                                 ("Section4", new TestSection
                                 {
-                                    Values = new[] {("Key4", (TestKeyValue)"Value344")},
+                                    Values = new[] {("Key4", (TestKeyValue)"Value344")}
                                 })
                             }
-                        }),
-
+                        })
                     }
                 };
 
@@ -405,15 +533,12 @@ namespace Microsoft.Extensions.Configuration.Test
                                     Values = new[]
                                     {
                                         ("Key3", (TestKeyValue)"Value123"),
-                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"}),
+                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"})
                                     },
                                 })
                             }
                         }),
-                        ("Section3", new TestSection
-                        {
-                        }),
-
+                        ("Section3", new TestSection())
                     }
                 };
 
@@ -433,7 +558,7 @@ namespace Microsoft.Extensions.Configuration.Test
                                     Values = new[]
                                     {
                                         ("KeY3", (TestKeyValue)"Value123"),
-                                        ("KeY3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"}),
+                                        ("KeY3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"})
                                     },
                                 })
                             }
@@ -444,11 +569,10 @@ namespace Microsoft.Extensions.Configuration.Test
                             {
                                 ("SectioN4", new TestSection
                                 {
-                                    Values = new[] {("KeY4", (TestKeyValue)"Value344")},
+                                    Values = new[] {("KeY4", (TestKeyValue)"Value344")}
                                 })
                             }
-                        }),
-
+                        })
                     }
                 };
 
@@ -472,7 +596,7 @@ namespace Microsoft.Extensions.Configuration.Test
                                     Values = new[]
                                     {
                                         ("Key3", (TestKeyValue)"Value123"),
-                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"}),
+                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"})
                                     },
                                 }),
                                 ("Section2", new TestSection
@@ -480,7 +604,7 @@ namespace Microsoft.Extensions.Configuration.Test
                                     Values = new[]
                                     {
                                         ("Key3", (TestKeyValue)"Value123"),
-                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"}),
+                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"})
                                     },
                                 })
 
@@ -492,11 +616,10 @@ namespace Microsoft.Extensions.Configuration.Test
                             {
                                 ("Section4", new TestSection
                                 {
-                                    Values = new[] {("Key4", (TestKeyValue)"Value344")},
+                                    Values = new[] {("Key4", (TestKeyValue)"Value344")}
                                 })
                             }
-                        }),
-
+                        })
                     }
                 };
 
@@ -520,7 +643,7 @@ namespace Microsoft.Extensions.Configuration.Test
                                     Values = new[]
                                     {
                                         ("Key3", (TestKeyValue)"Value123"),
-                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"}),
+                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"})
                                     },
                                 }),
                                 ("SectioN2", new TestSection
@@ -528,7 +651,7 @@ namespace Microsoft.Extensions.Configuration.Test
                                     Values = new[]
                                     {
                                         ("KeY3", (TestKeyValue)"Value123"),
-                                        ("KeY3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"}),
+                                        ("KeY3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2"})
                                     },
                                 })
 
@@ -540,11 +663,97 @@ namespace Microsoft.Extensions.Configuration.Test
                             {
                                 ("Section4", new TestSection
                                 {
-                                    Values = new[] {("Key4", (TestKeyValue)"Value344")},
+                                    Values = new[] {("Key4", (TestKeyValue)"Value344")}
+                                })
+                            }
+                        })
+                    }
+                };
+
+            public static TestSection NullsTestConfig { get; }
+                = new TestSection
+                {
+                    Values = new[] { ("Key1", new TestKeyValue((string)null)) },
+                    Sections = new[]
+                    {
+                        ("Section1", new TestSection
+                        {
+                            Values = new[] {("Key2", new TestKeyValue((string)null))},
+                            Sections = new[]
+                            {
+                                ("Section2", new TestSection
+                                {
+                                    Values = new[]
+                                    {
+                                        ("Key3", new TestKeyValue((string)null)),
+                                        ("Key3a", (TestKeyValue)new string[] {null, null, null})
+                                    },
                                 })
                             }
                         }),
+                        ("Section3", new TestSection
+                        {
+                            Sections = new[]
+                            {
+                                ("Section4", new TestSection
+                                {
+                                    Values = new[] {("Key4", new TestKeyValue((string)null))}
+                                })
+                            }
+                        })
+                    }
+                };
 
+            public static TestSection ExtraValuesTestConfig { get; }
+                = new TestSection
+                {
+                    Values = new[]
+                    {
+                        ("Key1", (TestKeyValue)"Value1"),
+                        ("Key1r", (TestKeyValue)"Value1r")
+                    },
+                    Sections = new[]
+                    {
+                        ("Section1", new TestSection
+                        {
+                            Values = new[]
+                            {
+                                ("Key2", (TestKeyValue)"Value12"),
+                                ("Key2r", (TestKeyValue)"Value12r")
+                            },
+                            Sections = new[]
+                            {
+                                ("Section2", new TestSection
+                                {
+                                    Values = new[]
+                                    {
+                                        ("Key3", (TestKeyValue)"Value123"),
+                                        ("Key3a", (TestKeyValue)new[] {"ArrayValue0", "ArrayValue1", "ArrayValue2", "ArrayValue2r"}),
+                                        ("Key3ar", (TestKeyValue)new[] {"ArrayValue0r"})
+                                    },
+                                })
+                            }
+                        }),
+                        ("Section3", new TestSection
+                        {
+                            Sections = new[]
+                            {
+                                ("Section4", new TestSection
+                                {
+                                    Values = new[] {("Key4", (TestKeyValue)"Value344")}
+                                })
+                            }
+                        }),
+                        ("Section5r", new TestSection
+                        {
+                            Sections = new[]
+                            {
+                                ("Section6r", new TestSection
+                                {
+                                    Values = new[] {("Key5r", (TestKeyValue)"Value565r")}
+                                })
+                            }
+                        })
                     }
                 };
         }
