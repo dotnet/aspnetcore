@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
+    <NuGetVerifierRuleFile Condition="'$(OS)' != 'Windows_NT'">$(RepositoryRoot)NuGetPackageVerifier.xplat.json</NuGetVerifierRuleFile>
+  </PropertyGroup>
+
+</Project>
