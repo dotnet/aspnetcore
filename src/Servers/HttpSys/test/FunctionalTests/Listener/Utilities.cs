@@ -19,14 +19,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         private static object PortLock = new object();
 
         internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
-        // Minimum support for Windows 7 is assumed.
-        internal static readonly bool IsWin8orLater;
-
-        static Utilities()
-        {
-            var win8Version = new Version(6, 2);
-            IsWin8orLater = (Environment.OSVersion.Version >= win8Version);
-        }
 
         internal static HttpSysListener CreateHttpServer(out string baseAddress)
         {
