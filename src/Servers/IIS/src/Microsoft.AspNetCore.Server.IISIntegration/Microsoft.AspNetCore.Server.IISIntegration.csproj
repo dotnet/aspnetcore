@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepositoryRoot)src\shared\HttpSys\**\*.cs" />
+    <Compile Include="$(RepositoryRoot)src\Shared\HttpSys\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(VCTargetsPath)' != ''">
