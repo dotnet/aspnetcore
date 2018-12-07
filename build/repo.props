@@ -70,8 +70,7 @@
                     Exclude="
                       @(ProjectToExclude);
                       $(RepositoryRoot)**\bin\**\*;
-                      $(RepositoryRoot)**\obj\**\*;
-                      $(RepositoryRoot)**\AutobahnTestApp\**\*;" />
+                      $(RepositoryRoot)**\obj\**\*;" />
   </ItemGroup>
 
   <!-- Properties for publishing -->
