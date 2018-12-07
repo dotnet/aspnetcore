@@ -52,7 +52,6 @@
     <ShippedRepository Include="Antiforgery" RootPath="$(RepositoryRoot)src\Antiforgery\" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="CORS" RootPath="$(RepositoryRoot)src\CORS\" />
-    <ShippedRepository Include="HttpSysServer" RootPath="$(RepositoryRoot)src\HttpSysServer\" />
     <ShippedRepository Include="Identity" RootPath="$(RepositoryRoot)src\Identity\" />
     <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
@@ -60,7 +59,6 @@
     <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\" />
     <ShippedRepository Include="Razor" RootPath="$(RepositoryRoot)src\Razor\" />
     <ShippedRepository Include="ResponseCaching" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
-    <ShippedRepository Include="Routing" RootPath="$(RepositoryRoot)src\Routing\" />
     <ShippedRepository Include="Security" RootPath="$(RepositoryRoot)src\Security\" />
     <ShippedRepository Include="Session" RootPath="$(RepositoryRoot)src\Session\" />
     <ShippedRepository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />

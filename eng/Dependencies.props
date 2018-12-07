@@ -19,25 +19,28 @@
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="$(MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(MicrosoftExtensionsConfigurationUserSecretsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="$(MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Process.Sources" Version="$(MicrosoftExtensionsProcessSourcesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.RazorViews.Sources" Version="$(MicrosoftExtensionsRazorViewsSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.StackTrace.Sources" Version="$(MicrosoftExtensionsStackTraceSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
@@ -47,6 +50,7 @@
     <LatestPackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
     <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
     <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
+    <LatestPackageReference Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
     <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <LatestPackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />

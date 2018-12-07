@@ -19,7 +19,6 @@
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
     <PackageArtifact Include="dotnet-user-secrets" Category="ship" />
     <PackageArtifact Include="dotnet-watch" Category="ship" />
-    <PackageArtifact Include="Internal.AspNetCore.Universe.Lineup" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
@@ -82,7 +81,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Http" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.HttpOverrides" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.HttpsPolicy" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.HttpSys.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.UI" Category="ship" />
@@ -125,7 +123,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.ResponseCompression" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Rewrite" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" />
@@ -201,5 +198,7 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
+
+    <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship"/>
   </ItemGroup>
 </Project>
