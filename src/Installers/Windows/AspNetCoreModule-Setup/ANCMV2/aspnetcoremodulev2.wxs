@@ -279,13 +279,11 @@
                           Value="&quot;[IISInstallDir]appcmd.exe&quot; unlock config /section:system.webserver/handlers" />
         <CustomAction Id="CA_UNLOCk_HANDLER" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
         <CustomAction Id="UpdateDynamicCompression" BinaryKey="IISCustomActionDll" DllEntry ="RegisterANCMCompressionCA" Execute ="deferred" Return ="ignore" Impersonate ="no" />
-        <CustomAction BinaryKey="IISCustomActionDll" Id="CheckForSharedConfiguration" DllEntry="CheckForSharedConfigurationCA" Execute="deferred" Return="check" Impersonate="no"/>
 
         <InstallExecuteSequence>
             <AppSearch Before="LaunchConditions" />
             <LaunchConditions After="FindRelatedProducts" />
             <MigrateFeatureStates />
-            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize"></Custom>
             <Custom Action="CA_UNLOCk_HANDLER_PROPERTY" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>
             <Custom Action="CA_UNLOCk_HANDLER" After="CA_UNLOCk_HANDLER_PROPERTY"><![CDATA[(NOT PATCH)]]></Custom>
             <Custom Action="UpdateDynamicCompression" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>
