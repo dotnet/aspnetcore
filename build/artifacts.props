@@ -193,7 +193,6 @@
     <PackageArtifact Include="RazorPageGenerator" Category="noship" />
 
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources" Category="noship"/>
-    <PackageArtifact Include="Microsoft.Extensions.Buffers.Testing.Sources" Category="noship"/>
   </ItemGroup>
 
 </Project>

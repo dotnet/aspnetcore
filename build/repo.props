@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
+    <SharedSourceDirectories Include="$(SharedSourcesFolder)Hosting.WebHostBuilderFactory\" />
   </ItemGroup>
 
   <ItemGroup>
