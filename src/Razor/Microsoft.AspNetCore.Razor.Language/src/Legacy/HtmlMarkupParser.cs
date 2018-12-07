@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     internal partial class HtmlMarkupParser : TokenizerBackedParser<HtmlTokenizer>
     {
         private const string ScriptTagName = "script";
+        private static readonly SyntaxList<RazorSyntaxNode> EmptySyntaxList = new SyntaxListBuilder<RazorSyntaxNode>(0).ToList();
 
         private static readonly char[] ValidAfterTypeAttributeNameCharacters = { ' ', '\t', '\r', '\n', '\f', '=' };
         private static readonly SyntaxToken[] nonAllowedHtmlCommentEnding = new[]
@@ -21,10 +22,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SyntaxFactory.Token(SyntaxKind.OpenAngle, "<"),
         };
 
+        private Stack<TagTracker> _tagTracker = new Stack<TagTracker>();
+
         public HtmlMarkupParser(ParserContext context)
             : base(context.ParseLeadingDirectives ? FirstDirectiveHtmlLanguageCharacteristics.Instance : HtmlLanguageCharacteristics.Instance, context)
         {
         }
+
+        private TagTracker CurrentTracker => _tagTracker.Count > 0 ? _tagTracker.Peek() : null;
+
+        private string CurrentStartTagName => CurrentTracker?.TagName;
+
+        private SourceLocation CurrentStartTagLocation => CurrentTracker?.TagLocation ?? SourceLocation.Undefined;
 
         public CSharpCodeParser CodeParser { get; set; }
 
@@ -44,6 +53,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 ParseMarkupNodes(builder, ParseMode.Markup);
                 AcceptMarkerTokenIfNecessary();
                 builder.Add(OutputAsMarkupLiteral());
+
+                // If we are still tracking any unclosed start tags, we need to close them.
+                while (_tagTracker.Count > 0)
+                {
+                    var tracker = _tagTracker.Pop();
+                    var element = SyntaxFactory.MarkupElement(tracker.StartTag, builder.Consume(), endTag: null);
+                    builder.AddRange(tracker.PreviousNodes);
+                    builder.Add(element);
+                }
 
                 var markup = SyntaxFactory.MarkupBlock(builder.ToList());
 
@@ -71,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     ParseMarkupText(builder);
                     break;
                 case ParserState.Tag:
-                    ParseMarkupElement(builder);
+                    ParseMarkupElement(builder, mode);
                     break;
                 case ParserState.SpecialTag:
                     ParseSpecialTag(builder);
@@ -111,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             AcceptAndMoveNext();
         }
 
-        private void ParseMarkupElement(in SyntaxListBuilder<RazorSyntaxNode> builder)
+        private void ParseMarkupElement(in SyntaxListBuilder<RazorSyntaxNode> builder, ParseMode mode)
         {
             Assert(SyntaxKind.OpenAngle);
 
@@ -121,47 +139,101 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (!NextIs(SyntaxKind.ForwardSlash))
             {
                 // Parsing a start tag
+                var tagStart = CurrentStart;
                 var startTag = ParseStartTag(out var tagName, out var tagMode);
-                builder.Add(startTag);
-
                 if (tagMode == MarkupTagMode.Script)
                 {
-                    ParseJavascriptAndEndScriptTag(builder);
+                    ParseJavascriptAndEndScriptTag(builder, startTag);
                     return;
                 }
-                else if (tagMode != MarkupTagMode.Void && tagMode != MarkupTagMode.SelfClosing)
+                else if (tagMode == MarkupTagMode.SelfClosing || tagMode == MarkupTagMode.Invalid)
                 {
-                    var body = ParseTagBody(tagName, out var seenEndTag);
-                    if (body != null)
-                    {
-                        builder.AddRange(body);
-                    }
-
-                    if (seenEndTag)
-                    {
-                        var endTag = ParseEndTag();
-                        builder.Add(endTag);
-                    }
+                    // For cases like <foo /> or invalid cases like |<|<p>
+                    var element = SyntaxFactory.MarkupElement(startTag, EmptySyntaxList, endTag: null);
+                    builder.Add(element);
+                    return;
+                }
+                else
+                {
+                    // This is a normal start tag. We need to keep track of it.
+                    var tracker = new TagTracker(tagName, startTag, tagStart, builder.Consume());
+                    _tagTracker.Push(tracker);
+                    return;
                 }
             }
             else
             {
                 // Parsing an end tag.
-                var endTag = ParseEndTag();
-                builder.Add(endTag);
+                var endTag = ParseEndTag(out var endTagName);
+                if (endTagName != null && string.Equals(CurrentStartTagName, endTagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Happy path. Found a matching start tag. Create the element and reset the builder.
+                    var tracker = _tagTracker.Pop();
+                    var element = SyntaxFactory.MarkupElement(tracker.StartTag, builder.Consume(), endTag);
+                    builder.AddRange(tracker.PreviousNodes);
+                    builder.Add(element);
+                    return;
+                }
+                else
+                {
+                    // Current tag scope does not match the end tag. Attempt to recover the start tag
+                    // by looking up the previous tag scopes for a matching start tag.
+                    if (!TryRecoverStartTag(builder, endTagName, endTag))
+                    {
+                        // Could not recover.
+                        var element = SyntaxFactory.MarkupElement(startTag: null, body: EmptySyntaxList, endTag: endTag);
+                        builder.Add(element);
+                    }
+                }
             }
         }
 
-        private MarkupTagBlockSyntax ParseStartTag(out string tagName, out MarkupTagMode tagMode)
+        private bool TryRecoverStartTag(in SyntaxListBuilder<RazorSyntaxNode> builder, string endTagName, MarkupEndTagSyntax endTag)
+        {
+            var malformedTagCount = 0;
+            foreach (var tag in _tagTracker)
+            {
+                if (string.Equals(tag.TagName, endTagName, StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                malformedTagCount++;
+            }
+
+            if (malformedTagCount != _tagTracker.Count)
+            {
+                // This means we found a matching tag.
+                for (var i = 0; i < malformedTagCount; i++)
+                {
+                    var tracker = _tagTracker.Pop();
+                    var malformedElement = SyntaxFactory.MarkupElement(tracker.StartTag, builder.Consume(), endTag: null);
+                    builder.AddRange(tracker.PreviousNodes);
+                    builder.Add(malformedElement);
+                }
+
+                // Now complete our target tag which is not malformed.
+                var tagTracker = _tagTracker.Pop();
+                var element = SyntaxFactory.MarkupElement(tagTracker.StartTag, builder.Consume(), endTag);
+                builder.AddRange(tagTracker.PreviousNodes);
+                builder.Add(element);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private MarkupStartTagSyntax ParseStartTag(out string tagName, out MarkupTagMode tagMode)
         {
             tagName = null;
-            tagMode = MarkupTagMode.Normal;
+            tagMode = MarkupTagMode.Invalid;
             using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
             {
                 var tagBuilder = pooledResult.Builder;
 
                 AcceptAndMoveNext(); // Accept '<'
-                TryParseBangEscape(tagBuilder);
+                var isBangEscape = TryParseBangEscape(tagBuilder);
 
                 if (At(SyntaxKind.Text))
                 {
@@ -170,6 +242,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         // This is a void element.
                         tagMode = MarkupTagMode.Void;
+                    }
+                    else
+                    {
+                        tagMode = MarkupTagMode.Normal;
+                    }
+
+                    if (isBangEscape)
+                    {
+                        // We don't want to group <p> and </!p> together.
+                        tagName = "!" + tagName;
                     }
                 }
                 TryAccept(SyntaxKind.Text);
@@ -189,7 +271,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 // End tag block
                 tagBuilder.Add(OutputAsMarkupLiteral());
-                var tagBlock = SyntaxFactory.MarkupTagBlock(tagBuilder.ToList());
+                var tagBlock = SyntaxFactory.MarkupStartTag(tagBuilder.ToList());
                 if (string.Equals(tagName, ScriptTagName, StringComparison.OrdinalIgnoreCase))
                 {
                     // If the script tag expects javascript content then we should do minimal parsing until we reach
@@ -204,10 +286,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private MarkupTagBlockSyntax ParseEndTag()
+        private MarkupEndTagSyntax ParseEndTag(out string tagName)
         {
             // This section can accept things like: '</p  >' or '</p>' etc.
             Assert(SyntaxKind.OpenAngle);
+
+            tagName = null;
 
             using (var pooledResult = Pool.Allocate<RazorSyntaxNode>())
             {
@@ -217,14 +301,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 TryAccept(SyntaxKind.ForwardSlash);
 
                 // Whitespace here is invalid (according to the spec)
-                TryParseBangEscape(tagBuilder);
-                TryAccept(SyntaxKind.Text);
+                var isBangEscape = TryParseBangEscape(tagBuilder);
+                if (At(SyntaxKind.Text))
+                {
+                    tagName = isBangEscape ? "!" : string.Empty;
+                    tagName += CurrentToken.Content;
+                    AcceptAndMoveNext();
+                }
                 TryAccept(SyntaxKind.Whitespace);
                 TryAccept(SyntaxKind.CloseAngle);
 
                 // End tag block
                 tagBuilder.Add(OutputAsMarkupLiteral());
-                var tagBlock = SyntaxFactory.MarkupTagBlock(tagBuilder.ToList());
+                var tagBlock = SyntaxFactory.MarkupEndTag(tagBuilder.ToList());
                 return tagBlock;
             }
         }
@@ -598,8 +687,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                    token.Kind == SyntaxKind.NewLine;
         }
 
-        private void ParseJavascriptAndEndScriptTag(in SyntaxListBuilder<RazorSyntaxNode> builder, AcceptedCharactersInternal endTagAcceptedCharacters = AcceptedCharactersInternal.Any)
+        private void ParseJavascriptAndEndScriptTag(in SyntaxListBuilder<RazorSyntaxNode> builder, MarkupStartTagSyntax startTag, AcceptedCharactersInternal endTagAcceptedCharacters = AcceptedCharactersInternal.Any)
         {
+            var previousNodes = builder.Consume();
+
             // Special case for <script>: Skip to end of script tag and parse code
             var seenEndScript = false;
 
@@ -637,6 +728,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
+            MarkupEndTagSyntax endTag = null;
             if (seenEndScript)
             {
                 var tagStart = CurrentStart;
@@ -660,9 +752,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Accept(closeAngle);
                     }
                     tagBuilder.Add(OutputAsMarkupLiteral());
-                    builder.Add(SyntaxFactory.MarkupTagBlock(tagBuilder.ToList()));
+                    endTag = SyntaxFactory.MarkupEndTag(tagBuilder.ToList());
                 }
             }
+
+            var element = SyntaxFactory.MarkupElement(startTag, builder.Consume(), endTag);
+            builder.AddRange(previousNodes);
+            builder.Add(element);
         }
 
         private bool ParseSpecialTag(in SyntaxListBuilder<RazorSyntaxNode> builder)
@@ -878,7 +974,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             AcceptWhile(IsSpacingToken(includeNewLines: true));
         }
 
-        private bool ScriptTagExpectsHtml(MarkupTagBlockSyntax tagBlock)
+        private bool ScriptTagExpectsHtml(MarkupStartTagSyntax tagBlock)
         {
             MarkupAttributeBlockSyntax typeAttribute = null;
             for (var i = 0; i < tagBlock.Children.Count; i++)
@@ -1283,6 +1379,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private enum ParseMode
         {
             Markup,
+            MarkupInCodeBlock,
             Text,
         }
 
@@ -1291,7 +1388,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Normal,
             Void,
             SelfClosing,
-            Script
+            Script,
+            Invalid,
+        }
+
+        private class TagTracker
+        {
+            public TagTracker(
+                string tagName,
+                MarkupStartTagSyntax startTag,
+                SourceLocation tagLocation,
+                SyntaxList<RazorSyntaxNode> previousNodes)
+            {
+                TagName = tagName;
+                StartTag = startTag;
+                TagLocation = tagLocation;
+                PreviousNodes = previousNodes;
+            }
+
+            public string TagName { get; }
+
+            public MarkupStartTagSyntax StartTag { get; }
+
+            public SourceLocation TagLocation { get; }
+
+            public SyntaxList<RazorSyntaxNode> PreviousNodes { get; }
         }
     }
 }

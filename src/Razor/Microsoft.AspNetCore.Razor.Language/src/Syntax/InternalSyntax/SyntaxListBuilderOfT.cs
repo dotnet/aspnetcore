@@ -87,6 +87,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
             return _builder.ToList<TNode>();
         }
 
+        public SyntaxList<TNode> Consume()
+        {
+            var list = ToList();
+            Clear();
+            return list;
+        }
+
         public GreenNode ToListNode()
         {
             return _builder.ToListNode();

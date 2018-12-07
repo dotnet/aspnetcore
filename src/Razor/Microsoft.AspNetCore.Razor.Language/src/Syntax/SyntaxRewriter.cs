@@ -7,6 +7,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 {
     internal abstract partial class SyntaxRewriter : SyntaxVisitor<SyntaxNode>
     {
+        private int _recursionDepth;
+
+        public override SyntaxNode Visit(SyntaxNode node)
+        {
+            if (node != null)
+            {
+                _recursionDepth++;
+                StackGuard.EnsureSufficientExecutionStack(_recursionDepth);
+
+                var result = node.Accept(this);
+
+                _recursionDepth--;
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public override SyntaxNode VisitToken(SyntaxToken token)
         {
             // PERF: This is a hot method, so it has been written to minimize the following:

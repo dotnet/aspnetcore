@@ -9,9 +9,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
     /// </summary>
     internal abstract class SyntaxWalker : SyntaxVisitor
     {
+        private int _recursionDepth;
+
         public override void Visit(SyntaxNode node)
         {
-            node?.Accept(this);
+            if (node != null)
+            {
+                _recursionDepth++;
+                StackGuard.EnsureSufficientExecutionStack(_recursionDepth);
+
+                node.Accept(this);
+
+                _recursionDepth--;
+            }
         }
 
         public override void DefaultVisit(SyntaxNode node)
