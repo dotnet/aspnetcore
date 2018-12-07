@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             return GenerateDisplay(
                 metadata,
-                htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                htmlFieldName ?? GetExpressionText(expression),
                 templateName,
                 additionalViewData);
         }
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             return GenerateEditor(
                 modelExplorer,
-                htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                htmlFieldName ?? GetExpressionText(expression),
                 templateName,
                 additionalViewData);
         }
@@ -1245,6 +1245,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             return selectList;
+        }
+
+        private static string GetExpressionText(string expression)
+        {
+            // If it's exactly "model", then give them an empty string, to replicate the lambda behavior.
+            return string.Equals(expression, "model", StringComparison.OrdinalIgnoreCase) ? string.Empty : expression;
         }
     }
 }
