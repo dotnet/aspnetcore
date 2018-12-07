@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
     <ContentTargetFolders>content</ContentTargetFolders>
-    <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(TrimmedVersion)</PackageId>
+    <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(TrimmedVersion).$(SharedFxArchitecture)</PackageId>
     <MicrosoftAspNetCoreAppPackageVersion>$(PackageVersion)</MicrosoftAspNetCoreAppPackageVersion>
     <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</HostingStartupRuntimeFrameworkVersion>
 
@@ -23,6 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+
+    <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(SharedFxRid)" />
     <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(PackageVersion)" />
 
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
