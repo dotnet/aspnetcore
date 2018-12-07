@@ -38,7 +38,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7E80C58E
 		build\applicationhost.iis.config = build\applicationhost.iis.config
 		build\Build.Settings = build\Build.Settings
 		build\Config.Definitions.Props = build\Config.Definitions.Props
-		build\dependencies.props = build\dependencies.props
 		build\functional-test-assets.targets = build\functional-test-assets.targets
 		build\Key.snk = build\Key.snk
 		build\launchSettings.json = build\launchSettings.json
@@ -116,7 +115,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.BackwardsCompatibility.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.ForwardsCompatibility.FunctionalTests", "test\IIS.ForwardsCompatibility.FunctionalTests\IIS.ForwardsCompatibility.FunctionalTests.csproj", "{D1EA5D99-28FD-4197-81DE-17098846B38B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InProcessForwardsCompatWebSite", "test\WebSites\InProcessForwardsCompatWebSite\InProcessWebSite.csproj", "{BBBC85B2-5D7A-4D09-90B1-8DBCC9059493}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InProcessWebSite", "test\WebSites\InProcessForwardsCompatWebSite\InProcessWebSite.csproj", "{BBBC85B2-5D7A-4D09-90B1-8DBCC9059493}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -12,21 +12,23 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             private readonly AsyncIOEngine _engine;
 
             private IntPtr _requestHandler;
+            private bool _moreData;
 
             public AsyncFlushOperation(AsyncIOEngine engine)
             {
                 _engine = engine;
             }
 
-            public void Initialize(IntPtr requestHandler)
+            public void Initialize(IntPtr requestHandler, bool moreData)
             {
                 _requestHandler = requestHandler;
+                _moreData = moreData;
             }
 
             protected override bool InvokeOperation(out int hr, out int bytes)
             {
                 bytes = 0;
-                hr = NativeMethods.HttpFlushResponseBytes(_requestHandler, out var fCompletionExpected);
+                hr = NativeMethods.HttpFlushResponseBytes(_requestHandler, _moreData, out var fCompletionExpected);
 
                 return !fCompletionExpected;
             }
@@ -36,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 base.ResetOperation();
 
                 _requestHandler = default;
+                _moreData = false;
                 _engine.ReturnOperation(this);
             }
         }

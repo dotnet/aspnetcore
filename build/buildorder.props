@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <RepositoryBuildOrder Include="Razor" Order="6" />
-    <RepositoryBuildOrder Include="HttpSysServer" Order="8" />
     <RepositoryBuildOrder Include="Antiforgery" Order="10" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" />
     <RepositoryBuildOrder Include="StaticFiles" Order="11" />
@@ -16,7 +15,6 @@
     <RepositoryBuildOrder Include="Session" Order="11" />
     <RepositoryBuildOrder Include="ServerTests" Order="11" />
     <RepositoryBuildOrder Include="CORS" Order="12"  />
-    <RepositoryBuildOrder Include="Routing" Order="12" />
     <RepositoryBuildOrder Include="Security" Order="13" />
     <RepositoryBuildOrder Include="MetaPackages" Order="13" />
     <RepositoryBuildOrder Include="Mvc" Order="14" />

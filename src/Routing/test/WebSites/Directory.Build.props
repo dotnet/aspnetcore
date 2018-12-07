@@ -1,4 +1,0 @@
-<Project>
-  <!-- Skip the parent folder to prevent getting test package references. -->
-  <Import Project="..\..\Directory.Build.props" />
-</Project>

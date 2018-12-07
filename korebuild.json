@@ -1,10 +1,24 @@
 {
   "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
   "channel": "master",
+  "msbuildType": "full",
   "toolsets": {
     "nodejs": {
       "minVersion": "8.0",
       "required": true
+    },
+    "visualstudio": {
+      "required": [
+        "Windows"
+      ],
+      "includePrerelease": true,
+      "versionRange": "[15.8, 16.0)",
+      "requiredWorkloads": [
+        "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
+        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "Microsoft.VisualStudio.Component.VC.ATL",
+        "Microsoft.VisualStudio.Component.Windows10SDK.15063.Desktop"
+      ]
     }
   }
 }

@@ -6,7 +6,5 @@ This is required to provide dependencies for samples and tests.
   <ItemGroup>
     <LatestPackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="3.0.0-preview-18571-0010" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="3.0.0-preview-18571-0010" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="3.0.0-preview-18571-0010" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Routing" Version="3.0.0-preview-18571-0010" />
   </ItemGroup>
 </Project>

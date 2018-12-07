@@ -72,7 +72,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ResolveRepoInfo" DependsOnTargets="_ResolveProjectArtifactsInfoShipped;_PrepareRepositories;GetLineupPackageInfo">
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_ResolveProjectArtifactsInfoShipped;_PrepareRepositories">
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>$(BuildProperties);MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
@@ -178,19 +178,6 @@
     <Error Text="No solutions were found in '$(SubmoduleRoot)'. Did you forget to clone the submodules? Run `git submodule update --init`." Condition="@(Solution->Count()) == 0" />
   </Target>
 
-  <Target Name="GetLineupPackageInfo">
-    <ItemGroup>
-      <ArtifactInfo Include="$(BuildDir)Internal.AspNetCore.Universe.Lineup.$(PackageVersion).nupkg">
-        <ArtifactType>NuGetPackage</ArtifactType>
-        <PackageId>Internal.AspNetCore.Universe.Lineup</PackageId>
-        <Version>$(PackageVersion)</Version>
-        <Category>noship</Category>
-        <IsLineup>true</IsLineup>
-      </ArtifactInfo>
-      <FilesToSign Include="$(BuildDir)Internal.AspNetCore.Universe.Lineup.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
-    </ItemGroup>
-  </Target>
-
   <Target Name="GeneratePropsFiles" DependsOnTargets="PrepareOutputPaths;GetArtifactInfo">
     <ItemGroup>
       <_LineupPackages Include="@(ExternalDependency)" />
@@ -234,13 +221,6 @@
     <WriteLinesToFile File="$(GeneratedBrandingPropsPath)" Overwrite="true" Lines="$(BrandingPropsContent)"/>
 
     <Copy SourceFiles="$(GeneratedPackageVersionPropsPath);$(GeneratedBrandingPropsPath)" DestinationFolder="$(ArtifactsDir)" />
-
-    <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
-                DestinationFolder="$(BuildDir)"
-                Overwrite="true"
-                Properties="version=$(PackageVersion);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath);brandingPropsFile=$(GeneratedBrandingPropsPath)">
-      <Output TaskParameter="Packages" ItemName="LineupPackage" />
-    </PackNuSpec>
   </Target>
 
   <Target Name="CleanRepoArtifacts">
@@ -248,26 +228,6 @@
   </Target>
 
   <Target Name="_PrepareRepositories">
-    <ItemGroup Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)'!=''">
-      <_RepositoriesToInclude Include="$(KOREBUILD_REPOSITORY_INCLUDE)" />
-      <Repository Update="@(Repository)" Build="false" />
-      <Repository
-        Update="@(Repository)"
-        Condition="'@(Repository)'=='@(_RepositoriesToInclude)' AND '%(Identity)'!=''"
-        Build="true" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(KOREBUILD_REPOSITORY_EXCLUDE)'!=''">
-      <_RepositoriesToExclude Include="$(KOREBUILD_REPOSITORY_EXCLUDE)" />
-      <Repository
-        Update="@(Repository)"
-        Condition="'@(Repository)'=='@(_RepositoriesToExclude)' AND '%(Identity)'!=''"
-        Build="false" />
-    </ItemGroup>
-
-    <Error Text="KOREBUILD_REPOSITORY_EXCLUDE AND KOREBUILD_REPOSITORY_INCLUDE are specified."
-      Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)' != '' AND '$(KOREBUILD_REPOSITORY_EXCLUDE)' != ''" />
-
     <ItemGroup>
       <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != '' AND '%(RootPath)' == ''"  />
       <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != '' AND '%(RootPath)' == ''" />
@@ -282,7 +242,7 @@
   <Target Name="BuildRepositories"
      DependsOnTargets="_PrepareRepositories;GeneratePropsFiles;ComputeGraph;_BuildRepositories" />
 
-  <Target Name="ListExpectedPackages" DependsOnTargets="GetProjectArtifactInfo;GetFxProjectArtifactInfo;ResolveRepoInfo">
+  <Target Name="ListExpectedPackages" DependsOnTargets="ResolveSharedSourcesPackageInfo;GetProjectArtifactInfo;ResolveRepoInfo">
     <WriteLinesToFile File="$(RepositoryRoot)artifacts\packages.csv" Lines="PackageId,Version;@(ArtifactInfo->WithMetadataValue('ArtifactType', 'NuGetPackage')->'%(PackageId),%(Version)')" Overwrite="true" />
   </Target>
 

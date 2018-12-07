@@ -8,7 +8,7 @@
     <ArchiveProjects Include="$(RepositoryRoot)src\PackageArchive\Archive.*\*.*proj" />
   </ItemGroup>
 
-  <Target Name="BuildFallbackArchive" DependsOnTargets="GetProjectArtifactInfo;GetFxProjectArtifactInfo;ResolveRepoInfo;GeneratePropsFiles">
+  <Target Name="BuildFallbackArchive" DependsOnTargets="ResolveSharedSourcesPackageInfo;GetProjectArtifactInfo;GetFxProjectArtifactInfo;ResolveRepoInfo;GeneratePropsFiles">
     <PropertyGroup>
       <ArchiveBuildProps>
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);

@@ -41,7 +41,6 @@
     <Repository Include="AzureIntegration" />
     <Repository Include="Components" />
     <Repository Include="CORS" />
-    <Repository Include="HttpSysServer" />
     <Repository Include="Identity" />
     <Repository Include="IISIntegration" />
     <Repository Include="JavaScriptServices" />
@@ -49,7 +48,6 @@
     <Repository Include="Mvc" />
     <Repository Include="Razor" />
     <Repository Include="ResponseCaching" />
-    <Repository Include="Routing" />
     <Repository Include="Security" />
     <Repository Include="Session" />
     <Repository Include="SignalR" />

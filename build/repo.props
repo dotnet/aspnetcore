@@ -17,15 +17,11 @@
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
-    <!-- This creates false-positives on many of the native .dll's we produce or re-distribute from other teams. -->
-    <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
-
     <SharedSourcesFolder>$(RepositoryRoot)src\Shared\</SharedSourcesFolder>
   </PropertyGroup>
 
   <ItemGroup>
-    <SharedSourceDirectories Include="$([System.IO.Directory]::GetDirectories($(SharedSourcesFolder)))" />
-    <SharedSourceDirectories Remove="$(RepositoryRoot)src\Shared\Diagnostics\" />
+    <SharedSourceDirectories Include="$(SharedSourcesFolder)Hosting.WebHostBuilderFactory\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,7 +61,7 @@
     <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
     <ProjectToExclude Include="
                        $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
-                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
+                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj
                        " />
 
     <ProjectToBuild Include="
@@ -78,7 +74,11 @@
                       $(RepositoryRoot)src\Tools\**\*.*proj;
                       $(RepositoryRoot)src\Middleware\**\*.*proj;
                       "
-                    Exclude="@(ProjectToExclude)" />
+                    Exclude="
+                      @(ProjectToExclude);
+                      $(RepositoryRoot)**\bin\**\*;
+                      $(RepositoryRoot)**\obj\**\*;
+                      $(RepositoryRoot)**\AutobahnTestApp\**\*;" />
   </ItemGroup>
 
   <!-- Properties for publishing -->
