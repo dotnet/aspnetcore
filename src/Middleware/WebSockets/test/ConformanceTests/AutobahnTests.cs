@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
 
         // Skip if wstest is not installed for now, see https://github.com/aspnet/WebSockets/issues/95
         // We will enable Wstest on every build once we've gotten the necessary infrastructure sorted out :).
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4350")]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/4350")]
         public async Task AutobahnTestSuite()
         {
             // If we're on CI, we want to actually fail if WsTest isn't installed, rather than just skipping the test
