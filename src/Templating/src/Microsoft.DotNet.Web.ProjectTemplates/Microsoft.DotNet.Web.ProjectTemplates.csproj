@@ -23,6 +23,7 @@
       MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
       MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion=$(MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion);
       MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion=$(MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion);
+      MicrosoftAspNetCoreComponentsPackageVersion=$(MicrosoftAspNetCoreComponentsPackageVersion);
       MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion);
       MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion);
       MicrosoftAspNetCoreIdentityUIPackageVersion=$(MicrosoftAspNetCoreIdentityUIPackageVersion);
