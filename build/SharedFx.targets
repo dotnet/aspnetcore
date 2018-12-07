@@ -67,9 +67,10 @@
              Properties="$(SharedFxBuildProperties)"
              BuildInParallel="true" />
 
-    <MSBuild Projects="%(FxProjectToBuild.Identity)"
+    <MSBuild Projects="@(FxProjectToBuild)"
              Targets="Pack"
              Properties="$(SharedFxBuildProperties);NoBuild=true"
+             BuildInParallel="true"
              SkipNonexistentTargets="true" />
   </Target>
 
