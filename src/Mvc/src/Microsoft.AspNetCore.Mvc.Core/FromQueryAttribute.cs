@@ -12,6 +12,26 @@ namespace Microsoft.AspNetCore.Mvc
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class FromQueryAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider
     {
+        /// <summary>
+        /// Creates a new <see cref="FromQueryAttribute"/>.
+        /// </summary>
+        public FromQueryAttribute() { }
+
+        /// <summary>
+        /// Creates a new <see cref="FromQueryAttribute"/> while specifying
+        /// a target paramter name.
+        /// </summary>
+        /// <param name="name">The name of the query parameter. May not be null</param>
+        public FromQueryAttribute(string name)
+        {
+            if(name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            Name = name;
+        }
+
         /// <inheritdoc />
         public BindingSource BindingSource => BindingSource.Query;
 
