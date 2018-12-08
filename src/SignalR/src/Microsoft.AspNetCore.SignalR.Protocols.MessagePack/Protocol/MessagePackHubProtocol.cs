@@ -132,8 +132,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     return CreateInvocationMessage(input, ref startOffset, binder, resolver);
                 case HubProtocolConstants.StreamInvocationMessageType:
                     return CreateStreamInvocationMessage(input, ref startOffset, binder, resolver);
-                case HubProtocolConstants.StreamDataMessageType:
-                    return CreateStreamDataMessage(input, ref startOffset, binder, resolver);
                 case HubProtocolConstants.StreamItemMessageType:
                     return CreateStreamItemMessage(input, ref startOffset, binder, resolver);
                 case HubProtocolConstants.CompletionMessageType:
@@ -144,8 +142,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     return PingMessage.Instance;
                 case HubProtocolConstants.CloseMessageType:
                     return CreateCloseMessage(input, ref startOffset);
-                case HubProtocolConstants.StreamCompleteMessageType:
-                    return CreateStreamCompleteMessage(input, ref startOffset);
                 default:
                     // Future protocol changes can add message types, old clients can ignore them
                     return null;
@@ -194,14 +190,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 return new InvocationBindingFailureMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
-        }
-
-        private static StreamDataMessage CreateStreamDataMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
-        {
-            var streamId = ReadString(input, ref offset, "streamId");
-            var itemType = binder.GetStreamItemType(streamId);
-            var value = DeserializeObject(input, ref offset, itemType, "item", resolver);
-            return new StreamDataMessage(streamId, value);
         }
 
         private static StreamItemMessage CreateStreamItemMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
@@ -254,17 +242,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             var error = ReadString(input, ref offset, "error");
             return new CloseMessage(error);
-        }
-
-        private static StreamCompleteMessage CreateStreamCompleteMessage(byte[] input, ref int offset)
-        {
-            var streamId = ReadString(input, ref offset, "streamId");
-            var error = ReadString(input, ref offset, "error");
-            if (string.IsNullOrEmpty(error))
-            {
-                error = null;
-            }
-            return new StreamCompleteMessage(streamId, error);
         }
 
         private static Dictionary<string, string> ReadHeaders(byte[] input, ref int offset)
@@ -384,9 +361,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 case StreamInvocationMessage streamInvocationMessage:
                     WriteStreamInvocationMessage(streamInvocationMessage, packer);
                     break;
-                case StreamDataMessage streamDataMessage:
-                    WriteStreamDataMessage(streamDataMessage, packer);
-                    break;
                 case StreamItemMessage streamItemMessage:
                     WriteStreamingItemMessage(streamItemMessage, packer);
                     break;
@@ -401,9 +375,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     break;
                 case CloseMessage closeMessage:
                     WriteCloseMessage(closeMessage, packer);
-                    break;
-                case StreamCompleteMessage m:
-                    WriteStreamCompleteMessage(m, packer);
                     break;
                 default:
                     throw new InvalidDataException($"Unexpected message type: {message.GetType().Name}");
@@ -444,14 +415,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 WriteArgument(arg, packer);
             }
-        }
-
-        private void WriteStreamDataMessage(StreamDataMessage message, Stream packer)
-        {
-            MessagePackBinary.WriteArrayHeader(packer, 3);
-            MessagePackBinary.WriteInt16(packer, HubProtocolConstants.StreamDataMessageType);
-            MessagePackBinary.WriteString(packer, message.StreamId);
-            WriteArgument(message.Item, packer);
         }
 
         private void WriteStreamingItemMessage(StreamItemMessage message, Stream packer)
@@ -504,21 +467,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             MessagePackBinary.WriteInt16(packer, HubProtocolConstants.CancelInvocationMessageType);
             PackHeaders(packer, message.Headers);
             MessagePackBinary.WriteString(packer, message.InvocationId);
-        }
-
-        private void WriteStreamCompleteMessage(StreamCompleteMessage message, Stream packer)
-        {
-            MessagePackBinary.WriteArrayHeader(packer, 3);
-            MessagePackBinary.WriteInt16(packer, HubProtocolConstants.StreamCompleteMessageType);
-            MessagePackBinary.WriteString(packer, message.StreamId);
-            if (message.HasError)
-            {
-                MessagePackBinary.WriteString(packer, message.Error);
-            }
-            else
-            {
-                MessagePackBinary.WriteNil(packer);
-            }
         }
 
         private void WriteCloseMessage(CloseMessage message, Stream packer)
@@ -598,23 +546,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
 
             throw new InvalidDataException($"Reading '{field}' as String failed.", msgPackException);
-        }
-
-        private static bool ReadBoolean(byte[] input, ref int offset, string field)
-        {
-            Exception msgPackException = null;
-            try
-            {
-                var readBool = MessagePackBinary.ReadBoolean(input, offset, out var readSize);
-                offset += readSize;
-                return readBool;
-            }
-            catch (Exception e)
-            {
-                msgPackException = e;
-            }
-
-            throw new InvalidDataException($"Reading '{field}' as Boolean failed.", msgPackException);
         }
 
         private static long ReadMapLength(byte[] input, ref int offset, string field)

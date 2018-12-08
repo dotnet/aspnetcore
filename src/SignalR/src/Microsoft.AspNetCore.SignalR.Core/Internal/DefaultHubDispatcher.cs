@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     connection.StartClientTimeout();
                     break;
 
-                case StreamDataMessage streamItem:
+                case StreamItemMessage streamItem:
                     Log.ReceivedStreamItem(_logger, streamItem);
                     return ProcessStreamItem(connection, streamItem);
 
-                case StreamCompleteMessage streamCompleteMessage:
+                case CompletionMessage streamCompleteMessage:
                     // closes channels, removes from Lookup dict
                     // user's method can see the channel is complete and begin wrapping up
                     Log.CompletingStream(_logger, streamCompleteMessage);
@@ -149,14 +149,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 "Failed to bind Stream message.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
 
-            var message = new StreamCompleteMessage(bindingFailureMessage.Id, errorString);
+            var message = CompletionMessage.WithError(bindingFailureMessage.Id, errorString);
             Log.ClosingStreamWithBindingError(_logger, message);
             connection.StreamTracker.Complete(message);
 
             return Task.CompletedTask;
         }
 
-        private Task ProcessStreamItem(HubConnectionContext connection, StreamDataMessage message)
+        private Task ProcessStreamItem(HubConnectionContext connection, StreamItemMessage message)
         {
             Log.ReceivedStreamItem(_logger, message);
             return connection.StreamTracker.ProcessItem(message);

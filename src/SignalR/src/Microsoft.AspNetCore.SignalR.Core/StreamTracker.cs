@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        public Task ProcessItem(StreamDataMessage message)
+        public Task ProcessItem(StreamItemMessage message)
         {
-            return TryGetConverter(message.StreamId).WriteToStream(message.Item);
+            return TryGetConverter(message.InvocationId).WriteToStream(message.Item);
         }
         
         public Type GetStreamItemType(string streamId)
@@ -49,14 +49,14 @@ namespace Microsoft.AspNetCore.SignalR
             return TryGetConverter(streamId).GetItemType();
         }
 
-        public void Complete(StreamCompleteMessage message)
+        public void Complete(CompletionMessage message)
         {
-            _lookup.TryRemove(message.StreamId, out var converter);
+            _lookup.TryRemove(message.InvocationId, out var converter);
             if (converter == null)
             {
-                throw new KeyNotFoundException($"No stream with id '{message.StreamId}' could be found.");
+                throw new KeyNotFoundException($"No stream with id '{message.InvocationId}' could be found.");
             }
-            converter.TryComplete(message.HasError ? new Exception(message.Error) : null);
+            converter.TryComplete(message.HasResult ? null : new Exception(message.Error));
         }
 
         private static IStreamConverter BuildStream<T>()

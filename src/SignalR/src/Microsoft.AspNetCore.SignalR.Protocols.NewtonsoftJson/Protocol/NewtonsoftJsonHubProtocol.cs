@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                         }
                                         else
                                         {
-                                            // If we don't have an id yetmthen we need to store it as a JToken to parse later
+                                            // If we don't have an id yet then we need to store it as a JToken to parse later
                                             itemToken = JToken.Load(reader);
                                             break;
                                         }
@@ -334,22 +334,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 : BindStreamInvocationMessage(invocationId, target, arguments, hasArguments, binder);
                         }
                         break;
-                    case HubProtocolConstants.StreamDataMessageType:
-                        if (itemToken != null)
-                        {
-                            try
-                            {
-                                var itemType = binder.GetStreamItemType(streamId);
-                                item = itemToken.ToObject(itemType, PayloadSerializer);
-                            }
-                            catch (Exception ex)
-                            {
-                                message = new StreamBindingFailureMessage(streamId, ExceptionDispatchInfo.Capture(ex));
-                                break;
-                            }
-                        }
-                        message = BindParamStreamMessage(streamId, item, hasItem, binder);
-                        break;
                     case HubProtocolConstants.StreamItemMessageType:
                         if (itemToken != null)
                         {
@@ -383,9 +367,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                         return PingMessage.Instance;
                     case HubProtocolConstants.CloseMessageType:
                         return BindCloseMessage(error);
-                    case HubProtocolConstants.StreamCompleteMessageType:
-                        message = BindStreamCompleteMessage(streamId, error);
-                        break;
                     case null:
                         throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
                     default:
@@ -456,10 +437,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                             WriteHeaders(writer, m);
                             WriteStreamInvocationMessage(m, writer);
                             break;
-                        case StreamDataMessage m:
-                            WriteMessageType(writer, HubProtocolConstants.StreamDataMessageType);
-                            WriteStreamDataMessage(m, writer);
-                            break;
                         case StreamItemMessage m:
                             WriteMessageType(writer, HubProtocolConstants.StreamItemMessageType);
                             WriteHeaders(writer, m);
@@ -481,10 +458,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                         case CloseMessage m:
                             WriteMessageType(writer, HubProtocolConstants.CloseMessageType);
                             WriteCloseMessage(m, writer);
-                            break;
-                        case StreamCompleteMessage m:
-                            WriteMessageType(writer, HubProtocolConstants.StreamCompleteMessageType);
-                            WriteStreamCompleteMessage(m, writer);
                             break;
                         default:
                             throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
@@ -534,29 +507,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteInvocationId(message, writer);
         }
 
-        private void WriteStreamCompleteMessage(StreamCompleteMessage message, JsonTextWriter writer)
-        {
-            writer.WritePropertyName(StreamIdPropertyName);
-            writer.WriteValue(message.StreamId);
-
-            if (message.Error != null)
-            {
-                writer.WritePropertyName(ErrorPropertyName);
-                writer.WriteValue(message.Error);
-            }
-        }
-
         private void WriteStreamItemMessage(StreamItemMessage message, JsonTextWriter writer)
         {
             WriteInvocationId(message, writer);
-            writer.WritePropertyName(ItemPropertyName);
-            PayloadSerializer.Serialize(writer, message.Item);
-        }
-
-        private void WriteStreamDataMessage(StreamDataMessage message, JsonTextWriter writer)
-        {
-            writer.WritePropertyName(StreamIdPropertyName);
-            writer.WriteValue(message.StreamId);
             writer.WritePropertyName(ItemPropertyName);
             PayloadSerializer.Serialize(writer, message.Item);
         }
@@ -624,17 +577,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return new CancelInvocationMessage(invocationId);
         }
 
-        private HubMessage BindStreamCompleteMessage(string streamId, string error)
-        {
-            if (string.IsNullOrEmpty(streamId))
-            {
-                throw new InvalidDataException($"Missing required property '{StreamIdPropertyName}'.");
-            }
-
-            // note : if the stream completes normally, the error should be `null`
-            return new StreamCompleteMessage(streamId, error);
-        }
-
         private HubMessage BindCompletionMessage(string invocationId, string error, object result, bool hasResult, IInvocationBinder binder)
         {
             if (string.IsNullOrEmpty(invocationId))
@@ -653,20 +595,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
 
             return new CompletionMessage(invocationId, error, result: null, hasResult: false);
-        }
-
-        private HubMessage BindParamStreamMessage(string streamId, object item, bool hasItem, IInvocationBinder binder)
-        {
-            if (string.IsNullOrEmpty(streamId))
-            {
-                throw new InvalidDataException($"Missing required property '{StreamIdPropertyName}");
-            }
-            if (!hasItem)
-            {
-                throw new InvalidDataException($"Missing required property '{ItemPropertyName}");
-            }
-
-            return new StreamDataMessage(streamId, item);
         }
 
         private HubMessage BindStreamItemMessage(string invocationId, object item, bool hasItem, IInvocationBinder binder)
