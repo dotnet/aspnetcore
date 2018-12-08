@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             RemoteSignOutPath = new PathString("/signout-oidc");
 
             Events = new OpenIdConnectEvents();
+            ClientAuthenticationMode = OpenIdConnectClientAuthenticationMode.Post;
             Scope.Add("openid");
             Scope.Add("profile");
 
@@ -121,6 +122,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Gets or sets the 'client_secret'.
         /// </summary>
         public string ClientSecret { get; set; }
+
+        /// <summary>
+        /// Configure the way the client authenticate on the server
+        /// https://tools.ietf.org/html/rfc6749#section-2.3.1
+        /// </summary>
+        public IClientAuthentication ClientAuthenticationMode { get; set; }
 
         /// <summary>
         /// Configuration provided directly by the developer. If provided, then MetadataAddress and the Backchannel properties

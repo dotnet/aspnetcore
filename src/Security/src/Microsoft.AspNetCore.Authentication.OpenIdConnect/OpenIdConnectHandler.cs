@@ -748,6 +748,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             Logger.RedeemingCodeForTokens();
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, _configuration.TokenEndpoint);
+
+            this.Options.ClientAuthenticationMode.SetClientAuthentication(requestMessage, tokenEndpointRequest);
+
             requestMessage.Content = new FormUrlEncodedContent(tokenEndpointRequest.Parameters);
 
             var responseMessage = await Backchannel.SendAsync(requestMessage);

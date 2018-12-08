@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
@@ -703,6 +704,75 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
+        public async Task When_Client_authentication_mode_is_post_then_the_request_message_body_should_contains_client_id_and_client_secret()
+        {
+            var events = new ExpectedOidcEvents()
+            {
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+            };
+
+            string token_request = null;
+            var server = CreateServer(events, AppWritePath,
+                option =>
+                {
+                    option.ClientId = "a-test-client";
+                    option.ClientSecret = "asecret";
+                    option.ClientAuthenticationMode = OpenIdConnectClientAuthenticationMode.Post;
+                },
+                message =>
+                {
+                    if (string.Equals("/tokens", message.RequestUri.AbsolutePath, StringComparison.Ordinal))
+                    {
+                        token_request = message.Content.ReadAsStringAsync().Result;
+
+                    }
+                }
+                );
+            await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
+            Assert.Contains("client_id=a-test-client", token_request);
+            Assert.Contains("client_secret=asecret", token_request);
+        }
+        [Fact]
+        public async Task When_Client_authentication_mode_is_basic_then_the_request_message_header_should_contains_a_basic_authorization_header_with_clientid_and_client_secret()
+        {
+            var events = new ExpectedOidcEvents()
+            {
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+            };
+            var clientId = "@!12AD!0008!6D30.23D7";
+            var clientSecret = "P@55W0rd!";
+            AuthenticationHeaderValue authorization = null;
+            var server = CreateServer(events, AppWritePath,
+                option =>
+                {
+                    option.ClientId = clientId;
+                    option.ClientSecret = clientSecret;
+                    option.ClientAuthenticationMode = OpenIdConnectClientAuthenticationMode.Basic;
+                },
+                message =>
+                {
+                    if (string.Equals("/tokens", message.RequestUri.AbsolutePath, StringComparison.Ordinal))
+                    {
+                        authorization = message.Headers.Authorization;
+                    }
+                }
+            );
+            await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
+
+            Assert.Equal("Basic", authorization.Scheme);
+            Assert.Equal("JTQwJTIxMTJBRCUyMTAwMDglMjE2RDMwLjIzRDc6UCU0MDU1VzByZCUyMQ==", authorization.Parameter);
+        }
+
+
+        [Fact]
         public async Task OnAuthenticationFailed_HandledWithoutTicket_NoMoreEventsRun()
         {
             var events = new ExpectedOidcEvents()
@@ -1264,7 +1334,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             }
         }
 
-        private TestServer CreateServer(OpenIdConnectEvents events, RequestDelegate appCode)
+        private TestServer CreateServer(OpenIdConnectEvents events, RequestDelegate appCode, Action<OpenIdConnectOptions> option = null, Action<HttpRequestMessage> validateRequest = null)
         {
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -1289,7 +1359,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                         o.StateDataFormat = new TestStateDataFormat();
                         o.SecurityTokenValidator = new TestTokenValidator();
                         o.ProtocolValidator = new TestProtocolValidator();
-                        o.BackchannelHttpHandler = new TestBackchannel();
+                        o.BackchannelHttpHandler = new TestBackchannel(validateRequest);
+                        option?.Invoke(o);
                     });
                 })
                 .Configure(app =>
@@ -1384,12 +1455,22 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         private class TestBackchannel : HttpMessageHandler
         {
+            private readonly Action<HttpRequestMessage> verifyRequest;
+            public TestBackchannel(Action<HttpRequestMessage> validateRequest)
+            {
+                this.verifyRequest = validateRequest ?? (message => { });
+            }
+
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
+                this.verifyRequest(request);
                 if (string.Equals("/tokens", request.RequestUri.AbsolutePath, StringComparison.Ordinal))
                 {
-                    return Task.FromResult(new HttpResponseMessage() { Content =
-                       new StringContent("{ \"id_token\": \"my_id_token\", \"access_token\": \"my_access_token\" }", Encoding.ASCII, "application/json") });
+                    return Task.FromResult(new HttpResponseMessage()
+                    {
+                        Content =
+                       new StringContent("{ \"id_token\": \"my_id_token\", \"access_token\": \"my_access_token\" }", Encoding.ASCII, "application/json")
+                    });
                 }
                 if (string.Equals("/user", request.RequestUri.AbsolutePath, StringComparison.Ordinal))
                 {
