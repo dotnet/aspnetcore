@@ -29,9 +29,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 case CompletionMessage c:
                     _returnType = c.Result?.GetType() ?? typeof(object);
                     break;
-                case StreamDataMessage sd:
-                    _returnType = sd.Item.GetType() ?? typeof(object);
-                    break;
             }
         }
 

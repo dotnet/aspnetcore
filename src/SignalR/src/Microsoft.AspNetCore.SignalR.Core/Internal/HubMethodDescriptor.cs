@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
@@ -43,8 +42,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     HasSyntheticArguments = true;
                     return false;
                 }
+                else if (ReflectionHelper.IsStreamingType(p.ParameterType, mustBeDirectType: true))
+                {
+                    if (StreamingParameters == null)
+                    {
+                        StreamingParameters = new List<Type>();
+                    }
+
+                    StreamingParameters.Add(p.ParameterType.GetGenericArguments()[0]);
+                    HasSyntheticArguments = true;
+                    return false;
+                }
                 return true;
-            }).Select(GetParameterType).ToArray();
+            }).Select(p => p.ParameterType).ToArray();
 
             if (HasSyntheticArguments)
             {
@@ -54,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             Policies = policies.ToArray();
         }
 
-        public bool HasStreamingParameters { get; private set; }
+        public List<Type> StreamingParameters { get; private set; }
 
         private Func<object, CancellationToken, IAsyncEnumerator<object>> _convertToEnumerator;
 
@@ -75,17 +85,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public IList<IAuthorizeData> Policies { get; }
 
         public bool HasSyntheticArguments { get; private set; }
-
-        private Type GetParameterType(ParameterInfo p)
-        {
-            var type = p.ParameterType;
-            if (ReflectionHelper.IsStreamingType(type, mustBeDirectType: true))
-            {
-                HasStreamingParameters = true;
-                return typeof(StreamPlaceholder);
-            }
-            return type;
-        }
 
         private static bool IsChannelType(Type type, out Type payloadType)
         {

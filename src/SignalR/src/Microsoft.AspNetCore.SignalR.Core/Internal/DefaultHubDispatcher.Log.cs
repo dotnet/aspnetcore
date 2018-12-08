@@ -149,9 +149,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 _invalidReturnValueFromStreamingMethod(logger, hubMethod, null);
             }
 
-            public static void ReceivedStreamItem(ILogger logger, StreamDataMessage message)
+            public static void ReceivedStreamItem(ILogger logger, StreamItemMessage message)
             {
-                _receivedStreamItem(logger, message.StreamId, null);
+                _receivedStreamItem(logger, message.InvocationId, null);
             }
 
             public static void StartingParameterStream(ILogger logger, string streamId)
@@ -159,14 +159,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 _startingParameterStream(logger, streamId, null);
             }
 
-            public static void CompletingStream(ILogger logger, StreamCompleteMessage message)
+            public static void CompletingStream(ILogger logger, CompletionMessage message)
             {
-                _completingStream(logger, message.StreamId, null);
+                _completingStream(logger, message.InvocationId, null);
             }
 
-            public static void ClosingStreamWithBindingError(ILogger logger, StreamCompleteMessage message)
+            public static void ClosingStreamWithBindingError(ILogger logger, CompletionMessage message)
             {
-                _closingStreamWithBindingError(logger, message.StreamId, message.Error, null);
+                _closingStreamWithBindingError(logger, message.InvocationId, message.Error, null);
             }
         }
     }
