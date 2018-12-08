@@ -358,38 +358,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 htmlAttributes);
         }
 
-        /// <summary>
-        /// Gets the <see cref="ModelExpression"/> for <paramref name="expression"/>.
-        /// </summary>
-        /// <typeparam name="TResult">The type of the result.</typeparam>
-        /// <param name="expression">The expression.</param>
-        /// <returns>The <see cref="ModelExpression"/>.</returns>
-        public ModelExpression GetModelExpression<TResult>(Expression<Func<TModel, TResult>> expression)
+        private ModelExpression GetModelExpression<TResult>(Expression<Func<TModel, TResult>> expression)
         {
-            if (expression == null)
-            {
-                throw new ArgumentNullException(nameof(expression));
-            }
-
             return _modelExpressionProvider.CreateModelExpression(ViewData, expression);
         }
 
         /// <summary>
-        /// Gets the <see cref="ModelExpression"/> for <paramref name="expression"/>.
+        /// Gets the name for <paramref name="expression"/>.
         /// </summary>
-        /// <typeparam name="TResult">The type of the result.</typeparam>
         /// <param name="expression">The expression.</param>
-        /// <returns>The <see cref="ModelExpression"/>.</returns>
-        public ModelExpression GetModelExpression<TResult>(string expression)
-        {
-            if (expression == null)
-            {
-                throw new ArgumentNullException(nameof(expression));
-            }
-
-            return _modelExpressionProvider.CreateModelExpression(ViewData, expression);
-        }
-
+        /// <returns>The expression name.</returns>
         protected string GetExpressionName<TResult>(Expression<Func<TModel, TResult>> expression)
         {
             if (expression == null)
