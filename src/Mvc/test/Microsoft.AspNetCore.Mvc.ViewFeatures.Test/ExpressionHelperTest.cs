@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class ExpressionHelperTest
     {
-        private readonly ExpressionTextCache _expressionTextCache = new ExpressionTextCache();
+        private readonly ConcurrentDictionary<LambdaExpression, string> _expressionTextCache = new ConcurrentDictionary<LambdaExpression, string>(LambdaExpressionComparer.Instance);
 
         public static TheoryData<Expression, string> ExpressionAndTexts
         {
