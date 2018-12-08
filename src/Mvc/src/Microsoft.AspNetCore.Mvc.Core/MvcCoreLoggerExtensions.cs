@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             _logFilterExecutionPlan = LoggerMessage.Define<string, string[]>(
                 LogLevel.Debug,
-                new EventId(1, "LogFilterExecutionPlan"),
+                new EventId(1, "FilterExecutionPlan"),
                 "Execution plan of {FilterType} filters (in the following order): {Filters}");
 
             _beforeExecutingMethodOnFilter = LoggerMessage.Define<string, string, Type>(
@@ -553,7 +553,6 @@ namespace Microsoft.AspNetCore.Mvc
                 LogLevel.Debug,
                 new EventId(28, "NoNonIndexBasedFormatFoundForCollection"),
                 "Could not bind to collection using a format like {ModelName}=value1&{ModelName}=value2");
-
 
             _attemptingToBindCollectionUsingIndices = LoggerMessage.Define<string, string, string, string, string, string>(
                 LogLevel.Debug,
