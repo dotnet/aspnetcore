@@ -30,27 +30,27 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
             _handlerMethodExecuting = LoggerMessage.Define<string, string[], ModelValidationState>(
                 LogLevel.Information,
-                new EventId(101, nameof(ExecutingHandlerMethod)),
+                new EventId(101, "ExecutingHandlerMethod"),
                 "Executing handler method {HandlerName} with arguments ({Arguments}) - ModelState is {ValidationState}");
 
             _handlerMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
-                new EventId(102, nameof(ExecutedHandlerMethod)),
+                new EventId(102, "ExecutedHandlerMethod"),
                 "Executed handler method {HandlerName}, returned result {ActionResult}.");
 
             _implicitHandlerMethodExecuting = LoggerMessage.Define<ModelValidationState>(
                 LogLevel.Information,
-                new EventId(103, nameof(ExecutingImplicitHandlerMethod)),
+                new EventId(103, "ExecutingImplicitHandlerMethod"),
                 "Executing an implicit handler method - ModelState is {ValidationState}");
 
             _implicitHandlerMethodExecuted = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                new EventId(104, nameof(ExecutedImplicitHandlerMethod)),
+                new EventId(104, "ExecutedImplicitHandlerMethod"),
                 "Executed an implicit handler method, returned result {ActionResult}.");
 
             _pageFilterShortCircuit = LoggerMessage.Define<object>(
                LogLevel.Debug,
-                new EventId(3, nameof(PageFilterShortCircuited)),
+                new EventId(3, "PageFilterShortCircuited"),
                "Request was short circuited at page filter '{PageFilter}'.");
 
             _malformedPageDirective = LoggerMessage.Define<string, string[]>(
@@ -60,22 +60,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
             _notMostEffectiveFilter = LoggerMessage.Define<Type>(
                LogLevel.Debug,
-                new EventId(1, nameof(NotMostEffectiveFilter)),
+                new EventId(1, "NotMostEffectiveFilter"),
                "Skipping the execution of current filter as its not the most effective filter implementing the policy {FilterPolicy}.");
 
             _beforeExecutingMethodOnFilter = LoggerMessage.Define<string, string, string>(
                 LogLevel.Trace,
-                new EventId(1, nameof(BeforeExecutingMethodOnFilter)),
+                new EventId(1, "BeforeExecutingMethodOnFilter"),
                 "{FilterType}: Before executing {Method} on filter {Filter}.");
 
             _afterExecutingMethodOnFilter = LoggerMessage.Define<string, string, string>(
                 LogLevel.Trace,
-                new EventId(2, nameof(AfterExecutingMethodOnFilter)),
+                new EventId(2, "AfterExecutingMethodOnFilter"),
                 "{FilterType}: After executing {Method} on filter {Filter}.");
 
             _unsupportedAreaPath = LoggerMessage.Define<string>(
                 LogLevel.Warning,
-                new EventId(1, nameof(UnsupportedAreaPath)),
+                new EventId(1, "UnsupportedAreaPath"),
                 "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml");
         }
 
