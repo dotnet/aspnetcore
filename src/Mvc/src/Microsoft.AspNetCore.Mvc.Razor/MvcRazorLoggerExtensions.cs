@@ -36,27 +36,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             _viewCompilerStartCodeGeneration = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                new EventId(1, nameof(ViewCompilerStartCodeGeneration)),
+                new EventId(1, "ViewCompilerStartCodeGeneration"),
                 "Code generation for the Razor file at '{FilePath}' started.");
 
             _viewCompilerEndCodeGeneration = LoggerMessage.Define<string, double>(
                 LogLevel.Debug,
-                new EventId(2, nameof(ViewCompilerEndCodeGeneration)),
+                new EventId(2, "ViewCompilerEndCodeGeneration"),
                 "Code generation for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.");
 
             _viewCompilerLocatedCompiledView = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                new EventId(3, nameof(ViewCompilerLocatedCompiledView)),
+                new EventId(3, "ViewCompilerLocatedCompiledView"),
                 "Initializing Razor view compiler with compiled view: '{ViewName}'.");
 
             _viewCompilerNoCompiledViewsFound = LoggerMessage.Define(
                 LogLevel.Debug,
-                new EventId(4, nameof(ViewCompilerNoCompiledViewsFound)),
+                new EventId(4, "ViewCompilerNoCompiledViewsFound"),
                 "Initializing Razor view compiler with no compiled views.");
 
             _viewCompilerLocatedCompiledViewForPath = LoggerMessage.Define<string>(
                 LogLevel.Trace,
-                new EventId(5, nameof(ViewCompilerLocatedCompiledViewForPath)),
+                new EventId(5, "ViewCompilerLocatedCompiledViewForPath"),
                 "Located compiled view for view at path '{Path}'.");
 
             _viewCompilerRecompilingCompiledView = LoggerMessage.Define<string>(
@@ -66,52 +66,52 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             _viewCompilerCouldNotFindFileToCompileForPath = LoggerMessage.Define<string>(
                 LogLevel.Trace,
-                new EventId(7, nameof(ViewCompilerCouldNotFindFileAtPath)),
+                new EventId(7, "ViewCompilerCouldNotFindFileAtPath"),
                 "Could not find a file for view at path '{Path}'.");
 
             _viewCompilerFoundFileToCompileForPath = LoggerMessage.Define<string>(
                 LogLevel.Trace,
-                new EventId(8, nameof(ViewCompilerFoundFileToCompile)),
+                new EventId(8, "ViewCompilerFoundFileToCompile"),
                 "Found file at path '{Path}'.");
 
             _viewCompilerInvalidatingCompiledFile = LoggerMessage.Define<string>(
                 LogLevel.Trace,
-                new EventId(9, nameof(ViewCompilerInvalidingCompiledFile)),
+                new EventId(9, "ViewCompilerInvalidingCompiledFile"),
                 "Invalidating compiled view at path '{Path}' with a file since the checksum did not match.");
 
             _viewLookupCacheMiss = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
-                new EventId(1, nameof(ViewLookupCacheMiss)),
+                new EventId(1, "ViewLookupCacheMiss"),
                 "View lookup cache miss for view '{ViewName}' in controller '{ControllerName}'.");
 
             _viewLookupCacheHit = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
-                new EventId(2, nameof(ViewLookupCacheHit)),
+                new EventId(2, "ViewLookupCacheHit"),
                 "View lookup cache hit for view '{ViewName}' in controller '{ControllerName}'.");
 
             _precompiledViewFound = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                new EventId(3, nameof(PrecompiledViewFound)),
+                new EventId(3, "PrecompiledViewFound"),
                 "Using precompiled view for '{RelativePath}'.");
 
             _generatedCodeToAssemblyCompilationStart = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                new EventId(1, nameof(GeneratedCodeToAssemblyCompilationStart)),
+                new EventId(1, "GeneratedCodeToAssemblyCompilationStart"),
                 "Compilation of the generated code for the Razor file at '{FilePath}' started.");
 
             _generatedCodeToAssemblyCompilationEnd = LoggerMessage.Define<string, double>(
                 LogLevel.Debug,
-                new EventId(2, nameof(GeneratedCodeToAssemblyCompilationEnd)),
+                new EventId(2, "GeneratedCodeToAssemblyCompilationEnd"),
                 "Compilation of the generated code for the Razor file at '{FilePath}' completed in {ElapsedMilliseconds}ms.");
 
             _tagHelperComponentInitialized = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                new EventId(2, nameof(TagHelperComponentInitialized)),
+                new EventId(2, "TagHelperComponentInitialized"),
                 "Tag helper component '{ComponentName}' initialized.");
 
             _tagHelperComponentProcessed = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                new EventId(3, nameof(TagHelperComponentProcessed)),
+                new EventId(3, "TagHelperComponentProcessed"),
                 "Tag helper component '{ComponentName}' processed.");
         }
 

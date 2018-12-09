@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         {
             _failedToCreateXmlSerializer = LoggerMessage.Define<string>(
                 LogLevel.Warning,
-                new EventId(1, nameof(FailedToCreateXmlSerializer)),
+                new EventId(1, "FailedToCreateXmlSerializer"),
                 "An error occurred while trying to create an XmlSerializer for the type '{Type}'.");
 
             _failedToCreateDataContractSerializer = LoggerMessage.Define<string>(
                 LogLevel.Warning,
-                new EventId(2, nameof(FailedToCreateDataContractSerializer)),
+                new EventId(2, "FailedToCreateDataContractSerializer"),
                 "An error occurred while trying to create a DataContractSerializer for the type '{Type}'.");
         }
 
