@@ -1,0 +1,6 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcJsonOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "Kind": "Removal"
+  }
+]

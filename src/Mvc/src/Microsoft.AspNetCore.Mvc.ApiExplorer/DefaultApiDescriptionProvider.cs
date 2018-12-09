@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     {
         private readonly MvcOptions _mvcOptions;
-        private readonly IActionResultTypeMapper _mapper;
         private readonly ApiResponseTypeProvider _responseTypeProvider;
         private readonly RouteOptions _routeOptions;
         private readonly IInlineConstraintResolver _constraintResolver;
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
         /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
+        /// <param name="mapper">The <see cref="IActionResultTypeMapper"/>. This parameter is currently unused.</param>
         [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public DefaultApiDescriptionProvider(
             IOptions<MvcOptions> optionsAccessor,
@@ -64,7 +63,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             _mvcOptions = optionsAccessor.Value;
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
-            _mapper = mapper;
             _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
         }
 
@@ -75,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
         /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="mapper"> The <see cref="IActionResultTypeMapper"/>.</param>
+        /// <param name="mapper">The <see cref="IActionResultTypeMapper"/>. This parameter is currently unused.</param>
         /// <param name="routeOptions">The accessor for <see cref="RouteOptions"/>.</param>
         public DefaultApiDescriptionProvider(
             IOptions<MvcOptions> optionsAccessor,
@@ -87,7 +85,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             _mvcOptions = optionsAccessor.Value;
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
-            _mapper = mapper;
             _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
             _routeOptions = routeOptions.Value;
         }
@@ -202,8 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     var visitor = new PseudoModelBindingVisitor(context, actionParameter);
 
                     ModelMetadata metadata;
-                    if (_mvcOptions.AllowValidatingTopLevelNodes &&
-                        actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
+                    if (actionParameter is ControllerParameterDescriptor controllerParameterDescriptor &&
                         _modelMetadataProvider is ModelMetadataProvider provider)
                     {
                         // The default model metadata provider derives from ModelMetadataProvider

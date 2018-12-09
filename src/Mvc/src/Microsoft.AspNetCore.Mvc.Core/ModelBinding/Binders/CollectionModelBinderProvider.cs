@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     binderType,
                     elementBinder,
                     loggerFactory,
-                    mvcOptions.AllowValidatingTopLevelNodes);
+                    true /* allowValidatingTopLevelNodes */);
             }
 
             // If the model type is IEnumerable<> then we need to know if we can assign a List<> to it, since
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         binderType,
                         elementBinder,
                         loggerFactory,
-                        mvcOptions.AllowValidatingTopLevelNodes);
+                        true /* allowValidatingTopLevelNodes */);
                 }
             }
 

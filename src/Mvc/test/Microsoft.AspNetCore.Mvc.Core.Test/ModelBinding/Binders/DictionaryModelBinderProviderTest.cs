@@ -57,40 +57,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = provider.GetBinder(context);
 
             // Assert
-            Assert.IsType<DictionaryModelBinder<string, int>>(result);
-        }
-
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Create_ForDictionaryType_ReturnsBinder_WithExpectedAllowValidatingTopLevelNodes(
-            bool allowValidatingTopLevelNodes)
-        {
-            // Arrange
-            var provider = new DictionaryModelBinderProvider();
-
-            var context = new TestModelBinderProviderContext(typeof(Dictionary<string, string>));
-            context.MvcOptions.AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
-            context.OnCreatingBinder(m =>
-            {
-                if (m.ModelType == typeof(KeyValuePair<string, string>) || m.ModelType == typeof(string))
-                {
-                    return Mock.Of<IModelBinder>();
-                }
-                else
-                {
-                    Assert.False(true, "Not the right model type");
-                    return null;
-                }
-            });
-
-            // Act
-            var result = provider.GetBinder(context);
-
-            // Assert
-            var binder = Assert.IsType<DictionaryModelBinder<string, string>>(result);
-            Assert.Equal(allowValidatingTopLevelNodes, binder.AllowValidatingTopLevelNodes);
-            Assert.False(((CollectionModelBinder<KeyValuePair<string, string>>)binder).AllowValidatingTopLevelNodes);
+            var binder = Assert.IsType<DictionaryModelBinder<string, int>>(result);
+            Assert.True(binder.AllowValidatingTopLevelNodes);
+            Assert.False(((CollectionModelBinder<KeyValuePair<string, int>>)binder).AllowValidatingTopLevelNodes);
         }
 
         private class Person

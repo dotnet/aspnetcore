@@ -55,17 +55,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.IsType<ComplexTypeModelBinder>(result);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Create_ForSupportedType_ReturnsBinder_WithExpectedAllowValidatingTopLevelNodes(
-            bool allowValidatingTopLevelNodes)
+        [Fact]
+        public void Create_ForSupportedType_ReturnsBinder()
         {
             // Arrange
             var provider = new ComplexTypeModelBinderProvider();
 
             var context = new TestModelBinderProviderContext(typeof(Person));
-            context.MvcOptions.AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
             context.OnCreatingBinder(m =>
             {
                 if (m.ModelType == typeof(int) || m.ModelType == typeof(string))
@@ -84,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             var binder = Assert.IsType<ComplexTypeModelBinder>(result);
-            Assert.Equal(allowValidatingTopLevelNodes, binder.AllowValidatingTopLevelNodes);
+            Assert.True(binder.AllowValidatingTopLevelNodes);
         }
 
         private class Person

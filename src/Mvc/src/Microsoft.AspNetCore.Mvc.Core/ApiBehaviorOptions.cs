@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -13,30 +12,9 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Options used to configure behavior for types annotated with <see cref="ApiControllerAttribute"/>.
     /// </summary>
-    public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
+    public class ApiBehaviorOptions
     {
-        private readonly CompatibilitySwitch<bool> _suppressMapClientErrors;
-        private readonly CompatibilitySwitch<bool> _suppressUseValidationProblemDetailsForInvalidModelStateResponses;
-        private readonly CompatibilitySwitch<bool> _allowInferringBindingSourceForCollectionTypesAsFromQuery;
-        private readonly ICompatibilitySwitch[] _switches;
-
         private Func<ActionContext, IActionResult> _invalidModelStateResponseFactory;
-
-        /// <summary>
-        /// Creates a new instance of <see cref="ApiBehaviorOptions"/>.
-        /// </summary>
-        public ApiBehaviorOptions()
-        {
-            _suppressMapClientErrors = new CompatibilitySwitch<bool>(nameof(SuppressMapClientErrors));
-            _suppressUseValidationProblemDetailsForInvalidModelStateResponses = new CompatibilitySwitch<bool>(nameof(SuppressUseValidationProblemDetailsForInvalidModelStateResponses));
-            _allowInferringBindingSourceForCollectionTypesAsFromQuery = new CompatibilitySwitch<bool>(nameof(AllowInferringBindingSourceForCollectionTypesAsFromQuery));
-            _switches = new[]
-            {
-                _suppressMapClientErrors,
-                _suppressUseValidationProblemDetailsForInvalidModelStateResponses,
-                _allowInferringBindingSourceForCollectionTypesAsFromQuery
-            };
-        }
 
         /// <summary>
         /// Delegate invoked on actions annotated with <see cref="ApiControllerAttribute"/> to convert invalid
@@ -92,47 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <value>
         /// The default value is <see langword="false"/>.
         /// </value>
-        public bool SuppressMapClientErrors
-        {
-            // Note: When compatibility switches are removed in 3.0, this property should be retained as a regular boolean property.
-            get => _suppressMapClientErrors.Value;
-            set => _suppressMapClientErrors.Value = value;
-        }
-
-        /// <summary>
-        /// Gets or sets a value that determines if controllers annotated with <see cref="ApiControllerAttribute"/> respond using
-        /// <see cref="ValidationProblemDetails"/> in <see cref="InvalidModelStateResponseFactory"/>.
-        /// <para>
-        /// When <see langword="true"/>, <see cref="SuppressModelStateInvalidFilter"/> returns errors in <see cref="ModelStateDictionary"/>
-        /// as a <see cref="ValidationProblemDetails"/>. Otherwise, <see cref="SuppressModelStateInvalidFilter"/> returns the errors
-        /// in the format determined by <see cref="SerializableError"/>.
-        /// </para>
-        /// </summary>
-        /// <value>
-        /// The default value is <see langword="false"/>.
-        /// </value>
-        public bool SuppressUseValidationProblemDetailsForInvalidModelStateResponses
-        {
-            get => _suppressUseValidationProblemDetailsForInvalidModelStateResponses.Value;
-            set => _suppressUseValidationProblemDetailsForInvalidModelStateResponses.Value = value;
-        }
-
-        /// <summary>
-        /// Gets or sets a value that determines if <see cref="BindingInfo.BindingSource"/> for collection types
-        /// (<see cref="ModelMetadata.IsCollectionType"/>).
-        /// <para>
-        /// When <see langword="true" />, the binding source for collection types is inferred as <see cref="BindingSource.Query"/>.
-        /// Otherwise <see cref="BindingSource.Body"/> is inferred.
-        /// </para>
-        /// </summary>
-        /// <value>
-        /// The default value is <see langword="false"/>.
-        /// </value>
-        public bool AllowInferringBindingSourceForCollectionTypesAsFromQuery
-        {
-            get => _allowInferringBindingSourceForCollectionTypesAsFromQuery.Value;
-            set => _allowInferringBindingSourceForCollectionTypesAsFromQuery.Value = value;
-        }
+        public bool SuppressMapClientErrors { get; set; }
 
         /// <summary>
         /// Gets a map of HTTP status codes to <see cref="ClientErrorData"/>. Configured values
@@ -142,14 +80,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// Use of this feature can be disabled by resetting <see cref="SuppressMapClientErrors"/>.
         /// </para>
         /// </summary>
-        public IDictionary<int, ClientErrorData> ClientErrorMapping { get; } =
-            new Dictionary<int, ClientErrorData>();
-
-        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
-        {
-            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
+        public IDictionary<int, ClientErrorData> ClientErrorMapping { get; } = new Dictionary<int, ClientErrorData>();
     }
 }

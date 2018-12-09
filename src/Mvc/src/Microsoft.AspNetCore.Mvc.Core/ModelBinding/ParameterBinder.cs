@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IModelBinderFactory _modelBinderFactory;
-        private readonly MvcOptions _mvcOptions;
         private readonly IObjectModelValidator _objectModelValidator;
 
         /// <summary>
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="modelBinderFactory">The <see cref="IModelBinderFactory"/>.</param>
         /// <param name="validator">The <see cref="IObjectModelValidator"/>.</param>
-        /// <param name="mvcOptions">The <see cref="MvcOptions"/> accessor.</param>
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/> accessor. This parameter is currently unused.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ParameterBinder(
             IModelMetadataProvider modelMetadataProvider,
@@ -90,7 +89,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _modelMetadataProvider = modelMetadataProvider;
             _modelBinderFactory = modelBinderFactory;
             _objectModelValidator = validator;
-            _mvcOptions = mvcOptions.Value;
             Logger = loggerFactory.CreateLogger(GetType());
         }
 
@@ -260,8 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var modelBindingResult = modelBindingContext.Result;
 
-            if (_mvcOptions.AllowValidatingTopLevelNodes &&
-                _objectModelValidator is ObjectModelValidator baseObjectValidator)
+            if (_objectModelValidator is ObjectModelValidator baseObjectValidator)
             {
                 Logger.AttemptingToValidateParameterOrProperty(parameter, metadata);
 

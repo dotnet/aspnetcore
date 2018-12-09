@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
         /// <remarks>
         /// <para>
-        /// This method should be called only when <see cref="MvcOptions.AllowValidatingTopLevelNodes" /> is
+        /// This method should be called only when <see cref="AllowValidatingTopLevelNodes" /> is
         /// <see langword="true" /> and a top-level model was not bound.
         /// </para>
         /// <para>

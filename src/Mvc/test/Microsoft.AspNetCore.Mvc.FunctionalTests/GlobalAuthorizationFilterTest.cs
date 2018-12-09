@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Administration/EitherCookie");
             request.Headers.Add("Cookie", cookie2);
 
-            // Act 2: Will succeed because, with AllowCombiningAuthorizeFilters true, [Authorize] allows either cookie.
+            // Act 2: Will succeed because {Authorize] allows either cookie.
             response = await Client.SendAsync(request);
 
             // Assert 2

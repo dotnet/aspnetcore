@@ -49,12 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             if (!options.SuppressInferBindingSourcesForParameters)
             {
-                var convention = new InferParameterBindingInfoConvention(modelMetadataProvider)
-                {
-                    AllowInferringBindingSourceForCollectionTypesAsFromQuery = options.AllowInferringBindingSourceForCollectionTypesAsFromQuery,
-                };
-
-                ActionModelConventions.Add(convention);
+                ActionModelConventions.Add(new InferParameterBindingInfoConvention(modelMetadataProvider));
             }
         }
 

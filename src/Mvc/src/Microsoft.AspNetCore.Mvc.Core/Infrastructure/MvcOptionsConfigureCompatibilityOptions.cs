@@ -23,16 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 return new Dictionary<string, object>
                 {
-                    [nameof(MvcOptions.AllowCombiningAuthorizeFilters)] = true,
-                    [nameof(MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes)] = true,
-                    [nameof(MvcOptions.AllowValidatingTopLevelNodes)] = true,
                     [nameof(MvcOptions.InputFormatterExceptionPolicy)] = InputFormatterExceptionPolicy.MalformedInputExceptions,
                     [nameof(MvcOptions.SuppressBindingUndefinedValueToEnumType)] = true,
-                    [nameof(MvcOptions.EnableEndpointRouting)] = true,
-
-                    // Matches JsonSerializerSettingsProvider.DefaultMaxDepth
-                    [nameof(MvcOptions.MaxValidationDepth)] = 32,
-
                     [nameof(MvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent)] = true,
                 };
             }
