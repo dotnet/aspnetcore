@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
@@ -11,60 +12,100 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class PipeThroughputBenchmark
     {
-        private const int _writeLength = 57;
-        private const int InnerLoopCount = 512;
-
-        private Pipe _pipe;
+        private PipeReader _reader;
+        private PipeWriter _writer;
         private MemoryPool<byte> _memoryPool;
 
-        [IterationSetup]
+        [GlobalSetup]
         public void Setup()
         {
             _memoryPool = KestrelMemoryPool.Create();
-            _pipe = new Pipe(new PipeOptions(_memoryPool));
+
+            var chunkLength = Length / Chunks;
+            if (chunkLength > _memoryPool.MaxBufferSize)
+            {
+                // Parallel test will deadlock if too large (waiting for second Task to complete), so N/A that run
+                throw new InvalidOperationException();
+            }
+
+            if (Length != chunkLength * Chunks)
+            {
+                // Test will deadlock waiting for data so N/A that run
+                throw new InvalidOperationException();
+            }
+
+            var pipe = new Pipe(new PipeOptions(_memoryPool));
+            _reader = pipe.Reader;
+            _writer = pipe.Writer;
         }
 
-        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
-        public void ParseLiveAspNetTwoTasks()
+        [Params(1, 2, 4, 8, 16)]
+        public int Chunks { get; set; }
+
+        [Params(128, 256)]
+        public int Length { get; set; }
+
+        [Benchmark]
+        public Task Parse_ParallelAsync()
+        {
+            // Seperate implementation to ensure tiered compilation can compile while "in-flow"
+            return Parse_ParallelAsyncImpl();
+        }
+
+        private Task Parse_ParallelAsyncImpl()
         {
             var writing = Task.Run(async () =>
             {
-                for (int i = 0; i < InnerLoopCount; i++)
+                var chunks = Chunks;
+                var chunkLength = Length / chunks;
+                for (var c = 0; c < chunks; c++)
                 {
-                    _pipe.Writer.GetMemory(_writeLength);
-                    _pipe.Writer.Advance(_writeLength);
-                    await _pipe.Writer.FlushAsync();
+                    _writer.GetMemory(chunkLength);
+                    _writer.Advance(chunkLength);
                 }
+
+                await _writer.FlushAsync();
             });
 
             var reading = Task.Run(async () =>
             {
-                long remaining = InnerLoopCount * _writeLength;
+                long remaining = Length;
                 while (remaining != 0)
                 {
-                    var result = await _pipe.Reader.ReadAsync();
+                    var result = await _reader.ReadAsync();
                     remaining -= result.Buffer.Length;
-                    _pipe.Reader.AdvanceTo(result.Buffer.End, result.Buffer.End);
+                    _reader.AdvanceTo(result.Buffer.End, result.Buffer.End);
                 }
             });
 
-            Task.WaitAll(writing, reading);
+            return Task.WhenAll(writing, reading);
         }
 
-        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
-        public void ParseLiveAspNetInline()
+        [Benchmark]
+        public Task Parse_SequentialAsync()
         {
-            for (int i = 0; i < InnerLoopCount; i++)
-            {
-                _pipe.Writer.GetMemory(_writeLength);
-                _pipe.Writer.Advance(_writeLength);
-                _pipe.Writer.FlushAsync().GetAwaiter().GetResult();
-                var result = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
-                _pipe.Reader.AdvanceTo(result.Buffer.End, result.Buffer.End);
-            }
+            // Seperate implementation to ensure tiered compilation can compile while "in-flow"
+            return Parse_SequentialAsyncImpl();
         }
 
-        [IterationCleanup]
+        private async Task Parse_SequentialAsyncImpl()
+        {
+            var chunks = Chunks;
+            var chunkLength = Length / chunks;
+
+            for (var c = 0; c < chunks; c++)
+            {
+                _writer.GetMemory(chunkLength);
+                _writer.Advance(chunkLength);
+            }
+
+            await _writer.FlushAsync();
+
+            var result = await _reader.ReadAsync();
+            _reader.AdvanceTo(result.Buffer.End, result.Buffer.End);
+        }
+
+        [GlobalCleanup]
         public void Cleanup()
         {
             _memoryPool.Dispose();
