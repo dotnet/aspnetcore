@@ -3,22 +3,42 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class ControllerActionDescriptorProvider : IActionDescriptorProvider
     {
+        // Using service provider here to avoid initializing Endpoint Routing features when
+        // they aren't in use.
+        private readonly IServiceProvider _services;
+        private readonly IOptions<MvcOptions> _options;
         private readonly ApplicationPartManager _partManager;
         private readonly ApplicationModelFactory _applicationModelFactory;
 
         public ControllerActionDescriptorProvider(
+            IServiceProvider services,
+            IOptions<MvcOptions> options,
             ApplicationPartManager partManager,
             ApplicationModelFactory applicationModelFactory)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             if (partManager == null)
             {
                 throw new ArgumentNullException(nameof(partManager));
@@ -29,6 +49,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 throw new ArgumentNullException(nameof(applicationModelFactory));
             }
 
+            _services = services;
+            _options = options;
             _partManager = partManager;
             _applicationModelFactory = applicationModelFactory;
         }
@@ -43,9 +65,29 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 throw new ArgumentNullException(nameof(context));
             }
 
-            foreach (var descriptor in GetDescriptors())
+            if (_options.Value.EnableEndpointRouting)
             {
-                context.Results.Add(descriptor);
+                // If we're using Endpoint Routing then the Endpoints are the source of truth, so don't
+                // create descriptors here.
+
+                var dataSource = _services.GetRequiredService<EndpointDataSource>();
+                for (var i = 0; i < dataSource.Endpoints.Count; i++)
+                {
+                    var actionDescriptor = dataSource.Endpoints[i].Metadata.GetMetadata<ControllerActionDescriptor>();
+                    if (actionDescriptor != null)
+                    {
+                        context.Results.Add(actionDescriptor);
+                    }
+                }
+            }
+            else
+            {
+                // If we're using legacy routing then create the descriptors here.
+
+                foreach (var descriptor in GetDescriptors())
+                {
+                    context.Results.Add(descriptor);
+                }
             }
         }
 

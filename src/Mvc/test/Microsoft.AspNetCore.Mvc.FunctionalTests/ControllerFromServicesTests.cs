@@ -105,6 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
+        // TODO: Known failure, because endpoint routing doesn't use custom parts
         [Fact]
         public async Task AddControllersAsServices_MultipleCalls_DoesNotReplacePreviousProvider()
         {

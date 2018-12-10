@@ -34,6 +34,8 @@ namespace MvcSandbox
         {
             app.UseRouting(builder =>
             {
+                builder.MapApplication();
+
                 builder.MapGet(
                     requestDelegate: WriteEndpoints,
                     pattern: "/endpoints",

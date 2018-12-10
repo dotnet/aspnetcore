@@ -700,6 +700,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
             var provider = new ControllerActionDescriptorProvider(
+                Mock.Of<IServiceProvider>(),
+                options,
                 manager,
                 new ApplicationModelFactory(new[] { modelProvider }, options));
 
@@ -1357,6 +1359,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
+                Mock.Of<IServiceProvider>(),
+                options,
                 manager,
                 new ApplicationModelFactory(new[] { modelProvider }, options));
 
@@ -1372,6 +1376,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
+                Mock.Of<IServiceProvider>(),
+                options,
                 manager,
                 new ApplicationModelFactory(new[] { modelProvider }, options));
 
@@ -1390,6 +1396,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
+                Mock.Of<IServiceProvider>(),
+                options,
                 manager,
                 new ApplicationModelFactory(new[] { modelProvider }, options));
 

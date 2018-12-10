@@ -10,8 +10,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,8 +23,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    public class MvcEndpointDataSourceTests
+    public class ControllerEndpointDataSourceTest
     {
+
+
+
         [Fact]
         public void Endpoints_AccessParameters_InitializedFromProvider()
         {
@@ -801,6 +806,15 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             var isEndpointSuppressed = endpoint.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching ?? false;
             Assert.Equal(suppressed, isEndpointSuppressed);
+        }
+
+        private static (ControllerEndpointDataSource dataSource, ApplicationPartManager partManager) CreateDataSource()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddMvcCore();
+
+            var services = serviceCollection.BuildServiceProvider();
+            return (services.GetRequiredService<ControllerEndpointDataSource>(), services.GetRequiredService<ApplicationPartManager>());
         }
     }
 }

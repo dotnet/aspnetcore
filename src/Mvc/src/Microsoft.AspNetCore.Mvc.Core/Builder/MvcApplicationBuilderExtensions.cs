@@ -88,43 +88,8 @@ namespace Microsoft.AspNetCore.Builder
 
             if (options.Value.EnableEndpointRouting)
             {
-                var mvcEndpointDataSource = app.ApplicationServices
-                    .GetRequiredService<MvcEndpointDataSource>();
-                var parameterPolicyFactory = app.ApplicationServices
-                    .GetRequiredService<ParameterPolicyFactory>();
-
                 var endpointRouteBuilder = new EndpointRouteBuilder(app);
-
                 configureRoutes(endpointRouteBuilder);
-
-                foreach (var router in endpointRouteBuilder.Routes)
-                {
-                    // Only accept Microsoft.AspNetCore.Routing.Route when converting to endpoint
-                    // Sub-types could have additional customization that we can't knowingly convert
-                    if (router is Route route && router.GetType() == typeof(Route))
-                    {
-                        var endpointInfo = new MvcEndpointInfo(
-                            route.Name,
-                            route.RouteTemplate,
-                            route.Defaults,
-                            route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
-                            route.DataTokens,
-                            parameterPolicyFactory);
-
-                        mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Cannot use '{router.GetType().FullName}' with Endpoint Routing.");
-                    }
-                }
-
-                // Include all controllers with attribute routing and Razor pages
-                var defaultEndpointConventionBuilder = new DefaultEndpointConventionBuilder();
-                mvcEndpointDataSource.AttributeRoutingConventionResolvers.Add((actionDescriptor) =>
-                {
-                    return defaultEndpointConventionBuilder;
-                });
 
                 if (!app.Properties.TryGetValue(EndpointRoutingRegisteredKey, out _))
                 {
@@ -132,7 +97,26 @@ namespace Microsoft.AspNetCore.Builder
                     // For back-compat register middleware so an endpoint is matched and then immediately used
                     app.UseRouting(routerBuilder =>
                     {
-                        routerBuilder.DataSources.Add(mvcEndpointDataSource);
+                        routerBuilder.MapApplication();
+
+                        foreach (var router in endpointRouteBuilder.Routes)
+                        {
+                            // Only accept Microsoft.AspNetCore.Routing.Route when converting to endpoint
+                            // Sub-types could have additional customization that we can't knowingly convert
+                            if (router is Route route && router.GetType() == typeof(Route))
+                            {
+                                routerBuilder.MapControllerRoute(
+                                    route.Name,
+                                    route.RouteTemplate,
+                                    route.Defaults,
+                                    route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
+                                    route.DataTokens);
+                            }
+                            else
+                            {
+                                throw new InvalidOperationException($"Cannot use '{router.GetType().FullName}' with Endpoint Routing.");
+                            }
+                        }
                     });
                 }
 

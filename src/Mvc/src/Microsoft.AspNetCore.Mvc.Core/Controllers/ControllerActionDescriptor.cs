@@ -27,12 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             {
                 if (base.DisplayName == null && ControllerTypeInfo != null && MethodInfo != null)
                 {
-                    base.DisplayName = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0}.{1} ({2})",
-                        TypeNameHelper.GetTypeDisplayName(ControllerTypeInfo),
-                        MethodInfo.Name,
-                        ControllerTypeInfo.Assembly.GetName().Name);
+                    base.DisplayName = GetDefaultDisplayName(ControllerTypeInfo, MethodInfo);
                 }
 
                 return base.DisplayName;
@@ -47,6 +42,26 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 
                 base.DisplayName = value;
             }
+        }
+
+        internal static string GetDefaultDisplayName(Type controllerType, MethodInfo actionMethod)
+        {
+            if (controllerType == null)
+            {
+                throw new ArgumentNullException(nameof(controllerType));
+            }
+
+            if (actionMethod == null)
+            {
+                throw new ArgumentNullException(nameof(actionMethod));
+            }
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}.{1} ({2})",
+                TypeNameHelper.GetTypeDisplayName(controllerType),
+                actionMethod.Name,
+                controllerType.Assembly.GetName().Name);
         }
     }
 }

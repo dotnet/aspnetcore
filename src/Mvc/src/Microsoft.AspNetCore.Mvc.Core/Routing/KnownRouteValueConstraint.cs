@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Empty constructor for backwards compatibility
             // Services will need to be resolved from HttpContext when this ctor is used
         }
-
+        
         public KnownRouteValueConstraint(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
         {
             if (actionDescriptorCollectionProvider == null)
@@ -50,6 +50,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             if (values == null)
             {
                 throw new ArgumentNullException(nameof(values));
+            }
+
+            // As a special case - if we're called with a null HttpContext, this means we were called
+            // by endpoint routing during initialization of the endpoints. In that case we need to skip
+            // because otherwise we could cause infinite recursion.
+            if (httpContext == null)
+            {
+                // Assume try since this constraint doesn't really have a purpose when used
+                // with endpoint routing.
+                return true;
             }
 
             if (values.TryGetValue(routeKey, out var obj))

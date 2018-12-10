@@ -40,6 +40,21 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// <returns><code>true</code> if the type is a controller; otherwise <code>false</code>.</returns>
         protected virtual bool IsController(TypeInfo typeInfo)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
+            return DefaultIsController(typeInfo);
+        }
+
+        internal static bool DefaultIsController(TypeInfo typeInfo)
+        {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
             if (!typeInfo.IsClass)
             {
                 return false;

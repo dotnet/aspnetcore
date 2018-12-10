@@ -1008,6 +1008,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
+                Mock.Of<IServiceProvider>(),
+                options,
                 manager,
                 new ApplicationModelFactory(new[] { modelProvider }, options));
 

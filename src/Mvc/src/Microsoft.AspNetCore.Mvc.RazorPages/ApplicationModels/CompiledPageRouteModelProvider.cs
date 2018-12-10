@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,16 +16,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     {
         private static readonly string RazorPageDocumentKind = "mvc.1.0.razor-page";
         private static readonly string RouteTemplateKey = "RouteTemplate";
-        private readonly ApplicationPartManager _applicationManager;
         private readonly RazorPagesOptions _pagesOptions;
         private readonly PageRouteModelFactory _routeModelFactory;
 
         public CompiledPageRouteModelProvider(
-            ApplicationPartManager applicationManager,
             IOptions<RazorPagesOptions> pagesOptionsAccessor,
             ILogger<CompiledPageRouteModelProvider> logger)
         {
-            _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
             _pagesOptions = pagesOptionsAccessor?.Value ?? throw new ArgumentNullException(nameof(pagesOptionsAccessor));
             _routeModelFactory = new PageRouteModelFactory(_pagesOptions, logger);
         }
@@ -52,52 +47,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private IEnumerable<CompiledViewDescriptor> GetViewDescriptors(ApplicationPartManager applicationManager)
-        {
-            if (applicationManager == null)
-            {
-                throw new ArgumentNullException(nameof(applicationManager));
-            }
-
-            var viewsFeature = GetViewFeature(applicationManager);
-
-            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var viewDescriptor in viewsFeature.ViewDescriptors)
-            {
-                if (!visited.Add(viewDescriptor.RelativePath))
-                {
-                    // Already seen an descriptor with a higher "order"
-                    continue;
-                }
-
-                if (IsRazorPage(viewDescriptor))
-                {
-                    yield return viewDescriptor;
-                }
-            }
-
-            bool IsRazorPage(CompiledViewDescriptor viewDescriptor)
-            {
-                if (viewDescriptor.Item != null)
-                {
-                    return viewDescriptor.Item.Kind == RazorPageDocumentKind;
-                }
-                else if (viewDescriptor.ViewAttribute != null)
-                {
-                    return viewDescriptor.ViewAttribute is RazorPageAttribute;
-                }
-
-                return false;
-            }
-        }
-
-        protected virtual ViewsFeature GetViewFeature(ApplicationPartManager applicationManager)
-        {
-            var viewsFeature = new ViewsFeature();
-            applicationManager.PopulateFeature(viewsFeature);
-            return viewsFeature;
-        }
-
         private void CreateModels(PageRouteModelProviderContext context)
         {
             var rootDirectory = _pagesOptions.RootDirectory;
@@ -107,9 +56,26 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             var areaRootDirectory = "/Areas/";
-            foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
+            
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < context.CompiledItems.Count; i++)
             {
+                var compiledItem = context.CompiledItems[i];
+                var viewDescriptor = new CompiledViewDescriptor(compiledItem, attribute: null);
+
                 var relativePath = viewDescriptor.RelativePath;
+                if (!visited.Add(relativePath))
+                {
+                    // Already seen an descriptor with a higher "order"
+                    continue;
+                }
+
+                if (!IsRazorPage(viewDescriptor))
+                {
+                    // Not a page
+                    continue;
+                }
+
                 var routeTemplate = GetRouteTemplate(viewDescriptor);
                 PageRouteModel routeModel = null;
 
@@ -129,15 +95,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     context.RouteModels.Add(routeModel);
                 }
             }
+
         }
 
         internal static string GetRouteTemplate(CompiledViewDescriptor viewDescriptor)
         {
-            if (viewDescriptor.ViewAttribute != null)
-            {
-                return ((RazorPageAttribute)viewDescriptor.ViewAttribute).RouteTemplate;
-            }
-
             if (viewDescriptor.Item != null)
             {
                 return viewDescriptor.Item.Metadata
@@ -147,6 +109,16 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             return null;
+        }
+
+        private static bool IsRazorPage(CompiledViewDescriptor viewDescriptor)
+        {
+            if (viewDescriptor.Item != null)
+            {
+                return viewDescriptor.Item.Kind == RazorPageDocumentKind;
+            }
+
+            return false;
         }
     }
 }
