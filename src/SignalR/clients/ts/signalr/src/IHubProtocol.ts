@@ -65,7 +65,7 @@ export interface InvocationMessage extends HubInvocationMessage {
     /** The target method arguments. */
     readonly arguments: any[];
     /** The target methods stream IDs. */
-    readonly streams?: string[];
+    readonly streams: string[];
 }
 
 /** A hub message representing a streaming invocation. */
@@ -80,7 +80,7 @@ export interface StreamInvocationMessage extends HubInvocationMessage {
     /** The target method arguments. */
     readonly arguments: any[];
     /** The target methods stream IDs. */
-    readonly streams?: string[];
+    readonly streams: string[];
 }
 
 /** A hub message representing a single item produced as part of a result stream. */

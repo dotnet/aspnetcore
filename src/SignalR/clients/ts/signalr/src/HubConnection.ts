@@ -512,7 +512,7 @@ export class HubConnection {
         }
     }
 
-    private createInvocation(methodName: string, args: any[], nonblocking: boolean, streams?: string[]): InvocationMessage {
+    private createInvocation(methodName: string, args: any[], nonblocking: boolean, streams: string[]): InvocationMessage {
         if (nonblocking) {
             return {
                 arguments: args,
@@ -570,9 +570,9 @@ export class HubConnection {
         }
     }
 
-    private replaceStreamingParams(args: any[]): [Array<IStreamResult<any>>, string[] | undefined] {
+    private replaceStreamingParams(args: any[]): [Array<IStreamResult<any>>, string[]] {
         const streams: Array<IStreamResult<any>> = [];
-        let streamIds: string[] | undefined = [];
+        const streamIds: string[] = [];
         for (let i = 0; i < args.length; i++) {
             const argument = args[i];
             if (this.isObservable(argument)) {
@@ -587,10 +587,6 @@ export class HubConnection {
             }
         }
 
-        if (streamIds!.length === 0) {
-            streamIds = undefined;
-        }
-
         return [streams, streamIds];
     }
 
@@ -599,7 +595,7 @@ export class HubConnection {
         return arg.subscribe && typeof arg.subscribe === "function";
     }
 
-    private createStreamInvocation(methodName: string, args: any[], streams?: string[]): StreamInvocationMessage {
+    private createStreamInvocation(methodName: string, args: any[], streams: string[]): StreamInvocationMessage {
         const invocationId = this.invocationId;
         this.invocationId++;
 

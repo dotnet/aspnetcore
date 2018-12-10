@@ -144,6 +144,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 arguments: properties[4],
                 headers,
                 invocationId,
+                streams: [],
                 target: properties[3] as string,
                 type: MessageType.Invocation,
             };
@@ -151,6 +152,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
             return {
                 arguments: properties[4],
                 headers,
+                streams: [],
                 target: properties[3],
                 type: MessageType.Invocation,
             };
@@ -213,28 +215,16 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        let payload: any;
-        if (invocationMessage.streams) {
-            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-            invocationMessage.target, invocationMessage.arguments, invocationMessage.streams]);
-        } else {
-            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-            invocationMessage.target, invocationMessage.arguments]);
-        }
+        const payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+        invocationMessage.target, invocationMessage.arguments, invocationMessage.streams]);
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
     private writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        let payload: any;
-        if (streamInvocationMessage.streams) {
-            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streams]);
-        } else {
-            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-            streamInvocationMessage.target, streamInvocationMessage.arguments]);
-        }
+        const payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+        streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streams]);
 
         return BinaryMessageFormat.write(payload.slice());
     }
