@@ -451,11 +451,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return channel;
         }
 
-        private Dictionary<string, object> PackageStreamingParams(ref object[] args, out List<string> streams)
+        private Dictionary<string, object> PackageStreamingParams(ref object[] args, out string[] streams)
         {
             // lazy initialized, to avoid allocating unecessary dictionaries
             Dictionary<string, object> readers = null;
-            streams = null;
+            List<string> streamIds = null;
 
             for (var i = 0; i < args.Length; i++)
             {
@@ -474,16 +474,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     i--;
                     //args[i] = new StreamPlaceholder(id);
 
-                    if (streams == null)
+                    if (streamIds == null)
                     {
-                        streams = new List<string>();
+                        streamIds = new List<string>();
                     }
 
-                    streams.Add(id);
+                    streamIds.Add(id);
 
                     Log.StartingStream(_logger, id);
                 }
             }
+
+            streams = streamIds?.ToArray();
 
             return readers;
         }
@@ -564,12 +566,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return await invocationTask;
         }
 
-        private async Task InvokeCore(string methodName, InvocationRequest irq, object[] args, List<string> streams, CancellationToken cancellationToken)
+        private async Task InvokeCore(string methodName, InvocationRequest irq, object[] args, string[] streams, CancellationToken cancellationToken)
         {
             Log.PreparingBlockingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
             // Client invocations are always blocking
-            var invocationMessage = new InvocationMessage(irq.InvocationId, methodName, args);
+            var invocationMessage = new InvocationMessage(irq.InvocationId, methodName, args, streams);
 
             Log.RegisteringInvocation(_logger, invocationMessage.InvocationId);
             _connectionState.AddInvocation(irq);
@@ -589,13 +591,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task InvokeStreamCore(string methodName, InvocationRequest irq, object[] args, List<string> streams, CancellationToken cancellationToken)
+        private async Task InvokeStreamCore(string methodName, InvocationRequest irq, object[] args, string[] streams, CancellationToken cancellationToken)
         {
             AssertConnectionValid();
 
             Log.PreparingStreamingInvocation(_logger, irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
-            var invocationMessage = new StreamInvocationMessage(irq.InvocationId, methodName, args);
+            var invocationMessage = new StreamInvocationMessage(irq.InvocationId, methodName, args, streams);
 
             Log.RegisteringInvocation(_logger, invocationMessage.InvocationId);
 
@@ -637,7 +639,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var readers = PackageStreamingParams(ref args, out var streams);
 
             Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
-            var invocationMessage = new InvocationMessage(null, methodName, args);
+            var invocationMessage = new InvocationMessage(null, methodName, args, streams);
             await SendWithLock(invocationMessage, callerName: nameof(SendCoreAsync));
 
             LaunchStreams(readers, cancellationToken);

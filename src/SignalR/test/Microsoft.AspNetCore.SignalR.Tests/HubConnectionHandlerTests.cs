@@ -2609,7 +2609,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
                     // Long running hub invocation to test that other invocations will not run until it is completed
-                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.LongRunningStream)).OrTimeout();
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.LongRunningStream), null).OrTimeout();
                     // Wait for the long running method to start
                     await tcsService.StartedMethod.Task.OrTimeout();
 
@@ -2698,14 +2698,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), new StreamPlaceholder("id"));
+                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), new[] { "id" }, Array.Empty<object>());
 
                 foreach (var letter in new[] { "B", "E", "A", "N", "E", "D" })
                 {
-                    await client.SendHubMessageAsync(new StreamDataMessage("id", letter)).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", letter)).OrTimeout();
                 }
 
-                await client.SendHubMessageAsync(new StreamCompleteMessage("id")).OrTimeout();
+                await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
                 var result = (CompletionMessage)await client.ReadAsync().OrTimeout();
 
                 Assert.Equal("BEANED", result.Result);
@@ -2721,15 +2721,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.UploadArray), new StreamPlaceholder("id"));
+                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.UploadArray), new[] { "id" }, Array.Empty<object>());
 
                 var objects = new[] { new SampleObject("solo", 322), new SampleObject("ggez", 3145) };
                 foreach (var thing in objects)
                 {
-                    await client.SendHubMessageAsync(new StreamDataMessage("id", thing)).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", thing)).OrTimeout();
                 }
 
-                await client.SendHubMessageAsync(new StreamCompleteMessage("id")).OrTimeout();
+                await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
                 var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
                 var result = ((JArray)response.Result).ToArray<object>();
 
@@ -2753,7 +2753,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 foreach (string id in ids)
                 {
-                    await client.BeginUploadStreamAsync("invocation_"+id, nameof(MethodHub.StreamingConcat), new StreamPlaceholder(id));
+                    await client.BeginUploadStreamAsync("invocation_"+id, nameof(MethodHub.StreamingConcat), new[] { id }, Array.Empty<object>());
                 }
 
                 var words = new[] { "zygapophyses", "qwerty", "abcd" };
@@ -2762,13 +2762,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 foreach (var spot in order)
                 {
-                    await client.SendHubMessageAsync(new StreamDataMessage(spot.ToString(), words[spot][pos[spot]])).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage(spot.ToString(), words[spot][pos[spot]])).OrTimeout();
                     pos[spot] += 1;
                 }
 
                 foreach (string id in new[] { "0", "2", "1" })
                 {
-                    await client.SendHubMessageAsync(new StreamCompleteMessage(id)).OrTimeout();
+                    await client.SendHubMessageAsync(CompletionMessage.Empty(id)).OrTimeout();
                     var response = await client.ReadAsync().OrTimeout();
                     Debug.Write(response);
                     Assert.Equal(words[int.Parse(id)], ((CompletionMessage)response).Result);
@@ -2819,13 +2819,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 using (var client = new TestClient())
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), new StreamPlaceholder("id")).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), new[] { "id" }, Array.Empty<object>()).OrTimeout();
 
                     // send integers that are then cast to strings
-                    await client.SendHubMessageAsync(new StreamDataMessage("id", 5)).OrTimeout();
-                    await client.SendHubMessageAsync(new StreamDataMessage("id", 10)).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", 5)).OrTimeout();
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", 10)).OrTimeout();
 
-                    await client.SendHubMessageAsync(new StreamCompleteMessage("id")).OrTimeout();
+                    await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
                     var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
 
                     Assert.Equal("510", response.Result);
@@ -2871,7 +2871,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 using (var client = new TestClient())
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                    await client.BeginUploadStreamAsync("invocationId", nameof(MethodHub.TestTypeCastingErrors), new StreamPlaceholder("channelId")).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocationId", nameof(MethodHub.TestTypeCastingErrors), new[] { "channelId" }, Array.Empty<object>()).OrTimeout();
 
                     // client is running wild, sending strings not ints.
                     // this error should be propogated to the user's HubMethod code
@@ -2934,7 +2934,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 using (var client = new TestClient())
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                    await client.SendHubMessageAsync(new StreamCompleteMessage("fake_id")).OrTimeout();
+                    await client.SendHubMessageAsync(CompletionMessage.Empty("fake_id")).OrTimeout();
 
                     // Client is breaking protocol by sending an invalid id, and should be closed.
                     var message = client.TryRead();
@@ -2957,8 +2957,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 using (var client = new TestClient())
                 {
                     await client.ConnectAsync(connectionHandler).OrTimeout();
-                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.TestCustomErrorPassing), new StreamPlaceholder("id")).OrTimeout();
-                    await client.SendHubMessageAsync(new StreamCompleteMessage("id", CustomErrorMessage)).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.TestCustomErrorPassing), new[] { "id" }, Array.Empty<object>()).OrTimeout();
+                    await client.SendHubMessageAsync(CompletionMessage.WithError("id", CustomErrorMessage)).OrTimeout();
 
                     var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
                     Assert.True((bool)response.Result);
@@ -3088,14 +3088,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await client.Connected.OrThrowIfOtherFails(connectionHandlerTask).OrTimeout();
 
                     var streamId = "sample_id";
-                    var messagePromise = client.StreamAsync(nameof(StreamingHub.StreamEcho), new StreamPlaceholder(streamId)).OrTimeout();
+                    var messagePromise = client.StreamAsync(nameof(StreamingHub.StreamEcho), new[] { streamId }, Array.Empty<object>()).OrTimeout();
 
                     var phrases = new[] { "asdf", "qwer", "zxcv" };
                     foreach (var phrase in phrases)
                     {
-                        await client.SendHubMessageAsync(new StreamDataMessage(streamId, phrase));
+                        await client.SendHubMessageAsync(new StreamItemMessage(streamId, phrase));
                     }
-                    await client.SendHubMessageAsync(new StreamCompleteMessage(streamId));
+                    await client.SendHubMessageAsync(CompletionMessage.Empty(streamId));
 
                     var messages = await messagePromise;
 

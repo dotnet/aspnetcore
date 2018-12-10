@@ -21,6 +21,21 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// </summary>
         public object[] Arguments { get; }
 
+        public string[] Streams { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubMethodInvocationMessage"/> class.
+        /// </summary>
+        /// <param name="invocationId">The invocation ID.</param>
+        /// <param name="target">The target method name.</param>
+        /// <param name="arguments">The target method arguments.</param>
+        /// <param name="streams">The target methods stream IDs.</param>
+        protected HubMethodInvocationMessage(string invocationId, string target, object[] arguments, string[] streams)
+            : this(invocationId, target, arguments)
+        {
+            Streams = streams;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HubMethodInvocationMessage"/> class.
         /// </summary>
@@ -66,6 +81,18 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InvocationMessage"/> class.
+        /// </summary>
+        /// <param name="invocationId">The invocation ID.</param>
+        /// <param name="target">The target method name.</param>
+        /// <param name="arguments">The target method arguments.</param>
+        /// <param name="streams">The target methods stream IDs.</param>
+        public InvocationMessage(string invocationId, string target, object[] arguments, string[] streams)
+            : base(invocationId, target, arguments, streams)
+        {
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {
@@ -95,6 +122,22 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="arguments">The target method arguments.</param>
         public StreamInvocationMessage(string invocationId, string target, object[] arguments)
             : base(invocationId, target, arguments)
+        {
+            if (string.IsNullOrEmpty(invocationId))
+            {
+                throw new ArgumentNullException(nameof(invocationId));
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreamInvocationMessage"/> class.
+        /// </summary>
+        /// <param name="invocationId">The invocation ID.</param>
+        /// <param name="target">The target method name.</param>
+        /// <param name="arguments">The target method arguments.</param>
+        /// <param name="streams">The target methods stream IDs.</param>
+        public StreamInvocationMessage(string invocationId, string target, object[] arguments, string[] streams)
+            : base(invocationId, target, arguments, streams)
         {
             if (string.IsNullOrEmpty(invocationId))
             {

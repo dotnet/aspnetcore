@@ -39,10 +39,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                     return true;
                 case CloseMessage closeMessage:
                     return string.Equals(closeMessage.Error, ((CloseMessage) y).Error);
-                case StreamCompleteMessage streamCompleteMessage:
-                    return StreamCompleteMessagesEqual(streamCompleteMessage, (StreamCompleteMessage)y);
-                case StreamDataMessage streamDataMessage:
-                    return StreamDataMessagesEqual(streamDataMessage, (StreamDataMessage)y);
                 default:
                     throw new InvalidOperationException($"Unknown message type: {x.GetType().FullName}");
             }
@@ -69,7 +65,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             return SequenceEqual(x.Headers, y.Headers)
                 && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
                 && string.Equals(x.Target, y.Target, StringComparison.Ordinal)
-                && ArgumentListsEqual(x.Arguments, y.Arguments);
+                && ArgumentListsEqual(x.Arguments, y.Arguments)
+                && StringArrayEqual(x.Streams, y.Streams);
         }
 
         private bool StreamInvocationMessagesEqual(StreamInvocationMessage x, StreamInvocationMessage y)
@@ -77,19 +74,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             return SequenceEqual(x.Headers, y.Headers)
                 && string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal)
                 && string.Equals(x.Target, y.Target, StringComparison.Ordinal)
-                && ArgumentListsEqual(x.Arguments, y.Arguments);
-        }
-
-        private bool StreamCompleteMessagesEqual(StreamCompleteMessage x, StreamCompleteMessage y)
-        {
-            return x.StreamId == y.StreamId
-                && x.Error == y.Error;
-        }
-
-        private bool StreamDataMessagesEqual(StreamDataMessage x, StreamDataMessage y)
-        {
-            return x.StreamId == y.StreamId
-                && (Equals(x.Item, y.Item) || SequenceEqual(x.Item, y.Item));
+                && ArgumentListsEqual(x.Arguments, y.Arguments)
+                && StringArrayEqual(x.Streams, y.Streams);
         }
 
         private bool ArgumentListsEqual(object[] left, object[] right)
@@ -106,27 +92,12 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             for (var i = 0; i < left.Length; i++)
             {
-                if (!(Equals(left[i], right[i]) || SequenceEqual(left[i], right[i]) || PlaceholdersEqual(left[i], right[i])))
+                if (!(Equals(left[i], right[i]) || SequenceEqual(left[i], right[i])))
                 {
                     return false;
                 }
             }
             return true;
-        }
-
-        private bool PlaceholdersEqual(object left, object right)
-        {
-            if (left.GetType() != right.GetType())
-            {
-                return false;
-            }
-            switch(left)
-            {
-                case StreamPlaceholder leftPlaceholder:
-                    return leftPlaceholder.StreamId == (right as StreamPlaceholder).StreamId;
-                default:
-                    return false;
-            }
         }
 
         private bool SequenceEqual(object left, object right)
@@ -156,6 +127,37 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             }
 
             return !leftMoved && !rightMoved;
+        }
+
+        private bool StringArrayEqual(string[] left, string[] right)
+        {
+            if (left == null && right == null)
+            {
+                return true;
+            }
+
+            if (left == null || right == null)
+            {
+                return false;
+            }
+
+            if (left.Length != right.Length)
+            {
+                return false;
+            }
+
+            foreach (var item in left)
+            {
+                foreach (var item2 in right)
+                {
+                    if (item != item2)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         public int GetHashCode(HubMessage obj)

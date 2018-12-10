@@ -93,8 +93,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 binary: "lQGDo0Zvb6NCYXKyS2V5V2l0aApOZXcNCkxpbmVzq1N0aWxsIFdvcmtzsVZhbHVlV2l0aE5ld0xpbmVzsEFsc28KV29ya3MNCkZpbmXApm1ldGhvZJKGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgOGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgM="),
             new ProtocolTestData(
                 name: "InvocationWithStreamPlaceholderObject",
-                message: new InvocationMessage(null, "Target", new object[] { new StreamPlaceholder("__test_id__")}),
-                binary: "lQGAwKZUYXJnZXSRgahTdHJlYW1JZKtfX3Rlc3RfaWRfXw=="
+                message: new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__" }),
+                binary: "lgGAwKZUYXJnZXSQkatfX3Rlc3RfaWRfXw=="
                 ),
 
             // StreamItem Messages
@@ -233,27 +233,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 message: AddHeaders(TestHeaders, new CancelInvocationMessage("xyz")),
                 binary: "kwWDo0Zvb6NCYXKyS2V5V2l0aApOZXcNCkxpbmVzq1N0aWxsIFdvcmtzsVZhbHVlV2l0aE5ld0xpbmVzsEFsc28KV29ya3MNCkZpbmWjeHl6"),
 
-            // StreamComplete Messages
-            new ProtocolTestData(
-                name: "StreamComplete",
-                message: new StreamCompleteMessage("xyz"),
-                binary: "kwijeHl6wA=="),
-            new ProtocolTestData(
-                name: "StreamCompleteWithError",
-                message: new StreamCompleteMessage("xyz", "zoinks"),
-                binary: "kwijeHl6pnpvaW5rcw=="),
-
             // Ping Messages
             new ProtocolTestData(
                 name: "Ping",
                 message: PingMessage.Instance,
                 binary: "kQY="),
-
-            // StreamData Messages
-            new ProtocolTestData(
-                name: "StreamData",
-                message: new StreamDataMessage("xyz", new CustomObject()),
-                binary: "kwmjeHl6hqpTdHJpbmdQcm9wqFNpZ25hbFIhqkRvdWJsZVByb3DLQBkh+1RCzxKnSW50UHJvcCqsRGF0ZVRpbWVQcm9w1v9Y7ByAqE51bGxQcm9wwKtCeXRlQXJyUHJvcMQDAQID"),
         }.ToDictionary(t => t.Name);
 
         [Theory]
@@ -285,7 +269,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 0x80,
                 StringBytes(3), (byte)'x', (byte)'y', (byte)'z',
                 StringBytes(6), (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d',
-                ArrayBytes(0),
+                ArrayBytes(0), // Arguments
+                ArrayBytes(0), // Streams
                 0xc3,
                 StringBytes(2), (byte)'e', (byte)'x' };
 

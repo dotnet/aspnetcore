@@ -855,7 +855,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 // List<T> will be looked at to replace with a StreamPlaceholder and should be skipped, so an error will be thrown from the
                 // protocol on the server when it tries to match List<T> with a StreamPlaceholder
                 var hubException = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync<int>("StreamEcho", new List<string> { "1", "2" }).OrTimeout());
-                Assert.Equal("Failed to invoke 'StreamEcho' due to an error on the server. InvalidDataException: Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.",
+                Assert.Equal("Failed to invoke 'StreamEcho' due to an error on the server. InvalidDataException: Invocation provides 1 argument(s) but target expects 0.",
                     hubException.Message);
                 await connection.DisposeAsync().OrTimeout();
             }

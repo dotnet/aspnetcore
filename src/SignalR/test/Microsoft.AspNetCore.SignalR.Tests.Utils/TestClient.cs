@@ -95,9 +95,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return connection;
         }
 
-        public async Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
+        public Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
         {
-            var invocationId = await SendStreamInvocationAsync(methodName, args);
+            return StreamAsync(methodName, streams: null, args);
+        }
+
+        public async Task<IList<HubMessage>> StreamAsync(string methodName, string[] streams, params object[] args)
+        {
+            var invocationId = await SendStreamInvocationAsync(methodName, streams, args);
 
             var messages = new List<HubMessage>();
             while (true)
@@ -174,13 +179,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task<string> SendStreamInvocationAsync(string methodName, params object[] args)
         {
-            var invocationId = GetInvocationId();
-            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args));
+            return SendStreamInvocationAsync(methodName, streams: null, args);
         }
 
-        public Task<string> BeginUploadStreamAsync(string invocationId, string methodName, params object[] args)
+        public Task<string> SendStreamInvocationAsync(string methodName, string[] streams, params object[] args)
         {
-            var message = new InvocationMessage(invocationId, methodName, args);            
+            var invocationId = GetInvocationId();
+            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args, streams));
+        }
+
+        public Task<string> BeginUploadStreamAsync(string invocationId, string methodName, string[] streams, params object[] args)
+        {
+            var message = new InvocationMessage(invocationId, methodName, args, streams);
             return SendHubMessageAsync(message);
         } 
 

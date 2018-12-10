@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 throw new KeyNotFoundException($"No stream with id '{message.InvocationId}' could be found.");
             }
-            converter.TryComplete(message.HasResult ? null : new Exception(message.Error));
+            converter.TryComplete(message.HasResult || message.Error == null ? null : new Exception(message.Error));
         }
 
         private static IStreamConverter BuildStream<T>()

@@ -218,21 +218,21 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var invocation = await connection.ReadSentJsonAsync().OrTimeout();
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 Assert.Equal("SomeMethod", invocation["target"]);
-                var streamId = invocation["arguments"][0]["streamId"];
+                var streamId = invocation["streams"][0];
 
                 foreach (var number in new[] { 42, 43, 322, 3145, -1234 })
                 {
                     await channel.Writer.WriteAsync(number).AsTask().OrTimeout();
 
                     var item = await connection.ReadSentJsonAsync().OrTimeout();
-                    Assert.Equal(HubProtocolConstants.StreamDataMessageType, item["type"]);
+                    Assert.Equal(HubProtocolConstants.StreamItemMessageType, item["type"]);
                     Assert.Equal(number, item["item"]);
-                    Assert.Equal(streamId, item["streamId"]);
+                    Assert.Equal(streamId, item["invocationId"]);
                 }
 
                 channel.Writer.TryComplete();
                 var completion = await connection.ReadSentJsonAsync().OrTimeout();
-                Assert.Equal(HubProtocolConstants.StreamCompleteMessageType, completion["type"]);
+                Assert.Equal(HubProtocolConstants.CompletionMessageType, completion["type"]);
 
                 await connection.ReceiveJsonMessage(
                     new { type = HubProtocolConstants.CompletionMessageType, invocationId = invocation["invocationId"], result = 42 }
@@ -259,16 +259,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 Assert.Equal("SomeMethod", invocation["target"]);
                 Assert.Null(invocation["invocationId"]);
-                var streamId = invocation["arguments"][0]["streamId"];
+                var streamId = invocation["streams"][0];
 
                 foreach (var item in new[] { 2, 3, 10, 5 })
                 {
                     await channel.Writer.WriteAsync(item);
 
                     var received = await connection.ReadSentJsonAsync().OrTimeout();
-                    Assert.Equal(HubProtocolConstants.StreamDataMessageType, received["type"]);
+                    Assert.Equal(HubProtocolConstants.StreamItemMessageType, received["type"]);
                     Assert.Equal(item, received["item"]);
-                    Assert.Equal(streamId, received["streamId"]);
+                    Assert.Equal(streamId, received["invocationId"]);
                 }
             }
         }
@@ -297,14 +297,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await channel.Writer.WriteAsync(item);
 
                     var received = await connection.ReadSentJsonAsync().OrTimeout();
-                    Assert.Equal(HubProtocolConstants.StreamDataMessageType, received["type"]);
+                    Assert.Equal(HubProtocolConstants.StreamItemMessageType, received["type"]);
                     Assert.Equal(item.Foo, received["item"]["foo"]);
                     Assert.Equal(item.Bar, received["item"]["bar"]);
                 }
 
                 channel.Writer.TryComplete();
                 var completion = await connection.ReadSentJsonAsync().OrTimeout();
-                Assert.Equal(HubProtocolConstants.StreamCompleteMessageType, completion["type"]);
+                Assert.Equal(HubProtocolConstants.CompletionMessageType, completion["type"]);
 
                 var expected = new SampleObject("oof", 14);
                 await connection.ReceiveJsonMessage(
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 // the next sent message should be a completion message
                 var complete = await connection.ReadSentJsonAsync().OrTimeout();
-                Assert.Equal(HubProtocolConstants.StreamCompleteMessageType, complete["type"]);
+                Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
                 Assert.EndsWith("canceled by client.", ((string)complete["error"]));
             } 
         }

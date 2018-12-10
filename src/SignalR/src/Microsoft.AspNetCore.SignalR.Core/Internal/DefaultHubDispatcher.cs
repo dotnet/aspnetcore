@@ -206,24 +206,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 hub = hubActivator.Create();
 
-                if (isStreamCall)
-                {
-                    // swap out placeholders for channels
-                    var args = hubMethodInvocationMessage.Arguments;
-                    for (int i = 0; i < args.Length; i++)
-                    {
-                        var placeholder = args[i] as StreamPlaceholder;
-                        if (placeholder == null)
-                        {
-                            continue;
-                        }
-
-                        Log.StartingParameterStream(_logger, placeholder.StreamId);
-                        var itemType = methodExecutor.MethodParameters[i].ParameterType.GetGenericArguments()[0];
-                        args[i] = connection.StreamTracker.AddStream(placeholder.StreamId, itemType);
-                    }
-                }
-
                 try
                 {
                     InitializeHub(hub, connection);
@@ -236,6 +218,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
                         arguments = new object[descriptor.OriginalParameterTypes.Count];
 
+                        var streamPointer = 0;
                         var hubInvocationArgumentPointer = 0;
                         for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
                         {
@@ -248,11 +231,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             }
                             else
                             {
-                                // This is the only synthetic argument type we currently support
                                 if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
                                 {
                                     cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                                     arguments[parameterPointer] = cts.Token;
+                                }
+                                else if (ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
+                                {
+                                    Log.StartingParameterStream(_logger, hubMethodInvocationMessage.Streams[streamPointer]);
+                                    var itemType = descriptor.OriginalParameterTypes[parameterPointer].GetGenericArguments()[0];
+                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.Streams[streamPointer], itemType);
+                                    streamPointer++;
                                 }
                                 else
                                 {
