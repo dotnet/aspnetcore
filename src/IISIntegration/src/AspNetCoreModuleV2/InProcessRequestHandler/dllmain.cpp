@@ -100,6 +100,8 @@ CreateApplication(
 )
 {
     TraceContextScope traceScope(FindParameter<IHttpTraceContext*>("TraceContext", pParameters, nParameters));
+    auto site = FindParameter<IHttpSite*>("Site", pParameters, nParameters);
+
     try
     {
         HRESULT hr = S_OK;

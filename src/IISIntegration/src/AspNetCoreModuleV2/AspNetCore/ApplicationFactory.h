@@ -36,10 +36,11 @@ public:
     {
         // m_location.data() is const ptr copy to local to get mutable pointer
         auto location = m_location;
-        std::array<APPLICATION_PARAMETER, 2> parameters {
+        std::array<APPLICATION_PARAMETER, 3> parameters {
             {
                 {"InProcessExeLocation", location.data()},
-                {"TraceContext", pHttpContext->GetTraceContext()}
+                {"TraceContext", pHttpContext->GetTraceContext()},
+                {"Site", pHttpContext->GetSite()}
             }
         };
 

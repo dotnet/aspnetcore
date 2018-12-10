@@ -10,6 +10,7 @@
 #include "ConfigurationSection.h"
 
 #define CS_ASPNETCORE_SECTION                            L"system.webServer/aspNetCore"
+#define CS_SITE_SECTION                                  L"system.applicationHost/sites"
 #define CS_WINDOWS_AUTHENTICATION_SECTION                L"system.webServer/security/authentication/windowsAuthentication"
 #define CS_BASIC_AUTHENTICATION_SECTION                  L"system.webServer/security/authentication/basicAuthentication"
 #define CS_ANONYMOUS_AUTHENTICATION_SECTION              L"system.webServer/security/authentication/anonymousAuthentication"

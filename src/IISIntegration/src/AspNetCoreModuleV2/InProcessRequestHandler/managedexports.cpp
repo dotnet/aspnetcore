@@ -185,6 +185,7 @@ struct IISConfigurationData
     BOOL fWindowsAuthEnabled;
     BOOL fBasicAuthEnabled;
     BOOL fAnonymousAuthEnable;
+    BSTR pwzBindings;
 };
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
@@ -207,7 +208,7 @@ http_get_application_properties(
     pIISCofigurationData->fWindowsAuthEnabled = pConfiguration.QueryWindowsAuthEnabled();
     pIISCofigurationData->fBasicAuthEnabled = pConfiguration.QueryBasicAuthEnabled();
     pIISCofigurationData->fAnonymousAuthEnable = pConfiguration.QueryAnonymousAuthEnabled();
-
+    pIISCofigurationData->pwzBindings = SysAllocString(pInProcessApplication->QueryBindings();
     return S_OK;
 }
 

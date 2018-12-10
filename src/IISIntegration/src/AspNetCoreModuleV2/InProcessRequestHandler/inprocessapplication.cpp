@@ -344,6 +344,7 @@ void IN_PROCESS_APPLICATION::QueueStop()
 
 HRESULT IN_PROCESS_APPLICATION::Start(
     IHttpServer& pServer,
+    IHttpSite& pSite,
     IHttpApplication& pHttpApplication,
     APPLICATION_PARAMETER* pParameters,
     DWORD nParameters,
