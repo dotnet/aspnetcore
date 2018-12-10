@@ -49,19 +49,15 @@
 
   <ItemGroup>
     <ShippedRepository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
-    <ShippedRepository Include="Antiforgery" RootPath="$(RepositoryRoot)src\Antiforgery\" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
-    <ShippedRepository Include="CORS" RootPath="$(RepositoryRoot)src\CORS\" />
     <ShippedRepository Include="Identity" RootPath="$(RepositoryRoot)src\Identity\" />
     <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="Mvc" RootPath="$(RepositoryRoot)src\Mvc\" />
     <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\" />
     <ShippedRepository Include="Razor" RootPath="$(RepositoryRoot)src\Razor\" />
-    <ShippedRepository Include="ResponseCaching" RootPath="$(RepositoryRoot)src\ResponseCaching\" />
     <ShippedRepository Include="Security" RootPath="$(RepositoryRoot)src\Security\" />
     <ShippedRepository Include="Session" RootPath="$(RepositoryRoot)src\Session\" />
     <ShippedRepository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
-    <ShippedRepository Include="StaticFiles" RootPath="$(RepositoryRoot)src\StaticFiles\" />
   </ItemGroup>
 </Project>

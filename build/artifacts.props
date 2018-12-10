@@ -112,7 +112,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Owin" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.RangeHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Design" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Language" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Runtime" Category="ship" />
