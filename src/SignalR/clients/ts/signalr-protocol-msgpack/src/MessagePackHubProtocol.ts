@@ -4,7 +4,7 @@
 import { Buffer } from "buffer";
 import * as msgpack5 from "msgpack5";
 
-import { CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage, LogLevel, MessageHeaders, MessageType, NullLogger, StreamCompleteMessage, StreamDataMessage, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
+import { CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage, LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
 
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
 import { isArrayBuffer } from "./Utils";
@@ -65,15 +65,12 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 return this.writeInvocation(message as InvocationMessage);
             case MessageType.StreamInvocation:
                 return this.writeStreamInvocation(message as StreamInvocationMessage);
-            case MessageType.StreamData:
-                return this.writeStreamData(message as StreamDataMessage);
             case MessageType.StreamItem:
+                return this.writeStreamItem(message as StreamItemMessage);
             case MessageType.Completion:
-                throw new Error(`Writing messages of type '${message.type}' is not supported.`);
+                return this.writeCompletion(message as CompletionMessage);
             case MessageType.Ping:
                 return BinaryMessageFormat.write(SERIALIZED_PING_MESSAGE);
-            case MessageType.StreamComplete:
-                return this.writeStreamComplete(message as StreamCompleteMessage);
             default:
                 throw new Error("Invalid message type.");
         }
@@ -216,32 +213,56 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-        invocationMessage.target, invocationMessage.arguments]);
+        let payload: any;
+        if (invocationMessage.streams) {
+            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+            invocationMessage.target, invocationMessage.arguments, invocationMessage.streams]);
+        } else {
+            payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
+            invocationMessage.target, invocationMessage.arguments]);
+        }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
     private writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-        streamInvocationMessage.target, streamInvocationMessage.arguments]);
+        let payload: any;
+        if (streamInvocationMessage.streams) {
+            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streams]);
+        } else {
+            payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
+            streamInvocationMessage.target, streamInvocationMessage.arguments]);
+        }
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
-    private writeStreamData(streamDataMessage: StreamDataMessage): ArrayBuffer {
+    private writeStreamItem(streamItemMessage: StreamItemMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.StreamData, streamDataMessage.streamId,
-            streamDataMessage.item]);
+        const payload = msgpack.encode([MessageType.StreamItem, streamItemMessage.headers || {}, streamItemMessage.invocationId,
+        streamItemMessage.item]);
 
         return BinaryMessageFormat.write(payload.slice());
     }
 
-    private writeStreamComplete(streamCompleteMessage: StreamCompleteMessage): ArrayBuffer {
+    private writeCompletion(completionMessage: CompletionMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.StreamComplete, streamCompleteMessage.streamId,
-            streamCompleteMessage.error || null]);
+        const resultKind = completionMessage.error ? 1 : completionMessage.result ? 3 : 2;
+
+        let payload: any;
+        switch (resultKind) {
+            case 1:
+                payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.error]);
+                break;
+            case 2:
+                payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind]);
+                break;
+            case 3:
+                payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.result]);
+                break;
+        }
 
         return BinaryMessageFormat.write(payload.slice());
     }

@@ -21,6 +21,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// </summary>
         public object[] Arguments { get; }
 
+        /// <summary>
+        /// The target methods stream IDs.
+        /// </summary>
         public string[] Streams { get; }
 
         /// <summary>

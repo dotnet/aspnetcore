@@ -3,7 +3,7 @@
 
 import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } from "./HandshakeProtocol";
 import { IConnection } from "./IConnection";
-import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamCompleteMessage, StreamDataMessage, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
+import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
@@ -30,7 +30,6 @@ export class HubConnection {
     private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
     private methods: { [name: string]: Array<(...args: any[]) => void> };
     private invocationId: number;
-    private streamId: number;
     private closedCallbacks: Array<(error?: Error) => void>;
     private receivedHandshakeResponse: boolean;
     private handshakeResolver!: (value?: PromiseLike<{}>) => void;
@@ -86,7 +85,6 @@ export class HubConnection {
         this.methods = {};
         this.closedCallbacks = [];
         this.invocationId = 0;
-        this.streamId = 0;
         this.receivedHandshakeResponse = false;
         this.connectionState = HubConnectionState.Disconnected;
 
@@ -155,8 +153,8 @@ export class HubConnection {
      * @returns {IStreamResult<T>} An object that yields results from the server as they are received.
      */
     public stream<T = any>(methodName: string, ...args: any[]): IStreamResult<T> {
-        const streams = this.replaceStreamingParams(args);
-        const invocationDescriptor = this.createStreamInvocation(methodName, args);
+        const [streams, streamIds] = this.replaceStreamingParams(args);
+        const invocationDescriptor = this.createStreamInvocation(methodName, args, streamIds);
 
         const subject = new Subject<T>();
         subject.cancelCallback = () => {
@@ -219,17 +217,12 @@ export class HubConnection {
      * @returns {Promise<void>} A Promise that resolves when the invocation has been successfully sent, or rejects with an error.
      */
     public send(methodName: string, ...args: any[]): Promise<void> {
-        const streams = this.replaceStreamingParams(args);
-        const sendPromise = this.sendWithProtocol(this.createInvocation(methodName, args, true));
+        const [streams, streamIds] = this.replaceStreamingParams(args);
+        const sendPromise = this.sendWithProtocol(this.createInvocation(methodName, args, true, streamIds));
 
         this.launchStreams(streams, sendPromise);
 
         return sendPromise;
-    }
-
-    private nextStreamId(): string {
-        this.streamId += 1;
-        return this.streamId.toString();
     }
 
     /** Invokes a hub method on the server using the specified name and arguments.
@@ -244,8 +237,8 @@ export class HubConnection {
      * @returns {Promise<T>} A Promise that resolves with the result of the server method (if any), or rejects with an error.
      */
     public invoke<T = any>(methodName: string, ...args: any[]): Promise<T> {
-        const streams = this.replaceStreamingParams(args);
-        const invocationDescriptor = this.createInvocation(methodName, args, false);
+        const [streams, streamIds] = this.replaceStreamingParams(args);
+        const invocationDescriptor = this.createInvocation(methodName, args, false, streamIds);
 
         const p = new Promise<any>((resolve, reject) => {
             // invocationId will always have a value for a non-blocking invocation
@@ -519,10 +512,11 @@ export class HubConnection {
         }
     }
 
-    private createInvocation(methodName: string, args: any[], nonblocking: boolean): InvocationMessage {
+    private createInvocation(methodName: string, args: any[], nonblocking: boolean, streams?: string[]): InvocationMessage {
         if (nonblocking) {
             return {
                 arguments: args,
+                streams,
                 target: methodName,
                 type: MessageType.Invocation,
             };
@@ -533,6 +527,7 @@ export class HubConnection {
             return {
                 arguments: args,
                 invocationId: invocationId.toString(),
+                streams,
                 target: methodName,
                 type: MessageType.Invocation,
             };
@@ -554,7 +549,7 @@ export class HubConnection {
         for (const streamId in streams) {
             streams[streamId].subscribe({
                 complete: () => {
-                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createStreamCompleteMessage(streamId)));
+                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createCompletionMessage(streamId)));
                 },
                 error: (err) => {
                     let message: string;
@@ -566,31 +561,37 @@ export class HubConnection {
                         message = "Unknown error";
                     }
 
-                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createStreamCompleteMessage(streamId, message)));
+                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createCompletionMessage(streamId, message)));
                 },
                 next: (item) => {
-                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createStreamDataMessage(streamId, item)));
+                    promiseQueue = promiseQueue.then(() => this.sendWithProtocol(this.createStreamItemMessage(streamId, item)));
                 },
             });
         }
     }
 
-    private replaceStreamingParams(args: any[]): Array<IStreamResult<any>> {
+    private replaceStreamingParams(args: any[]): [Array<IStreamResult<any>>, string[] | undefined] {
         const streams: Array<IStreamResult<any>> = [];
+        let streamIds: string[] | undefined = [];
         for (let i = 0; i < args.length; i++) {
             const argument = args[i];
             if (this.isObservable(argument)) {
-                const streamId = this.nextStreamId();
+                const streamId = this.invocationId;
+                this.invocationId++;
                 // Store the stream for later use
                 streams[streamId] = argument;
-                // Replace the stream with a placeholder
-                // Use capitalized StreamId because the MessagePack-CSharp library expects exact case for arguments
-                // Json allows case-insensitive arguments by default
-                args[i] = { StreamId: streamId };
+                streamIds.push(streamId.toString());
+
+                // remove stream from args
+                args.splice(i, 1);
             }
         }
 
-        return streams;
+        if (streamIds!.length === 0) {
+            streamIds = undefined;
+        }
+
+        return [streams, streamIds];
     }
 
     private isObservable(arg: any): arg is IStreamResult<any> {
@@ -598,13 +599,14 @@ export class HubConnection {
         return arg.subscribe && typeof arg.subscribe === "function";
     }
 
-    private createStreamInvocation(methodName: string, args: any[]): StreamInvocationMessage {
+    private createStreamInvocation(methodName: string, args: any[], streams?: string[]): StreamInvocationMessage {
         const invocationId = this.invocationId;
         this.invocationId++;
 
         return {
             arguments: args,
             invocationId: invocationId.toString(),
+            streams,
             target: methodName,
             type: MessageType.StreamInvocation,
         };
@@ -617,26 +619,27 @@ export class HubConnection {
         };
     }
 
-    private createStreamDataMessage(id: string, item: any): StreamDataMessage {
+    private createStreamItemMessage(id: string, item: any): StreamItemMessage {
         return {
+            invocationId: id,
             item,
-            streamId: id,
-            type: MessageType.StreamData,
+            type: MessageType.StreamItem,
         };
     }
 
-    private createStreamCompleteMessage(id: string, error?: string): StreamCompleteMessage {
+    private createCompletionMessage(id: string, error?: any, result?: any): CompletionMessage {
         if (error) {
             return {
                 error,
-                streamId: id,
-                type: MessageType.StreamComplete,
+                invocationId: id,
+                type: MessageType.Completion,
             };
         }
 
         return {
-            streamId: id,
-            type: MessageType.StreamComplete,
+            invocationId: id,
+            result,
+            type: MessageType.Completion,
         };
     }
 }
