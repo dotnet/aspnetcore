@@ -472,7 +472,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     // TODO: super ugly
                     Array.Resize(ref args, args.Length - 1);
                     i--;
-                    //args[i] = new StreamPlaceholder(id);
 
                     if (streamIds == null)
                     {

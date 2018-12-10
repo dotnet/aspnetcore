@@ -41,7 +41,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     HasSyntheticArguments = true;
                     return false;
-                } else if (ReflectionHelper.IsStreamingType(p.ParameterType, mustBeDirectType: true))
+                }
+                else if (ReflectionHelper.IsStreamingType(p.ParameterType, mustBeDirectType: true))
                 {
                     HasStreamingParameters = true;
                     HasSyntheticArguments = true;
