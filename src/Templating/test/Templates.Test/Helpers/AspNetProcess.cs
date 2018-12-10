@@ -63,7 +63,7 @@ namespace Templates.Test.Helpers
             }
 
             output.WriteLine("Running ASP.NET application...");
-            if (framework.StartsWith("netcore"))
+            if (framework.StartsWith("netcore", StringComparison.Ordinal))
             {
                 var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{framework}/{projectName}.dll";
                 _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
