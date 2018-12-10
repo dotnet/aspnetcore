@@ -436,7 +436,7 @@ public class HubConnection {
                 exception = new RuntimeException(errorMessage);
                 logger.error("HubConnection disconnected with an error {}.", errorMessage);
             }
-            if (connectionState != null){
+            if (connectionState != null) {
                 connectionState.cancelOutstandingInvocations(exception);
                 connectionState = null;
             }
