@@ -13,6 +13,8 @@
 
     <!-- Let us hardcode versions -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
+    <BlazorTemplatesPackageOutputPath>$(BuildDir)Microsoft.AspNetCore.Blazor.Templates.*.nupkg</BlazorTemplatesPackageOutputPath>
   </PropertyGroup>
 
   <!-- Submodule support -->
@@ -33,6 +35,11 @@
   -->
   <ItemGroup Condition="'$(BlazorAllTests)'!='true'">
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Components.E2ETest\Microsoft.AspNetCore.Components.E2ETest.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FilesToExcludeFromSigning Include="open-iconic.otf" Container="$(BlazorTemplatesPackageOutputPath)" />
+    <FilesToExcludeFromSigning Include="open-iconic.ttf" Container="$(BlazorTemplatesPackageOutputPath)" />
   </ItemGroup>
 
   <ItemGroup>
