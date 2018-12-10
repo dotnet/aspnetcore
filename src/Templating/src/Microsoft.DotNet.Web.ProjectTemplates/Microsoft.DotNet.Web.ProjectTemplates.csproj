@@ -13,6 +13,10 @@
   <ItemGroup>
     <!-- We don't need to code sign these .js files because they are not used in Windows Script Host. -->
     <ExcludePackageFileFromSigning Include="content\**\*.js" />
+
+    <!-- Similarly, not applicable to sign fonts -->
+    <ExcludePackageFileFromSigning Include="content\**\*.ttf" />
+    <ExcludePackageFileFromSigning Include="content\**\*.otf" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
