@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.TestHo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.WindowsServices", "WindowsServices\src\Microsoft.AspNetCore.Hosting.WindowsServices.csproj", "{FA29445B-1BA7-448D-8ADF-56BF6D6633BB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.WindowsServices.Tests", "WindowsServices\test\Microsoft.AspNetCore.Hosting.WindowsServices.Tests.csproj", "{CCD5D010-7E06-4209-ADD5-3B010A41DCF1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{FA29445B-1BA7-448D-8ADF-56BF6D6633BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA29445B-1BA7-448D-8ADF-56BF6D6633BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA29445B-1BA7-448D-8ADF-56BF6D6633BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCD5D010-7E06-4209-ADD5-3B010A41DCF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCD5D010-7E06-4209-ADD5-3B010A41DCF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCD5D010-7E06-4209-ADD5-3B010A41DCF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCD5D010-7E06-4209-ADD5-3B010A41DCF1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
