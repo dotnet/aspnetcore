@@ -66,6 +66,7 @@
 
     <ProjectToBuild Include="
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
+                      $(RepositoryRoot)src\DataProtection\**\*.*proj;
                       $(RepositoryRoot)src\Antiforgery\**\*.*proj;
                       $(RepositoryRoot)src\Hosting\**\*.*proj;
                       $(RepositoryRoot)src\Http\**\*.*proj;
