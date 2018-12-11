@@ -13,6 +13,10 @@
   <ItemGroup>
     <!-- We don't need to code sign these .js files because they are not used in Windows Script Host. -->
     <ExcludePackageFileFromSigning Include="content\**\*.js" />
+
+    <!-- Similarly, not applicable to sign fonts -->
+    <ExcludePackageFileFromSigning Include="content\**\*.ttf" />
+    <ExcludePackageFileFromSigning Include="content\**\*.otf" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
@@ -23,6 +27,7 @@
       MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
       MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion=$(MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion);
       MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion=$(MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion);
+      MicrosoftAspNetCoreComponentsPackageVersion=$(MicrosoftAspNetCoreComponentsPackageVersion);
       MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion);
       MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion);
       MicrosoftAspNetCoreIdentityUIPackageVersion=$(MicrosoftAspNetCoreIdentityUIPackageVersion);
@@ -41,6 +46,12 @@
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="RazorComponentsWeb-CSharp.App.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.App/RazorComponentsWeb-CSharp.App.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="RazorComponentsWeb-CSharp.Server.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.Server/RazorComponentsWeb-CSharp.Server.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj">
