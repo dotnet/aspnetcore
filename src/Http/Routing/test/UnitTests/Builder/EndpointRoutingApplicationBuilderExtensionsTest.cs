@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Builder
             // Assert
             Assert.Equal(
                 "EndpointRoutingMiddleware must be added to the request execution pipeline before EndpointMiddleware. " +
-                "Please add EndpointRoutingMiddleware by calling 'IApplicationBuilder.UseEndpointRouting' " +
+                "Please add EndpointRoutingMiddleware by calling 'IApplicationBuilder.UseRouting' " +
                 "inside the call to 'Configure(...)' in the application startup code.",
                 ex.Message);
         }

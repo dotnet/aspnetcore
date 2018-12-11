@@ -68,9 +68,12 @@
                        $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj
                        " />
 
+    <NpmProjectDirectory Include="$(RepositoryRoot)src\Middleware\CORS\test\FunctionalTests\" />
+
     <ProjectToBuild Include="
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                       $(RepositoryRoot)src\DataProtection\**\*.*proj;
+                      $(RepositoryRoot)src\Antiforgery\**\*.*proj;
                       $(RepositoryRoot)src\Hosting\**\*.*proj;
                       $(RepositoryRoot)src\Http\**\*.*proj;
                       $(RepositoryRoot)src\Html\**\*.*proj;

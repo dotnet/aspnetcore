@@ -17,8 +17,8 @@
 
   <ItemGroup>
     <!-- TODO use SharedSourceRoot instead of hard coded path. Issues with including Directory.Build.props -->
-    <Compile Include="$(RepositoryRoot)..\Shared\Buffers.MemoryPool\**\*.cs" />
-    <Compile Include="$(RepositoryRoot)..\Shared\HttpSys\**\*.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Shared\Buffers.MemoryPool\**\*.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Shared\HttpSys\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildServerIIS21)' != 'true'">
