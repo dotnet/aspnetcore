@@ -3,9 +3,11 @@
   <Package Id="dotnet-sql-cache" Version="2.2.0" />
   <Package Id="dotnet-user-secrets" Version="2.2.0" />
   <Package Id="dotnet-watch" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Antiforgery" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Core" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Connections.Abstractions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Cors" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Abstractions" Version="2.2.0" />
@@ -37,6 +39,8 @@
   <Package Id="Microsoft.AspNetCore.Localization" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Owin" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.ResponseCaching" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Rewrite" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
@@ -48,6 +52,7 @@
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />

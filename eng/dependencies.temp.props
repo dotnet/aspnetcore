@@ -5,6 +5,5 @@ This is required to provide dependencies for samples and tests.
 <Project>
   <ItemGroup>
     <LatestPackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
   </ItemGroup>
 </Project>
