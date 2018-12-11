@@ -495,6 +495,17 @@
     <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
     <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Session-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Session' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Session' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.StaticFiles-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.StaticFiles' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>

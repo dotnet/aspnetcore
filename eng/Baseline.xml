@@ -50,6 +50,7 @@
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.1.3" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.3" />
   <Package Id="Microsoft.AspNetCore.Server.HttpSys" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Session" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.1.1" />
