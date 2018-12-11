@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public void GeneratedCodeIsUpToDate()
         {
-            var repositoryRoot = TestPathUtilities.GetSolutionRootDirectory("Microsoft.AspNetCore");
+            var kestrelSlnDir = TestPathUtilities.GetSolutionRootDirectory("Kestrel");
 
-            var httpHeadersGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Http/HttpHeaders.Generated.cs");
-            var httpProtocolGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Http/HttpProtocol.Generated.cs");
-            var httpUtilitiesGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs");
+            var httpHeadersGeneratedPath = Path.Combine(kestrelSlnDir, "Kestrel/Core/src/Internal/Http/HttpHeaders.Generated.cs");
+            var httpProtocolGeneratedPath = Path.Combine(kestrelSlnDir, "Kestrel/Core/src/Internal/Http/HttpProtocol.Generated.cs");
+            var httpUtilitiesGeneratedPath = Path.Combine(kestrelSlnDir, "Kestrel/Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs");
 
             var testHttpHeadersGeneratedPath = Path.GetTempFileName();
             var testHttpProtocolGeneratedPath = Path.GetTempFileName();
