@@ -144,7 +144,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 arguments: properties[4],
                 headers,
                 invocationId,
-                streams: [],
+                streamIds: [],
                 target: properties[3] as string,
                 type: MessageType.Invocation,
             };
@@ -152,7 +152,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
             return {
                 arguments: properties[4],
                 headers,
-                streams: [],
+                streamIds: [],
                 target: properties[3],
                 type: MessageType.Invocation,
             };
@@ -216,7 +216,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
     private writeInvocation(invocationMessage: InvocationMessage): ArrayBuffer {
         const msgpack = msgpack5();
         const payload = msgpack.encode([MessageType.Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-        invocationMessage.target, invocationMessage.arguments, invocationMessage.streams]);
+        invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds]);
 
         return BinaryMessageFormat.write(payload.slice());
     }
@@ -224,7 +224,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
     private writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
         const msgpack = msgpack5();
         const payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-        streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streams]);
+        streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds]);
 
         return BinaryMessageFormat.write(payload.slice());
     }

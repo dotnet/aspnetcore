@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 WriteArgument(arg, packer);
             }
 
-            WriteStreamIds(message.Streams, packer);
+            WriteStreamIds(message.StreamIds, packer);
         }
 
         private void WriteStreamInvocationMessage(StreamInvocationMessage message, Stream packer)
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 WriteArgument(arg, packer);
             }
 
-            WriteStreamIds(message.Streams, packer);
+            WriteStreamIds(message.StreamIds, packer);
         }
 
         private void WriteStreamingItemMessage(StreamItemMessage message, Stream packer)

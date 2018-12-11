@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const string ResultPropertyName = "result";
         private const string ItemPropertyName = "item";
         private const string InvocationIdPropertyName = "invocationId";
-        private const string StreamsPropertyName = "streams";
+        private const string StreamsPropertyName = "streamIds";
         private const string TypePropertyName = "type";
         private const string ErrorPropertyName = "error";
         private const string TargetPropertyName = "target";
@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             WriteArguments(message.Arguments, writer);
 
-            WriteStreamIds(message.Streams, writer);
+            WriteStreamIds(message.StreamIds, writer);
         }
 
         private void WriteStreamInvocationMessage(StreamInvocationMessage message, JsonTextWriter writer)
@@ -544,7 +544,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             WriteArguments(message.Arguments, writer);
 
-            WriteStreamIds(message.Streams, writer);
+            WriteStreamIds(message.StreamIds, writer);
         }
 
         private void WriteCloseMessage(CloseMessage message, JsonTextWriter writer)

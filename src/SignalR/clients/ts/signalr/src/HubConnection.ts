@@ -512,11 +512,11 @@ export class HubConnection {
         }
     }
 
-    private createInvocation(methodName: string, args: any[], nonblocking: boolean, streams: string[]): InvocationMessage {
+    private createInvocation(methodName: string, args: any[], nonblocking: boolean, streamIds: string[]): InvocationMessage {
         if (nonblocking) {
             return {
                 arguments: args,
-                streams,
+                streamIds,
                 target: methodName,
                 type: MessageType.Invocation,
             };
@@ -527,7 +527,7 @@ export class HubConnection {
             return {
                 arguments: args,
                 invocationId: invocationId.toString(),
-                streams,
+                streamIds,
                 target: methodName,
                 type: MessageType.Invocation,
             };
@@ -595,14 +595,14 @@ export class HubConnection {
         return arg.subscribe && typeof arg.subscribe === "function";
     }
 
-    private createStreamInvocation(methodName: string, args: any[], streams: string[]): StreamInvocationMessage {
+    private createStreamInvocation(methodName: string, args: any[], streamIds: string[]): StreamInvocationMessage {
         const invocationId = this.invocationId;
         this.invocationId++;
 
         return {
             arguments: args,
             invocationId: invocationId.toString(),
-            streams,
+            streamIds,
             target: methodName,
             type: MessageType.StreamInvocation,
         };

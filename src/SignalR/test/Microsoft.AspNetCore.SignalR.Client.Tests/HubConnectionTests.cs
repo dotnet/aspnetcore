@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var invocation = await connection.ReadSentJsonAsync().OrTimeout();
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 Assert.Equal("SomeMethod", invocation["target"]);
-                var streamId = invocation["streams"][0];
+                var streamId = invocation["streamIds"][0];
 
                 foreach (var number in new[] { 42, 43, 322, 3145, -1234 })
                 {
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 Assert.Equal("SomeMethod", invocation["target"]);
                 Assert.Null(invocation["invocationId"]);
-                var streamId = invocation["streams"][0];
+                var streamId = invocation["streamIds"][0];
 
                 foreach (var item in new[] { 2, 3, 10, 5 })
                 {

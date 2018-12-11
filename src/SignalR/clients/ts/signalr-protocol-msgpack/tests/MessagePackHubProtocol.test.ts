@@ -9,7 +9,7 @@ describe("MessagePackHubProtocol", () => {
         const invocation = {
             arguments: [42, true, "test", ["x1", "y2"], null],
             headers: {},
-            streams: [],
+            streamIds: [],
             target: "myMethod",
             type: MessageType.Invocation,
         } as InvocationMessage;
@@ -23,7 +23,7 @@ describe("MessagePackHubProtocol", () => {
         const invocation = {
             arguments: [new Date(Date.UTC(2018, 1, 1, 12, 34, 56))],
             headers: {},
-            streams: [],
+            streamIds: [],
             target: "mymethod",
             type: MessageType.Invocation,
         } as InvocationMessage;
@@ -39,7 +39,7 @@ describe("MessagePackHubProtocol", () => {
             headers: {
                 foo: "bar",
             },
-            streams: [],
+            streamIds: [],
             target: "myMethod",
             type: MessageType.Invocation,
         } as InvocationMessage;
@@ -54,7 +54,7 @@ describe("MessagePackHubProtocol", () => {
             arguments: [42, true, "test", ["x1", "y2"], null],
             headers: {},
             invocationId: "123",
-            streams: [],
+            streamIds: [],
             target: "myMethod",
             type: MessageType.Invocation,
         } as InvocationMessage;

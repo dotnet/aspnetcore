@@ -113,7 +113,7 @@ describe("HubConnection", () => {
                             "arg",
                             42,
                         ],
-                        streams: [],
+                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -145,7 +145,7 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
-                        streams: [],
+                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -346,7 +346,7 @@ describe("HubConnection", () => {
                     expect(JSON.parse(connection.sentData[1])).toEqual({
                         arguments: ["arg"],
                         invocationId: "1",
-                        streams: ["0"],
+                        streamIds: ["0"],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -382,7 +382,7 @@ describe("HubConnection", () => {
 
                     expect(JSON.parse(connection.sentData[1])).toEqual({
                         arguments: ["arg"],
-                        streams: ["0"],
+                        streamIds: ["0"],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -426,7 +426,7 @@ describe("HubConnection", () => {
                     expect(JSON.parse(connection.sentData[1])).toEqual({
                         arguments: ["arg"],
                         invocationId: "1",
-                        streams: ["0"],
+                        streamIds: ["0"],
                         target: "testMethod",
                         type: MessageType.StreamInvocation,
                     });
@@ -896,7 +896,7 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
-                        streams: [],
+                        streamIds: [],
                         target: "testStream",
                         type: MessageType.StreamInvocation,
                     });

@@ -238,9 +238,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 }
                                 else if (ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
                                 {
-                                    Log.StartingParameterStream(_logger, hubMethodInvocationMessage.Streams[streamPointer]);
+                                    Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
                                     var itemType = descriptor.OriginalParameterTypes[parameterPointer].GetGenericArguments()[0];
-                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.Streams[streamPointer], itemType);
+                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
                                     streamPointer++;
                                 }
                                 else
