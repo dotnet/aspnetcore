@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Antiforgery" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.WebEncoders" />
+  </ItemGroup>
+
+</Project>

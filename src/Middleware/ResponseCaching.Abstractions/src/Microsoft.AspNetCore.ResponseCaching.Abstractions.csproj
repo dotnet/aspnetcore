@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core response caching middleware abstractions and feature interface definitions.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;cache;caching</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Primitives" />
+  </ItemGroup>
+
+</Project>
