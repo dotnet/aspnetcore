@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <!-- Packages that go to nuget.org -->
+    <PackageArtifact Include="AspNetCoreRuntime.3.0.$(SharedFxArchitecture)" Category="ship" Condition=" '$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86' " />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship" />
@@ -84,7 +85,6 @@
       <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="noship" />
 
     <!-- This packages contain bits used by Azure site extensions, and are not currently deployed to NuGet.org automatically like the rest of our packages. -->
-      <PackageArtifact Include="AspNetCoreRuntime.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86' " />
       <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="noship" />
       <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
 
