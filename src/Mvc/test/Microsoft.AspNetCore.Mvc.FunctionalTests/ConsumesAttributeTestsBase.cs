@@ -74,16 +74,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "http://localhost/ConsumesAttribute_PassThrough/CreateProductMultiple");
 
             // Act
-            try
-            {
-                var response = await Client.SendAsync(request);
+            var response = await Client.SendAsync(request);
 
-                // Assert
-                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            }
-            catch
-            {
-            }
+            // Assert
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         }
 
         [Theory]
