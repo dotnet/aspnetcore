@@ -58,7 +58,6 @@
     <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\"/>
     <ShippedRepository Include="Razor" RootPath="$(RepositoryRoot)src\Razor\" />
     <ShippedRepository Include="Security" RootPath="$(RepositoryRoot)src\Security\" />
-    <ShippedRepository Include="Session" RootPath="$(RepositoryRoot)src\Session\" />
     <ShippedRepository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
   </ItemGroup>
 </Project>
