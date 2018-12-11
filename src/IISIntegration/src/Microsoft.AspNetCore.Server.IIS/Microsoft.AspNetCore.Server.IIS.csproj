@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
     <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -9,7 +9,7 @@
     <PackageTags>aspnetcore;iis</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackNativeAssets Condition="'$(OS)' == 'Windows_NT'">true</PackNativeAssets>
-    <NativeAssetsTargetFramework>netcoreapp2.2</NativeAssetsTargetFramework>
+    <NativeAssetsTargetFramework>netcoreapp3.0</NativeAssetsTargetFramework>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
   </PropertyGroup>
 

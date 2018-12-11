@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

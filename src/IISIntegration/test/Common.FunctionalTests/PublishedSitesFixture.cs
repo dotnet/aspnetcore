@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 new DeploymentParameters(publisher.ApplicationPath, DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
                     HostingModel = hostingModel,
-                    TargetFramework = "netcoreapp2.2",
+                    TargetFramework = Tfm.NetCoreApp30,
                     AncmVersion = AncmVersion.AspNetCoreModuleV2
                 },
                 publish);
