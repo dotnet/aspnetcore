@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         /// Gets a dictionary mapping the <see cref="HealthStatus"/> to an HTTP status code applied to the response.
         /// This property can be used to configure the status codes returned for each status.
         /// </summary>
-        public IDictionary<HealthStatus, int> ResultStatusCodes { get; } = new Dictionary<HealthStatus, int>()
+        public IDictionary<HealthStatus, int> ResultStatusCodes { get; set; } = new Dictionary<HealthStatus, int>()
         {
             { HealthStatus.Healthy, StatusCodes.Status200OK },
             { HealthStatus.Degraded, StatusCodes.Status200OK },
