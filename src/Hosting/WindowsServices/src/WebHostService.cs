@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
         }
 
         /// <summary>
-        /// This method is not intended for direct use. It's sole purpose is to allow
+        /// This method is not intended for direct use. Its sole purpose is to allow
         /// the service to be started by the tests.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
