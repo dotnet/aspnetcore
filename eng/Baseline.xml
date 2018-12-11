@@ -55,5 +55,4 @@
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.WebUtilities" Version="2.1.1" />
   <Package Id="Microsoft.Net.Http.Headers" Version="2.1.1" />
-
 </Baseline>
