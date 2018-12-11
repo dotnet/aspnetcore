@@ -17,6 +17,10 @@
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
+    
+    <!-- Disable the check which asserts that all managed .NET binaries we distribute are strong-named signed. Workaround for https://github.com/aspnet/AspNetCore-Internal/issues/1501 -->
+    <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
+    
     <SharedSourcesFolder>$(RepositoryRoot)src\Shared\</SharedSourcesFolder>
   </PropertyGroup>
 
@@ -64,9 +68,12 @@
                        $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj
                        " />
 
+    <NpmProjectDirectory Include="$(RepositoryRoot)src\Middleware\CORS\test\FunctionalTests\" />
+
     <ProjectToBuild Include="
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                       $(RepositoryRoot)src\DataProtection\**\*.*proj;
+                      $(RepositoryRoot)src\Antiforgery\**\*.*proj;
                       $(RepositoryRoot)src\Hosting\**\*.*proj;
                       $(RepositoryRoot)src\Http\**\*.*proj;
                       $(RepositoryRoot)src\Html\**\*.*proj;
