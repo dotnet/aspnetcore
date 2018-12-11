@@ -41,6 +41,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Session" ProjectPath="$(RepositoryRoot)src\Middleware\Session\src\Microsoft.AspNetCore.Session.csproj" />
     <ProjectReferenceProvider Include="dotnet-dev-certs" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-dev-certs\src\dotnet-dev-certs.csproj" />
     <ProjectReferenceProvider Include="dotnet-sql-cache" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-sql-cache\src\dotnet-sql-cache.csproj" />
     <ProjectReferenceProvider Include="dotnet-user-secrets" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-user-secrets\src\dotnet-user-secrets.csproj" />

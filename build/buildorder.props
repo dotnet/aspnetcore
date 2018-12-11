@@ -10,7 +10,6 @@
     <RepositoryBuildOrder Include="Razor" Order="6" RootPath="$(RepositoryRoot)src\Razor\" />
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
     <RepositoryBuildOrder Include="IISIntegration" Order="10" RootPath="$(RepositoryRoot)src\IISIntegration\" />
-    <RepositoryBuildOrder Include="Session" Order="11" RootPath="$(RepositoryRoot)src\Session\" />
     <RepositoryBuildOrder Include="ServerTests" Order="11" RootPath="$(RepositoryRoot)src\ServerTests\" />
     <RepositoryBuildOrder Include="Security" Order="13" RootPath="$(RepositoryRoot)src\Security\" />
     <RepositoryBuildOrder Include="MetaPackages" Order="13" RootPath="$(RepositoryRoot)src\MetaPackages\" />
