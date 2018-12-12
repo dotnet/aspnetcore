@@ -60,7 +60,7 @@ namespace FunctionalTests
 
         private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory)
         {
-            var solutionPath = TestPathUtilities.GetSolutionRootDirectory("CORS");
+            var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
 
             var runtimeFlavor = GetRuntimeFlavor();
             var applicationType = runtimeFlavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable;
