@@ -36,18 +36,18 @@ namespace ServerComparison.FunctionalTests
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         public Task ResponseCompression_IISExpress_NoCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
         {
-            return ResponseCompression(ServerType.IISExpress, 
-                runtimeFlavor, 
-                RuntimeArchitecture.x64, 
-                CheckNoCompressionAsync, 
+            return ResponseCompression(ServerType.IISExpress,
+                runtimeFlavor,
+                RuntimeArchitecture.x64,
+                CheckNoCompressionAsync,
                 applicationType,
-                hostCompression: false, 
-                hostingModel: hostingModel, 
+                hostCompression: false,
+                hostingModel: hostingModel,
                 additionalPublishParameters: additionalPublishParameters);
         }
 
@@ -56,18 +56,18 @@ namespace ServerComparison.FunctionalTests
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         public Task ResponseCompression_IISExpress_HostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
         {
-            return ResponseCompression(ServerType.IISExpress, 
-                runtimeFlavor, 
-                RuntimeArchitecture.x64, 
-                CheckHostCompressionAsync, 
+            return ResponseCompression(ServerType.IISExpress,
+                runtimeFlavor,
+                RuntimeArchitecture.x64,
+                CheckHostCompressionAsync,
                 applicationType,
-                hostCompression: true, 
-                hostingModel: hostingModel, 
+                hostCompression: true,
+                hostingModel: hostingModel,
                 additionalPublishParameters: additionalPublishParameters);
         }
 
@@ -76,40 +76,40 @@ namespace ServerComparison.FunctionalTests
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         public Task ResponseCompression_IISExpress_AppCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
         {
-            return ResponseCompression(ServerType.IISExpress, 
-                runtimeFlavor, 
-                RuntimeArchitecture.x64, 
-                CheckAppCompressionAsync, 
+            return ResponseCompression(ServerType.IISExpress,
+                runtimeFlavor,
+                RuntimeArchitecture.x64,
+                CheckAppCompressionAsync,
                 applicationType,
-                hostCompression: true, 
-                hostingModel: hostingModel, 
-                additionalPublishParameters: additionalPublishParameters);        
+                hostCompression: true,
+                hostingModel: hostingModel,
+                additionalPublishParameters: additionalPublishParameters);
         }
 
-        
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]        
+        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
         public Task ResponseCompression_IISExpress_AppAndHostCompression(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
         {
-            return ResponseCompression(ServerType.IISExpress, 
-                runtimeFlavor, 
-                RuntimeArchitecture.x64, 
-                CheckAppCompressionAsync, 
+            return ResponseCompression(ServerType.IISExpress,
+                runtimeFlavor,
+                RuntimeArchitecture.x64,
+                CheckAppCompressionAsync,
                 applicationType,
-                hostCompression: true, 
-                hostingModel: hostingModel, 
-                additionalPublishParameters: additionalPublishParameters);        
+                hostCompression: true,
+                hostingModel: hostingModel,
+                additionalPublishParameters: additionalPublishParameters);
         }
 
         // WebListener
@@ -135,7 +135,7 @@ namespace ServerComparison.FunctionalTests
         {
             return ResponseCompression(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, CheckAppCompressionAsync, applicationType, hostCompression: false);
         }
-        
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable)]
@@ -162,7 +162,7 @@ namespace ServerComparison.FunctionalTests
         {
             return ResponseCompression(serverType, runtimeFlavor, architecture, CheckAppCompressionAsync, applicationType, hostCompression: false);
         }
-        
+
         // Nginx
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
@@ -201,11 +201,11 @@ namespace ServerComparison.FunctionalTests
         }
 
         private async Task ResponseCompression(ServerType serverType,
-            RuntimeFlavor runtimeFlavor, 
-            RuntimeArchitecture architecture, 
-            Func<HttpClient, ILogger, Task> scenario, 
-            ApplicationType applicationType, 
-            bool hostCompression, 
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            Func<HttpClient, ILogger, Task> scenario,
+            ApplicationType applicationType,
+            bool hostCompression,
             [CallerMemberName] string testName = null,
             HostingModel hostingModel = HostingModel.OutOfProcess,
             string additionalPublishParameters = "")
@@ -215,7 +215,7 @@ namespace ServerComparison.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("ResponseCompression");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "ResponseCompression",
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType,

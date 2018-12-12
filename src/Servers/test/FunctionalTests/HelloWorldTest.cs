@@ -66,11 +66,11 @@ namespace ServerComparison.FunctionalTests
         }
 
 
-        private async Task HelloWorld(ServerType serverType, 
-            RuntimeFlavor runtimeFlavor, 
-            RuntimeArchitecture architecture, 
-            ApplicationType applicationType, 
-            [CallerMemberName] string testName = null, 
+        private async Task HelloWorld(ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            ApplicationType applicationType,
+            [CallerMemberName] string testName = null,
             HostingModel hostingModel = HostingModel.OutOfProcess,
             string additionalPublishParameters = "")
         {
@@ -79,7 +79,7 @@ namespace ServerComparison.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("HelloWorld");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),

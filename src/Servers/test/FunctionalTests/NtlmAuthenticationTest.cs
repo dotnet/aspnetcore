@@ -37,7 +37,7 @@ namespace ServerComparison.FunctionalTests
         [InlineData(ServerType.WebListener, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Standalone)]
         public async Task NtlmAuthentication(ServerType serverType,
             RuntimeFlavor runtimeFlavor,
-            string targetFramework, 
+            string targetFramework,
             RuntimeArchitecture architecture,
             ApplicationType applicationType,
             HostingModel hostingModel = HostingModel.OutOfProcess,
@@ -48,7 +48,7 @@ namespace ServerComparison.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "NtlmAuthentication.config", nginxConfig: null),

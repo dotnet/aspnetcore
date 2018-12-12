@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <StandardTestTfms>netcoreapp2.1;netcoreapp2.0</StandardTestTfms>
+    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
+
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <RuntimeIdentifiers>win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND ('$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == '')">
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND ('$(ANCMVersion)' == 'V1')">
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
+  </ItemGroup>
+
+</Project>

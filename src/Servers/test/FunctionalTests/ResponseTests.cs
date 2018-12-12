@@ -60,7 +60,7 @@ namespace ServerComparison.FunctionalTests
         {
             return ResponseFormats(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, CheckManuallyChunkedAsync, applicationType, hostingModel: hostingModel, additionalPublishParameters: additionalPublishParameters);
         }
-        
+
         // Weblistener
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
@@ -104,7 +104,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(ServerType.WebListener, runtimeFlavor, RuntimeArchitecture.x64, CheckHttp11ConnectionCloseAsync, applicationType);
         }
 
-        
+
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable)]
@@ -149,7 +149,7 @@ namespace ServerComparison.FunctionalTests
         {
             return ResponseFormats(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, CheckHttp11ConnectionCloseAsync, applicationType);
         }
-        
+
         [Theory]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
@@ -157,7 +157,7 @@ namespace ServerComparison.FunctionalTests
         {
             return ResponseFormats(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, CheckChunkedAsync, applicationType);
         }
-        
+
         [Theory]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
@@ -174,7 +174,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(ServerType.Kestrel, runtimeFlavor, RuntimeArchitecture.x64, CheckManuallyChunkedAndCloseAsync, applicationType);
         }
 
-        // Nginx        
+        // Nginx
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
@@ -204,11 +204,11 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(ServerType.Nginx, runtimeFlavor, RuntimeArchitecture.x64, CheckManuallyChunkedAsync, applicationType);
         }
 
-        private async Task ResponseFormats(ServerType serverType, 
-            RuntimeFlavor runtimeFlavor, 
+        private async Task ResponseFormats(ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
             RuntimeArchitecture architecture,
-            Func<HttpClient, ILogger, Task> scenario, 
-            ApplicationType applicationType, 
+            Func<HttpClient, ILogger, Task> scenario,
+            ApplicationType applicationType,
             [CallerMemberName] string testName = null,
             HostingModel hostingModel = HostingModel.OutOfProcess,
             string additionalPublishParameters = "")
@@ -218,7 +218,7 @@ namespace ServerComparison.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("ResponseFormats");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "Responses",
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),
