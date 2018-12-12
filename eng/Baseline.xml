@@ -11,9 +11,22 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="dotnet-watch" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore" Version="2.1.6" />
   <Package Id="Microsoft.AspNetCore.Antiforgery" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Authentication" Version="2.1.2" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Cookies" Version="2.1.2" />
   <Package Id="Microsoft.AspNetCore.Authentication.Core" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Facebook" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Google" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authentication.OAuth" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Twitter" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authentication.WsFederation" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authorization" Version="2.1.2" />
+  <Package Id="Microsoft.AspNetCore.Authorization.Policy" Version="2.1.2" />
   <Package Id="Microsoft.AspNetCore.Connections.Abstractions" Version="2.1.3" />
+  <Package Id="Microsoft.AspNetCore.CookiePolicy" Version="2.1.2" />
   <Package Id="Microsoft.AspNetCore.Cors" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.1.1" />
@@ -64,4 +77,5 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.WebUtilities" Version="2.1.1" />
   <Package Id="Microsoft.Net.Http.Headers" Version="2.1.1" />
+  <Package Id="Microsoft.Owin.Security.Interop" Version="2.1.2" />
 </Baseline>
