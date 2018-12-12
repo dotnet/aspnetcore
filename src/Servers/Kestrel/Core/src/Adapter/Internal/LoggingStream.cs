@@ -83,17 +83,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return read;
         }
 
-#if NETCOREAPP2_1
         public override int Read(Span<byte> destination)
         {
             int read = _inner.Read(destination);
             Log("Read", destination.Slice(0, read));
             return read;
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
@@ -102,17 +97,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return read;
         }
 
-#if NETCOREAPP2_1
         public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             int read = await _inner.ReadAsync(destination, cancellationToken);
             Log("ReadAsync", destination.Span.Slice(0, read));
             return read;
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public override long Seek(long offset, SeekOrigin origin)
         {
@@ -130,16 +120,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             _inner.Write(buffer, offset, count);
         }
 
-#if NETCOREAPP2_1
         public override void Write(ReadOnlySpan<byte> source)
         {
             Log("Write", source);
             _inner.Write(source);
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
@@ -147,16 +132,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return _inner.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             Log("WriteAsync", source.Span);
             return _inner.WriteAsync(source, cancellationToken);
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         private void Log(string method, ReadOnlySpan<byte> buffer)
         {
