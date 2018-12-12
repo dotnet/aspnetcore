@@ -3,10 +3,13 @@
     Installs or updates Visual Studio on a local developer machine
 .PARAMETER Update
     Update VS to latest version instead of modifying the installation to include new workloads.
+.PARAMETER Quiet
+    Whether to run installer in the background
 #>
 [CmdletBinding(DefaultParameterSetName = 'Default')]
 param(
-    [switch]$Update
+    [switch]$Update,
+    [switch]$Quiet
 )
 
 $ErrorActionPreference = 'Stop'
@@ -27,14 +30,15 @@ $arguments = @(
     '--wait',
     '--norestart')
 
-if (Test-Path $vsInstallPath) {
-    # prepend the arg list with the verb
-    if ($Update) {
-        $arguments = ,'update' + $arguments
-    }
-    else {
-        $arguments = ,'modify' + $arguments
-    }
+if ($Update) {
+    $arguments = ,'update' + $arguments
+}
+else {
+    $arguments = ,'modify' + $arguments
+}
+
+if ($Quiet) {
+    $arguments += '--quiet'
 }
 
 try {
