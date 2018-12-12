@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         /// <summary>
         /// Defines whether the bearer token should be stored in the
-        /// <see cref="Http.Authentication.AuthenticationProperties"/> after a successful authorization.
+        /// <see cref="AuthenticationProperties"/> after a successful authorization.
         /// </summary>
         public bool SaveToken { get; set; } = true;
 
