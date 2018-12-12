@@ -151,9 +151,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.WebSockets" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.WebUtilities" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
     <PackageArtifact Include="Microsoft.CodeAnalysis.Razor" Category="ship" />
-    <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.Data.Sqlite.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.Data.Sqlite" Category="ship" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="ship" />
@@ -184,9 +182,6 @@
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="ship" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />
     <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="noship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Editor.Razor" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Mac.LanguageServices.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Category="ship" />
