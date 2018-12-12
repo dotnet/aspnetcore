@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 new DiagnosticResult
                 {
                     Id = "BL9993",
-                    Message = "Component parameter 'BadProperty1' is marked public, but component parameters should not be public.",
+                    Message = "Component parameter 'BadProperty1' has a public setter, but component parameters should not be publicly settable.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 new DiagnosticResult
                 {
                     Id = "BL9993",
-                    Message = "Component parameter 'BadProperty2' is marked public, but component parameters should not be public.",
+                    Message = "Component parameter 'BadProperty2' has a public setter, but component parameters should not be publicly settable.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {
@@ -116,8 +116,9 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
 
         class TypeName
         {
-            [Parameter] public string BadProperty1 { get; private set; }
-            [Parameter] public object BadProperty2 { get; protected set; }
+            [Parameter] public string MyProperty1 { get; private set; }
+            [Parameter] public object MyProperty2 { get; protected set; }
+            [Parameter] public object MyProperty2 { get; internal set; }
         }
     }" + BlazorParameterSource;
 

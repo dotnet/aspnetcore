@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 .Where(attr => semanticModel.GetTypeInfo(attr).Type?.ToDisplayString() == ComponentsApi.ParameterAttribute.FullTypeName)
                 .FirstOrDefault();
 
-            if (parameterAttribute != null && IsPublic(declaration))
+            if (parameterAttribute != null && IsPubliclySettable(declaration))
             {
                 var identifierText = declaration.Identifier.Text;
                 if (!string.IsNullOrEmpty(identifierText))
@@ -60,11 +60,11 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             }
         }
 
-        private static bool IsPublic(PropertyDeclarationSyntax declaration)
+        private static bool IsPubliclySettable(PropertyDeclarationSyntax declaration)
         {
-            // If the property explicitly specifies a non-public setter, then it's valid
+            // If the property has a setter explicitly marked private/protected/internal, then it's not public
             var setter = declaration.AccessorList?.Accessors.SingleOrDefault(x => x.Keyword.IsKind(SyntaxKind.SetKeyword));
-            if (setter != null && setter.Modifiers.Any(x => !x.IsKind(SyntaxKind.PublicKeyword)))
+            if (setter != null && setter.Modifiers.Any(x => x.IsKind(SyntaxKind.PrivateKeyword) || x.IsKind(SyntaxKind.ProtectedKeyword) || x.IsKind(SyntaxKind.InternalKeyword)))
             {
                 return false;
             }
