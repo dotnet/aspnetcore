@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     "..", // debug
                     "..", // obj
                     "..", // projectfolder
-                    "src",
-                    "servers",
                     "iis",
                     "test",
                     "testassets",
