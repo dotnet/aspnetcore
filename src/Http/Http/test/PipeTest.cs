@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         {
             MemoryStream = new MemoryStream();
             Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
-            Reader = new StreamPipeReader(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
+            Reader = new StreamPipeReader(MemoryStream, new StreamPipeReaderOptions(MinimumSegmentSize, minimumReadThreshold: 256, new TestMemoryPool()));
         }
 
         public void Dispose()
@@ -47,6 +47,13 @@ namespace Microsoft.AspNetCore.Http.Tests
         public void WriteWithoutPosition(byte[] data)
         {
             MemoryStream.Write(data, 0, data.Length);
+        }
+
+        public void Append(byte[] data)
+        {
+            var originalPosition = MemoryStream.Position;
+            MemoryStream.Write(data, 0, data.Length);
+            MemoryStream.Position = originalPosition;
         }
 
         public byte[] ReadWithoutFlush()

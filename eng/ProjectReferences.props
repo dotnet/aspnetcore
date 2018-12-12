@@ -12,7 +12,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" ProjectPath="$(RepositoryRoot)src\DataProtection\EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Extensions" ProjectPath="$(RepositoryRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" ProjectPath="$(RepositoryRoot)src\DataProtection\StackExchangeRedis\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.SystemWeb" ProjectPath="$(RepositoryRoot)src\DataProtection\SystemWeb\src\Microsoft.AspNetCore.DataProtection.SystemWeb.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting.Abstractions" ProjectPath="$(RepositoryRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting" ProjectPath="$(RepositoryRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" ProjectPath="$(RepositoryRoot)src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
