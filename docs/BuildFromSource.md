@@ -57,7 +57,7 @@ Before opening our .sln files in Visual Studio or VS Code, you need to perform t
 
 1. Executing the following on command-line:
    ```
-   .\build.cmd /p:SkipTests=true /p:_ProjectsOnly=true /p:BuildNumberSuffix=t999
+   .\build.cmd /p:SkipTests=true /p:_ProjectsOnly=true
    ```
    This will download required tools and build the entire repository once. At that point, you should be able to open .sln files to work on the projects you care about.
 
