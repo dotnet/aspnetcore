@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,13 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 return SendAsync(buffers.First);
             }
 
-#if NETCOREAPP2_1
             if (!_awaitableEventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
-#elif NETSTANDARD2_0
-            if (_awaitableEventArgs.Buffer != null)
-#else
-#error TFMs need to be updated
-#endif
             {
                 _awaitableEventArgs.SetBuffer(null, 0, 0);
             }
@@ -55,15 +49,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 _awaitableEventArgs.BufferList = null;
             }
 
-#if NETCOREAPP2_1
             _awaitableEventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
-#elif NETSTANDARD2_0
-            var segment = memory.GetArray();
 
-            _awaitableEventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
-#else
-#error TFMs need to be updated
-#endif
             if (!_socket.SendAsync(_awaitableEventArgs))
             {
                 _awaitableEventArgs.Complete();

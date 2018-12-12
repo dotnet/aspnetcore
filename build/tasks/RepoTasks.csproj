@@ -2,14 +2,15 @@
   <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core' ">netcoreapp2.1</TargetFramework>
+    <TargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core' ">net461</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Remove="Internal.AspNetCore.Sdk" />
     <PackageReference Include="Microsoft.DotNet.Archive" Version="$(MicrosoftDotNetArchivePackageVersion)" />
-    <PackageReference Include="NuGet.Build.Tasks" Version="$(NuGetInMSBuildVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DevDependency_MicrosoftExtensionsDependencyModelPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="NuGet.Build.Tasks" Version="4.9.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DevDependency_MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageReference Include="WindowsAzure.Storage" Version="$(DevDependency_WindowsAzureStoragePackageVersion)" />
   </ItemGroup>
 

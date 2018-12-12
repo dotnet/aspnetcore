@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             _distributedFormatterDeserializedFailed = LoggerMessage.Define<string>(
                 LogLevel.Error,
-                1,
+                new EventId(1, "DistributedFormatterDeserializationException"),
                 "Couldn't deserialize cached value for key {Key}.");
         }
 

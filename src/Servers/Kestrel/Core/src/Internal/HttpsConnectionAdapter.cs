@@ -131,7 +131,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             try
             {
-#if NETCOREAPP2_1
                 // Adapt to the SslStream signature
                 ServerCertificateSelectionCallback selector = null;
                 if (_serverCertificateSelector != null)
@@ -172,22 +171,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 }
 
                 await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
-#elif NETSTANDARD2_0 // No ALPN support
-                var serverCert = _serverCertificate;
-                if (_serverCertificateSelector != null)
-                {
-                    context.Features.Set(sslStream);
-                    serverCert = _serverCertificateSelector(context.ConnectionContext, null);
-                    if (serverCert != null)
-                    {
-                        EnsureCertificateIsAllowedForServerAuth(serverCert);
-                    }
-                }
-                await sslStream.AuthenticateAsServerAsync(serverCert, certificateRequired,
-                        _options.SslProtocols, _options.CheckCertificateRevocation);
-#else
-#error TFMs need to be updated
-#endif
             }
             catch (OperationCanceledException)
             {
@@ -206,13 +189,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 timeoutFeature.CancelTimeout();
             }
 
-#if NETCOREAPP2_1
             feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.Protocol;
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
-#elif NETSTANDARD2_0 // No ALPN support
-#else
-#error TFMs need to be updated
-#endif
             feature.ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);
             feature.CipherAlgorithm = sslStream.CipherAlgorithm;
             feature.CipherStrength = sslStream.CipherStrength;

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
         {
             _notMostEffectiveFilter = LoggerMessage.Define<Type>(
                LogLevel.Debug,
-               1,
+               new EventId(1, "NotMostEffectiveFilter"),
                "Skipping the execution of current filter as its not the most effective filter implementing the policy {FilterPolicy}.");
         }
 

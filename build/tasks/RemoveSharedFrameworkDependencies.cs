@@ -24,7 +24,8 @@ namespace RepoTasks
 
         public override bool Execute()
         {
-            var dependencyToRemove = FrameworkOnlyPackages.Select(p => p.ItemSpec).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            Log.LogMessage("NuGet version = " + typeof(PackageArchiveReader).Assembly.GetName().Version);
+            var dependencyToRemove = new HashSet<string>(FrameworkOnlyPackages.Select(p => p.ItemSpec), StringComparer.OrdinalIgnoreCase);
 
             foreach (var file in Files)
             {

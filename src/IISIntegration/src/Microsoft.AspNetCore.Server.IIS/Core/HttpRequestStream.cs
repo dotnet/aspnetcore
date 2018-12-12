@@ -78,17 +78,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
         }
 
-#if NETCOREAPP2_1
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);
 
             return ReadAsyncInternal(destination, cancellationToken);
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
         {

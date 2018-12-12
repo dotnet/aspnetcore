@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IntegrationTesting.IIS</PackageId>
     <!-- Always include a pre-release label since this is an internal-only package. -->
     <Version>$(VersionPrefix)-$(VersionSuffix)</Version>

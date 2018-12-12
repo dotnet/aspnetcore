@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                         if (flush)
                         {
-                            await AsyncIO.FlushAsync();
+                            await AsyncIO.FlushAsync(moreData: true);
                             flush = false;
                         }
                     }

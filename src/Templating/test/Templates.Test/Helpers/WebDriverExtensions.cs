@@ -1,7 +1,8 @@
-﻿using OpenQA.Selenium;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Linq;
 
 namespace Templates.Test.Helpers
 {
@@ -77,6 +78,22 @@ namespace Templates.Test.Helpers
         {
             new WebDriverWait(browser, TimeSpan.FromSeconds(WebDriverFactory.DefaultMaxWaitTimeInSeconds))
                 .Until(driver => driver.FindElements(By.CssSelector(expectedElementCss)).Count > 0);
+        }
+
+        public static void WaitForText(this IWebDriver browser, string cssSelector, string expectedText)
+        {
+            new WebDriverWait(browser, TimeSpan.FromSeconds(WebDriverFactory.DefaultMaxWaitTimeInSeconds))
+                .Until(driver => {
+                    try
+                    {
+                        var matchingElement = driver.FindElements(By.CssSelector(cssSelector)).FirstOrDefault();
+                        return matchingElement?.Text == expectedText;
+                    }
+                    catch (Exception) // We can get a "stale element" exception if the DOM mutates while we're holding a reference to its element
+                    {
+                        return false;
+                    }
+                });
         }
     }
 }

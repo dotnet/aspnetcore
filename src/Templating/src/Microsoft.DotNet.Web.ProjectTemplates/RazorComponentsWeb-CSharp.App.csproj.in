@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <LangVersion>7.3</LangVersion>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb_CSharp.App</RootNamespace>
+
+    <!-- The linker is not beneficial for server-side execution. Re-enable this if you switch to WebAssembly execution. -->
+    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+  </PropertyGroup>
+
+  <!-- TODO: Remove this once it's included in the shared framework -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Build" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

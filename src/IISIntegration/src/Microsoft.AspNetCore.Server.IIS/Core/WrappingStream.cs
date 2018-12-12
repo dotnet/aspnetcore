@@ -68,13 +68,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => _inner.ReadAsync(buffer, offset, count, cancellationToken);
 
-#if NETCOREAPP2_1
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
             => _inner.ReadAsync(destination, cancellationToken);
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public override int ReadByte()
             => _inner.ReadByte();
@@ -91,13 +86,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             => _inner.WriteAsync(buffer, offset, count, cancellationToken);
 
-#if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
             => _inner.WriteAsync(source, cancellationToken);
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public override void WriteByte(byte value)
             => _inner.WriteByte(value);

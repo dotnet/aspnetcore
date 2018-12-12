@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -140,7 +140,6 @@ namespace Microsoft.AspNetCore.Testing
                 _innerStream.Close();
             }
 
-#if NETCOREAPP2_2
             public override int Read(Span<byte> buffer)
             {
                 return _innerStream.Read(buffer);
@@ -165,10 +164,6 @@ namespace Microsoft.AspNetCore.Testing
             {
                 _innerStream.CopyTo(destination, bufferSize);
             }
-#elif NET461
-#else
-#error TFMs need to be updated
-#endif
         }
     }
 }

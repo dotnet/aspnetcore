@@ -1,6 +1,11 @@
 <Project>
   <Import Project="..\..\Directory.Build.props" />
 
+  <ItemGroup>
+    <!-- Ensure we are only putting packages in the package cache that are explicitly listed -->
+    <PackageReference Remove="@(PackageReference)" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- Don't restore from any fallback folder -->
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>

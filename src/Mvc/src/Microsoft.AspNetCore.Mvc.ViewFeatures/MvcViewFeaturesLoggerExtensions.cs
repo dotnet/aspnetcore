@@ -42,83 +42,83 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             _viewComponentExecuting = LoggerMessage.Define<string, string[]>(
                 LogLevel.Debug,
-                1,
+                new EventId(1, "ViewComponentExecuting"),
                 "Executing view component {ViewComponentName} with arguments ({Arguments}).");
 
             _viewComponentExecuted = LoggerMessage.Define<string, double, string>(
                 LogLevel.Debug,
-                2,
+                new EventId(2, "ViewComponentExecuted"),
                 "Executed view component {ViewComponentName} in {ElapsedMilliseconds}ms and returned " +
                 "{ViewComponentResult}");
 
             _partialViewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                1,
+                new EventId(1, "PartialViewResultExecuting"),
                 "Executing PartialViewResult, running view {PartialViewName}.");
 
             _partialViewFound = LoggerMessage.Define<string, double>(
                 LogLevel.Debug,
-                2,
+                new EventId(2, "PartialViewFound"),
                 "The partial view path '{PartialViewFilePath}' was found in {ElapsedMilliseconds}ms.");
 
             _partialViewNotFound = LoggerMessage.Define<string, IEnumerable<string>>(
                 LogLevel.Error,
-                3,
+                new EventId(3, "PartialViewNotFound"),
                 "The partial view '{PartialViewName}' was not found. Searched locations: {SearchedViewLocations}");
 
             _partialViewResultExecuted = LoggerMessage.Define<string, double>(
                 LogLevel.Information,
-                4,
+                new EventId(4, "PartialViewResultExecuted"),
                 "Executed PartialViewResult - view {PartialViewName} executed in {ElapsedMilliseconds}ms.");
 
             _antiforgeryTokenInvalid = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                1,
+                new EventId(1, "AntiforgeryTokenInvalid"),
                 "Antiforgery token validation failed. {Message}");
 
             _viewComponentResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                1,
+                new EventId(1, "ViewComponentResultExecuting"),
                 "Executing ViewComponentResult, running {ViewComponentName}.");
 
             _viewResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                1,
+                new EventId(1, "ViewResultExecuting"),
                 "Executing ViewResult, running view {ViewName}.");
 
             _viewFound = LoggerMessage.Define<string, double>(
                 LogLevel.Debug,
-                2,
+                new EventId(2, "ViewFound"),
                 "The view path '{ViewFilePath}' was found in {ElapsedMilliseconds}ms.");
 
             _viewNotFound = LoggerMessage.Define<string, IEnumerable<string>>(
                 LogLevel.Error,
-                3,
+                new EventId(3, "ViewNotFound"),
                 "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}");
 
             _viewResultExecuted = LoggerMessage.Define<string, double>(
                 LogLevel.Information,
-                4,
+                new EventId(4, "ViewResultExecuted"),
                 "Executed ViewResult - view {ViewName} executed in {ElapsedMilliseconds}ms.");
 
             _tempDataCookieNotFound = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                1,
+                new EventId(1, "TempDataCookieNotFound"),
                 "The temp data cookie {CookieName} was not found.");
 
             _tempDataCookieLoadSuccess = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                2,
+                new EventId(2, "TempDataCookieLoadSuccess"),
                 "The temp data cookie {CookieName} was used to successfully load temp data.");
 
             _tempDataCookieLoadFailure = LoggerMessage.Define<string>(
                 LogLevel.Warning,
-                3,
+                new EventId(3, "TempDataCookieLoadFailure"),
                 "The temp data cookie {CookieName} could not be loaded.");
 
             _notMostEffectiveFilter = LoggerMessage.Define<Type>(
                 LogLevel.Trace,
-                1,
+                new EventId(1, "NotMostEffectiveFilter"),
                 "Skipping the execution of current filter as its not the most effective filter implementing the policy {FilterPolicy}.");
         }
 

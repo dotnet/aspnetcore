@@ -9,7 +9,7 @@
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
     <!-- Always include framework metapackages in patch updates. -->
-    <IsPackageInThisPatch Condition="'$(IsFrameworkMetapackage)' == 'true'">true</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="'$(IsFrameworkMetapackage)' == 'true' OR '$(IsSharedSourcePackage)' == 'true' ">true</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
   </PropertyGroup>
 
