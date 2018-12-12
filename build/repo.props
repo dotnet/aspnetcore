@@ -62,6 +62,13 @@
 
     <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
 
+    <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
+    <ProjectToExclude Include="
+                      $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
+                      $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\TestServer.csproj;
+                      "
+                      Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
+
     <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
     <ProjectToExclude Include="
                        $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;

@@ -46,7 +46,6 @@
     <Repository Include="Mvc" />
     <Repository Include="Razor" />
     <Repository Include="Security" />
-    <Repository Include="Session" />
     <Repository Include="SignalR" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
