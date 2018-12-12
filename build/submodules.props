@@ -36,7 +36,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" RootPath="$(RepositoryRoot)src\MetaPackages\" />
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\Templating\" />
