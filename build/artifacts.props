@@ -115,7 +115,6 @@
       <PackageArtifact Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Abstractions" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Extensions" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.DataProtection" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" />
