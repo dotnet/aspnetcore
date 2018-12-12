@@ -27,3 +27,4 @@ scripts/tmp/
 .tools/
 launchSettings.json
 korebuild-lock.txt
+.gradle/

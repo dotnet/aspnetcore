@@ -1,6 +1,0 @@
-LIBRARY aspnetcorerh
-
-EXPORTS
-    CreateApplication
-    CreateRequestHandler
-

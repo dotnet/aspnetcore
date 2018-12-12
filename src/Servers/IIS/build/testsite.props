@@ -1,0 +1,44 @@
+<Project>
+
+  <PropertyGroup>
+    <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
+    <Platforms>x64;x86</Platforms>
+    <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
+    <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
+    <NativePlatform Condition="'$(Platform)' == 'AnyCPU'">x64</NativePlatform>
+    <NativePlatform Condition="'$(NativePlatform)' == ''">$(Platform)</NativePlatform>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NativePlatform)' == 'x86'">
+    <IISExpressPath>$(MSBuildProgramFiles32)\IIS Express\iisexpress.exe</IISExpressPath>
+    <IISPath>$(SystemRoot)\SysWOW64\inetsrv\w3wp.exe</IISPath>
+    <NativeFolder>Win32</NativeFolder>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NativePlatform)' == 'x64'">
+    <IISExpressPath>$(ProgramW6432)\IIS Express\iisexpress.exe</IISExpressPath>
+    <IISPath>$(SystemRoot)\System32\inetsrv\w3wp.exe</IISPath>
+    <NativeFolder>x64</NativeFolder>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- For standalone publish, all dlls are flattened to the same folder.
+         Set the base path to the request handler
+    -->
+    <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
+
+  </PropertyGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
+    <None Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeFolder)\aspnetcore.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="$(NativePlatform)\%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <IISExpressArguments>/config:"$(IISExpressAppHostConfig)"</IISExpressArguments>
+    <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
+
+    <AncmPath>$(NativePlatform)\aspnetcore.dll</AncmPath>
+    <DotNetPath>$(userprofile)\.dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
+  </PropertyGroup>
+
+</Project>
