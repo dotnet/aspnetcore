@@ -416,7 +416,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return RazorDiagnostic.Create(Parsing_InvalidTagHelperLookupText, location, lookupText);
         }
-
         #endregion
 
         #region Semantic Errors
@@ -778,6 +777,22 @@ namespace Microsoft.AspNetCore.Razor.Language
                 invalidCharacter);
 
             return diagnostic;
+        }
+
+        #endregion
+
+        #region Rewriter Errors
+
+        // Rewriter Errors ID Offset = 4000
+
+        internal static readonly RazorDiagnosticDescriptor Rewriter_InsufficientStack =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}4000",
+                () => Resources.Rewriter_InsufficientStack,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateRewriter_InsufficientStack(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Rewriter_InsufficientStack, location);
         }
 
         #endregion

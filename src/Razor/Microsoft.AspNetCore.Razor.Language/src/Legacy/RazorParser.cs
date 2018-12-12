@@ -44,9 +44,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var root = markupParser.ParseDocument().CreateRed();
 
             var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, Options);
-
-            // Group markup elements
-            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
             return syntaxTree;
         }
     }

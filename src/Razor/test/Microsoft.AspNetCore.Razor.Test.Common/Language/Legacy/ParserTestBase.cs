@@ -241,9 +241,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
             codeDocument.SetSyntaxTree(syntaxTree);
 
-            // Group markup elements
-            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
-
             var defaultDirectivePass = new DefaultDirectiveSyntaxTreePass();
             syntaxTree = defaultDirectivePass.Execute(codeDocument, syntaxTree);
 
@@ -270,9 +267,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var diagnostics = context.ErrorSink.Errors;
 
             var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
-
-            // Group markup elements
-            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
 
             return syntaxTree;
         }
@@ -306,9 +300,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var diagnostics = context.ErrorSink.Errors;
 
             var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
-
-            // Group markup elements
-            syntaxTree = MarkupElementRewriter.AddMarkupElements(syntaxTree);
 
             return syntaxTree;
         }

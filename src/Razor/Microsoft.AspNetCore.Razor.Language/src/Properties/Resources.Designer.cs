@@ -1898,6 +1898,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatVirtualFileSystem_InvalidRelativePath(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("VirtualFileSystem_InvalidRelativePath"), p0);
 
+        /// <summary>
+        /// Not enough stack space to continue parsing this document. Razor doesn't support more than 500 nested elements.
+        /// </summary>
+        internal static string Rewriter_InsufficientStack
+        {
+            get => GetString("Rewriter_InsufficientStack");
+        }
+
+        /// <summary>
+        /// Not enough stack space to continue parsing this document. Razor doesn't support deeply nested elements.
+        /// </summary>
+        internal static string FormatRewriter_InsufficientStack()
+            => GetString("Rewriter_InsufficientStack");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
