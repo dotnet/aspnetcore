@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Fact]
-        public Task Https_HelloWorld_CLR_X64(string ancmVersion)
+        public Task Https_HelloWorld_CLR_X64()
         {
             return HttpsHelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44396, "V1");
         }
@@ -96,13 +96,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [Fact]
-        public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable(string ancmVersion)
+        public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable()
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44397, sendClientCert: false, "V1");
         }
 
         [Fact]
-        public Task Https_HelloWorld_NoClientCert_Clr_X64(string ancmVersion)
+        public Task Https_HelloWorld_NoClientCert_Clr_X64()
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44398, sendClientCert: false, "V1");
         }
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [Fact(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-        public Task Https_HelloWorld_ClientCert_Clr_X64(string ancmVersion)
+        public Task Https_HelloWorld_ClientCert_Clr_X64()
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44301, sendClientCert: true, "V1");
         }
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [Fact(Skip = "Manual test only, selecting a client cert is non-determanistic on different machines.")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-        public Task Https_HelloWorld_ClientCert_CoreCLR_X64_Portable(string ancmVersion)
+        public Task Https_HelloWorld_ClientCert_CoreCLR_X64_Portable()
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44302, sendClientCert: true, "V1");
         }

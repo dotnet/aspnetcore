@@ -1,5 +1,4 @@
 <Project>
-  <Import Project="$(RepositoryRoot)\version.props" />
   <Target Name="CreateVersionHeader" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <VersionHeaderContents Include="// Copyright (c) .NET Foundation. All rights reserved." />

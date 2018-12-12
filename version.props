@@ -11,6 +11,8 @@
 
     <!-- ANCM versioning is intentionally 10 + AspNetCoreMajorVersion because earlier versions of ANCM shipped as 8.x. -->
     <AspNetCoreModuleVersionMajor>1$(AspNetCoreMajorVersion)</AspNetCoreModuleVersionMajor>
+    <AspNetCoreModuleVersionMinor>$(AspNetCoreMinorVersion)</AspNetCoreModuleVersionMinor>
+    <AspNetCoreModuleVersionRevision>$(AspNetCorePatchVersion)</AspNetCoreModuleVersionRevision>
 
     <VersionSuffix>$(PreReleaseLabel)-$(BuildNumber)</VersionSuffix>
     <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumber)</BrandingVersionSuffix>

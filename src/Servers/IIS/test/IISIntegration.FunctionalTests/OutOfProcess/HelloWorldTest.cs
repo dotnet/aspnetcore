@@ -19,19 +19,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task HelloWorld_IISExpress_Clr_X64_Portable(string ancmVersion)
+        [Fact(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
+        public Task HelloWorld_IISExpress_Clr_X64_Portable()
         {
-            return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, ancmVersion);
+            return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, "V1");
         }
 
-        [Theory]
-        [InlineData("V1")]
-        public Task HelloWorld_IISExpress_CoreClr_X64_Portable(string ancmVersion)
+        [Fact]
+        public Task HelloWorld_IISExpress_CoreClr_X64_Portable()
         {
-            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, ancmVersion);
+            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, "V1");
         }
 
         private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, string ancmVersion)

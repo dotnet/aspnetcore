@@ -25,20 +25,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Theory(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task NtlmAuthentication_Clr_X64(string ancmVersion)
+        [Fact(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
+        public Task NtlmAuthentication_Clr_X64_Portable()
         {
-            return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051, ancmVersion);
+            return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051, "V1");
         }
 
-        [Theory]
-        [InlineData("V1")]
-        [InlineData("V2")]
-        public Task NtlmAuthentication_CoreClr_X64_Portable(string ancmVersion)
+        [Fact]
+        public Task NtlmAuthentication_CoreClr_X64_Portable()
         {
-            return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052, ancmVersion);
+            return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052, "V1");
         }
 
         private async Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port, string ancmVersion)
@@ -59,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     additionalPublishParameters += " -r " + windowsRid;
 
                 }
-   
+
                 var deploymentParameters = new DeploymentParameters(Helpers.GetOutOfProcessTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = $"http://localhost:{port}",
