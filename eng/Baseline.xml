@@ -52,6 +52,7 @@
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Session" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.2.0" />

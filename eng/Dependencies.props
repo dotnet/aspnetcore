@@ -19,6 +19,8 @@
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Caching.Redis" Version="$(MicrosoftExtensionsCachingRedisPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="$(MicrosoftExtensionsCachingSqlServerPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />

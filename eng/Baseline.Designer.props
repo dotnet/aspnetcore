@@ -509,6 +509,17 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Session-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Session' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Session' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.StaticFiles-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.StaticFiles' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
