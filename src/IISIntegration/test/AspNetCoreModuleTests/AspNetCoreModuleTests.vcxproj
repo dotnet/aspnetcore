@@ -23,7 +23,7 @@
     <ProjectGuid>{0692D963-DB10-4387-B3EA-460FBB9BD9A3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>AspNetCoreModuleTests</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
