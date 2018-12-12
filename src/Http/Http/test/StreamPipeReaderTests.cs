@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task ReadWithAdvance()
         {
-            Write(new byte[10000]);
+            WriteByteArray(9000);
 
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.End);
@@ -71,8 +71,9 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task ReadWithAdvanceDifferentSegmentSize()
         {
-            Reader = new StreamPipeReader(MemoryStream, 4095, new TestMemoryPool());
-            Write(new byte[10000]);
+            CreateReader(minimumSegmentSize: 4095);
+
+            WriteByteArray(9000);
 
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.End);
@@ -85,8 +86,9 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task ReadWithAdvanceSmallSegments()
         {
-            Reader = new StreamPipeReader(MemoryStream, 16, new TestMemoryPool());
-            Write(new byte[128]);
+            CreateReader();
+
+            WriteByteArray(128);
 
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.End);
@@ -251,8 +253,9 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task AdvanceMultipleSegments()
         {
-            Reader = new StreamPipeReader(MemoryStream, 16, new TestMemoryPool());
-            Write(new byte[128]);
+            CreateReader();
+
+            WriteByteArray(128);
 
             var result = await Reader.ReadAsync();
             Assert.Equal(16, result.Buffer.Length);
@@ -269,8 +272,9 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task AdvanceMultipleSegmentsEdgeCase()
         {
-            Reader = new StreamPipeReader(MemoryStream, 16, new TestMemoryPool());
-            Write(new byte[128]);
+            CreateReader();
+
+            WriteByteArray(128);
 
             var result = await Reader.ReadAsync();
             Reader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
@@ -288,7 +292,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task CompleteReaderWithoutAdvanceDoesNotThrow()
         {
-            Write(new byte[100]);
+            WriteByteArray(100);
             await Reader.ReadAsync();
             Reader.Complete();
         }
@@ -296,7 +300,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task AdvanceAfterCompleteThrows()
         {
-            Write(new byte[100]);
+            WriteByteArray(100);
             var buffer = (await Reader.ReadAsync()).Buffer;
 
             Reader.Complete();
@@ -309,7 +313,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         public async Task ReadBetweenBlocks()
         {
             var blockSize = 16;
-            Reader = new StreamPipeReader(MemoryStream, blockSize, new TestMemoryPool());
+            CreateReader();
 
             WriteWithoutPosition(Enumerable.Repeat((byte)'a', blockSize - 5).ToArray());
             Write(Encoding.ASCII.GetBytes("Hello World"));
@@ -364,7 +368,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public void ReadAsyncWithDataReadyReturnsTaskWithValue()
         {
-            Write(new byte[20]);
+            WriteByteArray(20);
             var task = Reader.ReadAsync();
             Assert.True(IsTaskWithResult(task));
         }
@@ -380,8 +384,9 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task AdvancePastMinReadSizeReadAsyncReturnsMoreData()
         {
-            Reader = new StreamPipeReader(MemoryStream, 16, new TestMemoryPool());
-            Write(new byte[32]);
+            CreateReader();
+
+            WriteByteArray(32);
             var result = await Reader.ReadAsync();
             Assert.Equal(16, result.Buffer.Length);
 
@@ -393,7 +398,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task ExamineEverythingResetsAfterSuccessfulRead()
         {
-            Write(Encoding.ASCII.GetBytes(new string('a', 10000)));
+            WriteByteArray(10000);
 
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
@@ -408,10 +413,10 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task ReadMultipleTimesAdvanceFreesAppropriately()
         {
-            var blockSize = 16;
             var pool = new TestMemoryPool();
-            Reader = new StreamPipeReader(MemoryStream, blockSize, pool);
-            Write(Encoding.ASCII.GetBytes(new string('a', 10000)));
+            CreateReader(memoryPool: pool);
+
+            WriteByteArray(2000);
 
             for (var i = 0; i < 99; i++)
             {
@@ -428,8 +433,9 @@ namespace Microsoft.AspNetCore.Http.Tests
         public async Task AsyncReadWorks()
         {
             MemoryStream = new AsyncStream();
-            Reader = new StreamPipeReader(MemoryStream, 16, new TestMemoryPool());
-            Write(Encoding.ASCII.GetBytes(new string('a', 10000)));
+            CreateReader();
+
+            WriteByteArray(2000);
 
             for (var i = 0; i < 99; i++)
             {
@@ -445,7 +451,8 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task ConsumePartialBufferWorks()
         {
-            Reader = new StreamPipeReader(MemoryStream, 16, new TestMemoryPool());
+            CreateReader();
+
             Write(Encoding.ASCII.GetBytes(new string('a', 8)));
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.GetPosition(4), readResult.Buffer.End);
@@ -460,7 +467,8 @@ namespace Microsoft.AspNetCore.Http.Tests
         [Fact]
         public async Task ConsumePartialBufferBetweenMultipleSegmentsWorks()
         {
-            Reader = new StreamPipeReader(MemoryStream, 16, new TestMemoryPool());
+            CreateReader();
+
             Write(Encoding.ASCII.GetBytes(new string('a', 8)));
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.GetPosition(4), readResult.Buffer.End);
@@ -477,9 +485,76 @@ namespace Microsoft.AspNetCore.Http.Tests
             Reader.AdvanceTo(readResult.Buffer.End);
         }
 
+        [Fact]
+        public async Task SetMinimumReadThresholdSegmentAdvancesCorrectly()
+        {
+            CreateReader(minimumReadThreshold: 8);
+
+            WriteByteArray(9);
+            var readResult = await Reader.ReadAsync();
+            Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+
+            AppendByteArray(9);
+            readResult = await Reader.ReadAsync();
+
+            foreach (var segment in readResult.Buffer)
+            {
+                Assert.Equal(9, segment.Length);
+            }
+            Assert.False(readResult.Buffer.IsSingleSegment);
+        }
+
+        [Fact]
+        public async Task SetMinimumReadThresholdToMiminumSegmentSizeOnlyGetNewBlockWhenDataIsWritten()
+        {
+            CreateReader(minimumReadThreshold: 16);
+            WriteByteArray(0);
+
+            var readResult = await Reader.ReadAsync();
+            Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+
+            WriteByteArray(16);
+            readResult = await Reader.ReadAsync();
+
+            Assert.Equal(16, readResult.Buffer.Length);
+            Assert.True(readResult.Buffer.IsSingleSegment);
+        }
+
+        [Fact]
+        public void SetMinimumReadThresholdOfZeroThrows()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new StreamPipeReader(MemoryStream,
+                new StreamPipeReaderOptions(minimumSegmentSize: 4096, minimumReadThreshold: 0, new TestMemoryPool())));
+        }
+
+        [Fact]
+        public void SetOptionsToNullThrows()
+        {
+            Assert.Throws<ArgumentNullException>(() => new StreamPipeReader(MemoryStream, null));
+        }
+
+        private void CreateReader(int minimumSegmentSize = 16, int minimumReadThreshold = 4, MemoryPool<byte> memoryPool = null)
+        {
+            Reader = new StreamPipeReader(MemoryStream,
+                new StreamPipeReaderOptions(
+                    minimumSegmentSize,
+                    minimumReadThreshold,
+                    memoryPool ?? new TestMemoryPool()));
+        }
+
         private bool IsTaskWithResult<T>(ValueTask<T> task)
         {
             return task == new ValueTask<T>(task.Result);
+        }
+
+        private void WriteByteArray(int size)
+        {
+            Write(new byte[size]);
+        }
+
+        private void AppendByteArray(int size)
+        {
+            Append(new byte[size]);
         }
 
         private class AsyncStream : MemoryStream
