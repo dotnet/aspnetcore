@@ -40,20 +40,7 @@ export class HandshakeProtocol {
             // optional content after is additional messages
             const responseLength = separatorIndex + 1;
             messageData = String.fromCharCode.apply(null, binaryData.slice(0, responseLength));
-
-            if (binaryData.byteLength > responseLength) {
-                remainingData = binaryData.slice(responseLength);
-                // IE 11 does not have .slice() on Uint8Array, we polyfill it with Array.prototype.slice()
-                // which returns an Array object, that doesn't have .buffer, which is an ArrayBuffer
-                // so we need to convert it into a Uint8Array and .buffer that
-                if (remainingData.buffer) {
-                    remainingData = remainingData.buffer;
-                } else {
-                    remainingData = new Uint8Array(remainingData).buffer;
-                }
-            } else {
-                remainingData = null;
-            }
+            remainingData = (binaryData.byteLength > responseLength) ? binaryData.slice(responseLength).buffer : null;
         } else {
             const textData: string = data;
             const separatorIndex = textData.indexOf(TextMessageFormat.RecordSeparator);
