@@ -29,7 +29,8 @@
       "TypeId": "public abstract class Microsoft.AspNetCore.Http.HttpContext",
       "MemberId": "public abstract Microsoft.AspNetCore.Http.Authentication.AuthenticationManager get_Authentication()",
       "Kind": "Removal"
-    }
+    },
+    {
       "TypeId": "public class Microsoft.AspNetCore.Http.Features.Authentication.SignInContext",
       "Kind": "Removal"
     },
