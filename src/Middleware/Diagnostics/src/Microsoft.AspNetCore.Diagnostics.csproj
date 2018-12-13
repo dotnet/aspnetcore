@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Diagnostics\*.cs" />
+    <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +21,6 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.RazorViews.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.StackTrace.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
     <Reference Include="System.Diagnostics.DiagnosticSource" />
