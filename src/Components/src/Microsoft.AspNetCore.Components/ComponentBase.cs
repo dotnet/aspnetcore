@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Components
                 _hasCalledInit = true;
                 OnInit();
 
-                // If you override OnInitAsync and return a nonnull task, then by default
+                // If you override OnInitAsync and return a noncompleted task, then by default
                 // we automatically re-render once that task completes.
                 var initTask = OnInitAsync();
                 ContinueAfterLifecycleTask(initTask);
@@ -173,19 +173,28 @@ namespace Microsoft.AspNetCore.Components
 
         private async void ContinueAfterLifecycleTask(Task task)
         {
-            if (task != null)
+            if (task == null)
             {
-                var hasCompletedSynchronously = task.IsCompleted;
+                // Treat like a pre-completed task that can't possibly raise errors
+                // i.e., do nothing
+            }
+            else if (task.IsCompleted)
+            {
+                // Since it's already completed synchronously, no need to await and no
+                // need to issue a further render (we already rerender synchronously).
+                // Just need to make sure we propagate any errors.
+                if (task.IsFaulted)
+                {
+                    HandleException(task.Exception);
+                }
+            }
+            else
+            {
+                // For incomplete tasks, automatically re-render on completion
                 try
                 {
                     await task;
-
-                    // When task has completed synchronously, no need to notify about state change.
-                    // Notification is done in caller method.
-                    if (!hasCompletedSynchronously)
-                    {
-                        StateHasChanged();
-                    }
+                    StateHasChanged();
                 }
                 catch (Exception ex)
                 {
@@ -208,13 +217,12 @@ namespace Microsoft.AspNetCore.Components
         void IHandleEvent.HandleEvent(EventHandlerInvoker binding, UIEventArgs args)
         {
             var task = binding.Invoke(args);
+            ContinueAfterLifecycleTask(task);
 
             // After each event, we synchronously re-render (unless !ShouldRender())
             // This just saves the developer the trouble of putting "StateHasChanged();"
             // at the end of every event callback.
             StateHasChanged();
-
-            ContinueAfterLifecycleTask(task);
         }
 
         void IHandleAfterRender.OnAfterRender()
