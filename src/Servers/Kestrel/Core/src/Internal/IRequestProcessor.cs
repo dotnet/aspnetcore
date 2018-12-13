@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         void HandleRequestHeadersTimeout();
         void HandleReadDataRateTimeout();
         void OnInputOrOutputCompleted();
+        void Tick(DateTimeOffset now);
         void Abort(ConnectionAbortedException ex);
     }
 }

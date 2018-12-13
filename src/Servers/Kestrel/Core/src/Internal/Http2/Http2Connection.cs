@@ -966,10 +966,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        void IRequestProcessor.Tick(DateTimeOffset now)
+        {
+            Input.CancelPendingRead();
+        }
+
         void IHttp2StreamLifetimeHandler.OnStreamCompleted(Http2Stream stream)
         {
             _completedStreams.Enqueue(stream);
-            Input.CancelPendingRead();
             _streamCompletionAwaitable.Complete();
         }
 
