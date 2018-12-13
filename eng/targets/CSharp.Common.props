@@ -11,4 +11,13 @@
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
+    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.NET.Test.Sdk" />
+    <Reference Include="Moq" />
+    <Reference Include="xunit" />
+    <Reference Include="xunit.analyzers" />
+    <Reference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
 </Project>
