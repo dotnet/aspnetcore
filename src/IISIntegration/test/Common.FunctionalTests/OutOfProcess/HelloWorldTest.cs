@@ -71,10 +71,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
             Assert.Equal(deploymentResult.ContentRoot + "\\wwwroot", await deploymentResult.HttpClient.GetStringAsync("/WebRootPath"));
-            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
-
             var expectedDll = variant.AncmVersion == AncmVersion.AspNetCoreModule ? "aspnetcore.dll" : "aspnetcorev2.dll";
             Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m=> m.FileName.Contains(expectedDll));
+
+            if (DeployerSelector.HasNewHandler && variant.HostingModel == HostingModel.InProcess)
+            {
+                Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
+                Assert.Equal(Path.GetDirectoryName(deploymentResult.HostProcess.MainModule.FileName), await deploymentResult.HttpClient.GetStringAsync("/DllDirectory"));
+            }
         }
     }
 }
