@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="parameters">The parameters to apply.</param>
         public virtual void SetParameters(ParameterCollection parameters)
         {
-            parameters.AssignToProperties(this);
+            parameters.SetParameterProperties(this);
 
             if (!_hasCalledInit)
             {

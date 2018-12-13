@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Reflection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components
@@ -16,10 +17,7 @@ namespace Microsoft.AspNetCore.Components
     {
         private const BindingFlags _bindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
-        private delegate void WriteParameterAction(object target, object parameterValue);
-
-        private readonly static IDictionary<Type, IDictionary<string, WriteParameterAction>> _cachedParameterWriters
-            = new ConcurrentDictionary<Type, IDictionary<string, WriteParameterAction>>();
+        private readonly static IDictionary<Type, IDictionary<string, IPropertySetter>> _cachedParameterWriters = new ConcurrentDictionary<Type, IDictionary<string, IPropertySetter>>();
 
         /// <summary>
         /// Iterates through the <see cref="ParameterCollection"/>, assigning each parameter
@@ -27,7 +25,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="parameterCollection">The <see cref="ParameterCollection"/>.</param>
         /// <param name="target">An object that has a public writable property matching each parameter's name and type.</param>
-        public static void AssignToProperties(
+        public static void SetParameterProperties(
             in this ParameterCollection parameterCollection,
             object target)
         {
@@ -43,6 +41,8 @@ namespace Microsoft.AspNetCore.Components
                 _cachedParameterWriters[targetType] = parameterWriters;
             }
 
+            var localParameterWriter = parameterWriters.Values.ToList();
+
             foreach (var parameter in parameterCollection)
             {
                 var parameterName = parameter.Name;
@@ -53,7 +53,8 @@ namespace Microsoft.AspNetCore.Components
 
                 try
                 {
-                    parameterWriter(target, parameter.Value);
+                    parameterWriter.SetValue(target, parameter.Value);
+                    localParameterWriter.Remove(parameterWriter);
                 }
                 catch (Exception ex)
                 {
@@ -62,14 +63,19 @@ namespace Microsoft.AspNetCore.Components
                         $"type '{target.GetType().FullName}'. The error was: {ex.Message}", ex);
                 }
             }
+
+            foreach (var nonUsedParameter in localParameterWriter)
+            {
+                nonUsedParameter.SetValue(target, nonUsedParameter.GetDefaultValue());
+            }
         }
 
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(Type targetType)
             => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags);
 
-        private static IDictionary<string, WriteParameterAction> CreateParameterWriters(Type targetType)
+        private static IDictionary<string, IPropertySetter> CreateParameterWriters(Type targetType)
         {
-            var result = new Dictionary<string, WriteParameterAction>(StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {
@@ -90,10 +96,7 @@ namespace Microsoft.AspNetCore.Components
                         $"name '{propertyName.ToLowerInvariant()}'. Parameter names are case-insensitive and must be unique.");
                 }
 
-                result.Add(propertyName, (object target, object parameterValue) =>
-                {
-                    propertySetter.SetValue(target, parameterValue);
-                });
+                result.Add(propertyName, propertySetter);
             }
 
             return result;

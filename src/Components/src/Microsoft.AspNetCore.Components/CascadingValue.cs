@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components
         public void SetParameters(ParameterCollection parameters)
         {
             // Implementing the parameter binding manually, instead of just calling
-            // parameters.AssignToProperties(this), is just a very slight perf optimization
+            // parameters.SetParameterProperties(this), is just a very slight perf optimization
             // and makes it simpler impose rules about the params being required or not.
 
             var hasSuppliedValue = false;

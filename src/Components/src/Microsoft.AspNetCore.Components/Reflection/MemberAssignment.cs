@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,15 +43,23 @@ namespace Microsoft.AspNetCore.Components.Reflection
         class PropertySetter<TTarget, TValue> : IPropertySetter
         {
             private readonly Action<TTarget, TValue> _setterDelegate;
+            private object _defaultValue;
 
             public PropertySetter(MethodInfo setMethod)
             {
                 _setterDelegate = (Action<TTarget, TValue>)Delegate.CreateDelegate(
                     typeof(Action<TTarget, TValue>), setMethod);
+                var propertyType = typeof(TValue);
+                _defaultValue = propertyType.IsValueType ? Activator.CreateInstance(propertyType) : null;
             }
 
             public void SetValue(object target, object value)
                 => _setterDelegate((TTarget)target, (TValue)value);
+
+            public object GetDefaultValue()
+            {
+                return _defaultValue;
+            }
         }
     }
 }
