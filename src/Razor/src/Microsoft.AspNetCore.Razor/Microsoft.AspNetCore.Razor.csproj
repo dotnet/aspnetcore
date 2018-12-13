@@ -8,7 +8,7 @@ Commonly used types:
 Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute
 Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute
 Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
 
     <!-- Required to implement an HtmlEncoder -->
