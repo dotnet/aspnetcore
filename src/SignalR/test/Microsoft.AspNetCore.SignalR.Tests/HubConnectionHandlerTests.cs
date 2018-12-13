@@ -2819,7 +2819,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 using (var client = new TestClient())
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), new[] { "id" }, Array.Empty<object>()).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), streamIds: new[] { "id" }, Array.Empty<object>()).OrTimeout();
 
                     // send integers that are then cast to strings
                     await client.SendHubMessageAsync(new StreamItemMessage("id", 5)).OrTimeout();
@@ -2957,11 +2957,61 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 using (var client = new TestClient())
                 {
                     await client.ConnectAsync(connectionHandler).OrTimeout();
-                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.TestCustomErrorPassing), new[] { "id" }, Array.Empty<object>()).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.TestCustomErrorPassing), streamIds: new[] { "id" }, args: Array.Empty<object>()).OrTimeout();
                     await client.SendHubMessageAsync(CompletionMessage.WithError("id", CustomErrorMessage)).OrTimeout();
 
                     var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
                     Assert.True((bool)response.Result);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UploadStreamWithTooManyStreamsFails()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    await client.ConnectAsync(connectionHandler).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), streamIds: new[] { "id", "id2" }, args: Array.Empty<object>()).OrTimeout();
+
+                    var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
+                    Assert.Equal("An unexpected error occurred invoking 'StreamingConcat' on the server. HubException: Client sent 2 stream(s), Hub method expects 1.", response.Error);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UploadStreamWithTooFewStreamsFails()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    await client.ConnectAsync(connectionHandler).OrTimeout();
+                    await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamingConcat), streamIds: Array.Empty<string>(), args: Array.Empty<object>()).OrTimeout();
+
+                    var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
+                    Assert.Equal("An unexpected error occurred invoking 'StreamingConcat' on the server. HubException: Client sent 0 stream(s), Hub method expects 1.", response.Error);
                 }
             }
         }

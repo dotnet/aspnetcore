@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             try
             {
-                streamIds = string.Join(", ", StreamIds?.Select(id => id?.ToString()));
+                streamIds = string.Join(", ", StreamIds != null ? StreamIds.Select(id => id?.ToString()) : Array.Empty<string>());
             }
             catch (Exception ex)
             {
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             try
             {
-                streamIds = string.Join(", ", StreamIds?.Select(id => id?.ToString()));
+                streamIds = string.Join(", ", StreamIds != null ? StreamIds.Select(id => id?.ToString()) : Array.Empty<string>());
             }
             catch (Exception ex)
             {

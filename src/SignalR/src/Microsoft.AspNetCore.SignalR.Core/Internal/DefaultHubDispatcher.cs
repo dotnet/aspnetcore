@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             else
             {
-                bool isStreamCall = descriptor.HasStreamingParameters;
+                bool isStreamCall = descriptor.StreamingParameters != null;
                 return Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamResponse, isStreamCall);
             }
         }
@@ -208,6 +208,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 try
                 {
+                    var clientStreamLength = hubMethodInvocationMessage.StreamIds != null ? hubMethodInvocationMessage.StreamIds.Length : 0;
+                    var serverStreamLength = descriptor.StreamingParameters != null ? descriptor.StreamingParameters.Count : 0;
+                    if (clientStreamLength != serverStreamLength)
+                    {
+                        throw new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
+                    }
+
                     InitializeHub(hub, connection);
                     Task invocation = null;
 
@@ -236,10 +243,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                     cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                                     arguments[parameterPointer] = cts.Token;
                                 }
-                                else if (ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
+                                else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
                                 {
                                     Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
-                                    var itemType = descriptor.OriginalParameterTypes[parameterPointer].GetGenericArguments()[0];
+                                    var itemType = descriptor.StreamingParameters[streamPointer];
                                     arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
                                     streamPointer++;
                                 }
