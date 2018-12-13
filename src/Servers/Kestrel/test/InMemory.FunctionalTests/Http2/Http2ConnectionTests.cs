@@ -2678,6 +2678,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             await InitializeConnectionAsync(_echoApplication);
 
+            StartHeartbeat();
+
             // Start some streams
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
             await StartStreamAsync(3, _browserRequestHeaders, endStream: false);
@@ -3627,6 +3629,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             await InitializeConnectionAsync(_echoApplication);
 
+            StartHeartbeat();
+
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
 
             _connection.StopProcessingNextRequest();
@@ -3656,6 +3660,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task AcceptNewStreamsDuringClosingConnection()
         {
             await InitializeConnectionAsync(_echoApplication);
+
+            StartHeartbeat();
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
 
