@@ -77,6 +77,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await InitializeConnectionAsync(_noopApplication);
 
+            StartHeartbeat();
+
             AdvanceClock(limits.KeepAliveTimeout + Heartbeat.Interval);
 
             // keep-alive timeout set but not fired.

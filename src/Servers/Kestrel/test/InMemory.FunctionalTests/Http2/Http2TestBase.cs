@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -152,6 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _appAbort;
 
         protected TestServiceContext _serviceContext;
+        private Timer _timer;
 
         internal DuplexPipe.DuplexPipePair _pair;
         protected Http2Connection _connection;
@@ -385,6 +386,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public override void Dispose()
         {
+            _timer?.Dispose();
             _pair.Application?.Input.Complete();
             _pair.Application?.Output.Complete();
             _pair.Transport?.Input.Complete();
@@ -455,6 +457,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withLength: 0,
                 withFlags: (byte)Http2SettingsFrameFlags.ACK,
                 withStreamId: 0);
+        }
+
+        protected void StartHeartbeat()
+        {
+            if (_timer == null)
+            {
+                _timer = new Timer(OnHeartbeat, state: this, dueTime: Heartbeat.Interval, period: Heartbeat.Interval);
+            }
+        }
+
+        private static void OnHeartbeat(object state)
+        {
+            ((IRequestProcessor)((Http2TestBase)state)._connection)?.Tick(default);
         }
 
         protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream)
