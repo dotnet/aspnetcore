@@ -146,14 +146,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 return false;
             }
 
-            foreach (var item in left)
+            for (var i = 0; i < left.Length; i++)
             {
-                foreach (var item2 in right)
+                if (!string.Equals(left[i], right[i]))
                 {
-                    if (item != item2)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
