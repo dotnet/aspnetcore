@@ -459,12 +459,50 @@
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.5.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Mvc.Razor.Extensions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' AND '$(TargetFramework)' == 'net46' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.1.2, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[2.1.2, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.1.2, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[2.1.2, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Owin-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Razor-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Razor.Design-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Design' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Design' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.AspNetCore.Razor.Language-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Language' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Language' AND '$(TargetFramework)' == 'net46' " />
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Language' AND '$(TargetFramework)' == 'netstandard2.0' " />
+  <!-- Package: Microsoft.AspNetCore.Razor.Runtime-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Runtime' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Runtime' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor" Version="[2.1.2, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.ResponseCaching.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ResponseCaching.Abstractions' ">
@@ -689,6 +727,21 @@
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.5.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.CodeAnalysis.Razor-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' AND '$(TargetFramework)' == 'net46' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.1.2, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="[2.8.0, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Common" Version="[2.8.0, )" />
+    <BaselinePackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="[4.3.0, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.1.2, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="[2.8.0, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Common" Version="[2.8.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.Net.Http.Headers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
@@ -705,4 +758,9 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Owin.Security" Version="[3.0.1, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.Net.Sdk.Razor-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Sdk.Razor' ">
+    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Sdk.Razor' AND '$(TargetFramework)' == 'netstandard2.0' " />
 </Project>

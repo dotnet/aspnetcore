@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This assembly contains infrastructure supporting Razor MSBuild integration.</Description>
+
+    <!-- This needs to support desktop and CoreCLR to run in msbuild -->
+    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
+    
+    <!-- This is not a package, it is part of Microsoft.AspNetCore.Razor.Design. -->
+    <IsPackable>false</IsPackable>
+    <EnableApiCheck>false</EnableApiCheck>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    
+    <Compile Include="..\..\Razor.Tools\src\ServerProtocol\*.cs">
+      <Link>Shared\ServerProtocol\%(FileName)</Link>
+    </Compile>
+    <Compile Include="..\..\Razor.Tools\src\PipeName.cs">
+      <Link>Shared\PipeName.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Razor.Tools\src\MutexName.cs">
+      <Link>Shared\MutexName.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Razor.Tools\src\Client.cs">
+      <Link>Shared\Client.cs</Link>
+    </Compile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This assembly contains infrastructure supporting Razor MSBuild integration.</Description>
+
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>rzc</AssemblyName>
+
+    <!-- This is not a package, it is part of Microsoft.AspNetCore.Razor.Design. -->
+    <IsPackable>false</IsPackable>
+    <EnableApiCheck>false</EnableApiCheck>
+    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <IsImplementationProject>false</IsImplementationProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <!-- This makes it so that the runtimeconfig.json is included as part of the build output of the project that references this project. -->
+  <Target Name="PreserveRuntimeConfig" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <AllItemsFullPathWithTargetPath Include="$(ProjectRuntimeConfigFilePath)">
+        <TargetPath>$(ProjectRuntimeConfigFileName)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AllItemsFullPathWithTargetPath>
+    </ItemGroup>
+  </Target>
+</Project>
