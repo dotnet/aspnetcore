@@ -25,6 +25,10 @@ export class MessagePackHubProtocol implements IHubProtocol {
     /** The TransferFormat of the protocol. */
     public readonly transferFormat: TransferFormat = TransferFormat.Binary;
 
+    private readonly errorResult = 1;
+    private readonly voidResult = 2;
+    private readonly nonVoidResult = 3;
+
     /** Creates an array of HubMessage objects from the specified serialized representation.
      *
      * @param {ArrayBuffer | Buffer} input An ArrayBuffer containing the serialized representation.
@@ -180,13 +184,9 @@ export class MessagePackHubProtocol implements IHubProtocol {
             throw new Error("Invalid payload for Completion message.");
         }
 
-        const errorResult = 1;
-        const voidResult = 2;
-        const nonVoidResult = 3;
-
         const resultKind = properties[3];
 
-        if (resultKind !== voidResult && properties.length < 5) {
+        if (resultKind !== this.voidResult && properties.length < 5) {
             throw new Error("Invalid payload for Completion message.");
         }
 
@@ -194,10 +194,10 @@ export class MessagePackHubProtocol implements IHubProtocol {
         let result: any;
 
         switch (resultKind) {
-            case errorResult:
+            case this.errorResult:
                 error = properties[4];
                 break;
-            case nonVoidResult:
+            case this.nonVoidResult:
                 result = properties[4];
                 break;
         }
@@ -239,17 +239,17 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     private writeCompletion(completionMessage: CompletionMessage): ArrayBuffer {
         const msgpack = msgpack5();
-        const resultKind = completionMessage.error ? 1 : completionMessage.result ? 3 : 2;
+        const resultKind = completionMessage.error ? this.errorResult : completionMessage.result ? this.nonVoidResult : this.voidResult;
 
         let payload: any;
         switch (resultKind) {
-            case 1:
+            case this.errorResult:
                 payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.error]);
                 break;
-            case 2:
+            case this.voidResult:
                 payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind]);
                 break;
-            case 3:
+            case this.nonVoidResult:
                 payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.result]);
                 break;
         }

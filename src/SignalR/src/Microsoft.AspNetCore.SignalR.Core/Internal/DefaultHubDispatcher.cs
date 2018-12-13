@@ -208,8 +208,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 try
                 {
-                    var clientStreamLength = hubMethodInvocationMessage.StreamIds != null ? hubMethodInvocationMessage.StreamIds.Length : 0;
-                    var serverStreamLength = descriptor.StreamingParameters != null ? descriptor.StreamingParameters.Count : 0;
+                    var clientStreamLength = hubMethodInvocationMessage.StreamIds?.Length ?? 0;
+                    var serverStreamLength = descriptor.StreamingParameters?.Count ?? 0;
                     if (clientStreamLength != serverStreamLength)
                     {
                         throw new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");

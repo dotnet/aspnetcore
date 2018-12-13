@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private static string[] ReadStreamIds(byte[] input, ref int offset)
         {
-            var streamIdLength = ReadArrayLength(input, ref offset, "streams");
+            var streamIdLength = ReadArrayLength(input, ref offset, "streamIds");
             string[] streams = null;
             if (streamIdLength > 0)
             {
@@ -479,12 +479,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private void WriteStreamIds(string[] streams, Stream packer)
+        private void WriteStreamIds(string[] streamIds, Stream packer)
         {
-            if (streams != null)
+            if (streamIds != null)
             {
-                MessagePackBinary.WriteArrayHeader(packer, streams.Length);
-                foreach (var streamId in streams)
+                MessagePackBinary.WriteArrayHeader(packer, streamIds.Length);
+                foreach (var streamId in streamIds)
                 {
                     MessagePackBinary.WriteString(packer, streamId);
                 }
