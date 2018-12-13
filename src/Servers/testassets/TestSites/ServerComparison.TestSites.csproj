@@ -9,14 +9,6 @@
     <RuntimeIdentifiers>win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND ('$(ANCMVersion)' == 'V2' Or '$(ANCMVersion)' == '')">
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND ('$(ANCMVersion)' == 'V1')">
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
