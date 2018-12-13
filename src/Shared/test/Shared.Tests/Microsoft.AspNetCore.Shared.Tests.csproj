@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,10 +12,17 @@
     <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" />
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="FSharp.Core" />
+    <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\ThrowingLibrary\ThrowingLibrary.csproj" />
   </ItemGroup>
 
 </Project>
