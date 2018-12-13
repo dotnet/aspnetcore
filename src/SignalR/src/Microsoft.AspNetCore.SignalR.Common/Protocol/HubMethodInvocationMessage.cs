@@ -100,6 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         public override string ToString()
         {
             string args;
+            string streamIds;
             try
             {
                 args = string.Join(", ", Arguments?.Select(a => a?.ToString()));
@@ -108,7 +109,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 args = $"Error: {ex.Message}";
             }
-            return $"InvocationMessage {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {args} ] }}";
+
+            try
+            {
+                streamIds = string.Join(", ", StreamIds?.Select(id => id?.ToString()));
+            }
+            catch (Exception ex)
+            {
+                streamIds = $"Error: {ex.Message}";
+            }
+
+            return $"InvocationMessage {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {args} ], {nameof(StreamIds)}: [ {streamIds} ] }}";
         }
     }
 
@@ -144,6 +155,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         public override string ToString()
         {
             string args;
+            string streamIds;
             try
             {
                 args = string.Join(", ", Arguments?.Select(a => a?.ToString()));
@@ -152,7 +164,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 args = $"Error: {ex.Message}";
             }
-            return $"StreamInvocation {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {args} ] }}";
+
+            try
+            {
+                streamIds = string.Join(", ", StreamIds?.Select(id => id?.ToString()));
+            }
+            catch (Exception ex)
+            {
+                streamIds = $"Error: {ex.Message}";
+            }
+
+            return $"StreamInvocation {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {args} ], {nameof(StreamIds)}: [ {streamIds} ] }}";
         }
     }
 }

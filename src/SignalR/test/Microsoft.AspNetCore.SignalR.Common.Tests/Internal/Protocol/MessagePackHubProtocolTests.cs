@@ -92,9 +92,13 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 message: AddHeaders(TestHeaders, new InvocationMessage("method", new object[] { new CustomObject(), new CustomObject() })),
                 binary: "lgGDo0Zvb6NCYXKyS2V5V2l0aApOZXcNCkxpbmVzq1N0aWxsIFdvcmtzsVZhbHVlV2l0aE5ld0xpbmVzsEFsc28KV29ya3MNCkZpbmXApm1ldGhvZJKGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgOGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgOQ"),
             new ProtocolTestData(
-                name: "InvocationWithStreamPlaceholderObject",
+                name: "InvocationWithStreamArgument",
                 message: new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__" }),
-                binary: "lgGAwKZUYXJnZXSQkatfX3Rlc3RfaWRfXw=="
+                binary: "lgGAwKZUYXJnZXSQkatfX3Rlc3RfaWRfXw=="),
+            new ProtocolTestData(
+                name: "InvocationWithStreamAndNormalArgument",
+                message: new InvocationMessage(null, "Target", new object[] { 42 }, new string[] { "__test_id__" }),
+                binary: "lgGAwKZUYXJnZXSRKpGrX190ZXN0X2lkX18="
                 ),
 
             // StreamItem Messages
@@ -206,6 +210,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 name: "StreamInvocationWithNoHeadersAndEnumArg",
                 message: new StreamInvocationMessage("xyz", "method", new object[] { TestEnum.One }),
                 binary: "lgSAo3h5eqZtZXRob2SRo09uZZA="),
+            new ProtocolTestData(
+                name: "StreamInvocationWithStreamArgument",
+                message: new StreamInvocationMessage("xyz", "method", Array.Empty<object>(), new string[] { "__test_id__" }),
+                binary: "lgSAo3h5eqZtZXRob2SQkatfX3Rlc3RfaWRfXw=="),
+            new ProtocolTestData(
+                name: "StreamInvocationWithStreamAndNormalArgument",
+                message: new StreamInvocationMessage("xyz", "method", new object[] { 42 }, new string[] { "__test_id__" }),
+                binary: "lgSAo3h5eqZtZXRob2SRKpGrX190ZXN0X2lkX18="),
             new ProtocolTestData(
                 name: "StreamInvocationWithNoHeadersAndIntAndStringArgs",
                 message: new StreamInvocationMessage("xyz", "method", new object[] { 42, "string" }),
