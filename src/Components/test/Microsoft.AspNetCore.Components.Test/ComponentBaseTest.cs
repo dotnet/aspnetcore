@@ -201,6 +201,10 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(2, renderer.Batches.Count);
 
             // Completes task started by OnInitAsync
+            // NOTE: We will probably change this behavior. It would make more sense for the base class
+            // to wait until InitAsync is completed before proceeding with SetParametersAsync, rather
+            // that running the two lifecycle methods in parallel. This will come up as a requirement
+            // when implementing async server-side prerendering.
             component.Counter = 3;
             initTask.SetResult(true);
 
