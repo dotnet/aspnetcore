@@ -8,6 +8,8 @@
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
