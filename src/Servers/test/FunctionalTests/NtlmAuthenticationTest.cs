@@ -22,7 +22,7 @@ namespace ServerComparison.FunctionalTests
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, "net461", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "V2", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, "net461", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, "netcoreapp2.1", RuntimeArchitecture.x64, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]

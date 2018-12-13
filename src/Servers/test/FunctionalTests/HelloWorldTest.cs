@@ -34,7 +34,7 @@ namespace ServerComparison.FunctionalTests
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
         {
             return HelloWorld(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, applicationType, hostingModel: hostingModel, additionalPublishParameters: additionalPublishParameters);

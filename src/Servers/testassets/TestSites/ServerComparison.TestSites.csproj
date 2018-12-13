@@ -2,10 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;netcoreapp2.0;net461</TargetFrameworks>
-    <StandardTestTfms>netcoreapp2.1;netcoreapp2.0</StandardTestTfms>
-    <StandardTestTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestTfms);net461</StandardTestTfms>
-
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <RuntimeIdentifiers>win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
