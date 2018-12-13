@@ -78,7 +78,6 @@
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.1.1</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.1</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>2.1.1</MicrosoftExtensionsWebEncodersPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.1</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
 
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.1.1</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>

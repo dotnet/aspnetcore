@@ -13,6 +13,7 @@
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

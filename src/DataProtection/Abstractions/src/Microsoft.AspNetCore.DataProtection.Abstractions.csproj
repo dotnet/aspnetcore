@@ -12,10 +12,7 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
 
   <ItemGroup>
     <Compile Include="..\..\shared\src\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.WebEncoders.Sources" PrivateAssets="All" />
+    <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
   </ItemGroup>
 
 </Project>
