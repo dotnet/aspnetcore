@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Services;
@@ -32,9 +31,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter] private Assembly AppAssembly { get; set; }
         
         /// <summary>
-        /// Gets or sets the route that should be used when no components are found with the requested route.
+        /// Gets or sets the type of the component that should be used as a fallback when no match is found for the requested route.
         /// </summary>
-        [Parameter] private string FallbackRoute { get; set; }
+        [Parameter] private Type FallbackComponent { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -79,21 +78,23 @@ namespace Microsoft.AspNetCore.Components.Routing
             builder.CloseComponent();
         }
 
-        private void Refresh(bool useFallback = false)
+        private void Refresh()
         {
-            var locationPath = useFallback ? FallbackRoute : UriHelper.ToBaseRelativePath(_baseUri, _locationAbsolute);
+            var locationPath = UriHelper.ToBaseRelativePath(_baseUri, _locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
             Routes.Route(context);
+
             if (context.Handler == null)
             {
-                if (useFallback || FallbackRoute == null)
+                if (FallbackComponent != null)
                 {
-                    throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with {(useFallback ? "the fallback route" : "a route for")} '/{locationPath}'.");
+                    context.Handler = FallbackComponent;
                 }
-                
-                Refresh(useFallback: true);
-                return;
+                else
+                {
+                    throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with a route for '/{locationPath}', and no fallback is defined.");
+                }
             }
 
             if (!typeof(IComponent).IsAssignableFrom(context.Handler))
