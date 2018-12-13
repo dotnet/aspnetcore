@@ -4,6 +4,7 @@
   <PropertyGroup>
     <BaseIntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <BaseOutputPath>$(RepositoryRoot)bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <ToolSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ToolSharedSourceRoot>
   </PropertyGroup>
 
 </Project>

@@ -10,7 +10,6 @@
   <ItemGroup Label="ProdCon dependencies">
     <!-- These dependencies must use version variables because they may be overriden by ProdCon builds. -->
     <LatestPackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Version="$(MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />

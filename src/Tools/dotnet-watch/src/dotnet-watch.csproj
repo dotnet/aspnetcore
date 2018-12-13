@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\shared\src\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
