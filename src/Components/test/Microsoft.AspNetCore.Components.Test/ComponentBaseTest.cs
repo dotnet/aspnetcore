@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
@@ -17,11 +16,10 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var service = new TestService();
-            var component = new TestComponent(service);
+            var component = new TestComponent();
 
             int onInitRuns = 0;
-            service.OnInit = c => onInitRuns++;
+            component.OnInitLogic = c => onInitRuns++;
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
@@ -36,12 +34,11 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var service = new TestService();
-            var component = new TestComponent(service);
+            var component = new TestComponent();
 
             int onInitAsyncRuns = 0;
-            service.RunsBaseOnInitAsync = false;
-            service.OnInitAsync = c =>
+            component.RunsBaseOnInitAsync = false;
+            component.OnInitAsyncLogic = c =>
             {
                 onInitAsyncRuns++;
                 return Task.CompletedTask;
@@ -61,12 +58,11 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var service = new TestService();
-            var component = new TestComponent(service);
+            var component = new TestComponent();
 
             int onInitAsyncRuns = 0;
-            service.RunsBaseOnInitAsync = true;
-            service.OnInitAsync = c =>
+            component.RunsBaseOnInitAsync = true;
+            component.OnInitAsyncLogic = c =>
             {
                 onInitAsyncRuns++;
                 return Task.CompletedTask;
@@ -86,11 +82,10 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var service = new TestService();
-            var component = new TestComponent(service);
+            var component = new TestComponent();
 
             int onParametersSetRuns = 0;
-            service.OnParametersSet = c => onParametersSetRuns++;
+            component.OnParametersSetLogic = c => onParametersSetRuns++;
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
@@ -106,12 +101,11 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var service = new TestService();
-            var component = new TestComponent(service);
+            var component = new TestComponent();
 
             int onParametersSetAsyncRuns = 0;
-            service.RunsBaseOnParametersSetAsync = false;
-            service.OnParametersSetAsync = c =>
+            component.RunsBaseOnParametersSetAsync = false;
+            component.OnParametersSetAsyncLogic = c =>
             {
                 onParametersSetAsyncRuns++;
                 return Task.CompletedTask;
@@ -131,12 +125,11 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var service = new TestService();
-            var component = new TestComponent(service);
+            var component = new TestComponent();
 
             int onParametersSetAsyncRuns = 0;
-            service.RunsBaseOnParametersSetAsync = true;
-            service.OnParametersSetAsync = c =>
+            component.RunsBaseOnParametersSetAsync = true;
+            component.OnParametersSetAsyncLogic = c =>
             {
                 onParametersSetAsyncRuns++;
                 return Task.CompletedTask;
@@ -156,13 +149,12 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var service = new TestService();
-            var component = new TestComponent(service);
+            var component = new TestComponent();
 
             component.Counter = 1;
             var parametersSetTask = new TaskCompletionSource<bool>();
-            service.RunsBaseOnParametersSetAsync = false;
-            service.OnParametersSetAsync = c => parametersSetTask.Task;
+            component.RunsBaseOnParametersSetAsync = false;
+            component.OnParametersSetAsyncLogic = c => parametersSetTask.Task;
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
@@ -184,16 +176,15 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer();
-            var service = new TestService();
-            var component = new TestComponent(service);
+            var component = new TestComponent();
 
             component.Counter = 1;
             var initTask = new TaskCompletionSource<bool>();
             var parametersSetTask = new TaskCompletionSource<bool>();
-            service.RunsBaseOnInitAsync = true;
-            service.RunsBaseOnParametersSetAsync = true;
-            service.OnInitAsync = c => initTask.Task;
-            service.OnParametersSetAsync = c => parametersSetTask.Task;
+            component.RunsBaseOnInitAsync = true;
+            component.RunsBaseOnParametersSetAsync = true;
+            component.OnInitAsyncLogic = c => initTask.Task;
+            component.OnParametersSetAsyncLogic = c => parametersSetTask.Task;
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
@@ -219,12 +210,21 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestComponent : ComponentBase
         {
-            private readonly TestService _service;
+            public bool RunsBaseOnInit { get; set; } = true;
 
-            public TestComponent(TestService service)
-            {
-                _service = service;
-            }
+            public bool RunsBaseOnInitAsync { get; set; } = true;
+
+            public bool RunsBaseOnParametersSet { get; set; } = true;
+
+            public bool RunsBaseOnParametersSetAsync { get; set; } = true;
+
+            public Action<TestComponent> OnInitLogic { get; set; }
+
+            public Func<TestComponent, Task> OnInitAsyncLogic { get; set; }
+
+            public Action<TestComponent> OnParametersSetLogic { get; set; }
+
+            public Func<TestComponent, Task> OnParametersSetAsyncLogic { get; set; }
 
             public int Counter { get; set; }
 
@@ -238,72 +238,43 @@ namespace Microsoft.AspNetCore.Components.Test
 
             protected override void OnInit()
             {
-                if (_service?.RunsBaseOnInit ?? false)
+                if (RunsBaseOnInit)
                 {
                     base.OnInit();
                 }
 
-                _service?.OnInit?.Invoke(this);
+                OnInitLogic?.Invoke(this);
             }
 
-            protected override Task OnInitAsync()
+            protected override async Task OnInitAsync()
             {
-                return _service?.OnInitAsync == null ? base.OnInitAsync() : OnInitServiceAsync();
-            }
-
-            protected override void OnParametersSet()
-            {
-                if (_service?.RunsBaseOnParametersSet ?? false)
-                {
-                    base.OnParametersSet();
-                }
-
-                _service?.OnParametersSet?.Invoke(this);
-            }
-
-            protected override Task OnParametersSetAsync()
-            {
-                return _service?.OnParametersSetAsync == null ? base.OnParametersSetAsync() : OnParametersSetServiceAsync();
-            }
-
-            private async Task OnInitServiceAsync()
-            {
-                if (_service.RunsBaseOnInitAsync)
+                if (RunsBaseOnInitAsync)
                 {
                     await base.OnInitAsync();
                 }
 
-                await _service.OnInitAsync(this);
+                await OnInitAsyncLogic?.Invoke(this);
             }
 
-            private async Task OnParametersSetServiceAsync()
+            protected override void OnParametersSet()
             {
-                if (_service.RunsBaseOnParametersSetAsync)
+                if (RunsBaseOnParametersSet)
+                {
+                    base.OnParametersSet();
+                }
+
+                OnParametersSetLogic?.Invoke(this);
+            }
+
+            protected override async Task OnParametersSetAsync()
+            {
+                if (RunsBaseOnParametersSetAsync)
                 {
                     await base.OnParametersSetAsync();
                 }
 
-                await _service.OnParametersSetAsync(this);
+                await OnParametersSetAsyncLogic?.Invoke(this);
             }
-        }
-
-        private class TestService
-        {
-            public bool RunsBaseOnInit { get; set; } = true;
-
-            public bool RunsBaseOnInitAsync { get; set; } = true;
-
-            public bool RunsBaseOnParametersSet { get; set; } = true;
-
-            public bool RunsBaseOnParametersSetAsync { get; set; } = true;
-
-            public Action<TestComponent> OnInit { get; set; }
-
-            public Func<TestComponent, Task> OnInitAsync { get; set; }
-
-            public Action<TestComponent> OnParametersSet { get; set; }
-
-            public Func<TestComponent, Task> OnParametersSetAsync { get; set; }
         }
     }
 }
