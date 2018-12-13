@@ -27,7 +27,7 @@ export class MessagePackHubProtocol implements IHubProtocol {
 
     /** Creates an array of HubMessage objects from the specified serialized representation.
      *
-     * @param {ArrayBuffer | Buffer} input An ArrayBuffer containing the serialized representation.
+     * @param {ArrayBuffer | Buffer} input An ArrayBuffer or Buffer containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
      */
     public parseMessages(input: ArrayBuffer | Buffer, logger: ILogger): HubMessage[] {
