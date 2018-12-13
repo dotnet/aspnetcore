@@ -66,6 +66,7 @@
 
     <ProjectToBuild Include="@(NativeProjects)" Condition="'$(OS)' == 'Windows_NT'"/>
     <ProjectToBuild Include="
+                      $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                       $(RepositoryRoot)src\DataProtection\**\*.*proj;
                       $(RepositoryRoot)src\Antiforgery\**\*.*proj;
