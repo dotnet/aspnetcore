@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
-    <DebugType>portable</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -12,15 +11,9 @@
               ..\src\BenchmarkRunner\**\*.cs;
               ..\src\StackTrace\ExceptionDetails\**\*.cs;
               " />
-    <EmbeddedResource Include="..\src\**\*.resx" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\testassets\ThrowingLibrary\ThrowingLibrary.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.Reflection.Metadata" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="System.Security.Cryptography.Cng" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe" />
