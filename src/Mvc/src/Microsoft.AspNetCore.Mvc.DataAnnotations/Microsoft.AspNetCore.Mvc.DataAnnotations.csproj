@@ -10,12 +10,12 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
 
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
   </ItemGroup>

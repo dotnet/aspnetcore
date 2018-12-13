@@ -14,6 +14,7 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
   </ItemGroup>
 
@@ -26,7 +27,6 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
     <PackageReference Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreChunkingCookieManagerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="$(MicrosoftAspNetCoreHtmlAbstractionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.PropertyActivator.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyActivatorSourcesPackageVersion)" />

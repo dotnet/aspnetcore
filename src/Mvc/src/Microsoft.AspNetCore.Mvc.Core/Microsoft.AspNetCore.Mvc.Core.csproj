@@ -17,7 +17,8 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
   </PropertyGroup>
 
   <ItemGroup>
-      <Compile Include="$(RepositoryRoot)\src\Shared\RangeHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +31,6 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(MicrosoftAspNetCoreHttpExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="$(MicrosoftAspNetCoreResponseCachingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="$(MicrosoftAspNetCoreRoutingPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />

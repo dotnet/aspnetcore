@@ -21,7 +21,6 @@
     <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Version="$(MicrosoftExtensionsCachingRedisPackageVersion)"  AllMetapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="$(MicrosoftExtensionsCachingSqlServerPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="$(MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion)"  AllMetapackage="true" />

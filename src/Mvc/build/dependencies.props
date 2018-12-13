@@ -71,7 +71,6 @@
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.1</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftCodeAnalysisRazorPackageVersion>2.1.1</MicrosoftCodeAnalysisRazorPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.1</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.1.1</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.1</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsConfigurationPackageVersion>2.1.1</MicrosoftExtensionsConfigurationPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
