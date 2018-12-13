@@ -10,7 +10,8 @@
     <li><NavLink href="Other" Match=NavLinkMatch.All>Other with base-relative URL (matches all)</NavLink></li>
     <li><NavLink href="/subdir/Other?abc=123">Other with query</NavLink></li>
     <li><NavLink href="/subdir/Other#blah">Other with hash</NavLink></li>
-    <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With parameters</NavLink></li>
+    <li><NavLink href="/subdir/WithParameters/Name/Abc">With parameters</NavLink></li>
+    <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
 </ul>
 
 <button onclick=@(x => uriHelper.NavigateTo("Other"))>

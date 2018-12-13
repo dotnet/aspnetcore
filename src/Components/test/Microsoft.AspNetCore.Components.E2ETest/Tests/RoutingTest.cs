@@ -203,7 +203,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("With parameters")).Click();
+            WaitAssert.Equal("Your full name is Abc .", () => app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("With parameters");
+
+            // Can add more parameters while remaining on same page
+            app.FindElement(By.LinkText("With more parameters")).Click();
             WaitAssert.Equal("Your full name is Abc McDef.", () => app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("With parameters", "With more parameters");
+
+            // Can remove parameters while remaining on same page
+            app.FindElement(By.LinkText("With parameters")).Click();
+            WaitAssert.Equal("Your full name is Abc .", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("With parameters");
         }
 
