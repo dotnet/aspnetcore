@@ -39,7 +39,8 @@ public:
         _In_ STRU                 *pstruStdoutLogFile,
         _In_ STRU                 *pszAppPhysicalPath,
         _In_ STRU                 *pszAppPath,
-        _In_ STRU                 *pszAppVirtualPath
+        _In_ STRU                 *pszAppVirtualPath,
+        _In_ STRU                 *pszAppAddresses
         );
 
     HRESULT
@@ -98,7 +99,7 @@ public:
         }
     }
 
-    virtual 
+    virtual
     ~SERVER_PROCESS();
 
     static
@@ -129,7 +130,7 @@ public:
     };
 
     VOID
-    SendSignal( 
+    SendSignal(
         VOID
     );
 
@@ -142,7 +143,7 @@ private:
        VOID
     );
 
-    BOOL 
+    BOOL
     IsDebuggerIsAttached(
         VOID
     );
@@ -164,13 +165,13 @@ private:
         _Out_ BOOL      * pfReady
     );
 
-    HRESULT 
+    HRESULT
     RegisterProcessWait(
         _In_ PHANDLE phWaitHandle,
         _In_ HANDLE  hProcessToWaitOn
     );
 
-    HRESULT 
+    HRESULT
     GetChildProcessHandles(
         VOID
     );
@@ -252,6 +253,7 @@ private:
     STRU                    m_struAppVirtualPath;  // e.g., '/' for site
     STRU                    m_struAppFullPath;     // e.g.,  /LM/W3SVC/4/ROOT/Inproc
     STRU                    m_struPhysicalPath;    // e.g., c:/test/mysite
+    STRU                    m_struAppAddresses;     // e.g.,  /LM/W3SVC/4/ROOT/Inproc
     STRU                    m_struPort;
     STRU                    m_struCommandLine;
 
@@ -281,7 +283,7 @@ private:
     HANDLE                  m_hProcessWaitHandle;
     HANDLE                  m_hShutdownHandle;
     //
-    // m_hChildProcessHandle is the handle to process created by 
+    // m_hChildProcessHandle is the handle to process created by
     // m_hProcessHandle process if it does.
     //
     HANDLE                  m_hChildProcessHandles[MAX_ACTIVE_CHILD_PROCESSES];

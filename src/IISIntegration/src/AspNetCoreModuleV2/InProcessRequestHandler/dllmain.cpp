@@ -100,7 +100,7 @@ CreateApplication(
 )
 {
     TraceContextScope traceScope(FindParameter<IHttpTraceContext*>("TraceContext", pParameters, nParameters));
-    auto site = FindParameter<IHttpSite*>("Site", pParameters, nParameters);
+    const auto pSite = FindParameter<IHttpSite*>("Site", pParameters, nParameters);
 
     try
     {
@@ -119,14 +119,14 @@ CreateApplication(
         g_fInProcessApplicationCreated = true;
 
         std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> inProcessApplication;
-        if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
+        if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, pSite, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
         {
             *ppApplication = inProcessApplication.release();
         }
         else
         {
             std::unique_ptr<InProcessOptions> options;
-            THROW_IF_FAILED(InProcessOptions::Create(*pServer, *pHttpApplication, options));
+            THROW_IF_FAILED(InProcessOptions::Create(*pServer, pSite, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
             auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, g_hServerModule, options->QueryDisableStartUpErrorPage(), hr);
 

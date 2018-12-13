@@ -4,12 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
@@ -21,13 +19,9 @@ namespace TestSite
 {
     public partial class Startup
     {
-        private IServerAddressesFeature _serverAddresses;
-
         public void Configure(IApplicationBuilder app)
         {
             TestStartup.Register(app, this);
-
-            _serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>();
         }
 
         public Task Path(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.Path.Value);
@@ -35,7 +29,6 @@ namespace TestSite
         public Task Query(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.QueryString.Value);
 
         public Task BodyLimit(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize?.ToString() ?? "null");
-
 
         public Task HelloWorld(HttpContext ctx) => ctx.Response.WriteAsync("Hello World");
 
@@ -97,9 +90,10 @@ namespace TestSite
             await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
         }
 
-        private async Task ServerAddresses(HttpContext context)
+        private async Task OriginalServerAddresses(HttpContext ctx)
         {
-            await context.Response.WriteAsync(string.Join(",", _serverAddresses.Addresses));
+            var serverAddresses = ctx.RequestServices.GetService<OriginalServerAddressesFilter>().ServerAddresses;
+            await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
         }
     }
 }

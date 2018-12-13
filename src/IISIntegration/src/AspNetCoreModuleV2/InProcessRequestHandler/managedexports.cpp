@@ -208,7 +208,7 @@ http_get_application_properties(
     pIISCofigurationData->fWindowsAuthEnabled = pConfiguration.QueryWindowsAuthEnabled();
     pIISCofigurationData->fBasicAuthEnabled = pConfiguration.QueryBasicAuthEnabled();
     pIISCofigurationData->fAnonymousAuthEnable = pConfiguration.QueryAnonymousAuthEnabled();
-    pIISCofigurationData->pwzBindings = SysAllocString(pInProcessApplication->QueryBindings();
+    pIISCofigurationData->pwzBindings = SysAllocString(BindingInformation::Format(pConfiguration.QueryBindings()).c_str());
     return S_OK;
 }
 

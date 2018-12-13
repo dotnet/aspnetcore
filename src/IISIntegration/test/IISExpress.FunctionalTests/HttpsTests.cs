@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
-            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
+            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}";
             deploymentParameters.AddHttpsToServerConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -54,6 +54,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             else
             {
                 Assert.Equal("Scheme:https; Original:", responseText);
+            }
+
+            if (variant.AncmVersion == AncmVersion.AspNetCoreModuleV2 &&
+                !DeployerSelector.IsForwardsCompatibilityTest &&
+                !DeployerSelector.IsBackwardsCompatiblityTest)
+            {
+                Assert.Equal(deploymentParameters.ApplicationBaseUriHint, await client.GetStringAsync("/ServerAddresses"));
             }
         }
     }

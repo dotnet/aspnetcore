@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Hosting
                     services => {
                         services.AddSingleton(new IISNativeApplication(iisConfigData.pNativeApplication));
                         services.AddSingleton<IServer, IISHttpServer>();
-                        services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
+                        services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath, iisConfigData.pwzBindings));
                         services.AddAuthenticationCore();
                         services.Configure<IISServerOptions>(
                              options => { options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled; }

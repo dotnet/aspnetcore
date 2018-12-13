@@ -2,20 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal class IISServerSetupFilter : IStartupFilter
     {
-        private string _virtualPath;
+        private readonly string _virtualPath;
 
-        public IISServerSetupFilter(string virtualPath)
+        private readonly string _bindings;
+
+        public IISServerSetupFilter(string virtualPath, string bindings)
         {
             _virtualPath = virtualPath;
+            _bindings = bindings;
         }
 
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
@@ -28,9 +33,21 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     throw new InvalidOperationException("Application is running inside IIS process but is not configured to use IIS server.");
                 }
 
+                app.ServerFeatures.Set<IServerAddressesFeature>(new ServerAddressesFeature(_bindings));
                 app.UsePathBase(_virtualPath);
                 next(app);
             };
+        }
+
+        internal class ServerAddressesFeature : IServerAddressesFeature
+        {
+            public ServerAddressesFeature(string addresses)
+            {
+                Addresses = addresses.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            public ICollection<string> Addresses { get; }
+            public bool PreferHostingUrls { get; set; }
         }
     }
 }

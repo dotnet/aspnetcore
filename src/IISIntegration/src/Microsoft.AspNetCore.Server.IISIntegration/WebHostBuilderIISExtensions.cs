@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Hosting
         // These are defined as ASPNETCORE_ environment variables by IIS's AspNetCoreModule.
         private static readonly string ServerPort = "PORT";
         private static readonly string ServerPath = "APPL_PATH";
+        private static readonly string ServerAddresses = "IIS_ADDRESSES";
         private static readonly string PairingToken = "TOKEN";
         private static readonly string IISAuth = "IIS_HTTPAUTH";
         private static readonly string IISWebSockets = "IIS_WEBSOCKETS_SUPPORTED";
@@ -45,6 +46,7 @@ namespace Microsoft.AspNetCore.Hosting
             var pairingToken = hostBuilder.GetSetting(PairingToken) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{PairingToken}");
             var iisAuth = hostBuilder.GetSetting(IISAuth) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{IISAuth}");
             var websocketsSupported = hostBuilder.GetSetting(IISWebSockets) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{IISWebSockets}");
+            var serverAddresses = hostBuilder.GetSetting(ServerAddresses) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerAddresses}");
 
             bool isWebSocketsSupported;
             if (!bool.TryParse(websocketsSupported, out isWebSocketsSupported))
@@ -85,7 +87,7 @@ namespace Microsoft.AspNetCore.Hosting
                     // Delay register the url so users don't accidently overwrite it.
                     hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
                     hostBuilder.PreferHostingUrls(true);
-                    services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken, new PathString(path), isWebSocketsSupported));
+                    services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken, new PathString(path), isWebSocketsSupported, serverAddresses));
                     services.Configure<ForwardedHeadersOptions>(options =>
                     {
                         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;

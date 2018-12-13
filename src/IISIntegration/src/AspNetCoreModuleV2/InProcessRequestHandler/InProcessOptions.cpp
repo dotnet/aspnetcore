@@ -7,13 +7,14 @@
 
 HRESULT InProcessOptions::Create(
     IHttpServer& pServer,
+    IHttpSite* site,
     IHttpApplication& pHttpApplication,
     std::unique_ptr<InProcessOptions>& options)
 {
     try
     {
         const WebConfigConfigurationSource configurationSource(pServer.GetAdminManager(), pHttpApplication);
-        options = std::make_unique<InProcessOptions>(configurationSource);
+        options = std::make_unique<InProcessOptions>(configurationSource, site);
     }
     catch (InvalidOperationException& ex)
     {

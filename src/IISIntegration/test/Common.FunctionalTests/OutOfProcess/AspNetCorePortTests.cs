@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var responseText = await deploymentResult.HttpClient.GetStringAsync("/ServerAddresses");
+            var responseText = await deploymentResult.HttpClient.GetStringAsync("/OriginalServerAddresses");
 
             Assert.Equal(port, new Uri(responseText).Port);
         }
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var responseText = await deploymentResult.HttpClient.GetStringAsync("/ServerAddresses");
+            var responseText = await deploymentResult.HttpClient.GetStringAsync("/OriginalServerAddresses");
 
             // If env var is empty, ANCM should assign a random port (same as no env var)
             Assert.InRange(new Uri(responseText).Port, _minPort, _maxPort);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/ServerAddresses");
+            var response = await deploymentResult.HttpClient.GetAsync("/OriginalServerAddresses");
 
             Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
         }

@@ -192,6 +192,7 @@ public:
         _In_ BOOL                           fBasicAuthEnabled,
         _In_ BOOL                           fAnonymousAuthEnabled,
         _In_ PCWSTR                         pApplicationPhysicalPath,
+        _In_ PCWSTR                         pServerAddresses,
         _Out_ ENVIRONMENT_VAR_HASH**        ppEnvironmentVarTable
     )
     {
@@ -203,6 +204,7 @@ public:
         ENVIRONMENT_VAR_ENTRY* pHostingEntry = NULL;
         ENVIRONMENT_VAR_ENTRY* pIISAuthEntry = NULL;
         ENVIRONMENT_VAR_ENTRY* pIISPathEntry = NULL;
+        ENVIRONMENT_VAR_ENTRY* pIISAddressesEntry = NULL;
         ENVIRONMENT_VAR_HASH* pEnvironmentVarTable = NULL;
 
         pEnvironmentVarTable = new ENVIRONMENT_VAR_HASH();
@@ -236,6 +238,22 @@ public:
 
         if (FAILED(hr = pIISPathEntry->Initialize(ASPNETCORE_IIS_PHYSICAL_PATH_ENV_STR, pApplicationPhysicalPath)) ||
             FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISPathEntry)))
+        {
+            goto Finished;
+        }
+
+        pEnvironmentVarTable->FindKey((PWSTR)ASPNETCORE_IIS_ADDRESSES_ENV_STR, &pIISAddressesEntry);
+        if (pIISAddressesEntry != NULL)
+        {
+            // user defined ASPNETCORE_IIS_PHYSICAL_PATH in configuration, wipe it off
+            pIISAddressesEntry->Dereference();
+            pEnvironmentVarTable->DeleteKey((PWSTR)ASPNETCORE_IIS_ADDRESSES_ENV_STR);
+        }
+
+        pIISAddressesEntry = new ENVIRONMENT_VAR_ENTRY();
+
+        if (FAILED(hr = pIISAddressesEntry->Initialize(ASPNETCORE_IIS_ADDRESSES_ENV_STR, pServerAddresses)) ||
+            FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISAddressesEntry)))
         {
             goto Finished;
         }

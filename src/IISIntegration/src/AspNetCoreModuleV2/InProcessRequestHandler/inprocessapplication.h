@@ -101,22 +101,10 @@ public:
         return m_blockManagedCallbacks;
     }
 
-    std::wstring QueryBindings() const
-    {
-        std::wstring result;
-
-        for (auto binding : m_pConfig->QueryBindings())
-        {
-            result += binding.QueryProtocol() + L"://" + binding.QueryHost() + L":" + binding.QueryPort() + L";";
-        }
-
-        return result;
-    }
-
     static
     HRESULT Start(
         IHttpServer& pServer,
-        IHttpSite& pSite,
+        IHttpSite* pSite,
         IHttpApplication& pHttpApplication,
         APPLICATION_PARAMETER* pParameters,
         DWORD nParameters,
