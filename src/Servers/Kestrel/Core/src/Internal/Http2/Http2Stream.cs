@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return false;
             }
 
-            var pathEncoded = pathSegment.IndexOf('%') >= 0;
+            var pathEncoded = pathSegment.Contains('%');
 
             // Compare with Http1Connection.OnOriginFormTarget
 
