@@ -10,7 +10,6 @@
     <Compile Include="..\src\**\*.cs"
              Exclude="
               ..\src\BenchmarkRunner\**\*.cs;
-              ..\src\RazorViews\**\*.cs;
               ..\src\StackTrace\ExceptionDetails\**\*.cs;
               " />
     <EmbeddedResource Include="..\src\**\*.resx" />
