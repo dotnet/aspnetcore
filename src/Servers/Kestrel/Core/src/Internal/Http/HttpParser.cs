@@ -75,60 +75,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Get Method and set the offset
             var method = HttpUtilities.GetKnownMethod(data, length, out var offset);
 
-            Span<byte> customMethod = method == HttpMethod.Custom ?
-                GetUnknownMethod(data, length, out offset) :
-                default;
+            Span<byte> customMethod = default;
+            if (method == HttpMethod.Custom)
+            {
+                customMethod = GetUnknownMethod(data, length, out offset);
+            }
 
             // Skip space
             offset++;
+            if (offset >= length)
+            {
+                // Start of path not found
+                RejectRequestLine(data, length);
+            }
 
-            byte ch = 0;
+            byte ch = data[offset];
+            if (ch == ByteSpace || ch == ByteQuestionMark || ch == BytePercentage)
+            {
+                // Empty path is illegal, or path starting with percentage
+                RejectRequestLine(data, length);
+            }
+
             // Target = Path and Query
             var pathEncoded = false;
-            var pathStart = -1;
+            var pathStart = offset;
+
+            // Skip first char (just checked)
+            offset++;
+
+            // Find end of path and if path is encoded
             for (; offset < length; offset++)
             {
                 ch = data[offset];
-                if (ch == ByteSpace)
+                if (ch == ByteSpace || ch == ByteQuestionMark)
                 {
-                    if (pathStart == -1)
-                    {
-                        // Empty path is illegal
-                        RejectRequestLine(data, length);
-                    }
-
-                    break;
-                }
-                else if (ch == ByteQuestionMark)
-                {
-                    if (pathStart == -1)
-                    {
-                        // Empty path is illegal
-                        RejectRequestLine(data, length);
-                    }
-
+                    // End of path
                     break;
                 }
                 else if (ch == BytePercentage)
                 {
-                    if (pathStart == -1)
-                    {
-                        // Path starting with % is illegal
-                        RejectRequestLine(data, length);
-                    }
-
                     pathEncoded = true;
                 }
-                else if (pathStart == -1)
-                {
-                    pathStart = offset;
-                }
-            }
-
-            if (pathStart == -1)
-            {
-                // Start of path not found
-                RejectRequestLine(data, length);
             }
 
             var pathBuffer = new Span<byte>(data + pathStart, offset - pathStart);
