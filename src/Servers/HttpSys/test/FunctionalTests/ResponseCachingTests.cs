@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         public ResponseCachingTests()
         {
-            _absoluteFilePath = Directory.GetFiles(Directory.GetCurrentDirectory()).First();
+            _absoluteFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Microsoft.AspNetCore.Server.HttpSys.dll");
             _fileLength = new FileInfo(_absoluteFilePath).Length;
         }
 
