@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components
 
             foreach (var nonUsedParameter in localParameterWriter)
             {
-                nonUsedParameter.SetValue(target, nonUsedParameter.GetDefaultValue());
+                nonUsedParameter.SetDefaultValue(target);
             }
         }
 
