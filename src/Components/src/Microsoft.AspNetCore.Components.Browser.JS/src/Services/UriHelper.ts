@@ -44,9 +44,7 @@ function enableNavigationInterception(assemblyName: string, functionName: string
 export function navigateTo(uri: string, forceLoad: boolean) {
   const absoluteUri = toAbsoluteUri(uri);
 
-  if (forceLoad) {
-    location.href = uri;
-  } else if (isWithinBaseUriSpace(absoluteUri)) {
+  if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
     performInternalNavigation(absoluteUri);
   } else {
     location.href = uri;
