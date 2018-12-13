@@ -3,6 +3,7 @@
   <Package Id="dotnet-sql-cache" Version="2.1.1" />
   <Package Id="dotnet-user-secrets" Version="2.1.1" />
   <Package Id="dotnet-watch" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore" Version="2.1.6" />
   <Package Id="Microsoft.AspNetCore.Antiforgery" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Authentication.Core" Version="2.1.1" />

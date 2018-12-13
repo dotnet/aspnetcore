@@ -36,7 +36,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" RootPath="$(RepositoryRoot)src\MetaPackages\" />
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\Templating\" />
 
