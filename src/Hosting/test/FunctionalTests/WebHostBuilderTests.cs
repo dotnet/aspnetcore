@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         public WebHostBuilderTests(ITestOutputHelper output) : base(output) { }
 
         public static TestMatrix TestVariants => TestMatrix.ForServers(ServerType.Kestrel)
-                .WithTfms(Tfm.Net461, Tfm.NetCoreApp22);
+                .WithTfms(Tfm.NetCoreApp30);
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]

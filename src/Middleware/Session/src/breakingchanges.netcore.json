@@ -1,0 +1,52 @@
+[
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public Microsoft.AspNetCore.Http.CookieSecurePolicy get_CookieSecure()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.Boolean get_CookieHttpOnly()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.String get_CookieDomain()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.String get_CookieName()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.String get_CookiePath()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.Void set_CookieDomain(System.String value)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.Void set_CookieHttpOnly(System.Boolean value)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.Void set_CookieName(System.String value)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.Void set_CookiePath(System.String value)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Builder.SessionOptions",
+      "MemberId": "public System.Void set_CookieSecure(Microsoft.AspNetCore.Http.CookieSecurePolicy value)",
+      "Kind": "Removal"
+    }
+  ]
