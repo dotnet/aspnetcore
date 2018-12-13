@@ -5,7 +5,6 @@
     },
     {
       "TypeId": "public class Microsoft.AspNetCore.Http.Features.Authentication.ChallengeContext",
-    },
       "Kind": "Removal"
     },
     {
