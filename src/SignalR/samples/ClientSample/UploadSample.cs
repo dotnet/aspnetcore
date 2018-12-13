@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -31,9 +32,9 @@ namespace ClientSample
                 .Build();
             await connection.StartAsync();
 
-            await BasicInvoke(connection);
-            //await MultiParamInvoke(connection);
-            //await AdditionalArgs(connection);
+            //await BasicInvoke(connection);
+            //await ScoreTrackerExample(connection);
+            await StreamingEcho(connection);
 
             return 0;
         }
@@ -46,6 +47,7 @@ namespace ClientSample
             foreach (var c in "hello")
             {
                 await channel.Writer.WriteAsync(c.ToString());
+                await Task.Delay(1000);
             }
             channel.Writer.TryComplete();
 
@@ -53,37 +55,52 @@ namespace ClientSample
             Debug.WriteLine($"You message was: {result}");
         }
 
-        private static async Task WriteStreamAsync<T>(IEnumerable<T> sequence, ChannelWriter<T> writer)
+        public static async Task ScoreTrackerExample(HubConnection connection)
         {
-            foreach (T element in sequence)
-            {
-                await writer.WriteAsync(element);
-                await Task.Delay(100);
-            }
+            var channel_one = Channel.CreateBounded<int>(2);
+            var channel_two = Channel.CreateBounded<int>(2);
+            _ = WriteItemsAsync(channel_one.Writer, new[] { 2, 2, 3 });
+            _ = WriteItemsAsync(channel_two.Writer, new[] { -2, 5, 3 });
 
-            writer.TryComplete();
-        }
-
-        public static async Task MultiParamInvoke(HubConnection connection)
-        {
-            var letters = Channel.CreateUnbounded<string>();
-            var numbers = Channel.CreateUnbounded<int>();
-
-            _ = WriteStreamAsync(new[] { "h", "i", "!" }, letters.Writer);
-            _ = WriteStreamAsync(new[] { 1, 2, 3, 4, 5 }, numbers.Writer);
-
-            var result = await connection.InvokeAsync<string>("DoubleStreamUpload", letters.Reader, numbers.Reader);
-
+            var result = await connection.InvokeAsync<string>("ScoreTracker", channel_one.Reader, channel_two.Reader);
             Debug.WriteLine(result);
+
+            async Task WriteItemsAsync(ChannelWriter<int> source, IEnumerable<int> scores)
+            {
+                await Task.Delay(1000);
+                foreach (var c in scores)
+                {
+                    await source.WriteAsync(c);
+                    await Task.Delay(250);
+                }
+
+                // TryComplete triggers the end of this upload's relayLoop
+                // which sends a StreamComplete to the server
+                source.TryComplete();
+            }
         }
 
-        public static async Task AdditionalArgs(HubConnection connection)
+        public static async Task StreamingEcho(HubConnection connection)
         {
-            var channel = Channel.CreateUnbounded<char>();
-            _ = WriteStreamAsync<char>("main message".ToCharArray(), channel.Writer);
+            var channel = Channel.CreateUnbounded<string>();
 
-            var result = await connection.InvokeAsync<string>("UploadWithSuffix", channel.Reader, " + wooh I'm a suffix");
-            Debug.WriteLine($"Your message was: {result}");
+            _ = Task.Run(async () =>
+            {
+                foreach (var phrase in new[] { "one fish", "two fish", "red fish", "blue fish" })
+                {
+                    await channel.Writer.WriteAsync(phrase);
+                }
+            });
+
+            var outputs = await connection.StreamAsChannelAsync<string>("StreamEcho", channel.Reader);
+
+            while (await outputs.WaitToReadAsync())
+            {
+                while (outputs.TryRead(out var item))
+                {
+                    Debug.WriteLine($"received '{item}'.");
+                }
+            }
         }
     }
 }

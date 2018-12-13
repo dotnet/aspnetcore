@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         public RazorPagesOptionsConfigureCompatibilityOptions(
             ILoggerFactory loggerFactory,
-            IOptions<MvcCompatibilityOptions> compatibilityOptions) 
+            IOptions<MvcCompatibilityOptions> compatibilityOptions)
             : base(loggerFactory, compatibilityOptions)
         {
         }
@@ -21,20 +21,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             get
             {
-                var values = new Dictionary<string, object>();
-
-                if (Version >= CompatibilityVersion.Version_2_1)
+                return new Dictionary<string, object>
                 {
-                    values[nameof(RazorPagesOptions.AllowAreas)] = true;
-                    values[nameof(RazorPagesOptions.AllowMappingHeadRequestsToGetHandler)] = true;
-                }
-
-                if (Version >= CompatibilityVersion.Version_2_2)
-                {
-                    values[nameof(RazorPagesOptions.AllowDefaultHandlingForOptionsRequests)] = true;
-                }
-
-                return values;
+                    [nameof(RazorPagesOptions.AllowAreas)] = true,
+                    [nameof(RazorPagesOptions.AllowMappingHeadRequestsToGetHandler)] = true,
+                    [nameof(RazorPagesOptions.AllowDefaultHandlingForOptionsRequests)] = true,
+                };
             }
         }
     }

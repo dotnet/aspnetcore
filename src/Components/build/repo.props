@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 
 </Project>

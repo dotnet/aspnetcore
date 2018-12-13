@@ -16,15 +16,16 @@
   <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
     <PackageReference Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" />
+
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
   </ItemGroup>
 
   <!-- These references are used when running locally -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
 
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
@@ -37,6 +38,10 @@
     Use All meta-package and not App to include Microsoft.EntityFrameworkCore.Sqlite.
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <KnownFrameworkReference 
+      Update="Microsoft.AspNetCore.App"
+      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
+      TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>

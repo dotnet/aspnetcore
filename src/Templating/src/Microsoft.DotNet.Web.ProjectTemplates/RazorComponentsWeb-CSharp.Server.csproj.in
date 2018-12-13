@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb_CSharp.Server</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RazorComponentsWeb-CSharp.App\RazorComponentsWeb-CSharp.App.csproj" />
+  </ItemGroup>
+
+  <!-- TODO: Remove this block once it's included in the shared framework -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Server" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
+  </ItemGroup>
+
+</Project>

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class HtmlHelper<TModel> : HtmlHelper, IHtmlHelper<TModel>
     {
-        private readonly ExpressionTextCache _expressionTextCache;
+        private readonly ModelExpressionProvider _modelExpressionProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlHelper{TModel}"/> class.
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IViewBufferScope bufferScope,
             HtmlEncoder htmlEncoder,
             UrlEncoder urlEncoder,
-            ExpressionTextCache expressionTextCache)
+            ModelExpressionProvider modelExpressionProvider)
             : base(
                   htmlGenerator,
                   viewEngine,
@@ -36,12 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                   htmlEncoder,
                   urlEncoder)
         {
-            if (expressionTextCache == null)
-            {
-                throw new ArgumentNullException(nameof(expressionTextCache));
-            }
-
-            _expressionTextCache = expressionTextCache;
+            _modelExpressionProvider = modelExpressionProvider ?? throw new ArgumentNullException(nameof(modelExpressionProvider));
         }
 
         /// <inheritdoc />
@@ -102,10 +97,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GenerateCheckBox(
-                modelExplorer,
-                GetExpressionName(expression),
+                modelExpression.ModelExplorer,
+                modelExpression.Name,
                 isChecked: null,
                 htmlAttributes: htmlAttributes);
         }
@@ -122,10 +117,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GenerateDropDown(
-                modelExplorer,
-                GetExpressionName(expression),
+                modelExpression.ModelExplorer,
+                modelExpression.Name,
                 selectList,
                 optionLabel,
                 htmlAttributes);
@@ -143,10 +138,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GenerateDisplay(
-                modelExplorer,
-                htmlFieldName ?? GetExpressionName(expression),
+                modelExpression.ModelExplorer,
+                htmlFieldName ?? modelExpression.Name,
                 templateName,
                 additionalViewData);
         }
@@ -159,8 +154,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
-            return GenerateDisplayName(modelExplorer, GetExpressionName(expression));
+            var modelExpression = GetModelExpression(expression);
+            return GenerateDisplayName(modelExpression.ModelExplorer, modelExpression.Name);
         }
 
         /// <inheritdoc />
@@ -172,18 +167,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression<TModelItem, TResult>(
-                expression,
+            var modelExpression = _modelExpressionProvider.CreateModelExpression(
                 new ViewDataDictionary<TModelItem>(ViewData, model: null),
-                MetadataProvider);
+                expression);
 
-            var expressionText = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
-            if (modelExplorer == null)
-            {
-                throw new InvalidOperationException(Resources.FormatHtmlHelper_NullModelMetadata(expressionText));
-            }
-
-            return GenerateDisplayName(modelExplorer, expressionText);
+            return GenerateDisplayName(modelExpression.ModelExplorer, modelExpression.Name);
         }
 
         /// <inheritdoc />
@@ -209,10 +197,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GenerateEditor(
-                modelExplorer,
-                htmlFieldName ?? GetExpressionName(expression),
+                modelExpression.ModelExplorer,
+                htmlFieldName ?? modelExpression.Name,
                 templateName,
                 additionalViewData);
         }
@@ -227,11 +215,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GenerateHidden(
-                modelExplorer,
-                GetExpressionName(expression),
-                modelExplorer.Model,
+                modelExpression.ModelExplorer,
+                modelExpression.Name,
+                modelExpression.Model,
                 useViewData: false,
                 htmlAttributes: htmlAttributes);
         }
@@ -258,8 +246,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
-            return GenerateLabel(modelExplorer, GetExpressionName(expression), labelText, htmlAttributes);
+            var modelExpression = GetModelExpression(expression);
+            return GenerateLabel(modelExpression.ModelExplorer, modelExpression.Name, labelText, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -273,10 +261,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
-            var name = GetExpressionName(expression);
+            var modelExpression = GetModelExpression(expression);
+            var name = modelExpression.Name;
 
-            return GenerateListBox(modelExplorer, name, selectList, htmlAttributes);
+            return GenerateListBox(modelExpression.ModelExplorer, name, selectList, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -301,10 +289,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GeneratePassword(
-                modelExplorer,
-                GetExpressionName(expression),
+                modelExpression.ModelExplorer,
+                modelExpression.Name,
                 value: null,
                 htmlAttributes: htmlAttributes);
         }
@@ -325,10 +313,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(value));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GenerateRadioButton(
-                modelExplorer,
-                GetExpressionName(expression),
+                modelExpression.ModelExplorer,
+                modelExpression.Name,
                 value,
                 isChecked: null,
                 htmlAttributes: htmlAttributes);
@@ -346,8 +334,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
-            return GenerateTextArea(modelExplorer, GetExpressionName(expression), rows, columns, htmlAttributes);
+            var modelExpression = GetModelExpression(expression);
+            return GenerateTextArea(modelExpression.ModelExplorer, modelExpression.Name, rows, columns, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -361,15 +349,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GenerateTextBox(
-                modelExplorer,
-                GetExpressionName(expression),
-                modelExplorer.Model,
+                modelExpression.ModelExplorer,
+                modelExpression.Name,
+                modelExpression.Model,
                 format,
                 htmlAttributes);
         }
 
+        private ModelExpression GetModelExpression<TResult>(Expression<Func<TModel, TResult>> expression)
+        {
+            return _modelExpressionProvider.CreateModelExpression(ViewData, expression);
+        }
+
+        /// <summary>
+        /// Gets the name for <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The expression.</param>
+        /// <returns>The expression name.</returns>
         protected string GetExpressionName<TResult>(Expression<Func<TModel, TResult>> expression)
         {
             if (expression == null)
@@ -377,9 +375,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return ExpressionHelper.GetExpressionText(expression, _expressionTextCache);
+            return _modelExpressionProvider.GetExpressionText(expression);
         }
 
+        /// <summary>
+        /// Gets the <see cref="ModelExplorer"/> for <paramref name="expression"/>.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result.</typeparam>
+        /// <param name="expression">The expression.</param>
+        /// <returns>The <see cref="ModelExplorer"/>.</returns>
         protected ModelExplorer GetModelExplorer<TResult>(Expression<Func<TModel, TResult>> expression)
         {
             if (expression == null)
@@ -387,15 +391,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer =
-                ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
-            if (modelExplorer == null)
-            {
-                var expressionName = GetExpressionName(expression);
-                throw new InvalidOperationException(Resources.FormatHtmlHelper_NullModelMetadata(expressionName));
-            }
-
-            return modelExplorer;
+            var modelExpression = GetModelExpression(expression);
+            return modelExpression.ModelExplorer;
         }
 
         /// <inheritdoc />
@@ -410,10 +407,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
+            var modelExpression = GetModelExpression(expression);
             return GenerateValidationMessage(
-                modelExplorer,
-                GetExpressionName(expression),
+                modelExpression.ModelExplorer,
+                modelExpression.Name,
                 message,
                 tag,
                 htmlAttributes);
@@ -427,8 +424,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = GetModelExplorer(expression);
-            return GenerateValue(GetExpressionName(expression), modelExplorer.Model, format, useViewData: false);
+            var modelExpression = GetModelExpression(expression);
+            return GenerateValue(modelExpression.Name, modelExpression.Model, format, useViewData: false);
         }
     }
 }

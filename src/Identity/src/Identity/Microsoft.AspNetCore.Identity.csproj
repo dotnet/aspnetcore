@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;identity;membership</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="$(MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Microsoft.Extensions.Identity.Core.csproj" />
+  </ItemGroup>
+
+</Project>

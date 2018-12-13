@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Identity\Microsoft.AspNetCore.Identity.csproj" />
+    <ProjectReference Include="..\..\src\Specification.Tests\Microsoft.AspNetCore.Identity.Specification.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
+  </ItemGroup>
+
+</Project>

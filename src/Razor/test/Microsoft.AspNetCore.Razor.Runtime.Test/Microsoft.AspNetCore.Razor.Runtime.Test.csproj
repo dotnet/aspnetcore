@@ -10,10 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\shared\Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources\**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj" />
   </ItemGroup>
 

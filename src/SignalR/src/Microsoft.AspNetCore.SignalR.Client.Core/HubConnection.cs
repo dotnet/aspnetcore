@@ -420,6 +420,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 irq.Dispose();
             }
 
+            var readers = PackageStreamingParams(args);
+
             CheckDisposed();
             await WaitConnectionLockAsync();
 
@@ -444,12 +446,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 ReleaseConnectionLock();
             }
 
+            LaunchStreams(readers, cancellationToken);
+
             return channel;
         }
 
         private Dictionary<string, object> PackageStreamingParams(object[] args)
         {
-            // lazy initialized, to avoid allocation unecessary dictionaries
+            // lazy initialized, to avoid allocating unecessary dictionaries
             Dictionary<string, object> readers = null;
 
             for (var i = 0; i < args.Length; i++)
@@ -621,7 +625,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var readers = PackageStreamingParams(args);
 
             Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
-
             var invocationMessage = new InvocationMessage(null, methodName, args);
             await SendWithLock(invocationMessage, callerName: nameof(SendCoreAsync));
 

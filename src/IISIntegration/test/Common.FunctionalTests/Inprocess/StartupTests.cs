@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp22)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
                 .WithAncmV2InProcess();
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip="https://github.com/aspnet/AspNetCore/issues/3950")]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()
         {
@@ -447,6 +447,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 });
 
             return dictionary;
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task SetCurrentDirectoryHandlerSettingWorks()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.HandlerSettings["SetCurrentDirectory"] = "true";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
+            Assert.Equal(deploymentResult.ContentRoot + "\\wwwroot", await deploymentResult.HttpClient.GetStringAsync("/WebRootPath"));
+            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
+            Assert.Equal(deploymentResult.ContentRoot + "\\", await deploymentResult.HttpClient.GetStringAsync("/BaseDirectory"));
+            Assert.Equal(deploymentResult.ContentRoot + "\\", await deploymentResult.HttpClient.GetStringAsync("/ASPNETCORE_IIS_PHYSICAL_PATH"));
+            Assert.Equal(Path.GetDirectoryName(deploymentResult.HostProcess.MainModule.FileName), await deploymentResult.HttpClient.GetStringAsync("/DllDirectory"));
         }
 
         private static void MoveApplication(

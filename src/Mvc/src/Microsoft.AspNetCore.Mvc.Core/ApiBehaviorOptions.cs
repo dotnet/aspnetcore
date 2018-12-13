@@ -75,40 +75,23 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets a value that determines if controllers with <see cref="ApiControllerAttribute"/>
-        /// transform certain certain client errors.
+        /// transform certain client errors.
         /// <para>
-        /// When <c>false</c>, a result filter is added to API controller actions that transforms <see cref="IClientErrorActionResult"/>.
+        /// When <see langword="false"/>, a result filter is added to API controller actions that transforms
+        /// <see cref="IClientErrorActionResult"/>. Otherwise, the filter is suppressed.
+        /// </para>
+        /// <para>
         /// By default, <see cref="ClientErrorMapping"/> is used to map <see cref="IClientErrorActionResult"/> to a
         /// <see cref="ProblemDetails"/> instance (returned as the value for <see cref="ObjectResult"/>).
         /// </para>
         /// <para>
         /// To customize the output of the filter (for e.g. to return a different error type), register a custom
-        /// implementation of of <see cref="IClientErrorFactory"/> in the service collection.
+        /// implementation of <see cref="IClientErrorFactory"/> in the service collection.
         /// </para>
         /// </summary>
         /// <value>
-        /// The default value is <see langword="true"/> if the version is
-        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="false"/> otherwise.
+        /// The default value is <see langword="false"/>.
         /// </value>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take
-        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// lower then this setting will have the value <see langword="false"/> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> or
-        /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
-        /// </para>
-        /// </remarks>
         public bool SuppressMapClientErrors
         {
             // Note: When compatibility switches are removed in 3.0, this property should be retained as a regular boolean property.
@@ -126,28 +109,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </para>
         /// </summary>
         /// <value>
-        /// The default value is <see langword="true"/> if the version is
-        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="false"/> otherwise.
+        /// The default value is <see langword="false"/>.
         /// </value>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take
-        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// lower then this setting will have the value <see langword="false"/> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> or
-        /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
-        /// </para>
-        /// </remarks>
         public bool SuppressUseValidationProblemDetailsForInvalidModelStateResponses
         {
             get => _suppressUseValidationProblemDetailsForInvalidModelStateResponses.Value;
@@ -163,28 +126,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </para>
         /// </summary>
         /// <value>
-        /// The default value is <see langword="false"/> if the version is
-        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="true"/> otherwise.
+        /// The default value is <see langword="false"/>.
         /// </value>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter takes
-        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// lower then this setting will have the value <see langword="true"/> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> or
-        /// higher then this setting will have the value <see langword="false"/> unless explicitly configured.
-        /// </para>
-        /// </remarks>
         public bool AllowInferringBindingSourceForCollectionTypesAsFromQuery
         {
             get => _allowInferringBindingSourceForCollectionTypesAsFromQuery.Value;

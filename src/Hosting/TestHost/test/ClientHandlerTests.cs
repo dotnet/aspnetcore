@@ -29,13 +29,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-#if NETCOREAPP2_2
                 Assert.Equal("HTTP/2.0", context.Request.Protocol);
-#elif NET461 || NETCOREAPP2_0
-                Assert.Equal("HTTP/1.1", context.Request.Protocol);
-#else
-    Unspecified Framework
-#endif
                 Assert.Equal("GET", context.Request.Method);
                 Assert.Equal("https", context.Request.Scheme);
                 Assert.Equal("/A/Path", context.Request.PathBase.Value);
@@ -61,13 +55,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-#if NETCOREAPP2_2
                 Assert.Equal("HTTP/2.0", features.Get<IHttpRequestFeature>().Protocol);
-#elif NET461 || NETCOREAPP2_0
-                Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
-#else
-    Unspecified Framework
-#endif
                 Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
                 Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
                 Assert.Equal("/A/Path", features.Get<IHttpRequestFeature>().PathBase);
@@ -157,51 +145,50 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task HeadersAvailableBeforeBodyFinished()
         {
-            ManualResetEvent block = new ManualResetEvent(false);
+            var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
                 await context.Response.WriteAsync("BodyStarted,");
-                block.WaitOne();
+                await block.Task;
                 await context.Response.WriteAsync("BodyFinished");
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
-            block.Set();
+            block.SetResult(0);
             Assert.Equal("BodyStarted,BodyFinished", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]
         public async Task FlushSendsHeaders()
         {
-            ManualResetEvent block = new ManualResetEvent(false);
+            var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
                 context.Response.Body.Flush();
-                block.WaitOne();
+                await block.Task;
                 await context.Response.WriteAsync("BodyFinished");
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
-            block.Set();
+            block.SetResult(0);
             Assert.Equal("BodyFinished", await response.Content.ReadAsStringAsync());
         }
 
         [Fact]
         public async Task ClientDisposalCloses()
         {
-            ManualResetEvent block = new ManualResetEvent(false);
+            var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
                 context.Response.Body.Flush();
-                block.WaitOne();
-                return Task.FromResult(0);
+                return block.Task;
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
@@ -211,21 +198,20 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            var result = await readTask.TimeoutAfter(TimeSpan.FromSeconds(10));
-            Assert.Equal(0, result);
-            block.Set();
+            var read = await readTask.WithTimeout();
+            Assert.Equal(0, read);
+            block.SetResult(0);
         }
 
         [Fact]
         public async Task ClientCancellationAborts()
         {
-            ManualResetEvent block = new ManualResetEvent(false);
+            var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
                 context.Response.Body.Flush();
-                block.WaitOne();
-                return Task.FromResult(0);
+                return block.Task;
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
@@ -236,8 +222,8 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
             Assert.False(readTask.IsCompleted, "Not Completed");
             cts.Cancel();
-            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.TimeoutAfter(TimeSpan.FromSeconds(10)));
-            block.Set();
+            await Assert.ThrowsAsync<OperationCanceledException>(() => readTask.WithTimeout());
+            block.SetResult(0);
         }
 
         [Fact]
@@ -255,19 +241,19 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task ExceptionAfterFirstWriteIsReported()
         {
-            ManualResetEvent block = new ManualResetEvent(false);
+            var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
                 await context.Response.WriteAsync("BodyStarted");
-                block.WaitOne();
+                await block.Task;
                 throw new InvalidOperationException("Test Exception");
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
                 HttpCompletionOption.ResponseHeadersRead);
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
-            block.Set();
+            block.SetResult(0);
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
             Assert.IsType<InvalidOperationException>(ex.GetBaseException());
         }

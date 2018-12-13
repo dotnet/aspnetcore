@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core basic middleware for rewriting URLs. Includes:
+* Support for custom URL rewrite rules
+* Support for running IIS URL Rewrite module rules
+* Support for running Apache mod_rewrite rules.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;urlrewrite;mod_rewrite</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+</Project>

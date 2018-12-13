@@ -7,9 +7,9 @@
     "PresetHeaders": "Html",
     "ReadyStateText": "Application started.",
     "Source": {
+      "Repository": "https://github.com/aspnet/AspNetCore.git",
       "BranchOrCommit": "master",
-      "Project": "benchmarkapps/BasicViews/BasicViews.csproj",
-      "Repository": "https://github.com/aspnet/mvc.git"
+      "Project": "src/Mvc/benchmarkapps/BasicViews/BasicViews.csproj"
     }
   },
   "BasicViews.GetHtmlHelpers": {

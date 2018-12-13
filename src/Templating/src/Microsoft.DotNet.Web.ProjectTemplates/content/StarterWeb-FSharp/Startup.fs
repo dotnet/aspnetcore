@@ -1,4 +1,4 @@
-﻿namespace Company.WebApplication1
+namespace Company.WebApplication1
 
 open System
 open System.Collections.Generic
@@ -21,7 +21,7 @@ type Startup private () =
     // This method gets called by the runtime. Use this method to add services to the container.
     member this.ConfigureServices(services: IServiceCollection) =
         // Add framework services.
-        services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2) |> ignore
+        services.AddMvc() |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
@@ -40,10 +40,13 @@ type Startup private () =
 #endif
         app.UseStaticFiles() |> ignore
 
-        app.UseMvc(fun routes ->
-            routes.MapRoute(
+        app.UseRouting(fun routes ->
+            routes.MapApplication() |> ignore
+            routes.MapControllerRoute(
                 name = "default",
                 template = "{controller=Home}/{action=Index}/{id?}") |> ignore
             ) |> ignore
+
+        app.UseAuthorization() |> ignore
 
     member val Configuration : IConfiguration = null with get, set

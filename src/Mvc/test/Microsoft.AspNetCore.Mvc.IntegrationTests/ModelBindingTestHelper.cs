@@ -191,9 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 serviceCollection.AddSingleton(Options.Create(mvcOptions));
             }
 
-            serviceCollection
-                .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            serviceCollection.AddMvc();
             serviceCollection
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)

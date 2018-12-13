@@ -37,7 +37,7 @@
   </PropertyGroup>
 
    <PropertyGroup>
-    <BuildNumberSuffix Condition=" '$(BuildNumberSuffix)' == '' ">0</BuildNumberSuffix>
+    <BuildNumberSuffix Condition=" '$(BuildNumberSuffix)' == '' ">t000</BuildNumberSuffix>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <VersionSuffix>$(PreReleaseLabel)-$(BuildNumberSuffix)</VersionSuffix>
     <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumberSuffix)</BrandingVersionSuffix>

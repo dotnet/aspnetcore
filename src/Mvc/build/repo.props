@@ -12,11 +12,6 @@
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\*.csproj" />
     <ExcludeSolutions Include="$(RepositoryRoot)Mvc.*Fun.sln" />
   </ItemGroup>
-  <PropertyGroup>
-    <!-- These properties are use by the automation that updates dependencies.props -->
-    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
-  </PropertyGroup>
 
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />

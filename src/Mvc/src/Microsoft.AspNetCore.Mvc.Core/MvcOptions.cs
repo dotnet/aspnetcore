@@ -80,28 +80,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// URLs with <see cref="IUrlHelper"/>.
         /// </summary>
         /// <value>
-        /// The default value is <see langword="true"/> if the version is
-        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="false"/> otherwise.
+        /// The default value is <see langword="true"/>.
         /// </value>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take
-        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// lower then this setting will have the value <see langword="false"/> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> or
-        /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
-        /// </para>
-        /// </remarks>
         public bool EnableEndpointRouting
         {
             get => _enableEndpointRouting.Value;
@@ -122,10 +102,12 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets a value that determines if policies on instances of <see cref="AuthorizeFilter" />
-        /// will be combined into a single effective policy. The default value of the property is <c>false</c>.
+        /// will be combined into a single effective policy.
         /// </summary>
+        /// <value>
+        /// The default value is <see langword="true"/>.
+        /// </value>
         /// <remarks>
-        /// <para>
         /// Authorization policies are designed such that multiple authorization policies applied to an endpoint
         /// should be combined and executed a single policy. The <see cref="AuthorizeFilter"/> (commonly applied
         /// by <see cref="AuthorizeAttribute"/>) can be applied globally, to controllers, and to actions - which
@@ -133,24 +115,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// these multiple policies would not combine as intended. This compatibility switch configures whether the
         /// old (unintended) behavior or the new combining behavior will be used when multiple authorization policies
         /// are applied.
-        /// </para>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <c>false</c> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
-        /// </para>
         /// </remarks>
         public bool AllowCombiningAuthorizeFilters
         {
@@ -162,28 +126,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets a value that determines if <see cref="HeaderModelBinder"/> should bind to types other than
         /// <see cref="string"/> or a collection of <see cref="string"/>. If set to <c>true</c>,
         /// <see cref="HeaderModelBinder"/> would bind to simple types (like <see cref="string"/>, <see cref="int"/>,
-        /// <see cref="Enum"/>, <see cref="bool"/> etc.) or a collection of simple types. The default value of the
-        /// property is <c>false</c>.
+        /// <see cref="Enum"/>, <see cref="bool"/> etc.) or a collection of simple types.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <c>false</c> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
-        /// </para>
-        /// </remarks>
+        /// <value>
+        /// The default value is <see langword="true"/>.
+        /// </value>
         public bool AllowBindingHeaderValuesToNonStringModelTypes
         {
             get => _allowBindingHeaderValuesToNonStringModelTypes.Value;
@@ -197,28 +144,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// <c>ValidationAttribute</c>s on these top-level nodes are checked. Otherwise, such attributes are ignored.
         /// </summary>
         /// <value>
-        /// The default value is <see langword="true"/> if the version is
-        /// <see cref="CompatibilityVersion.Version_2_1"/> or later; <see langword="false"/> otherwise.
+        /// The default value is <see langword="true"/>.
         /// </value>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take
-        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <see langword="false"/> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <see langword="true"/> unless explicitly configured.
-        /// </para>
-        /// </remarks>
         public bool AllowValidatingTopLevelNodes
         {
             get => _allowValidatingTopLevelNodes.Value;
@@ -250,29 +177,10 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets a value which determines how the model binding system interprets exceptions thrown by an <see cref="IInputFormatter"/>.
-        /// The default value of the property is <see cref="InputFormatterExceptionPolicy.AllExceptions"/>.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <see cref="InputFormatterExceptionPolicy.AllExceptions"/> unless
-        /// explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value
-        /// <see cref="InputFormatterExceptionPolicy.MalformedInputExceptions"/> unless explicitly configured.
-        /// </para>
-        /// </remarks>
+        /// <value>
+        /// The default value is <see cref="InputFormatterExceptionPolicy.MalformedInputExceptions"/>.
+        /// </value>
         public InputFormatterExceptionPolicy InputFormatterExceptionPolicy
         {
             get => _inputFormatterExceptionPolicy.Value;
@@ -286,27 +194,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Gets or sets a value indicating whether the model binding system will bind undefined values to
-        /// enum types. The default value of the property is <c>false</c>.
+        /// enum types.
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <c>false</c> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
-        /// </para>
-        /// </remarks>
+        /// <value>
+        /// The default value is <see langword="true"/>.
+        /// </value>
         public bool SuppressBindingUndefinedValueToEnumType
         {
             get => _suppressBindingUndefinedValueToEnumType.Value;
@@ -413,24 +305,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// When not <see langword="null"/>, <see cref="ValidationVisitor"/> will throw if
         /// traversing an object exceeds the maximum allowed validation depth.
         /// </para>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> then
-        /// this setting will have the value <c>200</c> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// earlier then this setting will have the value <see langword="null"/> unless explicitly configured.
-        /// </para>
         /// </summary>
+        /// <value>
+        /// The default value is <c>32</c>.
+        /// </value>
         public int? MaxValidationDepth
         {
             get => _maxValidationDepth.Value;
@@ -450,8 +328,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// can short-circuit validation when a model does not have any associated validators.
         /// </summary>
         /// <value>
-        /// The default value is <see langword="true"/> if the version is
-        /// <see cref="CompatibilityVersion.Version_2_2"/> or later; <see langword="false"/> otherwise.
+        /// The default value is <see langword="true"/>.
         /// </value>
         /// <remarks>
         /// When <see cref="ModelMetadata.HasValidators"/> is <see langword="true"/>, that is, it is determined
@@ -459,23 +336,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <see cref="ValidationVisitor"/> can short-circuit validation for the model and mark the object
         /// graph as valid. Setting this property to <see langword="true"/>, allows <see cref="ValidationVisitor"/> to
         /// perform this optimization.
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> then
-        /// this setting will have the value <see langword="true"/> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// earlier then this setting will have the value <see langword="false"/> unless explicitly configured.
-        /// </para>
         /// </remarks>
         public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent
         {

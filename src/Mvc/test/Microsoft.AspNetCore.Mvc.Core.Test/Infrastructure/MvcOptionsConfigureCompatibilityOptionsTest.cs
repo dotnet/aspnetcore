@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Infrastructure
             var mvcOptions = new MvcOptions();
             var mvcCompatibilityOptions = new MvcCompatibilityOptions
             {
-                CompatibilityVersion = CompatibilityVersion.Version_2_2,
+                CompatibilityVersion = CompatibilityVersion.Version_3_0,
             };
 
             var configureOptions = new MvcOptionsConfigureCompatibilityOptions(
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Infrastructure
             };
             var mvcCompatibilityOptions = new MvcCompatibilityOptions
             {
-                CompatibilityVersion = CompatibilityVersion.Version_2_2,
+                CompatibilityVersion = CompatibilityVersion.Version_3_0,
             };
 
             var configureOptions = new MvcOptionsConfigureCompatibilityOptions(
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Infrastructure
             };
             var mvcCompatibilityOptions = new MvcCompatibilityOptions
             {
-                CompatibilityVersion = CompatibilityVersion.Version_2_2,
+                CompatibilityVersion = CompatibilityVersion.Version_3_0,
             };
 
             var configureOptions = new MvcOptionsConfigureCompatibilityOptions(

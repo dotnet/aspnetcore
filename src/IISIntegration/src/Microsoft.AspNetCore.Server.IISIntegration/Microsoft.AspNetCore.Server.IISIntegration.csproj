@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core components for working with the IIS AspNetCoreModule.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>

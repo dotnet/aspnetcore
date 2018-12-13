@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(testName);
 
-                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "TestAssets",
+                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
 
                 var deploymentParameters = new DeploymentParameters(
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "Shutdown",
-                    TargetFramework = Tfm.NetCoreApp22,
+                    TargetFramework = Tfm.NetCoreApp30,
                     ApplicationType = ApplicationType.Portable,
                     PublishApplicationBeforeDeployment = true,
                     StatusMessagesEnabled = false

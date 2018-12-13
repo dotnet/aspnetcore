@@ -1,15 +1,3 @@
-[submodule "modules/BasicMiddleware"]
-	path = modules/BasicMiddleware
-	url = https://github.com/aspnet/BasicMiddleware.git
-	branch = master
-[submodule "modules/Identity"]
-	path = modules/Identity
-	url = https://github.com/aspnet/Identity.git
-	branch = master
-[submodule "modules/Localization"]
-	path = modules/Localization
-	url = https://github.com/aspnet/Localization.git
-	branch = master
 [submodule "src/IISIntegration/test/gtest/googletest"]
 	path = src/IISIntegration/test/gtest/googletest
 	url = https://github.com/google/googletest

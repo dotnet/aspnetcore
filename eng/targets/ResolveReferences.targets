@@ -34,6 +34,7 @@
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
     <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
+    <_ExplicitPackageReference Remove="Microsoft.NETFramework.ReferenceAssemblies" />
 
     <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
@@ -45,12 +46,18 @@
     <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
+
+    <!-- Use _ReferenceTemp to workaround issues in Visual Studio which causes a conflict between Reference, packages, and projects. -->
+    <_ReferenceTemp Include="@(Reference)" />
+    <Reference Remove="@(Reference)" />
   </ItemGroup>
 
   <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
     <ItemGroup>
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
+      <Reference Include="@(_ReferenceTemp)" />
+      <_ReferenceTemp Remove="@(_ReferenceTemp)" />
 
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
         but you can do a cartesian product of two item groups and filter out mismatched id's in a second pass.

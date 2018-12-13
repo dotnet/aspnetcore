@@ -6,12 +6,12 @@ namespace Test
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Microsoft.AspNetCore.Components;
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 using System.Threading.Tasks;
 
 #line default
 #line hidden
-    using Microsoft.AspNetCore.Components;
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 219

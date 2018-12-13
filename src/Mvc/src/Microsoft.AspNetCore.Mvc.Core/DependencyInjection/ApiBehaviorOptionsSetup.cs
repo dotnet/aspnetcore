@@ -30,16 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             get
             {
-                var dictionary = new Dictionary<string, object>();
-
-                if (Version < CompatibilityVersion.Version_2_2)
-                {
-                    dictionary[nameof(ApiBehaviorOptions.SuppressMapClientErrors)] = true;
-                    dictionary[nameof(ApiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses)] = true;
-                    dictionary[nameof(ApiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery)] = true;
-                }
-
-                return dictionary;
+                return new Dictionary<string, object>();
             }
         }
 

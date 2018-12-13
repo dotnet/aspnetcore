@@ -62,29 +62,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// e.g. <c>TempDataProperty-SuccessMessage</c>. When this option is <c>true</c>, the calculated key for the property is
         /// the property name e.g. <c>SuccessMessage</c>.
         /// </para>
-        /// <para>
-        /// Defaults to <c>false</c>.
-        /// </para>
         /// </summary>
-        /// <remarks>
-        /// <para>
-        /// This property is associated with a compatibility switch and can provide a different behavior depending on
-        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
-        /// guidance and examples of setting the application's compatibility version.
-        /// </para>
-        /// <para>
-        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
-        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <c>false</c> unless explicitly configured.
-        /// </para>
-        /// <para>
-        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
-        /// </para>
-        /// </remarks>
+        /// <value>
+        /// The default value is <see langword="true"/>.
+        /// </value>
         public bool SuppressTempDataAttributePrefix
         {
             get => _suppressTempDataAttributePrefix.Value;
@@ -96,7 +77,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// when they're bound to models marked with either
         /// <see cref="StringLengthAttribute"/> or <see cref="MaxLengthAttribute"/> attributes.
         /// </summary>
-        /// <remarks>If both attributes are specified, the one with the smaller value will be used for the rendered `maxlength` attribute.</remarks>
+        /// <value>
+        /// The default value is <see langword="true"/>.
+        /// </value>
+        /// <remarks>
+        /// If both attributes are specified, the one with the smaller value will be used for the rendered `maxlength` attribute.
+        /// </remarks>
         public bool AllowRenderingMaxLengthAttribute
         {
             get => _allowRenderingMaxLengthAttribute.Value;

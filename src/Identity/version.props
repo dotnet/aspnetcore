@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <VersionPrefix>3.0.0</VersionPrefix>
+    <VersionSuffix>alpha1</VersionSuffix>
+    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND ('$(VersionSuffix)' == 'servicing' OR '$(VersionSuffix)' == 'rtm') ">$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'servicing' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
+    <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
+    <FeatureBranchVersionPrefix Condition="'$(FeatureBranchVersionPrefix)' == ''">a-</FeatureBranchVersionPrefix>
+    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
+    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <ExperimentalVersionPrefix>0.6.0</ExperimentalVersionPrefix>
+    <ExperimentalVersionSuffix>alpha1</ExperimentalVersionSuffix>
+    <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true' AND ('$(ExperimentalVersionSuffix)' == 'servicing' OR '$(ExperimentalVersionSuffix)' == 'rtm') ">$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
+    <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' != 'servicing' AND '$(ExperimentalVersionSuffix)' != 'rtm' ">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
+    <ExperimentalVersionSuffix Condition="'$(ExperimentalVersionSuffix)' != '' And '$(BuildNumber)' != ''">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
+  </PropertyGroup>
+</Project>

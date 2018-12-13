@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public ICollection<string> Scope { get; } = new HashSet<string>();
 
         /// <summary>
-        /// Requests received on this path will cause the handler to invoke SignOut using the SignInScheme.
+        /// Requests received on this path will cause the handler to invoke SignOut using the SignOutScheme.
         /// </summary>
         public PathString RemoteSignOutPath { get; set; }
 

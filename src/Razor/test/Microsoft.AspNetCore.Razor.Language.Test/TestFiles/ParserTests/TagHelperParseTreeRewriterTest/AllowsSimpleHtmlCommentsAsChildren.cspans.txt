@@ -1,6 +1,0 @@
-Markup span at (3:0,3 [3] ) (Accepts:Any) - Parent: Tag block at (3:0,3 [3] )
-Markup span at (6:0,6 [4] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [36] )
-Markup span at (10:0,10 [4] ) (Accepts:Any) - Parent: Tag block at (10:0,10 [4] )
-Markup span at (14:0,14 [4] ) (Accepts:None) - Parent: HtmlComment block at (14:0,14 [18] )
-Markup span at (18:0,18 [11] ) (Accepts:Whitespace) - Parent: HtmlComment block at (14:0,14 [18] )
-Markup span at (29:0,29 [3] ) (Accepts:None) - Parent: HtmlComment block at (14:0,14 [18] )

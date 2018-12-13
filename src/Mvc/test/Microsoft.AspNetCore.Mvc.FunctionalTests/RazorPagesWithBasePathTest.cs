@@ -323,7 +323,7 @@ Hello from page";
             var expected =
 @"<a href=""/Accounts/Manage/RenderPartials"">Link inside area</a>
 <a href=""/Products/List/old/20"">Link to external area</a>
-<a href=""/Accounts"">Link to area action</a>
+<a href="""">Link to area action</a>
 <a href=""/Admin"">Link to non-area page</a>";
 
             // Act

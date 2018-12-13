@@ -11,4 +11,8 @@
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
 </Project>

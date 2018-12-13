@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,6 @@ using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
 using Templates.Test.Helpers;
-using Templates.Test.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -32,7 +31,7 @@ namespace Templates.Test
             _output.Value = output;
             TemplatePackageInstaller.EnsureTemplatingEngineInitialized(output);
 
-            ProjectGuid = Guid.NewGuid().ToString("N");
+            ProjectGuid = Guid.NewGuid().ToString("N").Substring(0, 6);
             ProjectName = $"AspNet.Template.{ProjectGuid}";
 
             var assemblyPath = GetType().GetTypeInfo().Assembly.CodeBase;

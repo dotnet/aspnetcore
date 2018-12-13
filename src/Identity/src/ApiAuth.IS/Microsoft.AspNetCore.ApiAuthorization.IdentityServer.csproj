@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>ASP.NET Core API Authorization package powered by Identity Server.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;apiauth;identity</PackageTags>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
+    <PackageReference Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServer4AspNetIdentityPackageVersion)" />
+    <PackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4EntityFrameworkPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EF\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\UI\Microsoft.AspNetCore.Identity.UI.csproj" />
+  </ItemGroup>
+
+</Project>

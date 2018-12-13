@@ -1,0 +1,634 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.HttpOverrides, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Builder.ForwardedHeadersExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseForwardedHeaders",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseForwardedHeaders",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Builder.ForwardedHeadersOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.ForwardedHeadersOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardedForHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardedForHeaderName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardedHostHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardedHostHeaderName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardedProtoHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardedProtoHeaderName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OriginalForHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OriginalForHeaderName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OriginalHostHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OriginalHostHeaderName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OriginalProtoHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_OriginalProtoHeaderName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardedHeaders",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardedHeaders",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ForwardLimit",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int32>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ForwardLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_KnownProxies",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.Net.IPAddress>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_KnownNetworks",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.HttpOverrides.IPNetwork>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AllowedHosts",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AllowedHosts",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RequireHeaderSymmetry",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RequireHeaderSymmetry",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.HttpMethodOverrideExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseHttpMethodOverride",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseHttpMethodOverride",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FormFieldName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_FormFieldName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "XForwardedFor",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "XForwardedHost",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "XForwardedProto",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        },
+        {
+          "Kind": "Field",
+          "Name": "All",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "7"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersDefaults",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_XForwardedForHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_XForwardedHostHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_XForwardedProtoHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_XOriginalForHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_XOriginalHostHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_XOriginalProtoHeaderName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.HttpOverrides.ForwardedHeadersMiddleware",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ApplyForwarders",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "next",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.HttpOverrides.HttpMethodOverrideMiddleware",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "next",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.HttpMethodOverrideOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.HttpOverrides.IPNetwork",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Prefix",
+          "Parameters": [],
+          "ReturnType": "System.Net.IPAddress",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PrefixLength",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Contains",
+          "Parameters": [
+            {
+              "Name": "address",
+              "Type": "System.Net.IPAddress"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "prefix",
+              "Type": "System.Net.IPAddress"
+            },
+            {
+              "Name": "prefixLength",
+              "Type": "System.Int32"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

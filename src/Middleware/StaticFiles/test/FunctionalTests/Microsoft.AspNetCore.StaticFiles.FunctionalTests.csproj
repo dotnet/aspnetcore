@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <!--
+      Workaround for "Use executable flags in Microsoft.NET.Test.Sdk" (https://github.com/Microsoft/vstest/issues/792).
+      Remove when fixed.
+    -->
+    <HasRuntimeOutput>true</HasRuntimeOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
+    <Content Include="TestDocument1MB.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SubFolder\**\*;TestDocument.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+  </ItemGroup>
+
+</Project>

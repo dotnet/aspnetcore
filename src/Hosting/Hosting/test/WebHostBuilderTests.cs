@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1127,6 +1127,33 @@ namespace Microsoft.AspNetCore.Hosting
             });
 
             Assert.Contains("No application configured.", exception.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
+        public void UseConfigurationWithSectionAddsSubKeys(IWebHostBuilder builder)
+        {
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("key", "value"),
+                    new KeyValuePair<string, string>("nested:key", "nestedvalue"),
+                }).Build();
+            var section = config.GetSection("nested");
+
+            builder = builder
+                .CaptureStartupErrors(false)
+                .Configure(app => { })
+                .UseConfiguration(section)
+                .UseServer(new TestServer());
+
+            Assert.Equal("nestedvalue", builder.GetSetting("key"));
+
+            using (var host = builder.Build())
+            {
+                var appConfig = host.Services.GetRequiredService<IConfiguration>();
+                Assert.Equal("nestedvalue", appConfig["key"]);
+            }
         }
 
         private static void StaticConfigureMethod(IApplicationBuilder app) { }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,19 +11,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public static class HubProtocolHelpers
     {
-        private static readonly IHubProtocol JsonHubProtocol = new JsonHubProtocol();
+        private static readonly IHubProtocol NewtonsoftJsonHubProtocol = new NewtonsoftJsonHubProtocol();
 
         private static readonly IHubProtocol MessagePackHubProtocol = new MessagePackHubProtocol();
 
         public static readonly List<string> AllProtocolNames = new List<string>
         {
-            JsonHubProtocol.Name,
+            NewtonsoftJsonHubProtocol.Name,
             MessagePackHubProtocol.Name
         };
 
         public static readonly IList<IHubProtocol> AllProtocols = new List<IHubProtocol>()
         {
-            JsonHubProtocol,
+            NewtonsoftJsonHubProtocol,
             MessagePackHubProtocol
         };
 

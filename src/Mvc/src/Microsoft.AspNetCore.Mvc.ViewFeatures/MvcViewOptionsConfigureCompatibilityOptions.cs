@@ -21,19 +21,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             get
             {
-                var values = new Dictionary<string, object>();
-
-                if (Version >= CompatibilityVersion.Version_2_1)
+                return new Dictionary<string, object>
                 {
-                    values[nameof(MvcViewOptions.SuppressTempDataAttributePrefix)] = true;
-                }
-
-                if (Version >= CompatibilityVersion.Version_2_2)
-                {
-                    values[nameof(MvcViewOptions.AllowRenderingMaxLengthAttribute)] = true;
-                }
-
-                return values;
+                    [nameof(MvcViewOptions.SuppressTempDataAttributePrefix)] = true,
+                    [nameof(MvcViewOptions.AllowRenderingMaxLengthAttribute)] = true,
+                };
             }
         }
     }

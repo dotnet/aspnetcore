@@ -21,7 +21,7 @@ type Startup private () =
     // This method gets called by the runtime. Use this method to add services to the container.
     member this.ConfigureServices(services: IServiceCollection) =
         // Add framework services.
-        services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2) |> ignore
+        services.AddMvc() |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
@@ -36,6 +36,10 @@ type Startup private () =
 #else
 
 #endif
-        app.UseMvc() |> ignore
+        app.UseRouting(fun routes ->
+            routes.MapApplication() |> ignore
+            ) |> ignore
+
+        app.UseAuthorization() |> ignore
 
     member val Configuration : IConfiguration = null with get, set

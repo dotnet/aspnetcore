@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var expectedOutput = Frame(testData.Json);
 
-            var protocolOptions = new JsonHubProtocolOptions
+            var protocolOptions = new NewtonsoftJsonHubProtocolOptions
             {
                 PayloadSerializerSettings = new JsonSerializerSettings()
                 {
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 }
             };
 
-            var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
+            var protocol = new NewtonsoftJsonHubProtocol(Options.Create(protocolOptions));
 
             var writer = MemoryBufferWriter.Get();
             try
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var input = Frame(testData.Json);
 
-            var protocolOptions = new JsonHubProtocolOptions
+            var protocolOptions = new NewtonsoftJsonHubProtocolOptions
             {
                 PayloadSerializerSettings = new JsonSerializerSettings
                 {
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             };
 
             var binder = new TestBinder(testData.Message);
-            var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
+            var protocol = new NewtonsoftJsonHubProtocol(Options.Create(protocolOptions));
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             protocol.TryParseMessage(ref data, binder, out var message);
 
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             input = Frame(input);
 
             var binder = new TestBinder(Array.Empty<Type>(), typeof(object));
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             var ex = Assert.Throws<InvalidDataException>(() => protocol.TryParseMessage(ref data, binder, out var _));
             Assert.Equal(expectedMessage, ex.Message);
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var input = Frame(testData.Json);
 
             var binder = new TestBinder(testData.Message);
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             protocol.TryParseMessage(ref data, binder, out var message);
 
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             input = Frame(input);
 
             var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             Assert.True(protocol.TryParseMessage(ref data, binder, out var message));
             Assert.NotNull(message);
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             input = Frame(input);
 
             var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             protocol.TryParseMessage(ref data, binder, out var message);
             var bindingFailure = Assert.IsType<InvocationBindingFailureMessage>(message);
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         public void DateTimeArgumentPreservesUtcKind(string input)
         {
             var binder = new TestBinder(new[] { typeof(DateTime) });
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame(input)));
             protocol.TryParseMessage(ref data, binder, out var message);
             var invocationMessage = Assert.IsType<InvocationMessage>(message);
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         public void DateTimeReturnValuePreservesUtcKind(string input)
         {
             var binder = new TestBinder(typeof(DateTime));
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame(input)));
             protocol.TryParseMessage(ref data, binder, out var message);
             var invocationMessage = Assert.IsType<CompletionMessage>(message);
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         public void ReadToEndOfArgumentArrayOnError()
         {
             var binder = new TestBinder(new[] { typeof(string) });
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame("{'type':1,'invocationId':'42','target':'foo','arguments':[[],{'target':'foo2'}]}")));
             protocol.TryParseMessage(ref data, binder, out var message);
             var bindingFailure = Assert.IsType<InvocationBindingFailureMessage>(message);

@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets or sets the formatted model value.
         /// </summary>
+        /// <value>The formatted model value.</value>
         /// <remarks>
         /// Will never return <c>null</c> to avoid problems when using HTML helpers within a template.  Otherwise the
         /// helpers could find elements in the `ViewDataDictionary`, not the intended Model properties.
         /// </remarks>
-        /// <value>The formatted model value.</value>
         public object FormattedModelValue
         {
             get { return _formattedModelValue; }
@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Gets or sets the HTML field prefix.
         /// </summary>
+        /// <value>The HTML field prefix.</value>
         /// <remarks>
         /// Will never return <c>null</c> for consistency with <see cref="FormattedModelValue"/>.
         /// </remarks>
-        /// <value>The HTML field prefix.</value>
         public string HtmlFieldPrefix
         {
             get { return _htmlFieldPrefix; }

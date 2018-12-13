@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             }
         }
 
-        public ValueTask FlushAsync()
+        public ValueTask FlushAsync(bool moreData)
         {
             lock (_contextLock)
             {

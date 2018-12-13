@@ -1,0 +1,17 @@
+{
+    "Default": {
+        "rules": [
+            "DefaultCompositeRule"
+        ],
+        "packages": {
+            "Microsoft.AspNetCore.Identity.UI": {
+                "Exclusions": {
+                    "DOC_MISSING": {
+                        "lib/netcoreapp3.0/Microsoft.AspNetCore.Identity.UI.Views.V3.dll": "This assembly is generated and contains precompiled razor pages",
+                        "lib/netcoreapp3.0/Microsoft.AspNetCore.Identity.UI.Views.V4.dll": "This assembly is generated and contains precompiled razor pages"
+                      }
+                }
+            }
+        }
+    }
+}

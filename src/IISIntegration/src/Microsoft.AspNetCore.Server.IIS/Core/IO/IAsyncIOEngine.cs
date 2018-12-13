@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         ValueTask<int> ReadAsync(Memory<byte> memory);
         ValueTask<int> WriteAsync(ReadOnlySequence<byte> data);
-        ValueTask FlushAsync();
+        ValueTask FlushAsync(bool moreData);
         void NotifyCompletion(int hr, int bytes);
     }
 }

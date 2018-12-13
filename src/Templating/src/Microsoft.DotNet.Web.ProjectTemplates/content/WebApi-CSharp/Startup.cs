@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,7 +43,7 @@ namespace Company.WebApplication1
             services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
                 .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
 #endif
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,13 +61,17 @@ namespace Company.WebApplication1
             }
 
             app.UseHttpsRedirection();
-#else
-
 #endif
+
+            app.UseRouting(routes =>
+            {
+                routes.MapApplication();
+            });
+
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
-            app.UseMvc();
+            app.UseAuthorization();
         }
     }
 }

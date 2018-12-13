@@ -1,0 +1,80 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Localization.Routing, Version=2.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Localization.Routing.RouteDataRequestCultureProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Localization.RequestCultureProvider",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "DetermineProviderCultureResult",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Localization.ProviderCultureResult>",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Localization.IRequestCultureProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RouteDataStringKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RouteDataStringKey",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UIRouteDataStringKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_UIRouteDataStringKey",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

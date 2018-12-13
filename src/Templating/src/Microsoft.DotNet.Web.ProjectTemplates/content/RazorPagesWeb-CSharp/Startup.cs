@@ -125,10 +125,9 @@ namespace Company.WebApplication1
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            })
-            .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            });
 #else
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc();
 #endif
         }
 
@@ -156,13 +155,18 @@ namespace Company.WebApplication1
 
 #endif
             app.UseStaticFiles();
+
+            app.UseRouting(routes =>
+            {
+                routes.MapApplication();
+            });
+
             app.UseCookiePolicy();
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
-
 #endif
-            app.UseMvc();
+            app.UseAuthorization();
         }
     }
 }

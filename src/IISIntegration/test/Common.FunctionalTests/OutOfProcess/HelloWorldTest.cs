@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
                 .WithAllAncmVersions();
 
@@ -68,11 +69,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal("null", responseText);
 
-            Assert.Equal(
-                $"ContentRootPath {deploymentResult.ContentRoot}" + Environment.NewLine +
-                $"WebRootPath {deploymentResult.ContentRoot}\\wwwroot" + Environment.NewLine +
-                $"CurrentDirectory {deploymentResult.ContentRoot}",
-                await deploymentResult.HttpClient.GetStringAsync("/HostingEnvironment"));
+            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
+            Assert.Equal(deploymentResult.ContentRoot + "\\wwwroot", await deploymentResult.HttpClient.GetStringAsync("/WebRootPath"));
+            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
 
             var expectedDll = variant.AncmVersion == AncmVersion.AspNetCoreModule ? "aspnetcore.dll" : "aspnetcorev2.dll";
             Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m=> m.FileName.Contains(expectedDll));

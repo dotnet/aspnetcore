@@ -5,32 +5,32 @@
   <PropertyGroup Label="Package Versions">
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>3.0.0-alpha1-20181031.6</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
-    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>3.0.0-a-alpha1-authz-middleware-16949</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>3.0.0-a-alpha1-authz-middleware-16949</MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>
-    <MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>
-    <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreDiagnosticsPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreIdentityPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreIdentityPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcTestingPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreMvcTestingPackageVersion>
-    <MicrosoftAspNetCorePackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreRewritePackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreRewritePackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10717</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreIdentityPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreIdentityPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcTestingPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreMvcTestingPackageVersion>
+    <MicrosoftAspNetCorePackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreRewritePackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreRewritePackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>3.0.0-alpha1-10772</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>3.0.0-preview-181106-14</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
@@ -61,10 +61,10 @@
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp30PackageVersion>3.0.0-preview1-26907-05</MicrosoftNETCoreApp30PackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.0.0-alpha1-10717</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-18579-0056</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
-    <MicrosoftOwinSecurityInteropPackageVersion>3.0.0-alpha1-10717</MicrosoftOwinSecurityInteropPackageVersion>
+    <MicrosoftOwinSecurityInteropPackageVersion>3.0.0-alpha1-10772</MicrosoftOwinSecurityInteropPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview1-26907-04</SystemComponentModelAnnotationsPackageVersion>

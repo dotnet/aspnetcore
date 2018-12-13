@@ -33,6 +33,8 @@
       <FilesToSign Include="Microsoft.Extensions.Hosting.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Hosting.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Http.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Localization.Abstractions.dll"             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="Microsoft.Extensions.Localization.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Logging.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Logging.Configuration.dll"                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.Logging.Console.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />

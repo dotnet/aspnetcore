@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Http
     public class StreamPipeReader : PipeReader
     {
         private readonly int _minimumSegmentSize;
+        private readonly int _minimumReadThreshold;
         private readonly Stream _readingStream;
         private readonly MemoryPool<byte> _pool;
 
@@ -35,11 +36,51 @@ namespace Microsoft.AspNetCore.Http
         private bool _examinedEverything;
         private object _lock = new object();
 
+        /// <summary>
+        /// Creates a new StreamPipeReader.
+        /// </summary>
+        /// <param name="readingStream">The stream to read from.</param>
+        public StreamPipeReader(Stream readingStream)
+            : this(readingStream, StreamPipeReaderOptions.DefaultOptions)
+        {
+        }
+
+
+        /// <summary>
+        /// Creates a new StreamPipeReader.
+        /// </summary>
+        /// <param name="readingStream">The stream to read from.</param>
+        /// <param name="options">The options to use.</param>
+        public StreamPipeReader(Stream readingStream, StreamPipeReaderOptions options)
+        {
+            _readingStream = readingStream ?? throw new ArgumentNullException(nameof(readingStream));
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (options.MinimumReadThreshold <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(options.MinimumReadThreshold));
+            }
+
+            _minimumSegmentSize = options.MinimumSegmentSize;
+            _minimumReadThreshold = Math.Min(options.MinimumReadThreshold, options.MinimumSegmentSize);
+            _pool = options.MemoryPool;
+        }
+
+        /// <inheritdoc />
+        public override void AdvanceTo(SequencePosition consumed)
+        {
+            AdvanceTo(consumed, consumed);
+        }
+
         private CancellationTokenSource InternalTokenSource
         {
             get
             {
-                lock(_lock)
+                lock (_lock)
                 {
                     if (_internalTokenSource == null)
                     {
@@ -52,34 +93,6 @@ namespace Microsoft.AspNetCore.Http
             {
                 _internalTokenSource = value;
             }
-
-        }
-
-        /// <summary>
-        /// Creates a new StreamPipeReader.
-        /// </summary>
-        /// <param name="readingStream">The stream to read from.</param>
-        public StreamPipeReader(Stream readingStream) : this(readingStream, minimumSegmentSize: 4096)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new StreamPipeReader.
-        /// </summary>
-        /// <param name="readingStream">The stream to read from.</param>
-        /// <param name="minimumSegmentSize">The minimum segment size to return from ReadAsync.</param>
-        /// <param name="pool"></param>
-        public StreamPipeReader(Stream readingStream, int minimumSegmentSize, MemoryPool<byte> pool = null)
-        {
-            _minimumSegmentSize = minimumSegmentSize;
-            _readingStream = readingStream;
-            _pool = pool ?? MemoryPool<byte>.Shared;
-        }
-
-        /// <inheritdoc />
-        public override void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
         }
 
         /// <inheritdoc />
@@ -309,7 +322,7 @@ namespace Microsoft.AspNetCore.Http
                 _readHead.SetMemory(_pool.Rent(GetSegmentSize()));
                 _readTail = _readHead;
             }
-            else if (_readTail.WritableBytes == 0)
+            else if (_readTail.WritableBytes < _minimumReadThreshold)
             {
                 CreateNewTailSegment();
             }

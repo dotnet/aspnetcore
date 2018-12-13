@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <Import Project="..\..\build\functional-test-assets.targets" />
@@ -10,7 +10,6 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IIS\Microsoft.AspNetCore.Server.IIS.csproj" />
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
   </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
