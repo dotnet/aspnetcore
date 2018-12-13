@@ -165,10 +165,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         private void WriteMarkerToken(CodeRenderingContext context, DirectiveTokenIntermediateNode node)
         {
-            // We want to map marker tokens to a location in the generated document
-            // that will provide CSharp intellisense.
-            context.AddSourceMappingFor(node);
-            context.CodeWriter.Write(" ");
+            // Marker tokens exist to be filled with other content a user might write. In an end-to-end
+            // scenario markers prep the Razor documents C# projections to have an empty projection that
+            // can be filled with other user content. This content can trigger a multitude of other events,
+            // such as completion. In the case of completion, a completion session can occur when a marker
+            // hasn't been filled and then we will fill it as a user types. The line pragma is necessary
+            // for consistency so when a C# completion session starts, filling user code doesn't result in
+            // a previously non-existent line pragma from being added and destroying the context in which
+            // the completion session was started.
+            using (context.CodeWriter.BuildLinePragma(node.Source))
+            {
+                context.AddSourceMappingFor(node);
+                context.CodeWriter.Write(" ");
+            }
         }
     }
 }
