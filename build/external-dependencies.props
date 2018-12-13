@@ -68,7 +68,6 @@
     <ExternalDependency Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)"  AllMetapackage="true" AppMetapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="$(MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion)"  />
     <ExternalDependency Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" AllMetapackage="true" AppMetapackage="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Process.Sources" Version="$(MicrosoftExtensionsProcessSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.PropertyActivator.Sources" Version="$(MicrosoftExtensionsPropertyActivatorSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.RazorViews.Sources" Version="$(MicrosoftExtensionsRazorViewsSourcesPackageVersion)" />

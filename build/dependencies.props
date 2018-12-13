@@ -79,7 +79,6 @@
     <MicrosoftExtensionsOptionsPackageVersion>2.1.1</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>2.1.1</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>2.1.6</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>2.1.1</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftExtensionsPropertyActivatorSourcesPackageVersion>2.1.1</MicrosoftExtensionsPropertyActivatorSourcesPackageVersion>
     <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>2.1.1</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
     <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.1.1</MicrosoftExtensionsRazorViewsSourcesPackageVersion>

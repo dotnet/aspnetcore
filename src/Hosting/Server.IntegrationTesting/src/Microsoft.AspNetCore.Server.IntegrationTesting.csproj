@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" />
     <EmbeddedResource Include="Deployers\RemoteWindowsDeployer\RemotePSSessionHelper.ps1;Deployers\RemoteWindowsDeployer\StartServer.ps1;Deployers\RemoteWindowsDeployer\StopServer.ps1" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
   </ItemGroup>
 
@@ -25,7 +26,6 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
-    <Reference Include="Microsoft.Extensions.Process.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Serilog.Extensions.Logging" />
     <Reference Include="Serilog.Sinks.File" />

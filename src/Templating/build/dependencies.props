@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -35,7 +35,6 @@
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.2-rtm-30913</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.1.2-rtm-30913</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>2.1.1</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.5</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>2.1.2-rtm-30913</MicrosoftNETSdkRazorPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>

@@ -41,7 +41,6 @@
     <LatestPackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.Process.Sources" Version="$(MicrosoftExtensionsProcessSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.RazorViews.Sources" Version="$(MicrosoftExtensionsRazorViewsSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.StackTrace.Sources" Version="$(MicrosoftExtensionsStackTraceSourcesPackageVersion)" />
