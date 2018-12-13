@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="FSharp.Core" />
     <Reference Include="System.Reflection.Metadata" />
     <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="System.Security.Cryptography.Cng" />
