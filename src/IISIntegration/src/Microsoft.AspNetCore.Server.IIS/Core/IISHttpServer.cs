@@ -1,5 +1,3 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
@@ -73,8 +71,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _logger = logger;
             _options = options.Value;
 
-            Features.Set<IServerAddressesFeature>(new ServerAddressesFeature(_options.ServerAddresses));
-
             if (_options.ForwardWindowsAuthentication)
             {
                 authentication.AddScheme(new AuthenticationScheme(IISServerDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandler)));
@@ -87,6 +83,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
             _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+
+            Features.Set<IServerAddressesFeature>(new ServerAddressesFeature(_options.ServerAddresses));
+
             return Task.CompletedTask;
         }
 
