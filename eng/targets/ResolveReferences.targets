@@ -1,3 +1,21 @@
+<!--
+
+  The targets in this file are used to implement custom <Reference> resolution.
+  For more details, see /docs/ReferenceResolution.md.
+
+  Properties which can be set by projects. If unset, these will be inferred.
+
+    * UseLatestPackageReferences = resolve `<Reference>` items to the latest version of PackageReferences in eng/Dependencies.props.
+    * UseProjectReferences = prefer project references to packages
+    * IsProjectReferenceProvider = when true, the assembly in this project should be available as a ProjectReferenceProvider (see below).
+
+  Items used by the resolution strategy:
+
+    * BaselinePackageReference = a list of packages that were reference in the last release of the project currently building
+    * LatestPackageReference = a list of the latest versions of packages
+    * Reference = a list of the references which are needed for compilation or runtime
+    * ProjectReferenceProvider = a list which maps of assembly names to the project file that produces it
+ -->
 <Project>
 
   <PropertyGroup>
@@ -31,17 +49,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Packages which are implicitly defined by the .NET Core SDK. -->
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
+    <!-- Capture a list of references which were set explicitly in the project. -->
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
+    <!-- Special case: ignore the reference to Internal.AspNetCore.Sdk, which is defined in eng/targets/Cpp.Common.props. -->
     <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
     <_ExplicitPackageReference Remove="Microsoft.NETFramework.ReferenceAssemblies" />
 
-    <UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
+    <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
-    <!-- Order matters. Projects should be used when possible instead of packages. -->
+    <!--
+      Turn Reference items into a ProjectReference when UseProjectReferences is true.
+      Order matters. This comes before package resolution because projects should be used when possible instead of packages.
+    -->
     <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
       Include="@(ProjectReferenceProvider)"
-      Exclude="@(UnusedProjectReferenceProvider)" />
+      Exclude="@(_UnusedProjectReferenceProvider)" />
 
     <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
 
@@ -52,12 +76,18 @@
     <Reference Remove="@(Reference)" />
   </ItemGroup>
 
+  <!--
+    This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
+    This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
+   -->
   <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' ">
     <ItemGroup>
       <Reference Include="@(_ReferenceTemp)" />
       <_ReferenceTemp Remove="@(_ReferenceTemp)" />
 
+      <!-- Identify if any references were present in the last release of this package, but have been removed. -->
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
+
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
         but you can do a cartesian product of two item groups and filter out mismatched id's in a second pass.
@@ -102,7 +132,8 @@
       <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" />
       <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
     </ItemGroup>
-<!--
+
+<!-- TODO: when we finish https://github.com/aspnet/AspNetCore/issues/4246, introduce errors to force projects to use custom resolution.
     <Error Condition="@(_ExplicitPackageReference->Count()) != 0"
            Text="PackageReference items are not allowed. Use &lt;Reference&gt; instead. " /> -->
 
@@ -118,6 +149,7 @@
            Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;" />
   </Target>
 
+  <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">
     <ItemGroup>
       <_TargetFramework Remove="@(_TargetFramework)" />

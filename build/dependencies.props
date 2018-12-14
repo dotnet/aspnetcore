@@ -36,14 +36,12 @@
     <InternalAspNetCoreAnalyzersPackageVersion>2.2.0</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>2.2.0</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.2.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.2.0</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.2.0</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsCachingRedisPackageVersion>2.2.0</MicrosoftExtensionsCachingRedisPackageVersion>
     <MicrosoftExtensionsCachingSqlServerPackageVersion>2.2.0</MicrosoftExtensionsCachingSqlServerPackageVersion>
-    <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.2.0</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.2.0</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
@@ -57,7 +55,6 @@
     <MicrosoftExtensionsConfigurationPackageVersion>2.2.0</MicrosoftExtensionsConfigurationPackageVersion>
     <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.2.0</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
     <MicrosoftExtensionsConfigurationXmlPackageVersion>2.2.0</MicrosoftExtensionsConfigurationXmlPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.2.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>2.2.0</MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>
@@ -85,23 +82,15 @@
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsLoggingTraceSourcePackageVersion>2.2.0</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
-    <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.2.0</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>2.2.0</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>2.2.0</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>2.2.0</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.2.0</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>2.2.0</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>2.2.0</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0</MicrosoftExtensionsProcessSourcesPackageVersion>
-    <MicrosoftExtensionsPropertyActivatorSourcesPackageVersion>2.2.0</MicrosoftExtensionsPropertyActivatorSourcesPackageVersion>
-    <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>2.2.0</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
-    <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.2.0</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
-    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.2.0</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
-    <MicrosoftExtensionsStackTraceSourcesPackageVersion>2.2.0</MicrosoftExtensionsStackTraceSourcesPackageVersion>
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.2.0</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.2.0</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0</MicrosoftExtensionsWebEncodersPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.2.0</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
 
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.2.0</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>

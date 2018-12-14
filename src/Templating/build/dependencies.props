@@ -13,7 +13,6 @@
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
     <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
-    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreCookiePolicyPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreCookiePolicyPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.2.0-preview3-35359</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
@@ -33,7 +32,6 @@
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0-preview3-35359</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.2.0-preview3-35359</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-preview3-35359</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview3-26927-02</MicrosoftNETCoreApp22PackageVersion>

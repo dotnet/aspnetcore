@@ -31,7 +31,6 @@
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsProcessSourcesPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview3-27001-02</MicrosoftNETCoreApp22PackageVersion>

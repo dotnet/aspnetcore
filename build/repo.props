@@ -78,6 +78,7 @@
     </ProjectToBuild>
 
     <ProjectToBuild Include="
+                      $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                       $(RepositoryRoot)src\DataProtection\**\*.*proj;
                       $(RepositoryRoot)src\Antiforgery\**\*.*proj;
@@ -86,6 +87,7 @@
                       $(RepositoryRoot)src\Html\**\*.*proj;
                       $(RepositoryRoot)src\Servers\**\*.csproj;
                       $(RepositoryRoot)src\Servers\**\*.pkgproj;
+                      $(RepositoryRoot)src\Shared\**\*.*proj;
                       $(RepositoryRoot)src\Tools\**\*.*proj;
                       $(RepositoryRoot)src\Middleware\**\*.*proj;
                       "

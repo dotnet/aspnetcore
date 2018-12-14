@@ -28,7 +28,6 @@
     <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsLoggingDebugPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
