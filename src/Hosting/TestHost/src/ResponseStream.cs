@@ -24,13 +24,15 @@ namespace Microsoft.AspNetCore.TestHost
         private Func<Task> _onFirstWriteAsync;
         private bool _firstWrite;
         private Action _abortRequest;
+        private Func<bool> _allowSynchronousIO;
 
         private Pipe _pipe = new Pipe();
 
-        internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest)
+        internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest, Func<bool> allowSynchronousIO)
         {
             _onFirstWriteAsync = onFirstWriteAsync ?? throw new ArgumentNullException(nameof(onFirstWriteAsync));
             _abortRequest = abortRequest ?? throw new ArgumentNullException(nameof(abortRequest));
+            _allowSynchronousIO = allowSynchronousIO ?? throw new ArgumentNullException(nameof(allowSynchronousIO));
             _firstWrite = true;
             _writeLock = new SemaphoreSlim(1, 1);
         }
@@ -144,6 +146,11 @@ namespace Microsoft.AspNetCore.TestHost
         // Write with count 0 will still trigger OnFirstWrite
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (!_allowSynchronousIO())
+            {
+                throw new InvalidOperationException("Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true.");
+            }
+
             // The Pipe Write method requires calling FlushAsync to notify the reader. Call WriteAsync instead.
             WriteAsync(buffer, offset, count).GetAwaiter().GetResult();
         }

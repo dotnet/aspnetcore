@@ -92,13 +92,12 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ResubmitRequestWorks()
         {
             int requestCount = 1;
-            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
-                int read = context.Request.Body.Read(new byte[100], 0, 100);
+                int read = await context.Request.Body.ReadAsync(new byte[100], 0, 100);
                 Assert.Equal(11, read);
 
                 context.Response.Headers["TestHeader"] = "TestValue:" + requestCount++;
-                return Task.FromResult(0);
             }));
 
             HttpMessageInvoker invoker = new HttpMessageInvoker(handler);

@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = 10;
-                httpContext.Response.Body.Flush();
+                httpContext.Response.Body.FlushAsync();
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {

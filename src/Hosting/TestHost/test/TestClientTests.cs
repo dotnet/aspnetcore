@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task PutAsyncWorks()
         {
             // Arrange
-            RequestDelegate appDelegate = ctx =>
-                ctx.Response.WriteAsync(new StreamReader(ctx.Request.Body).ReadToEnd() + " PUT Response");
+            RequestDelegate appDelegate = async ctx =>
+                await ctx.Response.WriteAsync(await new StreamReader(ctx.Request.Body).ReadToEndAsync() + " PUT Response");
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             // Arrange
             RequestDelegate appDelegate = async ctx =>
-                await ctx.Response.WriteAsync(new StreamReader(ctx.Request.Body).ReadToEnd() + " POST Response");
+                await ctx.Response.WriteAsync(await new StreamReader(ctx.Request.Body).ReadToEndAsync() + " POST Response");
             var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
@@ -132,16 +132,15 @@ namespace Microsoft.AspNetCore.TestHost
             }
 
             var builder = new WebHostBuilder();
-            RequestDelegate app = (ctx) =>
+            RequestDelegate app = async ctx =>
             {
                 var disposable = new TestDisposable();
                 ctx.Response.RegisterForDispose(disposable);
-                ctx.Response.Body.Write(data, 0, 1024);
+                await ctx.Response.Body.WriteAsync(data, 0, 1024);
 
                 Assert.False(disposable.IsDisposed);
 
-                ctx.Response.Body.Write(data, 1024, 1024);
-                return Task.FromResult(0);
+                await ctx.Response.Body.WriteAsync(data, 1024, 1024);
             };
 
             builder.Configure(appBuilder => appBuilder.Run(app));

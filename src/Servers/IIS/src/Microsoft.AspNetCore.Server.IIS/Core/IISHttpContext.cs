@@ -82,6 +82,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _options = options;
             _server = server;
             _logger = logger;
+
+            ((IHttpBodyControlFeature)this).AllowSynchronousIO = _options.AllowSynchronousIO;
         }
 
         public Version HttpVersion { get; set; }

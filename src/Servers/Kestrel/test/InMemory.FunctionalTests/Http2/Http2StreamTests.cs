@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1933,6 +1933,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await InitializeConnectionAsync(async context =>
             {
+                var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                bodyControlFeature.AllowSynchronousIO = true;
                 // Fill the flow control window to create async back pressure.
                 await context.Response.Body.WriteAsync(new byte[windowSize + 1], 0, windowSize + 1);
                 context.Response.Body.Write(new byte[1], 0, 1);
