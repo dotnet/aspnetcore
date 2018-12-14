@@ -102,5 +102,25 @@
     "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
     "MemberId": "public System.Void set_AllowValidatingTopLevelNodes(System.Boolean value)",
     "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy get_InputFormatterExceptionPolicy()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Boolean get_SuppressBindingUndefinedValueToEnumType()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Void set_InputFormatterExceptionPolicy(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Void set_SuppressBindingUndefinedValueToEnumType(System.Boolean value)",
+    "Kind": "Removal"
   }
 ]

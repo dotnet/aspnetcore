@@ -195,11 +195,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         // Throwing InputFormatterException
-        [Theory]
-        [InlineData(InputFormatterExceptionPolicy.AllExceptions)]
-        [InlineData(InputFormatterExceptionPolicy.MalformedInputExceptions)]
-        public async Task BindModel_CustomFormatter_ThrowingInputFormatterException_AddsErrorToModelState(
-            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
+        [Fact]
+        public async Task BindModel_CustomFormatter_ThrowingInputFormatterException_AddsErrorToModelState()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -215,12 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 throw new InputFormatterException("Bad input!!", expectedFormatException);
             });
-            var binder = CreateBinder(
-                new[] { formatter },
-                new MvcOptions()
-                {
-                    InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
-                });
+            var binder = CreateBinder(new[] { formatter }, new MvcOptions());
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -237,16 +229,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(entry.Value.Errors[0].Exception);
         }
 
-        public static TheoryData<IInputFormatter, InputFormatterExceptionPolicy> BuiltInFormattersThrowingInputFormatterException
+        public static TheoryData<IInputFormatter> BuiltInFormattersThrowingInputFormatterException
         {
             get
             {
-                return new TheoryData<IInputFormatter, InputFormatterExceptionPolicy>()
+                return new TheoryData<IInputFormatter>()
                 {
-                    { new XmlSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionPolicy.AllExceptions },
-                    { new XmlSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionPolicy.MalformedInputExceptions },
-                    { new XmlDataContractSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionPolicy.AllExceptions },
-                    { new XmlDataContractSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new XmlSerializerInputFormatter(new MvcOptions()) },
+                    { new XmlDataContractSerializerInputFormatter(new MvcOptions()) },
                 };
             }
         }
@@ -254,8 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [Theory]
         [MemberData(nameof(BuiltInFormattersThrowingInputFormatterException))]
         public async Task BindModel_BuiltInXmlInputFormatters_ThrowingInputFormatterException_AddsErrorToModelState(
-            IInputFormatter formatter,
-            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
+            IInputFormatter formatter)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -266,10 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
 
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
-            var binder = CreateBinder(new[] { formatter }, new MvcOptions()
-            {
-                InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
-            });
+            var binder = CreateBinder(new[] { formatter }, new MvcOptions());
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -286,11 +272,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(entry.Value.Errors[0].Exception);
         }
 
-        [Theory]
-        [InlineData(InputFormatterExceptionPolicy.AllExceptions)]
-        [InlineData(InputFormatterExceptionPolicy.MalformedInputExceptions)]
-        public async Task BindModel_BuiltInJsonInputFormatter_ThrowingInputFormatterException_AddsErrorToModelState(
-            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
+        [Fact]
+        public async Task BindModel_BuiltInJsonInputFormatter_ThrowingInputFormatterException_AddsErrorToModelState()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -303,10 +286,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
             var binder = CreateBinder(
                 new[] { new TestableJsonInputFormatter(throwNonInputFormatterException: false) },
-                new MvcOptions()
-                {
-                    InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
-                });
+                new MvcOptions());
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -321,25 +301,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.NotEmpty(entry.Value.Errors[0].ErrorMessage);
         }
 
-        public static TheoryData<IInputFormatter, InputFormatterExceptionPolicy> DerivedFormattersThrowingInputFormatterException
+        public static TheoryData<IInputFormatter> DerivedFormattersThrowingInputFormatterException
         {
             get
             {
-                return new TheoryData<IInputFormatter, InputFormatterExceptionPolicy>()
+                return new TheoryData<IInputFormatter>()
                 {
-                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionPolicy.AllExceptions },
-                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionPolicy.MalformedInputExceptions },
-                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionPolicy.AllExceptions },
-                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: false) },
+                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: false) },
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(DerivedFormattersThrowingInputFormatterException))]
-        public async Task BindModel_DerivedXmlInputFormatters_AddsErrorToModelState_(
-            IInputFormatter formatter,
-            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
+        public async Task BindModel_DerivedXmlInputFormatters_AddsErrorToModelState(IInputFormatter formatter)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -350,10 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
 
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
-            var binder = CreateBinder(new[] { formatter }, new MvcOptions()
-            {
-                InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
-            });
+            var binder = CreateBinder(new[] { formatter }, new MvcOptions());
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -370,11 +343,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(entry.Value.Errors[0].Exception);
         }
 
-        [Theory]
-        [InlineData(InputFormatterExceptionPolicy.AllExceptions)]
-        [InlineData(InputFormatterExceptionPolicy.MalformedInputExceptions)]
-        public async Task BindModel_DerivedJsonInputFormatter_AddsErrorToModelState(
-            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
+        [Fact]
+        public async Task BindModel_DerivedJsonInputFormatter_AddsErrorToModelState()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -387,10 +357,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
             var binder = CreateBinder(
                 new[] { new DerivedJsonInputFormatter(throwNonInputFormatterException: false) },
-                new MvcOptions()
-                {
-                    InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
-                });
+                new MvcOptions());
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -407,18 +374,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         // Throwing Non-InputFormatterException
-        public static TheoryData<IInputFormatter, string, InputFormatterExceptionPolicy> BuiltInFormattersThrowingNonInputFormatterException
+        public static TheoryData<IInputFormatter, string> BuiltInFormattersThrowingNonInputFormatterException
         {
             get
             {
-                return new TheoryData<IInputFormatter, string, InputFormatterExceptionPolicy>()
+                return new TheoryData<IInputFormatter, string>()
                 {
-                    { new TestableXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.AllExceptions },
-                    { new TestableXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.MalformedInputExceptions },
-                    { new TestableXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.AllExceptions },
-                    { new TestableXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.MalformedInputExceptions },
-                    { new TestableJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionPolicy.AllExceptions },
-                    { new TestableJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new TestableXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml" },
+                    { new TestableXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml" },
+                    { new TestableJsonInputFormatter(throwNonInputFormatterException: true), "text/json" },
                 };
             }
         }
@@ -427,8 +391,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [MemberData(nameof(BuiltInFormattersThrowingNonInputFormatterException))]
         public async Task BindModel_BuiltInInputFormatters_ThrowingNonInputFormatterException_Throws(
             IInputFormatter formatter,
-            string contentType,
-            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
+            string contentType)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -439,28 +402,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
 
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
-            var binder = CreateBinder(new[] { formatter }, new MvcOptions()
-            {
-                InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
-            });
+            var binder = CreateBinder(new[] { formatter }, new MvcOptions());
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<IOException>(() => binder.BindModelAsync(bindingContext));
             Assert.Equal("Unable to read input stream!!", exception.Message);
         }
 
-        public static TheoryData<IInputFormatter, string, InputFormatterExceptionPolicy> DerivedInputFormattersThrowingNonInputFormatterException
+        public static TheoryData<IInputFormatter, string> DerivedInputFormattersThrowingNonInputFormatterException
         {
             get
             {
-                return new TheoryData<IInputFormatter, string, InputFormatterExceptionPolicy>()
+                return new TheoryData<IInputFormatter, string>()
                 {
-                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.AllExceptions },
-                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.MalformedInputExceptions },
-                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.AllExceptions },
-                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.MalformedInputExceptions },
-                    { new DerivedJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionPolicy.AllExceptions },
-                    { new DerivedJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml" },
+                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml" },
+                    { new DerivedJsonInputFormatter(throwNonInputFormatterException: true), "text/json" },
                 };
             }
         }
@@ -469,8 +426,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [MemberData(nameof(DerivedInputFormattersThrowingNonInputFormatterException))]
         public async Task BindModel_DerivedXmlInputFormatters_ThrowingNonInputFormattingException_AddsErrorToModelState(
             IInputFormatter formatter,
-            string contentType,
-            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
+            string contentType)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -481,10 +437,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
 
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
-            var binder = CreateBinder(new[] { formatter }, new MvcOptions()
-            {
-                InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
-            });
+            var binder = CreateBinder(new[] { formatter }, new MvcOptions());
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -517,55 +470,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 throw new IOException("Unable to read input stream!!");
             });
-            var binder = CreateBinder(
-                new[] { formatter },
-                new MvcOptions()
-                {
-                    InputFormatterExceptionPolicy = InputFormatterExceptionPolicy.MalformedInputExceptions
-                });
+            var binder = CreateBinder(new[] { formatter }, new MvcOptions());
 
             // Act
             var exception = await Assert.ThrowsAsync<IOException>(
                 () => binder.BindModelAsync(bindingContext));
             Assert.Equal("Unable to read input stream!!", exception.Message);
-        }
-
-        [Fact]
-        public async Task BindModel_CustomFormatter_ThrowingNonInputFormatterException_AddsErrorToModelState()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("Bad data!"));
-            httpContext.Request.ContentType = "text/xyz";
-
-            var metadataProvider = new TestModelMetadataProvider();
-            metadataProvider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
-
-            var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
-            var formatter = new XyzFormatter((inputFormatterContext, encoding) =>
-            {
-                throw new IOException("Unable to read input stream!!");
-            });
-            var binder = CreateBinder(
-                new[] { formatter },
-                new MvcOptions()
-                {
-                    InputFormatterExceptionPolicy = InputFormatterExceptionPolicy.AllExceptions
-                });
-
-            // Act
-            await binder.BindModelAsync(bindingContext);
-
-            // Assert
-            Assert.False(bindingContext.Result.IsModelSet);
-            Assert.Null(bindingContext.Result.Model);
-
-            // Key is the empty string because this was a top-level binding.
-            var entry = Assert.Single(bindingContext.ModelState);
-            Assert.Equal(string.Empty, entry.Key);
-            var errorMessage = Assert.Single(entry.Value.Errors).Exception.Message;
-            Assert.Equal("Unable to read input stream!!", errorMessage);
-            Assert.IsType<IOException>(entry.Value.Errors[0].Exception);
         }
 
         [Fact]
