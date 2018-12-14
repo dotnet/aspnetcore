@@ -26,7 +26,6 @@
     <MicrosoftAspNetCoreAuthenticationPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreAuthenticationPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreAuthorizationPolicyPackageVersion>
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreChunkingCookieManagerSourcesPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreChunkingCookieManagerSourcesPackageVersion>
     <MicrosoftAspNetCoreCookiePolicyPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreCookiePolicyPackageVersion>
     <MicrosoftAspNetCoreCorsPackageVersion>2.2.0-a-rtm-fix-wildcard-16567</MicrosoftAspNetCoreCorsPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion>2.2.0-rtm-35519</MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion>
