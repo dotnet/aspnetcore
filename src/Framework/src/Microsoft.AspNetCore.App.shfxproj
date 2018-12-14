@@ -35,9 +35,6 @@
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IncludeMainProjectInDepsFile>false</IncludeMainProjectInDepsFile>
-
-    <!-- The only build output of a pkgproj is the project -->
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

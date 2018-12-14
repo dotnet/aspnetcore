@@ -31,11 +31,13 @@
     <PackageReference Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" PrivateAssets="All" />
 
     <ProjectReference Include="..\..\Framework\pkg\Microsoft.AspNetCore.App.pkgproj">
+      <Targets>Pack</Targets>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
 
     <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
+      <Targets>Pack</Targets>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
