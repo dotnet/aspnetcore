@@ -39,8 +39,8 @@ export class HandshakeProtocol {
             // content before separator is handshake response
             // optional content after is additional messages
             const responseLength = separatorIndex + 1;
-            messageData = String.fromCharCode.apply(null, this.slice(binaryData, 0, responseLength));
-            remainingData = (binaryData.byteLength > responseLength) ? this.slice(binaryData, responseLength).buffer : null;
+            messageData = String.fromCharCode.apply(null, binaryData.slice(0, responseLength));
+            remainingData = (binaryData.byteLength > responseLength) ? binaryData.slice(responseLength).buffer : null;
         } else {
             const textData: string = data;
             const separatorIndex = textData.indexOf(TextMessageFormat.RecordSeparator);
@@ -66,15 +66,5 @@ export class HandshakeProtocol {
         // multiple messages could have arrived with handshake
         // return additional data to be parsed as usual, or null if all parsed
         return [remainingData, responseMessage];
-    }
-
-    private slice(data: Uint8Array, start?: number, end?: number): Uint8Array {
-        const slicedData = data.slice(start, end);
-        if (slicedData instanceof Uint8Array) {
-            return slicedData;
-        }
-
-        // IE slice returns Array, we want Uint8Array
-        return new Uint8Array(slicedData);
     }
 }

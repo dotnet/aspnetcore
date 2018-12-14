@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         {
             try
             {
+                await Task.Delay(1000);
                 var result = await _application.ReadAsync(token);
                 var buffer = result.Buffer;
 
