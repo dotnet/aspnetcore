@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="mapper">The <see cref="IActionResultTypeMapper"/>.</param>
-        /// <remarks>The <paramref name="mapper"/> parameter is currently unused.</remarks>
+        /// <remarks>The <paramref name="mapper"/> parameter is currently ignored.</remarks>
         [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public DefaultApiDescriptionProvider(
             IOptions<MvcOptions> optionsAccessor,
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="mapper">The <see cref="IActionResultTypeMapper"/>.</param>
         /// <param name="routeOptions">The accessor for <see cref="RouteOptions"/>.</param>
-        /// <remarks>The <paramref name="mapper"/> parameter is currently unused.</remarks>
+        /// <remarks>The <paramref name="mapper"/> parameter is currently ignored.</remarks>
         public DefaultApiDescriptionProvider(
             IOptions<MvcOptions> optionsAccessor,
             IInlineConstraintResolver constraintResolver,

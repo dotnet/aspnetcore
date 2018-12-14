@@ -85,15 +85,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             Assert.NotNull(filter);
             var property = Assert.Single(filter.TempDataProperties);
             Assert.Same(expected, property.PropertyInfo);
-            Assert.Equal("TempDataProperty-Test2", property.Key);
+            Assert.Equal("Test2", property.Key);
         }
 
         [Fact]
-        public void OnProvidersExecuting_SetsKeyPrefixToEmptyString_IfCompatSwitchIsSet()
+        public void OnProvidersExecuting_SetsKeyPrefixToEmptyString()
         {
             // Arrange
             var expected = typeof(TestController_OneTempDataProperty).GetProperty(nameof(TestController_OneTempDataProperty.Test2));
-            var options = Options.Create(new MvcViewOptions { SuppressTempDataAttributePrefix = true });
+            var options = Options.Create(new MvcViewOptions());
             var type = typeof(TestController_OneTempDataProperty);
             var provider = new TempDataApplicationModelProvider(options);
             var context = GetContext(type);

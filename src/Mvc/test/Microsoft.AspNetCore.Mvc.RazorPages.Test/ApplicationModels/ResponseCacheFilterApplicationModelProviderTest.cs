@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         {
             var defaultProvider = new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new RazorPagesOptions { AllowDefaultHandlingForOptionsRequests = true }));
+                Options.Create(new RazorPagesOptions()));
 
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);

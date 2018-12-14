@@ -85,10 +85,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             List<LifecycleProperty> results = null;
 
             var propertyHelpers = PropertyHelper.GetVisibleProperties(type: type);
-            var prefix = viewOptions.SuppressTempDataAttributePrefix ?
-                string.Empty :
-                "TempDataProperty-";
-
             for (var i = 0; i < propertyHelpers.Length; i++)
             {
                 var propertyHelper = propertyHelpers[i];
@@ -105,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
                     var key = tempDataAttribute.Key;
                     if (string.IsNullOrEmpty(key))
                     {
-                        key = prefix + property.Name;
+                        key = property.Name;
                     }
 
                     results.Add(new LifecycleProperty(property, key));

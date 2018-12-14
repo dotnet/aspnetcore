@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(expectedValue, Int32.Parse(attribute.Value));
+            Assert.Equal(expectedValue, int.Parse(attribute.Value));
         }
 
         [Theory]
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(expectedValue, Int32.Parse(attribute.Value));
+            Assert.Equal(expectedValue, int.Parse(attribute.Value));
         }
 
         [Theory]
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(expectedValue, Int32.Parse(attribute.Value));
+            Assert.Equal(expectedValue, int.Parse(attribute.Value));
         }
 
         [Fact]
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(Math.Min(ModelWithMaxLengthMetadata.MaxLengthAttributeValue, ModelWithMaxLengthMetadata.StringLengthAttributeValue), Int32.Parse(attribute.Value));
+            Assert.Equal(Math.Min(ModelWithMaxLengthMetadata.MaxLengthAttributeValue, ModelWithMaxLengthMetadata.StringLengthAttributeValue), int.Parse(attribute.Value));
         }
 
         [Fact]
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "maxlength");
-            Assert.Equal(expectedValue, Int32.Parse(attribute.Value));
+            Assert.Equal(expectedValue, int.Parse(attribute.Value));
         }
 
         [Theory]
@@ -923,7 +923,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private static IHtmlGenerator GetGenerator(IModelMetadataProvider metadataProvider)
         {
             var mvcViewOptionsAccessor = new Mock<IOptions<MvcViewOptions>>();
-            mvcViewOptionsAccessor.SetupGet(accessor => accessor.Value).Returns(new MvcViewOptions() { AllowRenderingMaxLengthAttribute = true });
+            mvcViewOptionsAccessor.SetupGet(accessor => accessor.Value).Returns(new MvcViewOptions());
 
             var htmlEncoder = Mock.Of<HtmlEncoder>();
             var antiforgery = new Mock<IAntiforgery>();

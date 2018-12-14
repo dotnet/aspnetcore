@@ -137,7 +137,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var options = new RazorPagesOptions
             {
-                AllowAreas = true,
                 // Setting this value should not affect area page lookup.
                 RootDirectory = "/Files",
             };
@@ -214,44 +213,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void OnProvidersExecuting_DoesNotAddsModelsForAreaPages_IfFeatureIsDisabled()
-        {
-            // Arrange
-            var descriptors = new[]
-            {
-                CreateVersion_2_0_Descriptor("/Pages/About.cshtml"),
-                CreateVersion_2_0_Descriptor("/Areas/Accounts/Pages/Home.cshtml"),
-            };
-
-            var options = new RazorPagesOptions { AllowAreas = false };
-
-            var provider = CreateProvider(options: options, descriptors: descriptors);
-            var context = new PageRouteModelProviderContext();
-
-            // Act
-            provider.OnProvidersExecuting(context);
-
-            // Assert
-            Assert.Collection(
-                context.RouteModels,
-                result =>
-                {
-                    Assert.Equal("/Pages/About.cshtml", result.RelativePath);
-                    Assert.Equal("/About", result.ViewEnginePath);
-                    Assert.Collection(
-                        result.Selectors,
-                        selector => Assert.Equal("About", selector.AttributeRouteModel.Template));
-                    Assert.Collection(
-                        result.RouteValues.OrderBy(k => k.Key),
-                        kvp =>
-                        {
-                            Assert.Equal("page", kvp.Key);
-                            Assert.Equal("/About", kvp.Value);
-                        });
-                });
-        }
-
-        [Fact]
         public void OnProvidersExecuting_DoesNotAddAreaAndNonAreaRoutesForAPage()
         {
             // Arrange
@@ -265,7 +226,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             var options = new RazorPagesOptions
             {
-                AllowAreas = true,
                 RootDirectory = "/",
             };
 

@@ -1037,24 +1037,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void PopulateFilters_With21CompatBehavior_DoesNotAddDisallowOptionsRequestsPageFilter()
-        {
-            // Arrange
-            var provider = new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new RazorPagesOptions()));
-
-            var typeInfo = typeof(object).GetTypeInfo();
-            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
-
-            // Act
-            provider.PopulateFilters(pageModel);
-
-            // Assert
-            Assert.Empty(pageModel.Filters);
-        }
-
-        [Fact]
         public void PopulateFilters_AddsDisallowOptionsRequestsPageFilter()
         {
             // Arrange
@@ -1189,7 +1171,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             return new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new RazorPagesOptions {  AllowDefaultHandlingForOptionsRequests = true }));
+                Options.Create(new RazorPagesOptions()));
         }
     }
 }
