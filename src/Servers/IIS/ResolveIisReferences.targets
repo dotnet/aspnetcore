@@ -79,6 +79,8 @@ with the right MSBuild incantations to get output copied to the right place.
       <!-- Prepend LinkBase to output path. -->
       <NativeContent>
         <Link>%(LinkBase)%(FileName)%(Extension)</Link>
+        <!-- Don't put this content in a nuget package. -->
+        <Pack>false</Pack>
       </NativeContent>
     </ItemGroup>
 
