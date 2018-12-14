@@ -22,10 +22,22 @@
     <input id="textbox-int-mirror" bind="textboxIntValue" readonly />
 </p>
 <p>
+    Nullable int:
+    <input id="textbox-nullable-int" bind="textboxNullableIntValue" type="number" />
+    <span id="textbox-nullable-int-value">@textboxNullableIntValue</span>
+    <input id="textbox-nullable-int-mirror" bind="textboxNullableIntValue" readonly />
+</p>
+<p>
     long:
     <input id="textbox-long" bind="textboxLongValue" type="number" />
     <span id="textbox-long-value">@textboxLongValue</span>
     <input id="textbox-long-mirror" bind="textboxLongValue" readonly />
+</p>
+<p>
+    Nullable long:
+    <input id="textbox-nullable-long" bind="textboxNullableLongValue" type="number" />
+    <span id="textbox-nullable-long-value">@textboxNullableLongValue</span>
+    <input id="textbox-nullable-long-mirror" bind="textboxNullableLongValue" readonly />
 </p>
 <p>
     float:
@@ -34,16 +46,34 @@
     <input id="textbox-float-mirror" bind="textboxFloatValue" readonly />
 </p>
 <p>
+    Nullable float:
+    <input id="textbox-nullable-float" bind="textboxNullableFloatValue" type="number" />
+    <span id="textbox-nullable-float-value">@textboxNullableFloatValue</span>
+    <input id="textbox-nullable-float-mirror" bind="textboxNullableFloatValue" readonly />
+</p>
+<p>
     double:
     <input id="textbox-double" bind="textboxDoubleValue" type="number" />
     <span id="textbox-double-value">@textboxDoubleValue</span>
     <input id="textbox-double-mirror" bind="textboxDoubleValue" readonly />
 </p>
 <p>
+    Nullable double:
+    <input id="textbox-nullable-double" bind="textboxNullableDoubleValue" type="number" />
+    <span id="textbox-nullable-double-value">@textboxNullableDoubleValue</span>
+    <input id="textbox-nullable-double-mirror" bind="textboxNullableDoubleValue" readonly />
+</p>
+<p>
     decimal:
     <input id="textbox-decimal" bind="textboxDecimalValue" type="number" />
     <span id="textbox-decimal-value">@textboxDecimalValue</span>
     <input id="textbox-decimal-mirror" bind="textboxDecimalValue" readonly />
+</p>
+<p>
+    Nullable decimal:
+    <input id="textbox-nullable-decimal" bind="textboxNullableDecimalValue" type="number" />
+    <span id="textbox-nullable-decimal-value">@textboxNullableDecimalValue</span>
+    <input id="textbox-nullable-decimal-mirror" bind="textboxNullableDecimalValue" readonly />
 </p>
 
 <h2>Text Area</h2>
@@ -59,6 +89,12 @@
 </p>
 
 <h2>Checkbox</h2>
+<p>
+    Initially null:
+    <input id="checkbox-initially-null" bind="checkboxInitiallyNullValue" type="checkbox" />
+    <span id="checkbox-initially-null-value">@checkboxInitiallyNullValue</span>
+    <button id="checkbox-initially-null-invert" onclick="@(() => { checkboxInitiallyNullValue = !checkboxInitiallyNullValue; })">Invert</button>
+</p>
 <p>
     Initially unchecked:
     <input id="checkbox-initially-unchecked" bind="checkboxInitiallyUncheckedValue" type="checkbox" />
@@ -80,7 +116,7 @@
         <option value=@SelectableValue.Third>Third choice</option>
         @if (includeFourthOption)
         {
-            <option value=@SelectableValue.Fourth>Fourth choice</option>    
+        <option value=@SelectableValue.Fourth>Fourth choice</option>
         }
     </select>
     <span id="select-box-value">@selectValue</span>
@@ -94,14 +130,20 @@
     string textAreaInitiallyBlankValue = null;
     string textAreaInitiallyPopulatedValue = "Hello";
 
+    bool? checkboxInitiallyNullValue = null;
     bool checkboxInitiallyUncheckedValue = false;
     bool checkboxInitiallyCheckedValue = true;
 
     int textboxIntValue = -42;
+    int? textboxNullableIntValue = null;
     long textboxLongValue = 3_000_000_000;
+    long? textboxNullableLongValue = null;
     float textboxFloatValue = 3.141f;
+    float? textboxNullableFloatValue = null;
     double textboxDoubleValue = 3.14159265359d;
+    double? textboxNullableDoubleValue = null;
     decimal textboxDecimalValue = 0.0000000000000000000000000001M;
+    decimal? textboxNullableDecimalValue = null;
 
     bool includeFourthOption = false;
     enum SelectableValue { First, Second, Third, Fourth }
