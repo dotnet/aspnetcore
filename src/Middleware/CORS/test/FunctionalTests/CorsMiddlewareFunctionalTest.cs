@@ -60,7 +60,7 @@ namespace FunctionalTests
 
         private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory)
         {
-            var solutionPath = TestPathUtilities.GetSolutionRootDirectory("CORS");
+            var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
 
             var runtimeFlavor = GetRuntimeFlavor();
             var applicationType = runtimeFlavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable;
@@ -76,7 +76,7 @@ namespace FunctionalTests
             {
                 RuntimeFlavor = runtimeFlavor,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "samples", "SampleDestination"),
+                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleDestination"),
                 PublishApplicationBeforeDeployment = false,
                 ApplicationType = applicationType,
                 Configuration = configuration,
@@ -89,7 +89,7 @@ namespace FunctionalTests
             {
                 RuntimeFlavor = runtimeFlavor,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "samples", "SampleOrigin"),
+                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleOrigin"),
                 PublishApplicationBeforeDeployment = false,
                 ApplicationType = applicationType,
                 Configuration = configuration,
