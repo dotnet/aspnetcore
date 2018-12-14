@@ -173,33 +173,36 @@ namespace Microsoft.AspNetCore.Components
 
         private async void ContinueAfterLifecycleTask(Task task)
         {
-            if (task == null)
+            switch (task == null ? TaskStatus.RanToCompletion : task.Status)
             {
-                // Treat like a pre-completed task that can't possibly raise errors
-                // i.e., do nothing
-            }
-            else if (task.IsCompleted)
-            {
-                // Since it's already completed synchronously, no need to await and no
+                // If it's already completed synchronously, no need to await and no
                 // need to issue a further render (we already rerender synchronously).
                 // Just need to make sure we propagate any errors.
-                if (task.IsFaulted)
-                {
+                case TaskStatus.RanToCompletion:
+                case TaskStatus.Canceled:
+                    break;
+                case TaskStatus.Faulted:
                     HandleException(task.Exception);
-                }
-            }
-            else
-            {
-                // For incomplete tasks, automatically re-render on completion
-                try
-                {
-                    await task;
-                    StateHasChanged();
-                }
-                catch (Exception ex)
-                {
-                    HandleException(ex);
-                }
+                    break;
+
+                // For incomplete tasks, automatically re-render on successful completion
+                default:
+                    try
+                    {
+                        await task;
+                        StateHasChanged();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Either the task failed, or it was cancelled, or StateHasChanged threw.
+                        // We want to report task failure or StateHasChanged exceptions only.
+                        if (!task.IsCanceled)
+                        {
+                            HandleException(ex);
+                        }
+                    }
+
+                    break;
             }
         }
 

@@ -212,6 +212,54 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(3, renderer.Batches.Count);
         }
 
+        [Fact]
+        public void DoesNotRenderAfterOnInitAsyncTaskIsCancelled()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent() { Counter = 1 };
+            var initTask = new TaskCompletionSource<object>();
+            component.OnInitAsyncLogic = _ => initTask.Task;
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            renderer.RenderRootComponent(componentId);
+
+            // Assert
+            Assert.Single(renderer.Batches);
+
+            // Cancel task started by OnInitAsync
+            component.Counter = 2;
+            initTask.SetCanceled();
+
+            // Component should not be rendered again
+            Assert.Single(renderer.Batches);
+        }
+
+        [Fact]
+        public void DoesNotRenderAfterOnParametersSetAsyncTaskIsCancelled()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent() { Counter = 1 };
+            var onParametersSetTask = new TaskCompletionSource<object>();
+            component.OnParametersSetAsyncLogic = _ => onParametersSetTask.Task;
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            renderer.RenderRootComponent(componentId);
+
+            // Assert
+            Assert.Single(renderer.Batches);
+
+            // Cancel task started by OnParametersSet
+            component.Counter = 2;
+            onParametersSetTask.SetCanceled();
+
+            // Component should not be rendered again
+            Assert.Single(renderer.Batches);
+        }
+
         private class TestComponent : ComponentBase
         {
             public bool RunsBaseOnInit { get; set; } = true;
