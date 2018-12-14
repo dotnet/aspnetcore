@@ -83,6 +83,7 @@
                           $(RepositoryRoot)src\Hosting\**\*.*proj;
                           $(RepositoryRoot)src\Http\**\*.*proj;
                           $(RepositoryRoot)src\Html\**\*.*proj;
+                          $(RepositoryRoot)Identity**\*.*proj;
                           $(RepositoryRoot)src\Servers\**\*.csproj;
                           $(RepositoryRoot)src\Servers\**\*.pkgproj;
                           $(RepositoryRoot)src\Security\**\*.*proj;

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Shared test suite for Asp.Net Identity Core store implementations.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;identity;membership</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.Extensions.Configuration" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="xunit" />
+  </ItemGroup>
+
+</Project>

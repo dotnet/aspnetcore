@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "></PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\Core\Base32.cs" Link="Infrastructure\Base32.cs" />
+    <Compile Include="..\..\src\Core\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Identity.DefaultUI.WebSite" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <Reference Include="AngleSharp" />
+  </ItemGroup>
+
+</Project>
