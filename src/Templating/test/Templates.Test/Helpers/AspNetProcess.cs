@@ -45,7 +45,7 @@ namespace Templates.Test.Helpers
             {
                 output.WriteLine("Building ASP.NET application...");
                 ProcessEx
-                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug")
+                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"build -c Debug")
                     .WaitForExit(assertSuccess: true);
             }
 

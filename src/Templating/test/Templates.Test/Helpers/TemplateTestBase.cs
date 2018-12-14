@@ -139,7 +139,7 @@ $@"<Project>
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
                 .Value;
 
-            var args = $"\"{dotNetEfFullPath}\" migrations add {migrationName}";
+            var args = $"\"{dotNetEfFullPath}\" --verbose migrations add {migrationName}";
 
             // Only run one instance of 'dotnet new' at once, as a workaround for
             // https://github.com/aspnet/templating/issues/63

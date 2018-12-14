@@ -29,7 +29,7 @@ describe('razorcomponents are ok', () => {
         });
         await page.waitFor('ul');
 
-        let heading = page.$eval('h1', heading => heading.textContent);
+        let heading = await page.$eval('h1', heading => heading.textContent);
         expect(heading).toBe('Hello, world!');
 
         await clickByText(page, 'Counter');
@@ -48,8 +48,9 @@ describe('razorcomponents are ok', () => {
         await clickByText(page, 'Fetch data');
         await page.waitFor("h1");
         await page.waitFor("table>tbody>tr");
-        let rowCount = await page.$eval("tbody tr").count();
-        expect(rowCount).toBe(5);
+        let rows = await page.$$("tbody tr")
+
+        expect(rows.length).toBe(5);
 
         validateMessages(badMessages);
     });

@@ -21,12 +21,12 @@ namespace Templates.Test
             RunDotNetNew(template);
 
             // We don't want the Directory.Build.props/targets interfering
-            // File.WriteAllText(
-            //     Path.Combine(TemplateOutputDir, "Directory.Build.props"),
-            //     "<Project />");
-            // File.WriteAllText(
-            //     Path.Combine(TemplateOutputDir, "Directory.Build.targets"),
-            //     "<Project />");
+            File.WriteAllText(
+                Path.Combine(TemplateOutputDir, "Directory.Build.props"),
+                "<Project />");
+            File.WriteAllText(
+                Path.Combine(TemplateOutputDir, "Directory.Build.targets"),
+                "<Project />");
 
             // Run the "server" project
             ProjectName += ".Server";
