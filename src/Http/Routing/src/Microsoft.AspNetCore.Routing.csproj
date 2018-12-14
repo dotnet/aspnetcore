@@ -12,12 +12,15 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" />
   </ItemGroup>
 </Project>

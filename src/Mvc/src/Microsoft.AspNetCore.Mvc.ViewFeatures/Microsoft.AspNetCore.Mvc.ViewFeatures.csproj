@@ -14,6 +14,14 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PropertyActivator\*.cs" />
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
@@ -22,12 +30,7 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
     <PackageReference Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreChunkingCookieManagerSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="$(MicrosoftAspNetCoreDiagnosticsAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="$(MicrosoftAspNetCoreHtmlAbstractionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.PropertyActivator.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyActivatorSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />

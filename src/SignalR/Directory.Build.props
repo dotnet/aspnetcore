@@ -17,5 +17,6 @@
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	  <LangVersion>latest</LangVersion>
+    <SharedSourceRoot>$(MSBuildThisFileDirectory)..\Shared\</SharedSourceRoot>
   </PropertyGroup>
 </Project>
