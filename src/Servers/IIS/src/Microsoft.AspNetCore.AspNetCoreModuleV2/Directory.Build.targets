@@ -27,6 +27,9 @@
         <ArtifactType>NuGetPackage</ArtifactType>
         <PackageId>$(PackageId)</PackageId>
         <Version>$(PackageVersion)</Version>
+        <Certificate>$(PackageSigningCertName)</Certificate>
+        <ShouldBeSigned>true</ShouldBeSigned>
+        <IsContainer>true</IsContainer>
       </ArtifactInfo>
     </ItemGroup>
   </Target>
