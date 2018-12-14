@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task NonParameterConstraint_PassesConstraint_Match()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/NonParameterConstraintRoute/NonParameterConstraint/Index?match=true");
+            var response = await Client.GetAsync("http://localhost/NonParameterConstraintRoute?match=true");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task NonParameterConstraint_FailsConstraint_NoMatch()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/NonParameterConstraintRoute/NonParameterConstraint/Index?match=false");
+            var response = await Client.GetAsync("http://localhost/NonParameterConstraintRoute?match=false");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

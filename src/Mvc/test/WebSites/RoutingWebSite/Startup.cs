@@ -44,7 +44,7 @@ namespace RoutingWebSite
             {
                 routes.MapRoute(
                     "NonParameterConstraintRoute",
-                    "NonParameterConstraintRoute/{controller}/{action}",
+                    "NonParameterConstraintRoute/{controller=NonParameterConstraint}/{action=Index}",
                     defaults: null,
                     constraints: new { controller = "NonParameterConstraint", _ = new TestConstraint() });
 
