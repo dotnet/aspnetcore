@@ -62,7 +62,6 @@ namespace FunctionalTests
         {
             var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
 
-
             var configuration =
 #if RELEASE
                 "Release";
