@@ -104,7 +104,7 @@ let spec: string;
 let sauce = false;
 let allBrowsers = false;
 let noColor = false;
-let skipNode = true;
+let skipNode = false;
 let sauceUser = null;
 let sauceKey = null;
 let publicIp = false;
