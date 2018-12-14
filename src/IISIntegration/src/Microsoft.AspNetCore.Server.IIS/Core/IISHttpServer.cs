@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -71,6 +72,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _applicationLifetime = applicationLifetime;
             _logger = logger;
             _options = options.Value;
+
+            Features.Set<IServerAddressesFeature>(new ServerAddressesFeature(_options.ServerAddresses));
 
             if (_options.ForwardWindowsAuthentication)
             {

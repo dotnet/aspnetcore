@@ -128,7 +128,7 @@ REQUESTHANDLER_CONFIG::Populate(
         try
         {
             WebConfigConfigurationSource source(pAdminManager, *pHttpApplication);
-            m_struBindings.Copy(BindingInformation::Format(BindingInformation::Load(source, *pSite)).c_str());
+            m_struBindings.Copy(BindingInformation::GetHttpsPort(BindingInformation::Load(source, *pSite)).c_str());
         }
         catch (...)
         {

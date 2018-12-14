@@ -15,12 +15,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     {
         private readonly string _virtualPath;
 
-        private readonly string _bindings;
-
-        public IISServerSetupFilter(string virtualPath, string bindings)
+        public IISServerSetupFilter(string virtualPath)
         {
             _virtualPath = virtualPath;
-            _bindings = bindings;
         }
 
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
@@ -33,21 +30,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     throw new InvalidOperationException("Application is running inside IIS process but is not configured to use IIS server.");
                 }
 
-                app.ServerFeatures.Set<IServerAddressesFeature>(new ServerAddressesFeature(_bindings));
                 app.UsePathBase(_virtualPath);
                 next(app);
             };
-        }
-
-        internal class ServerAddressesFeature : IServerAddressesFeature
-        {
-            public ServerAddressesFeature(string addresses)
-            {
-                Addresses = addresses.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            }
-
-            public ICollection<string> Addresses { get; }
-            public bool PreferHostingUrls { get; set; }
         }
     }
 }

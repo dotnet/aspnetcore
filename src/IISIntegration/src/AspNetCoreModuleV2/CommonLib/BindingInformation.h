@@ -8,6 +8,15 @@
 #include "StringHelpers.h"
 #include "WebConfigConfigurationSource.h"
 
+#define CS_SITE_SECTION                         L"system.applicationHost/sites"
+#define CS_SITE_NAME                            L"name"
+#define CS_SITE_BINDINGS                        L"bindings"
+#define CS_SITE_BINDING_INFORMATION             L"bindingInformation"
+#define CS_SITE_BINDING_INFORMATION_ALL_HOSTS   L"*"
+#define CS_SITE_BINDING_PROTOCOL                L"protocol"
+#define CS_SITE_BINDING_PROTOCOL_HTTPS          L"https"
+#define CS_SITE_BINDING_INFORMATION_DELIMITER   L':'
+
 class BindingInformation
 {
 public:
@@ -45,15 +54,18 @@ public:
         auto sites = siteSection->GetCollection();
         for (const auto& site: sites)
         {
-            auto siteName = site->GetRequiredString(L"name");
+            auto siteName = site->GetRequiredString(CS_SITE_NAME);
             if (equals_ignore_case(runningSiteName, siteName))
             {
-                auto bindings = site->GetRequiredSection(L"bindings")->GetCollection();
+                auto bindings = site->GetRequiredSection(CS_SITE_BINDINGS)->GetCollection();
                 for (const auto& binding : bindings)
                 {
-                    const auto information = binding->GetRequiredString(L"bindingInformation");
-                    const auto firstColon = information.find(L':') + 1;
-                    const auto lastColon = information.find_last_of(L':');
+                    // Expected format:
+                    // IP:PORT:HOST
+                    // where IP or HOST can be empty
+                    const auto information = binding->GetRequiredString(CS_SITE_BINDING_INFORMATION);
+                    const auto firstColon = information.find(CS_SITE_BINDING_INFORMATION_DELIMITER) + 1;
+                    const auto lastColon = information.find_last_of(CS_SITE_BINDING_INFORMATION_DELIMITER);
 
                     std::wstring host;
                     // Check that : is not the last character
@@ -64,11 +76,11 @@ public:
                     }
                     if (host.length() == 0)
                     {
-                        host = L"*";
+                        host = CS_SITE_BINDING_INFORMATION_ALL_HOSTS;
                     }
 
                     items.emplace_back(
-                        binding->GetRequiredString(L"protocol"),
+                        binding->GetRequiredString(CS_SITE_BINDING_PROTOCOL),
                         host,
                         information.substr(firstColon, lastColon - firstColon)
                         );
@@ -80,16 +92,29 @@ public:
     }
 
     static
-    std::wstring Format(const std::vector<BindingInformation> bindings)
+    std::wstring Format(const std::vector<BindingInformation> & bindings, const std::wstring & basePath)
     {
         std::wstring result;
 
         for (auto binding : bindings)
         {
-            result += binding.QueryProtocol() + L"://" + binding.QueryHost() + L":" + binding.QueryPort() + L";";
+            result += binding.QueryProtocol() + L"://" + binding.QueryHost() + L":" + binding.QueryPort() + basePath + L";";
         }
 
         return result;
+    }
+
+    static
+    std::wstring GetHttpsPort(const std::vector<BindingInformation> & bindings)
+    {
+        for (auto binding : bindings)
+        {
+            if (equals_ignore_case(binding.QueryProtocol(), CS_SITE_BINDING_PROTOCOL_HTTPS))
+            {
+                return binding.QueryPort();
+            }
+        }
+        return L"";
     }
 
 private:

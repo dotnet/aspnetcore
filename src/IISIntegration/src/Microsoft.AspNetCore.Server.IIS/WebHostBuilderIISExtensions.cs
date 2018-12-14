@@ -40,10 +40,13 @@ namespace Microsoft.AspNetCore.Hosting
                     services => {
                         services.AddSingleton(new IISNativeApplication(iisConfigData.pNativeApplication));
                         services.AddSingleton<IServer, IISHttpServer>();
-                        services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath, iisConfigData.pwzBindings));
+                        services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                         services.AddAuthenticationCore();
                         services.Configure<IISServerOptions>(
-                             options => { options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled; }
+                            options => {
+                                options.ServerAddresses = iisConfigData.pwzBindings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);;
+                                options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled;
+                            }
                         );
                     });
             }

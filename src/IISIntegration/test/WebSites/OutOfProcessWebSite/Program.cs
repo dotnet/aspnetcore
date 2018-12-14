@@ -32,11 +32,6 @@ namespace TestSite
                         factory.AddConsole();
                         factory.AddFilter("Console", level => level >= LogLevel.Information);
                     })
-                .ConfigureServices(services => {
-                    var filter = new OriginalServerAddressesFilter();
-                    services.AddSingleton(filter);
-                    services.AddSingleton<IStartupFilter>(filter);
-                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()

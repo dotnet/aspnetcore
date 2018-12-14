@@ -40,7 +40,7 @@ public:
         _In_ STRU                 *pszAppPhysicalPath,
         _In_ STRU                 *pszAppPath,
         _In_ STRU                 *pszAppVirtualPath,
-        _In_ STRU                 *pszAppAddresses
+        _In_ STRU                 *pszHttpsPort
         );
 
     HRESULT
@@ -253,7 +253,7 @@ private:
     STRU                    m_struAppVirtualPath;  // e.g., '/' for site
     STRU                    m_struAppFullPath;     // e.g.,  /LM/W3SVC/4/ROOT/Inproc
     STRU                    m_struPhysicalPath;    // e.g., c:/test/mysite
-    STRU                    m_struAppAddresses;     // e.g.,  /LM/W3SVC/4/ROOT/Inproc
+    STRU                    m_struHttpsPort;     // e.g.,  /LM/W3SVC/4/ROOT/Inproc
     STRU                    m_struPort;
     STRU                    m_struCommandLine;
 

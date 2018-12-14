@@ -15,14 +15,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private readonly string _pairingToken;
         private readonly PathString _pathBase;
         private readonly bool _isWebsocketsSupported;
-        private readonly string _serverAddresses;
 
-        internal IISSetupFilter(string pairingToken, PathString pathBase, bool isWebsocketsSupported, string serverAddresses)
+        internal IISSetupFilter(string pairingToken, PathString pathBase, bool isWebsocketsSupported)
         {
             _pairingToken = pairingToken;
             _pathBase = pathBase;
             _isWebsocketsSupported = isWebsocketsSupported;
-            _serverAddresses = serverAddresses;
         }
 
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
@@ -32,23 +30,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 app.UsePathBase(_pathBase);
                 app.UseForwardedHeaders();
                 app.UseMiddleware<IISMiddleware>(_pairingToken, _isWebsocketsSupported);
-                if (_serverAddresses != null)
-                {
-                    app.ServerFeatures.Set<IServerAddressesFeature>(new ServerAddressesFeature(_serverAddresses));
-                }
                 next(app);
             };
-        }
-
-        internal class ServerAddressesFeature : IServerAddressesFeature
-        {
-            public ServerAddressesFeature(string addresses)
-            {
-                Addresses = addresses.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            }
-
-            public ICollection<string> Addresses { get; }
-            public bool PreferHostingUrls { get; set; }
         }
     }
 }

@@ -192,7 +192,7 @@ public:
         _In_ BOOL                           fBasicAuthEnabled,
         _In_ BOOL                           fAnonymousAuthEnabled,
         _In_ PCWSTR                         pApplicationPhysicalPath,
-        _In_ PCWSTR                         pServerAddresses,
+        _In_ PCWSTR                         pHttpsPort,
         _Out_ ENVIRONMENT_VAR_HASH**        ppEnvironmentVarTable
     )
     {
@@ -204,7 +204,7 @@ public:
         ENVIRONMENT_VAR_ENTRY* pHostingEntry = NULL;
         ENVIRONMENT_VAR_ENTRY* pIISAuthEntry = NULL;
         ENVIRONMENT_VAR_ENTRY* pIISPathEntry = NULL;
-        ENVIRONMENT_VAR_ENTRY* pIISAddressesEntry = NULL;
+        ENVIRONMENT_VAR_ENTRY* pIISHttpsPort = NULL;
         ENVIRONMENT_VAR_HASH* pEnvironmentVarTable = NULL;
 
         pEnvironmentVarTable = new ENVIRONMENT_VAR_HASH();
@@ -242,20 +242,23 @@ public:
             goto Finished;
         }
 
-        pEnvironmentVarTable->FindKey((PWSTR)ASPNETCORE_IIS_ADDRESSES_ENV_STR, &pIISAddressesEntry);
-        if (pIISAddressesEntry != NULL)
+        if (pHttpsPort != nullptr)
         {
-            // user defined ASPNETCORE_IIS_PHYSICAL_PATH in configuration, wipe it off
-            pIISAddressesEntry->Dereference();
-            pEnvironmentVarTable->DeleteKey((PWSTR)ASPNETCORE_IIS_ADDRESSES_ENV_STR);
-        }
+            pEnvironmentVarTable->FindKey((PWSTR)ASPNETCORE_HTTPS_PORT_ENV_STR, &pIISHttpsPort);
+            if (pIISHttpsPort != NULL)
+            {
+                // user defined ASPNETCORE_HTTPS_PORT in configuration, wipe it off
+                pIISHttpsPort->Dereference();
+                pEnvironmentVarTable->DeleteKey((PWSTR)ASPNETCORE_HTTPS_PORT_ENV_STR);
+            }
 
-        pIISAddressesEntry = new ENVIRONMENT_VAR_ENTRY();
+            pIISHttpsPort = new ENVIRONMENT_VAR_ENTRY();
 
-        if (FAILED(hr = pIISAddressesEntry->Initialize(ASPNETCORE_IIS_ADDRESSES_ENV_STR, pServerAddresses)) ||
-            FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISAddressesEntry)))
-        {
-            goto Finished;
+            if (FAILED(hr = pIISHttpsPort->Initialize(ASPNETCORE_HTTPS_PORT_ENV_STR, pHttpsPort)) ||
+                FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISHttpsPort)))
+            {
+                goto Finished;
+            }
         }
 
         pEnvironmentVarTable->FindKey((PWSTR)ASPNETCORE_IIS_AUTH_ENV_STR, &pIISAuthEntry);

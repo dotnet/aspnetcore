@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IISIntegration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -90,10 +91,10 @@ namespace TestSite
             await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
         }
 
-        private async Task OriginalServerAddresses(HttpContext ctx)
+        public async Task HTTPS_PORT(HttpContext context)
         {
-            var serverAddresses = ctx.RequestServices.GetService<OriginalServerAddressesFilter>().ServerAddresses;
-            await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
+            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int>("HTTPS_PORT");
+            await context.Response.WriteAsync(httpsPort.ToString());
         }
     }
 }

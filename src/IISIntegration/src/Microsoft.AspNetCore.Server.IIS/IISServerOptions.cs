@@ -22,5 +22,7 @@ namespace Microsoft.AspNetCore.Builder
         /// IIS has a non-anonymous authentication enabled, or for back compat with ANCMs that did not provide this information.
         /// </summary>
         internal bool ForwardWindowsAuthentication { get; set; } = true;
+
+        internal string[] ServerAddresses { get; set; }
     }
 }

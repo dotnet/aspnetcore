@@ -445,7 +445,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
         m_pConfig->QueryBasicAuthEnabled(),
         m_pConfig->QueryAnonymousAuthEnabled(),
         QueryApplicationPhysicalPath().c_str(),
-        BindingInformation::Format(m_pConfig->QueryBindings()).c_str(),
+        nullptr, /* pHttpsPort */
         &pHashTable));
 
     table.reset(pHashTable);

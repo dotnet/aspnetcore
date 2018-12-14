@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
-            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}";
+            deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -60,7 +60,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 !DeployerSelector.IsForwardsCompatibilityTest &&
                 !DeployerSelector.IsBackwardsCompatiblityTest)
             {
-                Assert.Equal(deploymentParameters.ApplicationBaseUriHint, await client.GetStringAsync("/ServerAddresses"));
+                // We expect ServerAddress to be set for InProcess and HTTPS_PORT for OutOfProcess
+                if (variant.HostingModel == HostingModel.InProcess)
+                {
+                    Assert.Equal(deploymentParameters.ApplicationBaseUriHint, await client.GetStringAsync("/ServerAddresses"));
+                }
+                else
+                {
+                    Assert.Equal(port.ToString(), await client.GetStringAsync("/HTTPS_PORT"));
+                }
             }
         }
     }
