@@ -126,6 +126,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Https" Category="ship" />

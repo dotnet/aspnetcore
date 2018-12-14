@@ -27,3 +27,4 @@ scripts/tmp/
 src/**/global.json
 launchSettings.json
 korebuild-lock.txt
+.gradle/
