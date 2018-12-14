@@ -11,10 +11,10 @@
 
   <ItemGroup>
     <Compile Include="$(KestrelSharedSourceRoot)src\ThrowHelper.cs" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
