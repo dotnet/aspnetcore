@@ -99,7 +99,7 @@ namespace Microsoft.Extensions.Http
 
             var factory = new TestHttpClientFactory(Services, ScopeFactory, LoggerFactory, Options, EmptyFilters);
 
-            // Act 
+            // Act
             using (factory.CreateClient())
             {
             }
@@ -124,7 +124,7 @@ namespace Microsoft.Extensions.Http
 
             var factory = new TestHttpClientFactory(Services, ScopeFactory, LoggerFactory, Options, EmptyFilters);
 
-            // Act 
+            // Act
             using (factory.CreateHandler())
             {
             }
@@ -403,7 +403,7 @@ namespace Microsoft.Extensions.Http
             Assert.True(factory.CleanupTimerStarted.IsSet, "Cleanup timer started");
 
             // We need to make sure that the outer handler actually gets GCed, so drop our references to it.
-            // This is important because the factory relies on this possibility for correctness. We need to ensure that 
+            // This is important because the factory relies on this possibility for correctness. We need to ensure that
             // the factory isn't keeping any references.
             kvp = default;
             client1 = null;
@@ -491,7 +491,7 @@ namespace Microsoft.Extensions.Http
             Assert.True(factory.CleanupTimerStarted.IsSet, "Cleanup timer started");
 
             // We need to make sure that the outer handler actually gets GCed, so drop our references to it.
-            // This is important because the factory relies on this possibility for correctness. We need to ensure that 
+            // This is important because the factory relies on this possibility for correctness. We need to ensure that
             // the factory isn't keeping any references.
             lock (this)
             {
