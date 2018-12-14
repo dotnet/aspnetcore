@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ using static Microsoft.AspNetCore.Hosting.Internal.HostingApplication;
 
 namespace Microsoft.AspNetCore.TestHost
 {
-    internal class HttpContextBuilder
+    internal class HttpContextBuilder : IHttpBodyControlFeature
     {
         private readonly IHttpApplication<Context> _application;
         private readonly HttpContext _httpContext;
@@ -23,23 +23,27 @@ namespace Microsoft.AspNetCore.TestHost
         private bool _pipelineFinished;
         private Context _testContext;
 
-        internal HttpContextBuilder(IHttpApplication<Context> application)
+        internal HttpContextBuilder(IHttpApplication<Context> application, bool allowSynchronousIO)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
+            AllowSynchronousIO = allowSynchronousIO;
             _httpContext = new DefaultHttpContext();
 
             var request = _httpContext.Request;
             request.Protocol = "HTTP/1.1";
             request.Method = HttpMethods.Get;
 
+            _httpContext.Features.Set<IHttpBodyControlFeature>(this);
             _httpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
             var requestLifetimeFeature = new HttpRequestLifetimeFeature();
             requestLifetimeFeature.RequestAborted = _requestAbortedSource.Token;
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(requestLifetimeFeature);
             
-            _responseStream = new ResponseStream(ReturnResponseMessageAsync, AbortRequest);
+            _responseStream = new ResponseStream(ReturnResponseMessageAsync, AbortRequest, () => AllowSynchronousIO);
             _responseFeature.Body = _responseStream;
         }
+
+        public bool AllowSynchronousIO { get; set; }
 
         internal void Configure(Action<HttpContext> configureContext)
         {
