@@ -98,8 +98,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new ProtocolTestData(
                 name: "InvocationWithStreamAndNormalArgument",
                 message: new InvocationMessage(null, "Target", new object[] { 42 }, new string[] { "__test_id__" }),
-                binary: "lgGAwKZUYXJnZXSRKpGrX190ZXN0X2lkX18="
-                ),
+                binary: "lgGAwKZUYXJnZXSRKpGrX190ZXN0X2lkX18="),
+            new ProtocolTestData(
+                name: "InvocationWithMulitpleStreams",
+                message: new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__", "__test_id2__" }),
+                binary: "lgGAwKZUYXJnZXSQkqtfX3Rlc3RfaWRfX6xfX3Rlc3RfaWQyX18="),
 
             // StreamItem Messages
             new ProtocolTestData(
