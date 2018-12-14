@@ -17,7 +17,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepositoryRoot)\src\Shared\RangeHelper\**\*.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Shared\RangeHelper\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
