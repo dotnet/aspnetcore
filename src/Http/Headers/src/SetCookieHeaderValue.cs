@@ -206,9 +206,9 @@ namespace Microsoft.Net.Http.Headers
         /// </param>
         public void AppendToStringBuilder(StringBuilder builder)
         {
-            builder.Append(_name);
+            builder.Append(_name.AsSpan());
             builder.Append("=");
-            builder.Append(_value);
+            builder.Append(_value.AsSpan());
 
             if (Expires.HasValue)
             {
@@ -249,11 +249,11 @@ namespace Microsoft.Net.Http.Headers
         private static void AppendSegment(StringBuilder builder, StringSegment name, StringSegment value)
         {
             builder.Append("; ");
-            builder.Append(name);
+            builder.Append(name.AsSpan());
             if (value != null)
             {
                 builder.Append("=");
-                builder.Append(value);
+                builder.Append(value.AsSpan());
             }
         }
 

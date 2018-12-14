@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await pipeReader.ReadAsync(cts.Token));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
         public async Task ReadCanBeCanceledViaCancelPendingReadWhenReadIsAsync()
         {
             var pipeReader = new StreamPipeReader(new HangingStream());
@@ -169,9 +169,9 @@ namespace Microsoft.AspNetCore.Http.Tests
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var task = Task.Run(async () =>
             {
-                var writingTask = pipeReader.ReadAsync();
+                var readingTask = pipeReader.ReadAsync();
                 tcs.SetResult(0);
-                result = await writingTask;
+                result = await readingTask;
             });
             await tcs.Task;
             pipeReader.CancelPendingRead();
