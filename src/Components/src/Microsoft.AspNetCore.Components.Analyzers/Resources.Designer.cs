@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Component parameters should not be public..
+        ///   Looks up a localized string similar to Component parameters should not have public setters..
         /// </summary>
         internal static string ComponentParametersShouldNotBePublic_Description {
             get {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Component parameter &apos;{0}&apos; is marked public, but component parameters should not be public..
+        ///   Looks up a localized string similar to Component parameter &apos;{0}&apos; has a public setter, but component parameters should not be publicly settable..
         /// </summary>
         internal static string ComponentParametersShouldNotBePublic_Format {
             get {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Component parameter is marked public.
+        ///   Looks up a localized string similar to Component parameter has public setter.
         /// </summary>
         internal static string ComponentParametersShouldNotBePublic_Title {
             get {
