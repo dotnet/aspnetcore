@@ -530,5 +530,31 @@ namespace Microsoft.AspNetCore.Mvc
                 host: host,
                 fragment: fragment);
         }
+
+        /// <summary>
+        /// Generates an absolute URL from the specified <paramref name="relativeUrl"/>
+        /// with the protocol and host name from the current request.
+        /// </summary>
+        /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="relativeUrl">The relative URL.</param>
+        /// <returns>The generated absolute URL.</returns>
+        public static string Absolute(this IUrlHelper helper, string relativeUrl)
+        {
+            if (helper == null)
+            {
+                throw new ArgumentNullException(nameof(helper));
+            }
+
+            if (relativeUrl == null)
+            {
+                throw new ArgumentNullException(nameof(relativeUrl));
+            }
+
+            var httpContext = helper.ActionContext.HttpContext;
+            var protocol = string.IsNullOrEmpty(httpContext.Request.Scheme) ? "http" : httpContext.Request.Scheme;
+            var host = httpContext.Request.Host.ToUriComponent();
+            var absoluteUrl = protocol + "://" + host + relativeUrl;
+            return absoluteUrl;
+        }
     }
 }

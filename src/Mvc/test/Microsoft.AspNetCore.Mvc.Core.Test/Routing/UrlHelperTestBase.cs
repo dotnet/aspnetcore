@@ -952,6 +952,20 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal("/b/Store/Checkout", url);
         }
 
+        [Fact]
+        public void UrlAbsolute_ReturnsExpectedResult()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithDefaultRoutes();
+            var relativeUrl = "/home/about";
+
+            // Act
+            var url = urlHelper.Absolute(relativeUrl);
+
+            // Assert
+            Assert.Equal("http://localhost/home/about", url);
+        }
+
         protected abstract IServiceProvider CreateServices();
 
         protected abstract IUrlHelper CreateUrlHelper(ActionContext actionContext);
