@@ -14,7 +14,6 @@
     <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.8.0</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsNonCapturingTimerSourcesPackageVersion>
@@ -62,7 +61,6 @@
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
-  <PropertyGroup Label="Package Versions: Pinned" />
-
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
+  <PropertyGroup Label="Package Versions: Pinned" />
 </Project>

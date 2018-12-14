@@ -38,7 +38,6 @@
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.2.0-rtm-35661</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.2.0-rtm-35661</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.2.0-rtm-35661</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
-    <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
@@ -53,9 +52,7 @@
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.2.0-rtm-181106-13</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-rtm-27105-02</MicrosoftNETCoreApp22PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>

@@ -58,8 +58,6 @@
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsRazorViewsSourcesPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsRazorViewsSourcesPackageVersion>
-    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.2.0-preview3-35425</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreApp22PackageVersion>2.2.0-preview3-27001-02</MicrosoftNETCoreApp22PackageVersion>

@@ -10,7 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.WebEncoders.Sources" PrivateAssets="All" />
+    <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>

@@ -9,13 +9,13 @@
     <None Include="Assets\*.*" CopyToOutputDirectory="PreserveNewest" />
     <Compile Remove="Assets\**\*.*" />
     <Compile Include="Assets\RuntimeInformationMiddleware.cs" />
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="$(MicrosoftExtensionsProcessSourcesPackageVersion)" />
 
     <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="$(MicrosoftAzureManagementFluentPackageVersion)" />
     <PackageReference Include="WindowsAzure.Storage" Version="$(WindowsAzureStoragePackageVersion)" />
