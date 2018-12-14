@@ -27,6 +27,7 @@ namespace TriageBuildFailures.Handlers
             "Attempting to cancel the build...",
             "Build FAILED.",
             "npm ERR!",
+            "SSL_ERROR_SYSCALL",
             "API rate limit exceeded for user ID"
         };
 
