@@ -27,8 +27,8 @@ In the SignalR protocol, the following types of messages can be sent:
 | `Close`               | Callee, Caller | Sent by the server when a connection is closed. Contains an error if the connection was closed because of an error.            |
 | `Invocation`          | Caller         | Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.                 |
 | `StreamInvocation`    | Caller         | Indicates a request to invoke a streaming method (the Target) with provided Arguments on the remote endpoint.                  |
-| `StreamItem`          | Callee         | Indicates individual items of streamed response data from a previous `StreamInvocation` message.                               |
-| `Completion`          | Callee         | Indicates a previous `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
+| `StreamItem`          | Callee, Caller | Indicates individual items of streamed response data from a previous `StreamInvocation` message or streamed uploads from an invocation with streamIds.                               |
+| `Completion`          | Callee, Caller | Indicates a previous `Invocation` or `StreamInvocation` has completed or a stream in an `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
 | `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
 | `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
 
@@ -132,6 +132,10 @@ Keep alive behavior is achieved via the `Ping` message type. **Either endpoint**
 Ping messages do not have any payload, they are completely empty messages (aside from the encoding necessary to identify the message as a `Ping` message).
 
 The default ASP.NET Core implementation automatically pings both directions on active connections. These pings are at regular intervals, and allow detection of unexpected disconnects (for example, unplugging a server). If the client detects that the server has stopped pinging, the client will close the connection, and vice versa. If there's other traffic through the connection, keep-alive pings aren't needed. A `Ping` is only sent if the interval has elapsed without a message being sent.
+
+## Upload streaming
+
+Sometimes Callees will want to receive streaming data from Callers. The Caller can begin such a process by making an `Invocation` or `StreamInvocation` and adding a "StreamIds" property with an array of IDs. The IDs must be unique from any other stream IDs used by the same Caller. The Caller then sends `StreamItem` messages with the "InvocationId" property set to the ID for the stream they are sending over. The Caller ends the stream by sending a `Completion` message with the ID of the stream they are completing.
 
 ## Example
 
