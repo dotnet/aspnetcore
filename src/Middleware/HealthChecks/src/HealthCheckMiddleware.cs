@@ -55,6 +55,13 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
+            if (!(HttpMethods.IsGet(httpContext.Request.Method) || HttpMethods.IsHead(httpContext.Request.Method)))
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                httpContext.Response.Headers.Add(HeaderNames.Allow, new [] { HttpMethods.Get, HttpMethods.Head });
+                return;
+            }
+
             // Get results
             var result = await _healthCheckService.CheckHealthAsync(_healthCheckOptions.Predicate, httpContext.RequestAborted);
 
@@ -80,7 +87,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 headers[HeaderNames.Expires] = "Thu, 01 Jan 1970 00:00:00 GMT";
             }
 
-            if (_healthCheckOptions.ResponseWriter != null)
+            if (_healthCheckOptions.ResponseWriter != null && !HttpMethods.IsHead(httpContext.Request.Method))
             {
                 await _healthCheckOptions.ResponseWriter(httpContext, result);
             }

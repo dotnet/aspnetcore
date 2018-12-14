@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -263,6 +265,64 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             var response = await client.GetAsync("/health");
 
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+        }
+        
+        [Theory]
+        [InlineData("CONNECT")]
+        [InlineData("DELETE")]
+        [InlineData("OPTIONS")]
+        [InlineData("PATCH")]
+        [InlineData("POST")]
+        [InlineData("PUT")]
+        [InlineData("TRACE")]
+        public async Task StatusCodeIs405ForUnsupportedMethods(string httpMethod)
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks()
+                        .AddAsyncCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddAsyncCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("Pretty bad.")))
+                        .AddAsyncCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.SendAsync(new HttpRequestMessage(new HttpMethod(httpMethod), "/health"));
+            var allow = response.Content.Headers.TryGetValues(HeaderNames.Allow, out var values) ? values.ToList() : new List<string>();
+
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+            Assert.Equal(2, allow.Count);
+            Assert.Contains(allow, e => e == HttpMethods.Get);
+            Assert.Contains(allow, e => e == HttpMethods.Head);
+        }
+
+        [Fact]
+        public async Task HeadRequestReturnsEmptyBody()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHealthChecks("/health");
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHealthChecks()
+                        .AddAsyncCheck("Foo", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")))
+                        .AddAsyncCheck("Bar", () => Task.FromResult(HealthCheckResult.Unhealthy("Pretty bad.")))
+                        .AddAsyncCheck("Baz", () => Task.FromResult(HealthCheckResult.Healthy("A-ok!")));
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, "/health"));
+            
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
             Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
         }
