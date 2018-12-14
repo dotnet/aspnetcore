@@ -47,14 +47,14 @@ namespace Microsoft.AspNetCore.Components.Browser.Services
         }
 
         /// <inheritdoc />
-        protected override void NavigateToCore(string uri)
+        protected override void NavigateToCore(string uri, bool forceLoad)
         {
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(Interop.NavigateTo, uri);
+            ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(Interop.NavigateTo, uri, forceLoad);
         }
 
         /// <summary>

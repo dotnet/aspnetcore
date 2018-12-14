@@ -13,8 +13,12 @@
     <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With parameters</NavLink></li>
 </ul>
 
-<button onclick=@(x => uriHelper.NavigateTo("Other"))>
+<button id="do-navigation" onclick=@(x => uriHelper.NavigateTo("Other"))>
     Programmatic navigation
+</button>
+
+<button id="do-navigation-forced" onclick=@(x => uriHelper.NavigateTo("Other", true))>
+    Programmatic navigation with force-load
 </button>
 
 <a id="anchor-with-no-href">

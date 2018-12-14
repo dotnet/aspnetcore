@@ -268,9 +268,33 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/");
 
             var app = MountTestComponent<TestRouter>();
-            app.FindElement(By.TagName("button")).Click();
+            var testSelector = WaitUntilTestSelectorReady();
+
+            app.FindElement(By.Id("do-navigation")).Click();
+            WaitAssert.True(() => Browser.Url.EndsWith("/Other"));
             WaitAssert.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+            // Because this was client-side navigation, we didn't lose the state in the test selector
+            Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanNavigateProgrammaticallyWithForceLoad()
+        {
+            SetUrlViaPushState("/");
+
+            var app = MountTestComponent<TestRouter>();
+            var testSelector = WaitUntilTestSelectorReady();
+
+            app.FindElement(By.Id("do-navigation-forced")).Click();
+            WaitAssert.True(() => Browser.Url.EndsWith("/Other"));
+
+            // Because this was a full-page load, our element references should no longer be valid
+            Assert.Throws<StaleElementReferenceException>(() =>
+            {
+                testSelector.SelectedOption.GetAttribute("value");
+            });
         }
 
         [Fact]
