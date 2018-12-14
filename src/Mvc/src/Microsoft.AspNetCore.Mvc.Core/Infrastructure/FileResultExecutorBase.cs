@@ -322,6 +322,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // the current length of the selected resource.  e.g. */length
                 response.StatusCode = StatusCodes.Status416RangeNotSatisfiable;
                 httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(fileLength);
+                response.ContentLength = 0;
 
                 return (range: null, rangeLength: 0, serveBody: false);
             }
