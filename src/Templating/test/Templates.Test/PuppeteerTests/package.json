@@ -18,6 +18,7 @@
     "test-angular": "jest __tests__/angularTest.ts",
     "test-mvc": "jest __tests__/mvcTest.ts",
     "test-razor": "jest __tests__/razorTest.ts",
+    "test-razorcomponents": "jest __tests__/razorcomponents.ts",
     "test-react": "jest __tests__/reactTest.ts",
     "test-reactredux": "jest __tests__/reactreduxTest.ts",
     "test-webapi": "jest __tests__/webapiTest.ts",

@@ -18,6 +18,6 @@ namespace Templates.Test.SpaTemplateTest
 
         [Fact]
         public async Task ReactReduxTemplate_Works()
-            => await SpaTemplateImpl(targetFrameworkOverride: null, "reactredux", _httpPort, _httpsPort);
+            => await SpaTemplateImpl("reactredux", _httpPort, _httpsPort);
     }
 }

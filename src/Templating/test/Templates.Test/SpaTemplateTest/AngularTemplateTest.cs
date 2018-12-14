@@ -18,6 +18,6 @@ namespace Templates.Test.SpaTemplateTest
 
         [Fact]
         public async Task AngularTemplate_Works()
-            => await SpaTemplateImpl(null, "angular", _httpPort, _httpsPort);
+            => await SpaTemplateImpl("angular", _httpPort, _httpsPort);
     }
 }

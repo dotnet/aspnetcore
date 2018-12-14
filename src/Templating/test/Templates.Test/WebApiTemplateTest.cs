@@ -16,7 +16,7 @@ namespace Templates.Test
         [Fact]
         public async Task WebApiTemplate_Works()
         {
-            await TemplateBase("webapi", targetFrameworkOverride: null, httpPort: 6050, httpsPort: 6051);
+            await TemplateBase("webapi", httpPort: 6050, httpsPort: 6051);
         }
     }
 }

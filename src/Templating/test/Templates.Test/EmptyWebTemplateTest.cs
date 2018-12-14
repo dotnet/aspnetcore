@@ -16,7 +16,7 @@ namespace Templates.Test
         [Fact]
         public async Task EmptyWebTemplate_Works()
         {
-            await TemplateBase("web", targetFrameworkOverride: null, httpPort: 6040, httpsPort: 6041);
+            await TemplateBase("web", httpPort: 6040, httpsPort: 6041);
         }
     }
 }

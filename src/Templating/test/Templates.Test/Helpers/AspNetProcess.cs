@@ -22,33 +22,30 @@ namespace Templates.Test.Helpers
             ITestOutputHelper output,
             string workingDirectory,
             string projectName,
-            string targetFrameworkOverride,
             bool publish,
             int httpPort,
             int httpsPort)
         {
             var now = DateTimeOffset.Now;
 
-            var framework = string.IsNullOrEmpty(targetFrameworkOverride) ? DefaultFramework : targetFrameworkOverride;
             if (publish)
             {
                 output.WriteLine("Publishing ASP.NET application...");
 
+                // Workaround for issue with runtime store not yet being published
+                // https://github.com/aspnet/Home/issues/2254#issuecomment-339709628
+                var extraArgs = "-p:PublishWithAspNetCoreTargetManifest=false";
+
                 ProcessEx
-                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release")
+                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}")
                     .WaitForExit(assertSuccess: true);
-                workingDirectory = Path.Combine(workingDirectory, "bin", "Release", framework, "publish");
-                // Should install their own stuff
-                //if (File.Exists(Path.Combine(workingDirectory, "ClientApp", "package.json")))
-                //{
-                //    Npm.RestoreWithRetry(output, Path.Combine(workingDirectory, "ClientApp"));
-                //}
+                workingDirectory = Path.Combine(workingDirectory, "bin", "Release", DefaultFramework, "publish");
             }
             else
             {
                 output.WriteLine("Building ASP.NET application...");
                 ProcessEx
-                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug -f {framework}")
+                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug")
                     .WaitForExit(assertSuccess: true);
             }
 
@@ -63,43 +60,8 @@ namespace Templates.Test.Helpers
             }
 
             output.WriteLine("Running ASP.NET application...");
-            if (framework.StartsWith("netcore", StringComparison.Ordinal))
-            {
-                var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{framework}/{projectName}.dll";
-                _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
-            }
-            else
-            {
-                var exeFullPath = publish
-                    ? Path.Combine(workingDirectory, $"{projectName}.exe")
-                    : Path.Combine(workingDirectory, "bin", "Debug", framework, $"{projectName}.exe");
-                using (new AddFirewallExclusion(exeFullPath))
-                {
-                    _process = ProcessEx.Run(output, workingDirectory, exeFullPath, envVars: envVars);
-                }
-            }
-            GetListeningUri(output);
-        }
-
-        private Uri GetListeningUri(ITestOutputHelper output)
-        {
-            // Wait until the app is accepting HTTP requests
-            output.WriteLine("Waiting until ASP.NET application is accepting connections...");
-            var listeningMessage = _process
-                .OutputLinesAsEnumerable
-                .Where(line => line != null)
-                .FirstOrDefault(line => line.StartsWith(ListeningMessagePrefix, StringComparison.Ordinal));
-            Assert.True(!string.IsNullOrEmpty(listeningMessage), $"ASP.NET process exited without listening for requests.\nOutput: { _process.Output }\nError: { _process.Error }");
-
-            // Verify we have a valid URL to make requests to
-            var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);
-            output.WriteLine($"Detected that ASP.NET application is accepting connections on: {listeningUrlString}");
-            listeningUrlString = listeningUrlString.Substring(0, listeningUrlString.IndexOf(':')) +
-                "://localhost" +
-                listeningUrlString.Substring(listeningUrlString.LastIndexOf(':'));
-
-            output.WriteLine("Sending requests to " + listeningUrlString);
-            return new Uri(listeningUrlString, UriKind.Absolute);
+            var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{DefaultFramework}/{projectName}.dll";
+            _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
         }
 
         public void Dispose()

@@ -18,26 +18,24 @@ namespace Templates.Test
         [InlineData(null)]
         [InlineData("F#")]
         private async Task MvcTemplate_NoAuthImpl(string languageOverride)
-            => await MvcTemplateBase(targetFrameworkOverride: null, languageOverride: languageOverride);
+            => await MvcTemplateBase(languageOverride: languageOverride);
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task MvcTemplate_IndividualAuth(bool useLocalDb)
-            => await MvcTemplateBase(targetFrameworkOverride: null, auth: IndividualAuth, useLocalDb: useLocalDb);
+            => await MvcTemplateBase(auth: IndividualAuth, useLocalDb: useLocalDb);
 
         private async Task MvcTemplateBase(
-            string targetFrameworkOverride,
             string languageOverride = null,
             string auth = null,
             bool noHttps = false,
             bool useLocalDb = false)
             => await TemplateBase(
                 "mvc",
-                targetFrameworkOverride,
                 httpPort: 5002,
                 httpsPort: 5003,
-                languageOverride: languageOverride,
+                languageOverride,
                 auth,
                 noHttps,
                 useLocalDb);

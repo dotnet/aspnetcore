@@ -53,7 +53,6 @@ namespace Templates.Test
 
         protected async Task TemplateBase(
             string templateName,
-            string targetFrameworkOverride,
             int httpPort,
             int httpsPort,
             string languageOverride = default,
@@ -63,7 +62,7 @@ namespace Templates.Test
         {
             using (StartLog(out var loggerFactory))
             {
-                RunDotNetNew(templateName, targetFrameworkOverride, auth, language: languageOverride, useLocalDb, noHttps);
+                RunDotNetNew(templateName, auth, languageOverride, useLocalDb, noHttps);
 
                 var projectExtension = languageOverride == "F#" ? "fsproj" : "csproj";
                 var projectFileContents = ReadFile($"{ProjectName}.{projectExtension}");
@@ -73,11 +72,6 @@ namespace Templates.Test
 
                 if (auth == IndividualAuth)
                 {
-                    if (targetFrameworkOverride != null)
-                    {
-                        Assert.Contains("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
-                    }
-
                     if (!useLocalDb)
                     {
                         Assert.Contains(".db", projectFileContents);
@@ -92,21 +86,16 @@ namespace Templates.Test
                     Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
                 }
 
-                if (targetFrameworkOverride != null && !noHttps && templateName != "web")
-                {
-                    Assert.Contains("Microsoft.AspNetCore.HttpsPolicy", projectFileContents);
-                }
-
-                await RunPuppeteerTests(templateName, targetFrameworkOverride, httpPort, httpsPort);
+                await RunPuppeteerTests(templateName, httpPort, httpsPort);
             }
         }
 
-        protected async Task RunPuppeteerTests(string templateName, string targetFrameworkOverride, int httpPort, int httpsPort)
+        protected async Task RunPuppeteerTests(string templateName, int httpPort, int httpsPort)
         {
             foreach (var publish in new[] { false, true })
             {
                 // Arrange
-                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish, httpPort, httpsPort))
+                using (var aspNetProcess = StartAspNetProcess(publish, httpPort, httpsPort))
                 {
                     // Act
                     var testResult = await RunTest(templateName);
