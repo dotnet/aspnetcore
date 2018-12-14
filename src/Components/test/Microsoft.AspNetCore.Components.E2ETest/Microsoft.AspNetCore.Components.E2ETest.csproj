@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="$(MicrosoftExtensionsProcessSourcesPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="Selenium.Support" Version="3.12.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.12.0" />
