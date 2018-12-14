@@ -84,10 +84,25 @@ namespace Microsoft.AspNetCore.Components.Hosting
         {
             // Arrange
             var builder = new WebAssemblyHostBuilder();
-            builder.ConfigureServices((c, s) =>
+            builder.UseServiceProviderFactory(new TestServiceProviderFactory());
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            Assert.IsType<TestServiceProvider>(host.Services);
+        }
+
+        [Fact]
+        public void HostBuilder_CanCustomizeServiceFactoryWithContext()
+        {
+            // Arrange
+            var builder = new WebAssemblyHostBuilder();
+            builder.UseServiceProviderFactory(context =>
             {
-                s.AddSingleton<IServiceProviderFactory<IServiceCollection>>(
-                    new TestServiceProviderFactory());
+                Assert.NotNull(context.Properties);
+                Assert.Same(builder.Properties, context.Properties);
+                return new TestServiceProviderFactory();
             });
 
             // Act

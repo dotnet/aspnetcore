@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.Hosting
         private List<Action<WebAssemblyHostBuilderContext, IServiceCollection>> _configureServicesActions = new List<Action<WebAssemblyHostBuilderContext, IServiceCollection>>();
         private bool _hostBuilt;
         private WebAssemblyHostBuilderContext _BrowserHostBuilderContext;
+        private IWebAssemblyServiceFactoryAdapter _serviceProviderFactory = new WebAssemblyServiceFactoryAdapter<IServiceCollection>(new DefaultServiceProviderFactory());
         private IServiceProvider _appServices;
 
         /// <summary>
@@ -36,6 +37,26 @@ namespace Microsoft.AspNetCore.Components.Hosting
         public IWebAssemblyHostBuilder ConfigureServices(Action<WebAssemblyHostBuilderContext, IServiceCollection> configureDelegate)
         {
             _configureServicesActions.Add(configureDelegate ?? throw new ArgumentNullException(nameof(configureDelegate)));
+            return this;
+        }
+
+        /// <summary>
+        /// Overrides the factory used to create the service provider.
+        /// </summary>
+        /// <returns>The same instance of the <see cref="IWebAssemblyHostBuilder"/> for chaining.</returns>
+        public IWebAssemblyHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory)
+        {
+            _serviceProviderFactory = new WebAssemblyServiceFactoryAdapter<TContainerBuilder>(factory ?? throw new ArgumentNullException(nameof(factory)));
+            return this;
+        }
+
+        /// <summary>
+        /// Overrides the factory used to create the service provider.
+        /// </summary>
+        /// <returns>The same instance of the <see cref="IWebAssemblyHostBuilder"/> for chaining.</returns>
+        public IWebAssemblyHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<WebAssemblyHostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory)
+        {
+            _serviceProviderFactory = new WebAssemblyServiceFactoryAdapter<TContainerBuilder>(() => _BrowserHostBuilderContext, factory ?? throw new ArgumentNullException(nameof(factory)));
             return this;
         }
 
@@ -85,23 +106,8 @@ namespace Microsoft.AspNetCore.Components.Hosting
                 configureServicesAction(_BrowserHostBuilderContext, services);
             }
 
-            _appServices = GetProviderFromFactory(services);
-
-            IServiceProvider GetProviderFromFactory(IServiceCollection collection)
-            {
-                var provider = collection.BuildServiceProvider();
-                var factory = provider.GetService<IServiceProviderFactory<IServiceCollection>>();
-
-                if (factory != null)
-                {
-                    using (provider)
-                    {
-                        return factory.CreateServiceProvider(factory.CreateBuilder(collection));
-                    }
-                }
-
-                return provider;
-            }
+            var builder = _serviceProviderFactory.CreateBuilder(services);
+            _appServices = _serviceProviderFactory.CreateServiceProvider(builder);
         }
     }
 }
