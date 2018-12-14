@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <inheritdoc />
         public void SetParameters(ParameterCollection parameters)
         {
-            parameters.AssignToProperties(this);
+            parameters.SetParameterProperties(this);
             var types = ComponentResolver.ResolveComponents(AppAssembly);
             Routes = RouteTable.Create(types);
             Refresh();

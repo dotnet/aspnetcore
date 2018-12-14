@@ -1202,7 +1202,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 => RenderHandle = renderHandle;
 
             public void SetParameters(ParameterCollection parameters)
-                => parameters.AssignToProperties(this);
+                => parameters.SetParameterProperties(this);
         }
 
         private class EventComponent : AutoRenderComponent, IComponent, IHandleEvent
@@ -1310,7 +1310,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void SetParameters(ParameterCollection parameters)
             {
-                parameters.AssignToProperties(this);
+                parameters.SetParameterProperties(this);
                 Render();
             }
 

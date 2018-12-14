@@ -1557,7 +1557,7 @@ namespace Microsoft.AspNetCore.Components.Test
             public void Init(RenderHandle renderHandle) { }
             public void SetParameters(ParameterCollection parameters)
             {
-                parameters.AssignToProperties(this);
+                parameters.SetParameterProperties(this);
             }
         }
 
