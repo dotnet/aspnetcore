@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresNewShim]
         public async Task ExposesIServerAddressesFeature()
         {
-            Assert.Equal(_fixture.Client.BaseAddress.GetLeftPart(UriPartial.Authority), await _fixture.Client.GetStringAsync("/ServerAddresses"));
+            Assert.Equal(_fixture.Client.BaseAddress.ToString(), await _fixture.Client.GetStringAsync("/ServerAddresses"));
         }
     }
 }

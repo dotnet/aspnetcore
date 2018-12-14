@@ -58,7 +58,7 @@ std::vector<std::pair<std::wstring, std::wstring>> ConfigurationSection::GetKeyV
     for (auto const element : GetRequiredSection(name)->GetCollection())
     {
         pairs.emplace_back(element->GetRequiredString(CS_ASPNETCORE_COLLECTION_ITEM_NAME),
-                           element->GetRequiredString(CS_ASPNETCORE_COLLECTION_ITEM_VALUE));
+                           element->GetString(CS_ASPNETCORE_COLLECTION_ITEM_VALUE).value_or(L""));
     }
     return pairs;
 }
