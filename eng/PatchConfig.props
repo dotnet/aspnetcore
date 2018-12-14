@@ -5,6 +5,8 @@
 
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.1' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.AspNetCoreModule;
+      Microsoft.AspNetCore.AspNetCoreModuleV2;
       Microsoft.AspNetCore.Server.IIS;
       Microsoft.AspNetCore.Server.IISIntegration;
       Microsoft.AspNetCore.Server.IntegrationTesting.IIS;

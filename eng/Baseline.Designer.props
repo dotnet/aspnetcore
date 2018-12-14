@@ -4,6 +4,30 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <AspNetCoreBaselineVersion>2.2.0</AspNetCoreBaselineVersion>
   </PropertyGroup>
+  <!-- Package: dotnet-dev-certs-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: dotnet-sql-cache-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: dotnet-user-secrets-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-user-secrets' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: dotnet-watch-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-watch' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: Microsoft.AspNetCore.AspNetCoreModule-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: Microsoft.AspNetCore.AspNetCoreModuleV2-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Antiforgery-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Antiforgery' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -419,6 +443,36 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Win32.Registry" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Server.IISIntegration-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="System.Buffers" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.2, )" />
+    <BaselinePackageReference Include="System.Memory" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Numerics.Vectors" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Server.IIS-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.2, )" />
     <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Core-->

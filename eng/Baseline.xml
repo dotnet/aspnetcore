@@ -3,6 +3,8 @@
   <Package Id="dotnet-sql-cache" Version="2.2.0" />
   <Package Id="dotnet-user-secrets" Version="2.2.0" />
   <Package Id="dotnet-watch" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Antiforgery" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Core" Version="2.2.0" />
@@ -46,6 +48,8 @@
   <Package Id="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Routing" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.HttpSys" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Server.IIS" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="2.2.0" />

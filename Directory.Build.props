@@ -85,6 +85,7 @@
     <IncludeSymbols>true</IncludeSymbols>
 
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
+    <GoogleTestSubmoduleRoot>$(RepositoryRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
 
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>

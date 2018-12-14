@@ -71,6 +71,12 @@
 
     <NpmProjectDirectory Include="$(RepositoryRoot)src\Middleware\CORS\test\FunctionalTests\" />
 
+    <ProjectToBuild Condition=" '$(OS)' == 'Windows_NT' " Include="$(RepositoryRoot)src\Servers\**\*.vcxproj">
+      <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
+      <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x64'">Platform=x64</AdditionalProperties>
+      <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x86'">Platform=x86</AdditionalProperties>
+    </ProjectToBuild>
+
     <ProjectToBuild Include="
                       $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                       $(RepositoryRoot)src\DataProtection\**\*.*proj;
@@ -78,7 +84,8 @@
                       $(RepositoryRoot)src\Hosting\**\*.*proj;
                       $(RepositoryRoot)src\Http\**\*.*proj;
                       $(RepositoryRoot)src\Html\**\*.*proj;
-                      $(RepositoryRoot)src\Servers\**\*.*proj;
+                      $(RepositoryRoot)src\Servers\**\*.csproj;
+                      $(RepositoryRoot)src\Servers\**\*.pkgproj;
                       $(RepositoryRoot)src\Tools\**\*.*proj;
                       $(RepositoryRoot)src\Middleware\**\*.*proj;
                       "

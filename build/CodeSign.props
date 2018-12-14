@@ -65,6 +65,12 @@
       <FilesToSign Include="Microsoft.Extensions.Primitives.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.WebEncoders.dll"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
 
+      <!-- ANCM -->
+      <FilesToSign Include="aspnetcore.dll"                                                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="aspnetcorev2.dll"                                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="aspnetcorev2_inprocess.dll"                                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+      <FilesToSign Include="aspnetcorev2_outofprocess.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+
     <!-- These files came from partner teams. They have to be re-signed because we crossgen them and redistributable them in our installers. -->
 
       <!-- Microsoft.AspNetCore.All -->
