@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,9 +21,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // so we're reusing the services here.
     public class DfaMatcherTest
     {
-        private RouteEndpoint CreateEndpoint(string template, int order, object defaults = null, object requiredValues = null)
+        private RouteEndpoint CreateEndpoint(string template, int order, object defaults = null, object requiredValues = null, object policies = null)
         {
-            return EndpointFactory.CreateRouteEndpoint(template, defaults, requiredValues: requiredValues, order: order, displayName: template);
+            return EndpointFactory.CreateRouteEndpoint(template, defaults, policies: policies, requiredValues: requiredValues, order: order, displayName: template);
         }
 
         private Matcher CreateDfaMatcher(
@@ -723,6 +723,35 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             Assert.Same(dataSource.Endpoints[0], context.Endpoint);
+        }
+
+        [Fact]
+        public async Task MatchAsync_ConstraintWithoutParameter_ConstraintCalled()
+        {
+            // Arrange
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("test_url", 0, policies: new { _ = new TestConstraint() })
+            });
+
+            var matcher = CreateDfaMatcher(dataSource);
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = "/test_url";
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Null(context.Endpoint);
+        }
+
+        private class TestConstraint : IRouteConstraint
+        {
+            public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+            {
+                return false;
+            }
         }
 
         private (HttpContext httpContext, EndpointSelectorContext context) CreateContext()

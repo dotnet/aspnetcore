@@ -91,6 +91,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task NonParameterConstraint_PassesConstraint_Match()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/NonParameterConstraintRoute/NonParameterConstraint/Index?match=true");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task NonParameterConstraint_FailsConstraint_NoMatch()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/NonParameterConstraintRoute/NonParameterConstraint/Index?match=false");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task DataTokens_ReturnsDataTokensForRoute()
         {
             // Arrange & Act

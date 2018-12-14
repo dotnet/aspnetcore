@@ -584,6 +584,28 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Null(context.Handler);
         }
 
+        [Fact]
+        public async Task Match_ConstraintWithoutParameter_ConstraintCalled()
+        {
+            // Arrange
+            var route = CreateRoute("test_url", new { }, constraints: new { _ = new TestConstraint() });
+            var context = CreateRouteContext("/test_url");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.Handler);
+        }
+
+        private class TestConstraint : IRouteConstraint
+        {
+            public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+            {
+                return false;
+            }
+        }
+
         private static RouteContext CreateRouteContext(string requestPath, ILoggerFactory factory = null)
         {
             if (factory == null)
@@ -654,7 +676,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetVirtualPath_AlwaysUsesDefaultUrlEncoder()
         {
             // Arrange
-            var nameRouteValue = "name with %special #characters Jörn";
+            var nameRouteValue = "name with %special #characters JÃ¶rn";
             var expected = "/Home/Index?name=" + UrlEncoder.Default.Encode(nameRouteValue);
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
