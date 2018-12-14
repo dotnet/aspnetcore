@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var actionContext = new ActionContext(GetHttpContext(), new RouteData(), new ControllerActionDescriptor());
 
-            var authorizationFilterContext = new AuthorizationFilterContext(actionContext, action.Filters);
+            var authorizationFilterContext = new AuthorizationFilterContext(actionContext, new[] { authorizeFilter });
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationFilterContext);

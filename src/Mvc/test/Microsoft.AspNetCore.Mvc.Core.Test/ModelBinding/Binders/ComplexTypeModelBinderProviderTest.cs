@@ -79,8 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = provider.GetBinder(context);
 
             // Assert
-            var binder = Assert.IsType<ComplexTypeModelBinder>(result);
-            Assert.True(binder.AllowValidatingTopLevelNodes);
+            Assert.IsType<ComplexTypeModelBinder>(result);
         }
 
         private class Person

@@ -134,11 +134,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             var effectivePolicy = await ComputePolicyAsync();
             var canCache = PolicyProvider == null;
 
-            if (!context.IsEffectivePolicy(this))
-            {
-                return null;
-            }
-
             // Combine all authorize filters into single effective policy that's only run on the closest filter
             var builder = new AuthorizationPolicyBuilder(effectivePolicy);
             for (var i = 0; i < context.Filters.Count; i++)
@@ -173,6 +168,11 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
+            }
+
+            if (!context.IsEffectivePolicy(this))
+            {
+                return;
             }
 
             var effectivePolicy = await GetEffectivePolicyAsync(context);

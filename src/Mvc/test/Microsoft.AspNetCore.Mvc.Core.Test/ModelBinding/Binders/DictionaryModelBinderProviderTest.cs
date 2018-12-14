@@ -58,8 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             var binder = Assert.IsType<DictionaryModelBinder<string, int>>(result);
-            Assert.True(binder.AllowValidatingTopLevelNodes);
-            Assert.False(((CollectionModelBinder<KeyValuePair<string, int>>)binder).AllowValidatingTopLevelNodes);
+            Assert.False(binder.AllowValidatingTopLevelNodes); // work done in DictionaryModelBinder.
         }
 
         private class Person

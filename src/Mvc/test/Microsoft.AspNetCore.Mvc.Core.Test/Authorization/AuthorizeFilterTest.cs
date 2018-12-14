@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new[] { new AuthorizeAttribute() });
             var authorizationContext = GetAuthorizationContext();
+            authorizationContext.Filters.Add(authorizeFilter);
             var expected = "An AuthorizationPolicy cannot be created without a valid instance of " +
                 "IAuthorizationPolicyProvider.";
 
@@ -69,6 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new[] { new AuthorizeAttribute() });
             var authorizationContext = GetAuthorizationContext();
+            authorizationContext.Filters.Add(authorizeFilter);
             var expected = "An AuthorizationPolicy cannot be created without a valid instance of " +
                 "IAuthorizationPolicyProvider.";
 
@@ -103,6 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 .Callback(() => getPolicyCount++);
             var authorizeFilter = new AuthorizeFilter(policyProvider.Object, new AuthorizeAttribute[] { new AuthorizeAttribute("whatever") });
             var authorizationContext = GetAuthorizationContext();
+            authorizationContext.Filters.Add(authorizeFilter);
 
             // Act & Assert
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
