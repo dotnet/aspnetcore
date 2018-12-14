@@ -54,27 +54,33 @@
   <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <PropertyGroup>
       <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\test\testassets\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
-      <InjectDepsApp Condition="'$(TargetFramework)' == 'net461'">$(InjectDepsAssembly)</InjectDepsApp>
+      <InjectDepsApp Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">$(InjectDepsAssembly)</InjectDepsApp>
       <InjectDepsArguments>"win7-$(NativePlatform)" "$(AncmInProcessRHPath)"</InjectDepsArguments>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
       <InjectDepsAssembly>$(InjectDepsAssembly).exe</InjectDepsAssembly>
       <InjectDepsApp>$(InjectDepsAssembly)</InjectDepsApp>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(TargetFramework)' != 'net461'">
+    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
       <InjectDepsAssembly>$(InjectDepsAssembly).dll</InjectDepsAssembly>
       <InjectDepsApp>dotnet</InjectDepsApp>
       <InjectDepsArguments>$(InjectDepsAssembly) $(InjectDepsArguments)</InjectDepsArguments>
     </PropertyGroup>
   </Target>
 
-  <Target Name="InjectRequestHandler" AfterTargets="GenerateBuildDependencyFile" DependsOnTargets="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
+  <Target Name="InjectRequestHandler"
+          Condition=" '$(InProcessTestSite)' == 'true' and ( '$(OS)' == 'Windows_NT' or '$(TargetFrameworkIdentifier)' != '.NETFramework' ) "
+          AfterTargets="GenerateBuildDependencyFile"
+          DependsOnTargets="PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(ProjectDepsFilePath)&quot;" />
   </Target>
 
-  <Target Name="InjectRequestHandlerOnPublish" AfterTargets="GeneratePublishDependencyFile" DependsOnTargets="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
+  <Target Name="InjectRequestHandlerOnPublish"
+          Condition=" '$(InProcessTestSite)' == 'true' and ( '$(OS)' == 'Windows_NT' or '$(TargetFrameworkIdentifier)' != '.NETFramework' ) "
+          AfterTargets="GeneratePublishDependencyFile"
+          DependsOnTargets="PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(PublishDepsFilePath)&quot;" />
   </Target>
 

@@ -10,6 +10,7 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <PackageDescription>ASP.NET Core Module</PackageDescription>
+    <IsPackable Condition="'$(OS)' != 'Windows_NT'">false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -18,26 +19,24 @@
     <Content Include="..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.dll" PackagePath="contentFiles/any/any/x64" />
     <Content Include="..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.pdb" PackagePath="contentFiles/any/any/x64" />
 
-    <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x86/2.0.0" />
-    <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x86/2.0.0" />
+    <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x86/2.0.0" />
+    <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x86/2.0.0" />
     <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x64/2.0.0" />
     <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x64/2.0.0" />
 
     <Content Include="..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\*.xml" PackagePath="" />
     <Content Include="..\AspNetCoreModuleV2\AspNetCore\ancm.mof" />
     <Content Include="Microsoft.AspNetCore.AspNetCoreModule.props.in" PackagePath="build\" />
+    <Reference Include="AspNetCoreModuleV2" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="lib\**\*">
-      <Pack>True</Pack>
-      <PackagePath>lib</PackagePath>
-    </None>
+    <Content Include="_._" PackagePath="lib/$(TargetFramework)/" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <Target Name="CopyFilesToOutputDirectory" />
-  <Target Name="CoreCompile" />
+  <Target Name="CoreCompile" DependsOnTargets="ResolveReferences" />
   <Target Name="CreateManifestResourceNames" />
 </Project>

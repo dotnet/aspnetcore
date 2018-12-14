@@ -82,6 +82,7 @@
     <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
     <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(MicrosoftAspNetCoreServerIntegrationTestingPackageVersion)" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="$(MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

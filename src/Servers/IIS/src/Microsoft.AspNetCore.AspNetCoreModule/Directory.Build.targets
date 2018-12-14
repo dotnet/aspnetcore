@@ -20,7 +20,7 @@
 
   </PropertyGroup>
 
-  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
+  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)" Condition=" '$(IsPackable)' != 'false' ">
     <ItemGroup>
       <ArtifactInfo Include="$(TargetPath)">
         <ArtifactType>NuGetPackage</ArtifactType>

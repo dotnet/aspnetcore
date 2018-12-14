@@ -12,23 +12,23 @@
 
   <ItemGroup>
     <Compile Include="$(RepositoryRoot)src\Shared\HttpSys\**\*.cs" />
+    <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Numerics.Vectors" />
-    <Reference Include="System.Buffers" />
-    <Reference Include="System.IO.Pipelines" />
-    <Reference Include="System.Memory" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
-    <Reference Include="System.Security.Principal.Windows" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
+    <Reference Include="System.Buffers" />
+    <Reference Include="System.IO.Pipelines" />
+    <Reference Include="System.Memory" />
+    <Reference Include="System.Numerics.Vectors" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
+    <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 
 </Project>

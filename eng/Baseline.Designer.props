@@ -4,6 +4,30 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <AspNetCoreBaselineVersion>2.2.0</AspNetCoreBaselineVersion>
   </PropertyGroup>
+  <!-- Package: dotnet-dev-certs-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: dotnet-sql-cache-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: dotnet-user-secrets-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-user-secrets' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: dotnet-watch-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-watch' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: Microsoft.AspNetCore.AspNetCoreModule-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <!-- Package: Microsoft.AspNetCore.AspNetCoreModuleV2-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Antiforgery-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Antiforgery' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>

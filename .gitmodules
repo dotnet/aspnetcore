@@ -6,6 +6,6 @@
 	path = modules/Scaffolding
 	url = https://github.com/aspnet/Scaffolding.git
 	branch = release/2.2
-[submodule "src/IISIntegration/test/gtest/googletest"]
-	path = src/IISIntegration/test/gtest/googletest
+[submodule "googletest"]
+	path = src/submodules/googletest
 	url = https://github.com/google/googletest

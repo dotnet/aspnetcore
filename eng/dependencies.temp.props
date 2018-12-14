@@ -1,8 +1,0 @@
-<!--
-This file is temporary until aspnet/StaticFiles are merged into this repo.
-This is required to provide dependencies for samples and tests.
- -->
-<Project>
-  <ItemGroup>
-  </ItemGroup>
-</Project>

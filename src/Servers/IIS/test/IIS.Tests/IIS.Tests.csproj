@@ -4,19 +4,18 @@
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
   </PropertyGroup>
 
-  <Import Project="..\..\build\functional-test-assets.targets" />
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
   </ItemGroup>
 
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT'"/>
+    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT'"/>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Diagnostics.EventLog" />
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
   </ItemGroup>

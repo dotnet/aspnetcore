@@ -108,6 +108,7 @@
     <MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>2.2.0</MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>
     <InternalWebHostBuilderFactorySourcesPackageVersion>2.2.0</InternalWebHostBuilderFactorySourcesPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-rtm-final</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>2.2.0-rtm-35687</MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>
 
     <!-- 3rd party dependencies -->
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>

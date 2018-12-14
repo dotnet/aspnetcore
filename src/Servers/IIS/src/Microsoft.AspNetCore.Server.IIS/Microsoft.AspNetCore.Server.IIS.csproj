@@ -13,79 +13,27 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
   </PropertyGroup>
 
-  <Import Project="..\..\build\assets.props" />
-
   <ItemGroup>
-    <!-- TODO use SharedSourceRoot instead of hard coded path. Issues with including Directory.Build.props -->
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Shared\Buffers.MemoryPool\**\*.cs" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Include="$(RepositoryRoot)src\Shared\HttpSys\**\*.cs" />
-  </ItemGroup>
-
-
-  <ItemGroup Condition="'$(VCTargetsPath)' != ''">
-    <ProjectReference Include="..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" SetPlatform="Platform=x64">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" SetPlatform="Platform=x86">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-
-    <ProjectReference Include="..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" SetPlatform="Platform=x64">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-
-    <ProjectReference Include="..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" SetPlatform="Platform=x86">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-
-    <ProjectReference Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" SetPlatform="Platform=x64">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" SetPlatform="Platform=x86">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-
-    <ProjectReference Include="..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" SetPlatform="Platform=x64">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" SetPlatform="Platform=x86">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
-
-  </ItemGroup>
-
-
-  <ItemGroup Condition="'$(BuildServerIIS21)' != 'true'">
-    <Reference Include="System.IO.Pipelines" />
-    <Reference Include="System.Security.Principal.Windows" />
-
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-  </ItemGroup>
-
-
-  <ItemGroup Condition="'$(BuildServerIIS21)' == 'true'">
-    <Reference Include="System.IO.Pipelines" />
-    <Reference Include="System.Security.Principal.Windows" />
-
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
     <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="System.IO.Pipelines" />
+    <Reference Include="System.Security.Principal.Windows" />
+  </ItemGroup>
+
+  <Import Project="..\..\build\assets.props" />
 
   <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
       <None Include="%(InProcessComponents.DllLocation)" Pack="true" PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
-
-      <SignedPackageFile Include="%(InProcessComponents.DllLocation)" PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)/%(InProcessComponents.NativeAsset).dll" Certificate="$(AssemblySigningCertName)" />
     </ItemGroup>
   </Target>
 

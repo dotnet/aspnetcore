@@ -3,17 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Microsoft.AspNetCore.Server.IntegrationTesting.IIS</PackageId>
-    <!-- Always include a pre-release label since this is an internal-only package. -->
-    <Version>$(VersionPrefix)-$(VersionSuffix)</Version>
-    <PackageVersion>$(Version)</PackageVersion>
     <Description>Provides support for integration testing using IIS based servers.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+    <UseProjectReferences>true</UseProjectReferences>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  <Import Project="..\..\build\assets.props" />
 
   <ItemGroup>
     <EmbeddedResource Include="Http.config" />
@@ -25,14 +23,5 @@
     <Reference Include="Microsoft.Web.Administration" />
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
-
-  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles" Condition="$(PackNativeAssets) == 'true'">
-    <ItemGroup>
-      <Content Include="%(ShimComponents.DllLocation)" PackageCopyToOutput="true" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
-
-      <SignedPackageFile Include="%(ShimComponents.DllLocation)" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll" Certificate="$(AssemblySigningCertName)" />
-
-    </ItemGroup>
-  </Target>
 
 </Project>

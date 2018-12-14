@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
+    <Reference Include="xunit.assert" />
   </ItemGroup>
 
 </Project>

@@ -5,17 +5,15 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
+    <AspNetCoreHostingModel>inprocess</AspNetCoreHostingModel>
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" />
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <AspNetCoreHostingModel>inprocess</AspNetCoreHostingModel>
-  </PropertyGroup>
 </Project>

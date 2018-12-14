@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace TestSite
 {
@@ -47,6 +48,7 @@ namespace TestSite
         {
             if (context.User.Identity.IsAuthenticated)
             {
+                Assert.IsType<WindowsPrincipal>(context.User);
                 return context.Response.WriteAsync(context.User.Identity.AuthenticationType);
             }
             else

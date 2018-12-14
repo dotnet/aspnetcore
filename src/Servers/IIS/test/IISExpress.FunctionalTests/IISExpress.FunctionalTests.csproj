@@ -21,9 +21,9 @@
     <Compile Include="..\Common.FunctionalTests\**\*.cs" />
   </ItemGroup>
 
-  <Import Project="..\..\build\functional-test-assets.targets" />
-
   <ItemGroup>
+    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT'" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />

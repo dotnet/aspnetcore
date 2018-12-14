@@ -8,25 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="wwwroot\**" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
+    <Reference Include="xunit.assert" />
   </ItemGroup>
 
 </Project>
