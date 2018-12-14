@@ -16,6 +16,7 @@ Building ASP.NET Core on Windows requires:
 * Windows 7 or higher
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Visual Studio 2017. <https://visualstudio.com>
+    * To install the exact required components, run scripts\install_vs.ps1. This will use VS2017.
 * Git. <https://git-scm.org>
 * (Optional) some optional components, like the SignalR Java client, may require
     * NodeJS. LTS version of 10.14.2 or newer recommended <https://nodejs.org>
