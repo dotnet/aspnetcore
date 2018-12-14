@@ -1,7 +1,7 @@
 ﻿<!-- This file is temporary while we rework dependencies management. It is used when building individual folders as if they were repos. -->
 <Project>
   <PropertyGroup>
-    <InternalAspNetCoreSdkPackageVersion>2.2.1-build-20181114.3</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.1-build-20181213.2</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
     <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.2.0</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
     <MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>2.2.0</MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion>

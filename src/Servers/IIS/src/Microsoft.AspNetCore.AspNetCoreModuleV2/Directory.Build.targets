@@ -18,6 +18,7 @@
     <!-- There is no documentation  -->
     <RunPackageAnalysis>false</RunPackageAnalysis>
 
+    <TargetPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</TargetPath>
   </PropertyGroup>
 
   <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)" Condition=" '$(IsPackable)' != 'false' ">
@@ -29,6 +30,4 @@
       </ArtifactInfo>
     </ItemGroup>
   </Target>
-
-  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
 </Project>

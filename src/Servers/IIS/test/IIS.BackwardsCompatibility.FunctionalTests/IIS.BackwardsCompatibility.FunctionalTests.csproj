@@ -4,6 +4,7 @@
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
     <TestGroupName>IISBackwardsCompatibility.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <SkipTests Condition=" '$(SkipIISBackwardsCompatibilityTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>

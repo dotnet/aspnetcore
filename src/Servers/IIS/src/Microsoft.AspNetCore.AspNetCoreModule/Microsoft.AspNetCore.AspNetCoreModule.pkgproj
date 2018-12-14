@@ -2,6 +2,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
+    <PackageId>$(MSBuildProjectName)</PackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
