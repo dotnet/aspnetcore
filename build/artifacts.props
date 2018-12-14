@@ -49,7 +49,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" AllMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.CookiePolicy" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Cors" AllMetapackage="true" AppMetapackage="true" Category="ship" />

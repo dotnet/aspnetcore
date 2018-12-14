@@ -1,8 +1,8 @@
 [submodule "modules/EntityFrameworkCore"]
-	path = modules/EntityFrameworkCore
-	url = https://github.com/aspnet/EntityFrameworkCore.git
-	branch = release/2.1
+       path = modules/EntityFrameworkCore
+       url = https://github.com/aspnet/EntityFrameworkCore.git
+       branch = release/2.1
 [submodule "modules/Scaffolding"]
-	path = modules/Scaffolding
-	url = https://github.com/aspnet/Scaffolding.git
-	branch = release/2.1
+       path = modules/Scaffolding
+       url = https://github.com/aspnet/Scaffolding.git
+       branch = release/2.1
