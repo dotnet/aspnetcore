@@ -32,18 +32,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
         private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
         private const string MacOSFindCertificateCommandLine = "security";
-#if NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0
         private static readonly string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
-#endif
         private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";
         private const string MacOSRemoveCertificateTrustCommandLine = "sudo";
         private const string MacOSRemoveCertificateTrustCommandLineArgumentsFormat = "security remove-trusted-cert -d {0}";
         private const string MacOSDeleteCertificateCommandLine = "sudo";
         private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
         private const string MacOSTrustCertificateCommandLine = "sudo";
-#if NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0
         private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
-#endif
         private const int UserCancelledErrorCode = 1223;
 
         public IList<X509Certificate2> ListCertificates(
@@ -152,8 +148,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
             }
         }
-
-#if NETCOREAPP2_0 || NETCOREAPP2_1 || NETCOREAPP2_2 || NETCOREAPP3_0
 
         public X509Certificate2 CreateAspNetCoreHttpsDevelopmentCertificate(DateTimeOffset notBefore, DateTimeOffset notAfter, string subjectOverride, DiagnosticInformation diagnostics = null)
         {
@@ -739,7 +733,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return result;
         }
 
-        // This is just to avoid breaking changes across repos. 
+        // This is just to avoid breaking changes across repos.
         // Will be renamed back to EnsureAspNetCoreHttpsDevelopmentCertificate once updates are made elsewhere.
         public DetailedEnsureCertificateResult EnsureAspNetCoreHttpsDevelopmentCertificate2(
             DateTimeOffset notBefore,
@@ -893,7 +887,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             public EnsureCertificateResult ResultCode { get; set; }
             public DiagnosticInformation Diagnostics { get; set; } = new DiagnosticInformation();
         }
-#endif
 
         internal class DiagnosticInformation
         {

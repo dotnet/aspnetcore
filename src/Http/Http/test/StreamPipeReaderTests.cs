@@ -565,14 +565,6 @@ namespace Microsoft.AspNetCore.Http.Tests
                 await Task.Yield();
                 return await base.ReadAsync(buffer, offset, count, cancellationToken);
             }
-
-#if NETCOREAPP2_2
-            public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-            {
-                await Task.Yield();
-                return await base.ReadAsync(buffer, cancellationToken);
-            }
-#endif
         }
     }
 }

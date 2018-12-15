@@ -8,7 +8,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -227,18 +226,7 @@ namespace Microsoft.AspNetCore.Http
                 try
                 {
                     AllocateReadTail();
-#if NETCOREAPP3_0
                     var length = await _readingStream.ReadAsync(_readTail.AvailableMemory.Slice(_readTail.End), tokenSource.Token);
-#elif NETSTANDARD2_0
-                    if (!MemoryMarshal.TryGetArray<byte>(_readTail.AvailableMemory.Slice(_readTail.End), out var arraySegment))
-                    {
-                        ThrowHelper.CreateInvalidOperationException_NoArrayFromMemory();
-                    }
-
-                    var length = await _readingStream.ReadAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count, tokenSource.Token);
-#else
-#error Target frameworks need to be updated.
-#endif
                     Debug.Assert(length + _readTail.End <= _readTail.AvailableMemory.Length);
 
                     _readTail.End += length;
