@@ -15,9 +15,12 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" />
     <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 

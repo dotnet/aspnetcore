@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>IISForwardsCompatibility.FunctionalTests</TestGroupName>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <SkipTests Condition=" '$(SkipIISForwardsCompatibilityTests)' == 'true' ">true</SkipTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
+    <ProjectReference Include="..\WebSites\**\*.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common.FunctionalTests\**\*.cs" />
+    <Compile Include="..\IIS.Shared.FunctionalTests\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="System.Diagnostics.EventLog" />
+    <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
+  </ItemGroup>
+
+</Project>

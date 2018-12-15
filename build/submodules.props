@@ -40,9 +40,7 @@
     <Repository Include="AzureIntegration" />
     <Repository Include="Components" />
     <Repository Include="Identity" />
-    <Repository Include="IISIntegration" />
     <Repository Include="JavaScriptServices" />
-    <Repository Include="MetaPackages" PatchPolicy="CascadeVersions" />
     <Repository Include="Mvc" />
     <Repository Include="Razor" />
     <Repository Include="Security" />

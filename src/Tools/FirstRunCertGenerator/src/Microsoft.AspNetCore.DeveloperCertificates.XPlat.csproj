@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
   </ItemGroup>
 
 </Project>
