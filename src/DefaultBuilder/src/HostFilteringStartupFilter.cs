@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore
 {
-    internal class HostFilteringStartupFilter : IStartupFilter
+    public class HostFilteringStartupFilter : IStartupFilter
     {
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
         {
