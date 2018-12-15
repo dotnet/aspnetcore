@@ -712,34 +712,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             AcceptAndMoveNext();
 
-            var bookmark = CurrentStart.AbsoluteIndex;
-            var tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
-            var selfClosing = At(SyntaxKind.ForwardSlash);
-            if (selfClosing)
+            AcceptWhile(IsSpacingToken(includeNewLines: false));
+            if (At(SyntaxKind.CloseAngle) ||
+                (At(SyntaxKind.ForwardSlash) && NextIs(SyntaxKind.CloseAngle)))
             {
-                tagMode = MarkupTagMode.SelfClosing;
-                Accept(tokens);
-                Assert(SyntaxKind.ForwardSlash);
-                AcceptAndMoveNext();
-                bookmark = CurrentStart.AbsoluteIndex;
-                tokens = ReadWhile(IsSpacingToken(includeNewLines: true));
-            }
+                if (At(SyntaxKind.ForwardSlash))
+                {
+                    tagMode = MarkupTagMode.SelfClosing;
+                    AcceptAndMoveNext(); // '/'
+                }
 
-            if (!At(SyntaxKind.CloseAngle))
+                AcceptAndMoveNext(); // '>'
+                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+            }
+            else
             {
-                Context.Source.Position = bookmark;
-                NextToken();
                 Context.ErrorSink.OnError(
                     RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
                         new SourceSpan(textLocation, contentLength: 4 /* text */)));
 
                 RecoverTextTag();
-            }
-            else
-            {
-                Accept(tokens);
-                TryAccept(SyntaxKind.CloseAngle);
-                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             }
 
             isWellFormed = true;
