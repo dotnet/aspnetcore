@@ -8,7 +8,6 @@
     <PackageTags>aspnetcore</PackageTags>
     <PackageTitle>Microsoft ASP.NET Core Module</PackageTitle>
     <Pack>true</Pack>
-    <ContentTargetFolders>content</ContentTargetFolders>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <PackageDescription>ASP.NET Core Module</PackageDescription>
     <IsPackable Condition="'$(OS)' != 'Windows_NT'">false</IsPackable>
@@ -25,8 +24,8 @@
     <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x64/2.0.0" />
     <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x64/2.0.0" />
 
-    <Content Include="..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\*.xml" PackagePath="" />
-    <Content Include="..\AspNetCoreModuleV2\AspNetCore\ancm.mof" />
+    <Content Include="..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" PackagePath="/" />
+    <Content Include="..\AspNetCoreModuleV2\AspNetCore\ancm.mof" PackagePath="/" />
     <Content Include="Microsoft.AspNetCore.AspNetCoreModule.props.in" PackagePath="build\" />
     <Reference Include="AspNetCoreModuleV2" />
   </ItemGroup>
