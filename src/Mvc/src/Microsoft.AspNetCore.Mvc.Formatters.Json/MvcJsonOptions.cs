@@ -1,7 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 
@@ -10,8 +14,10 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Provides programmatic configuration for JSON in the MVC framework.
     /// </summary>
-    public class MvcJsonOptions
+    public class MvcJsonOptions : IEnumerable<ICompatibilitySwitch>
     {
+        private readonly ICompatibilitySwitch[] _switches = Array.Empty<ICompatibilitySwitch>();
+
         /// <summary>
         /// Gets or sets a flag to determine whether error messages from JSON deserialization by the
         /// <see cref="JsonInputFormatter"/> will be added to the <see cref="ModelStateDictionary"/>. If
@@ -31,5 +37,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets the <see cref="JsonSerializerSettings"/> that are used by this application.
         /// </summary>
         public JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.CreateSerializerSettings();
+
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
+        {
+            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }
 }
