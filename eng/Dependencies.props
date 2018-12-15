@@ -103,7 +103,7 @@ and are generated based on the last package release.
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
     <LatestPackageReference Include="Newtonsoft.Json" Version="9.0.1" Condition="'$(UseMSBuildJsonNet)' == 'true'" />
     <!-- This version should be used by runtime packages -->
-    <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" Condition="'$(UseMSBuildJsonNet)' != 'true'" />
+    <LatestPackageReference Include="Newtonsoft.Json" Version="12.0.1" Condition="'$(UseMSBuildJsonNet)' != 'true'" />
     <LatestPackageReference Include="StackExchange.Redis" Version="2.0.513" />
     <LatestPackageReference Include="WindowsAzure.Storage" Version="8.1.4" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.43.0" />
