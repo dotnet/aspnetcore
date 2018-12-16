@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
     public interface IEndpointConventionBuilder
     {
         /// <summary>
-        /// Adds the convention to the builder. Conventions will used for customization of <see cref="EndpointBuilder"/> instances.
+        /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
         /// </summary>
         /// <param name="convention">The convention to add to the builder.</param>
         void Add(Action<EndpointBuilder> convention);

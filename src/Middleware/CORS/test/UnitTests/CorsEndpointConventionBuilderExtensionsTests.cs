@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             var addCorsPolicy = Assert.Single(testConventionBuilder.Conventions);
 
-            var endpointModel = new TestEndpointModel();
+            var endpointModel = new TestEndpointBuilder();
             addCorsPolicy(endpointModel);
             var endpoint = endpointModel.Build();
 
@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             var addCorsPolicy = Assert.Single(testConventionBuilder.Conventions);
 
-            var endpointModel = new TestEndpointModel();
-            addCorsPolicy(endpointModel);
-            var endpoint = endpointModel.Build();
+            var endpointBuilder = new TestEndpointBuilder();
+            addCorsPolicy(endpointBuilder);
+            var endpoint = endpointBuilder.Build();
 
             var metadata = endpoint.Metadata.GetMetadata<ICorsPolicyMetadata>();
             Assert.NotNull(metadata);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.True(metadata.Policy.AllowAnyOrigin);
         }
 
-        private class TestEndpointModel : EndpointModel
+        private class TestEndpointBuilder : EndpointBuilder
         {
             public override Endpoint Build()
             {
@@ -65,9 +65,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
-            public IList<Action<EndpointModel>> Conventions { get; } = new List<Action<EndpointModel>>();
+            public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();
 
-            public void Apply(Action<EndpointModel> convention)
+            public void Add(Action<EndpointBuilder> convention)
             {
                 Conventions.Add(convention);
             }
