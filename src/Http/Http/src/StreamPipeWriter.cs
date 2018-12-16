@@ -8,13 +8,14 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Implements PipeWriter using a underlying stream.
+    /// Implements PipeWriter using a underlying stream. 
     /// </summary>
     public class StreamPipeWriter : PipeWriter, IDisposable
     {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Creates a new StreamPipeWrapper
+        /// Creates a new StreamPipeWrapper 
         /// </summary>
         /// <param name="writingStream">The stream to write to</param>
         public StreamPipeWriter(Stream writingStream) : this(writingStream, 4096)
@@ -173,7 +174,14 @@ namespace Microsoft.AspNetCore.Http
                         for (var i = 0; i < count; i++)
                         {
                             var segment = _completedSegments[0];
+#if NETCOREAPP3_0
                             await _writingStream.WriteAsync(segment.Buffer.Slice(0, segment.Length), localToken);
+#elif NETSTANDARD2_0
+                            MemoryMarshal.TryGetArray<byte>(segment.Buffer, out var arraySegment);
+                            await _writingStream.WriteAsync(arraySegment.Array, 0, segment.Length, localToken);
+#else
+#error Target frameworks need to be updated.
+#endif
                             _bytesWritten -= segment.Length;
                             segment.Return();
                             _completedSegments.RemoveAt(0);
@@ -182,7 +190,14 @@ namespace Microsoft.AspNetCore.Http
 
                     if (!_currentSegment.IsEmpty)
                     {
+#if NETCOREAPP3_0
                         await _writingStream.WriteAsync(_currentSegment.Slice(0, _position), localToken);
+#elif NETSTANDARD2_0
+                        MemoryMarshal.TryGetArray<byte>(_currentSegment, out var arraySegment);
+                        await _writingStream.WriteAsync(arraySegment.Array, 0, _position, localToken);
+#else
+#error Target frameworks need to be updated.
+#endif
                         _bytesWritten -= _position;
                         _position = 0;
                     }

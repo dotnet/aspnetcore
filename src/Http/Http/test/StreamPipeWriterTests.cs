@@ -311,6 +311,13 @@ namespace Microsoft.AspNetCore.Http.Tests
             await Task.Delay(30000, cancellationToken);
             return 0;
         }
+#if NETCOREAPP2_2
+        public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(30000, cancellationToken);
+            return 0;
+        }
+#endif
     }
 
     internal class SingleWriteStream : MemoryStream
@@ -318,6 +325,28 @@ namespace Microsoft.AspNetCore.Http.Tests
         private bool _shouldNextWriteFail;
 
         public bool AllowAllWrites { get; set; }
+
+
+#if NETCOREAPP2_2
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (_shouldNextWriteFail && !AllowAllWrites)
+                {
+                    await Task.Delay(30000, cancellationToken);
+                }
+                else
+                {
+                    await base.WriteAsync(source, cancellationToken);
+                }
+            }
+            finally
+            {
+                _shouldNextWriteFail = !_shouldNextWriteFail;
+            }
+        }
+#endif
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
