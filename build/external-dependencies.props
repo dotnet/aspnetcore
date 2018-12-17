@@ -135,8 +135,6 @@
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" VariableName="MicrosoftNETCoreAppPackageVersion" />
 
     <!-- Microsoft.NetCore.DotNetAppHost for global tools-->
-    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHost21PackageVersion)" VariableName="MicrosoftNETCoreDotNetAppHost21PackageVersion" />
-    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHost22PackageVersion)" VariableName="MicrosoftNETCoreDotNetAppHost22PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
     <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
 
