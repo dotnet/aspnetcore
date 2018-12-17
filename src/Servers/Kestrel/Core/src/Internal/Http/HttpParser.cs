@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // Check for CR in value
             var valueBuffer = new Span<byte>(headerLine + valueStart, valueEnd - valueStart + 1);
-            if (valueBuffer.IndexOf(ByteCR) >= 0)
+            if (valueBuffer.Contains(ByteCR))
             {
                 RejectRequestHeader(headerLine, length);
             }

@@ -21,10 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class PageBinderFactoryTest
     {
-        private static readonly MvcOptions _options = new MvcOptions
-        {
-            AllowValidatingTopLevelNodes = true,
-        };
+        private static readonly MvcOptions _options = new MvcOptions();
         private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(_options);
 
         [Fact]
@@ -712,56 +709,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 });
         }
 
-        [Fact]
-        public async Task CreateHandlerBinder_DoesNotValidateTopLevelParameters_IfDisabled()
-        {
-            // Arrange
-            var type = typeof(PageModelWithExecutors);
-            var actionDescriptor = GetActionDescriptorWithHandlerMethod(
-                type,
-                nameof(PageModelWithExecutors.OnPostWithValidation));
-
-            // Act
-
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var modelBinderFactory = TestModelBinderFactory.CreateDefault();
-            var mvcOptions = new MvcOptions();
-
-            var parameterBinder = new ParameterBinder(
-                modelMetadataProvider,
-                modelBinderFactory,
-                new DefaultObjectValidator(
-                    modelMetadataProvider,
-                    new[] { TestModelValidatorProvider.CreateDefaultProvider() },
-                    new MvcOptions()),
-                Options.Create(mvcOptions),
-                NullLoggerFactory.Instance);
-
-            var factory = PageBinderFactory.CreateHandlerBinder(
-                parameterBinder,
-                modelMetadataProvider,
-                modelBinderFactory,
-                actionDescriptor,
-                actionDescriptor.HandlerMethods[0],
-                mvcOptions);
-
-            var page = new PageWithProperty
-            {
-                PageContext = GetPageContext()
-            };
-
-            var model = new PageModelWithExecutors();
-            var arguments = new Dictionary<string, object>();
-
-            // Act
-            await factory(page.PageContext, arguments);
-
-            // Assert
-            var modelState = page.PageContext.ModelState;
-            Assert.True(modelState.IsValid);
-            Assert.Empty(modelState);
-        }
-
         private static CompiledPageActionDescriptor GetActionDescriptorWithHandlerMethod(Type type, string method)
         {
             var handlerMethodInfo = type.GetMethod(method);
@@ -921,24 +868,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             [FromForm]
             public string PropertyWithNoValue { get; set; }
-        }
-
-        private class PageModelWithModelBinderAttribute
-        {
-            [ModelBinder(BinderType = typeof(DeclarativeSecurityAction))]
-            public Guid PropertyWithBinderType { get; set; }
-        }
-
-        private class PageModelWithPropertyFilterAttribute
-        {
-            [ModelBinder]
-            [TestPropertyFilterProvider]
-            public object PropertyWithFilter { get; set; }
-        }
-
-        private class TestPropertyFilterProvider : Attribute, IPropertyFilterProvider
-        {
-            public Func<ModelMetadata, bool> PropertyFilter => _ => true;
         }
 
         private class PageModelWithDefaultValue

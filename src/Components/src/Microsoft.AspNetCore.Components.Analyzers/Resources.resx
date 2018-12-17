@@ -118,15 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ComponentParametersShouldNotBePublic_Description" xml:space="preserve">
-    <value>Component parameters should not be public.</value>
+    <value>Component parameters should not have public setters.</value>
   </data>
   <data name="ComponentParametersShouldNotBePublic_FixTitle" xml:space="preserve">
     <value>Make component parameter private</value>
   </data>
   <data name="ComponentParametersShouldNotBePublic_Format" xml:space="preserve">
-    <value>Component parameter '{0}' is marked public, but component parameters should not be public.</value>
+    <value>Component parameter '{0}' has a public setter, but component parameters should not be publicly settable.</value>
   </data>
   <data name="ComponentParametersShouldNotBePublic_Title" xml:space="preserve">
-    <value>Component parameter is marked public</value>
+    <value>Component parameter has public setter</value>
   </data>
 </root>

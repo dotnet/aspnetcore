@@ -4,7 +4,7 @@
   "msbuildType": "full",
   "toolsets": {
     "nodejs": {
-      "minVersion": "8.0",
+      "minVersion": "10.0",
       "required": true
     },
     "visualstudio": {

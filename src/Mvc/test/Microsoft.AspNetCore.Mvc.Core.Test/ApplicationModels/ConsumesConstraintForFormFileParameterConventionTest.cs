@@ -60,18 +60,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             IModelMetadataProvider modelMetadataProvider = null)
         {
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
-            var mvcOptions = Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true });
+            var mvcOptions = Options.Create(new MvcOptions());
             modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
             var convention = new DefaultApplicationModelProvider(mvcOptions, modelMetadataProvider);
             convention.OnProvidersExecuting(context);
 
             return context;
-        }
-
-        private static ControllerModel GetControllerModel(Type controllerType)
-        {
-            var context = GetContext(controllerType);
-            return Assert.Single(context.Result.Controllers);
         }
 
         private static ActionModel GetActionModel(Type controllerType, string actionName)

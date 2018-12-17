@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -16,7 +17,7 @@ namespace RoutingSandbox.Framework
     internal class FrameworkEndpointDataSource : EndpointDataSource, IEndpointConventionBuilder
     {
         private readonly RoutePatternTransformer _routePatternTransformer;
-        private readonly List<Action<EndpointModel>> _conventions;
+        private readonly List<Action<EndpointBuilder>> _conventions;
 
         public List<RoutePattern> Patterns { get; }
         public List<HubMethod> HubMethods { get; }
@@ -26,7 +27,7 @@ namespace RoutingSandbox.Framework
         public FrameworkEndpointDataSource(RoutePatternTransformer routePatternTransformer)
         {
             _routePatternTransformer = routePatternTransformer;
-            _conventions = new List<Action<EndpointModel>>();
+            _conventions = new List<Action<EndpointBuilder>>();
 
             Patterns = new List<RoutePattern>();
             HubMethods = new List<HubMethod>();
@@ -62,18 +63,18 @@ namespace RoutingSandbox.Framework
                         continue;
                     }
 
-                    var endpointModel = new RouteEndpointModel(
+                    var endpointBuilder = new RouteEndpointBuilder(
                         hubMethod.RequestDelegate,
                         resolvedPattern,
                         order++);
-                    endpointModel.DisplayName = $"{hubMethod.Hub}.{hubMethod.Method}";
+                    endpointBuilder.DisplayName = $"{hubMethod.Hub}.{hubMethod.Method}";
 
                     foreach (var convention in _conventions)
                     {
-                        convention(endpointModel);
+                        convention(endpointBuilder);
                     }
 
-                    endpoints.Add(endpointModel.Build());
+                    endpoints.Add(endpointBuilder.Build());
                 }
             }
 
@@ -85,7 +86,7 @@ namespace RoutingSandbox.Framework
             return NullChangeToken.Singleton;
         }
 
-        public void Apply(Action<EndpointModel> convention)
+        public void Add(Action<EndpointBuilder> convention)
         {
             _conventions.Add(convention);
         }

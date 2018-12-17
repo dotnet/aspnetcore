@@ -10,7 +10,7 @@ Features of the components programming model include:
 - [Routing](https://blazor.net/docs/routing.html)
 - [Layouts](https://blazor.net/docs/layouts.html)
 - Forms and validation
-- Dependency injection
+- [Dependency injection](https://blazor.net/docs/dependency-injection.html)
 - [JavaScript interop](https://blazor.net/docs/javascript-interop.html)
 - Live reloading in the browser during development
 - Server-side rendering

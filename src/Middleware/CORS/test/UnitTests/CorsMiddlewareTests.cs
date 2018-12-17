@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -562,6 +564,257 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                         Assert.Equal("AllowedHeader", Assert.Single(kvp.Value));
                     });
             }
+        }
+
+        [Fact]
+        public async Task Invoke_HasEndpointWithNoMetadata_RunsCors()
+        {
+            // Arrange
+            var corsService = Mock.Of<ICorsService>();
+            var mockProvider = new Mock<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+            mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<CorsPolicy>(null))
+                .Verifiable();
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                loggerFactory,
+                "DefaultPolicyName");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, EndpointMetadataCollection.Empty, "Test endpoint"));
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider.Object);
+
+            // Assert
+            mockProvider.Verify(
+                o => o.GetPolicyAsync(It.IsAny<HttpContext>(), "DefaultPolicyName"),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Invoke_HasEndpointWithEnableMetadata_MiddlewareHasPolicyName_RunsCorsWithPolicyName()
+        {
+            // Arrange
+            var corsService = Mock.Of<ICorsService>();
+            var mockProvider = new Mock<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+            mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<CorsPolicy>(null))
+                .Verifiable();
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                loggerFactory,
+                "DefaultPolicyName");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new EnableCorsAttribute("MetadataPolicyName")), "Test endpoint"));
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider.Object);
+
+            // Assert
+            mockProvider.Verify(
+                o => o.GetPolicyAsync(It.IsAny<HttpContext>(), "MetadataPolicyName"),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Invoke_HasEndpointWithEnableMetadata_MiddlewareHasPolicy_RunsCorsWithPolicyName()
+        {
+            // Arrange
+            var policy = new CorsPolicyBuilder().Build();
+            var corsService = Mock.Of<ICorsService>();
+            var mockProvider = new Mock<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+            mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<CorsPolicy>(null))
+                .Verifiable();
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                policy,
+                loggerFactory);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new EnableCorsAttribute("MetadataPolicyName")), "Test endpoint"));
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider.Object);
+
+            // Assert
+            mockProvider.Verify(
+                o => o.GetPolicyAsync(It.IsAny<HttpContext>(), "MetadataPolicyName"),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Invoke_HasEndpointWithCorsPolicyMetadata_MiddlewareHasPolicy_RunsCorsWithPolicyName()
+        {
+            // Arrange
+            var defaultPolicy = new CorsPolicyBuilder().Build();
+            var metadataPolicy = new CorsPolicyBuilder().Build();
+            var mockCorsService = new Mock<ICorsService>();
+            var mockProvider = new Mock<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+            mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<CorsPolicy>(null))
+                .Verifiable();
+            mockCorsService.Setup(o => o.EvaluatePolicy(It.IsAny<HttpContext>(), It.IsAny<CorsPolicy>()))
+                .Returns(new CorsResult())
+                .Verifiable();
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                mockCorsService.Object,
+                defaultPolicy,
+                loggerFactory);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new CorsPolicyMetadata(metadataPolicy)), "Test endpoint"));
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider.Object);
+
+            // Assert
+            mockProvider.Verify(
+                o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()),
+                Times.Never);
+            mockCorsService.Verify(
+                o => o.EvaluatePolicy(It.IsAny<HttpContext>(), metadataPolicy),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Invoke_HasEndpointWithEnableMetadataWithNoName_RunsCorsWithStaticPolicy()
+        {
+            // Arrange
+            var policy = new CorsPolicyBuilder().Build();
+            var mockCorsService = new Mock<ICorsService>();
+            var mockProvider = new Mock<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+            mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<CorsPolicy>(null))
+                .Verifiable();
+            mockCorsService.Setup(o => o.EvaluatePolicy(It.IsAny<HttpContext>(), It.IsAny<CorsPolicy>()))
+                .Returns(new CorsResult())
+                .Verifiable();
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                mockCorsService.Object,
+                policy,
+                loggerFactory);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new EnableCorsAttribute()), "Test endpoint"));
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider.Object);
+
+            // Assert
+            mockProvider.Verify(
+                o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()),
+                Times.Never);
+            mockCorsService.Verify(
+                o => o.EvaluatePolicy(It.IsAny<HttpContext>(), policy),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Invoke_HasEndpointWithDisableMetadata_SkipCors()
+        {
+            // Arrange
+            var corsService = Mock.Of<ICorsService>();
+            var mockProvider = new Mock<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+            mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<CorsPolicy>(null))
+                .Verifiable();
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                loggerFactory,
+                "DefaultPolicyName");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new DisableCorsAttribute()), "Test endpoint"));
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider.Object);
+
+            // Assert
+            mockProvider.Verify(
+                o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task Invoke_HasEndpointWithMutlipleMetadata_SkipCorsBecauseOfMetadataOrder()
+        {
+            // Arrange
+            var corsService = Mock.Of<ICorsService>();
+            var mockProvider = new Mock<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+            mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<CorsPolicy>(null))
+                .Verifiable();
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                loggerFactory,
+                "DefaultPolicyName");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new EnableCorsAttribute("MetadataPolicyName"), new DisableCorsAttribute()), "Test endpoint"));
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider.Object);
+
+            // Assert
+            mockProvider.Verify(
+                o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task Invoke_InvokeFlagSet()
+        {
+            // Arrange
+            var corsService = Mock.Of<ICorsService>();
+            var mockProvider = Mock.Of<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                loggerFactory,
+                "DefaultPolicyName");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new EnableCorsAttribute("MetadataPolicyName"), new DisableCorsAttribute()), "Test endpoint"));
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { "http://example.com" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider);
+
+            // Assert
+            Assert.Contains(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareInvoked"));
         }
     }
 }

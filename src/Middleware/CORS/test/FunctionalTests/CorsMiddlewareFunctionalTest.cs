@@ -25,11 +25,13 @@ namespace FunctionalTests
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
-        public async Task RunClientTests()
+        [Theory]
+        [InlineData("Startup")]
+        [InlineData("StartupWithoutEndpointRouting")]
+        public async Task RunClientTests(string startup)
         {
             using (StartLog(out var loggerFactory))
-            using (var deploymentResult = await CreateDeployments(loggerFactory))
+            using (var deploymentResult = await CreateDeployments(loggerFactory, startup))
             {
                 ProcessStartInfo processStartInfo;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -58,9 +60,10 @@ namespace FunctionalTests
             }
         }
 
-        private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory)
+        private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory, string startup)
         {
-            var solutionPath = TestPathUtilities.GetSolutionRootDirectory("CORS");
+            var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
+
             var configuration =
 #if RELEASE
                 "Release";
@@ -73,10 +76,14 @@ namespace FunctionalTests
                 TargetFramework = "netcoreapp3.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "samples", "SampleDestination"),
+                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleDestination"),
                 PublishApplicationBeforeDeployment = false,
                 ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
+                EnvironmentVariables =
+                {
+                    ["CORS_STARTUP"] = startup
+                }
             };
 
             var destinationFactory = ApplicationDeployerFactory.Create(destinationParameters, loggerFactory);
@@ -87,7 +94,7 @@ namespace FunctionalTests
                 TargetFramework = "netcoreapp3.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "samples", "SampleOrigin"),
+                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleOrigin"),
                 PublishApplicationBeforeDeployment = false,
                 ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,

@@ -17,6 +17,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Workaround microsoft/msbuild#3626 -->
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
+    <SharedSourceRoot>$(MSBuildThisFileDirectory)..\Shared\</SharedSourceRoot>
   </PropertyGroup>
 
 </Project>

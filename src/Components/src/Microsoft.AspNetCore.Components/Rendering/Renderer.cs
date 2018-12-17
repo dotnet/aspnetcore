@@ -54,6 +54,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
             => AttachAndInitComponent(component, -1).ComponentId;
 
         /// <summary>
+        /// Gets the current render tree for a given component.
+        /// </summary>
+        /// <param name="componentId">The id for the component.</param>
+        /// <returns>The <see cref="RenderTreeBuilder"/> representing the current render tree.</returns>
+        private protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrrentRenderTree.GetFrames();
+
+        /// <summary>
         /// Performs the first render for a root component. After this, the root component
         /// makes its own decisions about when to re-render, so there is no need to call
         /// this more than once.
@@ -63,6 +70,19 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             GetRequiredComponentState(componentId)
                 .SetDirectParameters(ParameterCollection.Empty);
+        }
+
+        /// <summary>
+        /// Performs the first render for a root component. After this, the root component
+        /// makes its own decisions about when to re-render, so there is no need to call
+        /// this more than once.
+        /// </summary>
+        /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
+        /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
+        protected void RenderRootComponent(int componentId, ParameterCollection initialParameters)
+        {
+            GetRequiredComponentState(componentId)
+                .SetDirectParameters(initialParameters);
         }
 
         private ComponentState AttachAndInitComponent(IComponent component, int parentComponentId)

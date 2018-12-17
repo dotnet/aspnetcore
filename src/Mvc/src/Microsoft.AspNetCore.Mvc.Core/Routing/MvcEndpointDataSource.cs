@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching,
-            List<Action<EndpointModel>> conventions)
+            List<Action<EndpointBuilder>> conventions)
         {
             RequestDelegate requestDelegate = (context) =>
             {
@@ -281,17 +281,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 return invoker.InvokeAsync();
             };
 
-            var model = new RouteEndpointModel(requestDelegate, routePattern, order);
-
+            var endpointBuilder = new RouteEndpointBuilder(requestDelegate, routePattern, order);
             AddEndpointMetadata(
-                model.Metadata,
+                endpointBuilder.Metadata,
                 action,
                 routeName,
                 dataTokens,
                 suppressLinkGeneration,
                 suppressPathMatching);
 
-            model.DisplayName = action.DisplayName;
+            endpointBuilder.DisplayName = action.DisplayName;
 
             // REVIEW: When should conventions be run
             // Metadata should have lower precedence that data source metadata
@@ -299,11 +298,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 foreach (var convention in conventions)
                 {
-                    convention(model);
+                    convention(endpointBuilder);
                 }
             }
 
-            return (RouteEndpoint)model.Build();
+            return (RouteEndpoint)endpointBuilder.Build();
         }
 
         private static void AddEndpointMetadata(

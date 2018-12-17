@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     keyBinder,
                     valueBinder,
                     loggerFactory,
-                    mvcOptions.AllowValidatingTopLevelNodes);
+                    true /* allowValidatingTopLevelNodes */);
             }
 
             return null;
