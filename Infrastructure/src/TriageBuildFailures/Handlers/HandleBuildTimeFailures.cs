@@ -19,6 +19,7 @@ namespace TriageBuildFailures.Handlers
         {
             "E:	 ",
             "error NU1603:",
+            "error NU5118:",
             "error KRB4005:",
             "TF400889:", // The following path contains more than the allowed 259 characters
             "Failed to publish artifacts:",
