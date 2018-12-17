@@ -16,6 +16,9 @@
     <IsSubfolderBuild>true</IsSubfolderBuild>
     <!-- Workaround microsoft/msbuild#3626 -->
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
+
+    <!-- Api check is currently broken on this subfolder of projects. -->
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
