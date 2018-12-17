@@ -598,17 +598,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task ReadAsync_DefaultOptions_DoesNotWrapJsonInputExceptions()
+        public async Task ReadAsync_DoNotAllowInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
         {
             // Arrange
-            var formatter = new JsonInputFormatter(
-                GetLogger(),
-                _serializerSettings,
-                ArrayPool<char>.Shared,
-                _objectPoolProvider,
-                new MvcOptions(),
-                new MvcJsonOptions());
-
+            var formatter = CreateFormatter(allowInputFormatterExceptionMessages: false);
             var contentBytes = Encoding.UTF8.GetBytes("{");
             var httpContext = GetHttpContext(contentBytes);
 

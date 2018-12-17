@@ -390,13 +390,6 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
-                        typeof(IPostConfigureOptions<MvcJsonOptions>),
-                        new[]
-                        {
-                            typeof(MvcJsonOptionsConfigureCompatibilityOptions),
-                        }
-                    },
-                    {
                         typeof(IActionConstraintProvider),
                         new Type[]
                         {

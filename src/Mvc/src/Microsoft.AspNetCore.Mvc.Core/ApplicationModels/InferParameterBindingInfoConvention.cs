@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// An <see cref="IActionModelConvention"/> that infers <see cref="BindingInfo.BindingSource"/> for parameters.
     /// </summary>
     /// <remarks>
-    /// The goal of this covention is to make intuitive and easy to document <see cref="BindingSource"/> inferences. The rules are:
+    /// The goal of this convention is to make intuitive and easy to document <see cref="BindingSource"/> inferences. The rules are:
     /// <list type="number">
     /// <item>A previously specified <see cref="BindingInfo.BindingSource" /> is never overwritten.</item>
     /// <item>A complex type parameter (<see cref="ModelMetadata.IsComplexType"/>) is assigned <see cref="BindingSource.Body"/>.</item>
@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             _modelMetadataProvider = modelMetadataProvider ?? throw new ArgumentNullException(nameof(modelMetadataProvider));
         }
-
-        internal bool AllowInferringBindingSourceForCollectionTypesAsFromQuery { get; set; }
 
         protected virtual bool ShouldApply(ActionModel action) => true;
 
@@ -118,13 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         private bool IsComplexTypeParameter(ParameterModel parameter)
         {
             // No need for information from attributes on the parameter. Just use its type.
-            var metadata = _modelMetadataProvider
-                .GetMetadataForType(parameter.ParameterInfo.ParameterType);
-
-            if (AllowInferringBindingSourceForCollectionTypesAsFromQuery && metadata.IsCollectionType)
-            {
-                return false;
-            }
+            var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterInfo.ParameterType);
 
             return metadata.IsComplexType;
         }

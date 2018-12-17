@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
@@ -134,8 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 var parameter = parameters[i];
 
                 ModelMetadata metadata;
-                if (mvcOptions.AllowValidatingTopLevelNodes &&
-                    modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase &&
+                if (modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase &&
                     parameter is ControllerParameterDescriptor controllerParameterDescriptor)
                 {
                     // The default model metadata provider derives from ModelMetadataProvider
