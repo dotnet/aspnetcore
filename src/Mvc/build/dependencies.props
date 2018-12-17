@@ -84,8 +84,6 @@
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsWebEncodersPackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.9</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.3</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27122-01</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>3.0.0-preview-18606-0099</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-18605-0080</MicrosoftNETSdkRazorPackageVersion>
