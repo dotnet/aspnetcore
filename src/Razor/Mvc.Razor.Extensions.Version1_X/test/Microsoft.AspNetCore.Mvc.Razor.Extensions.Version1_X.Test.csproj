@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\**" />
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Test.Common" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- We need this to compile but don't want it referenced by the project. It is included dynamically in CodeGeneration tests. -->
+    <Reference Include="Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X" />
+
+    <!-- Due to how DependencyContext.Load handles our special MvcShim reference above we need to also reference the MvcShim's DiagnosticSource dependency -->
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <MvcShim Condition="$(TargetFramework) != ''" Include="..\..\test\testassets\Razor.Test.MvcShim.Version1_X\bin\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.deps.json" />
+  </ItemGroup>
+
+  <Target Name="CopyDepsFromShims" AfterTargets="Build">
+    <Copy SourceFiles="@(MvcShim)" DestinationFolder="$(OutputPath)" />
+  </Target>
+</Project>
