@@ -107,14 +107,24 @@ public:
     static
     std::wstring GetHttpsPort(const std::vector<BindingInformation> & bindings)
     {
+        std::wstring selectedPort;
         for (auto binding : bindings)
         {
             if (equals_ignore_case(binding.QueryProtocol(), CS_SITE_BINDING_PROTOCOL_HTTPS))
             {
-                return binding.QueryPort();
+                const auto bindingPort = binding.QueryPort();
+                if (selectedPort.empty())
+                {
+                    selectedPort = binding.QueryPort();
+                }
+                else if (selectedPort != bindingPort)
+                {
+                    // If there are multiple endpoints configured return empty port
+                    return L"";
+                }
             }
         }
-        return L"";
+        return selectedPort;
     }
 
 private:

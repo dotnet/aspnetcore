@@ -247,17 +247,18 @@ public:
             pEnvironmentVarTable->FindKey((PWSTR)ASPNETCORE_HTTPS_PORT_ENV_STR, &pIISHttpsPort);
             if (pIISHttpsPort != NULL)
             {
-                // user defined ASPNETCORE_HTTPS_PORT in configuration, wipe it off
+                // user defined ASPNETCORE_HTTPS_PORT in configuration, don't override it
                 pIISHttpsPort->Dereference();
-                pEnvironmentVarTable->DeleteKey((PWSTR)ASPNETCORE_HTTPS_PORT_ENV_STR);
             }
-
-            pIISHttpsPort = new ENVIRONMENT_VAR_ENTRY();
-
-            if (FAILED(hr = pIISHttpsPort->Initialize(ASPNETCORE_HTTPS_PORT_ENV_STR, pHttpsPort)) ||
-                FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISHttpsPort)))
+            else
             {
-                goto Finished;
+                pIISHttpsPort = new ENVIRONMENT_VAR_ENTRY();
+
+                if (FAILED(hr = pIISHttpsPort->Initialize(ASPNETCORE_HTTPS_PORT_ENV_STR, pHttpsPort)) ||
+                    FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISHttpsPort)))
+                {
+                    goto Finished;
+                }
             }
         }
 
