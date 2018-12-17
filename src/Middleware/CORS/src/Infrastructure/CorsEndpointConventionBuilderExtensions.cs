@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Apply(endpointBuilder =>
+            builder.Add(endpointBuilder =>
             {
                 endpointBuilder.Metadata.Add(new EnableCorsAttribute(policyName));
             });
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Builder
             configurePolicy(policyBuilder);
             var policy = policyBuilder.Build();
 
-            builder.Apply(endpointBuilder =>
+            builder.Add(endpointBuilder =>
             {
                 endpointBuilder.Metadata.Add(new CorsPolicyMetadata(policy));
             });

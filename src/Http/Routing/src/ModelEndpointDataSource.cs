@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -19,9 +20,9 @@ namespace Microsoft.AspNetCore.Routing
             _endpointConventionBuilders = new List<EndpointConventionBuilder>();
         }
 
-        public IEndpointConventionBuilder AddEndpointModel(EndpointModel endpointModel)
+        public IEndpointConventionBuilder AddEndpointBuilder(EndpointBuilder endpointBuilder)
         {
-            var builder = new EndpointConventionBuilder(endpointModel);
+            var builder = new EndpointConventionBuilder(endpointBuilder);
             _endpointConventionBuilders.Add(builder);
 
             return builder;
@@ -35,21 +36,21 @@ namespace Microsoft.AspNetCore.Routing
         public override IReadOnlyList<Endpoint> Endpoints => _endpointConventionBuilders.Select(e => e.Build()).ToArray();
 
         // for testing
-        internal IEnumerable<EndpointModel> EndpointModels => _endpointConventionBuilders.Select(b => b.EndpointModel);
+        internal IEnumerable<EndpointBuilder> EndpointBuilders => _endpointConventionBuilders.Select(b => b.EndpointBuilder);
 
         private class EndpointConventionBuilder : IEndpointConventionBuilder
         {
-            internal EndpointModel EndpointModel { get; }
+            internal EndpointBuilder EndpointBuilder { get; }
 
-            private readonly List<Action<EndpointModel>> _conventions;
+            private readonly List<Action<EndpointBuilder>> _conventions;
 
-            public EndpointConventionBuilder(EndpointModel endpointModel)
+            public EndpointConventionBuilder(EndpointBuilder endpointBuilder)
             {
-                EndpointModel = endpointModel;
-                _conventions = new List<Action<EndpointModel>>();
+                EndpointBuilder = endpointBuilder;
+                _conventions = new List<Action<EndpointBuilder>>();
             }
 
-            public void Apply(Action<EndpointModel> convention)
+            public void Add(Action<EndpointBuilder> convention)
             {
                 _conventions.Add(convention);
             }
@@ -58,10 +59,10 @@ namespace Microsoft.AspNetCore.Routing
             {
                 foreach (var convention in _conventions)
                 {
-                    convention(EndpointModel);
+                    convention(EndpointBuilder);
                 }
 
-                return EndpointModel.Build();
+                return EndpointBuilder.Build();
             }
         }
     }

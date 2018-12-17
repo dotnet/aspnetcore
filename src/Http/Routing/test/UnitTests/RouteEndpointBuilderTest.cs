@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class RouteEndpointModelTest
+    public class RouteEndpointBuilderTest
     {
         [Fact]
         public void Build_AllValuesSet_EndpointCreated()
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing
             var metadata = new object();
             RequestDelegate requestDelegate = (d) => null;
 
-            var builder = new RouteEndpointModel(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
+            var builder = new RouteEndpointBuilder(requestDelegate, RoutePatternFactory.Parse("/"), defaultOrder)
             {
                 DisplayName = "Display name!",
                 Metadata = { metadata }
