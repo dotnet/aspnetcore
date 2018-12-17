@@ -108,7 +108,6 @@
       <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.CookiePolicy" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Cors" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Cryptography.Internal" Category="noship" />

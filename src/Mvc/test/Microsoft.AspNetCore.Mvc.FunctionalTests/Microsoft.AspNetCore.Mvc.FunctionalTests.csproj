@@ -51,7 +51,6 @@
 
     <PackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreChunkingCookieManagerSourcesPackageVersion)" />
 
     <!--
       Explicitly referencing routing here to make it easy to integrate breaking changes. Localization.Routing brings in a transitive
