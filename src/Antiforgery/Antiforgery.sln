@@ -6,9 +6,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{71D070C4-B32
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6EDD8B57-4DE8-4246-A6A3-47ECD92740B4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery", "src\Microsoft.AspNetCore.Antiforgery\Microsoft.AspNetCore.Antiforgery.csproj", "{46FB03FB-7A44-4106-BDDE-D6F5417544AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery", "src\Microsoft.AspNetCore.Antiforgery.csproj", "{46FB03FB-7A44-4106-BDDE-D6F5417544AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery.Test", "test\Microsoft.AspNetCore.Antiforgery.Test\Microsoft.AspNetCore.Antiforgery.Test.csproj", "{415E83F8-6002-47E4-AA8E-CD5169C06F28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery.Test", "test\Microsoft.AspNetCore.Antiforgery.Test.csproj", "{415E83F8-6002-47E4-AA8E-CD5169C06F28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -16,7 +16,8 @@ if (!Uint8Array.prototype.indexOf) {
 }
 if (!Uint8Array.prototype.slice) {
     Object.defineProperty(Uint8Array.prototype, "slice", {
-        value: Array.prototype.slice,
+        // wrap the slice in Uint8Array so it looks like a Uint8Array.slice call
+        value: (start?: number, end?: number) => new Uint8Array(Array.prototype.slice(start, end)),
         writable: true,
     });
 }

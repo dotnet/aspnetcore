@@ -55,7 +55,7 @@
       </SharedFxBuildProperties>
     </PropertyGroup>
 
-    <MSBuild Projects="$(MSBuildToolsPath)\NuGet.targets"
+    <MSBuild Projects="$(NuGetRestoreTargets)"
              Targets="Restore"
              Properties="$(SharedFxBuildProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
 

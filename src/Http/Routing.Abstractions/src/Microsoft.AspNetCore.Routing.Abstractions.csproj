@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core abstractions for routing requests to application logic and for generating links.
+Commonly used types:
+Microsoft.AspNetCore.Routing.IRouter
+Microsoft.AspNetCore.Routing.RouteData</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;routing</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+  </ItemGroup>
+</Project>

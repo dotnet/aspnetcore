@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>CORS middleware and policy for ASP.NET Core to enable cross-origin resource sharing.
+Commonly used types:
+Microsoft.AspNetCore.Cors.DisableCorsAttribute
+Microsoft.AspNetCore.Cors.EnableCorsAttribute</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;cors</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+</Project>

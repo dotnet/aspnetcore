@@ -38,10 +38,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// The <see cref="IModelBinder"/> for binding <typeparamref name="TElement"/>.
         /// </param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <remarks>
-        /// The binder will not add an error for an unbound top-level model even if
-        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/>.
-        /// </remarks>
         public ArrayModelBinder(IModelBinder elementBinder, ILoggerFactory loggerFactory)
             : base(elementBinder, loggerFactory)
         {
@@ -59,11 +55,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
         /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
         /// </param>
+        /// <remarks>
+        /// The <paramref name="allowValidatingTopLevelNodes"/> parameter is currently ignored.
+        /// <see cref="CollectionModelBinder{TElement}.AllowValidatingTopLevelNodes"/> is always <see langword="true"/>
+        /// in <see cref="ArrayModelBinder{TElement}"/>.
+        /// </remarks>
         public ArrayModelBinder(
             IModelBinder elementBinder,
             ILoggerFactory loggerFactory,
             bool allowValidatingTopLevelNodes)
-            : base(elementBinder, loggerFactory, allowValidatingTopLevelNodes)
+            : base(elementBinder, loggerFactory, allowValidatingTopLevelNodes: true)
         {
         }
 

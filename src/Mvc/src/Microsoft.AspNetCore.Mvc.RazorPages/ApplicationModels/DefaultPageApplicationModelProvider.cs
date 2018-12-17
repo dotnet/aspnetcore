@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         private readonly PageHandlerPageFilter _pageHandlerPageFilter = new PageHandlerPageFilter();
         private readonly PageHandlerResultFilter _pageHandlerResultFilter = new PageHandlerResultFilter();
         private readonly IModelMetadataProvider _modelMetadataProvider;
-        private readonly MvcOptions _mvcOptions;
         private readonly RazorPagesOptions _razorPagesOptions;
         private readonly Func<ActionContext, bool> _supportsAllRequests;
         private readonly Func<ActionContext, bool> _supportsNonGetRequests;
@@ -29,11 +28,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         public DefaultPageApplicationModelProvider(
             IModelMetadataProvider modelMetadataProvider,
-            IOptions<MvcOptions> options,
             IOptions<RazorPagesOptions> razorPagesOptions)
         {
             _modelMetadataProvider = modelMetadataProvider;
-            _mvcOptions = options.Value;
             _razorPagesOptions = razorPagesOptions.Value;
 
             _supportsAllRequests = _ => true;
@@ -248,7 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var attributes = parameter.GetCustomAttributes(inherit: true);
 
             BindingInfo bindingInfo;
-            if (_mvcOptions.AllowValidatingTopLevelNodes && _modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
+            if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
             {
                 var modelMetadata = modelMetadataProviderBase.GetMetadataForParameter(parameter);
                 bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);

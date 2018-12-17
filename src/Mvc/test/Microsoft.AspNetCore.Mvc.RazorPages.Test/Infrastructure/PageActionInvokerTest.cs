@@ -1544,15 +1544,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var mvcOptions = new MvcOptions
-            {
-                AllowValidatingTopLevelNodes = true,
-            };
+            var mvcOptions = new MvcOptions();
 
             return new ParameterBinder(
                 metadataProvider,
                 factory,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()),
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, mvcOptions),
                 Options.Create(mvcOptions),
                 NullLoggerFactory.Instance);
         }

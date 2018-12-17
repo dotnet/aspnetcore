@@ -49,20 +49,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             if (context.ActionContext.ActionDescriptor is ControllerActionDescriptor)
             {
-                var controllerContext = new ControllerContext(context.ActionContext);
-                // PERF: These are rarely going to be changed, so let's go copy-on-write.
-                controllerContext.ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories);
+                var controllerContext = new ControllerContext(context.ActionContext)
+                {
+                    // PERF: These are rarely going to be changed, so let's go copy-on-write.
+                    ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories)
+                };
                 controllerContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
 
-                var cacheResult = _controllerActionInvokerCache.GetCachedResult(controllerContext);
+                var (cacheEntry, filters) = _controllerActionInvokerCache.GetCachedResult(controllerContext);
 
                 var invoker = new ControllerActionInvoker(
                     _logger,
                     _diagnosticListener,
                     _mapper,
                     controllerContext,
-                    cacheResult.cacheEntry,
-                    cacheResult.filters);
+                    cacheEntry,
+                    filters);
 
                 context.Result = invoker;
             }

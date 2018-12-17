@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>HttpSys.FunctionalTests</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <Reference Include="System.Net.Http.WinHttpHandler" />
+  </ItemGroup>
+
+</Project>

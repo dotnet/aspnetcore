@@ -16,5 +16,6 @@
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	  <LangVersion>latest</LangVersion>
+    <SharedSourceRoot>$(MSBuildThisFileDirectory)..\Shared\</SharedSourceRoot>
   </PropertyGroup>
 </Project>

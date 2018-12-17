@@ -16,9 +16,10 @@ Building ASP.NET Core on Windows requires:
 * Windows 7 or higher
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Visual Studio 2017. <https://visualstudio.com>
+    * To install the exact required components, run scripts\install_vs.ps1. This will use VS2017.
 * Git. <https://git-scm.org>
 * (Optional) some optional components, like the SignalR Java client, may require
-    * NodeJS <https://nodejs.org>
+    * NodeJS. LTS version of 10.14.2 or newer recommended <https://nodejs.org>
     * Java Development Kit 10 or newer. Either:
         * OpenJDK <http://jdk.java.net/10/>
         * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
@@ -32,7 +33,7 @@ Building ASP.NET Core on macOS or Linux requires:
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Git <https://git-scm.org>
 * (Optional) some optional components, like the SignalR Java client, may require
-    * NodeJS  <https://nodejs.org>
+    * NodeJS. LTS version of 10.14.2 or newer recommended <https://nodejs.org>
     * Java Development Kit 10 or newer. Either:
         * OpenJDK <http://jdk.java.net/10/>
         * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
@@ -60,8 +61,8 @@ Before opening our .sln files in Visual Studio or VS Code, you need to perform t
    .\build.cmd /p:SkipTests=true /p:_ProjectsOnly=true
    ```
    This will download required tools and build the entire repository once. At that point, you should be able to open .sln files to work on the projects you care about.
-   
-2. Update your `PATH` environment variable. (See [below for details](#path).)
+
+2. Use the `startvs.cmd` script to open Visual Studio .sln files. This script first sets required environment variables.
 
 > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. Visual Studio will only build projects in a solution file, and makes a best effort to use other files on disk. If you pull many changes, the files on disk may be stale and will need to re-build.
 
@@ -84,20 +85,35 @@ Opening solution files may produce an error code NU1105 with a message such
 
 This is a known issue in NuGet (<https://github.com/NuGet/Home/issues/5820>) and we are working with them for a solution. See also <https://github.com/aspnet/AspNetCore/issues/4183> to track progress on this.
 
-**The workaround** for now is to disable NuGet restore in Visual Studio.
+**The workaround** for now is to add all projects to the solution.
 
-![screenshot](https://i.imgur.com/cTKP381.png)
+    dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
+
 
 #### PATH
 
-For VS Code and Visual Studio to work correctly, you must place the following location in your PATH.
-```
-Windows: %USERPROFILE%\.dotnet\x64
-Linux/macOS: $HOME/.dotnet
-```
-This must come **before** any other installation of `dotnet`. In Windows, we recommend removing `C:\Program Files\dotnet` from PATH in system variables and adding `%USERPROFILE%\.dotnet\x64` to PATH in user variables.
+For VS Code and Visual Studio and `dotnet` commands to work correctly, you must place the following location in your PATH.
+Use the following commands to update the PATH variable in a command line window.
 
-<img src="http://i.imgur.com/Tm2PAfy.png" width="400" />
+Windows (Command Prompt)
+
+```batch
+set PATH=%USERPROFILE%\.dotnet\x64;%PATH%
+```
+
+Windows (Powershell)
+
+```ps1
+$env:PATH="$env:USERPROFILE\.dotnet\x64;$env:PATH"
+```
+
+Linux/macOS:
+
+```sh
+export PATH="$HOME/.dotnet:$PATH"
+```
+
+On Windows, we recommend using the `startvs.cmd` command to launch Visual Studio.
 
 ## Building on command-line
 

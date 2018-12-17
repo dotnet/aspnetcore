@@ -16,7 +16,7 @@ namespace BasicWebSite
             services.AddRouting();
 
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest) // this compat version enables endpoint routing
+                .SetCompatibilityVersion(CompatibilityVersion.Latest)
                 .AddXmlDataContractSerializerFormatters();
 
             services.ConfigureBaseWebSiteAuthPolicies();
@@ -29,6 +29,8 @@ namespace BasicWebSite
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseDeveloperExceptionPage();
+
             // Initializes the RequestId service for each request
             app.UseMiddleware<RequestIdMiddleware>();
 

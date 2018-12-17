@@ -151,41 +151,58 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="parameters">The parameters to apply.</param>
         public virtual void SetParameters(ParameterCollection parameters)
         {
-            parameters.AssignToProperties(this);
+            parameters.SetParameterProperties(this);
 
             if (!_hasCalledInit)
             {
                 _hasCalledInit = true;
                 OnInit();
 
-                // If you override OnInitAsync and return a nonnull task, then by default
+                // If you override OnInitAsync and return a noncompleted task, then by default
                 // we automatically re-render once that task completes.
                 var initTask = OnInitAsync();
-                if (initTask != null && initTask.Status != TaskStatus.RanToCompletion)
-                {
-                    initTask.ContinueWith(ContinueAfterLifecycleTask);
-                }
+                ContinueAfterLifecycleTask(initTask);
             }
 
             OnParametersSet();
             var parametersTask = OnParametersSetAsync();
-            if (parametersTask != null && parametersTask.Status != TaskStatus.RanToCompletion)
-            {
-                parametersTask.ContinueWith(ContinueAfterLifecycleTask);
-            }
+            ContinueAfterLifecycleTask(parametersTask);
 
             StateHasChanged();
         }
 
-        private void ContinueAfterLifecycleTask(Task task)
+        private async void ContinueAfterLifecycleTask(Task task)
         {
-            if (task.Exception == null)
+            switch (task == null ? TaskStatus.RanToCompletion : task.Status)
             {
-                StateHasChanged();
-            }
-            else
-            {
-                HandleException(task.Exception);
+                // If it's already completed synchronously, no need to await and no
+                // need to issue a further render (we already rerender synchronously).
+                // Just need to make sure we propagate any errors.
+                case TaskStatus.RanToCompletion:
+                case TaskStatus.Canceled:
+                    break;
+                case TaskStatus.Faulted:
+                    HandleException(task.Exception);
+                    break;
+
+                // For incomplete tasks, automatically re-render on successful completion
+                default:
+                    try
+                    {
+                        await task;
+                        StateHasChanged();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Either the task failed, or it was cancelled, or StateHasChanged threw.
+                        // We want to report task failure or StateHasChanged exceptions only.
+                        if (!task.IsCanceled)
+                        {
+                            HandleException(ex);
+                        }
+                    }
+
+                    break;
             }
         }
 
@@ -203,18 +220,12 @@ namespace Microsoft.AspNetCore.Components
         void IHandleEvent.HandleEvent(EventHandlerInvoker binding, UIEventArgs args)
         {
             var task = binding.Invoke(args);
+            ContinueAfterLifecycleTask(task);
 
             // After each event, we synchronously re-render (unless !ShouldRender())
             // This just saves the developer the trouble of putting "StateHasChanged();"
             // at the end of every event callback.
             StateHasChanged();
-
-            if (task.Status == TaskStatus.RanToCompletion)
-            {
-                return;
-            }
-
-            task.ContinueWith(ContinueAfterLifecycleTask);
         }
 
         void IHandleAfterRender.OnAfterRender()

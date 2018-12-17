@@ -87,6 +87,8 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumberSuffix=$(BuildNumberSuffix)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
+      <!-- We collect all output and code sign at the end. We don't need to code sign when we build each submodule. -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DisableCodeSigning=true</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetAssetRootAccessTokenSuffix=$(DotNetAssetRootAccessTokenSuffix)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetAssetRootUrl=$(DotNetAssetRootUrl)'</RepositoryBuildArguments>
       <RepositoryBuildArguments Condition=" '$(SkipTestsDueToMissingSharedFx)' == 'true' ">$(RepositoryBuildArguments) /p:SkipAspNetCoreRuntimeInstall=true</RepositoryBuildArguments>

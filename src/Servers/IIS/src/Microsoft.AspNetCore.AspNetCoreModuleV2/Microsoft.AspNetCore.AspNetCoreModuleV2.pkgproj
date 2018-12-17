@@ -1,0 +1,42 @@
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <PackageTags>aspnetcore</PackageTags>
+    <PackageTitle>Microsoft ASP.NET Core Module</PackageTitle>
+    <Pack>true</Pack>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <PackageDescription>ASP.NET Core Module</PackageDescription>
+    <IsPackable Condition="'$(OS)' != 'Windows_NT'">false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <Content Include="..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\Win32\aspnetcorev2.dll" PackagePath="contentFiles/any/any/x86" />
+    <Content Include="..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\Win32\aspnetcorev2.pdb" PackagePath="contentFiles/any/any/x86" />
+    <Content Include="..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.dll" PackagePath="contentFiles/any/any/x64" />
+    <Content Include="..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.pdb" PackagePath="contentFiles/any/any/x64" />
+
+    <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x86/2.0.0" />
+    <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x86/2.0.0" />
+    <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x64/2.0.0" />
+    <Content Include="..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x64/2.0.0" />
+
+    <Content Include="..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" PackagePath="/" />
+    <Content Include="..\AspNetCoreModuleV2\AspNetCore\ancm.mof" PackagePath="/" />
+    <Content Include="Microsoft.AspNetCore.AspNetCoreModule.props.in" PackagePath="build\" />
+    <Reference Include="AspNetCoreModuleV2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="_._" PackagePath="lib/$(TargetFramework)/" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="CopyFilesToOutputDirectory" />
+  <Target Name="CoreCompile" DependsOnTargets="ResolveReferences" />
+  <Target Name="CreateManifestResourceNames" />
+</Project>

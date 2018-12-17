@@ -1,0 +1,687 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Session, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.SessionServiceCollectionExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddSession",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddSession",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.SessionOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.SessionMiddlewareExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseSession",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseSession",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.AspNetCore.Builder.SessionOptions"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.SessionOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Cookie",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Cookie",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.CookieBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IdleTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IdleTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IOTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_IOTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CookieName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookieName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CookieDomain",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookieDomain",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CookiePath",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookiePath",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CookieHttpOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookieHttpOnly",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CookieSecure",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieSecurePolicy",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookieSecure",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.CookieSecurePolicy"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Session.DistributedSession",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Http.ISession"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IsAvailable",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Id",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Keys",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<System.String>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryGetValue",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Byte[]",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Set",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Byte[]"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Remove",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clear",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "LoadAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CommitAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.ISession",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "sessionKey",
+              "Type": "System.String"
+            },
+            {
+              "Name": "idleTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "ioTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "tryEstablishSession",
+              "Type": "System.Func<System.Boolean>"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "isNewSessionKey",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Session.DistributedSessionStore",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Session.ISessionStore"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "sessionKey",
+              "Type": "System.String"
+            },
+            {
+              "Name": "idleTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "ioTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "tryEstablishSession",
+              "Type": "System.Func<System.Boolean>"
+            },
+            {
+              "Name": "isNewSessionKey",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.ISession",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Session.ISessionStore",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "cache",
+              "Type": "Microsoft.Extensions.Caching.Distributed.IDistributedCache"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Session.ISessionStore",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "sessionKey",
+              "Type": "System.String"
+            },
+            {
+              "Name": "idleTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "ioTimeout",
+              "Type": "System.TimeSpan"
+            },
+            {
+              "Name": "tryEstablishSession",
+              "Type": "System.Func<System.Boolean>"
+            },
+            {
+              "Name": "isNewSessionKey",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.ISession",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Session.SessionDefaults",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "CookieName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "CookiePath",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Session.SessionFeature",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Http.Features.ISessionFeature"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Session",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.ISession",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.Features.ISessionFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Session",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.ISession"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.Features.ISessionFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Session.SessionMiddleware",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "next",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "dataProtectionProvider",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider"
+            },
+            {
+              "Name": "sessionStore",
+              "Type": "Microsoft.AspNetCore.Session.ISessionStore"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.SessionOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

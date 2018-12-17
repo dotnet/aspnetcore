@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -145,10 +144,11 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         {
             var defaultProvider = new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions()),
                 Options.Create(new RazorPagesOptions { AllowDefaultHandlingForOptionsRequests = true }));
+
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);
+
             return context;
         }
     }

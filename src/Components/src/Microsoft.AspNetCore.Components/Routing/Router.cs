@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Services;
@@ -30,6 +29,11 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// assemblies, for components matching the URI.
         /// </summary>
         [Parameter] private Assembly AppAssembly { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the type of the component that should be used as a fallback when no match is found for the requested route.
+        /// </summary>
+        [Parameter] private Type FallbackComponent { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -45,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <inheritdoc />
         public void SetParameters(ParameterCollection parameters)
         {
-            parameters.AssignToProperties(this);
+            parameters.SetParameterProperties(this);
             var types = ComponentResolver.ResolveComponents(AppAssembly);
             Routes = RouteTable.Create(types);
             Refresh();
@@ -80,9 +84,17 @@ namespace Microsoft.AspNetCore.Components.Routing
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
             Routes.Route(context);
+
             if (context.Handler == null)
             {
-                throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with a route for '/{locationPath}'.");
+                if (FallbackComponent != null)
+                {
+                    context.Handler = FallbackComponent;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with a route for '/{locationPath}', and no fallback is defined.");
+                }
             }
 
             if (!typeof(IComponent).IsAssignableFrom(context.Handler))

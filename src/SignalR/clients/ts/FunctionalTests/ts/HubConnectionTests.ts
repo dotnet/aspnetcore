@@ -11,6 +11,8 @@ import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_HTTPS_URL, ENDPO
 import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
 
+import * as RX from "rxjs";
+
 const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
 const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL ? (ENDPOINT_BASE_HTTPS_URL + "/testhub") : undefined;
 
@@ -531,6 +533,46 @@ describe("hubConnection", () => {
                     done();
                 });
             });
+
+            it("can stream from client to server with rxjs", async (done) => {
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
+
+                await hubConnection.start();
+                const subject = new RX.Subject<string>();
+                const resultPromise = hubConnection.invoke<string>("StreamingConcat", subject.asObservable());
+                subject.next("Hello ");
+                subject.next("world");
+                subject.next("!");
+                subject.complete();
+                expect(await resultPromise).toBe("Hello world!");
+                await hubConnection.stop();
+                done();
+            });
+
+            it("can stream from client to server and close with error with rxjs", async (done) => {
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
+
+                await hubConnection.start();
+                const subject = new RX.Subject<string>();
+                const resultPromise = hubConnection.invoke<string>("StreamingConcat", subject.asObservable());
+                subject.next("Hello ");
+                subject.next("world");
+                subject.next("!");
+                subject.error(new Error("Something bad"));
+                try {
+                    await resultPromise;
+                    expect(false).toBe(true);
+                } catch (err) {
+                    expect(err.message).toEqual("An unexpected error occurred invoking 'StreamingConcat' on the server. Exception: Something bad");
+                } finally {
+                    await hubConnection.stop();
+                }
+                done();
+            });
         });
     });
 
@@ -592,16 +634,16 @@ describe("hubConnection", () => {
             });
 
             if (transportType !== HttpTransportType.LongPolling) {
-                it("terminates if no messages received within timeout interval", (done) => {
+                it("terminates if no messages received within timeout interval", async (done) => {
                     const hubConnection = getConnectionBuilder(transportType).build();
                     hubConnection.serverTimeoutInMilliseconds = 100;
 
-                    hubConnection.start().then(() => {
-                        hubConnection.onclose((error) => {
-                            expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
-                            done();
-                        });
+                    hubConnection.onclose((error) => {
+                        expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
+                        done();
                     });
+
+                    await hubConnection.start();
                 });
             }
 

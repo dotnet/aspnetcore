@@ -8,13 +8,22 @@ using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 {
-    internal class RequiredAttributeAdapter : AttributeAdapterBase<RequiredAttribute>
+    /// <summary>
+    /// <see cref="AttributeAdapterBase{TAttribute}"/> for <see cref="RequiredAttribute"/>.
+    /// </summary>
+    public sealed class RequiredAttributeAdapter : AttributeAdapterBase<RequiredAttribute>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="RequiredAttributeAdapter"/>.
+        /// </summary>
+        /// <param name="attribute">The <see cref="RequiredAttribute"/>.</param>
+        /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
         public RequiredAttributeAdapter(RequiredAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
         {
         }
 
+        /// <inheritdoc />
         public override void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)

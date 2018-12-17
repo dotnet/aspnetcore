@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -80,7 +80,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             IPEndPoint endPoint = _endPointInformation.IPEndPoint;
 
             var listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            NativeMethods.DisableHandleInheritance(listenSocket);
 
             // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
             if (endPoint.Address == IPAddress.IPv6Any)

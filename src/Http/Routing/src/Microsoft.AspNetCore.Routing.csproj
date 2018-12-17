@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core middleware for routing requests to application logic and for generating links.
+Commonly used types:
+Microsoft.AspNetCore.Routing.Route
+Microsoft.AspNetCore.Routing.RouteCollection</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;routing</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      The ability to save compiled assemblies is for testing and debugging, not shipped in the product.
+    -->
+    <ILEmitSaveAssemblies Condition="'$(ILEmitSaveAssemblies)'==''">false</ILEmitSaveAssemblies>
+    <DefineConstants Condition="'$(ILEmitSaveAssemblies)'=='true'">IL_EMIT_SAVE_ASSEMBLIES;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.ObjectPool" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+</Project>

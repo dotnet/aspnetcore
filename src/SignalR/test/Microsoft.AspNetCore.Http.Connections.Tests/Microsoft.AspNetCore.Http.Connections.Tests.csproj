@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\Shared\Buffers.Testing\**\*.cs" />
     <Content Include="..\xunit.runner.json" Link="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -18,7 +19,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="$(MicrosoftAspNetCoreAuthenticationCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Buffers.Testing.Sources" Version="$(MicrosoftExtensionsBuffersTestingSourcesPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
   </ItemGroup>
 

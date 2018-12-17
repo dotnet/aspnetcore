@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,19 +33,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         public string EncodingName { get; } = "gzip";
 
         /// <inheritdoc />
-        public bool SupportsFlush
-        {
-            get
-            {
-#if NET461
-                return false;
-#elif NETSTANDARD2_0 || NETCOREAPP2_1
-                return true;
-#else
-#error target frameworks need to be updated
-#endif
-            }
-        }
+        public bool SupportsFlush => true;
 
         /// <inheritdoc />
         public Stream CreateStream(Stream outputStream)

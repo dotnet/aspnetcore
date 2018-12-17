@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Support for storing data protection keys in Redis.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection;redis</PackageTags>

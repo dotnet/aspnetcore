@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+  </ItemGroup>
+
+</Project>

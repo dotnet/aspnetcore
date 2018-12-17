@@ -43,20 +43,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var xmlOptions = services.GetRequiredService<IOptions<MvcXmlOptions>>().Value;
 
             // Assert
-            Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
-            Assert.True(mvcOptions.AllowBindingHeaderValuesToNonStringModelTypes);
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
-            Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
-            Assert.True(mvcOptions.EnableEndpointRouting);
-            Assert.Equal(32, mvcOptions.MaxValidationDepth);
-            Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
-            Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.True(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
-            Assert.False(apiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery);
         }
 
         [Fact]
@@ -81,20 +73,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var xmlOptions = services.GetRequiredService<IOptions<MvcXmlOptions>>().Value;
 
             // Assert
-            Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
-            Assert.True(mvcOptions.AllowBindingHeaderValuesToNonStringModelTypes);
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
-            Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
             Assert.True(razorPagesOptions.AllowAreas);
-            Assert.True(mvcOptions.EnableEndpointRouting);
-            Assert.Equal(32, mvcOptions.MaxValidationDepth);
-            Assert.False(apiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses);
-            Assert.False(apiBehaviorOptions.SuppressMapClientErrors);
             Assert.True(razorPagesOptions.AllowDefaultHandlingForOptionsRequests);
             Assert.True(xmlOptions.AllowRfc7807CompliantProblemDetailsFormat);
             Assert.True(mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent);
-            Assert.False(apiBehaviorOptions.AllowInferringBindingSourceForCollectionTypesAsFromQuery);
         }
 
         // This just does the minimum needed to be able to resolve these options.

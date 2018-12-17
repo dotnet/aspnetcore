@@ -73,11 +73,15 @@
         <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-ci-server-$(PackageVersion).zip</RelativeBlobPath>
       </FilesToPublish>
 
-      <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-$(PackageVersion).patch.zip" >
+      <!-- This file is conditionally included because it may not exist in servicing builds -->
+      <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-$(PackageVersion).patch.zip"
+                      Condition="Exists('$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-$(PackageVersion).patch.zip')" >
         <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-ci-server-$(PackageVersion).patch.zip</RelativeBlobPath>
       </FilesToPublish>
 
-      <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-compat-$(PackageVersion).patch.zip" >
+      <!-- This file is conditionally included because it may not exist in servicing builds -->
+      <FilesToPublish Include="$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-compat-$(PackageVersion).patch.zip"
+                      Condition="Exists('$(DependencyAssetsDir)nuGetPackagesArchive-ci-server-compat-$(PackageVersion).patch.zip')">
         <RelativeBlobPath>$(BlobBasePath)nuGetPackagesArchive-ci-server-compat-$(PackageVersion).patch.zip</RelativeBlobPath>
       </FilesToPublish>
 

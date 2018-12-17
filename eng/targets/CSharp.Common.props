@@ -11,4 +11,17 @@
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(AddImplicitReferences)' != 'false' AND '$(IsTestProject)' == 'true' ">
+    <Reference Include="Microsoft.AspNetCore.Testing" />
+    <Reference Include="Microsoft.NET.Test.Sdk" />
+    <Reference Include="Moq" />
+    <Reference Include="xunit" />
+    <Reference Include="xunit.analyzers" />
+    <Reference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
 </Project>

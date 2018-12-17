@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Core components of ASP.NET Core Kestrel cross-platform web server.</Description>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -10,7 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />

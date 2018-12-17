@@ -1,4 +1,4 @@
-﻿@page "/fetchdata"
+@page "/fetchdata"
 @page "/fetchdata/{StartDate:datetime}"
 @inject HttpClient Http
 
@@ -48,14 +48,14 @@ else
 
     WeatherForecast[] forecasts;
 
-    public override void SetParameters(ParameterCollection parameters)
-    {
-        StartDate = DateTime.Now;
-        base.SetParameters(parameters);
-    }
-
     protected override async Task OnParametersSetAsync()
     {
+        // If no value was given in the URL for StartDate, apply a default
+        if (StartDate == default)
+        {
+            StartDate = DateTime.Now;
+        }
+
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>(
             $"sample-data/weather.json?date={StartDate.ToString("yyyy-MM-dd")}");
 

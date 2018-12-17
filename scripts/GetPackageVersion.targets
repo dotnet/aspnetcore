@@ -1,5 +1,0 @@
-<Project>
-  <Target Name="GetPackageVersion">
-    <Message Importance="high" Text="PackageVersion=$(PackageVersion)" />
-  </Target>
-</Project>

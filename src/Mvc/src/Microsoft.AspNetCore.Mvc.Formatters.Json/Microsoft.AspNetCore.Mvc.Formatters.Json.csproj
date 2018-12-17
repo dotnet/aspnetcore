@@ -9,9 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
 
     <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="$(MicrosoftAspNetCoreJsonPatchPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion)" />
   </ItemGroup>
 </Project>

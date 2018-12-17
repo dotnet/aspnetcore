@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "jest": "^23.6.0",
+    "merge": "^1.2.1",
+    "puppeteer": "^1.8.0"
+  },
+  "dependencies": {},
+  "scripts": {
+    "test": "jest"
+  }
+}

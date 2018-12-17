@@ -18,6 +18,18 @@ namespace Microsoft.AspNetCore.Components.Hosting
         IDictionary<object, object> Properties { get; }
 
         /// <summary>
+        /// Overrides the factory used to create the service provider.
+        /// </summary>
+        /// <returns>The same instance of the <see cref="IWebAssemblyHostBuilder"/> for chaining.</returns>
+        IWebAssemblyHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory);
+
+        /// <summary>
+        /// Overrides the factory used to create the service provider.
+        /// </summary>
+        /// <returns>The same instance of the <see cref="IWebAssemblyHostBuilder"/> for chaining.</returns>
+        IWebAssemblyHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<WebAssemblyHostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory);
+
+        /// <summary>
         /// Adds services to the container. This can be called multiple times and the results will be additive.
         /// </summary>
         /// <param name="configureDelegate">The delegate for configuring the <see cref="IServiceCollection"/> that will be used

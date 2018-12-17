@@ -469,22 +469,6 @@ Environment.NewLine + "int b";
         }
 
         [Fact]
-        public void InferBindingSourceForParameter_ReturnsQueryForCollectionOfSimpleTypes_WhenAllowInferringBindingSourceForCollectionTypesAsFromQueryIsSet()
-        {
-            // Arrange
-            var actionName = nameof(ParameterBindingController.CollectionOfSimpleTypes);
-            var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
-            var convention = GetConvention();
-            convention.AllowInferringBindingSourceForCollectionTypesAsFromQuery = true;
-
-            // Act
-            var result = convention.InferBindingSourceForParameter(parameter);
-
-            // Assert
-            Assert.Same(BindingSource.Query, result);
-        }
-
-        [Fact]
         public void InferBindingSourceForParameter_ReturnsBodyForCollectionOfComplexTypes()
         {
             // Arrange
@@ -497,22 +481,6 @@ Environment.NewLine + "int b";
 
             // Assert
             Assert.Same(BindingSource.Body, result);
-        }
-
-        [Fact]
-        public void InferBindingSourceForParameter_ReturnsQueryForCollectionOfComplexTypes_WhenAllowInferringBindingSourceForCollectionTypesAsFromQueryIsSet()
-        {
-            // Arrange
-            var actionName = nameof(ParameterBindingController.CollectionOfComplexTypes);
-            var parameter = GetParameterModel(typeof(ParameterBindingController), actionName);
-            var convention = GetConvention();
-            convention.AllowInferringBindingSourceForCollectionTypesAsFromQuery = true;
-
-            // Act
-            var result = convention.InferBindingSourceForParameter(parameter);
-
-            // Assert
-            Assert.Same(BindingSource.Query, result);
         }
 
         [Fact]
@@ -782,7 +750,7 @@ Environment.NewLine + "int b";
             IModelMetadataProvider modelMetadataProvider = null)
         {
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
-            var mvcOptions = Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true });
+            var mvcOptions = Options.Create(new MvcOptions());
             modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
             var convention = new DefaultApplicationModelProvider(mvcOptions, modelMetadataProvider);
             convention.OnProvidersExecuting(context);

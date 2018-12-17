@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="node_modules\**" />
+    <EmbeddedResource Remove="node_modules\**" />
+    <None Remove="node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- We don't need anything in this assembly, we just want to make sure it's built -->
+    <ProjectReference Include="..\..\samples\SampleOrigin\SampleOrigin.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\samples\SampleDestination\SampleDestination.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+  </ItemGroup>
+
+</Project>

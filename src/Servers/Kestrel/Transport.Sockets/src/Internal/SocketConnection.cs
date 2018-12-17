@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -156,12 +156,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             while (true)
             {
-                // MacOS blocked on https://github.com/dotnet/corefx/issues/31766
-                if (!IsMacOS)
-                {
-                    // Wait for data before allocating a buffer.
-                    await _receiver.WaitForDataAsync();
-                }
+                // Wait for data before allocating a buffer.
+                await _receiver.WaitForDataAsync();
 
                 // Ensure we have some reasonable amount of buffer space
                 var buffer = Input.GetMemory(MinAllocBufferSize);
@@ -215,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 shutdownReason = new ConnectionResetException(ex.Message, ex);;
                 _trace.ConnectionReset(ConnectionId);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
                 when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
                        ex is ObjectDisposedException)
             {

@@ -27,3 +27,5 @@ scripts/tmp/
 src/**/global.json
 launchSettings.json
 BenchmarkDotNet.Artifacts/
+korebuild-lock.txt
+.gradle/

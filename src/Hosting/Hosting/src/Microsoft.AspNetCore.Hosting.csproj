@@ -1,12 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core hosting infrastructure and startup logic for web applications.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" />
+    <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
@@ -20,8 +25,6 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.RazorViews.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.StackTrace.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
     <Reference Include="System.Diagnostics.DiagnosticSource" />
     <Reference Include="System.Reflection.Metadata" />
