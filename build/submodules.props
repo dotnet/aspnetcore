@@ -54,8 +54,7 @@
     <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="Mvc" RootPath="$(RepositoryRoot)src\Mvc\" />
-    <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\" />
-    <ShippedRepository Include="Razor" RootPath="$(RepositoryRoot)src\Razor\" />
+    <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\"/>
     <ShippedRepository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
   </ItemGroup>
 </Project>
