@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28315.86
+# Visual Studio 15
+VisualStudioVersion = 15.0.28306.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F5FDD4E5-6A52-4A86-BE5E-5E42CB1DC8DA}"
 EndProject
@@ -110,6 +110,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components-CSharp.Server", "blazor\src\Microsoft.AspNetCore.Blazor.Templates\content\Components-CSharp\Components-CSharp.Server\Components-CSharp.Server.csproj", "{24DE309C-A2F5-4726-A8D8-95BB44118CD8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorStandalone-CSharp", "blazor\src\Microsoft.AspNetCore.Blazor.Templates\content\BlazorStandalone-CSharp\BlazorStandalone-CSharp.csproj", "{2F92DE29-78E9-4A04-8F4F-F8F40E02FE98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Blazor", "blazor\src\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj", "{A42AC30B-45E3-4907-99A9-9ABDA45973D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -421,6 +423,14 @@ Global
 		{2F92DE29-78E9-4A04-8F4F-F8F40E02FE98}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2F92DE29-78E9-4A04-8F4F-F8F40E02FE98}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{2F92DE29-78E9-4A04-8F4F-F8F40E02FE98}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -475,6 +485,7 @@ Global
 		{7437B663-B5A8-43A3-9796-EE5A64B82E9E} = {6BDD3018-3961-488E-97D3-1FB7320A8AC6}
 		{24DE309C-A2F5-4726-A8D8-95BB44118CD8} = {6BDD3018-3961-488E-97D3-1FB7320A8AC6}
 		{2F92DE29-78E9-4A04-8F4F-F8F40E02FE98} = {E8EBA72C-D555-43AE-BC98-F0B2D05F6A07}
+		{A42AC30B-45E3-4907-99A9-9ABDA45973D7} = {AD41FFD8-2C0C-4F0C-9537-25C2A3A7A1F4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}
