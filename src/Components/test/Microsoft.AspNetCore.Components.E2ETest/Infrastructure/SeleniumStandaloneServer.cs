@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                 UseShellExecute = true,
             });
 
-            PollUntilProcessStarted().Wait();
+            PollUntilProcessStarted();
 
             AppDomain.CurrentDomain.ProcessExit += (sender, e) =>
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             };
         }
 
-        private async Task PollUntilProcessStarted()
+        private void PollUntilProcessStarted()
         {
             var timeoutAt = DateTime.Now.AddSeconds(15);
             while (true)
@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                 try
                 {
                     var timeoutAfter1Second = new CancellationTokenSource(1000);
-                    var response = await httpClient.GetAsync(
-                        Uri, timeoutAfter1Second.Token);
+                    var response = httpClient.GetAsync(
+                        Uri, timeoutAfter1Second.Token).Result;
                     response.EnsureSuccessStatusCode();
                     return;
                 }
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                     Console.WriteLine(ex.ToString());
                 }
 
-                await Task.Delay(1000);
+                Thread.Sleep(1000);
             }
         }
 
