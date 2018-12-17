@@ -90,8 +90,8 @@
     <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.3</NETStandardLibrary20PackageVersion>
-    <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
-    <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
+    <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
+    <NewtonsoftJsonPackageVersion>12.0.1</NewtonsoftJsonPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.18571.3</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.18571.3</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
