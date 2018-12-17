@@ -11,7 +11,6 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -96,8 +95,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Collection(options.OutputFormatters,
                 formatter => Assert.IsType<HttpNoContentOutputFormatter>(formatter),
                 formatter => Assert.IsType<StringOutputFormatter>(formatter),
-                formatter => Assert.IsType<StreamOutputFormatter>(formatter),
-                formatter => Assert.IsType<JsonOutputFormatter>(formatter));
+                formatter => Assert.IsType<StreamOutputFormatter>(formatter));
         }
 
         [Fact]
@@ -107,9 +105,7 @@ namespace Microsoft.AspNetCore.Mvc
             var options = GetOptions<MvcOptions>();
 
             // Assert
-            Assert.Collection(options.InputFormatters,
-                formatter => Assert.IsType<JsonPatchInputFormatter>(formatter),
-                formatter => Assert.IsType<JsonInputFormatter>(formatter));
+            Assert.Empty(options.InputFormatters);
         }
 
         [Fact]
@@ -229,16 +225,6 @@ namespace Microsoft.AspNetCore.Mvc
                     Assert.Equal(typeof(Stream), excludeFilter.Type);
                 },
                 provider => Assert.IsType<DataAnnotationsMetadataProvider>(provider),
-                provider =>
-                {
-                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
-                    Assert.Equal(typeof(IJsonPatchDocument), excludeFilter.Type);
-                },
-                provider =>
-                {
-                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
-                    Assert.Equal(typeof(JToken), excludeFilter.Type);
-                },
                 provider => Assert.IsType<DataMemberRequiredBindingMetadataProvider>(provider),
                 provider =>
                 {

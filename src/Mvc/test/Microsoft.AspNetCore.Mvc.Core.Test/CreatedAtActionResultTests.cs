@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var options = Options.Create(new MvcOptions());
             options.Value.OutputFormatters.Add(new StringOutputFormatter());
-            options.Value.OutputFormatters.Add(new JsonOutputFormatter(
+            options.Value.OutputFormatters.Add(new NewtonsoftJsonOutputFormatter(
                 new JsonSerializerSettings(),
                 ArrayPool<char>.Shared));
 

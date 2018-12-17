@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -299,14 +298,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// to JSON.
         /// </summary>
         /// <param name="data">The object to serialize.</param>
-        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/> to be used by
-        /// the formatter.</param>
+        /// <param name="serializerSettings">The serializer settings to be used by the formatter.</param>
         /// <returns>The created <see cref="JsonResult"/> that serializes the specified <paramref name="data"/>
         /// as JSON format for the response.</returns>
-        /// <remarks>Callers should cache an instance of <see cref="JsonSerializerSettings"/> to avoid
+        /// <remarks>Callers should cache an instance of serializer settings to avoid
         /// recreating cached data with each call.</remarks>
         [NonAction]
-        public virtual JsonResult Json(object data, JsonSerializerSettings serializerSettings)
+        public virtual JsonResult Json(object data, object serializerSettings)
         {
             if (serializerSettings == null)
             {

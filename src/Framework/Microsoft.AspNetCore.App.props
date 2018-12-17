@@ -54,7 +54,6 @@
     <Dependency Include="Microsoft.AspNetCore.Mvc.Core"                                Version="$(MicrosoftAspNetCoreMvcCorePackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Cors"                                Version="$(MicrosoftAspNetCoreMvcCorsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.DataAnnotations"                     Version="$(MicrosoftAspNetCoreMvcDataAnnotationsPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Json"                     Version="$(MicrosoftAspNetCoreMvcFormattersJsonPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Xml"                      Version="$(MicrosoftAspNetCoreMvcFormattersXmlPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Localization"                        Version="$(MicrosoftAspNetCoreMvcLocalizationPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Razor"                               Version="$(MicrosoftAspNetCoreMvcRazorPackageVersion)" />
