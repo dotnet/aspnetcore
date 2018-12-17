@@ -3,17 +3,17 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
 {
     internal class TempDataApplicationModelProvider : IApplicationModelProvider
     {
-        private readonly MvcViewOptions _options;
+        private readonly TempDataSerializer _tempDataSerializer;
 
-        public TempDataApplicationModelProvider(IOptions<MvcViewOptions> options)
+        public TempDataApplicationModelProvider(TempDataSerializer tempDataSerializer)
         {
-            _options = options.Value;
+            _tempDataSerializer = tempDataSerializer;
         }
 
         /// <inheritdoc />
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             {
                 var modelType = controllerModel.ControllerType.AsType();
 
-                var tempDataProperties = SaveTempDataPropertyFilterBase.GetTempDataProperties(modelType, _options);
+                var tempDataProperties = SaveTempDataPropertyFilterBase.GetTempDataProperties(_tempDataSerializer, modelType);
                 if (tempDataProperties == null)
                 {
                     continue;

@@ -24,7 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication" />
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
   </ItemGroup>

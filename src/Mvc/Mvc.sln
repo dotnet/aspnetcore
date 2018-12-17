@@ -83,11 +83,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Ab
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ViewFeatures", "src\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj", "{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Formatters.Json", "src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj", "{3FC8D9D6-9352-43A3-8E81-422F270085B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.NewtonsoftJson", "src\Microsoft.AspNetCore.Mvc.NewtonsoftJson\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj", "{3FC8D9D6-9352-43A3-8E81-422F270085B7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Formatters.Xml", "src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj", "{42C81540-CD47-4C68-A7A3-2A93B9C3B210}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Formatters.Json.Test", "test\Microsoft.AspNetCore.Mvc.Formatters.Json.Test\Microsoft.AspNetCore.Mvc.Formatters.Json.Test.csproj", "{493780DA-E696-40FF-BD12-4A5C5736F292}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test", "test\Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test\Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test.csproj", "{493780DA-E696-40FF-BD12-4A5C5736F292}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Formatters.Xml.Test", "test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test.csproj", "{22019146-BDFA-442E-8C8E-345FB9644578}"
 EndProject
