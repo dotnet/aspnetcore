@@ -169,10 +169,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             var defaultProvider = new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }),
                 Options.Create(new RazorPagesOptions { AllowDefaultHandlingForOptionsRequests = true }));
+
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);
+
             return context;
         }
     }

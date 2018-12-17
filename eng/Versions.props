@@ -1,0 +1,8 @@
+<!--
+
+  This file defines the versions of external dependencies used by ASP.NET Core.
+  This file might be updated by automation.
+
+  TODO: move versions from build/dependencies.props into this location. Depends on https://github.com/aspnet/AspNetCore/issues/4246.
+-->
+<Project />

@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 new[] { new DefaultFilterProvider() });
 
             // Act
-            var cacheEntry1 = controllerActionInvokerCache.GetCachedResult(controllerContext);
-            var cacheEntry2 = controllerActionInvokerCache.GetCachedResult(controllerContext);
+            var (cacheEntry, filters) = controllerActionInvokerCache.GetCachedResult(controllerContext);
+            var (cacheEntry2, filters2) = controllerActionInvokerCache.GetCachedResult(controllerContext);
 
             // Assert
-            Assert.Equal(cacheEntry1.filters, cacheEntry2.filters);
+            Assert.Equal(filters, filters2);
         }
 
         [Fact]
@@ -54,11 +54,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 new[] { new DefaultFilterProvider() });
 
             // Act
-            var cacheEntry1 = controllerActionInvokerCache.GetCachedResult(controllerContext);
-            var cacheEntry2 = controllerActionInvokerCache.GetCachedResult(controllerContext);
+            var (cacheEntry, filters) = controllerActionInvokerCache.GetCachedResult(controllerContext);
+            var (cacheEntry2, filters2) = controllerActionInvokerCache.GetCachedResult(controllerContext);
 
             // Assert
-            Assert.Same(cacheEntry1.cacheEntry, cacheEntry2.cacheEntry);
+            Assert.Same(cacheEntry, cacheEntry2);
         }
 
         private class TestFilter : IFilterMetadata
@@ -100,10 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 new[] { controllerContext.ActionDescriptor });
             var modelMetadataProvider = new EmptyModelMetadataProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
-            var mvcOptions = Options.Create(new MvcOptions
-            {
-                AllowValidatingTopLevelNodes = true,
-            });
+            var mvcOptions = Options.Create(new MvcOptions());
 
             return new ControllerActionInvokerCache(
                 descriptorProvider,

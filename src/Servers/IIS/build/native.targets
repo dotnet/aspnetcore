@@ -1,0 +1,24 @@
+<Project>
+  <Target Name="CreateVersionHeader" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <VersionHeaderContents Include="// Copyright (c) .NET Foundation. All rights reserved." />
+      <VersionHeaderContents Include="// Licensed under the MIT License. See LICENSE.txt in the project root for license information." />
+      <VersionHeaderContents Include="%0a" />
+      <VersionHeaderContents Include="// This file is auto-generated" />
+      <VersionHeaderContents Include="%0a" />
+      <VersionHeaderContents Include="#define FileVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreMinorVersion),$(AssemblyBuild),$(AspNetCorePatchVersion)" />
+      <VersionHeaderContents Include="#define FileVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreMinorVersion).$(AssemblyBuild).$(AspNetCorePatchVersion)\0&quot;" />
+      <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreMinorVersion),$(AssemblyBuild),$(AspNetCorePatchVersion)" />
+      <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreMinorVersion).$(AssemblyBuild).$(AspNetCorePatchVersion)\0&quot;" />
+      <VersionHeaderContents Include="#define PlatformToolset &quot;$(PlatformToolset)\0&quot;" />
+      <VersionHeaderContents Include="#define CommitHash &quot;$(CommitHash)\0&quot;" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <FileWrites Include="version.h" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
+  </Target>
+
+</Project>

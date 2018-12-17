@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SharedSourceRoot>$(MSBuildThisFileDirectory)..\Shared\</SharedSourceRoot>
   </PropertyGroup>
 
   <ItemGroup>

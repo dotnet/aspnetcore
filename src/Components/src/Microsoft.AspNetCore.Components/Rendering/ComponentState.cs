@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public int ComponentId => _componentId;
         public IComponent Component => _component;
         public ComponentState ParentComponentState => _parentComponentState;
+        public RenderTreeBuilder CurrrentRenderTree => _renderTreeBuilderCurrent;
 
         /// <summary>
         /// Constructs an instance of <see cref="ComponentState"/>.

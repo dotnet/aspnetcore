@@ -10,7 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />

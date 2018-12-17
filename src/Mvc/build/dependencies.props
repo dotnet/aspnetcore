@@ -7,7 +7,7 @@
       is not otherwise referenced. They avoid unnecessary changes to the Universe build graph or to product
       dependencies. Do not use these properties elsewhere.
     -->
-  
+
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>3.0.0-preview.18572.1</BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion>
@@ -61,11 +61,9 @@
     <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview-18605-0080</MicrosoftCodeAnalysisRazorPackageVersion>
     <MicrosoftDiaSymReaderNativePackageVersion>1.7.0</MicrosoftDiaSymReaderNativePackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsCachingMemoryPackageVersion>
-    <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsConfigurationPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview-27122-01</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
@@ -80,13 +78,9 @@
     <MicrosoftExtensionsLoggingDebugPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsLoggingDebugPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsPropertyActivatorSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsPropertyActivatorSourcesPackageVersion>
-    <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
-    <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-preview.18605.1</MicrosoftExtensionsWebEncodersPackageVersion>

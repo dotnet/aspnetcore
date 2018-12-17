@@ -9,9 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json" />
-    <Reference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

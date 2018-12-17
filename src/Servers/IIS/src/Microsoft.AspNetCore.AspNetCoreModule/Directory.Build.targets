@@ -1,0 +1,37 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <!-- There is no build output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- There are no symbols. -->
+    <IncludeSymbols>false</IncludeSymbols>
+    <!-- There is no API to check -->
+    <EnableApiCheck>false</EnableApiCheck>
+    <!-- Manually control dependencies -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- The only build output of a pkgproj is the project -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- There is no documentation  -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- There is no documentation  -->
+    <RunPackageAnalysis>false</RunPackageAnalysis>
+
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <TargetPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</TargetPath>
+  </PropertyGroup>
+
+  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)" Condition=" '$(IsPackable)' != 'false' ">
+    <ItemGroup>
+      <ArtifactInfo Include="$(TargetPath)">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+        <Certificate>$(PackageSigningCertName)</Certificate>
+        <ShouldBeSigned>true</ShouldBeSigned>
+        <IsContainer>true</IsContainer>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
+</Project>

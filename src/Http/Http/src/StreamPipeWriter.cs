@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Http
                         for (var i = 0; i < count; i++)
                         {
                             var segment = _completedSegments[0];
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
                             await _writingStream.WriteAsync(segment.Buffer.Slice(0, segment.Length), localToken);
 #elif NETSTANDARD2_0
                             MemoryMarshal.TryGetArray<byte>(segment.Buffer, out var arraySegment);
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Http
 
                     if (!_currentSegment.IsEmpty)
                     {
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
                         await _writingStream.WriteAsync(_currentSegment.Slice(0, _position), localToken);
 #elif NETSTANDARD2_0
                         MemoryMarshal.TryGetArray<byte>(_currentSegment, out var arraySegment);

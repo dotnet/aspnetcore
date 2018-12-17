@@ -54,8 +54,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// ASP.NET Core MVC 2.1 introduced compatibility switches for the following:
         /// <list type="bullet">
-        ///     <item><description><see cref="MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes"/></description></item>
-        ///     <item><description><see cref="MvcOptions.InputFormatterExceptionPolicy"/></description></item>
         ///     <item><description><see cref="MvcOptions.InputFormatterExceptionPolicy"/></description></item>
         ///     <item><description><see cref="MvcOptions.SuppressBindingUndefinedValueToEnumType"/></description></item>
         ///     <item><description><c>MvcJsonOptions.AllowInputFormatterExceptionMessages</c></description></item>
@@ -75,7 +73,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// ASP.NET Core MVC 2.2 introduced compatibility switches for the following:
         /// <list type="bullet">
         ///     <item><description><c>ApiBehaviorOptions.SuppressMapClientErrors</c></description></item>
-        ///     <item><description><c>ApiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses</c></description></item>
         ///     <item><description><c>MvcDataAnnotationsLocalizationOptions.AllowDataAnnotationsLocalizationForEnumDisplayAttributes</c></description></item>
         ///     <item><description><see cref="MvcOptions.EnableEndpointRouting" /></description></item>
         ///     <item><description><see cref="MvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent"/></description></item>

@@ -61,14 +61,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             uriHelper.TriggerOnLocationChanged();
         }
 
-        /// <summary>
-        /// Navigates to the specified URI.
-        /// </summary>
-        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
-        /// (as returned by <see cref="IUriHelper.GetBaseUri"/>).</param>
-        protected override void NavigateToCore(string uri)
+        /// <inheritdoc />
+        protected override void NavigateToCore(string uri, bool forceLoad)
         {
-            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri);
+            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
         }
     }
 }

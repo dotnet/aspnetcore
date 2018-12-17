@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
+    <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;iis</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackNativeAssets Condition="'$(OS)' == 'Windows_NT'">true</PackNativeAssets>
+    <NativeAssetsTargetFramework>netcoreapp3.0</NativeAssetsTargetFramework>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
+    <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="System.IO.Pipelines" />
+    <Reference Include="System.Security.Principal.Windows" />
+  </ItemGroup>
+
+  <Import Project="..\..\build\assets.props" />
+
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles" Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <None Include="%(InProcessComponents.DllLocation)"
+            Pack="true"
+            PackagePath="runtimes/win-%(InProcessComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddRunNativeComponents"
+          BeforeTargets="AssignTargetPaths"
+          Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <None Include="%(RunInProcessComponents.DllLocation)"
+            CopyToOutputDirectory="PreserveNewest"
+            Link="%(RunInProcessComponents.NativeAsset).dll" />
+      <None Include="%(RunInProcessComponents.PdbLocation)"
+            CopyToOutputDirectory="PreserveNewest"
+            Link="%(RunInProcessComponents.NativeAsset).pdb" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -3,4 +3,7 @@
 
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != ''" />
 
+  <Target Name="Pack" />
+  <Target Name="Restore" />
+  <Target Name="ResolveNuGetPackageAssets" />
 </Project>

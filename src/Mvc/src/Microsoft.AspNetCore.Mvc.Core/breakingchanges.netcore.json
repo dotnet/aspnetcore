@@ -72,5 +72,35 @@
     "TypeId": "public abstract class Microsoft.AspNetCore.Mvc.ModelBinding.ObjectModelValidator : Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator",
     "MemberId": "public abstract Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor GetValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState)",
     "Kind": "Addition"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Boolean get_AllowBindingHeaderValuesToNonStringModelTypes()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Boolean get_AllowCombiningAuthorizeFilters()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Boolean get_AllowValidatingTopLevelNodes()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Void set_AllowBindingHeaderValuesToNonStringModelTypes(System.Boolean value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Void set_AllowCombiningAuthorizeFilters(System.Boolean value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Void set_AllowValidatingTopLevelNodes(System.Boolean value)",
+    "Kind": "Removal"
   }
 ]

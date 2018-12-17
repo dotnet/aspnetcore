@@ -51,5 +51,13 @@ namespace Microsoft.AspNetCore.Components.Services
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="GetBaseUri"/>).</param>
         void NavigateTo(string uri);
+
+        /// <summary>
+        /// Navigates to the specified URI.
+        /// </summary>
+        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
+        /// (as returned by <see cref="GetBaseUri"/>).</param>
+        /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
+        void NavigateTo(string uri, bool forceLoad);
     }
 }

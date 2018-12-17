@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -28,10 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     public class ControllerBinderDelegateProviderTest
     {
-        private static readonly MvcOptions _options = new MvcOptions
-        {
-            AllowValidatingTopLevelNodes = true,
-        };
+        private static readonly MvcOptions _options = new MvcOptions();
         private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(_options);
 
         [Fact]
@@ -426,55 +422,6 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             Assert.Equal(
                 "some message",
                 controllerContext.ModelState["memberName"].Errors.Single().ErrorMessage);
-        }
-
-        [Fact]
-        public async Task CreateBinderDelegate_Delegate_DoesNotCallValidator_IfNotValidatingTopLevelNodes()
-        {
-            // Arrange
-            var actionDescriptor = GetActionDescriptor();
-            actionDescriptor.Parameters.Add(
-                new ControllerParameterDescriptor
-                {
-                    Name = "foo",
-                    ParameterType = typeof(object),
-                    ParameterInfo = ParameterInfos.CustomValidationParameterInfo
-                });
-
-            var controllerContext = GetControllerContext(actionDescriptor);
-            var factory = GetModelBinderFactory("Hello");
-
-            var mockValidator = new Mock<IModelValidator>();
-            mockValidator
-                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
-                .Returns(new[] { new ModelValidationResult("memberName", "some message") });
-
-            // Do not set AllowValidatingTopLevelNodes.
-            var mvcOptions = new MvcOptions();
-
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var parameterBinder = new ParameterBinder(
-                modelMetadataProvider,
-                factory,
-                GetObjectValidator(modelMetadataProvider, GetModelValidatorProvider(mockValidator.Object)),
-                Options.Create(mvcOptions),
-                NullLoggerFactory.Instance);
-            var controller = new TestController();
-            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
-
-            // Act
-            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
-                parameterBinder,
-                factory,
-                modelMetadataProvider,
-                actionDescriptor,
-                mvcOptions);
-
-            await binderDelegate(controllerContext, controller, arguments);
-
-            // Assert
-            Assert.True(controllerContext.ModelState.IsValid);
-            mockValidator.Verify(o => o.Validate(It.IsAny<ModelValidationContext>()), Times.Never());
         }
 
         [Fact]

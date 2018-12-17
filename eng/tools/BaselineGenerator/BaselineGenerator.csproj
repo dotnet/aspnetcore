@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <StartArguments>-o "$(MSBuildThisFileDirectory)../../Baseline.Designer.props"</StartArguments>
+    <StartArguments>-o "$(MSBuildThisFileDirectory)../../Baseline.Designer.props" --v3 -s https://dotnetfeed.blob.core.windows.net/dotnet-core/flatcontainer</StartArguments>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)../../</StartWorkingDirectory>
   </PropertyGroup>
 

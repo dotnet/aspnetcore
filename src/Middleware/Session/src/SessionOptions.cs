@@ -43,66 +43,6 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public TimeSpan IOTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
-        #region Obsolete API
-        /// <summary>
-        /// <para>
-        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Name"/> on <see cref="Cookie"/>.
-        /// </para>
-        /// <para>
-        /// Determines the cookie name used to persist the session ID.
-        /// </para>
-        /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Name) + ".")]
-        public string CookieName { get => Cookie.Name; set => Cookie.Name = value; }
-
-        /// <summary>
-        /// <para>
-        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Domain"/> on <see cref="Cookie"/>.
-        /// </para>
-        /// <para>
-        /// Determines the domain used to create the cookie. Is not provided by default.
-        /// </para>
-        /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Domain) + ".")]
-        public string CookieDomain { get => Cookie.Domain; set => Cookie.Domain = value; }
-
-        /// <summary>
-        /// <para>
-        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Path"/> on <see cref="Cookie"/>.
-        /// </para>
-        /// <para>
-        /// Determines the path used to create the cookie.
-        /// Defaults to <see cref="SessionDefaults.CookiePath"/>.
-        /// </para>
-        /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Path) + ".")]
-        public string CookiePath { get => Cookie.Path; set => Cookie.Path = value; }
-
-        /// <summary>
-        /// <para>
-        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.HttpOnly"/> on <see cref="Cookie"/>.
-        /// </para>
-        /// <para>
-        /// Determines if the browser should allow the cookie to be accessed by client-side JavaScript. The
-        /// default is true, which means the cookie will only be passed to HTTP requests and is not made available
-        /// to script on the page.
-        /// </para>
-        /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.HttpOnly) + ".")]
-        public bool CookieHttpOnly { get => Cookie.HttpOnly; set => Cookie.HttpOnly = value; }
-
-        /// <summary>
-        /// <para>
-        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.SecurePolicy"/> on <see cref="Cookie"/>.
-        /// </para>
-        /// <para>
-        /// Determines if the cookie should only be transmitted on HTTPS requests.
-        /// </para>
-        /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.SecurePolicy) + ".")]
-        public CookieSecurePolicy CookieSecure { get => Cookie.SecurePolicy; set => Cookie.SecurePolicy = value; }
-        #endregion
-
         private class SessionCookieBuilder : CookieBuilder
         {
             public SessionCookieBuilder()

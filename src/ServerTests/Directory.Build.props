@@ -13,6 +13,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <SharedSourceRoot>$(MSBuildThisFileDirectory)..\Shared\</SharedSourceRoot>
   </PropertyGroup>
 
   <ItemGroup>

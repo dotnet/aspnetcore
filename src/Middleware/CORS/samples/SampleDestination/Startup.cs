@@ -1,7 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,66 +25,70 @@ namespace SampleDestination
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
-        }
-
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            app.Map("/allow-origin", innerBuilder =>
+            services.AddCors(options =>
             {
-                innerBuilder.UseCors(policy => policy
+                options.AddPolicy("AllowOrigin", policy => policy
                     .WithOrigins(DefaultAllowedOrigin)
                     .AllowAnyMethod()
                     .AllowAnyHeader());
 
-                innerBuilder.UseMiddleware<SampleMiddleware>();
-            });
-
-            app.Map("/allow-header-method", innerBuilder =>
-            {
-                innerBuilder.UseCors(policy => policy
+                options.AddPolicy("AllowHeaderMethod", policy => policy
                     .WithOrigins(DefaultAllowedOrigin)
                     .WithHeaders("X-Test", "Content-Type")
                     .WithMethods("PUT"));
 
-                innerBuilder.UseMiddleware<SampleMiddleware>();
-            });
-
-            app.Map("/allow-credentials", innerBuilder =>
-            {
-                innerBuilder.UseCors(policy => policy
+                options.AddPolicy("AllowCredentials", policy => policy
                     .WithOrigins(DefaultAllowedOrigin)
                     .AllowAnyHeader()
                     .WithMethods("GET", "PUT")
                     .AllowCredentials());
 
-                innerBuilder.UseMiddleware<SampleMiddleware>();
-            });
-
-            app.Map("/exposed-header", innerBuilder =>
-            {
-                innerBuilder.UseCors(policy => policy
+                options.AddPolicy("ExposedHeader", policy => policy
                     .WithOrigins(DefaultAllowedOrigin)
                     .WithExposedHeaders("X-AllowedHeader", "Content-Length"));
 
-                innerBuilder.UseMiddleware<SampleMiddleware>();
-            });
-
-            app.Map("/allow-all", innerBuilder =>
-            {
-                innerBuilder.UseCors(policy => policy
+                options.AddPolicy("AllowAll", policy => policy
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
-
-                innerBuilder.UseMiddleware<SampleMiddleware>();
             });
+            services.AddRouting();
+        }
+
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            app.UseRouting(routing =>
+            {
+                routing.Map("/allow-origin", HandleRequest).WithCorsPolicy("AllowOrigin");
+                routing.Map("/allow-header-method", HandleRequest).WithCorsPolicy("AllowHeaderMethod");
+                routing.Map("/allow-credentials", HandleRequest).WithCorsPolicy("AllowCredentials");
+                routing.Map("/exposed-header", HandleRequest).WithCorsPolicy("ExposedHeader");
+                routing.Map("/allow-all", HandleRequest).WithCorsPolicy("AllowAll");
+            });
+
+            app.UseCors();
+
+            app.UseEndpoint();
 
             app.Run(async (context) =>
             {
                 await context.Response.WriteAsync("Hello World!");
             });
+        }
+
+        private Task HandleRequest(HttpContext context)
+        {
+            var content = Encoding.UTF8.GetBytes("Hello world");
+
+            context.Response.Headers["X-AllowedHeader"] = "Test-Value";
+            context.Response.Headers["X-DisallowedHeader"] = "Test-Value";
+
+            context.Response.ContentType = "text/plain; charset=utf-8";
+            context.Response.ContentLength = content.Length;
+            context.Response.Body.Write(content, 0, content.Length);
+
+            return Task.CompletedTask;
         }
     }
 }

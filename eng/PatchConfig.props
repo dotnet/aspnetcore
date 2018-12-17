@@ -1,3 +1,13 @@
+<!--
+
+This file contains a list of the package IDs which are patching in a given release.
+
+CAUTION: due to limitations in MSBuild, the format of the PackagesInPatch property is picky.
+When adding a new package, make sure the new line ends with a semicolon and starts with a space.
+Later on, this will be checked using this condition:
+
+    <IsPackageInThisPatch>$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
+-->
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -5,6 +15,8 @@
 
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.1' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.AspNetCoreModule;
+      Microsoft.AspNetCore.AspNetCoreModuleV2;
       Microsoft.AspNetCore.Server.IIS;
       Microsoft.AspNetCore.Server.IISIntegration;
       Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
