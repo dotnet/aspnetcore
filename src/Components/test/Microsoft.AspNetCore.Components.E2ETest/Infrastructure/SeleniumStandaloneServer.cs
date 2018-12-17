@@ -61,18 +61,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
         private void PollUntilProcessStarted()
         {
-            var timeoutAt = DateTime.Now.AddSeconds(15);
+            var timeoutAt = DateTime.Now.AddSeconds(30);
+            Exception lastException = null;
             while (true)
             {
                 if (DateTime.Now > timeoutAt)
                 {
-                    throw new TimeoutException($"The selenium server instance did not start accepting requests at {Uri} before the timeout occurred.");
+                    throw new TimeoutException($"The selenium server instance did not start accepting requests at {Uri} before the timeout occurred. The last exception was: {lastException?.ToString() ?? "NULL"}");
                 }
 
                 var httpClient = new HttpClient();
                 try
                 {
-                    var timeoutAfter1Second = new CancellationTokenSource(1000);
+                    var timeoutAfter1Second = new CancellationTokenSource(3000);
                     var response = httpClient.GetAsync(
                         Uri, timeoutAfter1Second.Token).Result;
                     response.EnsureSuccessStatusCode();
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
+                    lastException = ex;
                 }
 
                 Thread.Sleep(1000);
