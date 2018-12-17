@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Hosting
                         services.AddAuthenticationCore();
                         services.Configure<IISServerOptions>(
                             options => {
-                                options.ServerAddresses = iisConfigData.pwzBindings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);;
+                                options.ServerAddresses = iisConfigData.pwzBindings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                                 options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled;
                             }
                         );
