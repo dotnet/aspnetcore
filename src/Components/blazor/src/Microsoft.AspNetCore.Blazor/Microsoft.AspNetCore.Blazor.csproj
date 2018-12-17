@@ -4,4 +4,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Mono.WebAssembly.Interop" Version="$(JSInteropPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\src\shared\ConventionBasedStartup.cs" Link="Hosting\ConventionBasedStartup.cs" />
+    <Compile Include="..\..\..\src\shared\IBlazorStartup.cs" Link="Hosting\IBlazorStartup.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
+  </ItemGroup>
+
 </Project>
