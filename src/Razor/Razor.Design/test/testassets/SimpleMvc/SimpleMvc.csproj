@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <_RazorMSBuildRoot>$(SolutionRoot)Razor.Design\src\bin\$(Configuration)\netstandard2.0\</_RazorMSBuildRoot>
+  </PropertyGroup>
+
+  <Import Project="$(SolutionRoot)Razor.Design\src\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
+
+  <PropertyGroup>
+    <!-- Override for the MVC extension -->
+    <_MvcExtensionAssemblyPath>$(SolutionRoot)Mvc.Razor.Extensions\src\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>
+  </PropertyGroup>
+  <Import Project="$(SolutionRoot)Mvc.Razor.Extensions\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <!-- Test Placeholder -->
+
+  <Import Project="$(SolutionRoot)Mvc.Razor.Extensions\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />
+
+</Project>

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\**\*" />
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.AspNetCore.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Test.Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyModel" />
+  </ItemGroup>
+
+</Project>

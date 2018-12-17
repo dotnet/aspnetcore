@@ -1,6 +1,6 @@
 <Project>
   <!-- Properties which should be set after the project has been evaluated -->
-  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
+  <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj'">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
   </PropertyGroup>
@@ -52,5 +52,6 @@
 
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
+  <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
 </Project>
