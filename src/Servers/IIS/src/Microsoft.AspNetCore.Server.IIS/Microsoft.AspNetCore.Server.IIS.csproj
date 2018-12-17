@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT'" />
-    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''" />
+    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />

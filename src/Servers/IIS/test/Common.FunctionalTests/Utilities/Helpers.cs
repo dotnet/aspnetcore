@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string GetTestWebSitePath(string name)
         {
-            return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"test", "WebSites", name);
+            return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"test", "testassets", name);
         }
 
         public static string GetInProcessTestSitesPath()
