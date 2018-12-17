@@ -184,16 +184,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 var namesAndValues = new Dictionary<string, string>();
 
                 IStringLocalizer enumLocalizer = null;
-                if (_localizationOptions.AllowDataAnnotationsLocalizationForEnumDisplayAttributes)
+                if (_stringLocalizerFactory != null && _localizationOptions.DataAnnotationLocalizerProvider != null)
                 {
-                    if (_stringLocalizerFactory != null && _localizationOptions.DataAnnotationLocalizerProvider != null)
-                    {
-                        enumLocalizer = _localizationOptions.DataAnnotationLocalizerProvider(underlyingType, _stringLocalizerFactory);
-                    }
-                }
-                else
-                {
-                    enumLocalizer = _stringLocalizerFactory?.Create(underlyingType);
+                    enumLocalizer = _localizationOptions.DataAnnotationLocalizerProvider(underlyingType, _stringLocalizerFactory);
                 }
 
                 var enumFields = Enum.GetNames(underlyingType)

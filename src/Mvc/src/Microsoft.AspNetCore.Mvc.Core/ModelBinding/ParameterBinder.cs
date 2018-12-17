@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="validator">The <see cref="IObjectModelValidator"/>.</param>
         /// <param name="mvcOptions">The <see cref="MvcOptions"/> accessor.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <remarks>The <paramref name="mvcOptions"/> parameter is currently unused.</remarks>
+        /// <remarks>The <paramref name="mvcOptions"/> parameter is currently ignored.</remarks>
         public ParameterBinder(
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,

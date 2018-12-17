@@ -80,17 +80,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 filter.Properties,
                 property =>
                 {
-                    Assert.Equal("TempDataProperty-Test2", property.Key);
+                    Assert.Equal("Test2", property.Key);
                     Assert.Equal(type.GetProperty(nameof(TestPageModel_OneTempDataProperty.Test2)), property.PropertyInfo);
                 });
         }
 
         [Fact]
-        public void OnProvidersExecuting_SetsKeyPrefixToEmptyString_IfCompatSwitchIsSet()
+        public void OnProvidersExecuting_SetsKeyPrefixToEmptyString()
         {
             // Arrange
             var type = typeof(TestPageModel_OneTempDataProperty);
-            var options = Options.Create(new MvcViewOptions { SuppressTempDataAttributePrefix = true });
+            var options = Options.Create(new MvcViewOptions());
             var provider = new TempDataFilterPageApplicationModelProvider(options);
             var context = CreateProviderContext(type);
 
