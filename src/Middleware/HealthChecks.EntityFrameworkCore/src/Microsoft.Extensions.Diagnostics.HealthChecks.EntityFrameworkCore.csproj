@@ -8,6 +8,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks;entityframeworkcore</PackageTags>
+    <IsProductPackage>true</IsProductPackage>
     <BaseNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</BaseNamespace>
   </PropertyGroup>
 

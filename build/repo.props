@@ -8,14 +8,18 @@
     <DisableDefaultItems>true</DisableDefaultItems>
     <BuildSolutions>false</BuildSolutions>
 
+    <OverridePackageOutputPath>false</OverridePackageOutputPath>
+
     <SkipTests>false</SkipTests>
     <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
 
     <SubmoduleRoot>$(RepositoryRoot)src\</SubmoduleRoot>
 
-    <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
-    <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
+    <ProductPackageOutputPath>$(ArtifactsDir)$(Configuration)\packages\product\</ProductPackageOutputPath>
+    <InternalPackageOutputPath>$(ArtifactsDir)$(Configuration)\packages\internal\</InternalPackageOutputPath>
+    <InstallersOutputPath>$(ArtifactsDir)$(Configuration)\installers\</InstallersOutputPath>
+
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
 
     <!-- Disable the check which asserts that all managed .NET binaries we distribute are strong-named signed. Workaround for https://github.com/aspnet/AspNetCore-Internal/issues/1501 -->
@@ -26,35 +30,6 @@
 
   <ItemGroup>
     <SharedSourceDirectories Include="$(SharedSourcesFolder)Hosting.WebHostBuilderFactory\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <IntermediateInstaller Include="win-x86" FileExt=".zip" />
-    <IntermediateInstaller Include="win-x86" FileExt=".wixlib" />
-    <IntermediateInstaller Include="win-x64" FileExt=".zip" />
-    <IntermediateInstaller Include="win-x64" FileExt=".wixlib" />
-    <IntermediateInstaller Include="win-arm" FileExt=".zip" />
-    <IntermediateInstaller Include="osx-x64" FileExt=".tar.gz" />
-    <IntermediateInstaller Include="linux-x64" FileExt=".tar.gz" />
-    <IntermediateInstaller Include="linux-arm" FileExt=".tar.gz" />
-    <IntermediateInstaller Include="linux-arm64" FileExt=".tar.gz" />
-    <IntermediateInstaller Include="linux-musl-x64" FileExt=".tar.gz" />
-
-    <NativeInstaller Include="win-x86" FileExt=".exe" />
-    <NativeInstaller Include="win-x86" FileExt=".zip" />
-    <NativeInstaller Include="win-x64" FileExt=".exe" />
-    <NativeInstaller Include="win-x64" FileExt=".zip" />
-    <NativeInstaller Include="win-arm" FileExt=".zip" />
-    <NativeInstaller Include="osx-x64" FileExt=".tar.gz" />
-    <NativeInstaller Include="linux-x64" FileExt=".tar.gz" />
-    <NativeInstaller Include="linux-arm" FileExt=".tar.gz" />
-    <NativeInstaller Include="linux-arm64" FileExt=".tar.gz" />
-    <NativeInstaller Include="linux-musl-x64" FileExt=".tar.gz" />
-    <NativeInstaller Include="x64" FileExt=".deb" />
-    <NativeInstaller Include="x64" FileExt=".rpm" />
-    <NativeInstaller Include="rh.rhel.7-x64" FileExt=".rpm" />
-
-    <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
@@ -103,14 +78,6 @@
                       $(RepositoryRoot)**\bin\**\*;
                       $(RepositoryRoot)**\obj\**\*;" />
   </ItemGroup>
-
-  <!-- Properties for publishing -->
-  <PropertyGroup>
-    <!-- myget = non-orchestrated builds -->
-    <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>
-    <!-- azure = non-orchestrated builds -->
-    <PublishToAzureFeed Condition="$(PublishType.Contains('azure'))">true</PublishToAzureFeed>
-  </PropertyGroup>
 
   <Import Project="runtimes.props" />
   <Import Project="sources.props" />

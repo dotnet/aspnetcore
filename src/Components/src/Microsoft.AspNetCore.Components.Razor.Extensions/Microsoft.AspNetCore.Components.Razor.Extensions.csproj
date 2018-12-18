@@ -5,6 +5,7 @@
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.Components.Razor</RootNamespace>
     <Description>Extensions to the Razor compiler to support building Razor Components.</Description>
+    <IsProductPackage>true</IsProductPackage>
 
     <!-- Copy package references to output, needed so the build project can find them -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

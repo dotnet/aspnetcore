@@ -46,7 +46,7 @@
   </Target>
 
   <Target Name="PrepareOutputPaths">
-    <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
+    <MakeDir Directories="$(ArtifactsDir);$(ProductPackageOutputPath);$(InternalPackageOutputPath)" />
   </Target>
 
   <Target Name="GenerateProjectList" DependsOnTargets="ResolveProjects">
@@ -195,9 +195,8 @@
       <_LineupPackages Include="@(ExternalDependency)" />
       <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
 
-      <_RestoreSources Include="$(DependencyPackageDir)" Condition="'$(DependencyPackageDir)' != '' AND Exists('$(DependencyPackageDir)')" />
-      <_RestoreSources Include="$(SignedDependencyPackageDir)" Condition="'$(SignedDependencyPackageDir)' != '' AND Exists('$(SignedDependencyPackageDir)')" />
-      <_RestoreSources Include="$(BuildDir)" />
+      <_RestoreSources Include="$(ProductPackageOutputPath)" />
+      <_RestoreSources Include="$(InternalPackageOutputPath)"  />
       <_RestoreSources Include="$(RestoreSources)" />
     </ItemGroup>
 
@@ -263,7 +262,7 @@
   <!-- This is temporary until we can use FrameworkReference to build our own packages. -->
   <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec">
     <ItemGroup>
-      <_BuildOutput Include="$(BuildDir)%(PackageArtifact.Identity).*.nupkg"
+      <_BuildOutput Include="$(ProductPackageOutputPath)%(PackageArtifact.Identity).*.nupkg"
                     Condition=" '%(PackageArtifact.Category)' == 'ship' " />
 
       <SharedFxPackageRefToHide Include="@(SharedFrameworkOnlyPackage)" Exclude="@(ExternalDependency)" />
