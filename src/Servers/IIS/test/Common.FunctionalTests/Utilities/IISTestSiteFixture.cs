@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        public IISTestSiteFixture(Action<IISDeploymentParameters> configure)
+        internal IISTestSiteFixture(Action<IISDeploymentParameters> configure)
         {
             var logging = AssemblyTestLog.ForAssembly(typeof(IISTestSiteFixture).Assembly);
             _loggerFactory = logging.CreateLoggerFactory(null, nameof(IISTestSiteFixture));
