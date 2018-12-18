@@ -19,6 +19,10 @@
     <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
 
+  <Target Name="RequireFullMsBuildOnBuild" BeforeTargets="Build" >
+    <Error Text="Full MSBuild is required to build ANCM. Invoke MSBuild.exe to build this project." Condition="'$(VCTargetsPath)' == ''" />
+  </Target>
+
   <ItemGroup>
     <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''" />
     <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''" />
