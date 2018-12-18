@@ -80,6 +80,8 @@
     <MicrosoftExtensionsWebEncodersPackageVersion>2.1.1</MicrosoftExtensionsWebEncodersPackageVersion>
 
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.1.1</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion>2.1.1</MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion>
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.1.1</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion>2.1.1</MicrosoftAspNetCoreHostingWebHostBuilderFactorySourcesPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.1</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>

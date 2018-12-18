@@ -37,7 +37,7 @@ namespace E2ETests
             return _smokeTestRunner.SmokeTestSuite(ServerType.WebListener, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Standalone);
         }
 #if !NETCOREAPP2_0 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
-        [ConditionalFact(Skip = "https://github.com/aspnet/websdk/pull/322")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task SmokeTests_X64_IISExpress_Clr()
         {

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Fact(Skip = "Full framework web.config generation is currently incorrect. See https://github.com/aspnet/websdk/pull/322")]
+        [Fact]
         public Task HelloWorld_IISExpress_Clr_X64_Portable()
         {
             return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, "V1");

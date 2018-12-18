@@ -32,9 +32,7 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V2")]
-        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1", Skip = "Websdk issue with full framework publish. See https://github.com/aspnet/websdk/pull/322")]
+        [InlineData(RuntimeFlavor.Clr, ApplicationType.Portable, HostingModel.OutOfProcess, "/p:ANCMVersion=V1")]
         public Task HelloWorld_IISExpress(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, HostingModel hostingModel, string additionalPublishParameters)
         {
             return HelloWorld(ServerType.IISExpress, runtimeFlavor, RuntimeArchitecture.x64, applicationType, hostingModel: hostingModel, additionalPublishParameters: additionalPublishParameters);
@@ -66,11 +64,11 @@ namespace ServerComparison.FunctionalTests
         }
 
 
-        private async Task HelloWorld(ServerType serverType, 
-            RuntimeFlavor runtimeFlavor, 
-            RuntimeArchitecture architecture, 
-            ApplicationType applicationType, 
-            [CallerMemberName] string testName = null, 
+        private async Task HelloWorld(ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            ApplicationType applicationType,
+            [CallerMemberName] string testName = null,
             HostingModel hostingModel = HostingModel.OutOfProcess,
             string additionalPublishParameters = "")
         {
@@ -79,7 +77,7 @@ namespace ServerComparison.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger("HelloWorld");
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ServerConfigTemplateContent = Helpers.GetConfigContent(serverType, "Http.config", "nginx.conf"),

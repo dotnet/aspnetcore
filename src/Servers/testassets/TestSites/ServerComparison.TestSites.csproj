@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp2.0;net461</TargetFrameworks>
+    <RuntimeIdentifiers>win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+      <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
+  </ItemGroup>
+
+</Project>
