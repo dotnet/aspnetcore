@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsInvalidAuthorityChar(Span<byte> s)
+        public static bool ContainsInvalidAuthorityChar(ReadOnlySpan<byte> s)
         {
             var authority = _authority;
 
@@ -166,13 +166,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static int IndexOfInvalidTokenChar(byte* s, int length)
+        public static int IndexOfInvalidTokenChar(ReadOnlySpan<byte> span)
         {
             var token = _token;
 
-            for (var i = 0; i < length; i++)
+            for (var i = 0; i < span.Length; i++)
             {
-                var c = s[i];
+                var c = span[i];
                 if (c >= (uint)token.Length || !token[c])
                 {
                     return i;

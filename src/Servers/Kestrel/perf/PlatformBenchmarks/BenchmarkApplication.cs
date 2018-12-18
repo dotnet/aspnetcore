@@ -33,7 +33,7 @@ namespace PlatformBenchmarks
 
         private RequestType _requestType;
 
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
         {
             var requestType = RequestType.NotRecognized;
             if (method == HttpMethod.Get)

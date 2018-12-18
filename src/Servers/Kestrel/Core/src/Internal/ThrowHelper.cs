@@ -26,9 +26,20 @@ namespace System.Buffers
             return argument.ToString();
         }
 
+        // TODO:
+        // Move to helper in ReadOnlySequence
+        // https://github.com/dotnet/corefx/issues/33029
+        internal static void ThrowInvalidOperationException_EndPositionNotReached() { throw CreateInvalidOperationException_EndPositionNotReached(); }
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Exception CreateInvalidOperationException_EndPositionNotReached()
+        {
+            return new InvalidOperationException("EndPositionNotReached");
+        }
+
         internal enum ExceptionArgument
         {
             length,
+            count
         }
     }
 }

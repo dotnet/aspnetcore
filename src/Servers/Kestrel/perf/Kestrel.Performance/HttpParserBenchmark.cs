@@ -51,24 +51,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void ParseData()
         {
-            if (!_parser.ParseRequestLine(new Adapter(this), _buffer, out var consumed, out var examined))
+            var reader = new BufferReader<byte>(_buffer);
+            if (!_parser.ParseRequestLine(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
 
-            _buffer = _buffer.Slice(consumed, _buffer.End);
-
-            if (!_parser.ParseHeaders(new Adapter(this), _buffer, out consumed, out examined, out var consumedBytes))
+            if (!_parser.ParseHeaders(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
         }
 
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
         {
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
         }
 
@@ -81,10 +80,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 RequestHandler = requestHandler;
             }
 
-            public void OnHeader(Span<byte> name, Span<byte> value)
+            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
                 => RequestHandler.OnHeader(name, value);
 
-            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+            public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
         }
     }

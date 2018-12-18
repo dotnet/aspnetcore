@@ -148,25 +148,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
 
             var readableBuffer = awaitable.GetAwaiter().GetResult().Buffer;
+            var reader = new BufferReader<byte>(readableBuffer);
+            var length = readableBuffer.Length;
+
             do
             {
                 Http1Connection.Reset();
 
-                if (!Http1Connection.TakeStartLine(readableBuffer, out var consumed, out var examined))
+                if (!Http1Connection.TakeStartLine(ref reader, length))
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
 
-                readableBuffer = readableBuffer.Slice(consumed);
-
-                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(ref reader, length))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
-
-                readableBuffer = readableBuffer.Slice(consumed);
             }
-            while (readableBuffer.Length > 0);
+            while (!reader.End);
 
             Pipe.Reader.AdvanceTo(readableBuffer.End);
         }
@@ -184,23 +183,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 var result = awaitable.GetAwaiter().GetResult();
                 var readableBuffer = result.Buffer;
+                var length = readableBuffer.Length;
+                var reader = new BufferReader<byte>(readableBuffer);
 
                 Http1Connection.Reset();
 
-                if (!Http1Connection.TakeStartLine(readableBuffer, out var consumed, out var examined))
+                if (!Http1Connection.TakeStartLine(ref reader, length))
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
-                Pipe.Reader.AdvanceTo(consumed, examined);
+                Pipe.Reader.AdvanceTo(reader.Position);
 
                 result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 readableBuffer = result.Buffer;
+                reader = new BufferReader<byte>(readableBuffer);
 
-                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(ref reader, length))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
-                Pipe.Reader.AdvanceTo(consumed, examined);
+                Pipe.Reader.AdvanceTo(reader.Position);
             }
             while (true);
         }

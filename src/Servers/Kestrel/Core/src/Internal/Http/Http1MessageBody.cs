@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // byte consts don't have a data type annotation so we pre-cast it
             private const byte ByteCR = (byte)'\r';
             // "7FFFFFFF\r\n" is the largest chunk size that could be returned as an int.
-            private const int MaxChunkPrefixBytes = 10;
+            private const long MaxChunkPrefixBytes = 10;
 
             private long _inputLength;
 
@@ -446,9 +446,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // _consumedBytes aren't tracked for trailer headers, since headers have separate limits.
                 if (_mode == Mode.TrailerHeaders)
                 {
-                    if (_context.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                    BufferReader<byte> reader = new BufferReader<byte>(readableBuffer);
+                    if (_context.TakeMessageHeaders(ref reader, readableBuffer.Length))
                     {
                         _mode = Mode.Complete;
+                        consumed = reader.Position;
+                        examined = consumed;
+                    }
+                    else
+                    {
+                        consumed = reader.Position;
+                        examined = readableBuffer.End;
                     }
                 }
 
@@ -459,11 +467,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 consumed = buffer.Start;
                 examined = buffer.Start;
-                var reader = new BufferReader(buffer);
-                var ch1 = reader.Read();
-                var ch2 = reader.Read();
+                var reader = new BufferReader<byte>(buffer);
 
-                if (ch1 == -1 || ch2 == -1)
+                if (!(reader.TryRead(out var ch1) && reader.TryRead(out var ch2)))
                 {
                     examined = reader.Position;
                     return;
@@ -472,21 +478,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var chunkSize = CalculateChunkSize(ch1, 0);
                 ch1 = ch2;
 
-                while (reader.ConsumedBytes < MaxChunkPrefixBytes)
+                while (reader.Consumed < MaxChunkPrefixBytes)
                 {
                     if (ch1 == ';')
                     {
                         consumed = reader.Position;
                         examined = reader.Position;
 
-                        AddAndCheckConsumedBytes(reader.ConsumedBytes);
+                        AddAndCheckConsumedBytes(reader.Consumed);
                         _inputLength = chunkSize;
                         _mode = Mode.Extension;
                         return;
                     }
 
-                    ch2 = reader.Read();
-                    if (ch2 == -1)
+                    if (!reader.TryRead(out ch2))
                     {
                         examined = reader.Position;
                         return;
@@ -497,7 +502,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         consumed = reader.Position;
                         examined = reader.Position;
 
-                        AddAndCheckConsumedBytes(reader.ConsumedBytes);
+                        AddAndCheckConsumedBytes(reader.Consumed);
                         _inputLength = chunkSize;
                         _mode = chunkSize > 0 ? Mode.Data : Mode.Trailer;
                         return;

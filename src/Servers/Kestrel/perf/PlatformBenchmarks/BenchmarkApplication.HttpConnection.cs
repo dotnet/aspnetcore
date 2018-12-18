@@ -53,7 +53,7 @@ namespace PlatformBenchmarks
                 var buffer = result.Buffer;
                 while (true)
                 {
-                    if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var examined))
+                    if (!ParseHttpRequest(ref buffer, result.IsCompleted, out var consumed, out var examined))
                     {
                         return;
                     }
@@ -72,26 +72,28 @@ namespace PlatformBenchmarks
                     }
 
                     // No more input or incomplete data, Advance the Reader
-                    Reader.AdvanceTo(buffer.Start, examined);
+                    Reader.AdvanceTo(consumed, examined);
                     break;
                 }
             }
         }
 
-        private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted, out SequencePosition examined)
+        private bool ParseHttpRequest(ref ReadOnlySequence<byte> buffer, bool isCompleted, out SequencePosition consumed, out SequencePosition examined)
         {
             examined = buffer.End;
-
-            var consumed = buffer.Start;
+            consumed = buffer.Start;
             var state = _state;
+            var reader = new BufferReader<byte>(buffer);
 
-            if (!buffer.IsEmpty)
+            if (!reader.End)
             {
                 if (state == State.StartLine)
                 {
-                    if (Parser.ParseRequestLine(new ParsingAdapter(this), buffer, out consumed, out examined))
+                    if (Parser.ParseRequestLine(new ParsingAdapter(this), ref reader))
                     {
                         state = State.Headers;
+                        consumed = reader.Position;
+                        examined = consumed;
                     }
 
                     buffer = buffer.Slice(consumed);
@@ -99,9 +101,11 @@ namespace PlatformBenchmarks
 
                 if (state == State.Headers)
                 {
-                    if (Parser.ParseHeaders(new ParsingAdapter(this), buffer, out consumed, out examined, out int consumedBytes))
+                    if (Parser.ParseHeaders(new ParsingAdapter(this), ref reader))
                     {
                         state = State.Body;
+                        consumed = reader.Position;
+                        examined = consumed;
                     }
 
                     buffer = buffer.Slice(consumed);
@@ -121,7 +125,7 @@ namespace PlatformBenchmarks
             return true;
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
+        public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
         }
 
@@ -170,10 +174,10 @@ namespace PlatformBenchmarks
             public ParsingAdapter(BenchmarkApplication requestHandler)
                 => RequestHandler = requestHandler;
 
-            public void OnHeader(Span<byte> name, Span<byte> value)
+            public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
                 => RequestHandler.OnHeader(name, value);
 
-            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+            public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
         }
     }

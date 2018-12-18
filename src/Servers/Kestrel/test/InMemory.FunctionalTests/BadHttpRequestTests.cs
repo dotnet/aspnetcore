@@ -236,7 +236,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 foreach (var requestLine in HttpParsingData.RequestLineInvalidData)
                 {
-                    data.Add(requestLine, CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine.EscapeNonPrintable()));
+                    string detail = requestLine;
+                    var index = requestLine.IndexOfAny(new char[] { '\r', '\n' });
+                    if (index != -1)
+                    {
+                        detail = requestLine.Substring(0, index);
+                    }
+                    data.Add(requestLine, CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(detail.EscapeNonPrintable()));
                 }
 
                 foreach (var target in HttpParsingData.TargetWithEncodedNullCharData)

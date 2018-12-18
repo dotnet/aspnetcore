@@ -77,13 +77,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private void ParseRequest()
         {
             _http1Connection.Reset();
+            var reader = new BufferReader<byte>(_buffer);
+            var length = _buffer.Length;
 
-            if (!_http1Connection.TakeStartLine(_buffer, out var consumed, out var examined))
+            if (!_http1Connection.TakeStartLine(ref reader, length))
             {
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
 
-            if (!_http1Connection.TakeMessageHeaders(_buffer, out consumed, out examined))
+            if (!_http1Connection.TakeMessageHeaders(ref reader, length))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
@@ -92,8 +94,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private void ParseRequestLine()
         {
             _http1Connection.Reset();
+            var reader = new BufferReader<byte>(_buffer);
+            var length = _buffer.Length;
 
-            if (!_http1Connection.TakeStartLine(_buffer, out var consumed, out var examined))
+            if (!_http1Connection.TakeStartLine(ref reader, length))
             {
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
@@ -102,8 +106,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private void ParseRequestHeaders()
         {
             _http1Connection.Reset();
+            var reader = new BufferReader<byte>(_buffer);
+            var length = _buffer.Length;
 
-            if (!_http1Connection.TakeMessageHeaders(_buffer, out var consumed, out var examined))
+            if (!_http1Connection.TakeMessageHeaders(ref reader, length))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }

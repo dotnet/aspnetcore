@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxRequestHeaderFieldSize, _dynamicTable);
         }
 
-        void IHttpHeadersHandler.OnHeader(Span<byte> name, Span<byte> value)
+        void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
         }

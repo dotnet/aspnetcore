@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Connections.Abstractions;
@@ -14,14 +15,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteSlash = (byte)'/';
         private const byte ByteDot = (byte)'.';
 
-        public static string DecodePath(Span<byte> path, bool pathEncoded, string rawTarget, int queryLength)
+        public static string DecodePath(ReadOnlySpan<byte> path, bool pathEncoded, string rawTarget, int queryLength)
         {
             int pathLength;
+
+            byte[] array = null;
+            Span<byte> buffer = stackalloc byte[128];
+            if (path.Length > 128)
+            {
+                array = ArrayPool<byte>.Shared.Rent(path.Length);
+                buffer = array;
+            }
+
+            path.CopyTo(buffer);
+            buffer = buffer.Slice(0, path.Length);
+
+            string result = null;
+
             if (pathEncoded)
             {
                 // URI was encoded, unescape and then parse as UTF-8
                 // Disabling warning temporary
-                pathLength = UrlDecoder.DecodeInPlace(path);
+                pathLength = UrlDecoder.DecodeInPlace(buffer);
 
                 // Removing dot segments must be done after unescaping. From RFC 3986:
                 //
@@ -34,21 +49,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // character's encoding in US-ASCII.
                 //
                 // https://tools.ietf.org/html/rfc3986#section-2.2
-                pathLength = RemoveDotSegments(path.Slice(0, pathLength));
+                pathLength = RemoveDotSegments(buffer.Slice(0, pathLength));
 
-                return GetUtf8String(path.Slice(0, pathLength));
+                result = GetUtf8String(buffer.Slice(0, pathLength));
             }
-
-            pathLength = RemoveDotSegments(path);
-
-            if (path.Length == pathLength && queryLength == 0)
+            else
             {
-                // If no decoding was required, no dot segments were removed and
-                // there is no query, the request path is the same as the raw target
-                return rawTarget;
+                pathLength = RemoveDotSegments(buffer);
+
+                if (path.Length == pathLength && queryLength == 0)
+                {
+                    // If no decoding was required, no dot segments were removed and
+                    // there is no query, the request path is the same as the raw target
+                    result = rawTarget;
+                }
+                else
+                {
+                    result = buffer.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
+                }
             }
 
-            return path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
+            if (array != null)
+            {
+                ArrayPool<byte>.Shared.Return(array);
+            }
+
+            return result;
         }
 
         private static unsafe string GetUtf8String(Span<byte> path)

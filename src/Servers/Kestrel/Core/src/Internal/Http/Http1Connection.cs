@@ -137,6 +137,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             consumed = buffer.Start;
             examined = buffer.End;
 
+            var reader = new BufferReader<byte>(buffer);
+            var length = buffer.Length;
+
             switch (_requestProcessingStatus)
             {
                 case RequestProcessingStatus.RequestPending:
@@ -150,37 +153,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
                     goto case RequestProcessingStatus.ParsingRequestLine;
                 case RequestProcessingStatus.ParsingRequestLine:
-                    if (TakeStartLine(buffer, out consumed, out examined))
+                    if (TakeStartLine(ref reader, length))
                     {
-                        buffer = buffer.Slice(consumed, buffer.End);
-
                         _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
                         goto case RequestProcessingStatus.ParsingHeaders;
                     }
                     else
                     {
-                        break;
+                        consumed = reader.Position;
                     }
+                    break;
                 case RequestProcessingStatus.ParsingHeaders:
-                    if (TakeMessageHeaders(buffer, out consumed, out examined))
+                    if (TakeMessageHeaders(ref reader, length))
                     {
                         _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                        examined = reader.Position;
+                        consumed = examined;
+                    }
+                    else
+                    {
+                        consumed = reader.Position;
                     }
                     break;
             }
+
+            //Done:;
         }
 
-        public bool TakeStartLine(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeStartLine(ref BufferReader<byte> reader, long length)
         {
-            var overLength = false;
-            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
+            bool result;
+            if (length >= ServerOptions.Limits.MaxRequestLineSize)
             {
-                buffer = buffer.Slice(buffer.Start, ServerOptions.Limits.MaxRequestLineSize);
-                overLength = true;
+                result = TakeOverlengthStartLine(ref reader);
+            }
+            else
+            {
+                result = _parser.ParseRequestLine(new Http1ParsingHandler(this), ref reader);
             }
 
-            var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
-            if (!result && overLength)
+            return result;
+        }
+
+        private bool TakeOverlengthStartLine(ref BufferReader<byte> reader)
+        {
+            // More data in the reader than we want to allow, cap it
+            var sequence = reader.Sequence;
+            reader = new BufferReader<byte>(sequence.Slice(sequence.Start, ServerOptions.Limits.MaxRequestLineSize));
+
+            var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), ref reader);
+
+            if (result)
+            {
+                // Need to reset the reader to the right end point
+                var consumed = reader.Consumed;
+                reader = new BufferReader<byte>(sequence);
+                reader.Advance(consumed);
+            }
+            else
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
             }
@@ -188,26 +218,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
 
-        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeMessageHeaders(ref BufferReader<byte> reader, long length)
         {
-            // Make sure the buffer is limited
-            bool overLength = false;
-            if (buffer.Length >= _remainingRequestHeadersBytesAllowed)
-            {
-                buffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
+            var consumed = reader.Consumed;
+            var remaining = length - consumed;
+            bool result;
 
-                // If we sliced it means the current buffer bigger than what we're
-                // allowed to look at
-                overLength = true;
+            if (remaining >= _remainingRequestHeadersBytesAllowed)
+            {
+                // Possibly over max size, go down slow path
+                result = TakeOverlengthMessageHeaders(ref reader);
+            }
+            else
+            {
+                result = _parser.ParseHeaders(new Http1ParsingHandler(this), ref reader);
+                _remainingRequestHeadersBytesAllowed -= (int)(reader.Consumed - consumed);
             }
 
-            var result = _parser.ParseHeaders(new Http1ParsingHandler(this), buffer, out consumed, out examined, out var consumedBytes);
-            _remainingRequestHeadersBytesAllowed -= consumedBytes;
-
-            if (!result && overLength)
-            {
-                BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
-            }
             if (result)
             {
                 TimeoutControl.CancelTimeout();
@@ -216,7 +243,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
 
-        public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        private bool TakeOverlengthMessageHeaders(ref BufferReader<byte> reader)
+        {
+            // More data in the reader than we want to allow, cap it
+            reader = new BufferReader<byte>(reader.Sequence.Slice(reader.Position, _remainingRequestHeadersBytesAllowed));
+
+            var result = _parser.ParseHeaders(new Http1ParsingHandler(this), ref reader);
+            _remainingRequestHeadersBytesAllowed -= (int)reader.Consumed;
+
+            if (!result)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+            }
+
+            return result;
+        }
+
+        public void OnStartLine(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
         {
             Debug.Assert(target.Length != 0, "Request target must be non-zero length");
 
@@ -260,7 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         // Compare with Http2Stream.TryValidatePseudoHeaders
-        private void OnOriginFormTarget(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
+        private void OnOriginFormTarget(HttpMethod method, HttpVersion version, ReadOnlySpan<byte> target, ReadOnlySpan<byte> path, ReadOnlySpan<byte> query, ReadOnlySpan<byte> customMethod, bool pathEncoded)
         {
             Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
 
@@ -283,7 +326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
+        private void OnAuthorityFormTarget(HttpMethod method, ReadOnlySpan<byte> target)
         {
             _requestTargetForm = HttpRequestTarget.AuthorityForm;
 
@@ -331,7 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             QueryString = string.Empty;
         }
 
-        private void OnAbsoluteFormTarget(Span<byte> target, Span<byte> query)
+        private void OnAbsoluteFormTarget(ReadOnlySpan<byte> target, ReadOnlySpan<byte> query)
         {
             _requestTargetForm = HttpRequestTarget.AbsoluteForm;
 

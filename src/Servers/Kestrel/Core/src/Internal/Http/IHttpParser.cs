@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public interface IHttpParser<TRequestHandler> where TRequestHandler : IHttpHeadersHandler, IHttpRequestLineHandler
     {
-        bool ParseRequestLine(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined);
+        bool ParseRequestLine(TRequestHandler handler, ref BufferReader<byte> reader);
 
-        bool ParseHeaders(TRequestHandler handler, in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out int consumedBytes);
+        bool ParseHeaders(TRequestHandler handler, ref BufferReader<byte> reader);
     }
 }

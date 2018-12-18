@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void GetsKnownMethod(string input, bool expectedResult, string expectedKnownString, HttpMethod expectedMethod)
         {
             // Arrange
-            var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
+            var block = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
             var result = block.GetKnownMethod(out var knownMethod, out var length);
@@ -51,19 +51,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData("HTTP/1.0\r", true, HttpUtilities.Http10Version, HttpVersion.Http10)]
-        [InlineData("HTTP/1.1\r", true, HttpUtilities.Http11Version, HttpVersion.Http11)]
-        [InlineData("HTTP/3.0\r", false, null, HttpVersion.Unknown)]
-        [InlineData("http/1.0\r", false, null, HttpVersion.Unknown)]
-        [InlineData("http/1.1\r", false, null, HttpVersion.Unknown)]
+        [InlineData("HTTP/1.0", true, HttpUtilities.Http10Version, HttpVersion.Http10)]
+        [InlineData("HTTP/1.1", true, HttpUtilities.Http11Version, HttpVersion.Http11)]
+        [InlineData("HTTP/3.0", false, null, HttpVersion.Unknown)]
+        [InlineData("http/1.0", false, null, HttpVersion.Unknown)]
+        [InlineData("http/1.1", false, null, HttpVersion.Unknown)]
         [InlineData("short ", false, null, HttpVersion.Unknown)]
         public void GetsKnownVersion(string input, bool expectedResult, string expectedKnownString, HttpVersion version)
         {
             // Arrange
-            var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
+            var block = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
-            var result = block.GetKnownVersion(out HttpVersion knownVersion, out var length);
+            var result = block.GetKnownVersion(out HttpVersion knownVersion);
             string toString = null;
             if (knownVersion != HttpVersion.Unknown)
             {
@@ -74,17 +74,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(version, knownVersion);
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedKnownString, toString);
-            Assert.Equal(expectedKnownString?.Length ?? 0, length);
         }
 
         [Theory]
-        [InlineData("HTTP/1.0\r", "HTTP/1.0")]
-        [InlineData("HTTP/1.1\r", "HTTP/1.1")]
+        [InlineData("HTTP/1.0", "HTTP/1.0")]
+        [InlineData("HTTP/1.1", "HTTP/1.1")]
         public void KnownVersionsAreInterned(string input, string expected)
         {
             TestKnownStringsInterning(input, expected, span =>
             {
-                HttpUtilities.GetKnownVersion(span, out var version, out var _);
+                HttpUtilities.GetKnownVersion(span, out var version);
                 return HttpUtilities.VersionToString(version);
             });
         }
