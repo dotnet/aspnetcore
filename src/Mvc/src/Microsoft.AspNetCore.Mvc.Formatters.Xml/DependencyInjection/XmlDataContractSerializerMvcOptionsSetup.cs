@@ -18,19 +18,14 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     internal sealed class XmlDataContractSerializerMvcOptionsSetup : IConfigureOptions<MvcOptions>
     {
-        private readonly MvcXmlOptions _xmlOptions;
         private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlDataContractSerializerMvcOptionsSetup"/>.
         /// </summary>
-        /// <param name="xmlOptions"><see cref="MvcXmlOptions"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public XmlDataContractSerializerMvcOptionsSetup(
-            IOptions<MvcXmlOptions> xmlOptions,
-            ILoggerFactory loggerFactory)
+        public XmlDataContractSerializerMvcOptionsSetup(ILoggerFactory loggerFactory)
         {
-            _xmlOptions = xmlOptions?.Value ?? throw new ArgumentNullException(nameof(xmlOptions));
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
@@ -43,11 +38,11 @@ namespace Microsoft.Extensions.DependencyInjection
             options.ModelMetadataDetailsProviders.Add(new DataMemberRequiredBindingMetadataProvider());
 
             var inputFormatter = new XmlDataContractSerializerInputFormatter(options);
-            inputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory(_xmlOptions));
+            inputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory());
             options.InputFormatters.Add(inputFormatter);
 
             var outputFormatter = new XmlDataContractSerializerOutputFormatter(_loggerFactory);
-            outputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory(_xmlOptions));
+            outputFormatter.WrapperProviderFactories.Add(new ProblemDetailsWrapperProviderFactory());
             options.OutputFormatters.Add(outputFormatter);
 
             // Do not override any user mapping

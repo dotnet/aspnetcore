@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="OpenIdConnect\wellknownconfig.json" />
+    <None Remove="OpenIdConnect\wellknownkeys.json" />
+    <None Remove="WsFederation\federationmetadata.xml" />
+    <None Remove="WsFederation\InvalidToken.xml" />
+    <None Remove="WsFederation\ValidToken.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="WsFederation\federationmetadata.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="WsFederation\InvalidToken.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="WsFederation\ValidToken.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="OpenIdConnect\wellknownconfig.json" />
+    <EmbeddedResource Include="OpenIdConnect\wellknownkeys.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Facebook" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Google" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Twitter" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.WsFederation" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+  </ItemGroup>
+
+</Project>

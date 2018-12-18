@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// A count of consecutive clicks that happened in a short amount of time, incremented by one.
         /// </summary>
-        public float Detail { get; set; }
+        public long Detail { get; set; }
 
         /// <summary>
         /// The data that underlies a drag-and-drop operation, known as the drag data store.
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// A count of consecutive clicks that happened in a short amount of time, incremented by one.
         /// </summary>
-        public float Detail { get; set; }
+        public long Detail { get; set; }
 
         /// <summary>
         /// The X coordinate of the mouse pointer in global (screen) coordinates.
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// A count of consecutive clicks that happened in a short amount of time, incremented by one.
         /// </summary>
-        public float Detail { get; set; }
+        public long Detail { get; set; }
 
         /// <summary>
         /// A list of <see cref="UITouchPoint"/> for every point of contact currently touching the surface.

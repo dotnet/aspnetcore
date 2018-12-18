@@ -881,42 +881,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 });
         }
 
-        [Fact]
-        public void CreateHandlerMethods_WithLegacyValidationBehavior_AddsParameterDescriptors()
-        {
-            // Arrange
-            var provider = new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = false }),
-                Options.Create(new RazorPagesOptions()));
-            var typeInfo = typeof(PageWithHandlerParameters).GetTypeInfo();
-            var expected = typeInfo.GetMethod(nameof(PageWithHandlerParameters.OnPost));
-            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, new object[0]);
-
-            // Act
-            provider.PopulateHandlerMethods(pageModel);
-
-            // Assert
-            var handlerMethods = pageModel.HandlerMethods;
-            var handler = Assert.Single(handlerMethods);
-
-            Assert.Collection(
-                handler.Parameters,
-                p =>
-                {
-                    Assert.NotNull(p.ParameterInfo);
-                    Assert.Equal(typeof(string), p.ParameterInfo.ParameterType);
-                    Assert.Equal("name", p.ParameterName);
-                },
-                p =>
-                {
-                    Assert.NotNull(p.ParameterInfo);
-                    Assert.Equal(typeof(int), p.ParameterInfo.ParameterType);
-                    Assert.Equal("id", p.ParameterName);
-                    Assert.Equal("personId", p.BindingInfo.BinderModelName);
-                });
-        }
-
         private class PageWithHandlerParameters
         {
             public void OnPost(string name, [ModelBinder(Name = "personId")] int id) { }
@@ -1073,24 +1037,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
-        public void PopulateFilters_With21CompatBehavior_DoesNotAddDisallowOptionsRequestsPageFilter()
-        {
-            // Arrange
-            var provider = new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions()),
-                Options.Create(new RazorPagesOptions()));
-            var typeInfo = typeof(object).GetTypeInfo();
-            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
-
-            // Act
-            provider.PopulateFilters(pageModel);
-
-            // Assert
-            Assert.Empty(pageModel.Filters);
-        }
-
-        [Fact]
         public void PopulateFilters_AddsDisallowOptionsRequestsPageFilter()
         {
             // Arrange
@@ -1225,8 +1171,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             return new DefaultPageApplicationModelProvider(
                 TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }),
-                Options.Create(new RazorPagesOptions {  AllowDefaultHandlingForOptionsRequests = true }));
+                Options.Create(new RazorPagesOptions()));
         }
     }
 }

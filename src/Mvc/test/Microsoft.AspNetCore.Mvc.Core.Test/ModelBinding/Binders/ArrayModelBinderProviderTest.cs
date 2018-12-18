@@ -51,17 +51,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.IsType(typeof(ArrayModelBinder<>).MakeGenericType(modelType.GetElementType()), result);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Create_ForArrayType_ReturnsBinder_WithExpectedAllowValidatingTopLevelNodes(
-            bool allowValidatingTopLevelNodes)
+        [Fact]
+        public void Create_ForArrayType_ReturnsBinder()
         {
             // Arrange
             var provider = new ArrayModelBinderProvider();
 
             var context = new TestModelBinderProviderContext(typeof(int[]));
-            context.MvcOptions.AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
             context.OnCreatingBinder(m =>
             {
                 Assert.Equal(typeof(int), m.ModelType);
@@ -73,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             var binder = Assert.IsType<ArrayModelBinder<int>>(result);
-            Assert.Equal(allowValidatingTopLevelNodes, binder.AllowValidatingTopLevelNodes);
+            Assert.True(binder.AllowValidatingTopLevelNodes);
         }
 
         [Fact]

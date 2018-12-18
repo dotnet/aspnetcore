@@ -102,8 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 var parameter = handler.Parameters[i];
                 ModelMetadata metadata;
-                if (mvcOptions.AllowValidatingTopLevelNodes &&
-                    modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
+                if (modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
                 {
                     // The default model metadata provider derives from ModelMetadataProvider
                     // and can therefore supply information about attributes applied to parameters.

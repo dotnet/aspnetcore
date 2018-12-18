@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -380,20 +379,6 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             typeof(MvcOptionsConfigureCompatibilityOptions),
                             typeof(MvcCoreMvcOptionsSetup),
-                        }
-                    },
-                    {
-                        typeof(IPostConfigureOptions<RazorPagesOptions>),
-                        new[]
-                        {
-                            typeof(RazorPagesOptionsConfigureCompatibilityOptions),
-                        }
-                    },
-                    {
-                        typeof(IPostConfigureOptions<MvcJsonOptions>),
-                        new[]
-                        {
-                            typeof(MvcJsonOptionsConfigureCompatibilityOptions),
                         }
                     },
                     {

@@ -46,8 +46,7 @@ namespace Microsoft.AspNetCore.Components.Services
         /// (as returned by <see cref="GetBaseUri"/>).</param>
         public void NavigateTo(string uri)
         {
-            EnsureInitialized();
-            NavigateToCore(uri);
+            NavigateTo(uri, forceLoad: false);
         }
 
         /// <summary>
@@ -55,7 +54,20 @@ namespace Microsoft.AspNetCore.Components.Services
         /// </summary>
         /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
         /// (as returned by <see cref="GetBaseUri"/>).</param>
-        protected abstract void NavigateToCore(string uri);
+        /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
+        public void NavigateTo(string uri, bool forceLoad)
+        {
+            EnsureInitialized();
+            NavigateToCore(uri, forceLoad);
+        }
+
+        /// <summary>
+        /// Navigates to the specified URI.
+        /// </summary>
+        /// <param name="uri">The destination URI. This can be absolute, or relative to the base URI
+        /// (as returned by <see cref="GetBaseUri"/>).</param>
+        /// <param name="forceLoad">If true, bypasses client-side routing and forces the browser to load the new page from the server, whether or not the URI would normally be handled by the client-side router.</param>
+        protected abstract void NavigateToCore(string uri, bool forceLoad);
 
         /// <summary>
         /// Called to initialize BaseURI and current URI before those values the first time.

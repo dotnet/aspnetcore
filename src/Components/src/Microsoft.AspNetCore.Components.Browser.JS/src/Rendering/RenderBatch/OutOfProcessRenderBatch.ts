@@ -45,11 +45,13 @@ export class OutOfProcessRenderBatch implements RenderBatch {
   }
 
   disposedComponentIdsEntry(values: ArrayValues<number>, index: number): number {
-    return (values as any) + index * disposedComponentIdsEntryLength;
+    const entryPos = (values as any) + index * disposedComponentIdsEntryLength;
+    return readInt32LE(this.batchData, entryPos);
   }
 
   disposedEventHandlerIdsEntry(values: ArrayValues<number>, index: number): number {
-    return (values as any) + index * disposedEventHandlerIdsEntryLength;
+    const entryPos = (values as any) + index * disposedEventHandlerIdsEntryLength;
+    return readInt32LE(this.batchData, entryPos);
   }
 
   diffReader: RenderTreeDiffReader;

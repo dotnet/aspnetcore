@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -15,21 +16,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class MvcJsonOptions : IEnumerable<ICompatibilitySwitch>
     {
-        private readonly CompatibilitySwitch<bool> _allowInputFormatterExceptionMessages;
-        private readonly ICompatibilitySwitch[] _switches;
-
-        /// <summary>
-        /// Creates a new instance of <see cref="MvcJsonOptions"/>.
-        /// </summary>
-        public MvcJsonOptions()
-        {
-            _allowInputFormatterExceptionMessages = new CompatibilitySwitch<bool>(nameof(AllowInputFormatterExceptionMessages));
-
-            _switches = new ICompatibilitySwitch[]
-            {
-                _allowInputFormatterExceptionMessages,
-            };
-        }
+        private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
 
         /// <summary>
         /// Gets or sets a flag to determine whether error messages from JSON deserialization by the
@@ -44,21 +31,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// or using <see cref="BadRequestObjectResult"/>. In effect, this setting controls whether clients can receive
         /// detailed error messages about submitted JSON data.
         /// </remarks>
-        public bool AllowInputFormatterExceptionMessages
-        {
-            get => _allowInputFormatterExceptionMessages.Value;
-            set => _allowInputFormatterExceptionMessages.Value = value;
-        }
+        public bool AllowInputFormatterExceptionMessages { get; set; } = true;
 
         /// <summary>
         /// Gets the <see cref="JsonSerializerSettings"/> that are used by this application.
         /// </summary>
         public JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.CreateSerializerSettings();
 
-        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
-        {
-            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
-        }
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }

@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Http
                 try
                 {
                     AllocateReadTail();
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
                     var length = await _readingStream.ReadAsync(_readTail.AvailableMemory.Slice(_readTail.End), tokenSource.Token);
 #elif NETSTANDARD2_0
                     if (!MemoryMarshal.TryGetArray<byte>(_readTail.AvailableMemory.Slice(_readTail.End), out var arraySegment))

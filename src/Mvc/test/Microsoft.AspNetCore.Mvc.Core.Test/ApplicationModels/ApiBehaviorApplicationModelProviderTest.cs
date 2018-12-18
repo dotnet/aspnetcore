@@ -169,19 +169,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 loggerFactory);
         }
 
-        private static ApplicationModelProviderContext GetContext(
-            Type type,
-            IModelMetadataProvider modelMetadataProvider = null)
-        {
-            var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
-            var mvcOptions = Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true });
-            modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
-            var provider = new DefaultApplicationModelProvider(mvcOptions, modelMetadataProvider);
-            provider.OnProvidersExecuting(context);
-
-            return context;
-        }
-
         private class TestApiController : ControllerBase
         {
             public IActionResult TestAction(object value) => null;

@@ -48,11 +48,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [InlineData(false, false)]
         [InlineData(false, true)]
         [InlineData(true, false)]
+        [InlineData(true, true)]
         public async Task ArrayModelBinder_CreatesEmptyCollection_IfIsTopLevelObject(
             bool allowValidatingTopLevelNodes,
             bool isBindingRequired)
         {
             // Arrange
+            var expectedErrorCount = isBindingRequired ? 1 : 0;
             var binder = new ArrayModelBinder<string>(
                 new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
                 NullLoggerFactory.Instance,
@@ -81,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.Empty(Assert.IsType<string[]>(bindingContext.Result.Model));
             Assert.True(bindingContext.Result.IsModelSet);
-            Assert.Equal(0, bindingContext.ModelState.ErrorCount);
+            Assert.Equal(expectedErrorCount, bindingContext.ModelState.ErrorCount);
         }
 
         [Fact]
@@ -218,30 +220,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
-        private static IModelBinder CreateIntBinder()
-        {
-            return new StubModelBinder(context =>
-            {
-                var value = context.ValueProvider.GetValue(context.ModelName);
-                if (value != ValueProviderResult.None)
-                {
-                    object valueToConvert = null;
-                    if (value.Values.Count == 1)
-                    {
-                        valueToConvert = value.Values[0];
-                    }
-                    else if (value.Values.Count > 1)
-                    {
-                        valueToConvert = value.Values.ToArray();
-                    }
-
-                    var model = ModelBindingHelper.ConvertTo(valueToConvert, context.ModelType, value.Culture);
-                    return ModelBindingResult.Success(model);
-                }
-                return ModelBindingResult.Failed();
-            });
-        }
-
         private static DefaultModelBindingContext GetBindingContext(IValueProvider valueProvider)
         {
             var bindingContext = CreateContext();
@@ -277,4 +255,3 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
     }
 }
-

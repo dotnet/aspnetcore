@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -6,9 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.AspNetCore.Components.Browser\Hosting\ConventionBasedStartup.cs" Link="Hosting\ConventionBasedStartup.cs" />
-    <Compile Include="..\Microsoft.AspNetCore.Components.Browser\Hosting\IBlazorStartup.cs" Link="Hosting\IBlazorStartup.cs" />
-    <Compile Include="..\Microsoft.AspNetCore.Components.Browser\Services\BrowserUriHelperInterop.cs" Link="Circuits\BrowserUriHelperInterop.cs" />
+    <Compile Include="..\shared\ConventionBasedStartup.cs" Link="Hosting\ConventionBasedStartup.cs" />
+    <Compile Include="..\shared\IBlazorStartup.cs" Link="Hosting\IBlazorStartup.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
   </ItemGroup>
 
 </Project>

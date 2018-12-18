@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         public virtual void SetParameters(ParameterCollection parameters)
         {
-            parameters.AssignToProperties(this);
+            parameters.SetParameterProperties(this);
             TriggerRender();
         }
 

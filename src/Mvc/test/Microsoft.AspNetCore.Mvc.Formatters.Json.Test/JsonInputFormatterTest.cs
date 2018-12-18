@@ -598,17 +598,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task ReadAsync_DefaultOptions_DoesNotWrapJsonInputExceptions()
+        public async Task ReadAsync_DoNotAllowInputFormatterExceptionMessages_DoesNotWrapJsonInputExceptions()
         {
             // Arrange
-            var formatter = new JsonInputFormatter(
-                GetLogger(),
-                _serializerSettings,
-                ArrayPool<char>.Shared,
-                _objectPoolProvider,
-                new MvcOptions(),
-                new MvcJsonOptions());
-
+            var formatter = CreateFormatter(allowInputFormatterExceptionMessages: false);
             var contentBytes = Encoding.UTF8.GetBytes("{");
             var httpContext = GetHttpContext(contentBytes);
 
@@ -730,35 +723,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 metadata: metadata,
                 readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader,
                 treatEmptyInputAsDefaultValue: treatEmptyInputAsDefaultValue);
-        }
-
-        private IEnumerable<string> GetModelStateErrorMessages(ModelStateDictionary modelStateDictionary)
-        {
-            var allErrorMessages = new List<string>();
-            foreach (var keyModelStatePair in modelStateDictionary)
-            {
-                var key = keyModelStatePair.Key;
-                var errors = keyModelStatePair.Value.Errors;
-                if (errors != null && errors.Count > 0)
-                {
-                    foreach (var modelError in errors)
-                    {
-                        if (string.IsNullOrEmpty(modelError.ErrorMessage))
-                        {
-                            if (modelError.Exception != null)
-                            {
-                                allErrorMessages.Add(modelError.Exception.Message);
-                            }
-                        }
-                        else
-                        {
-                            allErrorMessages.Add(modelError.ErrorMessage);
-                        }
-                    }
-                }
-            }
-
-            return allErrorMessages;
         }
 
         private sealed class User

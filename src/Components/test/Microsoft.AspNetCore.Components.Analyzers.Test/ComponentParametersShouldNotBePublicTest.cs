@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 new DiagnosticResult
                 {
                     Id = "BL9993",
-                    Message = "Component parameter 'BadProperty1' is marked public, but component parameters should not be public.",
+                    Message = "Component parameter 'BadProperty1' has a public setter, but component parameters should not be publicly settable.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 new DiagnosticResult
                 {
                     Id = "BL9993",
-                    Message = "Component parameter 'BadProperty2' is marked public, but component parameters should not be public.",
+                    Message = "Component parameter 'BadProperty2' has a public setter, but component parameters should not be publicly settable.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {
@@ -104,6 +104,25 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [Parameter] object BadProperty2 { get; set; }
         }
     }" + BlazorParameterSource);
+        }
+
+        [Fact]
+        public void IgnoresPublicPropertiesWithNonPublicSetterWithParameterAttribute()
+        {
+            var test = @"
+    namespace ConsoleApplication1
+    {
+        using " + typeof(ParameterAttribute).Namespace + @";
+
+        class TypeName
+        {
+            [Parameter] public string MyProperty1 { get; private set; }
+            [Parameter] public object MyProperty2 { get; protected set; }
+            [Parameter] public object MyProperty2 { get; internal set; }
+        }
+    }" + BlazorParameterSource;
+
+            VerifyCSharpDiagnostic(test);
         }
 
         protected override CodeFixProvider GetCSharpCodeFixProvider()
