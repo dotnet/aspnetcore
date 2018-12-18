@@ -142,6 +142,10 @@ namespace Microsoft.AspNetCore.ResponseCompression
 
         private async void InternalWriteAsync(byte[] buffer, int offset, int count, AsyncCallback callback, TaskCompletionSource<object> tcs)
         {
+            // Avoid to compress responses with any ContentEncoding header.
+            if (_context.Response.Headers.ContainsKey(HeaderNames.ContentEncoding))
+                _compressionChecked = true;
+
             try
             {
                 await WriteAsync(buffer, offset, count);
