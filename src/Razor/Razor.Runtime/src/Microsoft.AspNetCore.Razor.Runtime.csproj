@@ -11,11 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor\Microsoft.AspNetCore.Razor.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="$(MicrosoftAspNetCoreHtmlAbstractionsPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
   </ItemGroup>
 
 </Project>
