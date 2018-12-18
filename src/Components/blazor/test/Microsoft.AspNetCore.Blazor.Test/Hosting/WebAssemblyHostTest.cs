@@ -3,14 +3,14 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Blazor.Hosting;
 using Microsoft.AspNetCore.Components.Builder;
+using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Mono.WebAssembly.Interop;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Hosting
+namespace Microsoft.AspNetCore.Blazor.Hosting.Test
 {
     public class WebAssemblyHostTest
     {

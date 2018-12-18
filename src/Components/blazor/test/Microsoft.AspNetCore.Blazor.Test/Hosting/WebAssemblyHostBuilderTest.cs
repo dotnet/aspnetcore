@@ -4,12 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.Blazor.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Hosting
+namespace Microsoft.AspNetCore.Blazor.Hosting.Test
 {
     public class WebAssemblyHostBuilderTest
     {
