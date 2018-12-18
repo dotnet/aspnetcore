@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return count;
         }
 
-        internal static void WriteBeginChunkBytes(ref BufferWriter<PipeWriter> start, int dataCount)
+        internal static void WriteBeginChunkBytes(this ref BufferWriter<PipeWriter> start, int dataCount)
         {
             // 10 bytes is max length + \r\n
             start.Ensure(10);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             start.Advance(count);
         }
 
-        internal static void WriteEndChunkBytes(ref BufferWriter<PipeWriter> start)
+        internal static void WriteEndChunkBytes(this ref BufferWriter<PipeWriter> start)
         {
             start.Write(EndChunkBytes);
         }
