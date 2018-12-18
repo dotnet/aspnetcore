@@ -123,13 +123,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return StringValues.Concat(existing, append);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static int BitCount(long value)
         {
-            if (Popcnt.X64.IsSupported)
-            {
-                return (int)Popcnt.X64.PopCount((ulong)value);
-            }
-            else
+            int SoftwareFallback(ulong v)
             {
                 // see https://github.com/dotnet/corefx/blob/5965fd3756bc9dd9c89a27621eb10c6931126de2/src/System.Reflection.Metadata/src/System/Reflection/Internal/Utilities/BitArithmetic.cs
 
@@ -138,12 +135,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 const ulong Mask00001111 = 0x0F0F0F0F0F0F0F0FUL;
                 const ulong Mask00000001 = 0x0101010101010101UL;
 
-                var v = (ulong)value;
-
                 v = v - ((v >> 1) & Mask01010101);
                 v = (v & Mask00110011) + ((v >> 2) & Mask00110011);
                 return (int)(unchecked(((v + (v >> 4)) & Mask00001111) * Mask00000001) >> 56);
             }
+
+            if (Popcnt.X64.IsSupported)
+            {
+                return (int)Popcnt.X64.PopCount((ulong)value);
+            }
+
+            return SoftwareFallback((ulong)value);
         }
 
         protected virtual int GetCountFast()
