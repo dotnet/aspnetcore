@@ -11,12 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.NodeServices\Microsoft.AspNetCore.NodeServices.csproj" />
+    <Reference Include="Microsoft.AspNetCore.NodeServices" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="$(MicrosoftAspNetCoreMvcTagHelpersPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="$(MicrosoftAspNetCoreMvcViewFeaturesPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
   </ItemGroup>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">

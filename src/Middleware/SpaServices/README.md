@@ -327,7 +327,7 @@ As a simple example, here's how you can set up Webpack to build TypeScript files
 
 ```
 npm install --save typescript ts-loader
-``` 
+```
 
 And if you don't already have it, you'll find it useful to install the `webpack` command-line tool:
 
@@ -641,8 +641,8 @@ by using the `HotModuleReplacementClientOptions` property on `WebpackDevMiddlewa
 ```csharp
 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
     HotModuleReplacement = true,
-    HotModuleReplacementClientOptions = new Dictionary<string, string> { 
-        { "reload", "true" }, 
+    HotModuleReplacementClientOptions = new Dictionary<string, string> {
+        { "reload", "true" },
     },
 });
 ```

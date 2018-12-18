@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <OutputType>exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.NodeServices" />
+    <Reference Include="Microsoft.AspNetCore.NodeServices.Sockets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+</Project>

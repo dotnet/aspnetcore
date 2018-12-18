@@ -73,6 +73,7 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.1.3" />
   <Package Id="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.1.2" />
   <Package Id="Microsoft.AspNetCore.Mvc" Version="2.1.3" />
+  <Package Id="Microsoft.AspNetCore.NodeServices" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Owin" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Razor" Version="2.1.2" />
   <Package Id="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" />
@@ -93,6 +94,8 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.3" />
   <Package Id="Microsoft.AspNetCore.Server.HttpSys" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Session" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.SpaServices.Extensions" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.SpaServices" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.1.1" />

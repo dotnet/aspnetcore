@@ -114,5 +114,9 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TestCommon" ProjectPath="$(RepositoryRoot)src\Mvc\test\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TestDiagnosticListener" ProjectPath="$(RepositoryRoot)src\Mvc\test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.NodeServices" ProjectPath="$(RepositoryRoot)src\Middleware\NodeServices\src\Microsoft.AspNetCore.NodeServices.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.NodeServices.Sockets" ProjectPath="$(RepositoryRoot)src\Middleware\NodeServices.Sockets\src\Microsoft.AspNetCore.NodeServices.Sockets.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices" ProjectPath="$(RepositoryRoot)src\Middleware\SpaServices\src\Microsoft.AspNetCore.SpaServices.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepositoryRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
   </ItemGroup>
 </Project>
