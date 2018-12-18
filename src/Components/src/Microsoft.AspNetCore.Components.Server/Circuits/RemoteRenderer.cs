@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         }
 
         /// <summary>
-        /// Associates the <see cref="IComponent"/> with the <see cref="BrowserRenderer"/>,
+        /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
         /// causing it to be displayed in the specified DOM element.
         /// </summary>
         /// <param name="componentType">The type of the component.</param>
