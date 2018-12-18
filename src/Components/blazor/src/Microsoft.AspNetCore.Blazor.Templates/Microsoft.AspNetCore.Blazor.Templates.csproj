@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2,0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <NuspecFile>Microsoft.AspNetCore.Blazor.Templates.nuspec</NuspecFile>
     <IsProductPackage>true</IsProductPackage>
     <EnableDefaultItems>False</EnableDefaultItems>
