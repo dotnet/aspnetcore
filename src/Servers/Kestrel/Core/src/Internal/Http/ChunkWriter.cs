@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal static class ChunkWriter
     {
-        private static ReadOnlySpan<byte> EndChunkBytes => new byte[2] { (byte)'\r', (byte)'\n' };  // uses C# compiler's optimization for static byte[] data
         private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
 
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
@@ -56,7 +55,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         internal static void WriteEndChunkBytes(this ref BufferWriter<PipeWriter> start)
         {
-            start.Write(EndChunkBytes);
+            start.Ensure(2);
+            var span = start.Span;
+
+            // CRLF done in reverse order so the 1st index will elide the bounds check for the 0th index
+            span[1] = (byte)'\n';
+            span[0] = (byte)'\r';
         }
     }
 }
