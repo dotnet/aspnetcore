@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -16,6 +18,29 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
     public class GetFileReferenceMetadata : Task
     {
         private const string TypeScriptLanguageName = "TypeScript";
+
+        // Ignore Unicode escape sequences because, though they may escape valid class name characters,
+        // backslash is not a valid filename character.
+        private static readonly HashSet<UnicodeCategory> ValidClassNameCharacterCategories =
+            new HashSet<UnicodeCategory>(new[]
+            {
+                // Formatting
+                UnicodeCategory.Format, // Cf
+                // Letter
+                UnicodeCategory.LowercaseLetter, // Ll
+                UnicodeCategory.ModifierLetter, // Lm
+                UnicodeCategory.OtherLetter, // Lo
+                UnicodeCategory.TitlecaseLetter, // Lt
+                UnicodeCategory.UppercaseLetter, // Lu
+                UnicodeCategory.LetterNumber, // Nl
+                // Combining
+                UnicodeCategory.SpacingCombiningMark, // Mc
+                UnicodeCategory.NonSpacingMark, // Mn
+                // Decimal digit
+                UnicodeCategory.DecimalDigitNumber, // Nd
+                // Connecting (includes underscore)
+                UnicodeCategory.ConnectorPunctuation, // Pc
+            });
 
         /// <summary>
         /// Extension to use in default OutputPath metadata value. Ignored when generating TypeScript.
@@ -78,30 +103,13 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                     Log.LogError(Resources.FormatInvalidEmptyMetadataValue("CodeGenerator", type, item.ItemSpec));
                 }
 
-                var className = item.GetMetadata("ClassName");
-                if (string.IsNullOrEmpty(className))
-                {
-                    var filename = item.GetMetadata("Filename");
-                    className = $"{filename}Client";
-                    if (char.IsLower(className[0]))
-                    {
-                        className = char.ToUpper(className[0]) + className.Substring(startIndex: 1);
-                    }
-
-                    MetadataSerializer.SetMetadata(newItem, "ClassName", className);
-                }
-
-                var @namespace = item.GetMetadata("Namespace");
-                if (string.IsNullOrEmpty(@namespace))
-                {
-                    MetadataSerializer.SetMetadata(newItem, "Namespace", Namespace);
-                }
-
                 var outputPath = item.GetMetadata("OutputPath");
                 if (string.IsNullOrEmpty(outputPath))
                 {
+                    // No need to further sanitize this path.
+                    var filename = item.GetMetadata("Filename");
                     var isTypeScript = codeGenerator.EndsWith(TypeScriptLanguageName, StringComparison.OrdinalIgnoreCase);
-                    outputPath = $"{className}{(isTypeScript ? ".ts" : Extension)}";
+                    outputPath = $"{filename}Client{(isTypeScript ? ".ts" : Extension)}";
                 }
 
                 // Place output file in correct directory (relative to project directory).
@@ -118,6 +126,37 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                 }
 
                 MetadataSerializer.SetMetadata(newItem, "OutputPath", outputPath);
+
+                var className = item.GetMetadata("ClassName");
+                if (string.IsNullOrEmpty(className))
+                {
+                    var outputFilename = Path.GetFileNameWithoutExtension(outputPath);
+                    var classNameBuilder = new StringBuilder(outputFilename);
+
+                    // Eliminate valid filename characters that are invalid in a class name e.g. '-'.
+                    for (var index = 0; index < classNameBuilder.Length; index++)
+                    {
+                        var @char = classNameBuilder[index];
+                        var category = char.GetUnicodeCategory(@char);
+                        if (!ValidClassNameCharacterCategories.Contains(category))
+                        {
+                            classNameBuilder[index] = '_';
+                        }
+                        else if (index == 0 && @char != '_' && !char.IsLetter(@char))
+                        {
+                            classNameBuilder.Insert(0, '_');
+                        }
+                    }
+
+                    className = classNameBuilder.ToString();
+                    MetadataSerializer.SetMetadata(newItem, "ClassName", className);
+                }
+
+                var @namespace = item.GetMetadata("Namespace");
+                if (string.IsNullOrEmpty(@namespace))
+                {
+                    MetadataSerializer.SetMetadata(newItem, "Namespace", Namespace);
+                }
 
                 // Add metadata which may be used as a property and passed to an inner build.
                 newItem.RemoveMetadata("SerializedMetadata");

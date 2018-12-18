@@ -311,7 +311,7 @@
         <SourceDocument>%(ServiceFileReference.FullPath)</SourceDocument>
       </Compile>
 
-      <!-- Otherwise, add all descendent files with the expected extension. -->
+      <!-- Otherwise, add all descendant files with the expected extension. -->
       <TypeScriptCompile Remove="@(_Directories -> '%(Identity)/**/*.ts')" />
       <TypeScriptCompile Include="@(_Directories -> '%(Identity)/**/*.ts')">
         <SourceDocument>%(_Directories.FullPath)</SourceDocument>
