@@ -65,24 +65,24 @@ namespace Microsoft.AspNetCore.Components.Browser
         /// <summary>
         /// Framework infrastructure, not intended by used by application code.
         /// </summary>
-        public Renderer Find(int browserRendererId)
+        public Renderer Find(int rendererId)
         {
             lock (_renderers)
             {
-                return _renderers[browserRendererId];
+                return _renderers[rendererId];
             }
         }
 
         /// <summary>
         /// Framework infrastructure, not intended by used by application code.
         /// </summary>
-        public bool TryRemove(int browserRendererId)
+        public bool TryRemove(int rendererId)
         {
             lock (_renderers)
             {
-                if (_renderers.ContainsKey(browserRendererId))
+                if (_renderers.ContainsKey(rendererId))
                 {
-                    _renderers.Remove(browserRendererId);
+                    _renderers.Remove(rendererId);
                     return true;
                 }
                 else

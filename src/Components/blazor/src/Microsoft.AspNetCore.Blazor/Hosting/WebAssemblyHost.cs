@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
         private readonly IJSRuntime _runtime;
 
         private IServiceScope _scope;
-        private BrowserRenderer _renderer;
+        private WebAssemblyRenderer _renderer;
 
         public WebAssemblyHost(IServiceProvider services, IJSRuntime runtime)
         {

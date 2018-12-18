@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             Entries.Add((componentType, domElementSelector));
         }
 
-        public BrowserRenderer CreateRenderer()
+        public WebAssemblyRenderer CreateRenderer()
         {
-            var renderer = new BrowserRenderer(Services);
+            var renderer = new WebAssemblyRenderer(Services);
             for (var i = 0; i < Entries.Count; i++)
             {
                 var entry = Entries[i];
