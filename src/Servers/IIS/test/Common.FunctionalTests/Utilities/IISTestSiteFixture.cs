@@ -46,7 +46,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private IISDeploymentResult _deploymentResult;
         private readonly Action<IISDeploymentParameters> _configure;
 
-        public IISTestSiteFixture(Action<IISDeploymentParameters> configure)
+        public IISTestSiteFixture() : this(_ => { })
+        {
+        }
+
+        internal IISTestSiteFixture(Action<IISDeploymentParameters> configure)
         {
             var logging = AssemblyTestLog.ForAssembly(typeof(IISTestSiteFixture).Assembly);
             _loggerFactory = logging.CreateLoggerFactory(null, nameof(IISTestSiteFixture));
