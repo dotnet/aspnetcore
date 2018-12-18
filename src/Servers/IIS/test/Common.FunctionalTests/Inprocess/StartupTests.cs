@@ -120,8 +120,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.EnvironmentVariables["PATH"] = "";
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "dotnet"));
 
+            // Key is always in 32bit view
+            using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
             using (new TestRegistryKey(
-                Registry.LocalMachine,
+                localMachine,
                 "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
                 "InstallLocation",
                 DotNetCommands.GetDotNetExecutable(runtimeArchitecture)))

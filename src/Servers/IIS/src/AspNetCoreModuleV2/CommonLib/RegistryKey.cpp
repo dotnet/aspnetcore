@@ -2,25 +2,25 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "RegistryKey.h"
+#include "exceptions.h"
 
-std::optional<DWORD> RegistryKey::TryGetDWORD(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName)
+std::optional<DWORD> RegistryKey::TryGetDWORD(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName, DWORD flags)
 {
     DWORD dwData = 0;
     DWORD cbData = sizeof(dwData);
-    if (RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_DWORD, nullptr,
-                    reinterpret_cast<LPBYTE>(&dwData), &cbData) == NO_ERROR)
+    if (LOG_LAST_ERROR_IF(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_DWORD | flags, nullptr, reinterpret_cast<LPBYTE>(&dwData), &cbData) != NO_ERROR))
     {
-        return dwData;
+        return std::nullopt;
     }
 
-    return std::nullopt;
+    return dwData;
 }
 
-std::optional<std::wstring> RegistryKey::TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName)
+std::optional<std::wstring> RegistryKey::TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName, DWORD flags)
 {
     DWORD cbData;
 
-    if (!RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ, nullptr, nullptr, &cbData) != ERROR_SUCCESS)
+    if (LOG_LAST_ERROR_IF(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ | flags, nullptr, nullptr, &cbData) != NO_ERROR))
     {
         return std::nullopt;
     }
@@ -28,7 +28,7 @@ std::optional<std::wstring> RegistryKey::TryGetString(HKEY section, const std::w
     std::wstring data;
     data.resize(cbData);
 
-    if (!RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ, nullptr, &data[0], &cbData) == NO_ERROR)
+    if (LOG_LAST_ERROR_IF(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ | flags, nullptr, &data[0], &cbData) != NO_ERROR))
     {
         return std::nullopt;
     }

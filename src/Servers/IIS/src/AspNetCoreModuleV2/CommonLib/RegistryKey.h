@@ -10,8 +10,8 @@ class RegistryKey
 {
 public:
     static
-    std::optional<DWORD> TryGetDWORD(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName);
+    std::optional<DWORD> TryGetDWORD(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName, DWORD flags = 0);
 
     static
-    std::optional<std::wstring> TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName);
+    std::optional<std::wstring> TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName, DWORD flags = 0);
 };

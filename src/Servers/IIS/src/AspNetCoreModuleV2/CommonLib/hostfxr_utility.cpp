@@ -10,6 +10,7 @@
 #include "HandleWrapper.h"
 #include "Environment.h"
 #include "StringHelpers.h"
+#include "RegistryKey.h"
 
 namespace fs = std::filesystem;
 
@@ -255,6 +256,31 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
         LOG_INFOF(L"Found dotnet.exe via where.exe invocation at '%ls'", dotnetViaWhere.value().c_str());
 
         return dotnetViaWhere.value();
+    }
+
+    BOOL isWow64Process = false;
+    if (LOG_LAST_ERROR_IF_NOT(IsWow64Process(GetCurrentProcess(), &isWow64Process)))
+    {
+        const auto platform = isWow64Process? L"x64" : L"x86";
+
+        const auto installationLocation = RegistryKey::TryGetString(
+            HKEY_LOCAL_MACHINE,
+            std::wstring(L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\") +  platform+ L"\\sdk",
+            L"InstallLocation",
+            RRF_SUBKEY_WOW6432KEY);
+
+        if (installationLocation.has_value())
+        {
+            LOG_INFOF(L"InstallLocation registry key is set to '%ls'", installationLocation.value().c_str());
+
+            auto const installationLocationDotnet = fs::path(installationLocation.value()) / "dotnet.exe";
+
+            if (is_regular_file(installationLocationDotnet))
+            {
+                LOG_INFOF(L"Found dotnet.exe in InstallLocation at '%ls'", installationLocationDotnet.c_str());
+                return installationLocationDotnet;
+            }
+        }
     }
 
     const auto programFilesLocation = GetAbsolutePathToDotnetFromProgramFiles();
