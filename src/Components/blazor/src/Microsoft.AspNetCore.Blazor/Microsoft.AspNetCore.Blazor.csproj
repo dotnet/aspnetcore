@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Build client-side single-page applications (SPAs) with Razor Components running under WebAssembly.</Description>
   </PropertyGroup>
 
   <ItemGroup>
