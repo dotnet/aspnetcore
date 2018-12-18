@@ -19,7 +19,7 @@
     <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
   
-  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
+  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
     <Error Condition="!Exists('$(AspNetCoreModuleV2InProcessHandlerDll)')" />
   </Target>
 
