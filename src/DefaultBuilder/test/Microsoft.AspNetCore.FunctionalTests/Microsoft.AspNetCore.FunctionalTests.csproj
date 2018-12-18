@@ -18,5 +18,6 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 </Project>

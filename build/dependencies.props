@@ -130,6 +130,7 @@
     <MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>
     <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
+    <MicrosoftAspNetCoreServerIISStablePackageVersion>2.2.0</MicrosoftAspNetCoreServerIISStablePackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.6</MicrosoftAspNetWebApiClientPackageVersion>
     <MicrosoftAzureDocumentDBCorePackageVersion>1.7.1</MicrosoftAzureDocumentDBCorePackageVersion>
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
