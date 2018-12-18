@@ -9,19 +9,19 @@ using Interop = Microsoft.AspNetCore.Components.Browser.BrowserUriHelperInterop;
 namespace Microsoft.AspNetCore.Blazor.Services
 {
     /// <summary>
-    /// Default browser implementation of <see cref="IUriHelper"/>.
+    /// Default client-side implementation of <see cref="IUriHelper"/>.
     /// </summary>
-    public class BrowserUriHelper : UriHelperBase
+    public class WebAssemblyUriHelper : UriHelperBase
     {
         /// <summary>
-        /// Gets the instance of <see cref="BrowserUriHelper"/>.
+        /// Gets the instance of <see cref="WebAssemblyUriHelper"/>.
         /// </summary>
-        public static readonly BrowserUriHelper Instance = new BrowserUriHelper();
+        public static readonly WebAssemblyUriHelper Instance = new WebAssemblyUriHelper();
 
         // For simplicity we force public consumption of the BrowserUriHelper through
         // a singleton. Only a single instance can be updated by the browser through
         // interop. We can construct instances for testing.
-        internal BrowserUriHelper()
+        internal WebAssemblyUriHelper()
         {
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         {
             ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(
                 Interop.EnableNavigationInterception,
-                typeof(BrowserUriHelper).Assembly.GetName().Name,
+                typeof(WebAssemblyUriHelper).Assembly.GetName().Name,
                 nameof(NotifyLocationChanged));
 
             // As described in other comment block above, BrowserUriHelper is only for

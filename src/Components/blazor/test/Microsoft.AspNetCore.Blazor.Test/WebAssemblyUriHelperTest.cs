@@ -1,15 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Services;
 using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Services.Test
 {
-    public class BrowserUriHelperTest
+    public class WebAssemblyUriHelperTest
     {
-        private BrowserUriHelper _browserUriHelper = new BrowserUriHelper();
+        private WebAssemblyUriHelper _uriHelper = new WebAssemblyUriHelper();
 
         [Theory]
         [InlineData("scheme://host/", "scheme://host/")]
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/path/page?query=string&another=here", "scheme://host/path/")]
         public void ComputesCorrectBaseUri(string baseUri, string expectedResult)
         {
-            var actualResult = BrowserUriHelper.ToBaseUri(baseUri);
+            var actualResult = WebAssemblyUriHelper.ToBaseUri(baseUri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -32,7 +31,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/path/", "scheme://host/path", "")]
         public void ComputesCorrectValidBaseRelativePaths(string baseUri, string absoluteUri, string expectedResult)
         {
-            var actualResult = _browserUriHelper.ToBaseRelativePath(baseUri, absoluteUri);
+            var actualResult = _uriHelper.ToBaseRelativePath(baseUri, absoluteUri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -44,7 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         {
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                _browserUriHelper.ToBaseRelativePath(baseUri, absoluteUri);
+                _uriHelper.ToBaseRelativePath(baseUri, absoluteUri);
             });
 
             Assert.Equal(
