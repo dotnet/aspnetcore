@@ -3,7 +3,10 @@
 
 namespace Microsoft.AspNetCore.Components
 {
-    public interface IComponent
+    /// <summary>
+    /// Represents a reference to a rendered element.
+    /// </summary>
+    public struct ElementRef
     {
     }
 }

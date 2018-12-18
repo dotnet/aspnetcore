@@ -5,9 +5,17 @@ using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
 {
-    public abstract class Component : IComponent
+    public abstract class ComponentBase : IComponent
     {
         public virtual void BuildRenderTree(RenderTreeBuilder builder)
+        {
+        }
+
+        public virtual void SetParameters(ParameterCollection parameters)
+        {
+        }
+
+        void IComponent.Init(RenderHandle renderHandle)
         {
         }
 

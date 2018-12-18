@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             @namespace.Content = computedNamespace;
 
             @class.ClassName = computedClass;
-            @class.BaseType = $"global::{CodeGenerationConstants.RazorComponent.FullTypeName}";
+            @class.BaseType = $"global::{CodeGenerationConstants.ComponentBase.FullTypeName}";
             var filePath = codeDocument.Source.RelativePath ?? codeDocument.Source.FilePath;
             if (string.IsNullOrEmpty(filePath))
             {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             @class.Modifiers.Add("public");
             @class.Modifiers.Add("sealed");
 
-            method.MethodName = CodeGenerationConstants.RazorComponent.BuildRenderTree;
+            method.MethodName = CodeGenerationConstants.ComponentBase.BuildRenderTree;
             method.ReturnType = "void";
             method.Modifiers.Clear();
             method.Modifiers.Add("public");
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             method.Parameters.Add(new MethodParameter()
             {
                 TypeName = CodeGenerationConstants.RenderTreeBuilder.FullTypeName,
-                ParameterName = CodeGenerationConstants.RazorComponent.BuildRenderTreeParameter,
+                ParameterName = CodeGenerationConstants.ComponentBase.BuildRenderTreeParameter,
             });
 
             // We need to call the 'base' method as the first statement.
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             callBase.Children.Add(new IntermediateToken
             {
                 Kind = TokenKind.CSharp,
-                Content = $"base.{CodeGenerationConstants.RazorComponent.BuildRenderTree}({CodeGenerationConstants.RazorComponent.BuildRenderTreeParameter});"
+                Content = $"base.{CodeGenerationConstants.ComponentBase.BuildRenderTree}({CodeGenerationConstants.ComponentBase.BuildRenderTreeParameter});"
             });
             method.Children.Insert(0, callBase);
         }

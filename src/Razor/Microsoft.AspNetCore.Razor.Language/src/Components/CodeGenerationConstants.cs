@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     // Keep these in sync with the actual definitions
     internal static class CodeGenerationConstants
     {
-        public static class RazorComponent
+        public static class ComponentBase
         {
-            public const string FullTypeName = "Microsoft.AspNetCore.Components.Component";
+            public const string FullTypeName = "Microsoft.AspNetCore.Components.ComponentBase";
             public const string BuildRenderTree = "BuildRenderTree";
             public const string BuildRenderTreeParameter = "builder";
         }
