@@ -121,7 +121,6 @@
       <BuildArguments>/t:CleanArtifacts /t:Build /p:SkipTests=true $(RepositoryBuildArguments)</BuildArguments>
       <BuildArguments Condition="'$(ProduceRepoBinLog)' == 'true'">$(BuildArguments) /bl:$(LogOutputDir)$(RepositoryToBuild).build.binlog</BuildArguments>
       <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts\</RepositoryArtifactsRoot>
-      <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)build\</RepositoryArtifactsBuildDirectory>
       <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)msbuild\</RepositoryArtifactsMSBuildDirectory>
     </PropertyGroup>
 
@@ -142,13 +141,13 @@
     <Error Text="Building $(RepositoryToBuild) failed: $(_BuildScriptToExecute) exited code $(BuildExitCode)" Condition=" '$(BuildExitCode)' != '0' " />
 
     <ItemGroup>
-      <RepositoryArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
       <RepositoryMSBuildArtifacts Include="$(RepositoryArtifactsMSBuildDirectory)**\*" />
+      <RepositoryArtifacts Include="$(RepositoryArtifactsRoot)**\*" Exclude="@(RepositoryMSBuildArtifacts)" />
     </ItemGroup>
 
     <Copy
        SourceFiles="@(RepositoryArtifacts)"
-       DestinationFolder="$(BuildDir)" />
+       DestinationFolder="$(ArtifactsDir)" />
 
     <Move
        SourceFiles="@(RepositoryMSBuildArtifacts)"

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard20</TargetFramework>
     <NuspecFile>Microsoft.AspNetCore.Blazor.Templates.nuspec</NuspecFile>
+    <IsProductPackage>true</IsProductPackage>
     <EnableDefaultItems>False</EnableDefaultItems>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IncludeBuildOutput>False</IncludeBuildOutput>

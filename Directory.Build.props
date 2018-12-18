@@ -76,12 +76,14 @@
   <Import Project="build\external-dependencies.props" />
   <Import Project="build\sources.props" />
 
-  <!-- Artfacts layout -->
+  <!-- Artifacts layout -->
   <PropertyGroup>
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
-    <PackageOutputPath>$(ArtifactsDir)build\</PackageOutputPath>
+    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
+    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
+    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
     <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
   </PropertyGroup>
 

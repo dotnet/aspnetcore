@@ -1,6 +1,10 @@
 ﻿<Project>
   <Import Project="dependencies.props" />
 
+  <PropertyGroup>
+    <OverridePackageOutputPath>false</OverridePackageOutputPath>
+  </PropertyGroup>
+
   <!-- Properties to make KoreBuild more like dotnet/arcade. -->
   <PropertyGroup>
     <SkipArtifactVerification>true</SkipArtifactVerification>

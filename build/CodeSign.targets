@@ -28,8 +28,7 @@
         PackageSigningCertName=$(PackageSigningCertName);
         VsixSigningCertName=$(VsixSigningCertName);
         JarSigningCertName=$(JarSigningCertName);
-        ArtifactsDir=$(ArtifactsDir);
-        BuildDir=$(BuildDir)
+        ArtifactsDir=$(ArtifactsDir)
       </GetFileSignInfoProps>
     </PropertyGroup>
 

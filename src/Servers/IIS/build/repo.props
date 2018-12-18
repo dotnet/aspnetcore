@@ -1,6 +1,11 @@
 <Project>
   <Import Project="..\..\..\build\dependencies.props" />
   <Import Project="..\..\..\build\runtimes.props" />
+
+  <PropertyGroup>
+    <OverridePackageOutputPath>false</OverridePackageOutputPath>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- TODO: temporary while we reorganize source code and refactor dependency management -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
