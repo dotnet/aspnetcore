@@ -101,16 +101,8 @@
 
     <!-- Razor uses a custom version of roslyn packages -->
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(VSIX_MicrosoftCodeAnalysisCommonPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisCommonPackageVersion" />
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(VSIX_MicrosoftCodeAnalysisCSharpPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisCSharpPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion" />
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" VariableName="VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion" />
 
     <!--
       BenchmarksOnly* package versions come from NuGet.org and are intended only for use in benchmarks apps where EF
@@ -138,18 +130,11 @@
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
 
     <!-- Multiple versions of this package required to support all netcoreapp versions -->
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp10PackageVersion)" VariableName="MicrosoftNETCoreApp10PackageVersion" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp11PackageVersion)" VariableName="MicrosoftNETCoreApp11PackageVersion" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" VariableName="MicrosoftNETCoreApp20PackageVersion" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp21PackageVersion)" VariableName="MicrosoftNETCoreApp21PackageVersion" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp22PackageVersion)" VariableName="MicrosoftNETCoreApp22PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp30PackageVersion)" VariableName="MicrosoftNETCoreApp30PackageVersion" />
     <!-- This variable should be used for anything that needs "latest" netcoreapp. -->
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreAppPackageVersion)" VariableName="MicrosoftNETCoreAppPackageVersion" />
 
     <!-- Microsoft.NetCore.DotNetAppHost for global tools-->
-    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHost21PackageVersion)" VariableName="MicrosoftNETCoreDotNetAppHost21PackageVersion" />
-    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHost22PackageVersion)" VariableName="MicrosoftNETCoreDotNetAppHost22PackageVersion" />
     <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNETCoreDotNetAppHostPackageVersion)" />
     <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
 
@@ -158,26 +143,6 @@
     <ExternalDependency Include="Microsoft.Owin.Security" Version="$(MicrosoftOwinSecurityPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(MicrosoftVisualStudioComponentModelHostPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ImageCatalog" Version="$(MicrosoftVisualStudioImageCatalogPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Language" Version="$(MicrosoftVisualStudioLanguagePackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion)" VariableName="VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion)" VariableName="VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion" />
-    <ExternalDependency Include="Microsoft.VisualStudio.OLE.Interop" Version="$(MicrosoftVisualStudioOLEInteropPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.Analyzers" Version="$(MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="$(MicrosoftVisualStudioProjectSystemManagedVSPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="$(MicrosoftVisualStudioShellInteropPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="$(MicrosoftVisualStudioShellInterop100PackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="$(MicrosoftVisualStudioShellInterop110PackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="$(MicrosoftVisualStudioShellInterop120PackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="$(MicrosoftVisualStudioShellInterop80PackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="$(MicrosoftVisualStudioShellInterop90PackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" Version="$(MicrosoftVisualStudioTextUIPackageVersion)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingPackageVersion)" />
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <ExternalDependency Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
