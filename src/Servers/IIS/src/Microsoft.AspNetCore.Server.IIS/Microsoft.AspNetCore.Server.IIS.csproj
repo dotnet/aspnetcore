@@ -18,12 +18,13 @@
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
     <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
-  
-  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
-    <Error Condition="!Exists('$(AspNetCoreModuleV2InProcessHandlerDll)')" />
+
+  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
+    <Error Text="Required dll from ANCM has not been built. To build ANCM, you must use MSBuild.exe."
+        Condition="'$(OS)' == 'Windows_NT' AND !Exists('$(AspNetCoreModuleV2InProcessHandlerDll)')" />
   </Target>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''">
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" />
   </ItemGroup>
 
