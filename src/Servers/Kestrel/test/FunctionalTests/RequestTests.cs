@@ -675,12 +675,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            var thrownEx = await Assert.ThrowsAnyAsync<Exception>(async () => await readTcs.Task).DefaultTimeout();
-
-            // https://github.com/aspnet/AspNetCore-Internal/issues/1521
-            // In more recent versions of Kestrel, we expect this to always be a TaskCanceledException,
-            // but without the changes in https://github.com/aspnet/KestrelHttpServer/pull/2844, this is flaky.
-            Assert.True(thrownEx is TaskCanceledException || thrownEx is IOException, $"{thrownEx} is neither a TaskCanceledException nor IOException.");
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await readTcs.Task);
 
             // The cancellation token for only the last request should be triggered.
             var abortedRequestId = await registrationTcs.Task.DefaultTimeout();
