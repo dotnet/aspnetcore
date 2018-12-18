@@ -74,6 +74,7 @@
 #define LOG_IF_FAILED(hr)                                       LogHResultFailed(LOCATION_INFO, hr)
 #define LOG_LAST_ERROR()                                        LogLastErrorIf(LOCATION_INFO, true)
 #define LOG_LAST_ERROR_IF(condition)                            LogLastErrorIf(LOCATION_INFO, condition)
+#define LOG_LAST_ERROR_IF_NOT(condition)                        !LogLastErrorIf(LOCATION_INFO, !condition)
 #define SUCCEEDED_LOG(hr)                                       SUCCEEDED(LOG_IF_FAILED(hr))
 #define FAILED_LOG(hr)                                          FAILED(LOG_IF_FAILED(hr))
 

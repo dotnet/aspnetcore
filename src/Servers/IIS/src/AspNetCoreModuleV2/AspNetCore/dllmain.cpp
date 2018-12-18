@@ -10,6 +10,7 @@
 #include "resources.h"
 #include "exceptions.h"
 #include "EventLog.h"
+#include "RegistryKey.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2.dll");
 
@@ -88,7 +89,6 @@ HRESULT
 
 --*/
 {
-    HKEY                                hKey {};
     BOOL                                fDisableANCM = FALSE;
 
     UNREFERENCED_PARAMETER(dwServerVersion);
@@ -102,31 +102,7 @@ HRESULT
         g_hEventLog = RegisterEventSource(nullptr, ASPNETCORE_EVENT_PROVIDER);
     }
 
-    // check whether the feature is disabled due to security reason
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-        L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
-        0,
-        KEY_READ,
-        &hKey) == NO_ERROR)
-    {
-        DWORD dwType = 0;
-        DWORD dwData = 0;
-        DWORD cbData;
-
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"DisableANCM",
-            nullptr,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD))
-        {
-            fDisableANCM = (dwData != 0);
-        }
-
-        RegCloseKey(hKey);
-    }
+    fDisableANCM = RegistryKey::TryGetDWORD(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters", L"DisableANCM").value_or(0) != 0;
 
     if (fDisableANCM)
     {

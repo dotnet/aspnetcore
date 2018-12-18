@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -105,6 +106,75 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
             // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
+        }
+
+        [ConditionalTheory]
+        [InlineData(RuntimeArchitecture.x64)]
+        [InlineData(RuntimeArchitecture.x86)]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.RuntimeArchitecture = runtimeArchitecture;
+
+            deploymentParameters.EnvironmentVariables["PATH"] = "";
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "dotnet"));
+
+            using (new TestRegistryKey(
+                Registry.LocalMachine,
+                "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
+                "InstallLocation",
+                DotNetCommands.GetDotNetExecutable(runtimeArchitecture)))
+            {
+                var deploymentResult = await DeployAsync(deploymentParameters);
+                await deploymentResult.AssertStarts();
+
+                StopServer();
+                // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
+                Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
+            }
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task DoesNotStartIfDisabled()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+
+            using (new TestRegistryKey(
+                Registry.LocalMachine,
+                "SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
+                "DisableANCM",
+                1))
+            {
+                var deploymentResult = await DeployAsync(deploymentParameters);
+                var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+                Assert.True(!response.IsSuccessStatusCode);
+
+                StopServer();
+
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "AspNetCore Module is disabled");
+            }
+        }
+
+
+        public class TestRegistryKey : IDisposable
+        {
+            private readonly RegistryKey _baseHive;
+            private readonly RegistryKey _subKey;
+
+            public TestRegistryKey(RegistryKey baseHive, string keyName, string valueName, object value)
+            {
+                _baseHive = baseHive;
+                _subKey = baseHive.CreateSubKey(keyName);
+                _subKey.SetValue(valueName, value);
+            }
+
+            public void Dispose()
+            {
+                _baseHive.DeleteSubKeyTree(_subKey.Name, throwOnMissingSubKey: false);
+            }
         }
 
         public static TestMatrix TestVariants
