@@ -19,18 +19,21 @@
     <EmbeddedResource Include="Http.config" />
   </ItemGroup>
 
-  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
+  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
     <Error Text="ANCM has not been built. To build ANCM, you must use MSBuild.exe."
            Condition="!Exists('$(AspNetCoreModuleV1ShimDll)')
            OR !Exists('$(AspNetCoreModuleV2ShimDll)')
            OR !Exists('$(AspNetCoreModuleV2OutOfProcessHandlerDll)')" />
   </Target>
 
-  <ItemGroup>
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" />
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />
     <Reference Include="System.ServiceProcess.ServiceController" />

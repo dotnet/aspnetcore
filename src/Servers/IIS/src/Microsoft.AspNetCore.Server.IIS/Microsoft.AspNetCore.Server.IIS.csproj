@@ -23,8 +23,11 @@
     <Error Condition="!Exists('$(AspNetCoreModuleV2InProcessHandlerDll)')" />
   </Target>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
