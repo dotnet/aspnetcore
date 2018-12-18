@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
+using System;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Xunit;
@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class ChunkWriterTests
     {
         [Theory]
+        [InlineData(0, "0\r\n")]
         [InlineData(1, "1\r\n")]
         [InlineData(10, "a\r\n")]
         [InlineData(0x08, "8\r\n")]
@@ -30,9 +31,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(0x7fffffffL, "7fffffff\r\n")]
         public void ChunkedPrefixMustBeHexCrLfWithoutLeadingZeros(int dataCount, string expected)
         {
-            var beginChunkBytes = ChunkWriter.BeginChunkBytes(dataCount);
+            Span<byte> span = new byte[10];
+            var count = ChunkWriter.BeginChunkBytes(dataCount, span);
 
-            Assert.Equal(Encoding.ASCII.GetBytes(expected), beginChunkBytes.ToArray());
+            Assert.Equal(Encoding.ASCII.GetBytes(expected), span.Slice(0, count).ToArray());
         }
     }
 }

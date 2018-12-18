@@ -19,40 +19,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return new ArraySegment<byte>(bytes);
         }
 
-        public static ArraySegment<byte> BeginChunkBytes(int dataCount)
+        public static int BeginChunkBytes(int dataCount, Span<byte> span)
         {
-            var bytes = new byte[10]
-            {
-                _hex[((dataCount >> 0x1c) & 0x0f)],
-                _hex[((dataCount >> 0x18) & 0x0f)],
-                _hex[((dataCount >> 0x14) & 0x0f)],
-                _hex[((dataCount >> 0x10) & 0x0f)],
-                _hex[((dataCount >> 0x0c) & 0x0f)],
-                _hex[((dataCount >> 0x08) & 0x0f)],
-                _hex[((dataCount >> 0x04) & 0x0f)],
-                _hex[((dataCount >> 0x00) & 0x0f)],
-                (byte)'\r',
-                (byte)'\n',
-            };
-
             // Determine the most-significant non-zero nibble
             int total, shift;
-            total = (dataCount > 0xffff) ? 0x10 : 0x00;
-            dataCount >>= total;
-            shift = (dataCount > 0x00ff) ? 0x08 : 0x00;
-            dataCount >>= shift;
+            var count = dataCount;
+            total = (count > 0xffff) ? 0x10 : 0x00;
+            count >>= total;
+            shift = (count > 0x00ff) ? 0x08 : 0x00;
+            count >>= shift;
             total |= shift;
-            total |= (dataCount > 0x000f) ? 0x04 : 0x00;
+            total |= (count > 0x000f) ? 0x04 : 0x00;
 
-            var offset = 7 - (total >> 2);
-            return new ArraySegment<byte>(bytes, offset, 10 - offset);
+            count = (total >> 2) + 3;
+
+            var offset = 0;
+            for (shift = total; shift >= 0; shift -= 4)
+            {
+                span[offset] = _hex[((dataCount >> shift) & 0x0f)];
+                offset++;
+            }
+
+            span[count - 2] = (byte)'\r';
+            span[count - 1] = (byte)'\n';
+
+            return count;
         }
 
-        internal static int WriteBeginChunkBytes(ref BufferWriter<PipeWriter> start, int dataCount)
+        internal static void WriteBeginChunkBytes(ref BufferWriter<PipeWriter> start, int dataCount)
         {
-            var chunkSegment = BeginChunkBytes(dataCount);
-            start.Write(new ReadOnlySpan<byte>(chunkSegment.Array, chunkSegment.Offset, chunkSegment.Count));
-            return chunkSegment.Count;
+            // 10 bytes is max length + \r\n
+            start.Ensure(10);
+
+            var count = BeginChunkBytes(dataCount, start.Span);
+            start.Advance(count);
         }
 
         internal static void WriteEndChunkBytes(ref BufferWriter<PipeWriter> start)
