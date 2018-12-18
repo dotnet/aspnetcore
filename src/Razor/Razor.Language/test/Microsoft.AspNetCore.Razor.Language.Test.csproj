@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.2;net46</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(DeveloperBuild)' != 'true' ">$(TargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net46</TargetFrameworks>
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
+    <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestFiles\**\*" />
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Test.Common" />
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+</Project>

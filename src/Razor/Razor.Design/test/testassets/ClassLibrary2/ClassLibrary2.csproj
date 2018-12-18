@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <_RazorMSBuildRoot>$(SolutionRoot)Razor.Design\src\bin\$(Configuration)\</_RazorMSBuildRoot>
+    <RazorSdkBuildTasksDirectoryRoot>$(RazorSdkProjectDirectory)bin\$(Configuration)\</RazorSdkBuildTasksDirectoryRoot>
+  </PropertyGroup>
+  <Import Project="$(SolutionRoot)Razor.Design\src\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
+
+  <PropertyGroup>
+    <!-- Override for the MVC extension -->
+    <_MvcExtensionAssemblyPath>$(SolutionRoot)Mvc.Razor.Extensions\src\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>
+  </PropertyGroup>
+  <Import Project="$(SolutionRoot)Mvc.Razor.Extensions\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RunningAsTest)' == ''">
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'==''">
+    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
+    <Reference Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib"/>
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime"/>
+    <Reference Include="Microsoft.AspNetCore.Razor.Design" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'!=''">
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
+  </ItemGroup>
+
+  <!-- Test Placeholder -->
+
+  <Import Project="$(SolutionRoot)Mvc.Razor.Extensions\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />
+</Project>

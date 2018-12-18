@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Diagnostics.DiagnosticSource" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Razor.Test.MvcShim\Microsoft.AspNetCore.Mvc*\**\*.cs" />
+  </ItemGroup>
+
+</Project>
