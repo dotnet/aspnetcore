@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal static class ChunkWriter
     {
-        private static readonly byte[] _endChunkBytes = Encoding.ASCII.GetBytes("\r\n");
+        private static ReadOnlySpan<byte> EndChunkBytes => new byte[2] { (byte)'\r', (byte)'\n' };  // uses C# compiler's optimization for static byte[] data
         private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
 
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         internal static void WriteEndChunkBytes(ref BufferWriter<PipeWriter> start)
         {
-            start.Write(new ReadOnlySpan<byte>(_endChunkBytes));
+            start.Write(EndChunkBytes);
         }
     }
 }
