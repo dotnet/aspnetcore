@@ -117,9 +117,9 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             if (getHttpMessageHandlerField != null)
             {
                 // Just in case you're not actually using HttpClient, defer the construction
-                // of the BrowserHttpMessageHandler
+                // of the WebAssemblyHttpMessageHandler
                 var handlerSingleton = new Lazy<HttpMessageHandler>(
-                    () => new BrowserHttpMessageHandler());
+                    () => new WebAssemblyHttpMessageHandler());
                 Func<HttpMessageHandler> handlerFactory = () => handlerSingleton.Value;
                 getHttpMessageHandlerField.SetValue(null, handlerFactory);
             }

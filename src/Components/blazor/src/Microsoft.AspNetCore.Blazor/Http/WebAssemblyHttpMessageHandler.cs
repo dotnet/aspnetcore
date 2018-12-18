@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
     /// <summary>
     /// A browser-compatible implementation of <see cref="HttpMessageHandler"/>
     /// </summary>
-    public class BrowserHttpMessageHandler : HttpMessageHandler
+    public class WebAssemblyHttpMessageHandler : HttpMessageHandler
     {
         /// <summary>
         /// Gets or sets the default value of the 'credentials' option on outbound HTTP requests.
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
         /// The name of a well-known property that can be added to <see cref="HttpRequestMessage.Properties"/>
         /// to control the arguments passed to the underlying JavaScript <code>fetch</code> API.
         /// </summary>
-        public const string FetchArgs = "BrowserHttpMessageHandler.FetchArgs";
+        public const string FetchArgs = "WebAssemblyHttpMessageHandler.FetchArgs";
 
         /// <inheritdoc />
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
             }
             else
             {
-                throw new NotImplementedException("BrowserHttpMessageHandler only supports running under Mono WebAssembly.");
+                throw new NotImplementedException("WebAssemblyHttpMessageHandler only supports running under Mono WebAssembly.");
             }
 
             return await tcs.Task;

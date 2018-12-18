@@ -105,7 +105,7 @@
 
             if (!string.IsNullOrEmpty(requestReferrer))
             {
-                requestMessage.Properties[BrowserHttpMessageHandler.FetchArgs] = new
+                requestMessage.Properties[WebAssemblyHttpMessageHandler.FetchArgs] = new
                 {
                     referrer = requestReferrer
                 };

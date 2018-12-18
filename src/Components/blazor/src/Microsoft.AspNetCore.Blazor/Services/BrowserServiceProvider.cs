@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         private void AddDefaultServices(ServiceCollection serviceCollection)
         {
             serviceCollection.AddSingleton<IUriHelper>(BrowserUriHelper.Instance);
-            serviceCollection.AddSingleton(new HttpClient(new BrowserHttpMessageHandler())
+            serviceCollection.AddSingleton(new HttpClient(new WebAssemblyHttpMessageHandler())
             {
                 BaseAddress = new Uri(BrowserUriHelper.Instance.GetBaseUri())
             });
