@@ -18,14 +18,13 @@
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
     <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
-
-  <Target Name="RequireFullMsBuildOnBuild" BeforeTargets="Build" >
-    <Error Text="Full MSBuild is required to build ANCM. Invoke MSBuild.exe to build this project." Condition="'$(VCTargetsPath)' == ''" />
+  
+  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
+    <Error Condition="!Exists('$(AspNetCoreModuleV2InProcessHandlerDll)')" />
   </Target>
 
   <ItemGroup>
-    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''" />
-    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
