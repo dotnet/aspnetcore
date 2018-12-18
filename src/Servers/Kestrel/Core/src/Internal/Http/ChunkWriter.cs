@@ -5,19 +5,14 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal static class ChunkWriter
     {
-        private static readonly ArraySegment<byte> _endChunkBytes = CreateAsciiByteArraySegment("\r\n");
+        private static readonly byte[] _endChunkBytes = Encoding.ASCII.GetBytes("\r\n");
         private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
-
-        private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
-        {
-            var bytes = Encoding.ASCII.GetBytes(text);
-            return new ArraySegment<byte>(bytes);
-        }
 
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
         {
@@ -34,9 +29,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             count = (total >> 2) + 3;
 
             var offset = 0;
+            ref var startHex = ref _hex[0];
+
             for (shift = total; shift >= 0; shift -= 4)
             {
-                span[offset] = _hex[((dataCount >> shift) & 0x0f)];
+                // Using Unsafe.Add to elide the bounds check on _hex as the & 0x0f definately
+                // constrains it to the range 0x0 - 0xf, matching the bounds of the array
+                span[offset] = Unsafe.Add(ref startHex, ((dataCount >> shift) & 0x0f));
                 offset++;
             }
 
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         internal static void WriteEndChunkBytes(ref BufferWriter<PipeWriter> start)
         {
-            start.Write(new ReadOnlySpan<byte>(_endChunkBytes.Array, _endChunkBytes.Offset, _endChunkBytes.Count));
+            start.Write(new ReadOnlySpan<byte>(_endChunkBytes));
         }
     }
 }
