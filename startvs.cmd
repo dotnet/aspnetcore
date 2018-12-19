@@ -17,7 +17,7 @@ SET PATH=%DOTNET_ROOT%;%PATH%
 
 SET sln=%1
 
-IF NOT EXIST %DOTNET_ROOT%\dotnet.exe (
+IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
     echo .NET Core has not yet been installed. Run `build.cmd -restore` to install tools
     exit /b 1
 )

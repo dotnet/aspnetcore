@@ -19,12 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     {
-        // See CompatibilitySwitch.cs for guide on how to implement these.
-        private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
-        private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
-        private readonly CompatibilitySwitch<bool> _allowShortCircuitingValidationWhenNoValidatorsArePresent;
-
-        private readonly ICompatibilitySwitch[] _switches;
+        private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
         private int? _maxValidationDepth = 32;
 
@@ -44,17 +39,6 @@ namespace Microsoft.AspNetCore.Mvc
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ValueProviderFactories = new List<IValueProviderFactory>();
-
-            _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
-            _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
-            _allowShortCircuitingValidationWhenNoValidatorsArePresent = new CompatibilitySwitch<bool>(nameof(AllowShortCircuitingValidationWhenNoValidatorsArePresent));
-
-            _switches = new ICompatibilitySwitch[]
-            {
-                _inputFormatterExceptionPolicy,
-                _suppressBindingUndefinedValueToEnumType,
-                _allowShortCircuitingValidationWhenNoValidatorsArePresent,
-            };
         }
 
         /// <summary>
@@ -103,34 +87,9 @@ namespace Microsoft.AspNetCore.Mvc
         public FormatterMappings FormatterMappings { get; }
 
         /// <summary>
-        /// Gets or sets a value which determines how the model binding system interprets exceptions thrown by an <see cref="IInputFormatter"/>.
-        /// </summary>
-        /// <value>
-        /// The default value is <see cref="InputFormatterExceptionPolicy.MalformedInputExceptions"/>.
-        /// </value>
-        public InputFormatterExceptionPolicy InputFormatterExceptionPolicy
-        {
-            get => _inputFormatterExceptionPolicy.Value;
-            set => _inputFormatterExceptionPolicy.Value = value;
-        }
-
-        /// <summary>
         /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
         public FormatterCollection<IInputFormatter> InputFormatters { get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the model binding system will bind undefined values to
-        /// enum types.
-        /// </summary>
-        /// <value>
-        /// The default value is <see langword="true"/>.
-        /// </value>
-        public bool SuppressBindingUndefinedValueToEnumType
-        {
-            get => _suppressBindingUndefinedValueToEnumType.Value;
-            set => _suppressBindingUndefinedValueToEnumType.Value = value;
-        }
 
         /// <summary>
         /// Gets or sets the flag to buffer the request body in input formatters. Default is <c>false</c>.
@@ -250,30 +209,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value that determines if <see cref="ValidationVisitor"/>
-        /// can short-circuit validation when a model does not have any associated validators.
-        /// </summary>
-        /// <value>
-        /// The default value is <see langword="true"/>.
-        /// </value>
-        /// <remarks>
-        /// When <see cref="ModelMetadata.HasValidators"/> is <see langword="true"/>, that is, it is determined
-        /// that a model or any of it's properties or collection elements cannot have any validators,
-        /// <see cref="ValidationVisitor"/> can short-circuit validation for the model and mark the object
-        /// graph as valid. Setting this property to <see langword="true"/>, allows <see cref="ValidationVisitor"/> to
-        /// perform this optimization.
-        /// </remarks>
-        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent
-        {
-            get => _allowShortCircuitingValidationWhenNoValidatorsArePresent.Value;
-            set => _allowShortCircuitingValidationWhenNoValidatorsArePresent.Value = value;
-        }
-
-        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
-        {
-            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
-        }
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }

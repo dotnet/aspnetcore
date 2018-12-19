@@ -7,5 +7,7 @@
   <PropertyGroup>
     <!-- Required to make /t:Restore happy, but not really used for anything else. -->
     <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <OutputPath>$(InstallersOutputPath)</OutputPath>
   </PropertyGroup>
 </Project>

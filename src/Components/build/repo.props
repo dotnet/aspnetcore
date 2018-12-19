@@ -1,16 +1,16 @@
 ﻿<Project>
   <Import Project="dependencies.props" />
 
+  <PropertyGroup>
+    <OverridePackageOutputPath>false</OverridePackageOutputPath>
+  </PropertyGroup>
+
   <!-- Properties to make KoreBuild more like dotnet/arcade. -->
   <PropertyGroup>
     <SkipArtifactVerification>true</SkipArtifactVerification>
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- These properties are use by the automation that updates dependencies.props -->
-    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
-
     <!-- Let us hardcode versions -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
@@ -37,6 +37,9 @@
 
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
+
+    <!-- TODO remove this and upgrade to build tools that use .NET Core 3.0-->
+    <DotNetCoreRuntime Include="2.2.0" />
   </ItemGroup>
 
 </Project>

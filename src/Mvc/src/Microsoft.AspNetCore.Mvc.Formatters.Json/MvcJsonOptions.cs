@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class MvcJsonOptions : IEnumerable<ICompatibilitySwitch>
     {
-        private readonly ICompatibilitySwitch[] _switches = Array.Empty<ICompatibilitySwitch>();
+        private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
 
         /// <summary>
         /// Gets or sets a flag to determine whether error messages from JSON deserialization by the
@@ -38,10 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.CreateSerializerSettings();
 
-        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
-        {
-            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
-        }
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }

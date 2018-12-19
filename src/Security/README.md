@@ -10,6 +10,4 @@ A list of community projects related to authentication and security for ASP.NET 
 ### Notes
 
 ASP.NET Security will not include Basic Authentication middleware due to its potential insecurity and performance problems. If you host under IIS you can enable it via IIS configuration.
-
-
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [AspNetCore](https://github.com/aspnet/AspNetCore) repo.

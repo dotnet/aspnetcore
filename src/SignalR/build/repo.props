@@ -2,6 +2,10 @@
   <Import Project="dependencies.props" />
 
   <PropertyGroup>
+    <OverridePackageOutputPath>false</OverridePackageOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
   </PropertyGroup>
 

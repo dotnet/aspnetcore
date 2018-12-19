@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <SignAssembly>false</SignAssembly>
     <LangVersion>7.1</LangVersion>
     <DisableImplicitFrameworkReferences>false</DisableImplicitFrameworkReferences>

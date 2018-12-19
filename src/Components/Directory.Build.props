@@ -16,10 +16,22 @@
     <IsSubfolderBuild>true</IsSubfolderBuild>
     <!-- Workaround microsoft/msbuild#3626 -->
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
+
+    <!-- Api check is currently broken on this subfolder of projects. -->
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
+
+  <!-- Artifacts layout -->
+  <PropertyGroup>
+    <ArtifactsDir>$(MSBuildThisFileDirectory)..\..\artifacts\</ArtifactsDir>
+    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
+    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
+    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
+    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
+  </PropertyGroup>
 
 </Project>

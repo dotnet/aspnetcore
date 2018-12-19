@@ -17,4 +17,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- Artifacts layout -->
+  <PropertyGroup>
+    <ArtifactsDir>$(MSBuildThisFileDirectory)..\..\artifacts\</ArtifactsDir>
+    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
+    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
+    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
+    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
+  </PropertyGroup>
+
 </Project>
