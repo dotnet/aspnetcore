@@ -111,12 +111,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _isReadOnly = true;
         }
 
-        public void Reset()
-        {
-            _isReadOnly = false;
-            ClearFast();
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected static StringValues AppendValue(in StringValues existing, string append)
         {

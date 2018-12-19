@@ -11,8 +11,14 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpRequestHeaders : HttpHeaders
+    public sealed partial class HttpRequestHeaders : HttpHeaders
     {
+        public void Reset()
+        {
+            _isReadOnly = false;
+            ClearFast();
+        }
+
         private static long ParseContentLength(string value)
         {
             if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
