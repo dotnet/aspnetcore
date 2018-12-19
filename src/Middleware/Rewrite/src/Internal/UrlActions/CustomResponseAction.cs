@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
@@ -31,6 +31,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.UrlActions
 
             if (!string.IsNullOrEmpty(StatusDescription))
             {
+                var feature = context.HttpContext.Features.Get<IHttpBodyControlFeature>();
+                if (feature != null)
+                {
+                    feature.AllowSynchronousIO = true;
+                }
                 var content = Encoding.UTF8.GetBytes(StatusDescription);
                 response.ContentLength = content.Length;
                 response.ContentType = "text/plain; charset=utf-8";
