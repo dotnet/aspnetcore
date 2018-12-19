@@ -163,6 +163,39 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
+        private class EmptyBadValidator : IUserValidator<TUser>,
+            IPasswordValidator<TUser>
+        {
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+            {
+                return Task.FromResult(IdentityResult.Failed());
+            }
+
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
+            {
+                return Task.FromResult(IdentityResult.Failed());
+            }
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task PasswordValidatorWithNoErrorsCanBlockAddPassword()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new EmptyBadValidator());
+            IdentityResultAssert.IsFailure(await manager.AddPasswordAsync(user, "password"));
+        }
+
         /// <summary>
         /// Test.
         /// </summary>
@@ -497,13 +530,78 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
             var manager = CreateManager();
             manager.PasswordValidators.Clear();
-            manager.PasswordValidators.Add(new AlwaysBadValidator());
+            manager.PasswordValidators.Add(new EmptyBadValidator());
             manager.PasswordValidators.Add(new AlwaysBadValidator());
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             var result = await manager.AddPasswordAsync(user, "pwd");
             IdentityResultAssert.IsFailure(result, AlwaysBadValidator.ErrorMessage);
-            Assert.Equal(2, result.Errors.Count());
+            Assert.Single(result.Errors);
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task PasswordValidatorWithNoErrorsCanBlockChangePassword()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new AlwaysBadValidator());
+            IdentityResultAssert.IsFailure(await manager.ChangePasswordAsync(user, "password", "new"));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task PasswordValidatorWithNoErrorsCanBlockCreateUser()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new AlwaysBadValidator());
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(user, "password"));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task PasswordValidatorWithNoErrorsCanBlockResetPasswordWithStaticTokenProvider()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            manager.RegisterTokenProvider("Static", new StaticTokenProvider());
+            manager.Options.Tokens.PasswordResetTokenProvider = "Static";
+            var user = CreateTestUser();
+            const string password = "password";
+            const string newPassword = "newpassword";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            Assert.NotNull(stamp);
+            var token = await manager.GeneratePasswordResetTokenAsync(user);
+            Assert.NotNull(token);
+            manager.PasswordValidators.Add(new AlwaysBadValidator());
+            IdentityResultAssert.IsFailure(await manager.ResetPasswordAsync(user, token, newPassword));
+            Assert.True(await manager.CheckPasswordAsync(user, password));
+            Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
         }
 
         /// <summary>

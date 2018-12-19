@@ -982,9 +982,19 @@ namespace Microsoft.AspNetCore.Identity.Test
             // TODO: Can switch to Mock eventually
             var manager = MockHelpers.TestUserManager(new EmptyStore());
             manager.PasswordValidators.Clear();
-            manager.PasswordValidators.Add(new BadPasswordValidator<PocoUser>());
+            manager.PasswordValidators.Add(new BadPasswordValidator<PocoUser>(true));
             IdentityResultAssert.IsFailure(await manager.CreateAsync(new PocoUser(), "password"),
                 BadPasswordValidator<PocoUser>.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task PasswordValidatorWithoutErrorsBlocksCreate()
+        {
+            // TODO: Can switch to Mock eventually
+            var manager = MockHelpers.TestUserManager(new EmptyStore());
+            manager.PasswordValidators.Clear();
+            manager.PasswordValidators.Add(new BadPasswordValidator<PocoUser>());
+            IdentityResultAssert.IsFailure(await manager.CreateAsync(new PocoUser(), "password"));
         }
 
         [Fact]
@@ -1175,10 +1185,22 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             public static readonly IdentityError ErrorMessage = new IdentityError { Description = "I'm Bad." };
 
-            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+            private IdentityResult badResult;
+
+            public BadPasswordValidator(bool includeErrorMessage = false)
             {
-                return Task.FromResult(IdentityResult.Failed(ErrorMessage));
+                if (includeErrorMessage)
+                {
+                    badResult = IdentityResult.Failed(ErrorMessage);
+                }
+                else
+                {
+                    badResult = IdentityResult.Failed();
+                }
             }
+
+            public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+                => Task.FromResult(badResult);
         }
 
         private class EmptyStore :
