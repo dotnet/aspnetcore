@@ -48,8 +48,8 @@
       <!-- NPM packages -->
       <NpmPackageToPublish Include="$(ProductPackageOutputPath)*.tgz" />
 
-      <PackagesToPublish Include="$(ProductPackageOutputPath)*.symbols.nupkg" IsSymbolsPackage="true" />
-      <PackagesToPublish Include="$(ProductPackageOutputPath)*.nupkg" Exclude="@(PackagesToPublish)" />
+      <PackageToPublish Include="$(ProductPackageOutputPath)*.symbols.nupkg" IsSymbolsPackage="true" />
+      <PackageToPublish Include="$(ProductPackageOutputPath)*.nupkg" Exclude="@(PackageToPublish)" />
     </ItemGroup>
 
     <!--
@@ -57,12 +57,12 @@
       Publishing these can be disabled.
     -->
     <ItemGroup Condition=" '$(PublishInternalPackages)' != 'false' ">
-      <PackagesToPublish Include="$(InternalPackageOutputPath)*.symbols.nupkg" IsSymbolsPackage="true">
+      <PackageToPublish Include="$(InternalPackageOutputPath)*.symbols.nupkg" IsSymbolsPackage="true">
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
-      </PackagesToPublish>
-      <PackagesToPublish Include="$(InternalPackageOutputPath)*.nupkg" Exclude="@(PackagesToPublish)">
+      </PackageToPublish>
+      <PackageToPublish Include="$(InternalPackageOutputPath)*.nupkg" Exclude="@(PackageToPublish)">
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
-      </PackagesToPublish>
+      </PackageToPublish>
     </ItemGroup>
   </Target>
 
