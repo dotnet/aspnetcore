@@ -103,7 +103,6 @@
     <Dependency Include="Microsoft.Extensions.DependencyInjection.Abstractions"        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.DependencyInjection"                     Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.DependencyModel"                         Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
-    <Dependency Include="Microsoft.Extensions.DiagnosticAdapter"                       Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions"   Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Diagnostics.HealthChecks"                Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)"  />
     <Dependency Include="Microsoft.Extensions.FileProviders.Abstractions"              Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
