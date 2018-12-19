@@ -77,22 +77,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected void ThrowHeadersReadOnlyException()
+        protected static void ThrowHeadersReadOnlyException()
         {
             throw new InvalidOperationException(CoreStrings.HeadersAreReadOnly);
         }
 
-        protected void ThrowArgumentException()
+        protected static void ThrowArgumentException()
         {
             throw new ArgumentException();
         }
 
-        protected void ThrowKeyNotFoundException()
+        protected static void ThrowKeyNotFoundException()
         {
             throw new KeyNotFoundException();
         }
 
-        protected void ThrowDuplicateKeyException()
+        protected static void ThrowDuplicateKeyException()
         {
             throw new ArgumentException(CoreStrings.KeyAlreadyExists);
         }
