@@ -5,8 +5,7 @@
 
   <Target Name="Gather" BeforeTargets="Test">
     <ItemGroup>
-      <!-- <ProjectsToTest Include="$(ProjectsToTest)" /> -->
-      <ProjectsToTest Include="C:\Github\Extensions\src\Configuration\Config.UserSecrets\test\Microsoft.Extensions.Configuration.UserSecrets.Tests.csproj" />
+      <ProjectsToTest Include="$(ProjectsToTest)" />
     </ItemGroup>
     <MSBuild Projects="@(ProjectsToTest)"
               Targets="CreateTestPayload"
