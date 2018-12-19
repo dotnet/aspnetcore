@@ -123,14 +123,14 @@ private:
 
         ~ExecuteClrContext()
         {
-            m_errorWriter = nullptr;
+            m_redirectionOutput = nullptr;
         }
 
         DWORD m_argc;
         std::unique_ptr<PCWSTR[]> m_argv;
 
         HostFxr m_hostFxr;
-        std::function<void(const std::wstring&)> m_errorWriter;
+        RedirectionOutput* m_redirectionOutput;
         int m_exitCode;
         int m_exceptionCode;
     };
@@ -165,7 +165,7 @@ private:
 
     static IN_PROCESS_APPLICATION*  s_Application;
 
-    std::unique_ptr<BaseOutputManager> m_pLoggerProvider;
+    StringStreamRedirectionOutput   m_redirectionOutput;
 
     inline static const LPCSTR      s_exeLocationParameterName = "InProcessExeLocation";
 

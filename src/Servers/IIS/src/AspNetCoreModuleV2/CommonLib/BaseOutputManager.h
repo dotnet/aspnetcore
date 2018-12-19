@@ -7,22 +7,37 @@
 #include "EventLog.h"
 #include "exceptions.h"
 #include "StringHelpers.h"
+#include "HostFxr.h"
 #include "debugutil.h"
 
-class BaseOutputManager :
-    public IOutputManager
+class BaseOutputManager
 {
 public:
-    BaseOutputManager() : BaseOutputManager(/* fEnableNativeLogging */ true) {}
-    BaseOutputManager(bool enableNativeLogging) :
+    BaseOutputManager(RedirectionOutput& output, bool enableNativeLogging) :
         m_disposed(false),
+        m_output(output),
         stdoutWrapper(nullptr),
         stderrWrapper(nullptr),
         m_enableNativeRedirection(enableNativeLogging)
     {
         InitializeSRWLock(&m_srwLock);
+        TryStartRedirection();
     }
-    ~BaseOutputManager() {}
+
+    ~BaseOutputManager()
+    {
+        TryStopRedirection();
+    }
+
+protected:
+
+    virtual
+    void
+    Start() = 0;
+
+    virtual
+    void
+    Stop() = 0;
 
     void
     TryStartRedirection()
@@ -38,22 +53,12 @@ public:
         TryOperation(stopLambda, L"Could not stop stdout redirection in %s. Exception message: %s.");
     }
 
-    const std::wstring & GetStdOutContent()
-    {
-        return m_stdOutContent;
-    }
-
-    void Append(const std::wstring & text)
-    {
-        m_stdOutContent += text;
-    }
-
-protected:
     bool m_disposed;
     bool m_enableNativeRedirection;
     SRWLOCK m_srwLock{};
     std::unique_ptr<StdWrapper> stdoutWrapper;
     std::unique_ptr<StdWrapper> stderrWrapper;
+    RedirectionOutput& m_output;
 
     template<typename Functor>
     void

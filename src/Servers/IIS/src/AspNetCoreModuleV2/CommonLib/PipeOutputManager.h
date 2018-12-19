@@ -13,19 +13,16 @@ class PipeOutputManager : public BaseOutputManager
     // Max event log message is ~32KB, limit pipe size just below that.
     #define MAX_PIPE_READ_SIZE 30000
 public:
-    PipeOutputManager();
-    PipeOutputManager(bool fEnableNativeLogging);
-    ~PipeOutputManager();
+    PipeOutputManager(RedirectionOutput& output, bool fEnableNativeLogging);
 
     void Start() override;
     void Stop() override;
 
+private:
     // Thread functions
     void ReadStdErrHandleInternal();
 
     static void ReadStdErrHandle(LPVOID pContext);
-
-private:
 
     HANDLE                          m_hErrReadPipe;
     HANDLE                          m_hErrWritePipe;

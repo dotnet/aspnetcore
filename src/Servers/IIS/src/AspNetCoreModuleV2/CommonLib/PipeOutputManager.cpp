@@ -13,23 +13,14 @@
 #define LOG_IF_DUPFAIL(err) do { if (err == -1) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
 #define LOG_IF_ERRNO(err) do { if (err != 0) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
 
-PipeOutputManager::PipeOutputManager()
-    : PipeOutputManager( /* fEnableNativeLogging */ true)
-{
-}
 
-PipeOutputManager::PipeOutputManager(bool fEnableNativeLogging) :
-    BaseOutputManager(fEnableNativeLogging),
+PipeOutputManager::PipeOutputManager(RedirectionOutput& output, bool fEnableNativeLogging) :
+    BaseOutputManager(output, fEnableNativeLogging),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
     m_hErrThread(nullptr),
     m_numBytesReadTotal(0)
 {
-}
-
-PipeOutputManager::~PipeOutputManager()
-{
-    PipeOutputManager::Stop();
 }
 
 // Start redirecting stdout and stderr into a pipe
@@ -160,7 +151,7 @@ void PipeOutputManager::Stop()
     // Useful for the IIS Express scenario as it is running with stdout and stderr
     auto capturedText = to_wide_string(std::string(m_pipeContents, m_numBytesReadTotal), GetConsoleOutputCP());
 
-    Append(capturedText);
+    m_output.Append(capturedText);
 
     if (!capturedText.empty())
     {

@@ -6,52 +6,39 @@
 #include "FileOutputManager.h"
 #include "PipeOutputManager.h"
 #include "NullOutputManager.h"
-#include "debugutil.h"
 #include <Windows.h>
-#include <io.h>
-#include "ntassert.h"
 #include "exceptions.h"
-#include "EventLog.h"
 #include "BaseOutputManager.h"
 
-HRESULT
-LoggingHelpers::CreateLoggingProvider(
-    bool fIsLoggingEnabled,
-    bool fEnableNativeLogging,
-    PCWSTR pwzStdOutFileName,
-    PCWSTR pwzApplicationPath,
-    std::unique_ptr<BaseOutputManager>& outputManager
+LoggingHelpers::Redirection
+LoggingHelpers::StartRedirection(
+    RedirectionOutput& output,
+    HostFxr& hostFxr,
+    const IHttpServer& server,
+    bool enableLogging,
+    std::wstring outputFileName,
+    std::wstring applicationPath
 )
 {
-    HRESULT hr = S_OK;
+    // Check if there is an existing active console window before redirecting
+    // Window == IISExpress with active console window, don't redirect to a pipe
+    // if true.
+    CONSOLE_SCREEN_BUFFER_INFO dummy;
 
-    DBG_ASSERT(outputManager != NULL);
+    auto enableNativeLogging = !server.IsCommandLineLaunch() & !hostFxr.SupportsOutputRedirection();
+    auto hostFxrRedirection = hostFxr.RedirectOutput(output);
+    std::unique_ptr<BaseOutputManager> outputManager;
 
-    try
+    if (enableLogging)
     {
-        // Check if there is an existing active console window before redirecting
-        // Window == IISExpress with active console window, don't redirect to a pipe
-        // if true.
-        CONSOLE_SCREEN_BUFFER_INFO dummy;
-
-        if (fIsLoggingEnabled)
-        {
-            auto manager = std::make_unique<FileOutputManager>(pwzStdOutFileName, pwzApplicationPath, fEnableNativeLogging);
-            outputManager = std::move(manager);
-        }
-        else if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &dummy))
-        {
-            outputManager = std::make_unique<PipeOutputManager>(fEnableNativeLogging);
-        }
-        else
-        {
-            outputManager = std::make_unique<NullOutputManager>();
-        }
+        outputManager = std::make_unique<FileOutputManager>(output, outputFileName, applicationPath, enableNativeLogging);
     }
-    catch (std::bad_alloc&)
+    if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &dummy))
     {
-        hr = E_OUTOFMEMORY;
+        outputManager = std::make_unique<PipeOutputManager>(output, enableNativeLogging);
     }
 
-    return hr;
+    outputManager = std::make_unique<NullOutputManager>(output);
+
+    return Redirection(std::move(hostFxrRedirection), std::move(outputManager));
 }

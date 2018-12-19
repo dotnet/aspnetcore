@@ -57,7 +57,6 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
         if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
             std::unique_ptr<HOSTFXR_OPTIONS> options;
-            std::unique_ptr<BaseOutputManager> outputManager;
 
             RETURN_IF_FAILED(HOSTFXR_OPTIONS::Create(
                 L"",
@@ -68,19 +67,13 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
             location = options->GetDotnetExeLocation();
 
-            RETURN_IF_FAILED(LoggingHelpers::CreateLoggingProvider(
-                pConfiguration.QueryStdoutLogEnabled(),
-                !m_pServer.IsCommandLineLaunch(),
-                pConfiguration.QueryStdoutLogFile().c_str(),
-                pApplication.GetApplicationPhysicalPath(),
-                outputManager));
+            StringStreamRedirectionOutput redirectionOutput;
 
-
-            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, outputManager.get());
+            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, redirectionOutput, pApplication, pConfiguration);
 
             if (FAILED_LOG(hr))
             {
-                auto output = outputManager->GetStdOutContent();
+                auto output = redirectionOutput.GetOutput();
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
@@ -212,7 +205,9 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
     const HOSTFXR_OPTIONS& hostfxrOptions,
     PCWSTR libraryName,
     std::wstring& handlerDllPath,
-    BaseOutputManager* outputManager
+    RedirectionOutput& redirectionOutput,
+    const IHttpApplication &pApplication,
+    const ShimOptions& pConfiguration
 )
 try
 {
@@ -226,52 +221,54 @@ try
 
     HostFxr hostFxr = HostFxr::CreateFromLoadedModule();
 
-    outputManager->TryStartRedirection();
-    auto redirection = hostFxr.RedirectOutput(std::bind(&BaseOutputManager::Append, outputManager, std::placeholders::_1));
-
-    struNativeSearchPaths.resize(dwBufferSize);
-    while (TRUE)
     {
-        DWORD                       hostfxrArgc;
-        std::unique_ptr<PCWSTR[]>   hostfxrArgv;
+        auto outputManager = LoggingHelpers::StartRedirection(
+                    redirectionOutput,
+                    hostFxr,
+                    m_pServer,
+                    pConfiguration.QueryStdoutLogEnabled(),
+                    pConfiguration.QueryStdoutLogFile(),
+                    pApplication.GetApplicationPhysicalPath());
 
-        hostfxrOptions.GetArguments(hostfxrArgc, hostfxrArgv);
-        const auto intHostFxrExitCode = hostFxr.GetNativeSearchDirectories(
-            hostfxrArgc,
-            hostfxrArgv.get(),
-            struNativeSearchPaths.data(),
-            dwBufferSize,
-            &dwRequiredBufferSize
-        );
-
-        if (intHostFxrExitCode == 0)
+        struNativeSearchPaths.resize(dwBufferSize);
+        while (TRUE)
         {
-            break;
-        }
-        else if (dwRequiredBufferSize > dwBufferSize)
-        {
-            dwBufferSize = dwRequiredBufferSize + 1; // for null terminator
+            DWORD                       hostfxrArgc;
+            std::unique_ptr<PCWSTR[]>   hostfxrArgv;
 
-            struNativeSearchPaths.resize(dwBufferSize);
-        }
-        else
-        {
-            // Stop redirecting before logging to event log to avoid logging debug logs
-            // twice.
-            outputManager->TryStopRedirection();
+            hostfxrOptions.GetArguments(hostfxrArgc, hostfxrArgv);
 
-            // If hostfxr didn't set the required buffer size, something in the app is misconfigured
-            // Ex: Framework not found.
-            EventLog::Error(
-                ASPNETCORE_EVENT_GENERAL_ERROR,
-                ASPNETCORE_EVENT_HOSTFXR_FAILURE_MSG
+            const auto intHostFxrExitCode = hostFxr.GetNativeSearchDirectories(
+                hostfxrArgc,
+                hostfxrArgv.get(),
+                struNativeSearchPaths.data(),
+                dwBufferSize,
+                &dwRequiredBufferSize
             );
 
-            return E_UNEXPECTED;
+            if (intHostFxrExitCode == 0)
+            {
+                break;
+            }
+            else if (dwRequiredBufferSize > dwBufferSize)
+            {
+                dwBufferSize = dwRequiredBufferSize + 1; // for null terminator
+
+                struNativeSearchPaths.resize(dwBufferSize);
+            }
+            else
+            {
+                // If hostfxr didn't set the required buffer size, something in the app is misconfigured
+                // Ex: Framework not found.
+                EventLog::Error(
+                    ASPNETCORE_EVENT_GENERAL_ERROR,
+                    ASPNETCORE_EVENT_HOSTFXR_FAILURE_MSG
+                );
+
+                return E_UNEXPECTED;
+            }
         }
     }
-
-    outputManager->TryStopRedirection();
 
     struNativeSearchPaths.resize(struNativeSearchPaths.find(L'\0'));
 

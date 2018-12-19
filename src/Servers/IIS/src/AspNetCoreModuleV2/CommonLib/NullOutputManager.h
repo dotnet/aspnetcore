@@ -9,15 +9,13 @@ class NullOutputManager : public BaseOutputManager
 {
 public:
 
-    NullOutputManager() = default;
+    NullOutputManager(RedirectionOutput& output) : BaseOutputManager(output, false) = default;
 
-    ~NullOutputManager() = default;
-
-    void Start()
+    void Start() override
     {
     }
 
-    void Stop()
+    void Stop() override
     {
     }
 };

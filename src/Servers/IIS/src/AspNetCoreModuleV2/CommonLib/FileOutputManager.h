@@ -3,20 +3,14 @@
 
 #pragma once
 
-#include "sttimer.h"
 #include "HandleWrapper.h"
-#include "StdWrapper.h"
-#include "stringa.h"
-#include "stringu.h"
 #include "BaseOutputManager.h"
 
 class FileOutputManager : public BaseOutputManager
 {
     #define MAX_FILE_READ_SIZE 30000
 public:
-    FileOutputManager(std::wstring pwzApplicationPath, std::wstring pwzStdOutLogFileName);
-    FileOutputManager(std::wstring pwzApplicationPath, std::wstring pwzStdOutLogFileName, bool fEnableNativeLogging);
-    ~FileOutputManager();
+    FileOutputManager(RedirectionOutput& output, std::wstring pwzApplicationPath, std::wstring pwzStdOutLogFileName, bool fEnableNativeLogging);
 
     void Start() override;
     void Stop() override;

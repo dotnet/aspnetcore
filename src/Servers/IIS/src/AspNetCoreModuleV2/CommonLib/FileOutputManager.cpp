@@ -11,21 +11,13 @@
 #include "StdWrapper.h"
 #include "StringHelpers.h"
 
-FileOutputManager::FileOutputManager(std::wstring pwzStdOutLogFileName, std::wstring  pwzApplicationPath) :
-    FileOutputManager(pwzStdOutLogFileName, pwzApplicationPath, /* fEnableNativeLogging */ true) { }
-
-FileOutputManager::FileOutputManager(std::wstring  pwzStdOutLogFileName, std::wstring  pwzApplicationPath, bool fEnableNativeLogging) :
-    BaseOutputManager(fEnableNativeLogging),
+FileOutputManager::FileOutputManager(RedirectionOutput& output, std::wstring  pwzStdOutLogFileName, std::wstring pwzApplicationPath, bool fEnableNativeLogging) :
+    BaseOutputManager(output, fEnableNativeLogging),
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
     m_applicationPath(pwzApplicationPath),
     m_stdOutLogFileName(pwzStdOutLogFileName)
 {
     InitializeSRWLock(&m_srwLock);
-}
-
-FileOutputManager::~FileOutputManager()
-{
-    FileOutputManager::Stop();
 }
 
 // Start redirecting stdout and stderr into the file handle.
@@ -159,7 +151,8 @@ FileOutputManager::Stop()
     THROW_LAST_ERROR_IF(!ReadFile(m_hLogFileHandle, pzFileContents, MAX_FILE_READ_SIZE, &dwNumBytesRead, NULL));
 
     auto content = to_wide_string(std::string(pzFileContents, dwNumBytesRead), GetConsoleOutputCP());
-    Append(content);
+    m_output.Append(content);
+
     if (!content.empty())
     {
         // printf will fail in in full IIS

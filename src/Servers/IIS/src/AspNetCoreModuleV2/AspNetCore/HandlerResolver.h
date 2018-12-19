@@ -21,7 +21,13 @@ public:
 private:
     HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
     HRESULT FindNativeAssemblyFromGlobalLocation(const ShimOptions& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
-    HRESULT FindNativeAssemblyFromHostfxr(const HOSTFXR_OPTIONS& hostfxrOptions, PCWSTR libraryName, std::wstring& handlerDllPath, BaseOutputManager* outputManager);
+    HRESULT FindNativeAssemblyFromHostfxr(
+        const HOSTFXR_OPTIONS& hostfxrOptions,
+        PCWSTR libraryName,
+        std::wstring& handlerDllPath,
+        RedirectionOutput& redirectionOutput,
+        const IHttpApplication &pApplication,
+        const ShimOptions& pConfiguration);
 
     HMODULE m_hModule;
     const IHttpServer &m_pServer;

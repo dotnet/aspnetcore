@@ -7,16 +7,34 @@
 
 class LoggingHelpers
 {
+
+    class Redirection: NonCopyable
+    {
+    public:
+
+        Redirection(HostFxrErrorRedirector redirector, std::unique_ptr<BaseOutputManager> outputManager)
+            : m_redirector(std::move(redirector)),
+              m_outputManager(std::move(outputManager))
+        {
+        }
+
+    private:
+        HostFxrErrorRedirector m_redirector;
+        std::unique_ptr<BaseOutputManager> m_outputManager;
+    };
+
 public:
 
     static
-    HRESULT
-    CreateLoggingProvider(
-        bool fLoggingEnabled,
-        bool fEnableNativeLogging,
-        PCWSTR pwzStdOutFileName,
-        PCWSTR pwzApplicationPath,
-        std::unique_ptr<BaseOutputManager>& outputManager
+    Redirection
+    StartRedirection(
+        RedirectionOutput& output,
+        HostFxr& hostFxr,
+        const IHttpServer& server,
+        bool enableLogging,
+        std::wstring outputFileName,
+        std::wstring applicationPath
     );
+
 };
 
