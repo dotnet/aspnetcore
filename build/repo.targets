@@ -296,8 +296,11 @@
   </PropertyGroup>
 
   <Target Name="Helix" DependsOnTargets="GetTestAssemblies;Restore">
+    <ItemGroup>
+      <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" />
+    </ItemGroup>
     <PropertyGroup>
-      <HelixTestProjects>@(ProjectToBuild)</HelixTestProjects>
+      <HelixTestProjects>@(CsProjects)</HelixTestProjects>
     </PropertyGroup>
     <Message Text="Projects=$(HelixTestProjects)" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
