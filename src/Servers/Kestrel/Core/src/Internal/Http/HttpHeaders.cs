@@ -111,6 +111,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _isReadOnly = true;
         }
 
+        // Inline to allow ClearFast to devirtualize in caller
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            _isReadOnly = false;
+            ClearFast();
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected static StringValues AppendValue(in StringValues existing, string append)
         {

@@ -22,12 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return new Enumerator(this);
         }
 
-        public void Reset()
-        {
-            _isReadOnly = false;
-            ClearFast();
-        }
-
         protected override IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
         {
             return GetEnumerator();
