@@ -2,17 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNetCore.Diagnostics.HealthChecks.Builder
+namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to add health checks.
+    /// </summary>
     public static class HealthCheckEndpointRouteBuilderExtensions
     {
+        /// <summary>
+        /// Adds a health checks endpoint to the <see cref="IEndpointRouteBuilder"/> with the specified template.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the health checks endpoint to.</param>
+        /// <param name="pattern">The URL pattern of the health checks endpoint.</param>
+        /// <returns>A convention builder for the health checks endpoint.</returns>
         public static IEndpointConventionBuilder MapHealthChecks(
            this IEndpointRouteBuilder builder,
            string pattern)
@@ -25,6 +32,13 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks.Builder
             return MapHealthChecksCore(builder, pattern, null);
         }
 
+        /// <summary>
+        /// Adds a health checks endpoint to the <see cref="IEndpointRouteBuilder"/> with the specified template and options.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the health checks endpoint to.</param>
+        /// <param name="pattern">The URL pattern of the health checks endpoint.</param>
+        /// <param name="options">A <see cref="HealthCheckOptions"/> used to configure the health checks.</param>
+        /// <returns>A convention builder for the health checks endpoint.</returns>
         public static IEndpointConventionBuilder MapHealthChecks(
            this IEndpointRouteBuilder builder,
            string pattern,
