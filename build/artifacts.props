@@ -23,11 +23,12 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Facebook" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Google" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.JwtBearer" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Twitter" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.WsFederation" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(BuildSiteExtensions)' == 'true' " />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Blazor" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Blazor.Cli" Category="ship" />
@@ -79,6 +80,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <!-- Experimental packages which are not ready for production yet -->
       <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
+      <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(BuildSiteExtensions)' == 'true' " />
 
     <!-- Packages for internal use only. -->
       <!-- These packages contain CLI tools which are bundled in the .NET Core SDK. -->
@@ -108,9 +110,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
       <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Core" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.Authentication.JwtBearer" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OAuth" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="noship" />
