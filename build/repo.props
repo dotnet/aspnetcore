@@ -7,6 +7,7 @@
     <DisableDefaultTargets>true</DisableDefaultTargets>
     <DisableDefaultItems>true</DisableDefaultItems>
     <BuildSolutions>false</BuildSolutions>
+    <BuildSiteExtensions Condition="'$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86'">true</BuildSiteExtensions>
 
     <OverridePackageOutputPath>false</OverridePackageOutputPath>
 
