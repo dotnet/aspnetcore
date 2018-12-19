@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            return codeDocument.GetInputDocumentKind() == InputDocumentKind.Component;
+            return string.Equals(codeDocument.GetFileKind(), FileKinds.Component);
         }
 
         protected override void OnDocumentStructureCreated(RazorCodeDocument codeDocument, NamespaceDeclarationIntermediateNode @namespace, ClassDeclarationIntermediateNode @class, MethodDeclarationIntermediateNode method)

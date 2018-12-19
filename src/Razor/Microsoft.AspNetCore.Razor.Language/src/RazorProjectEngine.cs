@@ -35,14 +35,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             return codeDocument;
         }
 
-        internal virtual RazorCodeDocument Process(RazorSourceDocument source, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        internal virtual RazorCodeDocument Process(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var codeDocument = CreateCodeDocumentCore(source, importSources, tagHelpers);
+            var codeDocument = CreateCodeDocumentCore(source, fileKind, importSources, tagHelpers);
             ProcessCore(codeDocument);
             return codeDocument;
         }
@@ -59,30 +59,40 @@ namespace Microsoft.AspNetCore.Razor.Language
             return codeDocument;
         }
 
-        internal virtual RazorCodeDocument ProcessDesignTime(RazorSourceDocument source, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        internal virtual RazorCodeDocument ProcessDesignTime(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var codeDocument = CreateCodeDocumentDesignTimeCore(source, importSources, tagHelpers);
+            var codeDocument = CreateCodeDocumentDesignTimeCore(source, fileKind, importSources, tagHelpers);
             ProcessCore(codeDocument);
             return codeDocument;
         }
 
         protected abstract RazorCodeDocument CreateCodeDocumentCore(RazorProjectItem projectItem);
 
-        internal virtual RazorCodeDocument CreateCodeDocumentCore(RazorSourceDocument source, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        internal virtual RazorCodeDocument CreateCodeDocumentCore(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
-            return RazorCodeDocument.Create(source, importSources);
+            var codeDocument = RazorCodeDocument.Create(source, importSources);
+            if (fileKind != null)
+            {
+                codeDocument.SetFileKind(fileKind);
+            }
+            return codeDocument;
         }
 
         protected abstract RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorProjectItem projectItem);
 
-        internal virtual RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorSourceDocument source, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        internal virtual RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
-            return RazorCodeDocument.Create(source, importSources);
+            var codeDocument = RazorCodeDocument.Create(source, importSources);
+            if (fileKind != null)
+            {
+                codeDocument.SetFileKind(fileKind);
+            }
+            return codeDocument;
         }
 
         protected abstract void ProcessCore(RazorCodeDocument codeDocument);

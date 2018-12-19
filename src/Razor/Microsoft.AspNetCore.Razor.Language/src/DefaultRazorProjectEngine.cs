@@ -68,10 +68,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             var importItems = importFeature.GetImports(projectItem);
             var importSourceDocuments = GetImportSourceDocuments(importItems);
 
-            return CreateCodeDocumentCore(sourceDocument, importSourceDocuments, tagHelpers: null);
+            return CreateCodeDocumentCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null);
         }
 
-        internal override RazorCodeDocument CreateCodeDocumentCore(RazorSourceDocument sourceDocument, IReadOnlyList<RazorSourceDocument> importSourceDocuments, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        internal override RazorCodeDocument CreateCodeDocumentCore(RazorSourceDocument sourceDocument, string fileKind, IReadOnlyList<RazorSourceDocument> importSourceDocuments, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
             if (sourceDocument == null)
             {
@@ -83,6 +83,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var codeDocument = RazorCodeDocument.Create(sourceDocument, importSourceDocuments, parserOptions, codeGenerationOptions);
             codeDocument.SetTagHelpers(tagHelpers);
+
+            if (fileKind != null)
+            {
+                codeDocument.SetFileKind(fileKind);
+            }
 
             return codeDocument;
         }
@@ -100,10 +105,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             var importItems = importFeature.GetImports(projectItem);
             var importSourceDocuments = GetImportSourceDocuments(importItems, suppressExceptions: true);
 
-            return CreateCodeDocumentDesignTimeCore(sourceDocument, importSourceDocuments, tagHelpers: null);
+            return CreateCodeDocumentDesignTimeCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null);
         }
 
-        internal override RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorSourceDocument sourceDocument, IReadOnlyList<RazorSourceDocument> importSourceDocuments, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        internal override RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorSourceDocument sourceDocument, string fileKind, IReadOnlyList<RazorSourceDocument> importSourceDocuments, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
             if (sourceDocument == null)
             {
@@ -115,6 +120,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var codeDocument = RazorCodeDocument.Create(sourceDocument, importSourceDocuments, parserOptions, codeGenerationOptions);
             codeDocument.SetTagHelpers(tagHelpers);
+
+            if (fileKind != null)
+            {
+                codeDocument.SetFileKind(fileKind);
+            }
 
             return codeDocument;
         }

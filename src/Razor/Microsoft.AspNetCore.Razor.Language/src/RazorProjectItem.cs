@@ -1,8 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.AspNetCore.Razor.Language.Components;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -34,6 +37,28 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// physical path of the <see cref="BasePath"/>.
         /// </summary>
         public virtual string RelativePhysicalPath => null;
+
+        /// <summary>
+        /// Gets the document kind that should be used for the generated document. If possible this will be inferred from the file path. May be null.
+        /// </summary>
+        public virtual string FileKind
+        {
+            get
+            {
+                if (FilePath == null)
+                {
+                    return null;
+                }
+                else if (string.Equals(".razor", Path.GetExtension(FilePath), StringComparison.OrdinalIgnoreCase))
+                {
+                    return FileKinds.Component;
+                }
+                else
+                {
+                    return FileKinds.Legacy;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the file contents as readonly <see cref="Stream"/>.
