@@ -10,53 +10,43 @@
 
   <Target Name="Publish" DependsOnTargets="$(PublishDependsOn)" />
 
-  <Target Name="GetFilesToPublish" DependsOnTargets="GetArtifactInfo">
-    <PropertyGroup>
-      <BlobBasePath>aspnetcore/Runtime/$(PackageVersion)/</BlobBasePath>
-      <NpmBlobBasePath>aspnetcore/npm/$(PackageVersion)/</NpmBlobBasePath>
-      <JarBlobBasePath>aspnetcore/jar/$(PackageVersion)/</JarBlobBasePath>
-    </PropertyGroup>
-
+  <Target Name="GetFilesToPublish">
     <ItemGroup>
       <!-- Installer output files with specific metadata. -->
-      <FilesToPublish Include="$(InstallersOutputPath)*.txt">
-        <RelativeBlobPath>$(BlobBasePath)%(FileName)%(Extension)</RelativeBlobPath>
+      <_FilesToPublish Include="$(InstallersOutputPath)*.txt">
         <ContentType>text/plain</ContentType>
-      </FilesToPublish>
+      </_FilesToPublish>
 
-      <FilesToPublish Include="$(InstallersOutputPath)*.version">
-        <RelativeBlobPath>$(BlobBasePath)%(FileName)%(Extension)</RelativeBlobPath>
+      <_FilesToPublish Include="$(InstallersOutputPath)*.version">
         <ContentType>text/plain</ContentType>
         <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
-        <Overwrite>true</Overwrite>
-      </FilesToPublish>
+      </_FilesToPublish>
 
-      <FilesToPublish Include="$(InstallersOutputPath)*.svg">
-        <RelativeBlobPath>$(BlobBasePath)%(FileName)%(Extension)</RelativeBlobPath>
+      <_FilesToPublish Include="$(InstallersOutputPath)*.svg">
         <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
         <ContentType>image/svg+xml</ContentType>
-        <Overwrite>true</Overwrite>
-      </FilesToPublish>
+      </_FilesToPublish>
 
       <!-- All other installer files. -->
-      <FilesToPublish Include="$(InstallerOutputPath)*" Exclude="@(FilesToPublish)">
-        <RelativeBlobPath>$(BlobBasePath)%(FileName)%(Extension)</RelativeBlobPath>
-      </FilesToPublish>
+      <_FilesToPublish Include="$(InstallersOutputPath)*" Exclude="@(_FilesToPublish)" />
 
       <!-- Java packages -->
-      <FilesToPublish Include="$(ProductPackageOutputPath)*.jar">
-        <RelativeBlobPath>$(JarBlobBasePath)%(FileName)%(Extension)</RelativeBlobPath>
-      </FilesToPublish>
+      <_FilesToPublish Include="$(ProductPackageOutputPath)*.jar;$(ProductPackageOutputPath)*.pom">
+        <BlobBasePath>aspnetcore/jar/$(PackageVersion)/</BlobBasePath>
+      </_FilesToPublish>
 
-      <FilesToPublish Include="$(ProductPackageOutputPath)*.pom">
-        <RelativeBlobPath>$(JarBlobBasePath)%(FileName)%(Extension)</RelativeBlobPath>
+      <!--
+        Transform the intermediate item group into the final group.
+        You can't use globbing _and_ set metadata using FileName and Extension at the same time. MSBuild quirks are fun.
+      -->
+      <FilesToPublish Include="@(_FilesToPublish)">
+        <RelativeBlobPath Condition="'%(_FilesToPublish.BlobBasePath)' != ''">%(_FilesToPublish.BlobBasePath)%(_FilesToPublish.FileName)%(_FilesToPublish.Extension)</RelativeBlobPath>
+        <RelativeBlobPath Condition="'%(_FilesToPublish.BlobBasePath)' == ''">aspnetcore/Runtime/$(PackageVersion)/%(_FilesToPublish.FileName)%(_FilesToPublish.Extension)</RelativeBlobPath>
       </FilesToPublish>
+      <_FilesToPublish Remove="@(_FilesToPublish)" />
 
       <!-- NPM packages -->
-      <NpmPackagesToPublish Include="$(ProductPackageOutputPath)*.tgz">
-        <RelativeBlobPath>$(NpmBlobBasePath)%(FileName)%(Extension)</RelativeBlobPath>
-        <ContentType>application/tar+gzip</ContentType>
-      </NpmPackagesToPublish>
+      <NpmPackageToPublish Include="$(ProductPackageOutputPath)*.tgz" />
 
       <PackagesToPublish Include="$(ProductPackageOutputPath)*.symbols.nupkg" IsSymbolsPackage="true" />
       <PackagesToPublish Include="$(ProductPackageOutputPath)*.nupkg" Exclude="@(PackagesToPublish)" />

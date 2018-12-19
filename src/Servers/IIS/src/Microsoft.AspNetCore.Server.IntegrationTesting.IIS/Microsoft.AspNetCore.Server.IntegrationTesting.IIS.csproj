@@ -13,8 +13,23 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
+  <Import Project="..\..\build\assets.props" />
+
   <ItemGroup>
     <EmbeddedResource Include="Http.config" />
+  </ItemGroup>
+
+  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT'">
+    <Error Text="Required dll from ANCM has not been built. To build ANCM, you must use MSBuild.exe."
+          Condition="!Exists('$(AspNetCoreModuleV1ShimDll)')
+            OR !Exists('$(AspNetCoreModuleV2ShimDll)')
+            OR !Exists('$(AspNetCoreModuleV2OutOfProcessHandlerDll)')" />
+  </Target>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''">
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>

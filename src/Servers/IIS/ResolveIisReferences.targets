@@ -16,7 +16,7 @@ with the right MSBuild incantations to get output copied to the right place.
       <ItemGroup Condition=" '@(Reference->AnyHaveMetadataValue('Identity', 'AspNetCoreModuleV2'))' == 'true' ">
         <Reference Remove="AspNetCoreModuleV2" />
         <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" />
-        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" />
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" />
         <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" />
       </ItemGroup>
 
@@ -26,7 +26,7 @@ with the right MSBuild incantations to get output copied to the right place.
           <!-- Set the arch-->
           <SetPlatform>Platform=x64</SetPlatform>
           <!-- The base path for the output. -->
-          <LinkBase>x64\</LinkBase>
+          <LinkBase>x64\%(HandlerPath)\</LinkBase>
           <!-- This reference assembly doesn't need -->
           <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
           <!-- NativeContent is a custom type of item group which is assigned a target path after project references are resolved.  -->
@@ -48,7 +48,7 @@ with the right MSBuild incantations to get output copied to the right place.
           <!-- Set the arch-->
           <SetPlatform>Platform=x86</SetPlatform>
           <!-- The base path for the output. -->
-          <LinkBase>x86\</LinkBase>
+          <LinkBase>x86\%(HandlerPath)\</LinkBase>
           <!-- This reference assembly doesn't need -->
           <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
           <!-- NativeContent is a custom type of item group which is assigned a target path after project references are resolved.  -->

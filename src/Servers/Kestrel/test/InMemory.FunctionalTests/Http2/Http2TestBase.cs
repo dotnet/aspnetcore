@@ -648,7 +648,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected static async Task FlushAsync(PipeWriter writableBuffer)
         {
-            await writableBuffer.FlushAsync();
+            await writableBuffer.FlushAsync().AsTask().DefaultTimeout();
         }
 
         protected Task SendPreambleAsync() => SendAsync(new ArraySegment<byte>(Http2Connection.ClientPreface));
@@ -1161,7 +1161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Contains(expectedErrorMessage, expected => message.Exception.Message.Contains(expected));
             }
 
-            await _connectionTask;
+            await _connectionTask.DefaultTimeout();
             _pair.Application.Output.Complete();
         }
 
