@@ -51,4 +51,4 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
   </ItemGroup>
 
-  </Project>
+</Project>
