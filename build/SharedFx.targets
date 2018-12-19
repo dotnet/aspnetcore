@@ -70,7 +70,7 @@
     <MSBuild Projects="@(FxProjectToBuild)"
              Targets="Pack"
              Properties="$(SharedFxBuildProperties);NoBuild=true"
-             BuildInParallel="true"
+             BuildInParallel="false"
              SkipNonexistentTargets="true" />
   </Target>
 
