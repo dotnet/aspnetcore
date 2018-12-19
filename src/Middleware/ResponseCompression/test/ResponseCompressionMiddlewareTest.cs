@@ -548,6 +548,12 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     app.UseResponseCompression();
                     app.Run(context =>
                     {
+                        var feature = context.Features.Get<IHttpBodyControlFeature>();
+                        if (feature != null)
+                        {
+                            feature.AllowSynchronousIO = true;
+                        }
+
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
                         context.Response.Body.Write(new byte[10], 0, 10);
@@ -651,6 +657,12 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
                         context.Features.Get<IHttpBufferingFeature>()?.DisableResponseBuffering();
+
+                        var feature = context.Features.Get<IHttpBodyControlFeature>();
+                        if (feature != null)
+                        {
+                            feature.AllowSynchronousIO = true;
+                        }
 
                         foreach (var signal in responseReceived)
                         {
