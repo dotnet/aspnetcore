@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Authentication
                         {
                             var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
                             var result = await context.AuthenticateAsync(name);
-                            res.Describe(result?.Ticket?.Principal);
+                            await res.Describe(result?.Ticket?.Principal);
                         }
                         else
                         {
