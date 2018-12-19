@@ -1,0 +1,13 @@
+<!--
+  This file is automatically imported by NuGet into a user's project
+  when it targets a single framework, or in classic (pre 2017) csproj projects.
+-->
+<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
+  <PropertyGroup>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netcoreapp3.0</TaskFolder>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</TaskFolder>
+    <TaskAssembly>$(MSBuildThisFileDirectory)..\tools\$(TaskFolder)\Internal.AspNetCore.SiteExtension.Sdk.dll</TaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="RepoTasks.TrimDeps" AssemblyFile="$(TaskAssembly)" />
+</Project>

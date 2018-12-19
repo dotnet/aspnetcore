@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" PrivateAssets="None" />
+    <PackageReference Include="$(HostingStartupPackageName)" Version="$(HostingStartupPackageVersion)" PrivateAssets="None" />
+  </ItemGroup>
+
+</Project>
