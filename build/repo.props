@@ -10,8 +10,6 @@
 
     <OverridePackageOutputPath>false</OverridePackageOutputPath>
 
-    <SkipTests>false</SkipTests>
-    <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
 
     <SubmoduleRoot>$(RepositoryRoot)src\</SubmoduleRoot>
@@ -28,15 +26,18 @@
     <SharedSourcesFolder>$(RepositoryRoot)src\Shared\</SharedSourcesFolder>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
+    <BuildNative>true</BuildNative>
+    <BuildManaged>true</BuildManaged>
+    <BuildNodeJS>true</BuildNodeJS>
+  </PropertyGroup>
+
   <ItemGroup>
     <SharedSourceDirectories Include="$(SharedSourcesFolder)Hosting.WebHostBuilderFactory\" />
   </ItemGroup>
 
+  <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
-    <SamplesProject Include="$(RepositoryRoot)src\**\samples\**\*.csproj;"/>
-
-    <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
-
     <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
     <ProjectToExclude Include="
                       $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
@@ -45,41 +46,57 @@
                       Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
 
     <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
+    <ProjectToExclude Include="$(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj" />
+
+    <!-- These projects are meant to be executed by tests. -->
     <ProjectToExclude Include="
-                       $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
-                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
-                       $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj
-                       " />
-
-    <NpmProjectDirectory Include="$(RepositoryRoot)src\Middleware\CORS\test\FunctionalTests\" />
-
-    <ProjectToBuild Condition=" '$(OS)' == 'Windows_NT' AND '$(MSBuildRuntimeType)' != 'Core' " Include="$(RepositoryRoot)src\Servers\**\*.vcxproj">
-      <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
-      <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x64'">Platform=x64</AdditionalProperties>
-      <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x86'">Platform=x86</AdditionalProperties>
-    </ProjectToBuild>
-
-    <ProjectToBuild Include="
-                      $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
-                      $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
-                      $(RepositoryRoot)src\DataProtection\**\*.*proj;
-                      $(RepositoryRoot)src\Antiforgery\**\*.*proj;
-                      $(RepositoryRoot)src\Hosting\**\*.*proj;
-                      $(RepositoryRoot)src\Http\**\*.*proj;
-                      $(RepositoryRoot)src\Html\**\*.*proj;
-                      $(RepositoryRoot)src\Servers\**\*.csproj;
-                      $(RepositoryRoot)src\Servers\**\*.pkgproj;
-                      $(RepositoryRoot)src\Security\**\*.*proj;
-                      $(RepositoryRoot)src\Shared\**\*.*proj;
-                      $(RepositoryRoot)src\Tools\**\*.*proj;
-                      $(RepositoryRoot)src\Middleware\**\*.*proj;
-                      $(RepositoryRoot)src\Razor\**\*.*proj;
-                      "
-                    Exclude="
-                      @(ProjectToExclude);
-                      $(RepositoryRoot)**\bin\**\*;
-                      $(RepositoryRoot)**\obj\**\*;" />
+                      $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
+                      $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
+                      " />
   </ItemGroup>
+
+  <Choose>
+    <!-- Project selection can be overridden on the command line by passing in -projects -->
+    <When Condition="'$(Projects)' != ''">
+      <ItemGroup>
+        <ProjectToBuild Include="$(Projects)" Exclude="@(ProjectToExclude)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <NpmProjectDirectory Include="$(RepositoryRoot)src\Middleware\CORS\test\FunctionalTests\" />
+
+        <ProjectToBuild Condition=" '$(OS)' == 'Windows_NT' AND '$(BuildNative)' == 'true' " Include="$(RepositoryRoot)src\Servers\**\*.vcxproj">
+          <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
+          <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x64'">Platform=x64</AdditionalProperties>
+          <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x86'">Platform=x86</AdditionalProperties>
+        </ProjectToBuild>
+
+        <ProjectToBuild Include="$(RepositoryRoot)src\Servers\**\*.pkgproj" Condition=" '$(_RunPack)' == 'true' OR '$(BuildAllProjects)' == 'true' "/>
+
+        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true' "
+                        Include="
+                          $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
+                          $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
+                          $(RepositoryRoot)src\DataProtection\**\*.*proj;
+                          $(RepositoryRoot)src\Antiforgery\**\*.*proj;
+                          $(RepositoryRoot)src\Hosting\**\*.*proj;
+                          $(RepositoryRoot)src\Http\**\*.*proj;
+                          $(RepositoryRoot)src\Html\**\*.*proj;
+                          $(RepositoryRoot)src\Servers\**\*.csproj;
+                          $(RepositoryRoot)src\Security\**\*.*proj;
+                          $(RepositoryRoot)src\Shared\**\*.*proj;
+                          $(RepositoryRoot)src\Tools\**\*.*proj;
+                          $(RepositoryRoot)src\Middleware\**\*.*proj;
+                          $(RepositoryRoot)src\Razor\**\*.*proj;
+                          "
+                        Exclude="
+                          @(ProjectToExclude);
+                          $(RepositoryRoot)**\bin\**\*;
+                          $(RepositoryRoot)**\obj\**\*;" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
   <Import Project="runtimes.props" />
   <Import Project="sources.props" />

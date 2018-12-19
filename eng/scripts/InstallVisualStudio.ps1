@@ -21,7 +21,7 @@ mkdir $intermedateDir -ErrorAction Ignore | Out-Null
 $bootstrapper = "$intermedateDir\vs_enterprise1.exe"
 Invoke-WebRequest -Uri 'https://aka.ms/vs/15/release/vs_enterprise.exe' -OutFile $bootstrapper
 
-$vsJson = "$PSScriptRoot\VsRequirements\vs.json"
+$vsJson = "$PSScriptRoot\vs.json"
 # no backslashes - this breaks the installer
 $vsInstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise"
 $arguments = @(

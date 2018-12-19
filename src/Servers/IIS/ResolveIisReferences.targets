@@ -20,7 +20,7 @@ with the right MSBuild incantations to get output copied to the right place.
         <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" />
       </ItemGroup>
 
-      <ItemGroup Condition="@(NativeProjectReference->Count()) != 0">
+      <ItemGroup Condition="@(NativeProjectReference->Count()) != 0 AND '$(BuildNative)' != 'false' ">
         <!-- TODO: investigate building just one arch at a time. -->
         <ProjectReference Include="@(NativeProjectReference)">
           <!-- Set the arch-->
@@ -70,6 +70,12 @@ with the right MSBuild incantations to get output copied to the right place.
       </ItemGroup>
     </When>
   </Choose>
+
+  <Target Name="_WarnAboutUnbuiltNativeDependencies"
+          BeforeTargets="Build"
+          Condition=" @(NativeProjectReference->Count()) != 0 AND '$(BuildNative)' == 'false' ">
+    <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -native` to build native projects. Run `build.cmd -managed -native` to build both C# and C++." />
+  </Target>
 
   <Target Name="_GetNativeContentCopyToOutputDirectoryItems"
           BeforeTargets="GetCopyToOutputDirectoryItems"
