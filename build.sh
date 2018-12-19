@@ -23,7 +23,7 @@ ci=false
 run_restore=true
 run_build=true
 run_pack=false
-run_tests=true
+run_tests=false
 build_all=false
 build_managed=false
 build_nodejs=false
@@ -44,6 +44,9 @@ Options:
     --[no-]build       Compile projects
     --[no-]pack        Produce packages.
     --[no-]test        Run tests.
+
+    --projects         A list of projects to build. (Must be an absolute path.)
+                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
 
     --all              Build all project types.
     --managed          Build managed projects (C#, F#, VB).
@@ -178,6 +181,11 @@ while [[ $# -gt 0 ]]; do
         --no-test)
             run_tests=false
             ;;
+        --projects|-[Pp]rojects)
+            shift
+            build_projects="${1:-}"
+            [ -z "$build_projects" ] && __error "Missing value for parameter --projects" && __usage
+            ;;
         --all|-[Aa]ll)
             build_all=true
             ;;
@@ -249,6 +257,8 @@ get_korebuild
 
 if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
+elif [ ! -z "$build_projects" ]; then
+    msbuild_args[${#msbuild_args[*]}]="-p:Projects=$build_projects"
 else
     # When adding new sub-group build flags, add them to this check
     if [ "$build_managed" = false ] && [ "$build_nodejs" = false ]; then
