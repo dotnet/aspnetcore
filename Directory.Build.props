@@ -95,6 +95,9 @@
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
+    
+    <!-- This disables test assembly parallelization by default by putting each test assembly in a unique group -->
+    <TestGroupName>$(MSBuildProjectName)</TestGroupName>
   </PropertyGroup>
 
   <Import Project="eng\Dependencies.props" />
