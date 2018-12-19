@@ -26,6 +26,7 @@ run_pack=false
 run_tests=true
 build_all=false
 build_managed=false
+build_nodejs=false
 build_projects=''
 msbuild_args=()
 
@@ -184,7 +185,7 @@ while [[ $# -gt 0 ]]; do
             build_managed=true
             ;;
         --nodejs|-NodeJS)
-            build_managed=true
+            build_nodejs=true
             ;;
         --native|-Native)
             __warn 'The C++ projects in this repo only build on Windows. The --native flag will be ignored.'
