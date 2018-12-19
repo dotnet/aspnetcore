@@ -295,9 +295,11 @@
     <DefaultHelixTestTimeout>00:30:00</DefaultHelixTestTimeout>
   </PropertyGroup>
 
-  <Target Name="Helix" DependsOnTargets="GetTestAssemblies;Restore">
+  <!-- <Target Name="Helix" DependsOnTargets="GetTestAssemblies;Restore"> -->
+  <Target Name="Helix" DependsOnTargets="Restore">
     <ItemGroup>
-      <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" />
+      <!-- <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" /> -->
+      <CsProjects Include="$(MSBuildThisFileDirectory)..\src\Security\Authentication\test\Microsoft.AspNetCore.Authentication.Test.csproj" />
     </ItemGroup>
     <PropertyGroup>
       <HelixTestProjects>@(CsProjects)</HelixTestProjects>
