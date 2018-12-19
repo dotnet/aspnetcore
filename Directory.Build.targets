@@ -59,4 +59,72 @@
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
+
+  <ItemGroup>
+    <PackageReference Include="xunit.runner.console" Version="2.4.1" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
+  </ItemGroup>
+
+  <Target Name="CreateTestPayload" Returns="@(TestPayload)">
+
+    <ItemGroup>
+      <_TargetFrameworks Remove="@(_TargetFrameworks)" />
+      <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_CreateTestPayloadInner"
+             Properties="TargetFramework=%(_TargetFrameworks.Identity)">
+      <Output TaskParameter="TargetOutputs" ItemName="TestPayload" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="CollectXunitConsoleRunner" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PropertyGroup>
+      <XunitConsoleRunnerDir>$([System.IO.Path]::GetDirectoryName($(XunitConsole472Path)))</XunitConsoleRunnerDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <XunitConsoleRunnerFiles Include="$(XunitConsoleRunnerDir)/**/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(XunitConsoleRunnerFiles)" DestinationFolder="$(PublishDir)" />
+  </Target>
+
+  <Target Name="_CreateTestPayloadInner" 
+    DependsOnTargets="Publish;CollectXunitConsoleRunner" 
+    Condition="'$(IsTestProject)' == 'true' AND ('$(HelixTargetQueue)' == 'Windows.10.Amd64.Open' OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
+    Returns="@(TestPayload)">
+
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+
+    <!-- Windows NetCore -->
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '$(HelixTargetQueue)' == 'Windows.10.Amd64.Open'" >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)test\vstest\runtests.cmd" />
+    </ItemGroup>
+
+    <!-- Windows NetFramework -->
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(HelixTargetQueue)' == 'Windows.10.Amd64.Open'" >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)test\xunit\runtests.cmd" />
+    </ItemGroup>
+
+    <!-- NonWindows -->
+    <ItemGroup Condition="'$(HelixTargetQueue)' != 'Windows.10.Amd64.Open'"  >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)test\vstest\runtests.sh" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
+
+    <ItemGroup>
+      <TestPayload Include="$(PublishAbsoluteDir.TrimEnd('\').TrimEnd('\'))">
+        <TestAssembly>$(TargetFileName)</TestAssembly>
+        <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
+        <!-- Look into how to be able to use $(NETCoreSdkVersion) -->
+        <Command Condition="'$(HelixTargetQueue)' == 'Windows.10.Amd64.Open'">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
+        <Command Condition="'$(HelixTargetQueue)' != 'Windows.10.Amd64.Open'">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
+        <TestTimeout>$(DistributedTestTimeout)</TestTimeout>
+      </TestPayload>
+    </ItemGroup>
+  </Target>
 </Project>
