@@ -154,7 +154,7 @@ while [[ $# -gt 0 ]]; do
             repo_path="${1:-}"
             [ -z "$repo_path" ] && __error "Missing value for parameter --repo-root" && __usage
             ;;
-        --restore)
+        --restore|-[Rr]estore)
             run_restore=true
             ;;
         --no-restore)
@@ -173,10 +173,10 @@ while [[ $# -gt 0 ]]; do
             run_pack=false
             ;;
         --test|-[Tt]est)
-            run_tests=false
+            run_tests=true
             ;;
         --no-test)
-            run_tests=true
+            run_tests=false
             ;;
         --all|-[Aa]ll)
             build_all=true
@@ -184,10 +184,10 @@ while [[ $# -gt 0 ]]; do
         --managed|-[Mm]anaged)
             build_managed=true
             ;;
-        --nodejs|-NodeJS)
+        --nodejs|-[Nn]ode[Jj][Ss])
             build_nodejs=true
             ;;
-        --native|-Native)
+        --native|-[Nn]ative)
             __warn 'The C++ projects in this repo only build on Windows. The --native flag will be ignored.'
             ;;
         --ci|-[Cc][Ii])
@@ -196,7 +196,7 @@ while [[ $# -gt 0 ]]; do
                 DOTNET_HOME="$DIR/.dotnet"
             fi
             ;;
-        --verbose|-Verbose)
+        --verbose|-[Vv]erbose)
             verbose=true
             ;;
         *)
