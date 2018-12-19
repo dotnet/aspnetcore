@@ -4,7 +4,6 @@
 #pragma once
 
 #include "stdafx.h"
-#include "stringa.h"
 
 class IOutputManager
 {
@@ -17,7 +16,7 @@ public:
     ~IOutputManager() = default;
 
     virtual
-    std::wstring
+    const std::wstring &
     GetStdOutContent() = 0;
 
     virtual

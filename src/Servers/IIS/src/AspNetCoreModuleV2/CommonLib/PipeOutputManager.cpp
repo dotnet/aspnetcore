@@ -158,12 +158,14 @@ void PipeOutputManager::Stop()
 
     // If we captured any output, relog it to the original stdout
     // Useful for the IIS Express scenario as it is running with stdout and stderr
-    m_stdOutContent = to_wide_string(std::string(m_pipeContents, m_numBytesReadTotal), GetConsoleOutputCP());
+    auto capturedText = to_wide_string(std::string(m_pipeContents, m_numBytesReadTotal), GetConsoleOutputCP());
 
-    if (!m_stdOutContent.empty())
+    Append(capturedText);
+
+    if (!capturedText.empty())
     {
         // printf will fail in in full IIS
-        if (wprintf(m_stdOutContent.c_str()) != -1)
+        if (wprintf(capturedText.c_str()) != -1)
         {
             // Need to flush contents for the new stdout and stderr
             _flushall();
@@ -171,10 +173,6 @@ void PipeOutputManager::Stop()
     }
 }
 
-std::wstring PipeOutputManager::GetStdOutContent()
-{
-    return m_stdOutContent;
-}
 
 void
 PipeOutputManager::ReadStdErrHandle(
@@ -214,7 +212,7 @@ PipeOutputManager::ReadStdErrHandleInternal()
 
     // Using std::string as a wrapper around new char[] so we don't need to call delete
     // Also don't allocate on stack as stack size is 128KB by default.
-    std::string tempBuffer; 
+    std::string tempBuffer;
     tempBuffer.resize(MAX_PIPE_READ_SIZE);
 
     // After reading the maximum amount of data, keep reading in a loop until Stop is called on the output manager.

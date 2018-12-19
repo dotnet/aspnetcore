@@ -17,6 +17,7 @@
 #include "ModuleHelpers.h"
 #include "BaseOutputManager.h"
 #include "Environment.h"
+#include "HostFxr.h"
 
 const PCWSTR HandlerResolver::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
@@ -75,7 +76,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
                 outputManager));
 
 
-            hr = FindNativeAssemblyFromHostfxr(*options.get(), pstrHandlerDllName, handlerDllPath, outputManager.get());
+            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, outputManager.get());
 
             if (FAILED_LOG(hr))
             {
@@ -213,42 +214,29 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
     std::wstring& handlerDllPath,
     BaseOutputManager* outputManager
 )
+try
 {
     std::wstring   struNativeSearchPaths;
     size_t         intIndex = 0;
     size_t         intPrevIndex = 0;
     DWORD          dwBufferSize = s_initialGetNativeSearchDirectoriesBufferSize;
     DWORD          dwRequiredBufferSize = 0;
-    hostfxr_get_native_search_directories_fn pFnHostFxrSearchDirectories = nullptr;
 
     RETURN_LAST_ERROR_IF_NULL(m_hHostFxrDll = LoadLibraryW(hostfxrOptions.GetHostFxrLocation().c_str()));
 
-    try
-    {
-        pFnHostFxrSearchDirectories = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(m_hHostFxrDll, "hostfxr_get_native_search_directories");
-    }
-    catch (...)
-    {
-        EventLog::Error(
-            ASPNETCORE_EVENT_GENERAL_ERROR,
-            ASPNETCORE_EVENT_HOSTFXR_DLL_INVALID_VERSION_MSG,
-            hostfxrOptions.GetHostFxrLocation().c_str()
-        );
-        return OBSERVE_CAUGHT_EXCEPTION();
-    }
-
-    RETURN_LAST_ERROR_IF_NULL(pFnHostFxrSearchDirectories);
-    struNativeSearchPaths.resize(dwBufferSize);
+    HostFxr hostFxr = HostFxr::CreateFromLoadedModule();
 
     outputManager->TryStartRedirection();
+    auto redirection = hostFxr.RedirectOutput(std::bind(&BaseOutputManager::Append, outputManager, std::placeholders::_1));
 
+    struNativeSearchPaths.resize(dwBufferSize);
     while (TRUE)
     {
         DWORD                       hostfxrArgc;
         std::unique_ptr<PCWSTR[]>   hostfxrArgv;
 
         hostfxrOptions.GetArguments(hostfxrArgc, hostfxrArgv);
-        const auto intHostFxrExitCode = pFnHostFxrSearchDirectories(
+        const auto intHostFxrExitCode = hostFxr.GetNativeSearchDirectories(
             hostfxrArgc,
             hostfxrArgv.get(),
             struNativeSearchPaths.data(),
@@ -323,4 +311,4 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
 
     return S_OK;
 }
-
+CATCH_RETURN()

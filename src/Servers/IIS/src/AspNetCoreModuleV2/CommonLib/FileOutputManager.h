@@ -18,7 +18,6 @@ public:
     FileOutputManager(std::wstring pwzApplicationPath, std::wstring pwzStdOutLogFileName, bool fEnableNativeLogging);
     ~FileOutputManager();
 
-    virtual std::wstring GetStdOutContent() override;
     void Start() override;
     void Stop() override;
 

@@ -212,6 +212,7 @@
     <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="HandleWrapper.h" />
+    <ClInclude Include="HostFxr.h" />
     <ClInclude Include="hostfxroptions.h" />
     <ClInclude Include="hostfxr_utility.h" />
     <ClInclude Include="iapplication.h" />
@@ -248,6 +249,7 @@
     <ClCompile Include="fx_ver.cpp" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
     <ClCompile Include="HandleWrapper.cpp" />
+    <ClCompile Include="HostFxr.cpp" />
     <ClCompile Include="hostfxr_utility.cpp" />
     <ClCompile Include="hostfxroptions.cpp" />
     <ClCompile Include="LoggingHelpers.cpp" />

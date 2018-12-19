@@ -12,6 +12,7 @@
 #include "EventLog.h"
 #include "ModuleHelpers.h"
 #include "Environment.h"
+#include "HostFxr.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
@@ -174,18 +175,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         auto context = std::make_shared<ExecuteClrContext>();
 
-        auto pProc = s_fMainCallback;
-        if (pProc == nullptr)
+        if (s_fMainCallback == nullptr)
         {
-            HMODULE hModule;
-            // hostfxr should already be loaded by the shim. If not, then we will need
-            // to load it ourselves by finding hostfxr again.
-            THROW_LAST_ERROR_IF_NULL(hModule = GetModuleHandle(L"hostfxr.dll"));
-
-            // Get the entry point for main
-            pProc = reinterpret_cast<hostfxr_main_fn>(GetProcAddress(hModule, "hostfxr_main"));
-            THROW_LAST_ERROR_IF_NULL(pProc);
-
             THROW_IF_FAILED(HOSTFXR_OPTIONS::Create(
                 m_dotnetExeKnownLocation,
                 m_pConfig->QueryProcessPath(),
@@ -196,8 +187,13 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
             hostFxrOptions->GetArguments(context->m_argc, context->m_argv);
             THROW_IF_FAILED(SetEnvironmentVariablesOnWorkerProcess());
+            context->m_hostFxr = HostFxr::CreateFromLoadedModule();
         }
-        context->m_pProc = pProc;
+        else
+        {
+            context->m_hostFxr = HostFxr(s_fMainCallback, nullptr, nullptr);
+        }
+
 
         if (m_pLoggerProvider == nullptr)
         {
@@ -209,6 +205,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 m_pLoggerProvider));
 
             m_pLoggerProvider->TryStartRedirection();
+            context->m_errorWriter = std::bind(&BaseOutputManager::Append, m_pLoggerProvider.get(), std::placeholders::_1);
         }
 
         // There can only ever be a single instance of .NET Core
@@ -247,6 +244,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         // Wait for shutdown request
         const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
         THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
+
+        context->m_errorWriter = nullptr;
 
         LOG_INFOF(L"Starting shutdown sequence %d", waitResult);
 
@@ -389,7 +388,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
 {
     __try
     {
-        auto const exitCode = context->m_pProc(context->m_argc, context->m_argv.get());
+        auto const exitCode = context->m_hostFxr.Main(context->m_argc, context->m_argv.get());
 
         LOG_INFOF(L"Managed application exited with code %d", exitCode);
 
@@ -415,6 +414,16 @@ IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrCont
     // this is required because thread might be abandoned
     HandleWrapper<ModuleHandleTraits> moduleHandle;
     ModuleHelpers::IncrementCurrentModuleRefCount(moduleHandle);
+
+    const auto redirect = context->m_hostFxr.RedirectOutput([&](const std::wstring& message) -> void
+    {
+        // Adding this indirection to allow writer to be reset during shutdown even if clr didn't stop in time
+        auto const writer = context->m_errorWriter;
+        if (writer)
+        {
+            writer(message);
+        }
+    });
 
     ExecuteClr(context);
 

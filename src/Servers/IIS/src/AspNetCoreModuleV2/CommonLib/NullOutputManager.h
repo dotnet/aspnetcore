@@ -20,10 +20,5 @@ public:
     void Stop()
     {
     }
-
-    std::wstring GetStdOutContent()
-    {
-        return L"";
-    }
 };
 

@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "StdWrapper.h"
-#include "stringu.h"
 #include "BaseOutputManager.h"
 
 class PipeOutputManager : public BaseOutputManager
@@ -21,7 +19,6 @@ public:
 
     void Start() override;
     void Stop() override;
-    std::wstring GetStdOutContent() override;
 
     // Thread functions
     void ReadStdErrHandleInternal();

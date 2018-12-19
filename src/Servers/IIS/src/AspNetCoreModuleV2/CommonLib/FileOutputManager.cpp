@@ -37,7 +37,7 @@ FileOutputManager::Start()
     SECURITY_ATTRIBUTES saAttr = { 0 };
     FILETIME processCreationTime;
     FILETIME dummyFileTime;
-    
+
     // To make Console.* functions work, allocate a console
     // in the current process.
     if (!AllocConsole())
@@ -50,10 +50,10 @@ FileOutputManager::Start()
     create_directories(logPath.parent_path());
 
     THROW_LAST_ERROR_IF(!GetProcessTimes(
-        GetCurrentProcess(), 
-        &processCreationTime, 
-        &dummyFileTime, 
-        &dummyFileTime, 
+        GetCurrentProcess(),
+        &processCreationTime,
+        &dummyFileTime,
+        &dummyFileTime,
         &dummyFileTime));
 
     THROW_LAST_ERROR_IF(!FileTimeToSystemTime(&processCreationTime, &systemTime));
@@ -158,9 +158,8 @@ FileOutputManager::Stop()
 
     THROW_LAST_ERROR_IF(!ReadFile(m_hLogFileHandle, pzFileContents, MAX_FILE_READ_SIZE, &dwNumBytesRead, NULL));
 
-    m_stdOutContent = to_wide_string(std::string(pzFileContents, dwNumBytesRead), GetConsoleOutputCP());
-
-    auto content = GetStdOutContent();
+    auto content = to_wide_string(std::string(pzFileContents, dwNumBytesRead), GetConsoleOutputCP());
+    Append(content);
     if (!content.empty())
     {
         // printf will fail in in full IIS
@@ -170,9 +169,4 @@ FileOutputManager::Stop()
             _flushall();
         }
     }
-}
-
-std::wstring FileOutputManager::GetStdOutContent()
-{
-    return m_stdOutContent;
 }

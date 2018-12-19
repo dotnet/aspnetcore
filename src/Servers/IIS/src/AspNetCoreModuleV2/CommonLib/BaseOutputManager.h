@@ -38,8 +38,17 @@ public:
         TryOperation(stopLambda, L"Could not stop stdout redirection in %s. Exception message: %s.");
     }
 
+    const std::wstring & GetStdOutContent()
+    {
+        return m_stdOutContent;
+    }
+
+    void Append(const std::wstring & text)
+    {
+        m_stdOutContent += text;
+    }
+
 protected:
-    std::wstring m_stdOutContent;
     bool m_disposed;
     bool m_enableNativeRedirection;
     SRWLOCK m_srwLock{};
@@ -64,5 +73,8 @@ protected:
             OBSERVE_CAUGHT_EXCEPTION();
         }
     }
+
+private:
+    std::wstring m_stdOutContent;
 };
 
