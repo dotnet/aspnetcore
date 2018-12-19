@@ -7,7 +7,6 @@
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
     <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
     <GetArtifactInfoDependsOn>$(GetArtifactInfo);GetFxProjectArtifactInfo</GetArtifactInfoDependsOn>
-    <BuildSiteExtensions Condition="'$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86'">true</BuildSiteExtensions>
   </PropertyGroup>
 
   <ItemGroup>
