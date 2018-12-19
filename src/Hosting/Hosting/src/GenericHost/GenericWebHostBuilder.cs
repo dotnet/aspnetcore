@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -196,16 +196,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public IWebHostBuilder UseDefaultServiceProvider(Action<WebHostBuilderContext, ServiceProviderOptions> configure)
         {
-            // REVIEW: This is a hack to change the builder with the HostBuilderContext in scope,
-            // we're not actually using configuration here
-            _builder.ConfigureAppConfiguration((context, _) =>
+            _builder.UseServiceProviderFactory(context =>
             {
                 var webHostBuilderContext = GetWebHostBuilderContext(context);
                 var options = new ServiceProviderOptions();
                 configure(webHostBuilderContext, options);
-
-                // This is only fine because this runs last
-                _builder.UseServiceProviderFactory(new DefaultServiceProviderFactory(options));
+                return new DefaultServiceProviderFactory(options);
             });
 
             return this;
