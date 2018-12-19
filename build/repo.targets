@@ -297,7 +297,7 @@
 
   <Target Name="Helix" DependsOnTargets="GetTestAssemblies;Restore">
     <PropertyGroup>
-      <HelixTestProjects>@(ProjectsToTest)</HelixTestProjects>
+      <HelixTestProjects>@(ProjectToBuild)</HelixTestProjects>
     </PropertyGroup>
     <Message Text="Projects=$(HelixTestProjects)" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
