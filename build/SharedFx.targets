@@ -66,7 +66,7 @@
     <MSBuild Projects="@(FxProjectToBuild)"
              Properties="$(SharedFxBuildProperties)"
              BuildInParallel="true" />
-
+    <!-- BuildInParallel="false" because dotnet store runs during site extension build and is failing if packages are being currently generated -->
     <MSBuild Projects="@(FxProjectToBuild)"
              Targets="Pack"
              Properties="$(SharedFxBuildProperties);NoBuild=true"
