@@ -7,7 +7,6 @@
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
     <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
     <GetArtifactInfoDependsOn>$(GetArtifactInfo);GetFxProjectArtifactInfo</GetArtifactInfoDependsOn>
-    <BuildSiteExtensions Condition="'$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86'">true</BuildSiteExtensions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -66,11 +65,11 @@
     <MSBuild Projects="@(FxProjectToBuild)"
              Properties="$(SharedFxBuildProperties)"
              BuildInParallel="true" />
-
+    <!-- BuildInParallel="false" because dotnet store runs during site extension build and is failing if packages are being currently generated -->
     <MSBuild Projects="@(FxProjectToBuild)"
              Targets="Pack"
              Properties="$(SharedFxBuildProperties);NoBuild=true"
-             BuildInParallel="true"
+             BuildInParallel="false"
              SkipNonexistentTargets="true" />
   </Target>
 
