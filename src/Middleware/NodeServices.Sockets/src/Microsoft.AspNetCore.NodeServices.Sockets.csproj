@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Socket-based RPC for Microsoft.AspNetCore.NodeServices.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,9 +13,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.NodeServices" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="System.Threading.Tasks.Dataflow" />
   </ItemGroup>
 

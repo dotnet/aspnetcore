@@ -26,6 +26,8 @@
   <PropertyGroup Label="Package Versions: Pinned">
     <!-- Packages that came from aspnet/Extensions. -->
     <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>2.1.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <!-- Adding MVC here until it is moved to project ref -->
+    <MicrosoftAspNetCoreMvcPackageVersion>2.1.1</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>2.1.1</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>2.1.2</MicrosoftExtensionsCachingAbstractionsPackageVersion>
