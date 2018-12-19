@@ -290,4 +290,21 @@
            Text="Repository %(Repository.Identity) is missing NuGetPackageVerifier.json. Expected file to exist in %(Repository.RootPath)NuGetPackageVerifier.json" />
   </Target>
 
+<!-- will move into korebuild -->
+  <PropertyGroup>
+    <DefaultHelixTestTimeout>00:30:00</DefaultHelixTestTimeout>
+  </PropertyGroup>
+
+  <Target Name="Helix" DependsOnTargets="GetTestAssemblies;Restore">
+    <PropertyGroup>
+      <HelixTestProjects>@(ProjectsToTest)</HelixTestProjects>
+    </PropertyGroup>
+    <Message Text="Projects=$(HelixTestProjects)" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
+             Targets="Test"
+             Properties="ProjectsToTest=$(HelixTestProjects)"
+             ContinueOnError="ErrorAndStop"
+             BuildInParallel="false" />
+  </Target>
+
 </Project>
