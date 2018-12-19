@@ -1177,26 +1177,26 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         {
                             var result = await context.AuthenticateAsync(TestExtensions.CookieAuthenticationScheme);
                             var tokens = result.Properties.GetTokens();
-                            res.Describe(tokens);
+                            await res.Describe(tokens);
                         }
                         else if (req.Path == new PathString("/me"))
                         {
-                            res.Describe(context.User);
+                            await res.Describe(context.User);
                         }
                         else if (req.Path == new PathString("/authenticate"))
                         {
                             var result = await context.AuthenticateAsync(TestExtensions.CookieAuthenticationScheme);
-                            res.Describe(result.Principal);
+                            await res.Describe(result.Principal);
                         }
                         else if (req.Path == new PathString("/authenticateGoogle"))
                         {
                             var result = await context.AuthenticateAsync("Google");
-                            res.Describe(result?.Principal);
+                            await res.Describe(result?.Principal);
                         }
                         else if (req.Path == new PathString("/authenticateFacebook"))
                         {
                             var result = await context.AuthenticateAsync("Facebook");
-                            res.Describe(result?.Principal);
+                            await res.Describe(result?.Principal);
                         }
                         else if (req.Path == new PathString("/unauthorized"))
                         {
