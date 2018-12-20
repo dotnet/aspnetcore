@@ -59,6 +59,7 @@ protected:
     RedirectionOutput& m_output;
 
     template<typename Functor>
+    static
     void
     TryOperation(Functor func,
         std::wstring exceptionMessage)

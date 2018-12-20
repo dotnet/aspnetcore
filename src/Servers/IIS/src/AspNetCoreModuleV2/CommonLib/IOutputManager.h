@@ -10,13 +10,14 @@
 class RedirectionOutput
 {
 public:
+    virtual ~RedirectionOutput() = default;
     virtual void Append(const std::wstring& text) = 0;
 };
 
 class ForwardingRedirectionOutput: NonCopyable, public RedirectionOutput
 {
 public:
-    ForwardingRedirectionOutput(RedirectionOutput ** target)
+    ForwardingRedirectionOutput(RedirectionOutput ** target) noexcept
         : m_target(target)
     {
     }

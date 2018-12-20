@@ -14,7 +14,7 @@ typedef corehost_error_writer_fn(*corehost_set_error_writer_fn) (corehost_error_
 class HostFxrErrorRedirector: NonCopyable
 {
 public:
-    HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput& writeFunction):
+    HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput& writeFunction) noexcept :
         m_setErrorWriter(setErrorWriterFn)
     {
         if (m_setErrorWriter)
@@ -65,7 +65,7 @@ public:
     HostFxr(
         hostfxr_main_fn hostfxr_main_fn,
         hostfxr_get_native_search_directories_fn hostfxr_get_native_search_directories_fn,
-        corehost_set_error_writer_fn corehost_set_error_writer_fn)
+        corehost_set_error_writer_fn corehost_set_error_writer_fn) noexcept
         : m_hostfxr_main_fn(hostfxr_main_fn),
           m_hostfxr_get_native_search_directories_fn(hostfxr_get_native_search_directories_fn),
           m_corehost_set_error_writer_fn(corehost_set_error_writer_fn)
@@ -74,22 +74,22 @@ public:
 
 	~HostFxr() = default;
 
-    int Main(DWORD argc, CONST PCWSTR argv[]) const
+    int Main(DWORD argc, CONST PCWSTR* argv) const noexcept(false)
     {
         return m_hostfxr_main_fn(argc, argv);
     }
 
-    int GetNativeSearchDirectories(INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD * required_buffer_size)
+    int GetNativeSearchDirectories(INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD * required_buffer_size) noexcept
     {
         return m_hostfxr_get_native_search_directories_fn(argc, argv, buffer, buffer_size, required_buffer_size);
     }
 
-    HostFxrErrorRedirector RedirectOutput(RedirectionOutput & writer)
+    HostFxrErrorRedirector RedirectOutput(RedirectionOutput & writer) noexcept
     {
         return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
     }
 
-    bool SupportsOutputRedirection() const
+    bool SupportsOutputRedirection() const noexcept
     {
         return m_corehost_set_error_writer_fn != nullptr;
     }

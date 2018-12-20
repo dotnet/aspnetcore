@@ -49,8 +49,7 @@ public:
 
         THROW_LAST_ERROR_IF(!GetModuleFileName(hModule, path, MAX_PATH));
 
-#pragma warning( pop )
-
         return path;
+#pragma warning( pop )
     }
 };

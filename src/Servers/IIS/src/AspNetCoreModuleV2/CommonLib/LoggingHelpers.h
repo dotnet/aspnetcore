@@ -19,7 +19,7 @@ class LoggingHelpers
             m_outputManager->TryStartRedirection();
         }
 
-        ~Redirection()
+        ~Redirection() noexcept(false)
         {
             m_outputManager->TryStopRedirection();
         }
