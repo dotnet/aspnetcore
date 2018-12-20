@@ -6,6 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
+    <IsProductPackage>true</IsProductPackage>
   </PropertyGroup>
 
   <ItemGroup>

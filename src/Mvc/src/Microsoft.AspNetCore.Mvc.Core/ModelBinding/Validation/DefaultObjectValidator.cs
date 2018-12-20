@@ -42,8 +42,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 validationState)
             {
                 MaxValidationDepth = _mvcOptions.MaxValidationDepth,
-                AllowShortCircuitingValidationWhenNoValidatorsArePresent =
-                    _mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent,
             };
 
             return visitor;

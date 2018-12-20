@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Razor\src\Microsoft.AspNetCore.Razor\TagHelpers\CaseSensitiveBoundAttributeComparer.cs" />
+    <Compile Include="$(SharedSourceRoot)Razor\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

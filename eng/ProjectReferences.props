@@ -47,6 +47,20 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Cookies" ProjectPath="$(RepositoryRoot)src\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication" ProjectPath="$(RepositoryRoot)src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Facebook" ProjectPath="$(RepositoryRoot)src\Security\Authentication\Facebook\src\Microsoft.AspNetCore.Authentication.Facebook.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Google" ProjectPath="$(RepositoryRoot)src\Security\Authentication\Google\src\Microsoft.AspNetCore.Authentication.Google.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.JwtBearer" ProjectPath="$(RepositoryRoot)src\Security\Authentication\JwtBearer\src\Microsoft.AspNetCore.Authentication.JwtBearer.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" ProjectPath="$(RepositoryRoot)src\Security\Authentication\MicrosoftAccount\src\Microsoft.AspNetCore.Authentication.MicrosoftAccount.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.OAuth" ProjectPath="$(RepositoryRoot)src\Security\Authentication\OAuth\src\Microsoft.AspNetCore.Authentication.OAuth.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" ProjectPath="$(RepositoryRoot)src\Security\Authentication\OpenIdConnect\src\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Twitter" ProjectPath="$(RepositoryRoot)src\Security\Authentication\Twitter\src\Microsoft.AspNetCore.Authentication.Twitter.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.WsFederation" ProjectPath="$(RepositoryRoot)src\Security\Authentication\WsFederation\src\Microsoft.AspNetCore.Authentication.WsFederation.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authorization" ProjectPath="$(RepositoryRoot)src\Security\Authorization\Core\src\Microsoft.AspNetCore.Authorization.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authorization.Policy" ProjectPath="$(RepositoryRoot)src\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.CookiePolicy" ProjectPath="$(RepositoryRoot)src\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Owin.Security.Interop" ProjectPath="$(RepositoryRoot)src\Security\Interop\src\Microsoft.Owin.Security.Interop.csproj" />
     <ProjectReferenceProvider Include="dotnet-dev-certs" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-dev-certs\src\dotnet-dev-certs.csproj" />
     <ProjectReferenceProvider Include="dotnet-sql-cache" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-sql-cache\src\dotnet-sql-cache.csproj" />
     <ProjectReferenceProvider Include="dotnet-user-secrets" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-user-secrets\src\dotnet-user-secrets.csproj" />
@@ -71,5 +85,20 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Session" ProjectPath="$(RepositoryRoot)src\Middleware\Session\src\Microsoft.AspNetCore.Session.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.StaticFiles" ProjectPath="$(RepositoryRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepositoryRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.CodeAnalysis.Razor" ProjectPath="$(RepositoryRoot)src\Razor\CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" ProjectPath="$(RepositoryRoot)src\Razor\Mvc.Razor.Extensions.Version1_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" ProjectPath="$(RepositoryRoot)src\Razor\Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Design" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Design\src\Microsoft.AspNetCore.Razor.Design.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Language" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Language\src\Microsoft.AspNetCore.Razor.Language.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Runtime" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Tasks" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Tasks\src\Microsoft.AspNetCore.Razor.Tasks.csproj" />
+    <ProjectReferenceProvider Include="rzc" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Tools\src\rzc.csproj" />
+    <ProjectReferenceProvider Include="dotnet-razorpagegenerator" ProjectPath="$(RepositoryRoot)src\Razor\RazorPageGenerator\src\dotnet-razorpagegenerator.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor" ProjectPath="$(RepositoryRoot)src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.NET.Sdk.Razor" ProjectPath="$(RepositoryRoot)src\Razor\Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.Common" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim.Version1_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,10 @@
 <Project>
   <Import Project="dependencies.props" />
 
+  <PropertyGroup>
+    <OverridePackageOutputPath>false</OverridePackageOutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
 

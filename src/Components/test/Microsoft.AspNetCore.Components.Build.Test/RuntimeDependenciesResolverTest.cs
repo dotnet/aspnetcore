@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 mainAssemblyDirectory, "bclLocations.txt"));
             var references = new[]
             {
+                "Microsoft.AspNetCore.Blazor.dll",
                 "Microsoft.AspNetCore.Components.Browser.dll",
                 "Microsoft.AspNetCore.Components.dll",
                 "Microsoft.Extensions.DependencyInjection.Abstractions.dll",
@@ -52,6 +53,8 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                  fewer assemblies from the server, and during publishing, illink would remove all the
                  uncalled implementation code from mscorlib.dll anyway.
                  */
+                "Microsoft.AspNetCore.Blazor.dll",
+                "Microsoft.AspNetCore.Blazor.pdb",
                 "Microsoft.AspNetCore.Components.Browser.dll",
                 "Microsoft.AspNetCore.Components.Browser.pdb",
                 "Microsoft.AspNetCore.Components.dll",

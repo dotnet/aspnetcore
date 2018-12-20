@@ -144,8 +144,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcViewOptionsSetup>());
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IPostConfigureOptions<MvcViewOptions>, MvcViewOptionsConfigureCompatibilityOptions>());
-            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, TempDataMvcOptionsSetup>());
 
             //

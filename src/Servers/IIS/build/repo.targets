@@ -36,8 +36,8 @@
 
   <Target Name="GetNativeArtifactsInfo">
     <PropertyGroup>
-      <AncmPackageOutputPath>$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg</AncmPackageOutputPath>
-      <AncmV2PackageOutputPath>$(BuildDir)Microsoft.AspNetCore.AspNetCoreModuleV2.$(PackageVersion).nupkg</AncmV2PackageOutputPath>
+      <AncmPackageOutputPath>$(ProductPackageOutputPath)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg</AncmPackageOutputPath>
+      <AncmV2PackageOutputPath>$(ProductPackageOutputPath)Microsoft.AspNetCore.AspNetCoreModuleV2.$(PackageVersion).nupkg</AncmV2PackageOutputPath>
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
@@ -74,13 +74,13 @@
         OutputPath="$(AspNetCoreModuleV2PropsOutputFile)" />
 
     <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\Microsoft.AspNetCore.AspNetCoreModule.nuspec"
-      DestinationFolder="$(BuildDir)"
+      DestinationFolder="$(ProductPackageOutputPath)"
       Properties="version=$(PackageVersion);Configuration=$(Configuration)"
       Overwrite="true"
       BasePath="$(RepositoryRoot)" />
 
     <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\Microsoft.AspNetCore.AspNetCoreModuleV2.nuspec"
-      DestinationFolder="$(BuildDir)"
+      DestinationFolder="$(ProductPackageOutputPath)"
       Properties="version=$(PackageVersion);Configuration=$(Configuration);AspNetCoreModuleOutOfProcessVersion=$(AspNetCoreModuleOutOfProcessVersion);AspNetCoreModuleV2Props=$(AspNetCoreModuleV2PropsOutputFile)"
       Overwrite="true"
       BasePath="$(RepositoryRoot)" />

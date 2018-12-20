@@ -1,0 +1,35 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <Import Project="..\Sdk\SiteExtension.targets" />
+
+  <PropertyGroup>
+    <!-- There is no build output -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- There are no symbols. -->
+    <IncludeSymbols>false</IncludeSymbols>
+    <!-- There is no API to check -->
+    <EnableApiCheck>false</EnableApiCheck>
+    <!-- Manually control dependencies -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <!-- There is no documentation  -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- There is no documentation  -->
+    <RunPackageAnalysis>false</RunPackageAnalysis>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
+    <ItemGroup>
+      <ArtifactInfo Include="$(TargetPath)">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
+
+  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
+
+</Project>

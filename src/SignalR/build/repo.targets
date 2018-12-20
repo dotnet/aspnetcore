@@ -11,6 +11,8 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <ProductPackageOutputPath>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..\..\artifacts\$(Configuration)\packages\product\'))</ProductPackageOutputPath>
+
     <!-- Pass the Java Package Version down to Gradle -->
     <GradleOptions>-PpackageVersion="$(JavaPackageVersion)"</GradleOptions>
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
@@ -83,7 +85,7 @@
       <NPMPackage Update="%(NPMPackage)">
         <PackageJson>$([System.IO.Path]::Combine(%(NPMPackage.FullPath), 'package.json'))</PackageJson>
         <OutputTar>$([System.IO.Path]::Combine(%(NPMPackage.FullPath), '%(NPMPackage.TarName)-$(PackageVersion).tgz'))</OutputTar>
-        <ArtifactPath>$([System.IO.Path]::Combine($(BuildDir), '%(NPMPackage.TarName)-$(PackageVersion).tgz'))</ArtifactPath>
+        <ArtifactPath>$([System.IO.Path]::Combine($(ProductPackageOutputPath), '%(NPMPackage.TarName)-$(PackageVersion).tgz'))</ArtifactPath>
       </NPMPackage>
 
       <ArtifactInfo Include="%(NPMPackage.ArtifactPath)">
@@ -101,19 +103,19 @@
 
   <Target Name="GetJavaArtifactInfo" DependsOnTargets="DetectJava" Condition=" '$(SkipJavaClient)' != 'true' ">
     <ItemGroup Condition="'$(HasJava)' == 'true'">
-      <ArtifactInfo Include="$(BuildDir)\%(Jars.Identity)">
+      <ArtifactInfo Include="$(ProductPackageOutputPath)\%(Jars.Identity)">
         <ArtifactType>JavaJar</ArtifactType>
         <Version>$(JavaClientVersion)</Version>
         <Category>ship</Category>
       </ArtifactInfo>
-      <ArtifactInfo Include="$(BuildDir)\%(PomFile.Identity)">
+      <ArtifactInfo Include="$(ProductPackageOutputPath)\%(PomFile.Identity)">
         <ArtifactType>MavenPOM</ArtifactType>
         <Version>$(JavaClientVersion)</Version>
         <Category>ship</Category>
       </ArtifactInfo>
 
-      <FilesToSign Include="$(BuildDir)\%(Jars.Identity)" Certificate="$(JarSigningCertName)" />
-      <FilesToExcludeFromSigning Include="$(BuildDir)\%(PomFile.Identity)" />
+      <FilesToSign Include="$(ProductPackageOutputPath)\%(Jars.Identity)" Certificate="$(JarSigningCertName)" />
+      <FilesToExcludeFromSigning Include="$(ProductPackageOutputPath)\%(PomFile.Identity)" />
     </ItemGroup>
   </Target>
 
@@ -174,7 +176,7 @@
     <Message Text="Packing Java client" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
     <Exec Command="./gradlew $(GradleOptions) createPackage" WorkingDirectory="$(RepositoryRoot)clients/java/signalr" />
-    <Copy SourceFiles="$(RepositoryRoot)clients/java/signalr\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(BuildDir)" />
+    <Copy SourceFiles="$(RepositoryRoot)clients/java/signalr\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(ProductPackageOutputPath)" />
   </Target>
 
 </Project>

@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJsonPatch);
         }
-        
+
         /// <inheritdoc />
         public override InputFormatterExceptionPolicy ExceptionPolicy
         {
