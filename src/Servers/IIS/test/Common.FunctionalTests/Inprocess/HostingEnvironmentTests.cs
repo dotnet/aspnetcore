@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             Assert.Equal(_fixture.DeploymentResult.ContentRoot, await _fixture.Client.GetStringAsync("/ContentRootPath"));
             Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\wwwroot", await _fixture.Client.GetStringAsync("/WebRootPath"));
-            Assert.Equal(Path.GetDirectoryName(_fixture.DeploymentResult.HostProcess.MainModule.FileName), await _fixture.Client.GetStringAsync("/CurrentDirectory"));
+            Assert.Equal(_fixture.DeploymentResult.ContentRoot, await _fixture.DeploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
             Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\", await _fixture.Client.GetStringAsync("/BaseDirectory"));
             Assert.Equal(_fixture.DeploymentResult.ContentRoot + "\\", await _fixture.Client.GetStringAsync("/ASPNETCORE_IIS_PHYSICAL_PATH"));
         }
