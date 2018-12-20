@@ -7,7 +7,6 @@
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
     <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
     <GetArtifactInfoDependsOn>$(GetArtifactInfo);GetFxProjectArtifactInfo</GetArtifactInfoDependsOn>
-    <BuildRuntimeSiteExtension Condition="'$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86'">true</BuildRuntimeSiteExtension>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,21 +14,25 @@
     <FxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
     <FxProjectToBuild Include="$(UnitTestFxProject)" />
     <FxProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
-    <FxProjectToBuild Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Include="$(RepositoryRoot)src\Installers\RuntimeSiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
+
     <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
     <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
+
+    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
+    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\LoggingBranch\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
   </ItemGroup>
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
 
   <Target Name="GetSharedFxFilesToSign">
     <ItemGroup>
-      <FilesToSign Include="$(ArtifactsDir)$(Configuration)\installers\aspnetcore-runtime-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
-      <FilesToSign Include="$(ArtifactsDir)$(Configuration)\installers\aspnetcore-runtime-internal-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
-      <FilesToSign Include="$(BuildDir)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(BuildDir)AspNetCoreRuntime.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildRuntimeSiteExtension)' == 'true' " Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(InstallersOutputPath)aspnetcore-runtime-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
+      <FilesToSign Include="$(InstallersOutputPath)aspnetcore-runtime-internal-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
+      <FilesToSign Include="$(ProductPackageOutputPath)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(ProductPackageOutputPath)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(ProductPackageOutputPath)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(ProductPackageOutputPath)AspNetCoreRuntime.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(InternalPackageOutputPath)Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
     </ItemGroup>
 
     <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
@@ -62,11 +65,11 @@
     <MSBuild Projects="@(FxProjectToBuild)"
              Properties="$(SharedFxBuildProperties)"
              BuildInParallel="true" />
-
+    <!-- BuildInParallel="false" because dotnet store runs during site extension build and is failing if packages are being currently generated -->
     <MSBuild Projects="@(FxProjectToBuild)"
              Targets="Pack"
              Properties="$(SharedFxBuildProperties);NoBuild=true"
-             BuildInParallel="true"
+             BuildInParallel="false"
              SkipNonexistentTargets="true" />
   </Target>
 

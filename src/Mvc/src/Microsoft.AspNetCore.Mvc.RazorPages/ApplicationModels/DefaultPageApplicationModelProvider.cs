@@ -179,10 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 pageModel.Filters.Add(_pageHandlerResultFilter);
             }
 
-            if (_razorPagesOptions.AllowDefaultHandlingForOptionsRequests)
-            {
-                pageModel.Filters.Add(_handleOptionsRequestsFilter);
-            }
+            pageModel.Filters.Add(_handleOptionsRequestsFilter);
         }
 
         /// <summary>

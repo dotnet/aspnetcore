@@ -13,7 +13,6 @@
       <ArchiveBuildProps>
         DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
-        OutputPath=$(ArtifactsDir)lzma\;
         _BuildToolsAssembly=$(_BuildToolsAssembly)
       </ArchiveBuildProps>
     </PropertyGroup>

@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCorePackageVersion)" />
         <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
     </ItemGroup>
 

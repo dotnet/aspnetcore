@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class ApiBehaviorOptions : IEnumerable<ICompatibilitySwitch>
     {
-        private readonly ICompatibilitySwitch[] _switches = Array.Empty<ICompatibilitySwitch>();
+        private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
         private Func<ActionContext, IActionResult> _invalidModelStateResponseFactory;
 
         /// <summary>
@@ -84,10 +84,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public IDictionary<int, ClientErrorData> ClientErrorMapping { get; } = new Dictionary<int, ClientErrorData>();
 
-        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
-        {
-            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
-        }
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }

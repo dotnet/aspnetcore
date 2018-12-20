@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
                 // When RootDirectory and AreaRootDirectory overlap (e.g. RootDirectory = '/', AreaRootDirectory = '/Areas'), we
                 // only want to allow a page to be associated with the area route.
-                if (_pagesOptions.AllowAreas && relativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
+                if (relativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
                 {
                     routeModel = _routeModelFactory.CreateAreaRouteModel(relativePath, routeTemplate);
                 }

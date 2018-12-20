@@ -17,7 +17,6 @@ This files is a temporary while this project transitions to using arcade.
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
     <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
-    <PackageOutputPath>$(ArtifactsDir)build\</PackageOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DisableArcadeProjectLayout)' != 'true'">

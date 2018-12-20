@@ -22,8 +22,7 @@ namespace SampleStartups
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config) // Default set of configurations to use, may be subsequently overridden 
-                //.UseKestrel()
-                .UseFakeServer()
+                .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory()) // Override the content root with the current directory
                 .UseUrls("http://*:1000", "https://*:902")
                 .UseEnvironment(EnvironmentName.Development)

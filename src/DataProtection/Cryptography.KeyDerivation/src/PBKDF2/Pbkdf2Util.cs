@@ -25,22 +25,12 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
                 // acceptable implementation
                 return new Win7Pbkdf2Provider();
             }
-#if NETCOREAPP3_0
             else
             {
                 // fastest implementation on .NET Core for Linux/macOS.
                 // Not supported on .NET Framework
                 return new NetCorePbkdf2Provider();
             }
-#elif NETSTANDARD2_0
-            else
-            {
-                // slowest implementation
-                return new ManagedPbkdf2Provider();
-            }
-#else
-#error Update target frameworks
-#endif
         }
     }
 }

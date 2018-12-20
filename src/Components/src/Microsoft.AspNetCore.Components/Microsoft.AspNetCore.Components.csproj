@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Components feature for ASP.NET Core.</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsProductPackage>true</IsProductPackage>
   </PropertyGroup>
 
   <ItemGroup>
