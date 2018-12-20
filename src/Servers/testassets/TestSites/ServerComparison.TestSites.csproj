@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-      <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion)" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>

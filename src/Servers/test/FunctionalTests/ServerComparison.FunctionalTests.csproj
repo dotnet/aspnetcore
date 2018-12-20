@@ -10,8 +10,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <!-- Temporary work around until ANCM ProjectReference changes are in 2.1 -->
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion)" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>
