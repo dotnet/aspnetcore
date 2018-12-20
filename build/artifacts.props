@@ -27,6 +27,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" AllMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV1" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Category="ship" />
