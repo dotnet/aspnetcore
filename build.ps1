@@ -196,14 +196,6 @@ $RepoRoot = Resolve-Path $RepoRoot
 $Channel = 'master'
 $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools'
 $ConfigFile = Join-Path $PSScriptRoot 'korebuild.json'
-
-# TODO: remove this workaround once we fix https://github.com/aspnet/Extensions/issues/815.
-# We only want to have one korebuild.json file for the repo, but this was required so that src/Identity still builds on `dotnet msbuild`.
-if (Test-Path "$RepoRoot/korebuild.json") {
-    $ConfigFile = "$RepoRoot/korebuild.json"
-}
-# end workaround
-
 $LockFile = Join-Path $PSScriptRoot 'korebuild-lock.txt'
 
 if (Test-Path $ConfigFile) {
