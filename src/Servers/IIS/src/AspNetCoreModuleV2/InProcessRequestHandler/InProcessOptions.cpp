@@ -7,13 +7,14 @@
 
 HRESULT InProcessOptions::Create(
     IHttpServer& pServer,
+    IHttpSite* site,
     IHttpApplication& pHttpApplication,
     std::unique_ptr<InProcessOptions>& options)
 {
     try
     {
         const WebConfigConfigurationSource configurationSource(pServer.GetAdminManager(), pHttpApplication);
-        options = std::make_unique<InProcessOptions>(configurationSource);
+        options = std::make_unique<InProcessOptions>(configurationSource, site);
     }
     catch (InvalidOperationException& ex)
     {
@@ -38,7 +39,7 @@ HRESULT InProcessOptions::Create(
     return S_OK;
 }
 
-InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSource) :
+InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSource, IHttpSite* pSite) :
     m_fStdoutLogEnabled(false),
     m_fWindowsAuthEnabled(false),
     m_fBasicAuthEnabled(false),
@@ -68,4 +69,9 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
 
     const auto anonAuthSection = configurationSource.GetSection(CS_ANONYMOUS_AUTHENTICATION_SECTION);
     m_fAnonymousAuthEnabled = anonAuthSection && anonAuthSection->GetBool(CS_ENABLED).value_or(false);
+
+    if (pSite != nullptr)
+    {
+        m_bindingInformation = BindingInformation::Load(configurationSource, *pSite);
+    }
 }

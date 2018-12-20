@@ -8,7 +8,6 @@
 #include "exceptions.h"
 #include "config_utility.h"
 
-
 REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
 {
     if (m_ppStrArguments != NULL)
@@ -28,6 +27,7 @@ REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
 HRESULT
 REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
     _In_  IHttpServer             *pHttpServer,
+    _In_  IHttpSite               *pSite,
     _In_  IHttpApplication        *pHttpApplication,
     _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
 )
@@ -49,7 +49,7 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
 
         pRequestHandlerConfig = new REQUESTHANDLER_CONFIG;
 
-        hr = pRequestHandlerConfig->Populate(pHttpServer, pHttpApplication);
+        hr = pRequestHandlerConfig->Populate(pHttpServer, pSite, pHttpApplication);
         if (FAILED(hr))
         {
             goto Finished;
@@ -85,6 +85,7 @@ Finished:
 HRESULT
 REQUESTHANDLER_CONFIG::Populate(
     IHttpServer    *pHttpServer,
+    IHttpSite      *pSite,
     IHttpApplication   *pHttpApplication
 )
 {
@@ -122,6 +123,19 @@ REQUESTHANDLER_CONFIG::Populate(
     }
 
     pAdminManager = pHttpServer->GetAdminManager();
+    if (pSite != nullptr)
+    {
+        try
+        {
+            WebConfigConfigurationSource source(pAdminManager, *pHttpApplication);
+            m_struHttpsPort.Copy(BindingInformation::GetHttpsPort(BindingInformation::Load(source, *pSite)).c_str());
+        }
+        catch (...)
+        {
+            FINISHED_IF_FAILED(OBSERVE_CAUGHT_EXCEPTION());
+        }
+    }
+
     hr = m_struConfigPath.Copy(pHttpApplication->GetAppConfigPath());
     if (FAILED(hr))
     {

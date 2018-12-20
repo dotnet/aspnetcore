@@ -1,5 +1,3 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
@@ -10,6 +8,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly ILogger<IISHttpServer> _logger;
         private readonly IISServerOptions _options;
         private readonly IISNativeApplication _nativeApplication;
+        private readonly ServerAddressesFeature _serverAddressesFeature;
 
         private volatile int _stopping;
         private bool Stopping => _stopping == 1;
@@ -71,11 +71,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _applicationLifetime = applicationLifetime;
             _logger = logger;
             _options = options.Value;
+            _serverAddressesFeature = new ServerAddressesFeature();
 
             if (_options.ForwardWindowsAuthentication)
             {
                 authentication.AddScheme(new AuthenticationScheme(IISServerDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandler)));
             }
+
+            Features.Set<IServerAddressesFeature>(_serverAddressesFeature);
         }
 
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
@@ -84,6 +87,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
             _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+
+            _serverAddressesFeature.Addresses = _options.ServerAddresses;
+
             return Task.CompletedTask;
         }
 
