@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var result = comparer.Compare(endpoint1, endpoint2);
 
             // Assert
-            Assert.Equal(1, result);
+            Assert.True(result > 0);
         }
 
         [Fact]
@@ -216,6 +216,29 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 e => Assert.Same(endpoint5, e),
                 e => Assert.Same(endpoint6, e),
                 e => Assert.Same(endpoint7, e));
+        }
+
+        [Fact]
+        public void Compare_PatternOrder_OrdinalIgnoreCaseSort()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("/I", order: 0);
+            var endpoint2 = CreateEndpoint("/i", order: 0);
+            var endpoint3 = CreateEndpoint("/\u0131", order: 0); // Turkish lowercase i
+
+            var list = new List<RouteEndpoint>() { endpoint1, endpoint2, endpoint3 };
+
+            var comparer = CreateComparer();
+
+            // Act
+            list.Sort(comparer);
+
+            // Assert
+            Assert.Collection(
+                list,
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e),
+                e => Assert.Same(endpoint3, e));
         }
 
         private static RouteEndpoint CreateEndpoint(string template, int order, params object[] metadata)
