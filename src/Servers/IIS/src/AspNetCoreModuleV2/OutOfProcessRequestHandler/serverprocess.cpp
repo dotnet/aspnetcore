@@ -30,7 +30,8 @@ SERVER_PROCESS::Initialize(
     STRU                  *pstruStdoutLogFile,
     STRU                  *pszAppPhysicalPath,
     STRU                  *pszAppPath,
-    STRU                  *pszAppVirtualPath
+    STRU                  *pszAppVirtualPath,
+    STRU                  *pszHttpsPort
 )
 {
     HRESULT hr = S_OK;
@@ -52,6 +53,7 @@ SERVER_PROCESS::Initialize(
         FAILED_LOG(hr = m_struAppFullPath.Copy(*pszAppPath))||
         FAILED_LOG(hr = m_struAppVirtualPath.Copy(*pszAppVirtualPath))||
         FAILED_LOG(hr = m_Arguments.Copy(*pszArguments)) ||
+        FAILED_LOG(hr = m_struHttpsPort.Copy(*pszHttpsPort)) ||
         FAILED_LOG(hr = SetupJobObject()))
     {
         goto Finished;
@@ -786,6 +788,7 @@ SERVER_PROCESS::StartProcess(
             m_fBasicAuthEnabled,
             m_fAnonymousAuthEnabled,
             m_struAppFullPath.QueryStr(),
+            m_struHttpsPort.QueryStr(),
             &pHashTable)))
         {
             pStrStage = L"InitEnvironmentVariablesTable";

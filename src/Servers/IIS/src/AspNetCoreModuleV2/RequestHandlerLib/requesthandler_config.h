@@ -43,6 +43,7 @@
 
 #include "stdafx.h"
 #include "environmentvariablehash.h"
+#include "BindingInformation.h"
 
 enum APP_HOSTING_MODEL
 {
@@ -62,6 +63,7 @@ public:
     HRESULT
     CreateRequestHandlerConfig(
         _In_  IHttpServer             *pHttpServer,
+        _In_  IHttpSite               *pSite,
         _In_  IHttpApplication        *pHttpApplication,
         _Out_ REQUESTHANDLER_CONFIG  **ppAspNetCoreConfig
     );
@@ -112,6 +114,12 @@ public:
     )
     {
         return m_dwRequestTimeoutInMS;
+    }
+
+    STRU*
+    QueryBindings()
+    {
+        return &m_struHttpsPort;
     }
 
     STRU*
@@ -226,6 +234,7 @@ protected:
     HRESULT
     Populate(
         IHttpServer      *pHttpServer,
+        IHttpSite        *pSite,
         IHttpApplication *pHttpApplication
     );
 
@@ -252,5 +261,5 @@ protected:
     STRU                   m_struHostFxrLocation;
     PWSTR*                 m_ppStrArguments;
     DWORD                  m_dwArgc;
-
+    STRU                   m_struHttpsPort;
 };

@@ -192,6 +192,7 @@ public:
         _In_ BOOL                           fBasicAuthEnabled,
         _In_ BOOL                           fAnonymousAuthEnabled,
         _In_ PCWSTR                         pApplicationPhysicalPath,
+        _In_ PCWSTR                         pHttpsPort,
         _Out_ ENVIRONMENT_VAR_HASH**        ppEnvironmentVarTable
     )
     {
@@ -203,6 +204,7 @@ public:
         ENVIRONMENT_VAR_ENTRY* pHostingEntry = NULL;
         ENVIRONMENT_VAR_ENTRY* pIISAuthEntry = NULL;
         ENVIRONMENT_VAR_ENTRY* pIISPathEntry = NULL;
+        ENVIRONMENT_VAR_ENTRY* pIISHttpsPort = NULL;
         ENVIRONMENT_VAR_HASH* pEnvironmentVarTable = NULL;
 
         pEnvironmentVarTable = new ENVIRONMENT_VAR_HASH();
@@ -238,6 +240,26 @@ public:
             FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISPathEntry)))
         {
             goto Finished;
+        }
+
+        if (pHttpsPort != nullptr)
+        {
+            pEnvironmentVarTable->FindKey((PWSTR)ASPNETCORE_HTTPS_PORT_ENV_STR, &pIISHttpsPort);
+            if (pIISHttpsPort != NULL)
+            {
+                // user defined ASPNETCORE_HTTPS_PORT in configuration, don't override it
+                pIISHttpsPort->Dereference();
+            }
+            else
+            {
+                pIISHttpsPort = new ENVIRONMENT_VAR_ENTRY();
+
+                if (FAILED(hr = pIISHttpsPort->Initialize(ASPNETCORE_HTTPS_PORT_ENV_STR, pHttpsPort)) ||
+                    FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISHttpsPort)))
+                {
+                    goto Finished;
+                }
+            }
         }
 
         pEnvironmentVarTable->FindKey((PWSTR)ASPNETCORE_IIS_AUTH_ENV_STR, &pIISAuthEntry);

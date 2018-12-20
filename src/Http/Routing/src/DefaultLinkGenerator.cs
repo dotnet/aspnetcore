@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -90,6 +90,7 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return GetPathByEndpoints(
+                httpContext,
                 endpoints,
                 values,
                 ambientValues,
@@ -112,6 +113,7 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return GetPathByEndpoints(
+                httpContext: null,
                 endpoints,
                 values,
                 ambientValues: null,
@@ -206,7 +208,8 @@ namespace Microsoft.AspNetCore.Routing
             return endpoints;
         }
 
-        public string GetPathByEndpoints(
+        private string GetPathByEndpoints(
+            HttpContext httpContext,
             List<RouteEndpoint> endpoints,
             RouteValueDictionary values,
             RouteValueDictionary ambientValues,
@@ -218,7 +221,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 var endpoint = endpoints[i];
                 if (TryProcessTemplate(
-                    httpContext: null,
+                    httpContext: httpContext,
                     endpoint: endpoint,
                     values: values,
                     ambientValues: ambientValues,

@@ -344,6 +344,7 @@ void IN_PROCESS_APPLICATION::QueueStop()
 
 HRESULT IN_PROCESS_APPLICATION::Start(
     IHttpServer& pServer,
+    IHttpSite* pSite,
     IHttpApplication& pHttpApplication,
     APPLICATION_PARAMETER* pParameters,
     DWORD nParameters,
@@ -352,7 +353,7 @@ HRESULT IN_PROCESS_APPLICATION::Start(
     try
     {
         std::unique_ptr<InProcessOptions> options;
-        THROW_IF_FAILED(InProcessOptions::Create(pServer, pHttpApplication, options));
+        THROW_IF_FAILED(InProcessOptions::Create(pServer, pSite, pHttpApplication, options));
         application = std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>(
             new IN_PROCESS_APPLICATION(pServer, pHttpApplication, std::move(options), pParameters, nParameters));
         THROW_IF_FAILED(application->LoadManagedApplication());
@@ -444,6 +445,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
         m_pConfig->QueryBasicAuthEnabled(),
         m_pConfig->QueryAnonymousAuthEnabled(),
         QueryApplicationPhysicalPath().c_str(),
+        nullptr, /* pHttpsPort */
         &pHashTable));
 
     table.reset(pHashTable);
