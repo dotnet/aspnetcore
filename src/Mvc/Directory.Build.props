@@ -17,6 +17,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UseRoutingFromFeatureBranch>true</UseRoutingFromFeatureBranch>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)..\Shared\</SharedSourceRoot>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
 
   <!-- Artifacts layout -->
