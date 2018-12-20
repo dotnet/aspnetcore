@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
 
             if (variant.AncmVersion == AncmVersion.AspNetCoreModuleV2 &&
-                !DeployerSelector.IsForwardsCompatibilityTest &&
-                !DeployerSelector.IsBackwardsCompatiblityTest)
+                DeployerSelector.HasNewHandler &&
+                DeployerSelector.HasNewShim)
             {
                 // We expect ServerAddress to be set for InProcess and HTTPS_PORT for OutOfProcess
                 if (variant.HostingModel == HostingModel.InProcess)
@@ -77,6 +77,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
         public async Task ServerAddressesIncludesBaseAddress()
         {
             var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";
@@ -96,6 +98,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
         public async Task HttpsPortCanBeOverriden()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
@@ -115,6 +119,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresNewShim]
         public async Task MultipleHttpsPortsProduceNoEnvVar()
         {
             var sslPort = GetNextSSLPort();
