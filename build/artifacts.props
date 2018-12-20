@@ -6,8 +6,6 @@
       <AppMetapackage>false</AppMetapackage>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
       <AllMetapackage>false</AllMetapackage>
-      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.Analyzers metapackage. -->
-      <Analyzer>false</Analyzer>
       <!--
       Other known package types:
         Dependency = for packages that are installed via PackageReference
@@ -26,7 +24,6 @@
     <PackageArtifact Include="dotnet-watch" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" AllMetapackage="true" Category="ship" />
@@ -89,8 +86,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Localization" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.MiddlewareAnalysis" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers.Experimental" Analyzer="true" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Analyzer="true" AllMetapackage="true" AppMetapackage="true" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ApiExplorer" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Core" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Cors" AllMetapackage="true" AppMetapackage="true" Category="ship" />

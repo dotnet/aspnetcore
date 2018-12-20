@@ -2,12 +2,8 @@
   <PropertyGroup>
     <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-
-    <VerifyVersion>false</VerifyVersion>
-    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
-    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
-    <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
-
+    <!-- These analyzers do not need to put into a package. -->
+    <IsPackable>false</IsPackable>
     <TargetFramework>netstandard1.3</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnableApiCheck>false</EnableApiCheck>
