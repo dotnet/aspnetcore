@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         if (value != null)
                         {
                             buffer.Write(_CrLf);
-                            PipelineExtensions.WriteAsciiNoValidation(ref buffer, kv.Key);
+                            buffer.WriteAsciiNoValidation(kv.Key);
                             buffer.Write(_colonSpace);
-                            PipelineExtensions.WriteAsciiNoValidation(ref buffer, value);
+                            buffer.WriteAsciiNoValidation(value);
                         }
                     }
                 }
