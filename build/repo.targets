@@ -32,12 +32,16 @@
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
     <RestoreDependsOn Condition=" '$(BuildNodeJS)' == 'true' ">$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
 
+    <CompileDependsOn />
+    <CompileDependsOn Condition=" '$(_RunRestore)' == 'true' ">Restore</CompileDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
     <CompileDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
 
     <PackageDependsOn>$(PackageDependsOn);PackProjects</PackageDependsOn>
     <PackageDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(PackageDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</PackageDependsOn>
 
+    <TestDependsOn />
+    <TestDependsOn Condition=" '$(_RunBuild)' == 'true' ">$(TestDependsOn);Compile</TestDependsOn>
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
     <TestDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(TestDependsOn);_TestRepositories</TestDependsOn>
 
