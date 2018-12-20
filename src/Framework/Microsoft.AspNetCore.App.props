@@ -17,9 +17,7 @@
     <Dependency Include="Microsoft.AspNetCore.Authentication.Abstractions"             Version="$(MicrosoftAspNetCoreAuthenticationAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication.Cookies"                  Version="$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication.Core"                     Version="$(MicrosoftAspNetCoreAuthenticationCorePackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Authentication.JwtBearer"                Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication.OAuth"                    Version="$(MicrosoftAspNetCoreAuthenticationOAuthPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.Authentication.OpenIdConnect"            Version="$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authentication"                          Version="$(MicrosoftAspNetCoreAuthenticationPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authorization.Policy"                    Version="$(MicrosoftAspNetCoreAuthorizationPolicyPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authorization"                           Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)" />
@@ -105,7 +103,6 @@
     <Dependency Include="Microsoft.Extensions.DependencyInjection.Abstractions"        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.DependencyInjection"                     Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.DependencyModel"                         Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
-    <Dependency Include="Microsoft.Extensions.DiagnosticAdapter"                       Version="$(MicrosoftExtensionsDiagnosticAdapterPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions"   Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Diagnostics.HealthChecks"                Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)"  />
     <Dependency Include="Microsoft.Extensions.FileProviders.Abstractions"              Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
@@ -133,15 +130,9 @@
     <Dependency Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.WebEncoders"                             Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
-    <Dependency Include="Microsoft.IdentityModel.JsonWebTokens"                        Version="$(MicrosoftIdentityModelJsonWebTokensPackageVersion)" />
-    <Dependency Include="Microsoft.IdentityModel.Logging"                              Version="$(MicrosoftIdentityModelLoggingPackageVersion)" />
-    <Dependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect"              Version="$(MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion)" />
-    <Dependency Include="Microsoft.IdentityModel.Protocols"                            Version="$(MicrosoftIdentityModelProtocolsPackageVersion)" />
-    <Dependency Include="Microsoft.IdentityModel.Tokens"                               Version="$(MicrosoftIdentityModelTokensPackageVersion)" />
     <Dependency Include="Microsoft.Net.Http.Headers"                                   Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
     <Dependency Include="Newtonsoft.Json.Bson"                                         Version="$(NewtonsoftJsonBsonPackageVersion)" />
     <Dependency Include="Newtonsoft.Json"                                              Version="$(NewtonsoftJsonPackageVersion)" />
-    <Dependency Include="System.IdentityModel.Tokens.Jwt"                              Version="$(SystemIdentityModelTokensJwtPackageVersion)" />
     <Dependency Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
     <Dependency Include="System.Net.WebSockets.WebSocketProtocol"                      Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
     <Dependency Include="System.Runtime.CompilerServices.Unsafe"                       Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
