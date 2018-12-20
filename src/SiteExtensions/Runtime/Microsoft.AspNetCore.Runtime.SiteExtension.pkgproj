@@ -19,7 +19,7 @@
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
     <Content Include="install.cmd" />
-    <Content Include="..\Microsoft.Web.Xdt.Extensions\bin\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="$(RepositoryRoot)bin\Microsoft.Web.Xdt.Extensions\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SharedFxArchitecture)' == 'x86'">
@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
+    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
     <!-- Make sure redist folder is built and ready -->
     <ProjectReference Include="..\..\Installers\Archive\Archive.Redist.zipproj" PrivateAssets="All" ReferenceOutputAssembly="False" />
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(PackageVersion)" />

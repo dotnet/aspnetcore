@@ -19,7 +19,7 @@
     <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
 
     <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
-    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\LoggingBranch\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
+    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
   </ItemGroup>
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
