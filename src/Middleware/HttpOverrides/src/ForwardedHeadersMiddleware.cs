@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpOverrides.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -181,7 +180,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     _logger.LogWarning(1, "Parameter count mismatch between X-Forwarded-Host and X-Forwarded-For or X-Forwarded-Proto.");
                     return;
                 }
-                entryCount =  Math.Max(forwardedHost.Length, entryCount);
+                entryCount = Math.Max(forwardedHost.Length, entryCount);
             }
 
             // Apply ForwardLimit, if any
@@ -224,7 +223,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             bool applyChanges = false;
             int entriesConsumed = 0;
 
-            for ( ; entriesConsumed < sets.Length; entriesConsumed++)
+            for (; entriesConsumed < sets.Length; entriesConsumed++)
             {
                 var set = sets[entriesConsumed];
                 if (checkFor)
@@ -237,8 +236,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         break;
                     }
 
-                    IPEndPoint parsedEndPoint;
-                    if (IPEndPointParser.TryParse(set.IpAndPortText, out parsedEndPoint))
+                    if (IPEndPoint.TryParse(set.IpAndPortText, out var parsedEndPoint))
                     {
                         applyChanges = true;
                         set.RemoteIpAndPort = parsedEndPoint;
