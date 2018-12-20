@@ -7,6 +7,7 @@ using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.NotEmpty(scriptTags);
 
             var shasum = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            using (var client = new HttpClient())
+            using (var client = new HttpClient(new RetryHandler(new HttpClientHandler() { })))
             {
                 foreach (var script in scriptTags)
                 {
@@ -60,6 +61,25 @@ namespace Microsoft.AspNetCore.Identity.Test
             {
                 Assert.True(shasum[t.Src] == t.Integrity, userMessage: $"Expected integrity on script tag to be {shasum[t.Src]} but it was {t.Integrity}. {t.FileName}");
             });
+        }
+
+        class RetryHandler : DelegatingHandler
+        {
+            public RetryHandler(HttpMessageHandler innerHandler) : base(innerHandler) { }
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                HttpResponseMessage result = null;
+                for (var i = 0; i < 10; i++)
+                {
+                    result = await base.SendAsync(request, cancellationToken);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        return result;
+                    }
+                    await Task.Delay(1000);
+                }
+                return result;
+            }
         }
 
         private struct ScriptTag
