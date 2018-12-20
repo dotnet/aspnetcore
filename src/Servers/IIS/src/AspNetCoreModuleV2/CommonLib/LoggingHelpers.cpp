@@ -33,12 +33,14 @@ LoggingHelpers::StartRedirection(
     {
         outputManager = std::make_unique<FileOutputManager>(output, outputFileName, applicationPath, enableNativeLogging);
     }
-    if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &dummy))
+    else if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &dummy))
     {
         outputManager = std::make_unique<PipeOutputManager>(output, enableNativeLogging);
     }
-
-    outputManager = std::make_unique<NullOutputManager>(output);
+    else
+    {
+        outputManager = std::make_unique<NullOutputManager>(output);
+    }
 
     return Redirection(std::move(hostFxrRedirection), std::move(outputManager));
 }

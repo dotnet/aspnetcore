@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 #include "ShimOptions.h"
-#include "hostfxroptions.h"
+#include "HostFxrResolutionResult.h"
 #include "HandleWrapper.h"
 #include "ApplicationFactory.h"
 #include "BaseOutputManager.h"
@@ -22,7 +22,7 @@ private:
     HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
     HRESULT FindNativeAssemblyFromGlobalLocation(const ShimOptions& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
     HRESULT FindNativeAssemblyFromHostfxr(
-        const HOSTFXR_OPTIONS& hostfxrOptions,
+        const HostFxrResolutionResult& hostfxrOptions,
         PCWSTR libraryName,
         std::wstring& handlerDllPath,
         RedirectionOutput& redirectionOutput,

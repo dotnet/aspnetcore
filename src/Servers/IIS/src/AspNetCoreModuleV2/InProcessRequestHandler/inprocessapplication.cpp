@@ -3,7 +3,7 @@
 
 #include "inprocessapplication.h"
 #include "inprocesshandler.h"
-#include "hostfxroptions.h"
+#include "HostFxrResolutionResult.h"
 #include "requesthandler_config.h"
 #include "environmentvariablehelpers.h"
 #include "exceptions.h"
@@ -171,13 +171,13 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 {
     try
     {
-        std::unique_ptr<HOSTFXR_OPTIONS> hostFxrOptions;
+        std::unique_ptr<HostFxrResolutionResult> hostFxrOptions;
 
         auto context = std::make_shared<ExecuteClrContext>();
 
         if (s_fMainCallback == nullptr)
         {
-            THROW_IF_FAILED(HOSTFXR_OPTIONS::Create(
+            THROW_IF_FAILED(HostFxrResolutionResult::Create(
                 m_dotnetExeKnownLocation,
                 m_pConfig->QueryProcessPath(),
                 QueryApplicationPhysicalPath(),
@@ -421,7 +421,7 @@ IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrCont
         // We use forwarder here instead of context->m_errorWriter itself to be able to
         // disconnect listener before CLR exits
         ForwardingRedirectionOutput redirectionForwarder(&context->m_redirectionOutput);
-        const auto redirect = context->m_hostFxr.RedirectOutput(&redirectionForwarder);
+        const auto redirect = context->m_hostFxr.RedirectOutput(redirectionForwarder);
 
         ExecuteClr(context);
     }

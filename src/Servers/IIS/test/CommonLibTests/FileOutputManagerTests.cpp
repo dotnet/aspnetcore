@@ -12,11 +12,12 @@ public:
     FileManagerWrapper(FileOutputManager* m)
         : manager(m)
     {
-        manager->Start();
+        manager->TryStartRedirection();
     }
 
     ~FileManagerWrapper()
     {
+        manager->TryStopRedirection();
         delete manager;
     }
 };
@@ -33,7 +34,8 @@ namespace FileOutManagerStartupTests
             PCWSTR expected = L"test";
 
             auto tempDirectory = TempDirectory();
-            FileOutputManager* pManager = new FileOutputManager(fileNamePrefix, tempDirectory.path());
+            StringStreamRedirectionOutput redirectionOutput;
+            FileOutputManager* pManager = new FileOutputManager(redirectionOutput, fileNamePrefix, tempDirectory.path(), true);
 
             {
                 FileManagerWrapper wrapper(pManager);
@@ -72,14 +74,15 @@ namespace FileOutManagerOutputTests
 
         auto tempDirectory = TempDirectory();
 
-        FileOutputManager* pManager = new FileOutputManager(L"", tempDirectory.path());
+        StringStreamRedirectionOutput redirectionOutput;
+        FileOutputManager* pManager = new FileOutputManager(redirectionOutput, L"", tempDirectory.path(), true);
         {
             FileManagerWrapper wrapper(pManager);
 
             fwprintf(stdout, expected);
             pManager->Stop();
 
-            auto output = pManager->GetStdOutContent();
+            auto output = redirectionOutput.GetOutput();
             ASSERT_FALSE(output.empty());
 
             ASSERT_STREQ(output.c_str(), expected);
@@ -92,14 +95,15 @@ namespace FileOutManagerOutputTests
 
         auto tempDirectory = TempDirectory();
 
-        FileOutputManager* pManager = new FileOutputManager(L"", tempDirectory.path().c_str());
+        StringStreamRedirectionOutput redirectionOutput;
+        FileOutputManager* pManager = new FileOutputManager(redirectionOutput, L"", tempDirectory.path().c_str(), true);
         {
             FileManagerWrapper wrapper(pManager);
 
             fwprintf(stderr, expected);
             pManager->Stop();
 
-            auto output = pManager->GetStdOutContent();
+            auto output = redirectionOutput.GetOutput();
             ASSERT_FALSE(output.empty());
 
             ASSERT_STREQ(output.c_str(), expected);
@@ -112,7 +116,8 @@ namespace FileOutManagerOutputTests
 
         auto tempDirectory = TempDirectory();
 
-        FileOutputManager* pManager = new FileOutputManager(L"", tempDirectory.path());
+        StringStreamRedirectionOutput redirectionOutput;
+        FileOutputManager* pManager = new FileOutputManager(redirectionOutput, L"", tempDirectory.path(), true);
         {
             FileManagerWrapper wrapper(pManager);
 
@@ -121,7 +126,7 @@ namespace FileOutManagerOutputTests
                 wprintf(expected);
             }
             pManager->Stop();
-            auto output = pManager->GetStdOutContent();
+            auto output = redirectionOutput.GetOutput();
             ASSERT_FALSE(output.empty());
 
             ASSERT_EQ(output.size(), 30000);
@@ -136,13 +141,14 @@ namespace FileOutManagerOutputTests
 
         for (int i = 0; i < 10; i++)
         {
-            FileOutputManager* pManager = new FileOutputManager(L"", tempDirectory.path());
+            StringStreamRedirectionOutput redirectionOutput;
+            FileOutputManager* pManager = new FileOutputManager(redirectionOutput, L"", tempDirectory.path(), true);
             {
                 FileManagerWrapper wrapper(pManager);
 
                 wprintf(expected);
                 pManager->Stop();
-                auto output = pManager->GetStdOutContent();
+                auto output = redirectionOutput.GetOutput();
                 ASSERT_FALSE(output.empty());
 
                 ASSERT_STREQ(output.c_str(), expected);

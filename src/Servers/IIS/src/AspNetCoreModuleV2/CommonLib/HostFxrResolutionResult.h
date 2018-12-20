@@ -10,10 +10,10 @@
 #include <vector>
 #include <string>
 
-class HOSTFXR_OPTIONS
+class HostFxrResolutionResult
 {
 public:
-    HOSTFXR_OPTIONS(
+    HostFxrResolutionResult(
         std::filesystem::path dotnetExeLocation,
         std::filesystem::path hostFxrLocation,
         std::vector<std::wstring> arguments
@@ -52,7 +52,7 @@ public:
          _In_  const std::wstring& pcwzProcessPath,
          _In_  const std::wstring& pcwzApplicationPhysicalPath,
          _In_  const std::wstring& pcwzArguments,
-         _Out_ std::unique_ptr<HOSTFXR_OPTIONS>& ppWrapper);
+         _Out_ std::unique_ptr<HostFxrResolutionResult>& ppWrapper);
 
 private:
     const std::filesystem::path m_dotnetExeLocation;

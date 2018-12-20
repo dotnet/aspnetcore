@@ -1,6 +1,6 @@
 #pragma once
 #include "ModuleHelpers.h"
-#include "hostfxr_utility.h"
+#include "HostFxrResolver.h"
 #include "exceptions.h"
 #include <functional>
 #include "EventLog.h"
@@ -26,6 +26,7 @@ public:
 
     HostFxrErrorRedirector(HostFxrErrorRedirector&& other) noexcept
     {
+        m_setErrorWriter = nullptr;
         std::swap(m_setErrorWriter, other.m_setErrorWriter);
     }
 
@@ -103,7 +104,7 @@ public:
         {
             return HostFxr(
                 ModuleHelpers::GetKnownProcAddress<hostfxr_main_fn>(hModule, "hostfxr_main"),
-                ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(hModule, "get_native_search_directories"),
+                ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(hModule, "hostfxr_get_native_search_directories"),
                 ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(hModule, "set_error_writer", true));
         }
         catch (...)

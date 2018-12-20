@@ -21,23 +21,11 @@ public:
         m_enableNativeRedirection(enableNativeLogging)
     {
         InitializeSRWLock(&m_srwLock);
-        TryStartRedirection();
     }
 
     ~BaseOutputManager()
     {
-        TryStopRedirection();
     }
-
-protected:
-
-    virtual
-    void
-    Start() = 0;
-
-    virtual
-    void
-    Stop() = 0;
 
     void
     TryStartRedirection()
@@ -52,6 +40,16 @@ protected:
         const auto stopLambda = [&]() { this->Stop(); };
         TryOperation(stopLambda, L"Could not stop stdout redirection in %s. Exception message: %s.");
     }
+
+protected:
+
+    virtual
+    void
+    Start() = 0;
+
+    virtual
+    void
+    Stop() = 0;
 
     bool m_disposed;
     bool m_enableNativeRedirection;

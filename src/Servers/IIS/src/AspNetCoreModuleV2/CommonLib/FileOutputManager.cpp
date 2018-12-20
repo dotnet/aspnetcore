@@ -130,6 +130,7 @@ FileOutputManager::Stop()
         fileData.nFileSizeHigh == 0 &&
         fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
     {
+        CloseHandle(m_hLogFileHandle.release());
         FindClose(handle);
         LOG_LAST_ERROR_IF(!DeleteFile(m_logFilePath.c_str()));
         return;

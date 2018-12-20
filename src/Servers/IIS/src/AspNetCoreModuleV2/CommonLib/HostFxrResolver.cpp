@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "hostfxr_utility.h"
+#include "HostFxrResolver.h"
 
 #include <atlcomcli.h>
 #include "fx_ver.h"
@@ -14,7 +14,7 @@
 namespace fs = std::filesystem;
 
 void
-HOSTFXR_UTILITY::GetHostFxrParameters(
+HostFxrResolver::GetHostFxrParameters(
     const fs::path     &processPath,
     const fs::path     &applicationPhysicalPath,
     const std::wstring &applicationArguments,
@@ -137,13 +137,13 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
 }
 
 BOOL
-HOSTFXR_UTILITY::IsDotnetExecutable(const std::filesystem::path & dotnetPath)
+HostFxrResolver::IsDotnetExecutable(const std::filesystem::path & dotnetPath)
 {
     return ends_with(dotnetPath, L"dotnet.exe", true);
 }
 
 void
-HOSTFXR_UTILITY::AppendArguments(
+HostFxrResolver::AppendArguments(
     const std::wstring &applicationArguments,
     const fs::path     &applicationPhysicalPath,
     std::vector<std::wstring> &arguments,
@@ -215,7 +215,7 @@ HOSTFXR_UTILITY::AppendArguments(
 // like: C:\Program Files\dotnet\dotnet.exe, C:\Program Files\dotnet\dotnet, dotnet.exe, or dotnet.
 // Get the absolute path to dotnet. If the path is already an absolute path, it will return that path
 fs::path
-HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
+HostFxrResolver::GetAbsolutePathToDotnet(
      const fs::path & applicationPath,
      const fs::path & requestedPath
 )
@@ -273,7 +273,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
 }
 
 fs::path
-HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
+HostFxrResolver::GetAbsolutePathToHostFxr(
     const fs::path & dotnetPath
 )
 {
@@ -313,7 +313,7 @@ HOSTFXR_UTILITY::GetAbsolutePathToHostFxr(
 // Returns true if a valid dotnet was found, else false.R
 //
 std::optional<fs::path>
-HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
+HostFxrResolver::InvokeWhereToFindDotnet()
 {
     HRESULT             hr = S_OK;
     // Arguments to call where.exe
@@ -473,14 +473,14 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
 }
 
 std::optional<fs::path>
-HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles()
+HostFxrResolver::GetAbsolutePathToDotnetFromProgramFiles()
 {
     const auto programFilesDotnet = fs::path(Environment::ExpandEnvironmentVariables(L"%ProgramFiles%")) / "dotnet" / "dotnet.exe";
     return is_regular_file(programFilesDotnet) ? std::make_optional(programFilesDotnet) : std::nullopt;
 }
 
 std::wstring
-HOSTFXR_UTILITY::FindHighestDotNetVersion(
+HostFxrResolver::FindHighestDotNetVersion(
     _In_ std::vector<std::wstring> & vFolders
 )
 {
@@ -498,7 +498,7 @@ HOSTFXR_UTILITY::FindHighestDotNetVersion(
 }
 
 VOID
-HOSTFXR_UTILITY::FindDotNetFolders(
+HostFxrResolver::FindDotNetFolders(
     const std::filesystem::path &path,
     _Out_ std::vector<std::wstring> &pvFolders
 )

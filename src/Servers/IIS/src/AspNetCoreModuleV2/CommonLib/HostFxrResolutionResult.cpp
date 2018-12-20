@@ -1,19 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "hostfxroptions.h"
+#include "HostFxrResolutionResult.h"
 
-#include "hostfxr_utility.h"
+#include "HostFxrResolver.h"
 #include "debugutil.h"
 #include "exceptions.h"
 #include "EventLog.h"
 
-HRESULT HOSTFXR_OPTIONS::Create(
+HRESULT HostFxrResolutionResult::Create(
         _In_ const std::wstring& pcwzDotnetExePath,
         _In_ const std::wstring& pcwzProcessPath,
         _In_ const std::wstring& pcwzApplicationPhysicalPath,
         _In_ const std::wstring& pcwzArguments,
-        _Out_ std::unique_ptr<HOSTFXR_OPTIONS>& ppWrapper)
+        _Out_ std::unique_ptr<HostFxrResolutionResult>& ppWrapper)
 {
     std::filesystem::path knownDotnetLocation;
 
@@ -26,7 +26,7 @@ HRESULT HOSTFXR_OPTIONS::Create(
     {
         std::filesystem::path hostFxrDllPath;
         std::vector<std::wstring> arguments;
-        HOSTFXR_UTILITY::GetHostFxrParameters(
+        HostFxrResolver::GetHostFxrParameters(
                 pcwzProcessPath,
                 pcwzApplicationPhysicalPath,
                 pcwzArguments,
@@ -39,7 +39,7 @@ HRESULT HOSTFXR_OPTIONS::Create(
         {
             LOG_INFOF(L"Argument[%d] = '%ls'", i, arguments[i].c_str());
         }
-        ppWrapper = std::make_unique<HOSTFXR_OPTIONS>(knownDotnetLocation, hostFxrDllPath, arguments);
+        ppWrapper = std::make_unique<HostFxrResolutionResult>(knownDotnetLocation, hostFxrDllPath, arguments);
     }
     catch (InvalidOperationException &ex)
     {

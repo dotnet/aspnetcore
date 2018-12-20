@@ -42,7 +42,7 @@
 #include "hashfn.h"
 
 #include "requesthandler_config.h"
-#include "hostfxr_utility.h"
+#include "HostFxrResolver.h"
 #include "config_utility.h"
 #include "environmentvariablehash.h"
 #include "iapplication.h"

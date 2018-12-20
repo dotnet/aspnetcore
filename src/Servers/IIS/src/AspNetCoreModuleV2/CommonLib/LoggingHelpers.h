@@ -16,6 +16,12 @@ class LoggingHelpers
             : m_redirector(std::move(redirector)),
               m_outputManager(std::move(outputManager))
         {
+            m_outputManager->TryStartRedirection();
+        }
+
+        ~Redirection()
+        {
+            m_outputManager->TryStopRedirection();
         }
 
     private:

@@ -11,7 +11,7 @@
 
 #define READ_BUFFER_SIZE 4096
 
-class HOSTFXR_UTILITY
+class HostFxrResolver
 {
 public:
 

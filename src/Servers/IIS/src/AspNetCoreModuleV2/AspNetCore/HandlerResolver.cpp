@@ -6,7 +6,7 @@
 #include "SRWExclusiveLock.h"
 #include "applicationinfo.h"
 #include "EventLog.h"
-#include "hostfxr_utility.h"
+#include "HostFxrResolver.h"
 #include "GlobalVersionUtility.h"
 #include "HandleWrapper.h"
 #include "file_utility.h"
@@ -56,9 +56,9 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
     {
         if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
-            std::unique_ptr<HOSTFXR_OPTIONS> options;
+            std::unique_ptr<HostFxrResolutionResult> options;
 
-            RETURN_IF_FAILED(HOSTFXR_OPTIONS::Create(
+            RETURN_IF_FAILED(HostFxrResolutionResult::Create(
                 L"",
                 pConfiguration.QueryProcessPath(),
                 pApplication.GetApplicationPhysicalPath(),
@@ -202,7 +202,7 @@ HandlerResolver::FindNativeAssemblyFromGlobalLocation(
 //
 HRESULT
 HandlerResolver::FindNativeAssemblyFromHostfxr(
-    const HOSTFXR_OPTIONS& hostfxrOptions,
+    const HostFxrResolutionResult& hostfxrOptions,
     PCWSTR libraryName,
     std::wstring& handlerDllPath,
     RedirectionOutput& redirectionOutput,
