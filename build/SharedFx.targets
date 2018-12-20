@@ -9,7 +9,6 @@
     <ItemGroup>
       <_MetapackageProject Include="$(RepositoryRoot)src\Packages\Microsoft.AspNetCore.All\Microsoft.AspNetCore.All.csproj" />
       <_MetapackageProject Include="$(RepositoryRoot)src\Packages\Microsoft.AspNetCore.App\Microsoft.AspNetCore.App.csproj" />
-      <_MetapackageProject Include="$(RepositoryRoot)src\Packages\Microsoft.AspNetCore.Analyzers\Microsoft.AspNetCore.Analyzers.csproj" />
     </ItemGroup>
 
     <MSBuild Projects="@(_MetapackageProject)"
@@ -89,14 +88,6 @@
         <AdditionalProperties>
           MetapackageName=Microsoft.AspNetCore.All;
           MetapackageReferenceType=AllMetapackage;
-          MetapackageDependencyVersionRangeType=Minimum
-        </AdditionalProperties>
-      </_MetapackageBuilderProject>
-
-      <_MetapackageBuilderProject Include="$(MSBuildProjectFullPath)">
-        <AdditionalProperties>
-          MetapackageName=Microsoft.AspNetCore.Analyzers;
-          MetapackageReferenceType=Analyzer;
           MetapackageDependencyVersionRangeType=Minimum
         </AdditionalProperties>
       </_MetapackageBuilderProject>
