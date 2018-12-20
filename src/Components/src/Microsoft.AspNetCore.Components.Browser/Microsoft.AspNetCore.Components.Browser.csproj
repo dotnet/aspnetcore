@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Support for rendering ASP.NET Core components in browsers.</Description>
+    <IsProductPackage>true</IsProductPackage>
   </PropertyGroup>
 
   <ItemGroup>

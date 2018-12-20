@@ -55,7 +55,7 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     m_environmentVariables = aspNetCoreSection->GetKeyValuePairs(CS_ASPNETCORE_ENVIRONMENT_VARIABLES);
 
     const auto handlerSettings = aspNetCoreSection->GetKeyValuePairs(CS_ASPNETCORE_HANDLER_SETTINGS);
-    m_fSetCurrentDirectory = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY).value_or(L"false"), L"true");
+    m_fSetCurrentDirectory = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY).value_or(L"true"), L"true");
 
     m_dwStartupTimeLimitInMS = aspNetCoreSection->GetRequiredLong(CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT) * 1000;
     m_dwShutdownTimeLimitInMS = aspNetCoreSection->GetRequiredLong(CS_ASPNETCORE_PROCESS_SHUTDOWN_TIME_LIMIT) * 1000;

@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-  
+
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
     <RazorAssemblyDescription>Compiled Razor views assembly for the ASP.NET Core Identity UI package.</RazorAssemblyDescription>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
+    <IsProductPackage>true</IsProductPackage>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
@@ -26,7 +27,7 @@
 
     <Content Update="**\*.cshtml" Pack="false" />
   </ItemGroup>
-    
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
@@ -38,7 +39,7 @@
     <ProjectReference Include="..\Identity\Microsoft.AspNetCore.Identity.csproj" />
     <ProjectReference Include="..\Stores\Microsoft.Extensions.Identity.Stores.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
 
     <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">

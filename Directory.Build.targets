@@ -1,5 +1,17 @@
 <Project>
   <!-- Properties which should be set after the project has been evaluated -->
+
+  <PropertyGroup>
+    <!--
+      By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
+      Packages which are intended to ship to NuGet.org must opt-in by setting this to true in the project file.
+    -->
+    <IsProductPackage Condition=" '$(IsProductPackage)' == '' ">false</IsProductPackage>
+
+    <PackageOutputPath Condition=" '$(IsProductPackage)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
+    <PackageOutputPath Condition=" '$(IsProductPackage)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
@@ -45,9 +57,6 @@
     <IsPackable Condition="'$(IsPackable)' == '' AND '$(IsImplementationProject)' == 'true' ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(MicrosoftNETCoreApp20PackageVersion)</RuntimeFrameworkVersion>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">$(MicrosoftNETCoreApp21PackageVersion)</RuntimeFrameworkVersion>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">$(MicrosoftNETCoreApp22PackageVersion)</RuntimeFrameworkVersion>
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreApp30PackageVersion)</RuntimeFrameworkVersion>
     <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
   </PropertyGroup>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Summary>Razor is a markup syntax for adding server-side logic to web pages. This package contains runtime components for rendering Razor pages and implementing tag helpers.</Summary>
+    <Description>$(Summary)
+
+Commonly used types:
+Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute
+Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute
+Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
+
+    <!-- Required to implement an HtmlEncoder -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

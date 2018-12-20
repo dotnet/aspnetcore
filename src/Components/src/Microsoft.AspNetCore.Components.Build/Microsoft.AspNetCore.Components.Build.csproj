@@ -5,6 +5,7 @@
     <Description>Build mechanism for ASP.NET Core Components.</Description>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IsProductPackage>true</IsProductPackage>
   </PropertyGroup>
 
   <!-- Pack settings -->
