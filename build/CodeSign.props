@@ -56,6 +56,10 @@
       <FilesToSign Include="aspnetcorev2_inprocess.dll"                                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="aspnetcorev2_outofprocess.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
 
+      <!-- Used as part of site extension -->
+      <FilesToSign Include="Microsoft.Web.Xdt.Extensions.dll"                               Certificate="$(AssemblySigningCertName)" Container="AspNetCoreRuntime.3.0" />
+
+
       <!-- This is a text file which doesn't need to be code signed, even though some .mof files can be signed. -->
       <FilesToExcludeFromSigning Include="ancm.mof" />
 
