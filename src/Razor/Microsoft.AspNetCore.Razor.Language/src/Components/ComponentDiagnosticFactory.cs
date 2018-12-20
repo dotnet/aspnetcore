@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal static class ComponentDiagnosticFactory
     {
@@ -217,11 +217,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 "following top-level items: {1}.",
                 RazorDiagnosticSeverity.Error);
 
-        //public static RazorDiagnostic Create_ChildContentMixedWithExplicitChildContent(SourceSpan? source, ComponentExtensionNode component)
-        //{
-        //    var supportedElements = string.Join(", ", component.Component.GetChildContentProperties().Select(p => $"'{p.Name}'"));
-        //    return RazorDiagnostic.Create(ChildContentMixedWithExplicitChildContent, source ?? SourceSpan.Undefined, component.TagName, supportedElements);
-        //}
+        public static RazorDiagnostic Create_ChildContentMixedWithExplicitChildContent(SourceSpan? source, ComponentExtensionNode component)
+        {
+            var supportedElements = string.Join(", ", component.Component.GetChildContentProperties().Select(p => $"'{p.Name}'"));
+            return RazorDiagnostic.Create(ChildContentMixedWithExplicitChildContent, source ?? SourceSpan.Undefined, component.TagName, supportedElements);
+        }
 
         public static readonly RazorDiagnosticDescriptor ChildContentHasInvalidAttribute =
             new RazorDiagnosticDescriptor(
@@ -252,26 +252,26 @@ namespace Microsoft.AspNetCore.Razor.Language
                 "element '{3}' of component '{4}'. Specify the parameter name like: '<{0} Context=\"another_name\"> to resolve the ambiguity",
                 RazorDiagnosticSeverity.Error);
 
-        //public static RazorDiagnostic Create_ChildContentRepeatedParameterName(
-        //    SourceSpan? source,
-        //    ComponentChildContentIntermediateNode childContent1,
-        //    ComponentExtensionNode component1,
-        //    ComponentChildContentIntermediateNode childContent2,
-        //    ComponentExtensionNode component2)
-        //{
-        //    Debug.Assert(childContent1.ParameterName == childContent2.ParameterName);
-        //    Debug.Assert(childContent1.IsParameterized);
-        //    Debug.Assert(childContent2.IsParameterized);
+        public static RazorDiagnostic Create_ChildContentRepeatedParameterName(
+            SourceSpan? source,
+            ComponentChildContentIntermediateNode childContent1,
+            ComponentExtensionNode component1,
+            ComponentChildContentIntermediateNode childContent2,
+            ComponentExtensionNode component2)
+        {
+            Debug.Assert(childContent1.ParameterName == childContent2.ParameterName);
+            Debug.Assert(childContent1.IsParameterized);
+            Debug.Assert(childContent2.IsParameterized);
 
-        //    return RazorDiagnostic.Create(
-        //        ChildContentRepeatedParameterName,
-        //        source ?? SourceSpan.Undefined,
-        //        childContent1.AttributeName,
-        //        component1.TagName,
-        //        childContent1.ParameterName,
-        //        childContent2.AttributeName,
-        //        component2.TagName);
-        //}
+            return RazorDiagnostic.Create(
+                ChildContentRepeatedParameterName,
+                source ?? SourceSpan.Undefined,
+                childContent1.AttributeName,
+                component1.TagName,
+                childContent1.ParameterName,
+                childContent2.AttributeName,
+                component2.TagName);
+        }
 
         public static readonly RazorDiagnosticDescriptor GenericComponentMissingTypeArgument =
             new RazorDiagnosticDescriptor(
@@ -279,16 +279,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                 () => "The component '{0}' is missing required type arguments. Specify the missing types using the attributes: {1}.",
                 RazorDiagnosticSeverity.Error);
 
-        //public static RazorDiagnostic Create_GenericComponentMissingTypeArgument(
-        //    SourceSpan? source,
-        //    ComponentExtensionNode component,
-        //    IEnumerable<BoundAttributeDescriptor> attributes)
-        //{
-        //    Debug.Assert(component.Component.IsGenericTypedComponent());
+        public static RazorDiagnostic Create_GenericComponentMissingTypeArgument(
+            SourceSpan? source,
+            ComponentExtensionNode component,
+            IEnumerable<BoundAttributeDescriptor> attributes)
+        {
+            Debug.Assert(component.Component.IsGenericTypedComponent());
 
-        //    var attributesText = string.Join(", ", attributes.Select(a => $"'{a.Name}'"));
-        //    return RazorDiagnostic.Create(GenericComponentMissingTypeArgument, source ?? SourceSpan.Undefined, component.TagName, attributesText);
-        //}
+            var attributesText = string.Join(", ", attributes.Select(a => $"'{a.Name}'"));
+            return RazorDiagnostic.Create(GenericComponentMissingTypeArgument, source ?? SourceSpan.Undefined, component.TagName, attributesText);
+        }
 
         public static readonly RazorDiagnosticDescriptor GenericComponentTypeInferenceUnderspecified =
             new RazorDiagnosticDescriptor(
@@ -297,16 +297,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                     "directly using the following attributes: {1}.",
                 RazorDiagnosticSeverity.Error);
 
-        //public static RazorDiagnostic Create_GenericComponentTypeInferenceUnderspecified(
-        //    SourceSpan? source,
-        //    ComponentExtensionNode component,
-        //    IEnumerable<BoundAttributeDescriptor> attributes)
-        //{
-        //    Debug.Assert(component.Component.IsGenericTypedComponent());
+        public static RazorDiagnostic Create_GenericComponentTypeInferenceUnderspecified(
+            SourceSpan? source,
+            ComponentExtensionNode component,
+            IEnumerable<BoundAttributeDescriptor> attributes)
+        {
+            Debug.Assert(component.Component.IsGenericTypedComponent());
 
-        //    var attributesText = string.Join(", ", attributes.Select(a => $"'{a.Name}'"));
-        //    return RazorDiagnostic.Create(GenericComponentTypeInferenceUnderspecified, source ?? SourceSpan.Undefined, component.TagName, attributesText);
-        //}
+            var attributesText = string.Join(", ", attributes.Select(a => $"'{a.Name}'"));
+            return RazorDiagnostic.Create(GenericComponentTypeInferenceUnderspecified, source ?? SourceSpan.Undefined, component.TagName, attributesText);
+        }
 
         public static readonly RazorDiagnosticDescriptor ChildContentHasInvalidParameterOnComponent =
             new RazorDiagnosticDescriptor(
@@ -314,9 +314,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 () => "Invalid parameter name. The parameter name attribute '{0}' on component '{1}' can only include literal text.",
                 RazorDiagnosticSeverity.Error);
 
-        //public static RazorDiagnostic Create_ChildContentHasInvalidParameterOnComponent(SourceSpan? source, string attribute, string element)
-        //{
-        //    return RazorDiagnostic.Create(ChildContentHasInvalidParameterOnComponent, source ?? SourceSpan.Undefined, attribute, element);
-        //}
+        public static RazorDiagnostic Create_ChildContentHasInvalidParameterOnComponent(SourceSpan? source, string attribute, string element)
+        {
+            return RazorDiagnostic.Create(ChildContentHasInvalidParameterOnComponent, source ?? SourceSpan.Undefined, attribute, element);
+        }
     }
 }

@@ -12,9 +12,6 @@
     <RazorSdkCurrentVersionTargets>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
   </PropertyGroup>
 
-  <!-- Import solution dependencies.props when building in place -->
-  <Import Project="..\..\build\dependencies.props" Condition="'$(BinariesRoot)'==''"/>
-
   <PropertyGroup>
     <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>

@@ -48,14 +48,18 @@
       <MvcRazorExtenionOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(MvcRazorExtenionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" />
+    <Copy SourceFiles="@(MvcRazorExtenionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
 
     <ItemGroup>
       <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\net46*\Microsoft.NET.Sdk.Razor.Tasks.*" />
       <ProjectOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\netstandard2.0*\Microsoft.NET.Sdk.Razor.Tasks.*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(ProjectOutput)" DestinationFiles="$(SdkOutputPath)tasks\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Copy SourceFiles="@(ProjectOutput)" DestinationFiles="$(SdkOutputPath)tasks\%(RecursiveDir)%(FileName)%(Extension)" SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
   </Target>
 
   <Target Name="PopulateNuspec" AfterTargets="InitializeStandardNuspecProperties" DependsOnTargets="LayoutDependencies">
