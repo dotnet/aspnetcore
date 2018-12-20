@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.AddHttpsToServerConfig();
             deploymentParameters.AddServerConfigAction(
                 (element, root) => {
-                    element.Descendants("application").Single().SetAttributeValue("path", "/" + appName);
+                    element.Descendants("site").Single().Element("application").SetAttributeValue("path", "/" + appName);
                     Helpers.CreateEmptyApplication(element, root);
                 });
 
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 });
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            Assert.Equal("NO_VALUE", await deploymentResult.HttpClient.GetStringAsync("/HTTPS_PORT"));
+            Assert.Equal("NOVALUE", await deploymentResult.HttpClient.GetStringAsync("/HTTPS_PORT"));
         }
 
         public static int GetNextSSLPort(int avoid = 0)
