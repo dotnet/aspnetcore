@@ -194,3 +194,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
 
 Some features, such as new target frameworks, may require prerelease tooling builds for Visual Studio.
 These are available in the [Visual Studio Preview](https://www.visualstudio.com/vs/preview/).
+
+## Resx files
+
+If you need to make changes to a .resx file, run `dotnet msbuild /t:Resx <path to csproj>`. This will update the generated C#.
