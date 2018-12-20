@@ -2,14 +2,16 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
+    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="$(MicrosoftAspNetCoreAuthorizationPolicyPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
   </ItemGroup>
 </Project>

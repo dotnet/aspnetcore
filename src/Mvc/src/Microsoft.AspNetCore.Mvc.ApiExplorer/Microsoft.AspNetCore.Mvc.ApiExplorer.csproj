@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
 
-    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

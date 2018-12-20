@@ -81,6 +81,7 @@
                       $(RepositoryRoot)src\Tools\**\*.*proj;
                       $(RepositoryRoot)src\Middleware\**\*.*proj;
                       $(RepositoryRoot)src\Razor\**\*.*proj;
+                      $(RepositoryRoot)src\Mvc\**\*.*proj;
                       "
                     Exclude="
                       @(ProjectToExclude);

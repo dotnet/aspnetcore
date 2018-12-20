@@ -95,5 +95,49 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim.Version1_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj" />
+    <ProjectReferenceProvider Include="MvcSandbox" ProjectPath="$(RepositoryRoot)src\Mvc\samples\MvcSandbox\MvcSandbox.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Abstractions\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Analyzers.Experimental" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Analyzers.Experimental\Microsoft.AspNetCore.Mvc.Analyzers.Experimental.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Analyzers" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Analyzers\Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ApiExplorer" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.ApiExplorer\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Core" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Cors" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Cors\Microsoft.AspNetCore.Mvc.Cors.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.DataAnnotations" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Json" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Localization" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Localization\Microsoft.AspNetCore.Mvc.Localization.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.RazorPages" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.RazorPages\Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TagHelpers" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Testing" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ViewFeatures" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.WebApiCompatShim\Microsoft.AspNetCore.Mvc.WebApiCompatShim.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TestCommon" ProjectPath="$(RepositoryRoot)src\Mvc\test\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TestDiagnosticListener" ProjectPath="$(RepositoryRoot)src\Mvc\test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
+    <ProjectReferenceProvider Include="ApiExplorerWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj" />
+    <ProjectReferenceProvider Include="ApplicationModelWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj" />
+    <ProjectReferenceProvider Include="BasicWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\BasicWebSite\BasicWebSite.csproj" />
+    <ProjectReferenceProvider Include="ControllersFromServicesClassLibrary" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.csproj" />
+    <ProjectReferenceProvider Include="ControllersFromServicesWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.csproj" />
+    <ProjectReferenceProvider Include="CorsWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\CorsWebSite\CorsWebSite.csproj" />
+    <ProjectReferenceProvider Include="ErrorPageMiddlewareWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj" />
+    <ProjectReferenceProvider Include="FilesWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\FilesWebSite\FilesWebSite.csproj" />
+    <ProjectReferenceProvider Include="FormatterWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
+    <ProjectReferenceProvider Include="HtmlGenerationWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
+    <ProjectReferenceProvider Include="RazorBuildWebSite.PrecompiledViews" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\RazorBuildWebSite.PrecompiledViews\RazorBuildWebSite.PrecompiledViews.csproj" />
+    <ProjectReferenceProvider Include="RazorBuildWebSite.Views" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\RazorBuildWebSite.Views\RazorBuildWebSite.Views.csproj" />
+    <ProjectReferenceProvider Include="RazorBuildWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
+    <ProjectReferenceProvider Include="RazorPageExecutionInstrumentationWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\RazorPageExecutionInstrumentationWebSite\RazorPageExecutionInstrumentationWebSite.csproj" />
+    <ProjectReferenceProvider Include="RazorPagesClassLibrary" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\RazorPagesClassLibrary\RazorPagesClassLibrary.csproj" />
+    <ProjectReferenceProvider Include="RazorPagesWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
+    <ProjectReferenceProvider Include="RazorWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\RazorWebSite\RazorWebSite.csproj" />
+    <ProjectReferenceProvider Include="RoutingWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\RoutingWebSite\RoutingWebSite.csproj" />
+    <ProjectReferenceProvider Include="SecurityWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\SecurityWebSite\SecurityWebSite.csproj" />
+    <ProjectReferenceProvider Include="SimpleWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\SimpleWebSite\SimpleWebSite.csproj" />
+    <ProjectReferenceProvider Include="TagHelpersWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj" />
+    <ProjectReferenceProvider Include="VersioningWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\VersioningWebSite\VersioningWebSite.csproj" />
+    <ProjectReferenceProvider Include="WebApiCompatShimWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.csproj" />
+    <ProjectReferenceProvider Include="XmlFormattersWebSite" ProjectPath="$(RepositoryRoot)src\Mvc\test\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
   </ItemGroup>
 </Project>

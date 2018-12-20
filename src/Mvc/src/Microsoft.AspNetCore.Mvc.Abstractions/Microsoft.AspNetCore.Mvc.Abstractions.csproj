@@ -17,9 +17,9 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="$(MicrosoftAspNetCoreRoutingAbstractionsPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
 </Project>

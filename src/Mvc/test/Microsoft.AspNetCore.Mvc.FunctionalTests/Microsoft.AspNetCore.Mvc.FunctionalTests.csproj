@@ -29,35 +29,35 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.csproj" />
-    <ProjectReference Include="..\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\BasicWebSite\BasicWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\CorsWebSite\CorsWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
-    <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
-    <ProjectReference Include="..\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RazorPageExecutionInstrumentationWebSite\RazorPageExecutionInstrumentationWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RazorWebSite\RazorWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RoutingWebSite\RoutingWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\SecurityWebSite\SecurityWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\SimpleWebSite\SimpleWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\VersioningWebSite\VersioningWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Reference Include="ApiExplorerWebSite" />
+    <Reference Include="ApplicationModelWebSite" />
+    <Reference Include="BasicWebSite" />
+    <Reference Include="ControllersFromServicesWebSite" />
+    <Reference Include="CorsWebSite" />
+    <Reference Include="ErrorPageMiddlewareWebSite" />
+    <Reference Include="FilesWebSite" />
+    <Reference Include="FormatterWebSite" />
+    <Reference Include="HtmlGenerationWebSite" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.TestCommon" />
+    <Reference Include="MvcSandbox" />
+    <Reference Include="RazorBuildWebSite" />
+    <Reference Include="RazorPageExecutionInstrumentationWebSite" />
+    <Reference Include="RazorPagesWebSite" />
+    <Reference Include="RazorWebSite" />
+    <Reference Include="RoutingWebSite" />
+    <Reference Include="SecurityWebSite" />
+    <Reference Include="SimpleWebSite" />
+    <Reference Include="TagHelpersWebSite" />
+    <Reference Include="VersioningWebSite" />
+    <Reference Include="WebApiCompatShimWebSite" />
+    <Reference Include="XmlFormattersWebSite" />
 
-    <PackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(MicrosoftAspNetCoreWebUtilitiesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(MicrosoftExtensionsLoggingTestingPackageVersion)" />
+    <Reference Include="AngleSharp" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 </Project>

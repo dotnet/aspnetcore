@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="$(MicrosoftAspNetCoreCorsPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Cors" />
   </ItemGroup>
 
 </Project>

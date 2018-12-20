@@ -16,11 +16,11 @@ Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Localization" Version="$(MicrosoftAspNetCoreLocalizationPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Localization" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>
 
 </Project>
