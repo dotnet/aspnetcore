@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public override string Title => "Add ProducesResponseType attributes.";
 
+        public override string EquivalenceKey => Title;
+
         protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
         {
             var context = await CreateCodeActionContext(cancellationToken).ConfigureAwait(false);
