@@ -27,6 +27,25 @@ public:
         m_port = port;
     }
 
+    BindingInformation(std::wstring protocol, std::wstring bindingInformation)
+    {
+        // Expected format:
+        // IP:PORT:HOST
+        // where IP or HOST can be empty
+
+        m_protocol = protocol;
+
+        const auto portStart = bindingInformation.find(CS_SITE_BINDING_INFORMATION_DELIMITER) + 1;
+        const auto lastColon = bindingInformation.find_last_of(CS_SITE_BINDING_INFORMATION_DELIMITER);
+        auto const hostStart = lastColon + 1;
+        m_host = bindingInformation.substr(hostStart, bindingInformation.length() - hostStart);
+        if (m_host.length() == 0)
+        {
+            m_host = CS_SITE_BINDING_INFORMATION_ALL_HOSTS;
+        }
+        m_port = bindingInformation.substr(portStart, lastColon - portStart);
+    }
+
     std::wstring& QueryProtocol()
     {
         return m_protocol;
@@ -60,29 +79,9 @@ public:
                 auto bindings = site->GetRequiredSection(CS_SITE_BINDINGS)->GetCollection();
                 for (const auto& binding : bindings)
                 {
-                    // Expected format:
-                    // IP:PORT:HOST
-                    // where IP or HOST can be empty
-                    const auto information = binding->GetRequiredString(CS_SITE_BINDING_INFORMATION);
-                    const auto firstColon = information.find(CS_SITE_BINDING_INFORMATION_DELIMITER) + 1;
-                    const auto lastColon = information.find_last_of(CS_SITE_BINDING_INFORMATION_DELIMITER);
-
-                    std::wstring host;
-                    // Check that : is not the last character
-                    if (lastColon != information.length() + 1)
-                    {
-                        auto const afterLastColon = lastColon + 1;
-                        host = information.substr(afterLastColon, information.length() - afterLastColon);
-                    }
-                    if (host.length() == 0)
-                    {
-                        host = CS_SITE_BINDING_INFORMATION_ALL_HOSTS;
-                    }
-
                     items.emplace_back(
                         binding->GetRequiredString(CS_SITE_BINDING_PROTOCOL),
-                        host,
-                        information.substr(firstColon, lastColon - firstColon)
+                        binding->GetRequiredString(CS_SITE_BINDING_INFORMATION)
                         );
                 }
             }

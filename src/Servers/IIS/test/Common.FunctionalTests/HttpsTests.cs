@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 });
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            Assert.Equal("", await deploymentResult.HttpClient.GetStringAsync("/HTTPS_PORT"));
+            Assert.Equal("NO_VALUE", await deploymentResult.HttpClient.GetStringAsync("/HTTPS_PORT"));
         }
 
         public static int GetNextSSLPort(int avoid = 0)

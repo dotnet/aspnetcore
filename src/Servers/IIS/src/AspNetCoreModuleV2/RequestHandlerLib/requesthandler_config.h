@@ -119,7 +119,7 @@ public:
     STRU*
     QueryBindings()
     {
-        return &m_struBindings;
+        return &m_struHttpsPort;
     }
 
     STRU*
@@ -261,5 +261,5 @@ protected:
     STRU                   m_struHostFxrLocation;
     PWSTR*                 m_ppStrArguments;
     DWORD                  m_dwArgc;
-    STRU                   m_struBindings;
+    STRU                   m_struHttpsPort;
 };

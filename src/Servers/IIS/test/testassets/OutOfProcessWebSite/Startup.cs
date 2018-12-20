@@ -94,7 +94,8 @@ namespace TestSite
         public async Task HTTPS_PORT(HttpContext context)
         {
             var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("HTTPS_PORT");
-            await context.Response.WriteAsync(Convert.ToString(httpsPort));
+
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
         }
     }
 }

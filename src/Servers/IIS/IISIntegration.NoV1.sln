@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IISExpress.FunctionalTests"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeIISSample", "samples\NativeIISSample\NativeIISSample.csproj", "{9BC4AFCB-325D-4C81-8228-8CF301CE2F97}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InProcessWebSite", "test\WebSites\InProcessWebSite\InProcessWebSite.csproj", "{679FA2A2-898B-4320-884E-C2D294A97CE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InProcessWebSite", "test\testassets\InProcessWebSite\InProcessWebSite.csproj", "{679FA2A2-898B-4320-884E-C2D294A97CE1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IIS", "src\Microsoft.AspNetCore.Server.IIS\Microsoft.AspNetCore.Server.IIS.csproj", "{46A8612B-418B-4D70-B3A7-A21DD0627473}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -63,7 +63,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 		{D57EA297-6DC2-4BC0-8C91-334863327863} = {D57EA297-6DC2-4BC0-8C91-334863327863}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StressTestWebSite", "test\WebSites\StressTestWebSite\StressTestWebSite.csproj", "{13FD8F12-FFBE-4D01-B4AC-444F2994B04F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StressTestWebSite", "test\testassets\StressTestWebSite\StressTestWebSite.csproj", "{13FD8F12-FFBE-4D01-B4AC-444F2994B04F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{46A8612B-418B-4D70-B3A7-A21DD0627473} = {46A8612B-418B-4D70-B3A7-A21DD0627473}
 	EndProjectSection
@@ -82,7 +82,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonLib", "src\AspNetCore
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IISLib", "src\AspNetCoreModuleV2\IISLib\IISLib.vcxproj", "{09D9D1D6-2951-4E14-BC35-76A23CF9391A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfProcessWebSite", "test\WebSites\OutOfProcessWebSite\OutOfProcessWebSite.csproj", "{42E60F88-E23F-417A-8143-0CCEC05E1D02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutOfProcessWebSite", "test\testassets\OutOfProcessWebSite\OutOfProcessWebSite.csproj", "{42E60F88-E23F-417A-8143-0CCEC05E1D02}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{622D35C9-627B-466E-8D15-752968CC79AF}"
 EndProject
@@ -114,7 +114,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.BackwardsCompatibility.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.ForwardsCompatibility.FunctionalTests", "test\IIS.ForwardsCompatibility.FunctionalTests\IIS.ForwardsCompatibility.FunctionalTests.csproj", "{D1EA5D99-28FD-4197-81DE-17098846B38B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InProcessWebSite", "test\WebSites\InProcessForwardsCompatWebSite\InProcessWebSite.csproj", "{BBBC85B2-5D7A-4D09-90B1-8DBCC9059493}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InProcessWebSite", "test\testassets\InProcessForwardsCompatWebSite\InProcessWebSite.csproj", "{BBBC85B2-5D7A-4D09-90B1-8DBCC9059493}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
