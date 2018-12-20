@@ -2,8 +2,6 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
-  <Import Project="..\Sdk\SiteExtension.props" />
-
   <PropertyGroup>
     <RestoreSources>
         $(RestoreSources);

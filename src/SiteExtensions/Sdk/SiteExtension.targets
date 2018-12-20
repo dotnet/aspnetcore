@@ -9,7 +9,7 @@
 
     <PropertyGroup>
       <_TemplatesDirectory>$(MSBuildThisFileDirectory)..\content\</_TemplatesDirectory>
-      <_DepsOutputDirectory>$(RepositoryRoot)\obj\lse\</_DepsOutputDirectory>
+      <_DepsOutputDirectory>$(IntermediateOutputPath)\se\</_DepsOutputDirectory>
       <_WorkingDirectory>$(_DepsOutputDirectory)\depswork</_WorkingDirectory>
       <_BasePackagePath>content\additionaldeps\</_BasePackagePath>
       <_RuntimeStoreManifestFile>$(_DepsOutputDirectory)\rs.csproj</_RuntimeStoreManifestFile>
@@ -18,7 +18,6 @@
       <![CDATA[
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <NETCoreAppMaximum>99.9</NETCoreAppMaximum>
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>

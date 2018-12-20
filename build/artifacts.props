@@ -93,7 +93,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
       <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="noship" />
 
     <!-- This packages contain bits used by Azure site extensions, and are not currently deployed to NuGet.org automatically like the rest of our packages. -->
-      <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="noship" />
       <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
 
     <!-- This packages are produce for testing purposes only. -->

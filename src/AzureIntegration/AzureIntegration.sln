@@ -1,6 +1,7 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27016.1
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28315.86
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServicesIntegration", "src\Microsoft.AspNetCore.AzureAppServicesIntegration\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj", "{5916BEB5-0969-469B-976C-A392E015DFAC}"
 EndProject
@@ -32,17 +33,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAppServicesHostingStartupSample", "sample\AzureAppServicesHostingStartupSample\AzureAppServicesHostingStartupSample.csproj", "{939EA897-CA31-4F2E-BA51-22B570B64671}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extensions", "src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj", "{9B22E525-FEC9-4C7C-9F9C-598C15BD0250}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.SiteExtension", "extensions\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj", "{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extensions.Tests", "test\Microsoft.Web.Xdt.Extensions.Tests\Microsoft.Web.Xdt.Extensions.Tests.csproj", "{809AEE05-1B28-4E31-8959-776B249BD725}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApplicationModelDetection", "src\Microsoft.Extensions.ApplicationModelDetection\Microsoft.Extensions.ApplicationModelDetection.csproj", "{F0CABFE8-A5B1-487B-A451-A486D26742D3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApplicationModelDetection.Tests", "test\Microsoft.Extensions.ApplicationModelDetection.Tests\Microsoft.Extensions.ApplicationModelDetection.Tests.csproj", "{15664836-2B94-4D2D-AC18-6DED01FCCCBD}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Runtime.SiteExtension", "extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj", "{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -70,18 +63,6 @@ Global
 		{939EA897-CA31-4F2E-BA51-22B570B64671}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{939EA897-CA31-4F2E-BA51-22B570B64671}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{939EA897-CA31-4F2E-BA51-22B570B64671}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B22E525-FEC9-4C7C-9F9C-598C15BD0250}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B22E525-FEC9-4C7C-9F9C-598C15BD0250}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B22E525-FEC9-4C7C-9F9C-598C15BD0250}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B22E525-FEC9-4C7C-9F9C-598C15BD0250}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{809AEE05-1B28-4E31-8959-776B249BD725}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{809AEE05-1B28-4E31-8959-776B249BD725}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{809AEE05-1B28-4E31-8959-776B249BD725}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{809AEE05-1B28-4E31-8959-776B249BD725}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F0CABFE8-A5B1-487B-A451-A486D26742D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F0CABFE8-A5B1-487B-A451-A486D26742D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0CABFE8-A5B1-487B-A451-A486D26742D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -90,10 +71,6 @@ Global
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,12 +81,8 @@ Global
 		{9BA1B692-B313-4E22-A864-F0ADBBE3C3FA} = {CD650B4B-81C2-4A44-AEF2-A251A877C1F0}
 		{AC023B45-7995-4D4A-8108-E512AE8E5734} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
 		{939EA897-CA31-4F2E-BA51-22B570B64671} = {37237C93-6855-40D9-9E60-418B093EF49A}
-		{9B22E525-FEC9-4C7C-9F9C-598C15BD0250} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
-		{1CE2D76B-39E6-46C0-8F6F-C63E370955A9} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
-		{809AEE05-1B28-4E31-8959-776B249BD725} = {CD650B4B-81C2-4A44-AEF2-A251A877C1F0}
 		{F0CABFE8-A5B1-487B-A451-A486D26742D3} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD} = {CD650B4B-81C2-4A44-AEF2-A251A877C1F0}
-		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5743DFE7-1AA5-439D-84AE-A480EA389927}
