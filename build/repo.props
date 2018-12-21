@@ -46,49 +46,60 @@
     <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup>
-    <SamplesProject Include="$(RepositoryRoot)src\**\samples\**\*.csproj;"/>
+  <Choose>
+    <!-- Project selection can be overridden on the command line by passing in -projects -->
+    <When Condition="'$(Projects)' != ''">
+      <ItemGroup>
+        <ProjectToBuild Include="$(Projects)" Exclude="@(ProjectToExclude)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <SamplesProject Include="$(RepositoryRoot)src\**\samples\**\*.csproj;"/>
 
-    <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
+        <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
 
-    <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
-    <ProjectToExclude Include="
-                      $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
-                      $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\TestServer.csproj;
-                      "
-                      Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
+        <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
+        <ProjectToExclude Include="
+                          $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
+                          $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\TestServer.csproj;
+                          "
+                          Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
 
-    <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
-    <ProjectToExclude Include="
-                       $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
-                       $(RepositoryRoot)src\Middleware\NodeServices.Sockets\**\*.csproj;
-                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
-                       $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj
-                       " />
+        <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
+        <ProjectToExclude Include="
+                          $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
+                          $(RepositoryRoot)src\Middleware\NodeServices.Sockets\**\*.csproj;
+                          $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
+                          $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj
+                          " />
 
-    <ProjectToBuild Include="@(NativeProjects)" Condition="'$(OS)' == 'Windows_NT'"/>
-    <ProjectToBuild Include="
-                      $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
-                      $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
-                      $(RepositoryRoot)src\DataProtection\**\*.*proj;
-                      $(RepositoryRoot)src\Antiforgery\**\*.*proj;
-                      $(RepositoryRoot)src\Hosting\**\*.*proj;
-                      $(RepositoryRoot)src\Http\**\*.*proj;
-                      $(RepositoryRoot)src\Html\**\*.*proj;
-                      $(RepositoryRoot)src\Servers\**\*.csproj;
-                      $(RepositoryRoot)src\Servers\**\*.pkgproj;
-                      $(RepositoryRoot)src\Security\**\*.*proj;
-                      $(RepositoryRoot)src\Shared\**\*.*proj;
-                      $(RepositoryRoot)src\Tools\**\*.*proj;
-                      $(RepositoryRoot)src\Middleware\**\*.*proj;
-                      $(RepositoryRoot)src\Razor\**\*.*proj;
-                      $(RepositoryRoot)src\Mvc\**\*.*proj;
-                      "
-                    Exclude="
-                      @(ProjectToExclude);
-                      $(RepositoryRoot)**\bin\**\*;
-                      $(RepositoryRoot)**\obj\**\*;" />
-  </ItemGroup>
+        <ProjectToBuild Include="@(NativeProjects)" Condition="'$(OS)' == 'Windows_NT'"/>
+        <ProjectToBuild Include="
+                          $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
+                          $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
+                          $(RepositoryRoot)src\DataProtection\**\*.*proj;
+                          $(RepositoryRoot)src\Antiforgery\**\*.*proj;
+                          $(RepositoryRoot)src\Hosting\**\*.*proj;
+                          $(RepositoryRoot)src\Http\**\*.*proj;
+                          $(RepositoryRoot)src\Html\**\*.*proj;
+                          $(RepositoryRoot)src\Servers\**\*.csproj;
+                          $(RepositoryRoot)src\Servers\**\*.pkgproj;
+                          $(RepositoryRoot)src\Security\**\*.*proj;
+                          $(RepositoryRoot)src\Shared\**\*.*proj;
+                          $(RepositoryRoot)src\Tools\**\*.*proj;
+                          $(RepositoryRoot)src\Middleware\**\*.*proj;
+                          $(RepositoryRoot)src\Razor\**\*.*proj;
+                          $(RepositoryRoot)src\Mvc\**\*.*proj;
+                          $(RepositoryRoot)src\Azure\**\*.*proj;
+                          "
+                        Exclude="
+                          @(ProjectToExclude);
+                          $(RepositoryRoot)**\bin\**\*;
+                          $(RepositoryRoot)**\obj\**\*;" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
   <!-- Properties for publishing -->
   <PropertyGroup>
