@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
@@ -11,8 +9,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class ModelDirectiveTest
+    public class ModelDirectiveTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Version_3_0;
+
         [Fact]
         public void ModelDirective_GetModelType_GetsTypeFromFirstWellFormedDirective()
         {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 @model
 ");
 
-            var engine = CreateEngine();
+            var engine = CreateRuntimeEngine();
 
             var irDocument = CreateIRDocument(engine, codeDocument);
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Arrange
             var codeDocument = CreateDocument(@" ");
 
-            var engine = CreateEngine();
+            var engine = CreateRuntimeEngine();
 
             var irDocument = CreateIRDocument(engine, codeDocument);
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 @model Type1
 ");
 
-            var engine = CreateEngine();
+            var engine = CreateRuntimeEngine();
             var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 @model Type2
 ");
 
-            var engine = CreateEngine();
+            var engine = CreateRuntimeEngine();
             var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 @model Type1
 ");
 
-            var engine = CreateEngine();
+            var engine = CreateRuntimeEngine();
             var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 @inherits BaseType<TModel>
 ");
 
-            var engine = CreateEngine();
+            var engine = CreateRuntimeEngine();
             var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
@@ -234,9 +234,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return visitor.Node;
         }
 
-        private RazorEngine CreateEngine()
+        private RazorEngine CreateRuntimeEngine()
         {
-            return CreateEngineCore();
+            return CreateEngineCore(designTime: false);
         }
 
         private RazorEngine CreateDesignTimeEngine()
@@ -246,13 +246,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private RazorEngine CreateEngineCore(bool designTime = false)
         {
-            return RazorProjectEngine.Create(b =>
+            return CreateProjectEngine(b =>
             {
                 // Notice we're not registering the ModelDirective.Pass here so we can run it on demand.
                 b.AddDirective(ModelDirective.Directive);
-
-                // There's some special interaction with the inherits directive
-                InheritsDirective.Register(b);
 
                 b.Features.Add(new DesignTimeOptionsFeature(designTime));
             }).Engine;

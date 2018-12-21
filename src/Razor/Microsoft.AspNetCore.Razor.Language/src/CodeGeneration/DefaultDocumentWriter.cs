@@ -257,6 +257,46 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 VisitDefault(node);
             }
 
+            public override void VisitComponent(ComponentIntermediateNode node)
+            {
+                Context.NodeWriter.WriteComponent(Context, node);
+            }
+
+            public override void VisitComponentAttribute(ComponentAttributeIntermediateNode node)
+            {
+                Context.NodeWriter.WriteComponentAttribute(Context, node);
+            }
+
+            public override void VisitComponentChildContent(ComponentChildContentIntermediateNode node)
+            {
+                Context.NodeWriter.WriteComponentChildContent(Context, node);
+            }
+
+            public override void VisitComponentTypeArgument(ComponentTypeArgumentIntermediateNode node)
+            {
+                Context.NodeWriter.WriteComponentTypeArgument(Context, node);
+            }
+
+            public override void VisitComponentTypeInferenceMethod(ComponentTypeInferenceMethodIntermediateNode node)
+            {
+                Context.NodeWriter.WriteComponentTypeInferenceMethod(Context, node);
+            }
+
+            public override void VisitMarkupElement(MarkupElementIntermediateNode node)
+            {
+                Context.NodeWriter.WriteMarkupElement(Context, node);
+            }
+
+            public override void VisitMarkupBlock(MarkupBlockIntermediateNode node)
+            {
+                Context.NodeWriter.WriteMarkupBlock(Context, node);
+            }
+
+            public override void VisitReferenceCapture(ReferenceCaptureIntermediateNode node)
+            {
+                Context.NodeWriter.WriteReferenceCapture(Context, node);
+            }
+
             public override void VisitDefault(IntermediateNode node)
             {
                 Context.RenderChildren(node);

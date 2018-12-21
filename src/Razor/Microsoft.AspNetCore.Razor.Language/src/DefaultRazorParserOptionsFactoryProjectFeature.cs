@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             _configureOptions = ProjectEngine.EngineFeatures.OfType<IConfigureRazorParserOptionsFeature>().ToArray();
         }
 
-        public RazorParserOptions Create(Action<RazorParserOptionsBuilder> configure)
+        public RazorParserOptions Create(string fileKind, Action<RazorParserOptionsBuilder> configure)
         {
-            var builder = new DefaultRazorParserOptionsBuilder(ProjectEngine.Configuration);
+            var builder = new DefaultRazorParserOptionsBuilder(ProjectEngine.Configuration, fileKind);
             configure?.Invoke(builder);
 
             for (var i = 0; i < _configureOptions.Length; i++)

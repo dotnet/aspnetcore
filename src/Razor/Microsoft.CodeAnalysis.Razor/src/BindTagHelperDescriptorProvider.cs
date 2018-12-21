@@ -248,7 +248,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 var formatName = entry.Suffix == null ? "Format_" + entry.ValueAttribute : "Format_" + entry.Suffix;
                 var formatAttributeName = entry.Suffix == null ? "format-" + entry.ValueAttribute : "format-" + entry.Suffix;
 
-                var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.Bind.TagHelperKind, name, entry.Assembly);
+                var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.Bind.TagHelperKind, name, ComponentsApi.AssemblyName);
                 builder.Documentation = string.Format(
                     ComponentResources.BindTagHelper_Element_Documentation,
                     entry.ValueAttribute,

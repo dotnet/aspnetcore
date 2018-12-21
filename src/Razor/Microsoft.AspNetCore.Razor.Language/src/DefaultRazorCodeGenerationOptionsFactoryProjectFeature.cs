@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             _configureOptions = ProjectEngine.EngineFeatures.OfType<IConfigureRazorCodeGenerationOptionsFeature>().ToArray();
         }
 
-        public RazorCodeGenerationOptions Create(Action<RazorCodeGenerationOptionsBuilder> configure)
+        public RazorCodeGenerationOptions Create(string fileKind, Action<RazorCodeGenerationOptionsBuilder> configure)
         {
-            var builder = new DefaultRazorCodeGenerationOptionsBuilder(ProjectEngine.Configuration);
+            var builder = new DefaultRazorCodeGenerationOptionsBuilder(ProjectEngine.Configuration, fileKind);
             configure?.Invoke(builder);
 
             for (var i = 0; i < _configureOptions.Length; i++)

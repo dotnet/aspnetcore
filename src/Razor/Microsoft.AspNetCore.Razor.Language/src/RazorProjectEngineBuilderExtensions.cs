@@ -146,6 +146,43 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         /// <summary>
+        /// Adds the specified <see cref="DirectiveDescriptor"/> for the provided file kind.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="fileKind">The file kind, for which to register the directive. See <see cref="FileKinds"/>.</param>
+        /// <param name="directive">The <see cref="DirectiveDescriptor"/> to add.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder AddDirective(this RazorProjectEngineBuilder builder, string fileKind, DirectiveDescriptor directive)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (fileKind == null)
+            {
+                throw new ArgumentNullException(nameof(fileKind));
+            }
+
+            if (directive == null)
+            {
+                throw new ArgumentNullException(nameof(directive));
+            }
+
+            var directiveFeature = GetDirectiveFeature(builder);
+
+            if (!directiveFeature.DirectivesByFileKind.TryGetValue(fileKind, out var directives))
+            {
+                directives = new List<DirectiveDescriptor>();
+                directiveFeature.DirectivesByFileKind.Add(fileKind, directives);
+            }
+
+            directives.Add(directive);
+
+            return builder;
+        }
+
+        /// <summary>
         /// Adds the provided <see cref="RazorProjectItem" />s as imports to all project items processed
         /// by the <see cref="RazorProjectEngine"/>.
         /// </summary>
@@ -158,17 +195,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-
-            var existingImportFeature = builder.Features.OfType<IImportProjectFeature>().First();
-            var testImportFeature = new AdditionalImportsProjectFeature(existingImportFeature, imports);
-            builder.SetImportFeature(testImportFeature);
+            
+            builder.Features.Add(new AdditionalImportsProjectFeature(imports));
 
             return builder;
         }
 
-        private static IRazorDirectiveFeature GetDirectiveFeature(RazorProjectEngineBuilder builder)
+        private static DefaultRazorDirectiveFeature GetDirectiveFeature(RazorProjectEngineBuilder builder)
         {
-            var directiveFeature = builder.Features.OfType<IRazorDirectiveFeature>().FirstOrDefault();
+            var directiveFeature = builder.Features.OfType<DefaultRazorDirectiveFeature>().FirstOrDefault();
             if (directiveFeature == null)
             {
                 directiveFeature = new DefaultRazorDirectiveFeature();
@@ -204,31 +239,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private class AdditionalImportsProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
         {
-            private readonly IImportProjectFeature _existingImportFeature;
-            private readonly IEnumerable<RazorProjectItem> _imports;
+            private readonly IReadOnlyList<RazorProjectItem> _imports;
 
-            public override RazorProjectEngine ProjectEngine
+            public AdditionalImportsProjectFeature(params string[] imports)
             {
-                get => base.ProjectEngine;
-                set
-                {
-                    _existingImportFeature.ProjectEngine = value;
-                    base.ProjectEngine = value;
-                }
-            }
-
-            public AdditionalImportsProjectFeature(IImportProjectFeature existingImportFeature, params string[] imports)
-            {
-                _existingImportFeature = existingImportFeature;
-                _imports = imports.Select(import => new InMemoryProjectItem(import));
+                _imports = imports.Select(import => new InMemoryProjectItem(import)).ToArray();
             }
 
             public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
             {
-                var imports = _existingImportFeature.GetImports(projectItem).ToList();
-                imports.AddRange(_imports);
-
-                return imports;
+                return _imports;
             }
 
             private class InMemoryProjectItem : RazorProjectItem

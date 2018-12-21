@@ -104,7 +104,7 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 var entry = data[i];
 
-                var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.EventHandler.TagHelperKind, entry.Attribute, entry.Assembly);
+                var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.EventHandler.TagHelperKind, entry.Attribute, ComponentsApi.AssemblyName);
                 builder.Documentation = string.Format(
                     ComponentResources.EventHandlerTagHelper_Documentation,
                     entry.Attribute,

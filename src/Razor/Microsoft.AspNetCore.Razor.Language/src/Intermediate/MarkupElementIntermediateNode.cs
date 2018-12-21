@@ -5,14 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Components;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    internal class MarkupElementIntermediateNode : ExtensionIntermediateNode
+    public sealed class MarkupElementIntermediateNode : IntermediateNode
     {
         public IEnumerable<HtmlAttributeIntermediateNode> Attributes => Children.OfType<HtmlAttributeIntermediateNode>();
 
@@ -36,56 +32,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<MarkupElementIntermediateNode>(this, visitor);
+            visitor.VisitMarkupElement(this);
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        public override void FormatNode(IntermediateNodeFormatter formatter)
         {
-            if (target == null)
+            if (formatter == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException(nameof(formatter));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            formatter.WriteContent(TagName);
 
-            var writer = (BlazorNodeWriter)context.NodeWriter;
-            writer.WriteHtmlElement(context, this);
-        }
-
-        private string DebuggerDisplay
-        {
-            get
-            {
-                var builder = new StringBuilder();
-                builder.Append("Element: ");
-                builder.Append("<");
-                builder.Append(TagName);
-
-                foreach (var attribute in Attributes)
-                {
-                    builder.Append(" ");
-                    builder.Append(attribute.AttributeName);
-                    builder.Append("=\"...\"");
-                }
-
-                foreach (var capture in Captures)
-                {
-                    builder.Append(" ");
-                    builder.Append("ref");
-                    builder.Append("=\"...\"");
-                }
-
-                builder.Append(">");
-                builder.Append(Body.Any() ? "..." : string.Empty);
-                builder.Append("</");
-                builder.Append(TagName);
-                builder.Append(">");
-
-                return builder.ToString();
-            }
+            formatter.WriteProperty(nameof(TagName), TagName);
         }
     }
 }

@@ -8,8 +8,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 {
-    public class MvcRazorTemplateEngineTest
+    public class MvcRazorTemplateEngineTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Version_1_1;
+
         [Fact]
         public void GetDefaultImports_IncludesDefaultImports()
         {
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 "@using Microsoft.AspNetCore.Mvc.ViewFeatures",
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
-                RazorProjectEngine.Create().Engine,
+                CreateProjectEngine().Engine,
                 new TestRazorProjectFileSystem());
 
             // Act
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 "@inject global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider",
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
-                RazorProjectEngine.Create().Engine,
+                CreateProjectEngine().Engine,
                 new TestRazorProjectFileSystem());
 
             // Act
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         {
             // Arrange
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
-                RazorProjectEngine.Create().Engine,
+                CreateProjectEngine().Engine,
                 new TestRazorProjectFileSystem());
 
             // Act

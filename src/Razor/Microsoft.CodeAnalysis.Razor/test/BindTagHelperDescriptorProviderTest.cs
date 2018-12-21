@@ -222,7 +222,7 @@ namespace Test
                 bind.Documentation);
 
             // These are all trivially derived from the assembly/namespace/type name
-            Assert.Equal("TestAssembly", bind.AssemblyName);
+            Assert.Equal("Microsoft.AspNetCore.Components", bind.AssemblyName);
             Assert.Equal("Bind", bind.Name);
             Assert.Equal("Test.BindAttributes", bind.DisplayName);
             Assert.Equal("Test.BindAttributes", bind.GetTypeName());

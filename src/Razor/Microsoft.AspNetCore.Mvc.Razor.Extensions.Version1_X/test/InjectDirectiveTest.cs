@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -173,7 +174,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         private RazorEngine CreateEngine()
         {
-            return RazorProjectEngine.Create(b =>
+            var configuration = RazorConfiguration.Create(RazorLanguageVersion.Version_1_1, "test", Array.Empty<RazorExtension>());
+            return RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, b =>
             {
                 // Notice we're not registering the InjectDirective.Pass here so we can run it on demand.
                 b.AddDirective(InjectDirective.Directive);

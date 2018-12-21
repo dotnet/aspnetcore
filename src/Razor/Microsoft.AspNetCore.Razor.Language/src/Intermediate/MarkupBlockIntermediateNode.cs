@@ -2,14 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Components;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    internal class MarkupBlockIntermediateNode : ExtensionIntermediateNode
+    public sealed class MarkupBlockIntermediateNode : IntermediateNode
     {
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
@@ -22,25 +18,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<MarkupBlockIntermediateNode>(this, visitor);
+            visitor.VisitMarkupBlock(this);
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        public override void FormatNode(IntermediateNodeFormatter formatter)
         {
-            if (target == null)
+            if (formatter == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException(nameof(formatter));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var writer = (BlazorNodeWriter)context.NodeWriter;
-            writer.WriteHtmlBlock(context, this);
+            formatter.WriteContent(Content);
         }
-
-        private string DebuggerDisplay => Content;
     }
 }

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
@@ -23,6 +25,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             if (documentNode.Options == null || documentNode.Options.SuppressMetadataAttributes)
             {
                 // Metadata attributes are turned off (or options not populated), nothing to do.
+                return;
+            }
+
+            if (string.Equals(documentNode.DocumentKind, ComponentDocumentClassifierPass.ComponentDocumentKind, StringComparison.Ordinal))
+            {
+                // Metadata attributes are not used for components.
                 return;
             }
 

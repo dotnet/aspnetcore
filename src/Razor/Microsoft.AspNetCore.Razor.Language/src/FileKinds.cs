@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal static class FileKinds
+    public static class FileKinds
     {
         public static readonly string Component = "component";
 

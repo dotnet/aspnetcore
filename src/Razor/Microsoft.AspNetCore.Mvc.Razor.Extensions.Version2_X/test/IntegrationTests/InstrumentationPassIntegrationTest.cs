@@ -6,12 +6,28 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.IntegrationTests
 {
     public class InstrumentationPassIntegrationTest : IntegrationTestBase
     {
+        private readonly static CSharpCompilation DefaultBaseCompilation = MvcShim.BaseCompilation.WithAssemblyName("AppCode");
+
+        public InstrumentationPassIntegrationTest()
+            : base(generateBaselines: null)
+        {
+            Configuration = RazorConfiguration.Create(
+                RazorLanguageVersion.Version_2_0,
+                "MVC-2.1",
+                new[] { new AssemblyExtension("MVC-2.1", typeof(ExtensionInitializer).Assembly) });
+        }
+
+        protected override CSharpCompilation BaseCompilation => DefaultBaseCompilation;
+
+        protected override RazorConfiguration Configuration { get; }
+
         [Fact]
         public void BasicTest()
         {

@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal interface IRazorParserOptionsFactoryProjectFeature : IRazorProjectEngineFeature
     {
-        RazorParserOptions Create(Action<RazorParserOptionsBuilder> configure);
+        RazorParserOptions Create(string fileKind, Action<RazorParserOptionsBuilder> configure);
     }
 }

@@ -9,12 +9,15 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         private bool _designTime;
 
-        public DefaultRazorCodeGenerationOptionsBuilder(RazorConfiguration configuration)
+        public DefaultRazorCodeGenerationOptionsBuilder(RazorConfiguration configuration, string fileKind)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
+
+            Configuration = configuration;
+            FileKind = fileKind;
         }
 
         public DefaultRazorCodeGenerationOptionsBuilder(bool designTime)
@@ -25,6 +28,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override RazorConfiguration Configuration { get; }
 
         public override bool DesignTime => _designTime;
+
+        public override string FileKind { get; }
 
         public override int IndentSize { get; set; } = 4;
 

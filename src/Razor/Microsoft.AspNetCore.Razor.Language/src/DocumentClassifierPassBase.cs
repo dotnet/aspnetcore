@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
@@ -10,15 +11,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class DocumentClassifierPassBase : IntermediateNodePassBase, IRazorDocumentClassifierPass
     {
-        private static readonly ICodeTargetExtension[] EmptyExtensionArray = new ICodeTargetExtension[0];
-        private ICodeTargetExtension[] _targetExtensions;
-
         protected abstract string DocumentKind { get; }
+
+        protected IReadOnlyList<ICodeTargetExtension> TargetExtensions { get; private set; }
 
         protected override void OnInitialized()
         {
             var feature = Engine.Features.OfType<IRazorTargetExtensionFeature>();
-            _targetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? EmptyExtensionArray;
+            TargetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? Array.Empty<ICodeTargetExtension>();
         }
 
         protected sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
@@ -35,6 +35,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             documentNode.DocumentKind = DocumentKind;
             documentNode.Target = CreateTarget(codeDocument, documentNode.Options);
+            if (documentNode.Target == null)
+            {
+                throw new InvalidOperationException($"{nameof(CreateTarget)} must return a non-null {nameof(CodeTarget)}.");
+            }
 
             Rewrite(codeDocument, documentNode);
         }
@@ -80,13 +84,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected abstract bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode);
 
-        private CodeTarget CreateTarget(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
+        // virtual to allow replacing the code target wholesale.
+        protected virtual CodeTarget CreateTarget(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
         {
             return CodeTarget.CreateDefault(codeDocument, options, (builder) =>
             {
-                for (var i = 0; i < _targetExtensions.Length; i++)
+                for (var i = 0; i < TargetExtensions.Count; i++)
                 {
-                    builder.TargetExtensions.Add(_targetExtensions[i]);
+                    builder.TargetExtensions.Add(TargetExtensions[i]);
                 }
 
                 ConfigureTarget(builder);

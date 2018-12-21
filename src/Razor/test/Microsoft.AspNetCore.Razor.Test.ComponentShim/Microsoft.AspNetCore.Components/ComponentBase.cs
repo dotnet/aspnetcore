@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components
 {
     public abstract class ComponentBase : IComponent
     {
-        public virtual void BuildRenderTree(RenderTreeBuilder builder)
+        protected virtual void BuildRenderTree(RenderTreeBuilder builder)
         {
         }
 

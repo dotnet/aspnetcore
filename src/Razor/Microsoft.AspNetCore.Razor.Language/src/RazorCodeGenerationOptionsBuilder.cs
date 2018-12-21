@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool DesignTime { get; }
 
+        public virtual string FileKind => null;
+
         public abstract int IndentSize { get; set; }
 
         public abstract bool IndentWithTabs { get; set; }

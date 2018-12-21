@@ -32,7 +32,9 @@ namespace Microsoft.CodeAnalysis.Razor
         protected static TagHelperDescriptor[] ExcludeBuiltInComponents(TagHelperDescriptorProviderContext context)
         {
             return context.Results
-                .Where(c => c.AssemblyName == "TestAssembly")
+                .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.Bind")
+                .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.BindAttributes")
+                .Where(c => c.GetTypeName() != "Microsoft.AspNetCore.Components.EventHandlers")
                 .OrderBy(c => c.Name)
                 .ToArray();
         }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private TestFile(string resourceName, Assembly assembly)
         {
             Assembly = assembly;
-            ResourceName = Assembly.GetName().Name + "." + resourceName.Replace('/', '.');
+            ResourceName = Assembly.GetName().Name + "." + resourceName.Replace('/', '.').Replace('\\', '.');
         }
 
         public Assembly Assembly { get; }

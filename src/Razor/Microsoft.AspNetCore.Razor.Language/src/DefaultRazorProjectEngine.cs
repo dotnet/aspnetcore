@@ -62,24 +62,55 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(projectItem));
             }
 
-            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
-
-            var importFeature = GetRequiredFeature<IImportProjectFeature>();
-            var importItems = importFeature.GetImports(projectItem);
-            var importSourceDocuments = GetImportSourceDocuments(importItems);
-
-            return CreateCodeDocumentCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null);
+            return CreateCodeDocumentCore(projectItem, configureParser: null, configureCodeGeneration: null);
         }
 
-        internal override RazorCodeDocument CreateCodeDocumentCore(RazorSourceDocument sourceDocument, string fileKind, IReadOnlyList<RazorSourceDocument> importSourceDocuments, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        protected RazorCodeDocument CreateCodeDocumentCore(
+            RazorProjectItem projectItem, 
+            Action<RazorParserOptionsBuilder> configureParser, 
+            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
+        {
+            if (projectItem == null)
+            {
+                throw new ArgumentNullException(nameof(projectItem));
+            }
+
+            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
+
+            var importItems = new List<RazorProjectItem>();
+            var features = ProjectFeatures.OfType<IImportProjectFeature>();
+            foreach (var feature in features)
+            {
+                importItems.AddRange(feature.GetImports(projectItem));
+            }
+
+            var importSourceDocuments = GetImportSourceDocuments(importItems);
+            return CreateCodeDocumentCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null, configureParser, configureCodeGeneration);
+        }
+
+        protected RazorCodeDocument CreateCodeDocumentCore(
+            RazorSourceDocument sourceDocument, 
+            string fileKind, 
+            IReadOnlyList<RazorSourceDocument> importSourceDocuments, 
+            IReadOnlyList<TagHelperDescriptor> tagHelpers,
+            Action<RazorParserOptionsBuilder> configureParser,
+            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
         {
             if (sourceDocument == null)
             {
                 throw new ArgumentNullException(nameof(sourceDocument));
             }
 
-            var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureParserOptions);
-            var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureCodeGenerationOptions);
+            var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(fileKind, builder =>
+            {
+                ConfigureParserOptions(builder);
+                configureParser?.Invoke(builder);
+            });
+            var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(fileKind, builder =>
+            {
+                ConfigureCodeGenerationOptions(builder);
+                configureCodeGeneration?.Invoke(builder);
+            });
 
             var codeDocument = RazorCodeDocument.Create(sourceDocument, importSourceDocuments, parserOptions, codeGenerationOptions);
             codeDocument.SetTagHelpers(tagHelpers);
@@ -99,24 +130,55 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(projectItem));
             }
 
-            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
-
-            var importFeature = GetRequiredFeature<IImportProjectFeature>();
-            var importItems = importFeature.GetImports(projectItem);
-            var importSourceDocuments = GetImportSourceDocuments(importItems, suppressExceptions: true);
-
-            return CreateCodeDocumentDesignTimeCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null);
+            return CreateCodeDocumentDesignTimeCore(projectItem, configureParser: null, configureCodeGeneration: null);
         }
 
-        internal override RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorSourceDocument sourceDocument, string fileKind, IReadOnlyList<RazorSourceDocument> importSourceDocuments, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        protected RazorCodeDocument CreateCodeDocumentDesignTimeCore(
+            RazorProjectItem projectItem,
+            Action<RazorParserOptionsBuilder> configureParser,
+            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
+        {
+            if (projectItem == null)
+            {
+                throw new ArgumentNullException(nameof(projectItem));
+            }
+
+            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
+
+            var importItems = new List<RazorProjectItem>();
+            var features = ProjectFeatures.OfType<IImportProjectFeature>();
+            foreach (var feature in features)
+            {
+                importItems.AddRange(feature.GetImports(projectItem));
+            }
+
+            var importSourceDocuments = GetImportSourceDocuments(importItems, suppressExceptions: true);
+            return CreateCodeDocumentDesignTimeCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null, configureParser, configureCodeGeneration);
+        }
+
+        protected RazorCodeDocument CreateCodeDocumentDesignTimeCore(
+            RazorSourceDocument sourceDocument, 
+            string fileKind, 
+            IReadOnlyList<RazorSourceDocument> importSourceDocuments, 
+            IReadOnlyList<TagHelperDescriptor> tagHelpers,
+            Action<RazorParserOptionsBuilder> configureParser,
+            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
         {
             if (sourceDocument == null)
             {
                 throw new ArgumentNullException(nameof(sourceDocument));
             }
 
-            var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeParserOptions);
-            var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeCodeGenerationOptions);
+            var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(fileKind, builder =>
+            {
+                ConfigureDesignTimeParserOptions(builder);
+                configureParser?.Invoke(builder);
+            });
+            var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(fileKind, builder =>
+            {
+                ConfigureDesignTimeCodeGenerationOptions(builder);
+                configureCodeGeneration?.Invoke(builder);
+            });
 
             var codeDocument = RazorCodeDocument.Create(sourceDocument, importSourceDocuments, parserOptions, codeGenerationOptions);
             codeDocument.SetTagHelpers(tagHelpers);
@@ -126,6 +188,62 @@ namespace Microsoft.AspNetCore.Razor.Language
                 codeDocument.SetFileKind(fileKind);
             }
 
+            return codeDocument;
+        }
+
+        public override RazorCodeDocument Process(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            var codeDocument = CreateCodeDocumentCore(source, fileKind, importSources, tagHelpers, configureParser: null, configureCodeGeneration: null);
+            ProcessCore(codeDocument);
+            return codeDocument;
+        }
+
+        public override RazorCodeDocument ProcessDeclarationOnly(RazorProjectItem projectItem)
+        {
+            if (projectItem == null)
+            {
+                throw new ArgumentNullException(nameof(projectItem));
+            }
+
+            var codeDocument = CreateCodeDocumentCore(projectItem, configureParser: null, configureCodeGeneration: (builder) =>
+            {
+                builder.SuppressPrimaryMethodBody = true;
+            });
+
+            ProcessCore(codeDocument);
+            return codeDocument;
+        }
+
+        public override RazorCodeDocument ProcessDeclarationOnly(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            var codeDocument = CreateCodeDocumentCore(source, fileKind, importSources, tagHelpers, configureParser: null, configureCodeGeneration: (builder) =>
+            {
+                builder.SuppressPrimaryMethodBody = true;
+            });
+
+            ProcessCore(codeDocument);
+            return codeDocument;
+        }
+
+        public override RazorCodeDocument ProcessDesignTime(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            var codeDocument = CreateCodeDocumentDesignTimeCore(source, fileKind, importSources, tagHelpers, configureParser: null, configureCodeGeneration: null);
+            ProcessCore(codeDocument);
             return codeDocument;
         }
 

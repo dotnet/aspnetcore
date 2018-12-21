@@ -7,8 +7,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class MvcViewDocumentClassifierPassTest
+    public class MvcViewDocumentClassifierPassTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Version_3_0;
+
         [Fact]
         public void MvcViewDocumentClassifierPass_SetsDocumentKind()
         {
@@ -216,8 +218,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("global::System.Threading.Tasks.Task", visitor.Method.ReturnType);
             Assert.Equal(new[] { "public", "async", "override" }, visitor.Method.Modifiers);
         }
-
-        private static RazorProjectEngine CreateProjectEngine() => RazorProjectEngine.Create();
 
         private static DocumentIntermediateNode CreateIRDocument(RazorProjectEngine projectEngine, RazorCodeDocument codeDocument)
         {

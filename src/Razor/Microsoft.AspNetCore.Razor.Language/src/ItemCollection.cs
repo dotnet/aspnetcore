@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public sealed class ItemCollection : ICollection<KeyValuePair<object, object>>
+    public sealed class ItemCollection : ICollection<KeyValuePair<object, object>>, ICollection
     {
         private readonly Dictionary<object, object> _inner;
 
@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public bool IsReadOnly => _inner != null;
 
-        int ICollection<KeyValuePair<object, object>>.Count => throw new NotImplementedException();
+        bool ICollection.IsSynchronized => ((ICollection)_inner).IsSynchronized;
 
-        bool ICollection<KeyValuePair<object, object>>.IsReadOnly => throw new NotImplementedException();
+        object ICollection.SyncRoot => ((ICollection)_inner).SyncRoot;
 
         public void Add(KeyValuePair<object, object> item)
         {
@@ -119,6 +119,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return ((ICollection<KeyValuePair<object, object>>)_inner).Remove(item);
+        }
+
+        void ICollection.CopyTo(Array array, int index)
+        {
+            ((ICollection)_inner).CopyTo(array, index);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
         public static readonly string RouteTemplateKey = "RouteTemplate";
 
         private static readonly RazorProjectEngine LeadingDirectiveParsingEngine = RazorProjectEngine.Create(
-            RazorConfiguration.Default,
+            RazorConfiguration.Create(RazorLanguageVersion.Version_2_1, "leading-directive-parser", Array.Empty<RazorExtension>()),
             RazorProjectFileSystem.Create("/"),
             builder =>
             {

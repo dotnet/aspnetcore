@@ -21,6 +21,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 throw new ArgumentNullException(nameof(projectItem));
             }
 
+            // Don't add MVC imports for a component - this shouldn't happen for v1, but just in case.
+            if (string.Equals(projectItem.FileKind, FileKinds.Component, StringComparison.OrdinalIgnoreCase))
+            {
+                return Array.Empty<RazorProjectItem>();
+            }
+
             var imports = new List<RazorProjectItem>();
             AddDefaultDirectivesImport(imports);
 

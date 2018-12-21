@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            FunctionsDirective.Register(builder);
             InjectDirective.Register(builder);
             ModelDirective.Register(builder);
             NamespaceDirective.Register(builder);
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
             builder.Features.Add(new AssemblyAttributeInjectionPass());
             builder.Features.Add(new InstrumentationPass());
 
-            builder.SetImportFeature(new MvcImportProjectFeature());
+            builder.Features.Add(new MvcImportProjectFeature());
         }
     }
 }

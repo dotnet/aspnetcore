@@ -182,6 +182,20 @@ public class MyModel
         }
 
         [Fact]
+        public void BasicComponent_Runtime()
+        {
+            // Arrange
+            var projectItem = CreateProjectItemFromFile(fileKind: FileKinds.Component);
+
+            // Act
+            var compiled = CompileToAssembly(projectItem, designTime: false);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
+        }
+
+        [Fact]
         public void Sections_Runtime()
         {
             // Arrange
@@ -621,6 +635,21 @@ public class MyModel
         {
             // Arrange
             var projectItem = CreateProjectItemFromFile();
+
+            // Act
+            var compiled = CompileToAssembly(projectItem, designTime: true);
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(compiled.CodeDocument.GetDocumentIntermediateNode());
+            AssertCSharpDocumentMatchesBaseline(compiled.CodeDocument.GetCSharpDocument());
+            AssertSourceMappingsMatchBaseline(compiled.CodeDocument);
+        }
+
+        [Fact]
+        public void BasicComponent_DesignTime()
+        {
+            // Arrange
+            var projectItem = CreateProjectItemFromFile(fileKind: FileKinds.Component);
 
             // Act
             var compiled = CompileToAssembly(projectItem, designTime: true);

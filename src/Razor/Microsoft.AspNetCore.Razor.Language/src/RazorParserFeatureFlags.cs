@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             var allowMinimizedBooleanTagHelperAttributes = false;
             var allowHtmlCommentsInTagHelpers = false;
+            var allowComponentFileKind = false;
             var experimental_AllowConditionalDataDashAttributes = false;
 
             if (version.CompareTo(RazorLanguageVersion.Version_2_1) >= 0)
@@ -16,6 +17,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 // Added in 2.1
                 allowMinimizedBooleanTagHelperAttributes = true;
                 allowHtmlCommentsInTagHelpers = true;
+            }
+
+            if (version.CompareTo(RazorLanguageVersion.Version_3_0) >= 0)
+            {
+                // Added in 3.0
+                allowComponentFileKind = true;
             }
 
             if (version.CompareTo(RazorLanguageVersion.Experimental) >= 0)
@@ -26,12 +33,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             return new DefaultRazorParserFeatureFlags(
                 allowMinimizedBooleanTagHelperAttributes,
                 allowHtmlCommentsInTagHelpers,
+                allowComponentFileKind,
                 experimental_AllowConditionalDataDashAttributes);
         }
 
         public abstract bool AllowMinimizedBooleanTagHelperAttributes { get; }
 
         public abstract bool AllowHtmlCommentsInTagHelpers { get; }
+
+        public abstract bool AllowComponentFileKind { get; }
 
         public abstract bool EXPERIMENTAL_AllowConditionalDataDashAttributes { get; }
 
@@ -40,16 +50,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             public DefaultRazorParserFeatureFlags(
                 bool allowMinimizedBooleanTagHelperAttributes,
                 bool allowHtmlCommentsInTagHelpers,
+                bool allowComponentFileKind,
                 bool experimental_AllowConditionalDataDashAttributes)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
                 AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelpers;
+                AllowComponentFileKind = allowComponentFileKind;
                 EXPERIMENTAL_AllowConditionalDataDashAttributes = experimental_AllowConditionalDataDashAttributes;
             }
 
             public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
 
             public override bool AllowHtmlCommentsInTagHelpers { get; }
+
+            public override bool AllowComponentFileKind { get; }
 
             public override bool EXPERIMENTAL_AllowConditionalDataDashAttributes { get; }
         }

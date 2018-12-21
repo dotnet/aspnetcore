@@ -3,7 +3,9 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
@@ -23,6 +25,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             return string.Equals(codeDocument.GetFileKind(), FileKinds.Component);
+        }
+
+        protected override CodeTarget CreateTarget(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
+        {
+            return new ComponentCodeTarget(options, TargetExtensions);
         }
 
         protected override void OnDocumentStructureCreated(RazorCodeDocument codeDocument, NamespaceDeclarationIntermediateNode @namespace, ClassDeclarationIntermediateNode @class, MethodDeclarationIntermediateNode method)
@@ -45,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             @namespace.Content = computedNamespace;
 
             @class.ClassName = computedClass;
-            @class.BaseType = $"global::{CodeGenerationConstants.ComponentBase.FullTypeName}";
+            @class.BaseType = $"{CodeGenerationConstants.ComponentBase.FullTypeName}";
             var filePath = codeDocument.Source.RelativePath ?? codeDocument.Source.FilePath;
             if (string.IsNullOrEmpty(filePath))
             {
@@ -61,12 +68,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             @class.Modifiers.Clear();
             @class.Modifiers.Add("public");
-            @class.Modifiers.Add("sealed");
+
+            var documentNode = codeDocument.GetDocumentIntermediateNode();
+            var typeParamReferences = documentNode.FindDirectiveReferences(ComponentTypeParamDirective.Directive);
+            for (var i = 0; i < typeParamReferences.Count; i++)
+            {
+                var typeParamNode = (DirectiveIntermediateNode)typeParamReferences[i].Node;
+                if (typeParamNode.HasDiagnostics)
+                {
+                    continue;
+                }
+
+                @class.TypeParameters.Add(new TypeParameter() { ParameterName = typeParamNode.Tokens.First().Content, });
+            }
 
             method.MethodName = CodeGenerationConstants.ComponentBase.BuildRenderTree;
             method.ReturnType = "void";
             method.Modifiers.Clear();
-            method.Modifiers.Add("public");
+            method.Modifiers.Add("protected");
             method.Modifiers.Add("override");
 
             method.Parameters.Clear();

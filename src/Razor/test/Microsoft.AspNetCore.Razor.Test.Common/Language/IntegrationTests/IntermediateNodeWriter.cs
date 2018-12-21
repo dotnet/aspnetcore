@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -15,7 +16,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     // Serializes single IR nodes (shallow).
     public class IntermediateNodeWriter :
         IntermediateNodeVisitor,
-        IExtensionIntermediateNodeVisitor<SectionIntermediateNode>
+        IExtensionIntermediateNodeVisitor<SectionIntermediateNode>,
+        IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>
+
     {
         private readonly TextWriter _writer;
 
@@ -44,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Avoid adding the type parameters to the baseline if they aren't present.
             if (node.TypeParameters != null && node.TypeParameters.Count > 0)
             {
-                entries.Add(string.Join(", ", node.TypeParameters));
+                entries.Add(string.Join(", ", node.TypeParameters.Select(p => p.ParameterName)));
             }
 
             WriteContentNode(node, entries.ToArray());
@@ -123,6 +126,51 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public override void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
         {
             WriteContentNode(node, node.AttributeName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
+        }
+
+        public override void VisitComponent(ComponentIntermediateNode node)
+        {
+            WriteContentNode(node, node.TagName);
+        }
+
+        public override void VisitComponentAttribute(ComponentAttributeIntermediateNode node)
+        {
+            WriteContentNode(node, node.AttributeName, string.Format("AttributeStructure.{0}", node.AttributeStructure));
+        }
+
+        public override void VisitComponentChildContent(ComponentChildContentIntermediateNode node)
+        {
+            WriteContentNode(node, node.AttributeName, node.ParameterName);
+        }
+
+        public override void VisitComponentTypeArgument(ComponentTypeArgumentIntermediateNode node)
+        {
+            WriteContentNode(node, node.TypeParameterName);
+        }
+
+        public override void VisitComponentTypeInferenceMethod(ComponentTypeInferenceMethodIntermediateNode node)
+        {
+            WriteContentNode(node, node.FullTypeName, node.MethodName);
+        }
+
+        public override void VisitMarkupElement(MarkupElementIntermediateNode node)
+        {
+            WriteContentNode(node, node.TagName);
+        }
+
+        public override void VisitMarkupBlock(MarkupBlockIntermediateNode node)
+        {
+            WriteContentNode(node, node.Content);
+        }
+
+        public override void VisitReferenceCapture(ReferenceCaptureIntermediateNode node)
+        {
+            WriteContentNode(node, node.IdentifierToken?.Content);
+        }
+
+        void IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>.VisitExtension(RouteAttributeExtensionNode node)
+        {
+            WriteContentNode(node, node.Template);
         }
 
         public override void VisitExtension(ExtensionIntermediateNode node)

@@ -12,8 +12,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             if (typeof(IntegrationTestBase).GetTypeInfo().IsAssignableFrom(methodUnderTest.DeclaringType.GetTypeInfo()))
             {
-                var typeName = methodUnderTest.DeclaringType.Name;
+                var typeName = methodUnderTest.ReflectedType.Name;
                 IntegrationTestBase.FileName = $"TestFiles/IntegrationTests/{typeName}/{methodUnderTest.Name}";
+            }
+            else if (typeof(RazorBaselineIntegrationTestBase).GetTypeInfo().IsAssignableFrom(methodUnderTest.DeclaringType.GetTypeInfo()))
+            {
+                var typeName = methodUnderTest.ReflectedType.Name;
+                RazorBaselineIntegrationTestBase.DirectoryPath = $"TestFiles/IntegrationTests/{typeName}/{methodUnderTest.Name}";
             }
         }
 
@@ -22,6 +27,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             if (typeof(IntegrationTestBase).GetTypeInfo().IsAssignableFrom(methodUnderTest.DeclaringType.GetTypeInfo()))
             {
                 IntegrationTestBase.FileName = null;
+            }
+            else if (typeof(RazorBaselineIntegrationTestBase).GetTypeInfo().IsAssignableFrom(methodUnderTest.DeclaringType.GetTypeInfo()))
+            {
+                RazorBaselineIntegrationTestBase.DirectoryPath = null;
             }
         }
     }

@@ -62,7 +62,7 @@ namespace Test
                 item.Documentation);
 
             // These are all trivially derived from the assembly/namespace/type name
-            Assert.Equal("TestAssembly", item.AssemblyName);
+            Assert.Equal("Microsoft.AspNetCore.Components", item.AssemblyName);
             Assert.Equal("onclick", item.Name);
             Assert.Equal("Test.EventHandlers", item.DisplayName);
             Assert.Equal("Test.EventHandlers", item.GetTypeName());

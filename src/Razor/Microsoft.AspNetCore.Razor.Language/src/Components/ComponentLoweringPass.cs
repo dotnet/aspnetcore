@@ -7,13 +7,18 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
-    internal class ComponentLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
+    internal class ComponentLoweringPass : ComponentIntermediateNodePassBase, IRazorOptimizationPass
     {
         // This pass runs earlier than our other passes that 'lower' specific kinds of attributes.
         public override int Order => 0;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
+            if (!IsComponentDocument(documentNode))
+            {
+                return;
+            }
+
             var @namespace = documentNode.FindPrimaryNamespace();
             var @class = documentNode.FindPrimaryClass();
             if (@namespace == null || @class == null)

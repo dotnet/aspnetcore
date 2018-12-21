@@ -35,18 +35,26 @@ namespace Microsoft.AspNetCore.Razor.Language
             return codeDocument;
         }
 
-        internal virtual RazorCodeDocument Process(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        public virtual RazorCodeDocument Process(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            var codeDocument = CreateCodeDocumentCore(source, fileKind, importSources, tagHelpers);
-            ProcessCore(codeDocument);
-            return codeDocument;
+            throw new NotImplementedException();
         }
 
+        public virtual RazorCodeDocument ProcessDeclarationOnly(RazorProjectItem projectItem)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual RazorCodeDocument ProcessDeclarationOnly(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual RazorCodeDocument ProcessDesignTime(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
+        {
+            throw new NotImplementedException();
+        }
+        
         public virtual RazorCodeDocument ProcessDesignTime(RazorProjectItem projectItem)
         {
             if (projectItem == null)
@@ -59,41 +67,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             return codeDocument;
         }
 
-        internal virtual RazorCodeDocument ProcessDesignTime(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
-        {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            var codeDocument = CreateCodeDocumentDesignTimeCore(source, fileKind, importSources, tagHelpers);
-            ProcessCore(codeDocument);
-            return codeDocument;
-        }
-
         protected abstract RazorCodeDocument CreateCodeDocumentCore(RazorProjectItem projectItem);
 
-        internal virtual RazorCodeDocument CreateCodeDocumentCore(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
-        {
-            var codeDocument = RazorCodeDocument.Create(source, importSources);
-            if (fileKind != null)
-            {
-                codeDocument.SetFileKind(fileKind);
-            }
-            return codeDocument;
-        }
-
         protected abstract RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorProjectItem projectItem);
-
-        internal virtual RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorSourceDocument source, string fileKind, IReadOnlyList<RazorSourceDocument> importSources, IReadOnlyList<TagHelperDescriptor> tagHelpers)
-        {
-            var codeDocument = RazorCodeDocument.Create(source, importSources);
-            if (fileKind != null)
-            {
-                codeDocument.SetFileKind(fileKind);
-            }
-            return codeDocument;
-        }
 
         protected abstract void ProcessCore(RazorCodeDocument codeDocument);
 
@@ -105,8 +81,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             return builder.Build();
         }
-
-        internal static RazorProjectEngine Create() => Create(configure: null);
 
         internal static RazorProjectEngine Create(Action<RazorProjectEngineBuilder> configure) => Create(RazorConfiguration.Default, RazorProjectFileSystem.Empty, configure);
 
@@ -136,7 +110,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             // This allows extensions to rely on default features, and customizations to override choices made by
             // extensions.
             AddDefaultPhases(builder.Phases);
-            AddDefaultsFeatures(builder.Features);
+            AddDefaultFeatures(builder.Features);
+
+            if (configuration.LanguageVersion.CompareTo(RazorLanguageVersion.Version_3_0) >= 0)
+            {
+                FunctionsDirective.Register(builder);
+                ImplementsDirective.Register(builder);
+                InheritsDirective.Register(builder);
+
+                AddComponentFeatures(builder);
+            }
 
             LoadExtensions(builder, configuration.Extensions);
 
@@ -157,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             phases.Add(new DefaultRazorCSharpLoweringPhase());
         }
 
-        private static void AddDefaultsFeatures(ICollection<IRazorFeature> features)
+        private static void AddDefaultFeatures(ICollection<IRazorFeature> features)
         {
             features.Add(new DefaultImportProjectFeature());
 
@@ -221,6 +204,36 @@ namespace Microsoft.AspNetCore.Razor.Language
             });
         }
 
+        private static void AddComponentFeatures(RazorProjectEngineBuilder builder)
+        {
+            // Project Engine Features
+            builder.Features.Add(new ComponentImportProjectFeature());
+
+            // Directives (conditional on file kind)
+            ComponentInjectDirective.Register(builder);
+            ComponentLayoutDirective.Register(builder);
+            ComponentPageDirective.Register(builder);
+            ComponentTypeParamDirective.Register(builder);
+
+            // Document Classifier
+            builder.Features.Add(new ComponentDocumentClassifierPass());
+
+            // Directive Classifier
+            builder.Features.Add(new ComponentWhitespacePass());
+            
+            // Optimization
+            builder.Features.Add(new ComponentComplexAttributeContentPass());
+            builder.Features.Add(new ComponentLoweringPass());
+            builder.Features.Add(new ComponentScriptTagPass());
+            builder.Features.Add(new ComponentEventHandlerLoweringPass());
+            builder.Features.Add(new ComponentReferenceCaptureLoweringPass());
+            builder.Features.Add(new ComponentBindLoweringPass());
+            builder.Features.Add(new ComponentTemplateDiagnosticPass());
+            builder.Features.Add(new ComponentGenericTypePass());
+            builder.Features.Add(new ComponentChildContentDiagnosticPass());
+            builder.Features.Add(new ComponentHtmlBlockPass());
+        }
+
         private static void LoadExtensions(RazorProjectEngineBuilder builder, IReadOnlyList<RazorExtension> extensions)
         {
             for (var i = 0; i < extensions.Count; i++)
@@ -234,9 +247,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                     initializer?.Initialize(builder);
                 }
             }
-
-            // Default extensions.
-            ComponentExtensions.Register(builder);
         }
     }
 }

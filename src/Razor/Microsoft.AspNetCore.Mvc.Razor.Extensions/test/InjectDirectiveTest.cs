@@ -1,15 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class InjectDirectiveTest
+    public class InjectDirectiveTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Version_3_0;
+
         [Fact]
         public void InjectDirectivePass_Execute_DefinesProperty()
         {
@@ -171,14 +172,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return visitor.Node;
         }
 
-        private RazorEngine CreateEngine()
+        protected override void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
-            return RazorProjectEngine.Create(b =>
-            {
-                // Notice we're not registering the InjectDirective.Pass here so we can run it on demand.
-                b.AddDirective(InjectDirective.Directive);
-                b.AddDirective(ModelDirective.Directive);
-            }).Engine;
+            // Notice we're not registering the InjectDirective.Pass here so we can run it on demand.
+            builder.AddDirective(InjectDirective.Directive);
+            builder.AddDirective(ModelDirective.Directive);
         }
 
         private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)

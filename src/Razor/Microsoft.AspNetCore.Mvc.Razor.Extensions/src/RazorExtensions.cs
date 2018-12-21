@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             ModelDirective.Register(builder);
             NamespaceDirective.Register(builder);
             PageDirective.Register(builder);
-
-            InheritsDirective.Register(builder);
+            
             SectionDirective.Register(builder);
 
             builder.Features.Add(new DefaultTagHelperDescriptorProvider());
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Features.Add(new RazorPageDocumentClassifierPass());
             builder.Features.Add(new MvcViewDocumentClassifierPass());
 
-            builder.SetImportFeature(new MvcImportProjectFeature());
+            builder.Features.Add(new MvcImportProjectFeature());
         }
     }
 }

@@ -7,8 +7,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 {
-    public class AssemblyAttributeInjectionPassTest
+    public class AssemblyAttributeInjectionPassTest : RazorProjectEngineTestBase
     {
+        protected override RazorLanguageVersion Version => RazorLanguageVersion.Version_2_1;
+
         [Fact]
         public void Execute_NoOps_IfNamespaceNodeIsMissing()
         {
@@ -20,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             // Act
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             // Act
@@ -71,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             // Act
@@ -112,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             // Act
@@ -147,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             // Act
@@ -190,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
@@ -237,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
@@ -290,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "\\test\\\"Index.cshtml"));
@@ -349,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
@@ -404,7 +406,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
 
             var pass = new AssemblyAttributeInjectionPass
             {
-                Engine = RazorProjectEngine.Create().Engine,
+                Engine = CreateProjectEngine().Engine,
             };
 
             var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "test\\\"Index.cshtml"));

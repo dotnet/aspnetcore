@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract ICollection<DirectiveDescriptor> Directives { get; }
 
+        public virtual string FileKind => null;
+
         public abstract bool ParseLeadingDirectives { get; set; }
 
         public virtual RazorLanguageVersion LanguageVersion { get; }

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             builder.Features.Add(new ModelExpressionPass());
             builder.Features.Add(new MvcViewDocumentClassifierPass());
 
-            builder.SetImportFeature(new MvcImportProjectFeature());
+            builder.Features.Add(new MvcImportProjectFeature());
         }
 
         public static void RegisterViewComponentTagHelpers(RazorProjectEngineBuilder builder)

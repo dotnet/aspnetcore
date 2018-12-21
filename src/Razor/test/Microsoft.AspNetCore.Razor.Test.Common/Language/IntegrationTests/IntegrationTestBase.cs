@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             return projectItem;
         }
 
-        protected RazorProjectItem CreateProjectItemFromFile(string filePath = null)
+        protected RazorProjectItem CreateProjectItemFromFile(string filePath = null, string fileKind = null)
         {
             if (FileName == null)
             {
@@ -201,7 +201,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 basePath: workingDirectory,
                 filePath: filePath,
                 physicalPath: fullPath,
-                relativePhysicalPath: sourceFileName)
+                relativePhysicalPath: sourceFileName,
+                fileKind: fileKind)
             {
                 Content = fileContent,
             };
@@ -321,10 +322,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     });
                 }
 
-                // Decorate the import feature so we can normalize line endings.
-                var importFeature = b.Features.OfType<IImportProjectFeature>().FirstOrDefault();
-                b.Features.Add(new NormalizedDefaultImportFeature(importFeature, LineEnding));
-                b.Features.Remove(importFeature);
+                b.Features.Add(new DefaultTypeNameFeature());
+
+                // Decorate each import feature so we can normalize line endings.
+                foreach (var feature in b.Features.OfType<IImportProjectFeature>().ToArray())
+                {
+                    b.Features.Remove(feature);
+                    b.Features.Add(new NormalizedDefaultImportFeature(feature, LineEnding));
+                }
             });
         }
 
