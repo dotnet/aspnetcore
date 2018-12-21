@@ -12,6 +12,9 @@ bool ends_with(const std::wstring &source, const std::wstring &suffix, bool igno
 bool equals_ignore_case(const std::wstring& s1, const std::wstring& s2);
 
 [[nodiscard]]
+int compare_ignore_case(const std::wstring& s1, const std::wstring& s2);
+
+[[nodiscard]]
 std::wstring to_wide_string(const std::string &source, const unsigned int codePage);
 
 template<typename ... Args>
@@ -48,3 +51,9 @@ std::string format(const std::string& format, Args ... args)
     return result;
 }
 
+struct ignore_case_comparer
+{
+    bool operator() (const std::wstring & s1, const std::wstring & s2) const {
+        return compare_ignore_case(s1, s2) == -1;
+    }
+};

@@ -5,6 +5,7 @@
 
 #include "StringHelpers.h"
 #include "ConfigurationLoadException.h"
+#include <map>
 
 std::wstring ConfigurationSection::GetRequiredString(const std::wstring& name)  const
 {
@@ -59,6 +60,17 @@ std::vector<std::pair<std::wstring, std::wstring>> ConfigurationSection::GetKeyV
     {
         pairs.emplace_back(element->GetRequiredString(CS_ASPNETCORE_COLLECTION_ITEM_NAME),
                            element->GetString(CS_ASPNETCORE_COLLECTION_ITEM_VALUE).value_or(L""));
+    }
+    return pairs;
+}
+
+std::map<std::wstring, std::wstring, ignore_case_comparer> ConfigurationSection::GetMap(const std::wstring& name) const
+{
+    std::map<std::wstring, std::wstring, ignore_case_comparer> pairs;
+
+    for (auto const element : GetRequiredSection(name)->GetCollection())
+    {
+        pairs.insert_or_assign(element->GetRequiredString(CS_ASPNETCORE_COLLECTION_ITEM_NAME), element->GetString(CS_ASPNETCORE_COLLECTION_ITEM_VALUE).value_or(L""));
     }
     return pairs;
 }

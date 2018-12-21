@@ -17,13 +17,18 @@ bool ends_with(const std::wstring &source, const std::wstring &suffix, bool igno
 
 bool equals_ignore_case(const std::wstring& s1, const std::wstring& s2)
 {
-    return CSTR_EQUAL == CompareStringOrdinal(s1.c_str(), static_cast<int>(s1.length()), s2.c_str(), static_cast<int>(s2.length()), true);
+    return compare_ignore_case(s1, s2) == 0;
+}
+
+int compare_ignore_case(const std::wstring& s1, const std::wstring& s2)
+{
+    return CompareStringOrdinal(s1.c_str(), static_cast<int>(s1.length()), s2.c_str(), static_cast<int>(s2.length()), true) - CSTR_EQUAL;
 }
 
 std::wstring to_wide_string(const std::string &source, const unsigned int codePage)
 {
     // MultiByteToWideChar returns 0 on failure, which is also the same return value
-    // for empty strings. Preemptive return. 
+    // for empty strings. Preemptive return.
     if (source.length() == 0)
     {
         return L"";

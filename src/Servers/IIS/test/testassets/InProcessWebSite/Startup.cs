@@ -266,29 +266,6 @@ namespace TestSite
             }
         }
 
-        private async Task CheckEnvironmentVariable(HttpContext ctx)
-        {
-            var variable = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_TESTING_VALUE");
-            await ctx.Response.WriteAsync(variable);
-        }
-
-        private async Task CheckEnvironmentLongValueVariable(HttpContext ctx)
-        {
-            var variable = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_TESTING_LONG_VALUE");
-            await ctx.Response.WriteAsync(variable);
-        }
-
-        private async Task CheckAppendedEnvironmentVariable(HttpContext ctx)
-        {
-            var variable = Environment.GetEnvironmentVariable("ProgramFiles");
-            await ctx.Response.WriteAsync(variable);
-        }
-
-        private async Task CheckRemoveAuthEnvironmentVariable(HttpContext ctx)
-        {
-            var variable = Environment.GetEnvironmentVariable("ASPNETCORE_IIS_HTTPAUTH");
-            await ctx.Response.WriteAsync(variable);
-        }
         private async Task ReadAndWriteSynchronously(HttpContext ctx)
         {
             var t2 = Task.Run(() => WriteManyTimesToResponseBody(ctx));

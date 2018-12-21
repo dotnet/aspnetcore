@@ -425,37 +425,20 @@ IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrCont
 HRESULT
 IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
 {
-    auto variables = m_pConfig->QueryEnvironmentVariables();
-
-    auto inputTable = std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER>(new ENVIRONMENT_VAR_HASH());
-    RETURN_IF_FAILED(inputTable->Initialize(37 /*prime*/));
-    // Copy environment variables to old style hash table
-    for (auto & variable : variables)
-    {
-        auto pNewEntry = std::unique_ptr<ENVIRONMENT_VAR_ENTRY, ENVIRONMENT_VAR_ENTRY_DELETER>(new ENVIRONMENT_VAR_ENTRY());
-        RETURN_IF_FAILED(pNewEntry->Initialize((variable.first + L"=").c_str(), variable.second.c_str()));
-        RETURN_IF_FAILED(inputTable->InsertRecord(pNewEntry.get()));
-    }
-
-    ENVIRONMENT_VAR_HASH* pHashTable = NULL;
-    std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER> table;
-    RETURN_IF_FAILED(ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
-        inputTable.get(),
+    auto variables = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
+        m_pConfig->QueryEnvironmentVariables(),
         m_pConfig->QueryWindowsAuthEnabled(),
         m_pConfig->QueryBasicAuthEnabled(),
         m_pConfig->QueryAnonymousAuthEnabled(),
+        false, // fAddHostingStartup
         QueryApplicationPhysicalPath().c_str(),
-        nullptr, /* pHttpsPort */
-        &pHashTable));
+        nullptr);
 
-    table.reset(pHashTable);
-
-    HRESULT hr = S_OK;
-    table->Apply(ENVIRONMENT_VAR_HELPERS::AppendEnvironmentVariables, &hr);
-    RETURN_IF_FAILED(hr);
-
-    table->Apply(ENVIRONMENT_VAR_HELPERS::SetEnvironmentVariables, &hr);
-    RETURN_IF_FAILED(hr);
+    for (const auto & variable : variables)
+    {
+        LOG_INFOF(L"Setting environment variable %ls=%ls", variable.first.c_str(), variable.second.c_str());
+        SetEnvironmentVariable(variable.first.c_str(), variable.second.c_str());
+    }
 
     return S_OK;
 }

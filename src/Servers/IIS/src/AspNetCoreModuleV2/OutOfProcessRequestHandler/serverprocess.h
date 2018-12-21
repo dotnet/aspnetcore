@@ -4,6 +4,7 @@
 #pragma once
 
 #include <random>
+#include <map>
 
 #define MIN_PORT                                    1025
 #define MAX_PORT                                    48000
@@ -33,7 +34,7 @@ public:
         _In_ BOOL                  fWindowsAuthEnabled,
         _In_ BOOL                  fBasicAuthEnabled,
         _In_ BOOL                  fAnonymousAuthEnabled,
-        _In_ ENVIRONMENT_VAR_HASH* pEnvironmentVariables,
+        _In_ std::map<std::wstring, std::wstring, ignore_case_comparer>& pEnvironmentVariables,
         _In_ BOOL                  fStdoutLogEnabled,
         _In_ BOOL                  fWebSocketSupported,
         _In_ STRU                 *pstruStdoutLogFile,
@@ -290,5 +291,5 @@ private:
     HANDLE                  m_hChildProcessWaitHandles[MAX_ACTIVE_CHILD_PROCESSES];
 
     PROCESS_MANAGER         *m_pProcessManager;
-    ENVIRONMENT_VAR_HASH    *m_pEnvironmentVarTable ;
+    std::map<std::wstring, std::wstring, ignore_case_comparer> m_pEnvironmentVarTable;
 };

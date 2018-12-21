@@ -53,7 +53,7 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     m_fStdoutLogEnabled = aspNetCoreSection->GetRequiredBool(CS_ASPNETCORE_STDOUT_LOG_ENABLED);
     m_struStdoutLogFile = aspNetCoreSection->GetRequiredString(CS_ASPNETCORE_STDOUT_LOG_FILE);
     m_fDisableStartUpErrorPage = aspNetCoreSection->GetRequiredBool(CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE);
-    m_environmentVariables = aspNetCoreSection->GetKeyValuePairs(CS_ASPNETCORE_ENVIRONMENT_VARIABLES);
+    m_environmentVariables = aspNetCoreSection->GetMap(CS_ASPNETCORE_ENVIRONMENT_VARIABLES);
 
     const auto handlerSettings = aspNetCoreSection->GetKeyValuePairs(CS_ASPNETCORE_HANDLER_SETTINGS);
     m_fSetCurrentDirectory = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY).value_or(L"true"), L"true");

@@ -134,6 +134,12 @@ private:
     return condition;
 }
 
+ __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS const InvalidOperationException& exception)
+{
+    TraceException(LOCATION_CALL exception);
+    DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, "InvalidOperationException '%ls' caught at " LOCATION_FORMAT, exception.as_wstring().c_str(), LOCATION_CALL_ONLY);
+}
+
  __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS const std::exception& exception)
 {
     TraceException(LOCATION_CALL exception);
@@ -164,6 +170,11 @@ __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ON
     {
         ReportException(LOCATION_CALL exception);
         return exception.GetResult();
+    }
+    catch (const InvalidOperationException& exception)
+    {
+        ReportException(LOCATION_CALL exception);
+        return HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION);
     }
     catch (const std::exception& exception)
     {

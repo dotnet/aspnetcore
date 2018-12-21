@@ -24,7 +24,7 @@ SERVER_PROCESS::Initialize(
     BOOL                  fWindowsAuthEnabled,
     BOOL                  fBasicAuthEnabled,
     BOOL                  fAnonymousAuthEnabled,
-    ENVIRONMENT_VAR_HASH *pEnvironmentVariables,
+    std::map<std::wstring, std::wstring, ignore_case_comparer>& pEnvironmentVariables,
     BOOL                  fStdoutLogEnabled,
     BOOL                  fWebSocketSupported,
     STRU                  *pstruStdoutLogFile,
@@ -761,6 +761,8 @@ SERVER_PROCESS::StartProcess(
     ENVIRONMENT_VAR_HASH    *pHashTable = NULL;
     PWSTR                   pStrStage = NULL;
     BOOL                    fCriticalError = FALSE;
+    std::map<std::wstring, std::wstring, ignore_case_comparer> variables;
+
     GetStartupInfoW(&startupInfo);
 
     //
@@ -782,27 +784,30 @@ SERVER_PROCESS::StartProcess(
             goto Failure;
         }
 
-        if (FAILED_LOG(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
-            m_pEnvironmentVarTable,
-            m_fWindowsAuthEnabled,
-            m_fBasicAuthEnabled,
-            m_fAnonymousAuthEnabled,
-            m_struAppFullPath.QueryStr(),
-            m_struHttpsPort.QueryStr(),
-            &pHashTable)))
+        try
         {
-            pStrStage = L"InitEnvironmentVariablesTable";
-            goto Failure;
+            variables = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
+                m_pEnvironmentVarTable,
+                m_fWindowsAuthEnabled,
+                m_fBasicAuthEnabled,
+                m_fAnonymousAuthEnabled,
+                true, // fAddHostingStartup
+                m_struAppFullPath.QueryStr(),
+                m_struHttpsPort.QueryStr());
+
+            variables = ENVIRONMENT_VAR_HELPERS::AddWebsocketEnabledToEnvironmentVariables(variables, m_fWebSocketSupported);
         }
+        CATCH_RETURN();
 
-        if (FAILED_LOG(hr = ENVIRONMENT_VAR_HELPERS::AddWebsocketEnabledToEnvironmentVariables(
-            pHashTable,
-            m_fWebSocketSupported
-        )))
+
+        pHashTable = new ENVIRONMENT_VAR_HASH();
+        RETURN_IF_FAILED(pHashTable->Initialize(37 /*prime*/));
+        // Copy environment variables to old style hash table
+        for (auto & variable : variables)
         {
-            pStrStage = L"AddWebsocketEnabledToEnvironmentVariables";
-            goto Failure;
-
+            auto pNewEntry = std::unique_ptr<ENVIRONMENT_VAR_ENTRY, ENVIRONMENT_VAR_ENTRY_DELETER>(new ENVIRONMENT_VAR_ENTRY());
+            RETURN_IF_FAILED(pNewEntry->Initialize((variable.first + L"=").c_str(), variable.second.c_str()));
+            RETURN_IF_FAILED(pHashTable->InsertRecord(pNewEntry.get()));
         }
 
         //
@@ -1793,7 +1798,6 @@ SERVER_PROCESS::~SERVER_PROCESS()
 
     CleanUp();
 
-    m_pEnvironmentVarTable = NULL;
     // no need to free m_pEnvironmentVarTable, as it references to
     // the same hash table hold by configuration.
     // the hashtable memory will be freed once onfiguration got recycled

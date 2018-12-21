@@ -134,5 +134,10 @@ namespace TestSite
             GetDllDirectory(1024, builder);
             await context.Response.WriteAsync(builder.ToString());
         }
+
+        private async Task GetEnvironmentVariable(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(Environment.GetEnvironmentVariable(ctx.Request.Query["name"].ToString()));
+        }
     }
 }
