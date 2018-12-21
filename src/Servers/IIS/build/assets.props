@@ -167,6 +167,7 @@
           DllLocation="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.dll"
           Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj"
           PdbLocation="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.pdb"
+          HandlerPath="2.0.0"
         />
         <ShimComponents
           VCPlatform="Win32"
@@ -180,6 +181,7 @@
           DllLocation="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.dll"
           Include="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj"
           PdbLocation="$(MSBuildThisFileDirectory)..\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.pdb"
+          HandlerPath="2.0.0"
         />
 
        <InProcessComponents

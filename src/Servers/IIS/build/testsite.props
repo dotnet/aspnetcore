@@ -54,34 +54,26 @@
   <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
     <PropertyGroup>
       <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\test\testassets\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
-      <InjectDepsApp Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">$(InjectDepsAssembly)</InjectDepsApp>
-      <InjectDepsArguments>"win7-$(NativePlatform)" "$(AncmInProcessRHPath)"</InjectDepsArguments>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
-      <InjectDepsAssembly>$(InjectDepsAssembly).exe</InjectDepsAssembly>
-      <InjectDepsApp>$(InjectDepsAssembly)</InjectDepsApp>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
-      <InjectDepsAssembly>$(InjectDepsAssembly).dll</InjectDepsAssembly>
-      <InjectDepsApp>dotnet</InjectDepsApp>
-      <InjectDepsArguments>$(InjectDepsAssembly) $(InjectDepsArguments)</InjectDepsArguments>
+      <InjectDepsApp>dotnet $(InjectDepsAssembly).dll</InjectDepsApp>
     </PropertyGroup>
   </Target>
 
+
   <Target Name="InjectRequestHandler"
-          Condition=" '$(InProcessTestSite)' == 'true' and ( '$(OS)' == 'Windows_NT' or '$(TargetFrameworkIdentifier)' != '.NETFramework' ) "
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(OS)' == 'Windows_NT' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           AfterTargets="GenerateBuildDependencyFile"
           DependsOnTargets="PrepareInjectionApp">
-    <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(ProjectDepsFilePath)&quot;" />
+    <Exec Command="$(InjectDepsApp) &quot;$(ProjectDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
   <Target Name="InjectRequestHandlerOnPublish"
-          Condition=" '$(InProcessTestSite)' == 'true' and ( '$(OS)' == 'Windows_NT' or '$(TargetFrameworkIdentifier)' != '.NETFramework' ) "
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(OS)' == 'Windows_NT' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           AfterTargets="GeneratePublishDependencyFile"
           DependsOnTargets="PrepareInjectionApp">
-    <Exec Command="$(InjectDepsApp) $(InjectDepsArguments) &quot;$(PublishDepsFilePath)&quot;" />
+    <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
 </Project>

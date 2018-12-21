@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -50,12 +50,7 @@
           BeforeTargets="AssignTargetPaths"
           Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
-      <None Include="%(RunInProcessComponents.DllLocation)"
-            CopyToOutputDirectory="PreserveNewest"
-            Link="%(RunInProcessComponents.NativeAsset).dll" />
-      <None Include="%(RunInProcessComponents.PdbLocation)"
-            CopyToOutputDirectory="PreserveNewest"
-            Link="%(RunInProcessComponents.NativeAsset).pdb" />
+      <None Include="%(InProcessComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
 </Project>
