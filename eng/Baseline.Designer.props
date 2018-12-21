@@ -644,6 +644,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.NodeServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
