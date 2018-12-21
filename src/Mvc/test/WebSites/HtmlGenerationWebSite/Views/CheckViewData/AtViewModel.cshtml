@@ -21,7 +21,7 @@
     @Html.DisplayFor(m => m)
 </div>
 <div class="row">
-    @Html.Partial("PartialForViewModel")
+    @(await Html.PartialAsync("PartialForViewModel"))
 </div>
 <div class="row">
     @(await Component.InvokeAsync<CheckViewData>())

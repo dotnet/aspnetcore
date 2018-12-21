@@ -1,14 +1,16 @@
-﻿<Project Sdk="Internal.AspNetCore.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+    <Compile Include="$(SharedSourceRoot)Razor\**\*.cs" />
+  </ItemGroup>
 
-    <PackageReference Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreRazorTagHelpersTestingSourcesPackageVersion)" />
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
   </ItemGroup>
 
 </Project>
