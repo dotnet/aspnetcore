@@ -13,11 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <Content Include="..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" PackagePath="contentFiles/any/any/x86"/>
-    <Content Include="..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" PackagePath="contentFiles/any/any/x86"/>
-    <Content Include="..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" PackagePath="contentFiles/any/any/x64"/>
-    <Content Include="..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb" PackagePath="contentFiles/any/any/x64"/>
-    <Content Include="..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\*.xml" PackagePath=""/>
+    <Content Include="..\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" PackagePath="contentFiles/any/any/x86"/>
+    <Content Include="..\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" PackagePath="contentFiles/any/any/x86"/>
+    <Content Include="..\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" PackagePath="contentFiles/any/any/x64"/>
+    <Content Include="..\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb" PackagePath="contentFiles/any/any/x64"/>
+    <Content Include="..\AspNetCore\bin\$(Configuration)\x64\*.xml" PackagePath=""/>
     <Content Include="Microsoft.AspNetCore.AspNetCoreModule.props" PackagePath="build\" />
   </ItemGroup>
 

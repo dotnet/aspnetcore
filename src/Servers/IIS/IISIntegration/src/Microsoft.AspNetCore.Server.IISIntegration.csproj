@@ -15,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(VCTargetsPath)' != ''">
-    <ProjectReference Include="..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" SetPlatform="Platform=x64">
+    <ProjectReference Include="..\..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" SetPlatform="Platform=x64">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" SetPlatform="Platform=x86">
+    <ProjectReference Include="..\..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" SetPlatform="Platform=x86">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
