@@ -78,11 +78,14 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization.Routing" ProjectPath="$(RepositoryRoot)src\Middleware\Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization" ProjectPath="$(RepositoryRoot)src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.MiddlewareAnalysis" ProjectPath="$(RepositoryRoot)src\Middleware\MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.NodeServices" ProjectPath="$(RepositoryRoot)src\Middleware\NodeServices\src\Microsoft.AspNetCore.NodeServices.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" ProjectPath="$(RepositoryRoot)src\Middleware\ResponseCaching.Abstractions\src\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ResponseCaching" ProjectPath="$(RepositoryRoot)src\Middleware\ResponseCaching\src\Microsoft.AspNetCore.ResponseCaching.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ResponseCompression" ProjectPath="$(RepositoryRoot)src\Middleware\ResponseCompression\src\Microsoft.AspNetCore.ResponseCompression.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Rewrite" ProjectPath="$(RepositoryRoot)src\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Session" ProjectPath="$(RepositoryRoot)src\Middleware\Session\src\Microsoft.AspNetCore.Session.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepositoryRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices" ProjectPath="$(RepositoryRoot)src\Middleware\SpaServices\src\Microsoft.AspNetCore.SpaServices.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.StaticFiles" ProjectPath="$(RepositoryRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepositoryRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
     <ProjectReferenceProvider Include="Microsoft.CodeAnalysis.Razor" ProjectPath="$(RepositoryRoot)src\Razor\CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj" />

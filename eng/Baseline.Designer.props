@@ -39,19 +39,6 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
-  <!-- Package: Microsoft.AspNetCore.Authentication-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.WebEncoders" Version="[2.2.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Abstractions' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -138,13 +125,18 @@
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="[5.3.0, )" />
     <BaselinePackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[5.3.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Authorization-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' ">
+  <!-- Package: Microsoft.AspNetCore.Authentication-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'netstandard2.0' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.WebEncoders" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authorization.Policy-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization.Policy' ">
@@ -154,6 +146,14 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Authorization-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Connections.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -161,6 +161,15 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.2, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.CookiePolicy-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.CookiePolicy' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.CookiePolicy' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Cors-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cors' ">
@@ -170,15 +179,6 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.CookiePolicy-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.CookiePolicy' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.CookiePolicy' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
@@ -542,6 +542,18 @@
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Localization" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Mvc.Razor.Extensions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' AND '$(TargetFramework)' == 'net46' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[2.2.0, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Razor-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -616,18 +628,6 @@
     <BaselinePackageReference Include="Microsoft.AspNet.WebApi.Client" Version="[5.2.6, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.2.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Mvc.Razor.Extensions-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' AND '$(TargetFramework)' == 'net46' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[2.2.0, )" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[2.2.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -647,19 +647,21 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.NodeServices-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Owin-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Razor-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Razor.Design-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Design' ">
@@ -678,6 +680,13 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor.Runtime' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Razor" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Razor-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Razor' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.ResponseCaching.Abstractions-->
@@ -894,6 +903,25 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SpaServices.Extensions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SpaServices" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SpaServices-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.NodeServices" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.StaticFiles-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.StaticFiles' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -931,21 +959,6 @@
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.5.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.CodeAnalysis.Razor-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' AND '$(TargetFramework)' == 'net46' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="[2.8.0, )" />
-    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Common" Version="[2.8.0, )" />
-    <BaselinePackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="[4.3.0, )" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="[2.8.0, )" />
-    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Common" Version="[2.8.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -969,6 +982,21 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Debug" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.CodeAnalysis.Razor-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' AND '$(TargetFramework)' == 'net46' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="[2.8.0, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Common" Version="[2.8.0, )" />
+    <BaselinePackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="[4.3.0, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.CodeAnalysis.Razor' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="[2.8.0, )" />
+    <BaselinePackageReference Include="Microsoft.CodeAnalysis.Common" Version="[2.8.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore' ">
