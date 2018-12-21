@@ -10,45 +10,28 @@ with the right MSBuild incantations to get output copied to the right place.
     <When Condition="'$(OS)' == 'Windows_NT' AND '$(MSBuildRuntimeType)' != 'Core' ">
       <ItemGroup Condition=" '@(Reference->AnyHaveMetadataValue('Identity', 'AspNetCoreModule'))' == 'true' ">
         <Reference Remove="AspNetCoreModule" />
-        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="x64" />
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="x86" />
       </ItemGroup>
 
       <ItemGroup Condition=" '@(Reference->AnyHaveMetadataValue('Identity', 'AspNetCoreModuleV2'))' == 'true' ">
         <Reference Remove="AspNetCoreModuleV2" />
-        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" />
-        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" />
-        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" />
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="x64" />
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64" HandlerPath="2.0.0" />
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" Platform="x64" />
+
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="x86" />
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x86" HandlerPath="2.0.0" />
+        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" Platform="x86" />
       </ItemGroup>
 
       <ItemGroup Condition="@(NativeProjectReference->Count()) != 0 AND '$(BuildNative)' != 'false' ">
         <!-- TODO: investigate building just one arch at a time. -->
         <ProjectReference Include="@(NativeProjectReference)">
           <!-- Set the arch-->
-          <SetPlatform>Platform=x64</SetPlatform>
+          <SetPlatform>Platform=%(Platform)</SetPlatform>
           <!-- The base path for the output. -->
           <LinkBase>x64\%(HandlerPath)\</LinkBase>
-          <!-- This reference assembly doesn't need -->
-          <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-          <!-- NativeContent is a custom type of item group which is assigned a target path after project references are resolved.  -->
-          <OutputItemType>NativeContent</OutputItemType>
-          <!-- Set the copy policy. -->
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-          <!-- This instructs the ProjectRef protocol to collect symbols as well as built output -->
-          <Targets>Build;BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup</Targets>
-          <!-- Optimization. Native projects don't have a .NET TargetFramework -->
-          <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-          <UndefineProperties>TargetFramework</UndefineProperties>
-          <!-- Don't put this reference into generated .nuspec -->
-          <PrivateAssets>All</PrivateAssets>
-          <!-- Publish assets from this reference -->
-          <Publish>true</Publish>
-        </ProjectReference>
-
-        <ProjectReference Include="@(NativeProjectReference)">
-          <!-- Set the arch-->
-          <SetPlatform>Platform=x86</SetPlatform>
-          <!-- The base path for the output. -->
-          <LinkBase>x86\%(HandlerPath)\</LinkBase>
           <!-- This reference assembly doesn't need -->
           <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
           <!-- NativeContent is a custom type of item group which is assigned a target path after project references are resolved.  -->
