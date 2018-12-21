@@ -31,7 +31,7 @@ Run tests.
 Run code signing.
 
 .PARAMETER Projects
-A list of projects to build. (Must be an absolute path.) Globbing patterns are supported, such as "$(pwd)/**/*.csproj"
+A list of projects to build. Globbing patterns are supported, such as "$(pwd)/**/*.csproj"
 
 .PARAMETER All
 Build all project types.
@@ -228,6 +228,12 @@ if ($All) {
     $MSBuildArguments += '/p:BuildAllProjects=true'
 }
 elseif ($Projects) {
+    if (![System.IO.Path]::IsPathRooted($Projects))
+    {
+        $CurrentDirectory = Get-Location;
+        $Projects = Join-Path $CurrentDirectory $Projects
+    }
+    Write-Warning $Projects
     $MSBuildArguments += "/p:Projects=$Projects"
 }
 else {
