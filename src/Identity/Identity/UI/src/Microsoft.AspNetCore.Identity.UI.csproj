@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
+    <RazorAssemblyDescription>Compiled Razor views assembly for the ASP.NET Core Identity UI package.</RazorAssemblyDescription>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot/**/*" />
+    <EmbeddedResource Remove="wwwroot/**/.bower.json" />
+    <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
+    <None Remove="wwwroot/**/.bower.json" />
+    <None Remove="wwwroot/**/LICENSE*" />
+    <None Include="THIRD-PARTY-NOTICES" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.Extensions.Identity.Stores" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_parameter1>Microsoft.AspNetCore.Mvc.AdditionalReference</_parameter1>
+      <_parameter2>$(RazorTargetName).dll,false</_parameter2>
+    </AssemblyAttribute>
+
+    <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+      <_Parameter1>BuildNumber</_Parameter1>
+      <_Parameter2>$(BuildNumber)</_Parameter2>
+    </RazorAssemblyAttribute>
+
+    <RazorTargetAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+      <_Parameter1>BuildNumber</_Parameter1>
+      <_Parameter2>$(BuildNumber)</_Parameter2>
+    </RazorTargetAssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
+    <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
+  </ItemGroup>
+
+  <Target Name="VerifyBuildOutputs" AfterTargets="Build">
+    <PropertyGroup>
+      <ExpectedOutputFile>$(OutputPath)$(RazorTargetName).dll</ExpectedOutputFile>
+    </PropertyGroup>
+
+    <Error Text="Unable to find precompiled view file $(ExpectedOutputFile)" Condition="!Exists('$(ExpectedOutputFile)')" />
+  </Target>
+
+</Project>

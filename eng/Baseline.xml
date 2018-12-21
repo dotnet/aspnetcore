@@ -53,6 +53,10 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Http" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.HttpOverrides" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.HttpsPolicy" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Identity" Version="2.1.6" />
+  <Package Id="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.1.6" />
+  <Package Id="Microsoft.AspNetCore.Identity.Specification.Tests" Version="2.1.6" />
+  <Package Id="Microsoft.AspNetCore.Identity.UI" Version="2.1.6" />
   <Package Id="Microsoft.AspNetCore.JsonPatch" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Localization.Routing" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Localization" Version="2.1.1" />
@@ -101,6 +105,8 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.WebUtilities" Version="2.1.1" />
+  <Package Id="Microsoft.Extensions.Identity.Core" Version="2.1.6" />
+  <Package Id="Microsoft.Extensions.Identity.Stores" Version="2.1.6" />
   <Package Id="Microsoft.AspNetCore" Version="2.1.6" />
   <Package Id="Microsoft.CodeAnalysis.Razor" Version="2.1.2" />
   <Package Id="Microsoft.Net.Http.Headers" Version="2.1.1" />
