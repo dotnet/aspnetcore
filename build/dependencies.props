@@ -93,11 +93,14 @@
     <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0</MicrosoftExtensionsWebEncodersPackageVersion>
 
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion>
     <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.2.0</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>2.2.0</MicrosoftExtensionsBuffersMemoryPoolSourcesPackageVersion>
     <InternalWebHostBuilderFactorySourcesPackageVersion>2.2.0</InternalWebHostBuilderFactorySourcesPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.6.0-rtm-final</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>2.2.0-rtm-35687</MicrosoftAspNetCoreServerIntegrationTestingIISPackageVersion>
+
 
     <!-- 3rd party dependencies -->
     <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>

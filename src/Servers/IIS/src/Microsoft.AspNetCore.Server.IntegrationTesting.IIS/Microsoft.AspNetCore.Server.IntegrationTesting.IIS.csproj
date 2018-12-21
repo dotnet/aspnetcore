@@ -32,6 +32,12 @@
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" />
   </ItemGroup>
 
+  <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(OS)' == 'Windows_NT'">
+    <ItemGroup>
+      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.HandlerPath)\%(ShimComponents.NativeAsset).dll" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />

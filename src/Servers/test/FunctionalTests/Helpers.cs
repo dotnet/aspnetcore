@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,10 +16,10 @@ namespace ServerComparison.FunctionalTests
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
             {
-                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "ServerTests.sln"));
+                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "FunctionalTests.sln"));
                 if (solutionFileInfo.Exists)
                 {
-                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "test", "ServerComparison.TestSites"));
+                    return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "testassets", "ServerComparison.TestSites"));
                 }
 
                 directoryInfo = directoryInfo.Parent;
