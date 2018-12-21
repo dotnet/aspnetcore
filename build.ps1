@@ -233,7 +233,6 @@ elseif ($Projects) {
         $CurrentDirectory = Get-Location;
         $Projects = Join-Path $CurrentDirectory $Projects
     }
-    Write-Warning $Projects
     $MSBuildArguments += "/p:Projects=$Projects"
 }
 else {
