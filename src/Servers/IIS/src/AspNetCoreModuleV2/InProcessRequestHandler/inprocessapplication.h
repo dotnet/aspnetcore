@@ -104,6 +104,7 @@ public:
     static
     HRESULT Start(
         IHttpServer& pServer,
+        IHttpSite* pSite,
         IHttpApplication& pHttpApplication,
         APPLICATION_PARAMETER* pParameters,
         DWORD nParameters,

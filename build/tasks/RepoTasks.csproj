@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Remove="Internal.AspNetCore.Sdk" />
-    <PackageReference Include="Microsoft.DotNet.Archive" Version="$(MicrosoftDotNetArchivePackageVersion)" />
     <PackageReference Include="NuGet.Build.Tasks" Version="4.9.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DevDependency_MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageReference Include="WindowsAzure.Storage" Version="$(DevDependency_WindowsAzureStoragePackageVersion)" />

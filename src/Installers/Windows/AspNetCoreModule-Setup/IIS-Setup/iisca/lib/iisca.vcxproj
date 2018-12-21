@@ -87,6 +87,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(WIX)sdk\$(WixPlatformToolset)\inc;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level4</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalDependencies>nothrownew.obj;httpapi.lib;shlwapi.lib;ahadmin.lib;xmllite.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>

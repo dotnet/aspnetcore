@@ -37,12 +37,17 @@ public:
     virtual std::optional<DWORD> GetLong(const std::wstring& name) const = 0;
     virtual std::optional<DWORD> GetTimespan(const std::wstring& name) const = 0;
 
+    virtual std::optional<std::shared_ptr<ConfigurationSection>> GetSection(const std::wstring& name) const = 0;
+    virtual std::vector<std::shared_ptr<ConfigurationSection>> GetCollection() const = 0;
+
     std::wstring GetRequiredString(const std::wstring& name) const;
     bool GetRequiredBool(const std::wstring& name)  const;
     DWORD GetRequiredLong(const std::wstring& name)  const;
     DWORD GetRequiredTimespan(const std::wstring& name)  const;
 
-    virtual std::vector<std::pair<std::wstring, std::wstring>> GetKeyValuePairs(const std::wstring& name) const = 0;
+    virtual std::vector<std::pair<std::wstring, std::wstring>> GetKeyValuePairs(const std::wstring& name) const;
+
+    virtual std::shared_ptr<ConfigurationSection> GetRequiredSection(const std::wstring & name) const;
 
 protected:
     static void ThrowRequiredException(const std::wstring& name);

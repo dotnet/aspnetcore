@@ -20,7 +20,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path "$PSScriptRoot/../../../"
-Import-Module -Scope Local "$repoRoot/scripts/common.psm1" -Force
+Import-Module -Scope Local "$repoRoot/eng/scripts/common.psm1" -Force
 $msbuild = Get-MSBuildPath -Prerelease -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
 
 $harvestRoot = "$repoRoot/obj/sfx/"
@@ -41,7 +41,7 @@ if (-not (Test-Path "$harvestRoot/x64/shared/")) {
 Push-Location $PSScriptRoot
 try {
     Invoke-Block { & $msbuild `
-            tasks/InstallerTasks.csproj `
+            InstallerTasks/InstallerTasks.csproj `
             -nologo `
             -m `
             -v:m `

@@ -51,7 +51,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
 
 $repoRoot = Resolve-Path "$PSScriptRoot/../../"
-Import-Module "$repoRoot/scripts/common.psm1" -Scope Local -Force
+Import-Module "$repoRoot/eng/scripts/common.psm1" -Scope Local -Force
 
 # This ID corresponds to the ProdCon build number
 Write-Host "ProductBuildId:  $env:PRODUCTBUILDID"

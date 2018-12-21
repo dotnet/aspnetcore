@@ -6,8 +6,6 @@
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
     <Lang Condition="'$(Lang)' == ''">ENU</Lang>
     <Cultures>en-US</Cultures>
-    <BaseOutputPath>$(RootOutputPath)bin/$(Configuration)/installers/</BaseOutputPath>
-    <OutputPath>$(BaseOutputPath)</OutputPath>
   </PropertyGroup>
 
   <!-- Additional parameters for Light/Candle-->

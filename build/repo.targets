@@ -1,6 +1,5 @@
 <Project>
   <Import Project="RepositoryBuild.targets" />
-  <Import Project="PackageArchive.targets" />
   <Import Project="AzureIntegration.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="CodeSign.targets" />
@@ -14,21 +13,40 @@
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.g.props</GeneratedPackageVersionPropsPath>
     <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.g.props</GeneratedRestoreSourcesPropsPath>
 
+    <!-- Reset the default korebuild lifecycle. -->
+    <BuildDependsOn>Prepare</BuildDependsOn>
+    <!-- Map bootstrapper flags to KoreBuild targets -->
+    <BuildDependsOn Condition=" '$(_RunRestore)' == 'true' ">$(BuildDependsOn);Restore</BuildDependsOn>
+    <BuildDependsOn Condition=" '$(_RunBuild)' == 'true' ">$(BuildDependsOn);Compile</BuildDependsOn>
+    <BuildDependsOn Condition=" '$(_RunPack)' == 'true' ">$(BuildDependsOn);Package</BuildDependsOn>
+    <BuildDependsOn Condition=" '$(_RunTests)' == 'true' ">$(BuildDependsOn);Test;Verify</BuildDependsOn>
+    <SkipTests Condition=" '$(_RunTests)' != 'true' ">true</SkipTests>
+    <DisableCodeSigning Condition=" '$(_RunSign)' != 'true' OR '$(OS)' != 'Windows_NT' ">true</DisableCodeSigning>
+
     <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn)</PrepareDependsOn>
-    <PrepareDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
+    <PrepareDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
+
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
-    <RestoreDependsOn Condition=" '$(SkipNpm)' != 'true' ">$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
+
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
+    <RestoreDependsOn Condition=" '$(BuildNodeJS)' == 'true' ">$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
+
+    <CompileDependsOn />
+    <CompileDependsOn Condition=" '$(_RunRestore)' == 'true' ">Restore</CompileDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
-    <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
-    <PackageDependsOn Condition=" '$(_ProjectsOnly)' == 'true'">$(PackageDependsOn);PackProjects</PackageDependsOn>
-    <PackageDependsOn Condition=" '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</PackageDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CodeSign</PackageDependsOn>
+    <CompileDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
+
+    <PackageDependsOn>$(PackageDependsOn);PackProjects</PackageDependsOn>
+    <PackageDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(PackageDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</PackageDependsOn>
+
+    <TestDependsOn />
+    <TestDependsOn Condition=" '$(_RunBuild)' == 'true' ">$(TestDependsOn);Compile</TestDependsOn>
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
-    <TestDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(TestDependsOn);_TestRepositories</TestDependsOn>
+    <TestDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(TestDependsOn);_TestRepositories</TestDependsOn>
+
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetProjectArtifactInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveSharedSourcesPackageInfo</GetArtifactInfoDependsOn>
-    <GetArtifactInfoDependsOn  Condition="'$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
 
     <!-- Package modification must happen before code signing. -->
     <CodeSignDependsOn>$(CodeSignDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</CodeSignDependsOn>
@@ -37,12 +55,8 @@
   <Target Name="RestoreNpm" Condition="@(NpmProjectDirectory->Count()) != 0">
     <Message Text="Restoring NPM modules" Importance="high" />
 
-    <PropertyGroup>
-      <NpmInstallCommand Condition=" '$(CI)' != 'true' ">install --no-optional</NpmInstallCommand>
-      <NpmInstallCommand Condition=" '$(CI)' == 'true' ">ci</NpmInstallCommand>
-    </PropertyGroup>
-
-    <Exec Command="npm $(NpmInstallCommand)" WorkingDirectory="%(NpmProjectDirectory.Identity)" Condition=" '%(NpmProjectDirectory.Identity)' != '' " />
+    <!-- Always run `npm ci` because `npm install` has a tendancy to churn package-lock.json for no apparent reason. -->
+    <Exec Command="npm ci" WorkingDirectory="%(NpmProjectDirectory.Identity)" Condition=" '%(NpmProjectDirectory.Identity)' != '' " />
   </Target>
 
   <Target Name="PrepareOutputPaths">

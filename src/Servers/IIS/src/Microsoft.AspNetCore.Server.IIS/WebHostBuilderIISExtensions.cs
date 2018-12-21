@@ -43,7 +43,10 @@ namespace Microsoft.AspNetCore.Hosting
                         services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                         services.AddAuthenticationCore();
                         services.Configure<IISServerOptions>(
-                             options => { options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled; }
+                            options => {
+                                options.ServerAddresses = iisConfigData.pwzBindings.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                                options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled;
+                            }
                         );
                     });
             }

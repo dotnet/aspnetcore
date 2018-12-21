@@ -200,6 +200,7 @@
   <ItemGroup>
     <ClInclude Include="application.h" />
     <ClInclude Include="baseoutputmanager.h" />
+    <ClInclude Include="BindingInformation.h" />
     <ClInclude Include="ConfigurationSection.h" />
     <ClInclude Include="ConfigurationSource.h" />
     <ClInclude Include="config_utility.h" />
