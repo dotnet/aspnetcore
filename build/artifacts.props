@@ -104,7 +104,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ViewFeatures" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Owin" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Design" AllMetapackage="true" AppMetapackage="true" Category="ship" />

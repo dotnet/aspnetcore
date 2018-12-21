@@ -645,6 +645,15 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Memory" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.1.1, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.NodeServices-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Owin-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
@@ -864,6 +873,25 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SpaServices.Extensions-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SpaServices" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SpaServices-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.NodeServices" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.StaticFiles-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.StaticFiles' ">
