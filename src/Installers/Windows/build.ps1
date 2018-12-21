@@ -41,7 +41,7 @@ if (-not (Test-Path "$harvestRoot/x64/shared/")) {
 Push-Location $PSScriptRoot
 try {
     Invoke-Block { & $msbuild `
-            tasks/InstallerTasks.csproj `
+            InstallerTasks/InstallerTasks.csproj `
             -nologo `
             -m `
             -v:m `

@@ -17,11 +17,6 @@
     </SignBundleEngine>
   </ItemDefinitionGroup>
 
-  <ItemGroup>
-    <Compile Include="**\*.wxs" Exclude="obj\**\*;bin\**\*" />
-    <EmbeddedResource Include="**\*.wxl" Exclude="obj\**\*;bin**\*;" />
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
     <EmbedCab Condition="'$(EmbedCab)' == ''">yes</EmbedCab>
     <Cabinet Condition="'$(Cabinet)' == ''">$(OutputName.Replace('-', '_')).cab</Cabinet>

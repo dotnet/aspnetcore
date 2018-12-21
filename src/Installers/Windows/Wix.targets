@@ -40,4 +40,10 @@
     </PropertyGroup>
   </Target>
 
+  <Target Name="CopyToArtifactsDirectory"
+          Condition=" '$(IsProductInstaller)' == 'true' "
+          AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(InstallersOutputPath)" />
+  </Target>
+
 </Project>
