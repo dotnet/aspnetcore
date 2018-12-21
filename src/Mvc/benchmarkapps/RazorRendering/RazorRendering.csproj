@@ -1,23 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <!-- These references are used when running locally -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
 
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
 
   <!--
     These references are used when running on the Benchmarks Server.
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftNETCoreApp22PackageVersion)" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETCoreApp22PackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

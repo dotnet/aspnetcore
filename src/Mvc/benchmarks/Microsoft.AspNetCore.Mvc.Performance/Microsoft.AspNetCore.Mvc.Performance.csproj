@@ -8,12 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
   </ItemGroup>
 
 </Project>

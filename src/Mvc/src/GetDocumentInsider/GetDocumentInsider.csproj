@@ -1,4 +1,4 @@
-﻿<Project Sdk="Internal.AspNetCore.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>GetDocument.Insider</AssemblyName>
     <Description>GetDocument Command-line Tool inside man</Description>
@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <IsImplementationProject>false</IsImplementationProject>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
@@ -13,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractions20PackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
   </ItemGroup>
 
   <Target Name="BuildX86" AfterTargets="Build" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">

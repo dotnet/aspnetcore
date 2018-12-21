@@ -1,4 +1,4 @@
-﻿<Project Sdk="Internal.AspNetCore.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC Razor view engine for CSHTML files.</Description>
@@ -11,14 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
 
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="$(MicrosoftAspNetCoreRazorRuntimePackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorPackageVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +26,25 @@
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;DocumentationProjectOutputGroup">
+
+    <!-- We can uncomment the below block once https://github.com/aspnet/AspNetCore/issues/6070 is fixed. -->
+    <!--
+
+    <PropertyGroup>
+      <SrcPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\src\</SrcPath>
+    </PropertyGroup>
+    <MSBuild Projects="$(SrcPath)Razor\Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj;
+                       $(SrcPath)Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj;
+                       $(SrcPath)Razor\CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj;"
+              Targets="_GetPackageVersionInfo" Properties="DesignTimeBuild=true;NoBuild=true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DependencyPackageInfo" />
+    </MSBuild>
+    <PropertyGroup>
+      <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>@(_DependencyPackageInfo->WithMetadataValue('PackageId', 'Microsoft.AspNetCore.Mvc.Razor.Extensions')->Metadata('PackageVersion'))</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+      <MicrosoftAspNetCoreRazorRuntimePackageVersion>@(_DependencyPackageInfo->WithMetadataValue('PackageId', 'Microsoft.AspNetCore.Razor.Runtime')->Metadata('PackageVersion'))</MicrosoftAspNetCoreRazorRuntimePackageVersion>
+      <MicrosoftCodeAnalysisRazorPackageVersion>@(_DependencyPackageInfo->WithMetadataValue('PackageId', 'Microsoft.CodeAnalysis.Razor')->Metadata('PackageVersion'))</MicrosoftCodeAnalysisRazorPackageVersion>
+    </PropertyGroup>
+    -->
 
     <PropertyGroup>
       <!-- Make sure we create a symbols.nupkg -->
