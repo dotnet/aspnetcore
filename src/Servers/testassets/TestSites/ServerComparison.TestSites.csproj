@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <Reference Include="AspNetCoreV1" />
+    <Reference Include="AspNetCoreModuleV1" />
   </ItemGroup>
 
   <ItemGroup>
