@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    internal class ComponentTypeArgumentExtensionNode : ExtensionIntermediateNode
+    public sealed class ComponentTypeArgumentIntermediateNode : IntermediateNode
     {
-        public ComponentTypeArgumentExtensionNode(TagHelperPropertyIntermediateNode propertyNode)
+        public ComponentTypeArgumentIntermediateNode(TagHelperPropertyIntermediateNode propertyNode)
         {
             if (propertyNode == null)
             {
@@ -47,23 +46,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<ComponentTypeArgumentExtensionNode>(this, visitor);
+            visitor.VisitComponentTypeArgument(this);
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        public override void FormatNode(IntermediateNodeFormatter formatter)
         {
-            if (target == null)
+            if (formatter == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException(nameof(formatter));
             }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var writer = (BlazorNodeWriter)context.NodeWriter;
-            writer.WriteComponentTypeArgument(context, this);
+            
+            formatter.WriteContent(TypeParameterName);
+            
+            formatter.WriteProperty(nameof(BoundAttribute), BoundAttribute?.DisplayName);
+            formatter.WriteProperty(nameof(TagHelper), TagHelper?.DisplayName);
         }
     }
 }

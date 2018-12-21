@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             visitor.Visit(documentNode);
         }
 
-        private class Visitor : IntermediateNodeWalker, IExtensionIntermediateNodeVisitor<ComponentExtensionNode>
+        private class Visitor : IntermediateNodeWalker
         {
             private readonly TypeNameFeature _typeNameFeature;
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 _typeNameFeature = typeNameFeature;
             }
 
-            public void VisitExtension(ComponentExtensionNode node)
+            public override void VisitComponent(ComponentIntermediateNode node)
             {
                 if (node.Component.IsGenericTypedComponent())
                 {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 base.VisitDefault(node);
             }
 
-            private void Process(ComponentExtensionNode node)
+            private void Process(ComponentIntermediateNode node)
             {
                 // First collect all of the information we have about each type parameter
                 //
@@ -157,12 +157,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 CreateTypeInferenceMethod(documentNode, node);
             }
 
-            private string GetContent(ComponentTypeArgumentExtensionNode node)
+            private string GetContent(ComponentTypeArgumentIntermediateNode node)
             {
                 return string.Join(string.Empty, node.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).Select(t => t.Content));
             }
 
-            private static bool ValidateTypeArguments(ComponentExtensionNode node, Dictionary<string, Binding> bindings)
+            private static bool ValidateTypeArguments(ComponentIntermediateNode node, Dictionary<string, Binding> bindings)
             {
                 var missing = new List<BoundAttributeDescriptor>();
                 foreach (var binding in bindings)
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return true;
             }
 
-            private void RewriteTypeNames(TypeNameRewriter rewriter, ComponentExtensionNode node)
+            private void RewriteTypeNames(TypeNameRewriter rewriter, ComponentIntermediateNode node)
             {
                 // Rewrite the component type name
                 node.TypeName = rewriter.Rewrite(node.TypeName);
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentExtensionNode node)
+            private void CreateTypeInferenceMethod(DocumentIntermediateNode documentNode, ComponentIntermediateNode node)
             {
                 var @namespace = documentNode.FindPrimaryNamespace().Content;
                 @namespace = string.IsNullOrEmpty(@namespace) ? "__Blazor" : "__Blazor." + @namespace;
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             public string Content { get; set; }
 
-            public ComponentTypeArgumentExtensionNode Node { get; set; }
+            public ComponentTypeArgumentIntermediateNode Node { get; set; }
         }
     }
 }

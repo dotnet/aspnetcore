@@ -3,19 +3,19 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    internal class RefExtensionNode : ExtensionIntermediateNode
+    public sealed class ReferenceCaptureIntermediateNode : IntermediateNode
     {
-        public RefExtensionNode(IntermediateToken identifierToken)
+        public ReferenceCaptureIntermediateNode(IntermediateToken identifierToken)
         {
             IdentifierToken = identifierToken ?? throw new ArgumentNullException(nameof(identifierToken));
             Source = IdentifierToken.Source;
         }
 
-        public RefExtensionNode(IntermediateToken identifierToken, string componentCaptureTypeName)
+        public ReferenceCaptureIntermediateNode(IntermediateToken identifierToken, string componentCaptureTypeName)
             : this(identifierToken)
         {
             if (string.IsNullOrEmpty(componentCaptureTypeName))
@@ -44,23 +44,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<RefExtensionNode>(this, visitor);
+            visitor.VisitReferenceCapture(this);
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        public override void FormatNode(IntermediateNodeFormatter formatter)
         {
-            if (target == null)
+            if (formatter == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException(nameof(formatter));
             }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var writer = (BlazorNodeWriter)context.NodeWriter;
-            writer.WriteReferenceCapture(context, this);
+            
+            formatter.WriteContent(IdentifierToken?.Content);
+            
+            formatter.WriteProperty(nameof(IdentifierToken), IdentifierToken?.Content);
+            formatter.WriteProperty(nameof(ComponentCaptureTypeName), ComponentCaptureTypeName);
         }
     }
 }

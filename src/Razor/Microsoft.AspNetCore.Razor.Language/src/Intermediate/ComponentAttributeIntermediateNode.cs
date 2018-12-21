@@ -2,19 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    internal class ComponentAttributeExtensionNode : ExtensionIntermediateNode
+    public sealed class ComponentAttributeIntermediateNode : IntermediateNode
     {
-        public ComponentAttributeExtensionNode()
+        public ComponentAttributeIntermediateNode()
         {
         }
 
-        public ComponentAttributeExtensionNode(TagHelperHtmlAttributeIntermediateNode attributeNode)
+        public ComponentAttributeIntermediateNode(TagHelperHtmlAttributeIntermediateNode attributeNode)
         {
             if (attributeNode == null)
             {
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        public ComponentAttributeExtensionNode(TagHelperPropertyIntermediateNode propertyNode)
+        public ComponentAttributeIntermediateNode(TagHelperPropertyIntermediateNode propertyNode)
         {
             if (propertyNode == null)
             {
@@ -62,36 +61,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        public ComponentAttributeExtensionNode(ComponentAttributeExtensionNode attributeNode)
-        {
-            if (attributeNode == null)
-            {
-                throw new ArgumentNullException(nameof(attributeNode));
-            }
-
-            AttributeName = attributeNode.AttributeName;
-            AttributeStructure = attributeNode.AttributeStructure;
-            BoundAttribute = attributeNode.BoundAttribute;
-            PropertyName = attributeNode.BoundAttribute.GetPropertyName();
-            Source = attributeNode.Source;
-            TagHelper = attributeNode.TagHelper;
-            TypeName = attributeNode.BoundAttribute.IsWeaklyTyped() ? null : attributeNode.BoundAttribute.TypeName;
-
-            for (var i = 0; i < attributeNode.Children.Count; i++)
-            {
-                Children.Add(attributeNode.Children[i]);
-            }
-
-            for (var i = 0; i < attributeNode.Diagnostics.Count; i++)
-            {
-                Diagnostics.Add(attributeNode.Diagnostics[i]);
-            }
-        }
-
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public string AttributeName { get; set; }
-
+        
         public AttributeStructure AttributeStructure { get; set; }
 
         public BoundAttributeDescriptor BoundAttribute { get; set; }
@@ -109,23 +82,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<ComponentAttributeExtensionNode>(this, visitor);
+            visitor.VisitComponentAttribute(this);
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        public override void FormatNode(IntermediateNodeFormatter formatter)
         {
-            if (target == null)
+            if (formatter == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException(nameof(formatter));
             }
+            
+            formatter.WriteContent(AttributeName);
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var writer = (BlazorNodeWriter)context.NodeWriter;
-            writer.WriteComponentAttribute(context, this);
+            formatter.WriteProperty(nameof(AttributeName), AttributeName);
+            formatter.WriteProperty(nameof(AttributeStructure), AttributeStructure.ToString());
+            formatter.WriteProperty(nameof(BoundAttribute), BoundAttribute?.DisplayName);
+            formatter.WriteProperty(nameof(PropertyName), PropertyName);
+            formatter.WriteProperty(nameof(TagHelper), TagHelper?.DisplayName);
+            formatter.WriteProperty(nameof(TypeName), TypeName);
         }
     }
 }

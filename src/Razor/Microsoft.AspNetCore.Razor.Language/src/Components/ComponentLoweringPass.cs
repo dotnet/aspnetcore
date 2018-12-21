@@ -60,9 +60,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private ComponentExtensionNode RewriteAsComponent(TagHelperIntermediateNode node, TagHelperDescriptor tagHelper)
+        private ComponentIntermediateNode RewriteAsComponent(TagHelperIntermediateNode node, TagHelperDescriptor tagHelper)
         {
-            var component = new ComponentExtensionNode()
+            var component = new ComponentIntermediateNode()
             {
                 Component = tagHelper,
                 Source = node.Source,
@@ -88,9 +88,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return component;
         }
 
-        private HtmlElementIntermediateNode RewriteAsElement(TagHelperIntermediateNode node)
+        private MarkupElementIntermediateNode RewriteAsElement(TagHelperIntermediateNode node)
         {
-            var result = new HtmlElementIntermediateNode()
+            var result = new MarkupElementIntermediateNode()
             {
                 Source = node.Source,
                 TagName = node.TagName,
@@ -109,10 +109,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private class ComponentRewriteVisitor : IntermediateNodeWalker
         {
-            private readonly ComponentExtensionNode _component;
+            private readonly ComponentIntermediateNode _component;
             private readonly IntermediateNodeCollection _children;
 
-            public ComponentRewriteVisitor(ComponentExtensionNode component)
+            public ComponentRewriteVisitor(ComponentIntermediateNode component)
             {
                 _component = component;
                 _children = component.Children;
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             public override void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
             {
-                var attribute = new ComponentAttributeExtensionNode(node);
+                var attribute = new ComponentAttributeIntermediateNode(node);
                 _children.Add(attribute);
 
                 // Since we don't support complex content, we can rewrite the inside of this
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // that get passed to the component, it needs special code generation support.
                 if (node.TagHelper.IsGenericTypedComponent() && node.BoundAttribute.IsTypeParameterProperty())
                 {
-                    _children.Add(new ComponentTypeArgumentExtensionNode(node));
+                    _children.Add(new ComponentTypeArgumentIntermediateNode(node));
                     return;
                 }
 
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     return;
                 }
 
-                _children.Add(new ComponentAttributeExtensionNode(node));
+                _children.Add(new ComponentAttributeIntermediateNode(node));
             }
 
             public override void VisitDefault(IntermediateNode node)
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // Each 'tag helper property' belongs to a specific tag helper. We want to handle
                 // the cases for components, but leave others alone. This allows our other passes
                 // to handle those cases.
-                _children.Add(node.TagHelper.IsComponentTagHelper() ? (IntermediateNode)new ComponentAttributeExtensionNode(node) : node);
+                _children.Add(node.TagHelper.IsComponentTagHelper() ? (IntermediateNode)new ComponentAttributeIntermediateNode(node) : node);
             }
 
             public override void VisitDefault(IntermediateNode node)

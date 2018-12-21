@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             };
 
-            if (parent is HtmlElementIntermediateNode)
+            if (parent is MarkupElementIntermediateNode)
             {
                 var valueNode = new HtmlAttributeIntermediateNode()
                 {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
             else
             {
-                var valueNode = new ComponentAttributeExtensionNode(node)
+                var valueNode = new ComponentAttributeIntermediateNode(node)
                 {
                     AttributeName = valueAttributeName,
                     BoundAttribute = valueAttribute, // Might be null if it doesn't match a component attribute
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     valueNode.Children[0].Children.Add(valueExpressionTokens[i]);
                 }
 
-                var changeNode = new ComponentAttributeExtensionNode(node)
+                var changeNode = new ComponentAttributeIntermediateNode(node)
                 {
                     AttributeName = changeAttributeName,
                     BoundAttribute = changeAttribute, // Might be null if it doesn't match a component attribute
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             changeAttributeName = node.TagHelper.GetChangeAttributeName() ?? changeAttributeName;
 
             // We expect 0-1 components per-node.
-            var componentTagHelper = (parent as ComponentExtensionNode)?.Component;
+            var componentTagHelper = (parent as ComponentIntermediateNode)?.Component;
             if (componentTagHelper == null)
             {
                 // If it's not a component node then there isn't too much else to figure out.

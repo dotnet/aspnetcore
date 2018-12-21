@@ -128,5 +128,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             VisitDefault(node);
         }
+
+        public virtual void VisitComponent(ComponentIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitComponentAttribute(ComponentAttributeIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitComponentChildContent(ComponentChildContentIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitComponentTypeArgument(ComponentTypeArgumentIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitComponentTypeInferenceMethod(ComponentTypeInferenceMethodIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
+
+        public virtual void VisitReferenceCapture(ReferenceCaptureIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
     }
 }

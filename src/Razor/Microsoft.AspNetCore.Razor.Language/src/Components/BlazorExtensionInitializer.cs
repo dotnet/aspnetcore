@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             builder.Features.Add(new ComplexAttributeContentPass());
             builder.Features.Add(new ComponentLoweringPass());
             builder.Features.Add(new EventHandlerLoweringPass());
-            builder.Features.Add(new RefLoweringPass());
+            builder.Features.Add(new ReferenceCaptureLoweringPass());
             builder.Features.Add(new BindLoweringPass());
             builder.Features.Add(new TemplateDiagnosticPass());
             builder.Features.Add(new GenericComponentPass());

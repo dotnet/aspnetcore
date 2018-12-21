@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
-    internal class RefLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
+    internal class ReferenceCaptureLoweringPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
         // Run after component lowering pass
         public override int Order => 50;
@@ -46,14 +46,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Determine whether this is an element capture or a component capture, and
             // if applicable the type name that will appear in the resulting capture code
-            var componentTagHelper = (parent as ComponentExtensionNode)?.Component;
+            var componentTagHelper = (parent as ComponentIntermediateNode)?.Component;
             if (componentTagHelper != null)
             {
-                return new RefExtensionNode(identifierToken, componentTagHelper.GetTypeName());
+                return new ReferenceCaptureIntermediateNode(identifierToken, componentTagHelper.GetTypeName());
             }
             else
             {
-                return new RefExtensionNode(identifierToken);
+                return new ReferenceCaptureIntermediateNode(identifierToken);
             }
         }
 

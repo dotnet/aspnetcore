@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     length--;
                 }
 
-                reference.Parent.Children.Insert(start, new HtmlBlockIntermediateNode()
+                reference.Parent.Children.Insert(start, new MarkupBlockIntermediateNode()
                 {
                     Content = rewriteVisitor.Builder.ToString(),
                 });
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         // the a from the list.
         private class FindHtmlTreeVisitor :
             IntermediateNodeWalker,
-            IExtensionIntermediateNodeVisitor<HtmlElementIntermediateNode>
+            IExtensionIntermediateNodeVisitor<MarkupElementIntermediateNode>
         {
             private bool _foundNonHtml;
 
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 base.VisitDefault(node);
             }
 
-            public void VisitExtension(HtmlElementIntermediateNode node)
+            public void VisitExtension(MarkupElementIntermediateNode node)
             {
                 // We need to restore the state after processing this node.
                 // We might have found a leaf-block of HTML, but that shouldn't
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private class RewriteVisitor :
             IntermediateNodeWalker,
-            IExtensionIntermediateNodeVisitor<HtmlElementIntermediateNode>
+            IExtensionIntermediateNodeVisitor<MarkupElementIntermediateNode>
         {
             private readonly StringBuilder _encodingBuilder;
 
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             public StringBuilder Builder { get; } = new StringBuilder();
 
-            public void VisitExtension(HtmlElementIntermediateNode node)
+            public void VisitExtension(MarkupElementIntermediateNode node)
             {
                 for (var i = 0; i < _trees.Count; i++)
                 {

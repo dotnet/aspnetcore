@@ -7,22 +7,22 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    internal class HtmlElementIntermediateNode : ExtensionIntermediateNode
+    internal class MarkupElementIntermediateNode : ExtensionIntermediateNode
     {
         public IEnumerable<HtmlAttributeIntermediateNode> Attributes => Children.OfType<HtmlAttributeIntermediateNode>();
 
-        public IEnumerable<RefExtensionNode> Captures => Children.OfType<RefExtensionNode>();
+        public IEnumerable<ReferenceCaptureIntermediateNode> Captures => Children.OfType<ReferenceCaptureIntermediateNode>();
 
         public IEnumerable<IntermediateNode> Body => Children.Where(c =>
         {
             return
                 c as HtmlAttributeIntermediateNode == null &&
-                c as RefExtensionNode == null;
+                c as ReferenceCaptureIntermediateNode == null;
         });
 
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<HtmlElementIntermediateNode>(this, visitor);
+            AcceptExtensionNode<MarkupElementIntermediateNode>(this, visitor);
         }
 
         public override void WriteNode(CodeTarget target, CodeRenderingContext context)

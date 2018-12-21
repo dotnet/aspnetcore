@@ -4,12 +4,12 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    internal class HtmlBlockIntermediateNode : ExtensionIntermediateNode
+    internal class MarkupBlockIntermediateNode : ExtensionIntermediateNode
     {
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<HtmlBlockIntermediateNode>(this, visitor);
+            AcceptExtensionNode<MarkupBlockIntermediateNode>(this, visitor);
         }
 
         public override void WriteNode(CodeTarget target, CodeRenderingContext context)

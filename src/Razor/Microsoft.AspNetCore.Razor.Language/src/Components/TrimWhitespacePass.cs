@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         shouldContinueIteration = shouldRemoveNode;
                         break;
 
-                    case HtmlElementIntermediateNode _:
+                    case MarkupElementIntermediateNode _:
                     case CSharpExpressionIntermediateNode _:
                     case TagHelperIntermediateNode _:
                         // These node types may produce non-whitespace output at runtime

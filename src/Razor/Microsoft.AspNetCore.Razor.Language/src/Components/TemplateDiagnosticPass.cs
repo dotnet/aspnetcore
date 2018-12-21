@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         ancestor is HtmlAttributeIntermediateNode ||
 
                         // Inside component attribute
-                        ancestor is ComponentAttributeExtensionNode ||
+                        ancestor is ComponentAttributeIntermediateNode ||
 
                         // Inside malformed ref attribute
                         ancestor is TagHelperPropertyIntermediateNode)

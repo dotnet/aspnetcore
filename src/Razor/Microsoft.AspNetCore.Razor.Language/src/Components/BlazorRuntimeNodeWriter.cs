@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        public override void WriteHtmlBlock(CodeRenderingContext context, HtmlBlockIntermediateNode node)
+        public override void WriteHtmlBlock(CodeRenderingContext context, MarkupBlockIntermediateNode node)
         {
             if (context == null)
             {
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 .WriteEndMethodInvocation();
         }
 
-        public override void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node)
+        public override void WriteHtmlElement(CodeRenderingContext context, MarkupElementIntermediateNode node)
         {
             if (context == null)
             {
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             context.CodeWriter.WriteUsing(node.Content, endLine: true);
         }
 
-        public override void WriteComponent(CodeRenderingContext context, ComponentExtensionNode node)
+        public override void WriteComponent(CodeRenderingContext context, ComponentIntermediateNode node)
         {
             if (context == null)
             {
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        public override void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeExtensionNode node)
+        public override void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeIntermediateNode node)
         {
             if (context == null)
             {
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             context.CodeWriter.WriteLine();
         }
 
-        private void WriteComponentAttributeInnards(CodeRenderingContext context, ComponentAttributeExtensionNode node, bool canTypeCheck)
+        private void WriteComponentAttributeInnards(CodeRenderingContext context, ComponentAttributeIntermediateNode node, bool canTypeCheck)
         {
             if (node.AttributeStructure == AttributeStructure.Minimized)
             {
@@ -505,7 +505,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentAttributeExtensionNode attribute)
+            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentAttributeIntermediateNode attribute)
             {
                 // We generally expect all children to be CSharp, this is here just in case.
                 return attribute.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
@@ -517,7 +517,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return html.FindDescendantNodes<IntermediateToken>().Where(t => t.IsHtml).ToArray();
             }
 
-            bool NeedsTypeCheck(ComponentAttributeExtensionNode n)
+            bool NeedsTypeCheck(ComponentAttributeIntermediateNode n)
             {
                 return node.BoundAttribute != null && !node.BoundAttribute.IsWeaklyTyped();
             }
@@ -567,7 +567,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             _scopeStack.CloseScope(context);
         }
 
-        public override void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentExtensionNode node)
+        public override void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentIntermediateNode node)
         {
             // We can skip type arguments during runtime codegen, they are handled in the
             // type/parameter declarations.
@@ -593,7 +593,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             _scopeStack.CloseScope(context);
         }
 
-        public override void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node)
+        public override void WriteReferenceCapture(CodeRenderingContext context, ReferenceCaptureIntermediateNode node)
         {
             // Looks like:
             //
@@ -615,7 +615,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             codeWriter.WriteEndMethodInvocation();
         }
 
-        protected override void WriteReferenceCaptureInnards(CodeRenderingContext context, RefExtensionNode node, bool shouldTypeCheck)
+        protected override void WriteReferenceCaptureInnards(CodeRenderingContext context, ReferenceCaptureIntermediateNode node, bool shouldTypeCheck)
         {
             // Looks like:
             //

@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 "following top-level items: {1}.",
                 RazorDiagnosticSeverity.Error);
 
-        public static RazorDiagnostic Create_ChildContentMixedWithExplicitChildContent(SourceSpan? source, ComponentExtensionNode component)
+        public static RazorDiagnostic Create_ChildContentMixedWithExplicitChildContent(SourceSpan? source, ComponentIntermediateNode component)
         {
             var supportedElements = string.Join(", ", component.Component.GetChildContentProperties().Select(p => $"'{p.Name}'"));
             return RazorDiagnostic.Create(ChildContentMixedWithExplicitChildContent, source ?? SourceSpan.Undefined, component.TagName, supportedElements);
@@ -255,9 +255,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static RazorDiagnostic Create_ChildContentRepeatedParameterName(
             SourceSpan? source,
             ComponentChildContentIntermediateNode childContent1,
-            ComponentExtensionNode component1,
+            ComponentIntermediateNode component1,
             ComponentChildContentIntermediateNode childContent2,
-            ComponentExtensionNode component2)
+            ComponentIntermediateNode component2)
         {
             Debug.Assert(childContent1.ParameterName == childContent2.ParameterName);
             Debug.Assert(childContent1.IsParameterized);
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static RazorDiagnostic Create_GenericComponentMissingTypeArgument(
             SourceSpan? source,
-            ComponentExtensionNode component,
+            ComponentIntermediateNode component,
             IEnumerable<BoundAttributeDescriptor> attributes)
         {
             Debug.Assert(component.Component.IsGenericTypedComponent());
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static RazorDiagnostic Create_GenericComponentTypeInferenceUnderspecified(
             SourceSpan? source,
-            ComponentExtensionNode component,
+            ComponentIntermediateNode component,
             IEnumerable<BoundAttributeDescriptor> attributes)
         {
             Debug.Assert(component.Component.IsGenericTypedComponent());

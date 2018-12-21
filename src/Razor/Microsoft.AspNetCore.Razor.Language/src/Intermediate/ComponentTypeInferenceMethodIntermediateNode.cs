@@ -2,23 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     /// <summary>
     /// Represents a type-inference thunk that is used by the generated component code.
     /// </summary>
-    internal class ComponentTypeInferenceMethodIntermediateNode : ExtensionIntermediateNode
+    public sealed class ComponentTypeInferenceMethodIntermediateNode : IntermediateNode
     {
         public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
         
         /// <summary>
         /// Gets the component usage linked to this type inference method.
         /// </summary>
-        public ComponentExtensionNode Component { get; set; }
+        public ComponentIntermediateNode Component { get; set; }
         
         /// <summary>
         /// Gets the full type name of the generated class containing this method.
@@ -37,23 +36,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<ComponentTypeInferenceMethodIntermediateNode>(this, visitor);
+            visitor.VisitComponentTypeInferenceMethod(this);
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        public override void FormatNode(IntermediateNodeFormatter formatter)
         {
-            if (target == null)
+            if (formatter == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException(nameof(formatter));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var writer = (BlazorNodeWriter)context.NodeWriter;
-            writer.WriteComponentTypeInferenceMethod(context, this);
+            formatter.WriteContent(Component?.TagName);        
+            
+            formatter.WriteProperty(nameof(Component), Component?.Component?.DisplayName);
+            formatter.WriteProperty(nameof(FullTypeName), FullTypeName);
+            formatter.WriteProperty(nameof(MethodName), MethodName);
         }
     }
 }

@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             visitor.Visit(documentNode);
         }
 
-        private class Visitor : IntermediateNodeWalker, IExtensionIntermediateNodeVisitor<HtmlElementIntermediateNode>
+        private class Visitor : IntermediateNodeWalker, IExtensionIntermediateNodeVisitor<MarkupElementIntermediateNode>
         {
-            public void VisitExtension(HtmlElementIntermediateNode node)
+            public void VisitExtension(MarkupElementIntermediateNode node)
             {
                 // Disallow <script> in components as per #552
                 if (string.Equals(node.TagName, "script", StringComparison.OrdinalIgnoreCase))

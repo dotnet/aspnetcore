@@ -14,21 +14,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     {
         public abstract void BeginWriteAttribute(CodeWriter codeWriter, string key);
 
-        public abstract void WriteComponent(CodeRenderingContext context, ComponentExtensionNode node);
+        public abstract void WriteComponent(CodeRenderingContext context, ComponentIntermediateNode node);
 
-        public abstract void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeExtensionNode node);
+        public abstract void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeIntermediateNode node);
 
         public abstract void WriteComponentChildContent(CodeRenderingContext context, ComponentChildContentIntermediateNode node);
 
-        public abstract void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentExtensionNode node);
+        public abstract void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentIntermediateNode node);
 
-        public abstract void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node);
+        public abstract void WriteHtmlElement(CodeRenderingContext context, MarkupElementIntermediateNode node);
 
-        public abstract void WriteHtmlBlock(CodeRenderingContext context, HtmlBlockIntermediateNode node);
+        public abstract void WriteHtmlBlock(CodeRenderingContext context, MarkupBlockIntermediateNode node);
 
-        public abstract void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node);
+        public abstract void WriteReferenceCapture(CodeRenderingContext context, ReferenceCaptureIntermediateNode node);
 
-        protected abstract void WriteReferenceCaptureInnards(CodeRenderingContext context, RefExtensionNode node, bool shouldTypeCheck);
+        protected abstract void WriteReferenceCaptureInnards(CodeRenderingContext context, ReferenceCaptureIntermediateNode node, bool shouldTypeCheck);
 
         public abstract void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node);
 

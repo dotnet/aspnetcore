@@ -3,11 +3,11 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    internal class ComponentChildContentIntermediateNode : ExtensionIntermediateNode
+    public sealed class ComponentChildContentIntermediateNode : IntermediateNode
     {
         public string AttributeName => BoundAttribute?.Name ?? ComponentsApi.RenderTreeBuilder.ChildContent;
 
@@ -28,23 +28,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<ComponentChildContentIntermediateNode>(this, visitor);
+            visitor.VisitComponentChildContent(this);
         }
 
-        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
+        public override void FormatNode(IntermediateNodeFormatter formatter)
         {
-            if (target == null)
+            if (formatter == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException(nameof(formatter));
             }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var writer = (BlazorNodeWriter)context.NodeWriter;
-            writer.WriteComponentChildContent(context, this);
+            
+            formatter.WriteContent(AttributeName);
+            
+            formatter.WriteProperty(nameof(AttributeName), AttributeName);
+            formatter.WriteProperty(nameof(BoundAttribute), BoundAttribute?.DisplayName);
+            formatter.WriteProperty(nameof(ParameterName), ParameterName);
+            formatter.WriteProperty(nameof(TypeName), TypeName);
         }
     }
 }

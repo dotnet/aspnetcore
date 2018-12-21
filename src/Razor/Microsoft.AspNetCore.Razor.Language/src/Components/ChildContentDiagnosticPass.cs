@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             visitor.Visit(documentNode);
         }
 
-        private class Visitor : IntermediateNodeWalker, IExtensionIntermediateNodeVisitor<ComponentExtensionNode>, IExtensionIntermediateNodeVisitor<ComponentChildContentIntermediateNode>
+        private class Visitor : IntermediateNodeWalker
         {
-            public void VisitExtension(ComponentExtensionNode node)
+            public override void VisitComponent(ComponentIntermediateNode node)
             {
                 // Check for properties that are set by both element contents (body) and the attribute itself.
                 foreach (var childContent in node.ChildContents)
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 base.VisitDefault(node);
             }
 
-            public void VisitExtension(ComponentChildContentIntermediateNode node)
+            public override void VisitComponentChildContent(ComponentChildContentIntermediateNode node)
             {
                 // Check that each child content has a unique parameter name within its scope. This is important
                 // because the parameter name can be implicit, and it doesn't work well when nested.
@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             node.Diagnostics.Add(ComponentDiagnosticFactory.Create_ChildContentRepeatedParameterName(
                                 node.Source,
                                 node,
-                                (ComponentExtensionNode)Ancestors[0], // Enclosing component
+                                (ComponentIntermediateNode)Ancestors[0], // Enclosing component
                                 ancestor, // conflicting child content node
-                                (ComponentExtensionNode)Ancestors[i + 1]));  // Enclosing component of conflicting child content node
+                                (ComponentIntermediateNode)Ancestors[i + 1]));  // Enclosing component of conflicting child content node
                         }
                     }
                 }

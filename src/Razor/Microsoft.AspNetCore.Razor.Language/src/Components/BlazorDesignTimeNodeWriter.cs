@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private static readonly string DesignTimeVariable = "__o";
 
-        public override void WriteHtmlBlock(CodeRenderingContext context, HtmlBlockIntermediateNode node)
+        public override void WriteHtmlBlock(CodeRenderingContext context, MarkupBlockIntermediateNode node)
         {
             if (context == null)
             {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // Do nothing
         }
 
-        public override void WriteHtmlElement(CodeRenderingContext context, HtmlElementIntermediateNode node)
+        public override void WriteHtmlElement(CodeRenderingContext context, MarkupElementIntermediateNode node)
         {
             if (context == null)
             {
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 .WriteParameterSeparator();
         }
 
-        public override void WriteComponent(CodeRenderingContext context, ComponentExtensionNode node)
+        public override void WriteComponent(CodeRenderingContext context, ComponentIntermediateNode node)
         {
             if (context == null)
             {
@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        public override void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeExtensionNode node)
+        public override void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeIntermediateNode node)
         {
             if (context == null)
             {
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             context.CodeWriter.WriteLine();
         }
 
-        private void WriteComponentAttributeInnards(CodeRenderingContext context, ComponentAttributeExtensionNode node, bool canTypeCheck)
+        private void WriteComponentAttributeInnards(CodeRenderingContext context, ComponentAttributeIntermediateNode node, bool canTypeCheck)
         {
             // We limit component attributes to simple cases. However there is still a lot of complexity
             // to handle here, since there are a few different cases for how an attribute might be structured.
@@ -567,12 +567,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            bool NeedsTypeCheck(ComponentAttributeExtensionNode n)
+            bool NeedsTypeCheck(ComponentAttributeIntermediateNode n)
             {
                 return n.BoundAttribute != null && !n.BoundAttribute.IsWeaklyTyped();
             }
 
-            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentAttributeExtensionNode attribute)
+            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentAttributeIntermediateNode attribute)
             {
                 // We generally expect all children to be CSharp, this is here just in case.
                 return attribute.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             _scopeStack.CloseScope(context);
         }
 
-        public override void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentExtensionNode node)
+        public override void WriteComponentTypeArgument(CodeRenderingContext context, ComponentTypeArgumentIntermediateNode node)
         {
             if (context == null)
             {
@@ -651,7 +651,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             context.CodeWriter.Write(");");
             context.CodeWriter.WriteLine();
 
-            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentTypeArgumentExtensionNode arg)
+            IReadOnlyList<IntermediateToken> GetCSharpTokens(ComponentTypeArgumentIntermediateNode arg)
             {
                 // We generally expect all children to be CSharp, this is here just in case.
                 return arg.FindDescendantNodes<IntermediateToken>().Where(t => t.IsCSharp).ToArray();
@@ -678,7 +678,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             _scopeStack.CloseScope(context);
         }
 
-        public override void WriteReferenceCapture(CodeRenderingContext context, RefExtensionNode node)
+        public override void WriteReferenceCapture(CodeRenderingContext context, ReferenceCaptureIntermediateNode node)
         {
             if (context == null)
             {
@@ -696,7 +696,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             WriteReferenceCaptureInnards(context, node, shouldTypeCheck: true);
         }
 
-        protected override void WriteReferenceCaptureInnards(CodeRenderingContext context, RefExtensionNode node, bool shouldTypeCheck)
+        protected override void WriteReferenceCaptureInnards(CodeRenderingContext context, ReferenceCaptureIntermediateNode node, bool shouldTypeCheck)
         {
             // We specialize this code based on whether or not we can type check. When we're calling into
             // a type-inferenced component, we can't do the type check. See the comments in WriteTypeInferenceMethod.

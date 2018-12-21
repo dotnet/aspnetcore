@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     for (var j = 0; j < parent.Children.Count; j++)
                     {
-                        var componentAttribute = parent.Children[j] as ComponentAttributeExtensionNode;
+                        var componentAttribute = parent.Children[j] as ComponentAttributeIntermediateNode;
                         if (componentAttribute != null &&
                             componentAttribute.TagHelper != null &&
                             componentAttribute.TagHelper.IsComponentTagHelper() &&
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 tokens.Insert(i + 1, original[i]);
             }
 
-            if (parent is HtmlElementIntermediateNode)
+            if (parent is MarkupElementIntermediateNode)
             {
                 var result = new HtmlAttributeIntermediateNode()
                 {
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
             else
             {
-                var result = new ComponentAttributeExtensionNode(node);
+                var result = new ComponentAttributeIntermediateNode(node);
 
                 result.Children.Clear();
                 result.Children.Add(new CSharpExpressionIntermediateNode());
