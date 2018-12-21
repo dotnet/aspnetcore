@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <Reference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
+    <Reference Include="AspNetCoreV1" />
   </ItemGroup>
 
   <ItemGroup>
