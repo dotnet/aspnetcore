@@ -21,14 +21,13 @@
           The actual handler folder version is dependent on the ANCMMsiVersion -->
     <ANCMOutOfProcessNugetPackageHandlerVersion>2.0.0</ANCMOutOfProcessNugetPackageHandlerVersion>
 
-    <!-- Location of main folders--> 
+    <!-- Location of main folders-->
     <AspNetCoreSetupRoot>$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
     <IIS-Setup>$(AspNetCoreSetupRoot)IIS-Setup\</IIS-Setup>
     <IIS-Common>$(IIS-Setup)IIS-Common\</IIS-Common>
     <ANCMBuildDirectory>$(AspNetCoreSetupRoot)build\</ANCMBuildDirectory>
 
     <!-- Variables used by ANCM wxs projects. -->
-    <CustomActionVariable>CustomAction=$(AspNetCoreSetupRoot)CustomAction\bin\$(Configuration)\$(Platform)\aspnetcoreca.dll</CustomActionVariable>
     <PreBuiltANCMSchema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModule\$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)\</PreBuiltANCMSchema>
     <PreBuiltANCMV2Schema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModuleV2\$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)\</PreBuiltANCMV2Schema>
     <PreBuiltANCMRoot>$(PreBuiltANCMSchema)contentFiles\any\any\</PreBuiltANCMRoot>
@@ -37,7 +36,7 @@
     <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
     <DefineConstants>ANCMMsiVersion=$(ANCMMsiVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
     <DefineConstants>PreBuiltANCMRoot=$(PreBuiltANCMRoot);PreBuiltANCMV2Root=$(PreBuiltANCMV2Root);$(DefineConstants)</DefineConstants>
-    <DefineConstants>$(CustomActionVariable);PreBuiltANCMSchema=$(PreBuiltANCMSchema);PreBuiltANCMV2Schema=$(PreBuiltANCMV2Schema);$(DefineConstants)</DefineConstants>
+    <DefineConstants>PreBuiltANCMSchema=$(PreBuiltANCMSchema);PreBuiltANCMV2Schema=$(PreBuiltANCMV2Schema);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
 </Project>

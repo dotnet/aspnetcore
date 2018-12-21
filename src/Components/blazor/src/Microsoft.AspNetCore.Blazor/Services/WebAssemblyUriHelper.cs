@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Blazor.Services
         }
 
         /// <summary>
-        /// Called to initialize BaseURI and current URI before those values the first time.
-        /// Override this method to dynamically calculate the those values.
+        /// Called to initialize BaseURI and current URI before those values are used the first time.
+        /// Override this method to dynamically calculate those values.
         /// </summary>
         protected override void InitializeState()
         {
@@ -36,14 +36,12 @@ namespace Microsoft.AspNetCore.Blazor.Services
                 typeof(WebAssemblyUriHelper).Assembly.GetName().Name,
                 nameof(NotifyLocationChanged));
 
-            // As described in other comment block above, BrowserUriHelper is only for
-            // client -side (Mono) use, so it's OK to rely on synchrony here.
+            // As described in the comment block above, BrowserUriHelper is only for
+            // client-side (Mono) use, so it's OK to rely on synchronicity here.
             var baseUri = ((IJSInProcessRuntime)JSRuntime.Current).Invoke<string>(Interop.GetBaseUri);
             var uri = ((IJSInProcessRuntime)JSRuntime.Current).Invoke<string>(Interop.GetLocationHref);
             SetAbsoluteBaseUri(baseUri);
             SetAbsoluteUri(uri);
-
-            Console.WriteLine("Initialized");
         }
 
         /// <inheritdoc />

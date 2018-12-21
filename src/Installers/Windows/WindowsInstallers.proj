@@ -15,15 +15,22 @@
     <InstallerProject Include="AspNetCoreModule-Setup/ANCMV2/ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
     <InstallerProject Include="AspNetCoreModule-Setup/ANCMV2/ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
 
-    <!-- Build the SharedFramework bundles-->
+    <!-- Build the SharedFramework installers -->
     <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
     <InstallerProject Include="SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
 
-    <InstallerProject Include="*/*.wixproj" Exclude="@(InstallerProject);ancm/**/*" />
+    <!-- Build the SharedFramework wixlib -->
+    <InstallerProject Include="SharedFrameworkLib/SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
+    <InstallerProject Include="SharedFrameworkLib/SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
+
+    <!-- Windows hosting bundled -->
+    <InstallerProject Include="WindowsHostingBundle/WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
   </ItemGroup>
 
   <Target Name="Build">
-    <MSBuild Projects="@(InstallerProject)" Targets="Build" />
+    <MSBuild Projects="@(InstallerProject)"
+             Targets="Build"
+             BuildInParallel="true" />
   </Target>
 
   <Target Name="Clean">
@@ -32,7 +39,7 @@
 
   <Target Name="Restore">
     <MSBuild Projects="AspNetCoreModule-Setup/ANCMPackageResolver/ANCMPackageResolver.csproj" Targets="Restore" />
-    <MSBuild Projects="@(InstallerProject)" Targets="Restore" />
+    <MSBuild Projects="@(InstallerProject)" Targets="Restore" BuildInParallel="true" />
   </Target>
 
 </Project>
