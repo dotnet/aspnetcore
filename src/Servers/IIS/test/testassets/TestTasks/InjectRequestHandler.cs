@@ -12,11 +12,16 @@ namespace TestTasks
 {
     public class InjectRequestHandler
     {
+        private const string aspnetcoreV2Name = "aspnetcorev2_inprocess.dll";
+
         private static void Main(string[] args)
         {
-            string rid = args[0];
-            string libraryLocation = args[1];
-            string depsFile = args[2];
+            string depsFile = args[0];
+            string rid = "";
+            if (args.Length > 1)
+            {
+                rid = args[1];
+            }
 
             JToken deps;
             using (var file = File.OpenText(depsFile))
@@ -32,26 +37,47 @@ namespace TestTasks
             var target = (JObject)deps["targets"][targetName.Value];
             var targetLibrary = target.Properties().FirstOrDefault(p => p.Name == libraryName);
             targetLibrary?.Remove();
+
+            var bitness = new JObject();
+            if (string.IsNullOrEmpty(rid))
+            {
+                bitness.Add(new JProperty($"x64/{aspnetcoreV2Name}", new JObject(
+                    new JProperty("rid", "win7-x64"),
+                    new JProperty("assetType", "native")
+                )));
+                bitness.Add(new JProperty($"x86/{aspnetcoreV2Name}", new JObject(
+                    new JProperty("rid", "win7-x86"),
+                    new JProperty("assetType", "native")
+                )));
+            }
+            else
+            {
+                bitness.Add(new JProperty(aspnetcoreV2Name, new JObject(
+                    new JProperty("rid", rid),
+                    new JProperty("assetType", "native")
+                )));
+                var outputFolder = Path.GetDirectoryName(depsFile);
+                var bitnessString = rid.Substring(rid.Length - 3, 3);
+                File.Copy(Path.Combine(outputFolder, bitnessString, aspnetcoreV2Name), Path.Combine(outputFolder, aspnetcoreV2Name), overwrite: true);
+            }
+
             targetLibrary =
                 new JProperty(libraryName, new JObject(
-                    new JProperty("runtimeTargets", new JObject(
-                        new JProperty(libraryLocation.Replace('\\', '/'), new JObject(
-                            new JProperty("rid", rid),
-                            new JProperty("assetType", "native")
-                        ))))));
+                    new JProperty("runtimeTargets", bitness)));
+           
             target.AddFirst(targetLibrary);
 
             var library = libraries.Properties().FirstOrDefault(p => p.Name == libraryName);
             library?.Remove();
             library =
-                new JProperty(libraryName, new JObject(
-                    new JProperty("type", "package"),
-                    new JProperty("serviceable", true),
-                    new JProperty("sha512", ""),
-                    new JProperty("path", libraryName),
-                    new JProperty("hashPath", "")));
+                 new JProperty(libraryName, new JObject(
+                     new JProperty("type", "package"),
+                     new JProperty("serviceable", true),
+                     new JProperty("sha512", ""),
+                     new JProperty("path", libraryName),
+                     new JProperty("hashPath", "")));
             libraries.AddFirst(library);
-            
+
             using (var file = File.CreateText(depsFile))
             using (var writer = new JsonTextWriter(file) { Formatting = Formatting.Indented })
             {
