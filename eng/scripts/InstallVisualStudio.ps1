@@ -59,7 +59,9 @@ $InstallPath = $InstallPath.TrimEnd('\')
 
 [string[]] $arguments = @()
 
-$verb  = if (Test-path $InstallPath) { $arguments += 'modify' }
+if (Test-path $InstallPath) {
+    $arguments += 'modify'
+}
 
 $arguments += `
     '--productId', "Microsoft.VisualStudio.Product.$Edition", `
