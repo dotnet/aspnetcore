@@ -9,10 +9,6 @@
     <Content Include="*.config;*.conf" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
-  </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.Extensions.Logging" />
