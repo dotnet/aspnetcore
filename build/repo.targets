@@ -1,6 +1,5 @@
 <Project>
   <Import Project="RepositoryBuild.targets" />
-  <Import Project="PackageArchive.targets" />
   <Import Project="AzureIntegration.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="CodeSign.targets" />
