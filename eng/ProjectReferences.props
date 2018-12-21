@@ -58,10 +58,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authorization.Policy" ProjectPath="$(RepositoryRoot)src\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.CookiePolicy" ProjectPath="$(RepositoryRoot)src\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Owin.Security.Interop" ProjectPath="$(RepositoryRoot)src\Security\Interop\src\Microsoft.Owin.Security.Interop.csproj" />
-    <ProjectReferenceProvider Include="dotnet-dev-certs" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-dev-certs\src\dotnet-dev-certs.csproj" />
-    <ProjectReferenceProvider Include="dotnet-sql-cache" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-sql-cache\src\dotnet-sql-cache.csproj" />
-    <ProjectReferenceProvider Include="dotnet-user-secrets" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-user-secrets\src\dotnet-user-secrets.csproj" />
-    <ProjectReferenceProvider Include="dotnet-watch" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-watch\src\dotnet-watch.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" ProjectPath="$(RepositoryRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Cors" ProjectPath="$(RepositoryRoot)src\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.Abstractions" ProjectPath="$(RepositoryRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
@@ -73,11 +69,14 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization.Routing" ProjectPath="$(RepositoryRoot)src\Middleware\Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Localization" ProjectPath="$(RepositoryRoot)src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.MiddlewareAnalysis" ProjectPath="$(RepositoryRoot)src\Middleware\MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.NodeServices" ProjectPath="$(RepositoryRoot)src\Middleware\NodeServices\src\Microsoft.AspNetCore.NodeServices.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" ProjectPath="$(RepositoryRoot)src\Middleware\ResponseCaching.Abstractions\src\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ResponseCaching" ProjectPath="$(RepositoryRoot)src\Middleware\ResponseCaching\src\Microsoft.AspNetCore.ResponseCaching.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ResponseCompression" ProjectPath="$(RepositoryRoot)src\Middleware\ResponseCompression\src\Microsoft.AspNetCore.ResponseCompression.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Rewrite" ProjectPath="$(RepositoryRoot)src\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Session" ProjectPath="$(RepositoryRoot)src\Middleware\Session\src\Microsoft.AspNetCore.Session.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepositoryRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices" ProjectPath="$(RepositoryRoot)src\Middleware\SpaServices\src\Microsoft.AspNetCore.SpaServices.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.StaticFiles" ProjectPath="$(RepositoryRoot)src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepositoryRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
     <ProjectReferenceProvider Include="Microsoft.CodeAnalysis.Razor" ProjectPath="$(RepositoryRoot)src\Razor\CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj" />
@@ -114,9 +113,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TestCommon" ProjectPath="$(RepositoryRoot)src\Mvc\test\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TestDiagnosticListener" ProjectPath="$(RepositoryRoot)src\Mvc\test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.NodeServices" ProjectPath="$(RepositoryRoot)src\Middleware\NodeServices\src\Microsoft.AspNetCore.NodeServices.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.NodeServices.Sockets" ProjectPath="$(RepositoryRoot)src\Middleware\NodeServices.Sockets\src\Microsoft.AspNetCore.NodeServices.Sockets.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices" ProjectPath="$(RepositoryRoot)src\Middleware\SpaServices\src\Microsoft.AspNetCore.SpaServices.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SpaServices.Extensions" ProjectPath="$(RepositoryRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
   </ItemGroup>
 </Project>
