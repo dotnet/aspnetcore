@@ -9,8 +9,7 @@ This NuGet package provides a fast and robust way to invoke Node.js code from a 
 
 It is the underlying mechanism supporting the following packages:
 
- * [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices) - builds on NodeServices, adding functionality commonly used in Single Page Applications, such as server-side prerendering, webpack middleware, and integration between server-side and client-side routing.
- * [`Microsoft.AspNetCore.AngularServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.AngularServices) and [`Microsoft.AspNetCore.ReactServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.ReactServices) - these build on `SpaServices`, adding helpers specific to Angular and React, such as cache priming and integrating server-side and client-side validation
+ * [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/aspnetcore/tree/release/2.1/src/Middleware/SpaServices/) - builds on NodeServices, adding functionality commonly used in Single Page Applications, such as server-side prerendering, webpack middleware, and integration between server-side and client-side routing.
 
 ### Requirements
 
@@ -37,7 +36,7 @@ For .NET Framework apps:
 In that case, you don't need to use NodeServices directly (or install it manually). You can either:
 
 * **Recommended:** Use the `aspnetcore-spa` Yeoman generator to get a ready-to-go starting point using your choice of client-side framework. [Instructions here.](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/)
-* Or set up your ASP.NET Core and client-side Angular/React/KO/etc. app manually, and then use the [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices) package to add features like server-side prerendering or Webpack middleware. But really, at least try using the `aspnetcore-spa` generator first.
+* Or set up your ASP.NET Core and client-side Angular/React/KO/etc. app manually, and then use the [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/aspnetcore/tree/release/2.1/src/Middleware/SpaServices/) package to add features like server-side prerendering or Webpack middleware. But really, at least try using the `aspnetcore-spa` generator first.
 
 # Simple usage example
 
@@ -256,8 +255,6 @@ module.exports = function(result, physicalPath, maxWidth, maxHeight) {
 }
 ```
 
-There's a working image resizing example following this approach [here](https://github.com/aspnet/JavaScriptServices/tree/dev/samples/misc/NodeServicesExamples) - see the [C# code](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/misc/NodeServicesExamples/Controllers/ResizeImage.cs) and the [JavaScript code](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/misc/NodeServicesExamples/Node/resizeImage.js).
-
 **Parameters**
 
 * `moduleName` - type: `string`
@@ -330,26 +327,6 @@ NodeServices is not meant to compete with Edge.js. Instead, NodeServices is an a
 **What about VroomJS?**
 
 People have asked about using [VroomJS](https://github.com/fogzot/vroomjs) as a hosting mechanism. We don't currently plan to implement that, because Vroom only supplies a V8 runtime environment, not a complete Node environment. The difference is that, with a true Node environment, *all* NPM modules and Node code will work exactly as expected, whereas in a Vroom environment, code will only work if it doesn't use any Node primitives, which rules out large portions of the NPM landscape.
-
-### Built-in hosting models
-
-Normally, you can just use the default hosting model, and not worry about it. But if you have some special requirements, you can write your own hosting model, or reference a package that supplies one.
-
-For example, you could use the 'socket' hosting model. It performs RPC between .NET and Node.js using a fast, low-level binary channel rather than the default HTTP transport. To do this, first install the NuGet package `Microsoft.AspNetCore.NodeServices.Sockets`. Then, at the top of your `Startup.cs` file, add:
-
-```csharp
-using Microsoft.AspNetCore.NodeServices.Sockets;
-```
-
-...then in your `Startup.cs` file's `ConfigureServices` method, you can configure:
-
-```csharp
-services.AddNodeServices(options => {
-    options.UseSocketHosting();
-});
-```
-
-Now when you run your application, it will use the socket-based hosting and transport mechanism. In the past, the socket transport was faster than HTTP, but since .NET Core 1.1 improved the performance of `HttpClient` there isn't really any speed difference any more, so there's no longer any significant advantage to using `Microsoft.AspNetCore.NodeServices.Sockets`.
 
 ### Custom hosting models
 
