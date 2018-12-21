@@ -49,21 +49,7 @@
     </ProjectReference>
   </ItemGroup>
 
-  <Target Name="BeforeBuild">
-    <CreateProperty Condition="$(IIS-Setup) != ''" Value="IIS-Setup=$(IIS-Setup);$(DefineConstants)">
-      <Output TaskParameter="Value" PropertyName="DefineConstants" />
-    </CreateProperty>
-  </Target>
-  <Target Name="EnsureImportsExist" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(ANCMBuildDirectory)settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ANCMBuildDirectory)settings.props'))" />
-    <Error Condition="!Exists('$(ANCMBuildDirectory)versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ANCMBuildDirectory)versions.props'))" />
-  </Target>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
-  <Import Project="$(ANCMBuildDirectory)settings.props" Condition="Exists('$(ANCMBuildDirectory)settings.props')" />
-  <Import Project="$(ANCMBuildDirectory)versions.props" Condition="Exists('$(ANCMBuildDirectory)versions.props')" />
-  <!-- Overwrite standard versioning scheme -->
+  <Import Project="$(ANCMBuildDirectory)settings.props"/>
+  <Import Project="$(ANCMBuildDirectory)versions.props"/>
 </Project>
