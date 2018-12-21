@@ -16,10 +16,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj" />
+
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <Reference Include="AngleSharp" />
   </ItemGroup>
 
+  <Import Project="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.targets" />
 </Project>
