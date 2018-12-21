@@ -9,7 +9,7 @@ This package enables:
  * [**Hot module replacement**](#webpack-hot-module-replacement) so that, during development, your code and markup changes will be pushed to your browser and updated in the running application automatically, without even needing to reload the page
  * [**Routing helpers**](#routing-helper-mapspafallbackroute) for integrating server-side routing with client-side routing
 
-Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.NodeServices) package as a fast and robust way to invoke Node.js-hosted code from ASP.NET Core at runtime.
+Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](src/Middleware/NodeServices) package as a fast and robust way to invoke Node.js-hosted code from ASP.NET Core at runtime.
 
 ### Requirements
 
@@ -223,8 +223,6 @@ npm install --save angular2-universal
 
 Now you can use the [`angular2-universal` APIs](https://github.com/angular/universal) from your `boot-server.ts` TypeScript module to execute your Angular component on the server. The code needed for this is fairly complex, but that's unavoidable because Angular supports so many different ways of being configured, and you need to provide wiring for whatever combination of DI modules you're using.
 
-You can find an example `boot-server.ts` that renders arbitrary Angular components [here](https://github.com/aspnet/JavaScriptServices/blob/dev/templates/AngularSpa/ClientApp/boot-server.ts). If you use this with your own application, you might need to edit the `serverBindings` array to reference any other DI services that your Angular component depends on.
-
 The easiest way to get started with Angular server-side rendering on ASP.NET Core is to use the [aspnetcore-spa generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/), which creates a ready-made working starting point.
 
 ### 5(b). Prerendering React components
@@ -299,8 +297,6 @@ If you want to enable server-side prerendering too, follow the same process as d
 
 The above example is extremely simple - it doesn't use `react-router`, and it doesn't load any data asynchronously. Real applications are likely to do both of these.
 
-For an example server-side boot module that knows how to evaluate `react-router` routes and render the correct React component, see [this example](https://github.com/aspnet/JavaScriptServices/blob/dev/templates/ReactReduxSpa/ClientApp/boot-server.tsx).
-
 Supporting asynchronous data loading involves more considerations. Unlike Angular applications that run asynchronously on the server and freely overwrite server-generated markup with client-generated markup, React strictly wants to run synchronously on the server and always produce the same markup on the server as it does on the client.
 
 To make this work, you most likely need some way to know in advance what data your React components will need to use, load it separately from those components, and have some way of transferring information about the loaded data from server to client. If you try to implement this in a generalized way, you'll end up reinventing something like the Flux/Redux pattern.
@@ -327,7 +323,7 @@ As a simple example, here's how you can set up Webpack to build TypeScript files
 
 ```
 npm install --save typescript ts-loader
-``` 
+```
 
 And if you don't already have it, you'll find it useful to install the `webpack` command-line tool:
 
@@ -641,8 +637,8 @@ by using the `HotModuleReplacementClientOptions` property on `WebpackDevMiddlewa
 ```csharp
 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
     HotModuleReplacement = true,
-    HotModuleReplacementClientOptions = new Dictionary<string, string> { 
-        { "reload", "true" }, 
+    HotModuleReplacementClientOptions = new Dictionary<string, string> {
+        { "reload", "true" },
     },
 });
 ```

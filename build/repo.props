@@ -66,6 +66,7 @@
     <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
     <ProjectToExclude Include="
                        $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
+                       $(RepositoryRoot)src\Middleware\NodeServices.Sockets\**\*.csproj;
                        $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
                        $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj
                        " />

@@ -37,7 +37,6 @@
 
   <ItemGroup>
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
-    <Repository Include="IISIntegration" RootPath="$(RepositoryRoot)src\IISIntegration\" />
     <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="EntityFrameworkCore" />
 
@@ -50,7 +49,6 @@
     <ShippedRepository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="Identity" RootPath="$(RepositoryRoot)src\Identity\" />
-    <ShippedRepository Include="JavaScriptServices" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
     <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\"/>
     <ShippedRepository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
