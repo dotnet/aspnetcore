@@ -2,13 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="RazorPagesClassLibrary" />
+    <ProjectReference Include="..\RazorPagesClassLibrary\RazorPagesClassLibrary.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />

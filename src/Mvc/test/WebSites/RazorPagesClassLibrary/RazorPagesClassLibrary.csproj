@@ -4,7 +4,6 @@
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <!--  Workaround https://github.com/dotnet/core-setup/issues/3726 -->
     <GenerateDependencyFile>false</GenerateDependencyFile>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 

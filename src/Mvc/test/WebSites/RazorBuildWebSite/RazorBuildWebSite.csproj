@@ -5,7 +5,6 @@
     <DefineConstants>$(DefineConstants)</DefineConstants>
     <!-- We have tests that test runtime view compilation. -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
@@ -13,8 +12,8 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
 
     <!-- Faking like we had Razor-on-Build (Rzc) and MvcPrecompilation -->
-    <Reference Include="RazorBuildWebSite.PrecompiledViews" />
-    <Reference Include="RazorBuildWebSite.Views" />
+    <ProjectReference Include="..\RazorBuildWebSite.PrecompiledViews\RazorBuildWebSite.PrecompiledViews.csproj" />
+    <ProjectReference Include="..\RazorBuildWebSite.Views\RazorBuildWebSite.Views.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />

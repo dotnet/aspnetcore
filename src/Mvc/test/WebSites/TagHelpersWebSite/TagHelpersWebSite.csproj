@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 

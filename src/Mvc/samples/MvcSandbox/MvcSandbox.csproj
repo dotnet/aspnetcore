@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
     <TargetFrameworks Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);net461</TargetFrameworks>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <PropertyGroup>

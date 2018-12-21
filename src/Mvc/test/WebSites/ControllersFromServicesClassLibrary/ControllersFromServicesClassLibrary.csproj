@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 

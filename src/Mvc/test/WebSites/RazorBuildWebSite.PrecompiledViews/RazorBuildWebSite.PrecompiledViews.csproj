@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
     <DefineConstants>$(DefineConstants)</DefineConstants>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 

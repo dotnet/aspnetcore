@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
     <DefineConstants>$(DefineConstants);NETCOREAPP2_0_CUSTOM_DEFINE</DefineConstants>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 

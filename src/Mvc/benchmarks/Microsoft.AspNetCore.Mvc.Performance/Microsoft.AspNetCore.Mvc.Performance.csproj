@@ -9,9 +9,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
   </ItemGroup>

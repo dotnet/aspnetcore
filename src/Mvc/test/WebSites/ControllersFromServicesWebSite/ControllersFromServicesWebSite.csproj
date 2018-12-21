@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="ControllersFromServicesClassLibrary" />
+    <ProjectReference Include="..\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.csproj" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
 
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
