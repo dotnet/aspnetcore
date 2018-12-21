@@ -92,6 +92,14 @@
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.2.0</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>2.2.0</MicrosoftExtensionsWebEncodersPackageVersion>
 
+    <!-- These dependencies are required to build. The need to be used as explicit package references -->
+    <MicrosoftNETSdkRazorPackageVersion>2.2.0</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftAspNetCoreRazorDesignPackageVersion>2.2.0</MicrosoftAspNetCoreRazorDesignPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>2.2.0</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.2.0</MicrosoftAspNetCoreRazorRuntimePackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>2.2.0</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>2.2.0</MicrosoftCodeAnalysisRazorPackageVersion>
+
     <!-- These dependencies are temporary while we refactor package refs into project refs. -->
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModuleV1PackageVersion>
