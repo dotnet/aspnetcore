@@ -20,7 +20,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path "$PSScriptRoot/../../../"
-Import-Module -Scope Local "$repoRoot/scripts/common.psm1" -Force
+Import-Module -Scope Local "$repoRoot/eng/scripts/common.psm1" -Force
 $msbuild = Get-MSBuildPath -Prerelease -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
 
 $harvestRoot = "$repoRoot/obj/sfx/"
