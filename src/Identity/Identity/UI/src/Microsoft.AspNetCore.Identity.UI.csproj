@@ -23,7 +23,6 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>

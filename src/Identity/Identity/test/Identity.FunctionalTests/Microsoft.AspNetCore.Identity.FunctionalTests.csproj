@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\Core\Base32.cs" Link="Infrastructure\Base32.cs" />
-    <Compile Include="..\..\src\Core\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
+    <Compile Include="..\..\..\Extensions\Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
+    <Compile Include="..\..\..\Extensions\Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Identity.DefaultUI.WebSite" />
+    <ProjectReference Include="..\..\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
