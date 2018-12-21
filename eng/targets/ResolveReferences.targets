@@ -85,7 +85,7 @@
       <_ReferenceTemp Remove="@(_ReferenceTemp)" />
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName)" />
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,

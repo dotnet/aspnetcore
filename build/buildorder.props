@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
-    <RepositoryBuildOrder Include="Mvc" Order="14" RootPath="$(RepositoryRoot)src\Mvc\" />
     <RepositoryBuildOrder Include="AADIntegration" Order="15" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <RepositoryBuildOrder Include="Identity" Order="15" RootPath="$(RepositoryRoot)src\Identity\"  />
     <RepositoryBuildOrder Include="JavaScriptServices" Order="15" RootPath="$(RepositoryRoot)src\JavaScriptServices\" />
