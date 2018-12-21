@@ -9,7 +9,7 @@ This NuGet package provides a fast and robust way to invoke Node.js code from a 
 
 It is the underlying mechanism supporting the following packages:
 
- * [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/aspnetcore/tree/release/2.1/src/Middleware/SpaServices/) - builds on NodeServices, adding functionality commonly used in Single Page Applications, such as server-side prerendering, webpack middleware, and integration between server-side and client-side routing.
+ * [`Microsoft.AspNetCore.SpaServices`](/src/Middleware/SpaServices/) - builds on NodeServices, adding functionality commonly used in Single Page Applications, such as server-side prerendering, webpack middleware, and integration between server-side and client-side routing.
 
 ### Requirements
 
@@ -36,7 +36,7 @@ For .NET Framework apps:
 In that case, you don't need to use NodeServices directly (or install it manually). You can either:
 
 * **Recommended:** Use the `aspnetcore-spa` Yeoman generator to get a ready-to-go starting point using your choice of client-side framework. [Instructions here.](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/)
-* Or set up your ASP.NET Core and client-side Angular/React/KO/etc. app manually, and then use the [`Microsoft.AspNetCore.SpaServices`](https://github.com/aspnet/aspnetcore/tree/release/2.1/src/Middleware/SpaServices/) package to add features like server-side prerendering or Webpack middleware. But really, at least try using the `aspnetcore-spa` generator first.
+* Or set up your ASP.NET Core and client-side Angular/React/KO/etc. app manually, and then use the [`Microsoft.AspNetCore.SpaServices`](/src/Middleware/SpaServices/) package to add features like server-side prerendering or Webpack middleware. But really, at least try using the `aspnetcore-spa` generator first.
 
 # Simple usage example
 
