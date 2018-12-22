@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class TestServer: IDisposable, IStartup
     {
-        private const string InProcessHandlerDll = "aspnetcorev2_inprocess.dll";
+        // TODO Change how we load aspnetcorev2_inprocess if we need to support x86
+        private const string InProcessHandlerDll = "x64/aspnetcorev2_inprocess.dll";
         private const string AspNetCoreModuleDll = "aspnetcorev2.dll";
         private const string HWebCoreDll = "hwebcore.dll";
 
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private static readonly SemaphoreSlim WebCoreLock = new SemaphoreSlim(1, 1);
 
         private static readonly int PortRetryCount = 10;
+        private static readonly int ServerTimeoutMilliseconds = 300_000;
 
         private readonly TaskCompletionSource<object> _startedTaskCompletionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory)
         {
-            await WebCoreLock.WaitAsync();
+            await WebCoreLock.WaitAsync(ServerTimeoutMilliseconds);
             var server = new TestServer(appBuilder, loggerFactory);
             server.Start();
             (await server.HttpClient.GetAsync("/start")).EnsureSuccessStatusCode();
@@ -139,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             lifetime.ApplicationStopping.Register(() => doneEvent.Set());
             _host.Start();
             _startedTaskCompletionSource.SetResult(null);
-            doneEvent.Wait();
+            doneEvent.Wait(ServerTimeoutMilliseconds);
             _host.Dispose();
             return 0;
         }

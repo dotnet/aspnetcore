@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\testsite.props" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
@@ -9,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT'"/>
-    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT'"/>
+    <Reference Include="AspNetCoreModule" Condition="'$(OS)' == 'Windows_NT'" />
+    <Reference Include="AspNetCoreModuleV2" Condition="'$(OS)' == 'Windows_NT'" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
@@ -22,7 +23,6 @@
 
   <ItemGroup>
     <None Include="AppHostConfig\HostableWebCore.config" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
-    <None Include="$(AspNetCoreModuleV2ShimDll)" Condition="$(PackNativeAssets) == 'true'" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
   </ItemGroup>
 
 </Project>
