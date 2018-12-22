@@ -1,16 +1,45 @@
 <#
 .SYNOPSIS
-    Installs or updates Visual Studio on a local developer machine
-.PARAMETER Update
-    Update VS to latest version instead of modifying the installation to include new workloads.
-.PARAMETER Quiet
-    Whether to run installer in the background
+    Installs or updates Visual Studio on a local developer machine.
+.DESCRIPTION
+    This installs Visual Studio along with all the workloads required to contribute to this repository.
+.PARAMETER Edition
+    Must be one of these values:
+
+        Community
+        Professional
+        Enterprise
+
+    Selects which 'offering' of Visual Studio to install.
+
+.PARAMETER InstallPath
+    The location of Visual Studio
+.PARAMETER Passive
+    Run the installer without requiring interaction.
+.LINK
+    https://visualstudio.com
+    https://github.com/aspnet/AspNetCore/blob/master/docs/BuildFromSource.md
+.EXAMPLE
+    To install VS 2017 Community, run
+
+        InstallVisualStudio.ps1 -Edition Community
 #>
 [CmdletBinding(DefaultParameterSetName = 'Default')]
 param(
-    [switch]$Update,
-    [switch]$Quiet
+    [ValidateSet('Community', 'Professional', 'Enterprise')]
+    [string]$Edition,
+    [string]$InstallPath,
+    [switch]$Passive
 )
+
+if (-not $Edition) {
+    Write-Host "You must specify a value for the -Edition parameter which selects the kind of Visual Studio to install." -f Red
+    Write-Host "Run ``Get-Help $PSCommandPath`` for more details." -f Red
+    Write-Host ""
+    Write-Host "Example:  ./InstallVisualStudio -Edition Community" -f Red
+    Write-Host ""
+    exit 1
+}
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
@@ -18,49 +47,35 @@ Set-StrictMode -Version 1
 $intermedateDir = "$PSScriptRoot\obj"
 mkdir $intermedateDir -ErrorAction Ignore | Out-Null
 
-$bootstrapper = "$intermedateDir\vs_enterprise1.exe"
-Invoke-WebRequest -Uri 'https://aka.ms/vs/15/release/vs_enterprise.exe' -OutFile $bootstrapper
+$bootstrapper = "$intermedateDir\vsinstaller.exe"
+Invoke-WebRequest -Uri "https://aka.ms/vs/15/release/vs_$($Edition.ToLowerInvariant()).exe" -OutFile $bootstrapper
 
-$vsJson = "$PSScriptRoot\vs.json"
+if (-not $InstallPath) {
+    $InstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\$Edition"
+}
+
 # no backslashes - this breaks the installer
-$vsInstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise"
-$arguments = @(
-    '--installPath', "`"$vsInstallPath`"",
-    '--in', $vsJson,
-    '--wait',
-    '--norestart')
+$InstallPath = $InstallPath.TrimEnd('\')
 
-if ($Update) {
-    $arguments = ,'update' + $arguments
-}
-else {
-    $arguments = ,'modify' + $arguments
+[string[]] $arguments = @()
+
+if (Test-path $InstallPath) {
+    $arguments += 'modify'
 }
 
-if ($Quiet) {
-    $arguments += '--quiet'
+$arguments += `
+    '--productId', "Microsoft.VisualStudio.Product.$Edition", `
+    '--installPath', "`"$InstallPath`"", `
+    '--in', "$PSScriptRoot\vs.json", `
+    '--norestart'
+
+if ($Passive) {
+    $arguments += '--passive'
 }
 
-Write-Host "Running '$bootstrapper $arguments' on $(hostname)"
-$process = Start-Process -FilePath $bootstrapper `
-    -ArgumentList $arguments `
-    -Verb runas `
-    -PassThru `
-    -ErrorAction Stop
-Write-Host "pid = $($process.Id)"
-Wait-Process -InputObject $process
-Write-Host "exit code = $($process.ExitCode)"
+Write-Host ""
+Write-Host "Installing Visual Studio 2017 $Edition" -f Magenta
+Write-Host ""
+Write-Host "Running '$bootstrapper $arguments'"
 
-# https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio#error-codes
-if ($process.ExitCode -eq 3010) {
-    Write-Warning "Agent $(hostname) requires restart to finish the VS update"
-}
-elseif ($process.ExitCode -eq 5007) {
-    Write-Error "Operation was blocked - the computer does not meet the requirements"
-}
-elseif (($process.ExitCode -eq 5004) -or ($process.ExitCode -eq 1602)) {
-    Write-Error "Operation was canceled"
-}
-elseif ($process.ExitCode -ne 0) {
-    Write-Error "Installation failed on $(hostname) for unknown reason"
-}
+& $bootstrapper @arguments
