@@ -41,7 +41,6 @@
     <Repository Include="Components" />
     <Repository Include="Identity" />
     <Repository Include="JavaScriptServices" />
-    <Repository Include="Mvc" />
     <Repository Include="SignalR" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
