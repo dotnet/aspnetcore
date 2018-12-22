@@ -230,8 +230,7 @@ if ($All) {
 elseif ($Projects) {
     if (![System.IO.Path]::IsPathRooted($Projects))
     {
-        $CurrentDirectory = Get-Location;
-        $Projects = Join-Path $CurrentDirectory $Projects
+        $Projects = Join-Path (Get-Location) $Projects
     }
     $MSBuildArguments += "/p:Projects=$Projects"
 }
