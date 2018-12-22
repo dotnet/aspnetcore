@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\build\testsite.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 
   <ItemGroup>
