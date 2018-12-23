@@ -93,6 +93,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
     <LatestPackageReference Include="FSharp.Core" Version="4.2.1" />
+    <LatestPackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->

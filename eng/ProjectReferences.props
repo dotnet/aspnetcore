@@ -110,6 +110,9 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Json" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Localization" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Localization\Microsoft.AspNetCore.Mvc.Localization.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.RazorPages" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.RazorPages\Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TagHelpers" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />

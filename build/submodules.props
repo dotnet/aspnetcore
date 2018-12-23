@@ -48,7 +48,6 @@
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="JsonPatch" />
-    <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\"/>
     <ShippedRepository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
   </ItemGroup>
 </Project>
