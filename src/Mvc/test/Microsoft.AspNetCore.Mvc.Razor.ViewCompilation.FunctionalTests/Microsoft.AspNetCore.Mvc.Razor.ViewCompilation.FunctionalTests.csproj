@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+
+    <DefineConstants>$(DefineConstants);__remove_this_to__GENERATE_BASELINES</DefineConstants>
+    <DefineConstants Condition="'$(GenerateBaseLines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
+    <SignAssembly>false</SignAssembly>
+    <PublicSign>false</PublicSign>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\*" />
+    <Compile Include="Infrastructure\*.cs" />
+    <Compile Include="DesktopTests\*.cs" Condition="'$(TargetFramework)'=='net461'" />
+    <Compile Include="CoreCLRTests\*.cs" Condition="'$(TargetFramework)'=='netcoreapp2.0' OR '$(TargetFramework)'=='netcoreapp2.1'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="CoreCLRTests\RazorSdkNeitherUsedTest_CoreCLR.cs" />
+    <None Remove="CoreCLRTests\RazorSdkPrecompilationUsedTest_CoreCLR.cs" />
+    <None Remove="Resources\ApplicationWithRazorSdkPrecompilationUsed.Home.Index.txt" />
+    <None Remove="Resources\ApplicationWithRazorSdkUsed.Home.Index.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ViewCompilationApps\ApplicationUsingRelativePaths\ApplicationUsingRelativePaths.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\ApplicationWithConfigureMvc\ApplicationWithConfigureMvc.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\ApplicationWithCustomInputFiles\ApplicationWithCustomInputFiles.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\ApplicationWithParseErrors\ApplicationWithParseErrors.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\ApplicationWithTagHelpers\ApplicationWithTagHelpers.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\ApplicationWithRazorSdkNeitherUsed\ApplicationWithRazorSdkNeitherUsed.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\ApplicationWithRazorSdkPrecompilationUsed\ApplicationWithRazorSdkPrecompilationUsed.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\ApplicationWithRazorSdkUsed\ApplicationWithRazorSdkUsed.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\PublishWithEmbedViewSources\PublishWithEmbedViewSources.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\RazorPagesApp\RazorPagesApp.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\SimpleAppWithAssemblyRename\SimpleAppWithAssemblyRename.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\SimpleApp\SimpleApp.csproj" />
+    <ProjectReference Include="..\ViewCompilationApps\StrongNamedApp\StrongNamedApp.csproj" />
+  </ItemGroup>
+
+</Project>

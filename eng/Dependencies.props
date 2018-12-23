@@ -98,6 +98,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Google.ProtoBuf" Version="$(GoogleProtoBufPackageVersion)" />
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
