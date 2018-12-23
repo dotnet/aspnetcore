@@ -16,7 +16,7 @@
 
 <div>
     <form id="delete-user" method="post" class="form-group">
-        <div asp-validation-summary="All" class="text-danger"></div>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         @if (Model.RequirePassword)
         {
             <div class="form-group">
