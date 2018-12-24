@@ -1204,7 +1204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                    statusCode != StatusCodes.Status304NotModified;
         }
 
-        private void ThrowResponseAlreadyStartedException(string value)
+        private static void ThrowResponseAlreadyStartedException(string value)
         {
             throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(value));
         }
