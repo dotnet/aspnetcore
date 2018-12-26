@@ -41,10 +41,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"));
         }
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
-        public async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
+
+        [ConditionalFact]
+        public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
+
+        private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_IIS_HTTPAUTH"] = "shouldberemoved";
@@ -52,12 +56,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.DoesNotContain("shouldberemoved", await GetStringAsync(deploymentParameters,"/GetEnvironmentVariable?name=ASPNETCORE_IIS_HTTPAUTH"));
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [RequiresNewHandler]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        public async Task WebConfigOverridesGlobalEnvironmentVariables(HostingModel hostingModel)
+        public Task WebConfigOverridesGlobalEnvironmentVariables_InProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesGlobalEnvironmentVariables_OutOfProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.OutOfProcess);
+
+        private async Task WebConfigOverridesGlobalEnvironmentVariables(HostingModel hostingModel)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
@@ -65,11 +73,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal("Production", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_ENVIRONMENT"));
         }
 
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigAppendsHostingStartup_InProcess() => WebConfigAppendsHostingStartup(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigAppendsHostingStartup_OutOfProcess() => WebConfigAppendsHostingStartup(HostingModel.OutOfProcess);
+
         [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        public async Task WebConfigAppendsHostingStartup(HostingModel hostingModel)
+        private async Task WebConfigAppendsHostingStartup(HostingModel hostingModel)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
@@ -83,11 +100,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
+        [ConditionalFact]
+        [RequiresNewHandler]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        public async Task WebConfigOverridesHostingStartup(HostingModel hostingModel)
+        public Task WebConfigOverridesHostingStartup_InProcess() => WebConfigOverridesHostingStartup(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesHostingStartup_OutOfProcess() => WebConfigOverridesHostingStartup(HostingModel.OutOfProcess);
+
+        private async Task WebConfigOverridesHostingStartup(HostingModel hostingModel)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
