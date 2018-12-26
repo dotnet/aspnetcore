@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // CRLF done in reverse order so the 1st index will elide the bounds check for the 0th index
             span[1] = (byte)'\n';
             span[0] = (byte)'\r';
+            start.Advance(2);
         }
     }
 }
