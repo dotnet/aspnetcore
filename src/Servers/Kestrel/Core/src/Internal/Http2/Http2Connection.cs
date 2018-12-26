@@ -605,7 +605,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
 
                     // Start a new stream
-                    _currentHeadersStream = new Http2Stream(new Http2StreamContext
+                    _currentHeadersStream = new Http2Stream<TContext>(application, new Http2StreamContext
                     {
                         ConnectionId = ConnectionId,
                         StreamId = _incomingFrame.StreamId,
@@ -995,13 +995,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _activeStreamCount++;
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
+
             // Must not allow app code to block the connection handling loop.
-            ThreadPool.UnsafeQueueUserWorkItem(state =>
-            {
-                var (app, currentStream) = (Tuple<IHttpApplication<TContext>, Http2Stream>)state;
-                _ = currentStream.ProcessRequestsAsync(app);
-            },
-            new Tuple<IHttpApplication<TContext>, Http2Stream>(application, _currentHeadersStream));
+            ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
         }
 
         private void ResetRequestHeaderParsingState()
