@@ -44,11 +44,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (a, b, c, d) => true
-            };
-            var client = deploymentResult.CreateClient(handler);
+            var client = CreateNonValidatingClient(deploymentResult);
             var response = await client.GetAsync("HttpsHelloWorld");
             var responseText = await response.Content.ReadAsStringAsync();
             if (variant.HostingModel == HostingModel.OutOfProcess)
@@ -94,7 +90,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 });
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            Assert.Equal(deploymentParameters.ApplicationBaseUriHint + appName, await deploymentResult.HttpClient.GetStringAsync($"/{appName}/ServerAddresses"));
+            var client = CreateNonValidatingClient(deploymentResult);
+
+            Assert.Equal(deploymentParameters.ApplicationBaseUriHint + appName, await client.GetStringAsync($"/{appName}/ServerAddresses"));
         }
 
         [ConditionalFact]
@@ -115,7 +113,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_HTTPS_PORT"] = "123";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            Assert.Equal("123", await deploymentResult.HttpClient.GetStringAsync("/HTTPS_PORT"));
+            var client = CreateNonValidatingClient(deploymentResult);
+
+            Assert.Equal("123", await client.GetStringAsync("/HTTPS_PORT"));
         }
 
         [ConditionalFact]
@@ -142,7 +142,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 });
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            Assert.Equal("NOVALUE", await deploymentResult.HttpClient.GetStringAsync("/HTTPS_PORT"));
+            var client = CreateNonValidatingClient(deploymentResult);
+
+            Assert.Equal("NOVALUE", await client.GetStringAsync("/HTTPS_PORT"));
+        }
+
+        private static HttpClient CreateNonValidatingClient(IISDeploymentResult deploymentResult)
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (a, b, c, d) => true
+            };
+            return deploymentResult.CreateClient(handler);
         }
 
         public static int GetNextSSLPort(int avoid = 0)
