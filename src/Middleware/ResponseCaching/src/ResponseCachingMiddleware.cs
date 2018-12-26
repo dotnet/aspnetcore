@@ -138,8 +138,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal async Task<bool> TryServeCachedResponseAsync(ResponseCachingContext context, IResponseCacheEntry cacheEntry)
         {
-            var cachedResponse = cacheEntry as CachedResponse;
-            if (cachedResponse == null)
+            if (!(cacheEntry is CachedResponse cachedResponse))
             {
                 return false;
             }
@@ -199,8 +198,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
             context.BaseKey = _keyProvider.CreateBaseKey(context);
             var cacheEntry = await _cache.GetAsync(context.BaseKey);
 
-            var cachedVaryByRules = cacheEntry as CachedVaryByRules;
-            if (cachedVaryByRules != null)
+            if (cacheEntry is CachedVaryByRules cachedVaryByRules)
             {
                 // Request contains vary rules, recompute key(s) and try again
                 context.CachedVaryByRules = cachedVaryByRules;
