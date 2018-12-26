@@ -151,10 +151,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             {
                 if (Continuation != null)
                 {
-                    // TODO: use generic overload when code moved to be netcoreapp only
-                    var continuation = Continuation;
-                    var state = State;
-                    ThreadPool.QueueUserWorkItem(_ => continuation(state));
+                    ThreadPool.UnsafeQueueUserWorkItem(Continuation, State, preferLocal: false);
                 }
             }
         }
