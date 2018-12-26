@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\..\build\testsite.props" />
+
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2</TargetFrameworks>
+    <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 
   <ItemGroup>
