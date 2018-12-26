@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalTheory]
+        [RequiresNewHandler]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
