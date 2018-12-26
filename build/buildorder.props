@@ -9,12 +9,10 @@
   <ItemGroup>
     <RepositoryBuildOrder Include="AADIntegration" Order="15" />
     <RepositoryBuildOrder Include="Identity" Order="15" />
-    <RepositoryBuildOrder Include="JavaScriptServices" Order="15" />
     <RepositoryBuildOrder Include="AzureIntegration" Order="15" />
     <RepositoryBuildOrder Include="MusicStore" Order="16" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" />
-    <RepositoryBuildOrder Include="Components" Order="17" />
     <RepositoryBuildOrder Include="Templating" Order="18" />
   </ItemGroup>
 </Project>
