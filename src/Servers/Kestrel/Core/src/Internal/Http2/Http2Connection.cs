@@ -453,7 +453,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 case Http2FrameType.WINDOW_UPDATE:
                     return ProcessWindowUpdateFrameAsync();
                 case Http2FrameType.CONTINUATION:
-                    return ProcessContinuationFrameAsync(application, payload);
+                    return ProcessContinuationFrameAsync(payload);
                 default:
                     return ProcessUnknownFrameAsync();
             }
@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _headerFlags = _incomingFrame.HeadersFlags;
 
                     var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
-                    return DecodeHeadersAsync(application, _incomingFrame.HeadersEndHeaders, headersPayload);
+                    return DecodeHeadersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
                 }
             }
         }
@@ -878,7 +878,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private Task ProcessContinuationFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload)
+        private Task ProcessContinuationFrameAsync(ReadOnlySequence<byte> payload)
         {
             if (_currentHeadersStream == null)
             {
@@ -905,7 +905,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         TimeoutControl.CancelTimeout();
                     }
 
-                    return DecodeHeadersAsync(application, _incomingFrame.ContinuationEndHeaders, payload);
+                    return DecodeHeadersAsync(_incomingFrame.ContinuationEndHeaders, payload);
                 }
             }
         }
@@ -921,7 +921,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         // This is always called with the _stateLock acquired.
-        private Task DecodeHeadersAsync<TContext>(IHttpApplication<TContext> application, bool endHeaders, ReadOnlySequence<byte> payload)
+        private Task DecodeHeadersAsync(bool endHeaders, ReadOnlySequence<byte> payload)
         {
             try
             {
@@ -932,7 +932,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     if (_state != Http2ConnectionState.Closed)
                     {
-                        StartStream(application);
+                        StartStream();
                     }
 
                     ResetRequestHeaderParsingState();
@@ -969,7 +969,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private void StartStream<TContext>(IHttpApplication<TContext> application)
+        private void StartStream()
         {
             if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
             {
