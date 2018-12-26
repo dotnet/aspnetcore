@@ -73,15 +73,26 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
-            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm2";
             if (hostingModel == HostingModel.InProcess)
             {
-                Assert.Equal("Asm1;Asm2", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+                Assert.Equal("Asm1", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
             }
             else
             {
-                Assert.Equal("Asm1;Asm2;Microsoft.AspNetCore.Server.IISIntegration", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+                Assert.Equal("Asm1;Microsoft.AspNetCore.Server.IISIntegration", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
             }
+        }
+
+        [ConditionalTheory]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task WebConfigOverridesHostingStartup(HostingModel hostingModel)
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm2";
+            Assert.Equal("Asm2", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
         }
     }
 }

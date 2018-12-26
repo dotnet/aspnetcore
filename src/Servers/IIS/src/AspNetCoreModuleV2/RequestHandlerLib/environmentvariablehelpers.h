@@ -66,15 +66,18 @@ public:
 
         environmentVariables.insert_or_assign(ASPNETCORE_IIS_AUTH_ENV_STR, strIisAuthEnvValue);
 
-        auto hostingStartupValues = Environment::GetEnvironmentVariableValue(HOSTING_STARTUP_ASSEMBLIES_ENV_STR).value_or(L"");
-        hostingStartupValues += L";" + environmentVariables[HOSTING_STARTUP_ASSEMBLIES_ENV_STR];
-
-        if (fAddHostingStartup && hostingStartupValues.find(HOSTING_STARTUP_ASSEMBLIES_ENV_STR) == std::wstring::npos)
+        if (fAddHostingStartup && environmentVariables.count(HOSTING_STARTUP_ASSEMBLIES_ENV_STR) == 0)
         {
-            hostingStartupValues += std::wstring(L";") + HOSTING_STARTUP_ASSEMBLIES_VALUE;
+            auto hostingStartupValues = Environment::GetEnvironmentVariableValue(HOSTING_STARTUP_ASSEMBLIES_ENV_STR).value_or(L"");
+
+            if (hostingStartupValues.find(HOSTING_STARTUP_ASSEMBLIES_ENV_STR) == std::wstring::npos)
+            {
+                hostingStartupValues += std::wstring(L";") + HOSTING_STARTUP_ASSEMBLIES_VALUE;
+            }
+
+            environmentVariables.insert_or_assign(HOSTING_STARTUP_ASSEMBLIES_ENV_STR, hostingStartupValues);
         }
 
-        environmentVariables.insert_or_assign(HOSTING_STARTUP_ASSEMBLIES_ENV_STR, hostingStartupValues);
 
         return environmentVariables;
     }
