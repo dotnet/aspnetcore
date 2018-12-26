@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -17,7 +18,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public partial class Http2Stream : HttpProtocol
+    public abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
     {
         private readonly Http2StreamContext _context;
         private readonly Http2OutputProducer _http2Output;
@@ -501,6 +502,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return (oldCompletionState, _completionState);
             }
         }
+
+        /// <summary>
+        /// Used to kick off the request processing loop by derived classes.
+        /// </summary>
+        public abstract void Execute();
 
         [Flags]
         private enum StreamCompletionFlags
