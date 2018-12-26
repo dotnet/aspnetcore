@@ -12,35 +12,35 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     /// </summary>
     internal static class LoggerExtensions
     {
-        private static Action<ILogger, string, Exception> _logRequestMethodNotCacheable;
-        private static Action<ILogger, Exception> _logRequestWithAuthorizationNotCacheable;
-        private static Action<ILogger, Exception> _logRequestWithNoCacheNotCacheable;
-        private static Action<ILogger, Exception> _logRequestWithPragmaNoCacheNotCacheable;
-        private static Action<ILogger, TimeSpan, Exception> _logExpirationMinFreshAdded;
-        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationSharedMaxAgeExceeded;
-        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationMustRevalidate;
-        private static Action<ILogger, TimeSpan, TimeSpan, TimeSpan, Exception> _logExpirationMaxStaleSatisfied;
-        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationMaxAgeExceeded;
-        private static Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _logExpirationExpiresExceeded;
-        private static Action<ILogger, Exception> _logResponseWithoutPublicNotCacheable;
-        private static Action<ILogger, Exception> _logResponseWithNoStoreNotCacheable;
-        private static Action<ILogger, Exception> _logResponseWithNoCacheNotCacheable;
-        private static Action<ILogger, Exception> _logResponseWithSetCookieNotCacheable;
-        private static Action<ILogger, Exception> _logResponseWithVaryStarNotCacheable;
-        private static Action<ILogger, Exception> _logResponseWithPrivateNotCacheable;
-        private static Action<ILogger, int, Exception> _logResponseWithUnsuccessfulStatusCodeNotCacheable;
-        private static Action<ILogger, Exception> _logNotModifiedIfNoneMatchStar;
-        private static Action<ILogger, EntityTagHeaderValue, Exception> _logNotModifiedIfNoneMatchMatched;
-        private static Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _logNotModifiedIfModifiedSinceSatisfied;
-        private static Action<ILogger, Exception> _logNotModifiedServed;
-        private static Action<ILogger, Exception> _logCachedResponseServed;
-        private static Action<ILogger, Exception> _logGatewayTimeoutServed;
-        private static Action<ILogger, Exception> _logNoResponseServed;
-        private static Action<ILogger, string, string, Exception> _logVaryByRulesUpdated;
-        private static Action<ILogger, Exception> _logResponseCached;
-        private static Action<ILogger, Exception> _logResponseNotCached;
-        private static Action<ILogger, Exception> _logResponseContentLengthMismatchNotCached;
-        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationInfiniteMaxStaleSatisfied;
+        private static readonly Action<ILogger, string, Exception> _logRequestMethodNotCacheable;
+        private static readonly Action<ILogger, Exception> _logRequestWithAuthorizationNotCacheable;
+        private static readonly Action<ILogger, Exception> _logRequestWithNoCacheNotCacheable;
+        private static readonly Action<ILogger, Exception> _logRequestWithPragmaNoCacheNotCacheable;
+        private static readonly Action<ILogger, TimeSpan, Exception> _logExpirationMinFreshAdded;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationSharedMaxAgeExceeded;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationMustRevalidate;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, TimeSpan, Exception> _logExpirationMaxStaleSatisfied;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationMaxAgeExceeded;
+        private static readonly Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _logExpirationExpiresExceeded;
+        private static readonly Action<ILogger, Exception> _logResponseWithoutPublicNotCacheable;
+        private static readonly Action<ILogger, Exception> _logResponseWithNoStoreNotCacheable;
+        private static readonly Action<ILogger, Exception> _logResponseWithNoCacheNotCacheable;
+        private static readonly Action<ILogger, Exception> _logResponseWithSetCookieNotCacheable;
+        private static readonly Action<ILogger, Exception> _logResponseWithVaryStarNotCacheable;
+        private static readonly Action<ILogger, Exception> _logResponseWithPrivateNotCacheable;
+        private static readonly Action<ILogger, int, Exception> _logResponseWithUnsuccessfulStatusCodeNotCacheable;
+        private static readonly Action<ILogger, Exception> _logNotModifiedIfNoneMatchStar;
+        private static readonly Action<ILogger, EntityTagHeaderValue, Exception> _logNotModifiedIfNoneMatchMatched;
+        private static readonly Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _logNotModifiedIfModifiedSinceSatisfied;
+        private static readonly Action<ILogger, Exception> _logNotModifiedServed;
+        private static readonly Action<ILogger, Exception> _logCachedResponseServed;
+        private static readonly Action<ILogger, Exception> _logGatewayTimeoutServed;
+        private static readonly Action<ILogger, Exception> _logNoResponseServed;
+        private static readonly Action<ILogger, string, string, Exception> _logVaryByRulesUpdated;
+        private static readonly Action<ILogger, Exception> _logResponseCached;
+        private static readonly Action<ILogger, Exception> _logResponseNotCached;
+        private static readonly Action<ILogger, Exception> _logResponseContentLengthMismatchNotCached;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationInfiniteMaxStaleSatisfied;
 
         static LoggerExtensions()
         {
