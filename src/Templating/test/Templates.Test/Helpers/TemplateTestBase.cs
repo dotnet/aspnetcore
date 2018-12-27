@@ -54,9 +54,9 @@ $@"<Project>
             var directoryBuildTargetsContent =
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
-
     <ItemGroup>
-       <PackageReference Include=""Microsoft.AspNetCore.App"" Version=""$(BundledAspNetCoreAppPackageVersion)"" IsImplicitlyDefined=""true"" />
+        <FrameworkReference Include=""Microsoft.AspNetCore.App"" />
+        <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorPackageVersion)"" />
     </ItemGroup>
 </Project>";
 

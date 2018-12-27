@@ -1,10 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
@@ -102,8 +104,14 @@ namespace Templates.Test.Helpers
 
             // Locate the artifacts directory containing the built template packages
             var solutionDir = FindAncestorDirectoryContaining("Templating.sln");
-            var artifactsDir = Path.Combine(solutionDir, "artifacts", "build");
+#if DEBUG
+            var config = "Debug";
+#else
+            var config = "Release";
+#endif
+            var artifactsDir = Path.Combine(solutionDir, "..", "..", "artifacts", config ,"packages", "product");
             var builtPackages = Directory.GetFiles(artifactsDir, "*.nupkg");
+            Assert.NotEmpty(builtPackages);
             foreach (var packagePath in builtPackages)
             {
                 if (_templatePackages.Any(name => Path.GetFileName(packagePath).StartsWith(name, StringComparison.OrdinalIgnoreCase)))

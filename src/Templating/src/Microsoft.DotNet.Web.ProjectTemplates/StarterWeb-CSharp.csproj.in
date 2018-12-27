@@ -27,5 +27,5 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqlitePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
   </ItemGroup>
-  
+
 </Project>
