@@ -367,14 +367,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected virtual void OnRequestProcessingEnding()
         {
+            
         }
 
         protected virtual void OnRequestProcessingEnded()
         {
+            
         }
 
         protected virtual void BeginRequestProcessing()
         {
+            
         }
 
         protected virtual void OnErrorAfterResponseStarted()

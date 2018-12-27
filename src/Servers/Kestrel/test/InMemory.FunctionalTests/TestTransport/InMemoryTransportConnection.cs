@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,19 +16,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     {
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
-        private readonly ILogger _logger;
         private bool _isClosed;
 
         public InMemoryTransportConnection(MemoryPool<byte> memoryPool, ILogger logger)
         {
             MemoryPool = memoryPool;
-            _logger = logger;
+            Log = logger;
 
             LocalAddress = IPAddress.Loopback;
             RemoteAddress = IPAddress.Loopback;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
         }
+
+        internal ILogger Log { get; }
 
         public override MemoryPool<byte> MemoryPool { get; }
 
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            _logger.LogDebug(@"Connection id ""{ConnectionId}"" closing because: ""{Message}""", ConnectionId, abortReason?.Message);
+            Log.LogDebug(@"Connection id ""{ConnectionId}"" closing because: ""{Message}""", ConnectionId, abortReason?.Message);
 
             Input.Complete(abortReason);
 

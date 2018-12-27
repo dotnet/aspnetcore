@@ -69,6 +69,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnRequestProcessingEnded()
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("HttpProtocol.OnRequestProcessingEnded");
+            }
+
             Input.Complete();
 
             TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
@@ -451,6 +456,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void OnRequestProcessingEnding()
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("Http1Connection.OnRequestProcessingEnding");
+            }
         }
 
         protected override string CreateRequestId()
@@ -461,6 +470,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override void BeginRequestProcessing()
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("Http1Connection.BeginRequestProcessing");
+            }
             // Reset the features and timeout.
             Reset();
             TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutReason.KeepAlive);
@@ -468,6 +481,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool BeginRead(out ValueTask<ReadResult> awaitable)
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("Http1Connection.BeginRead");
+            }
+
             awaitable = Input.ReadAsync();
             return true;
         }

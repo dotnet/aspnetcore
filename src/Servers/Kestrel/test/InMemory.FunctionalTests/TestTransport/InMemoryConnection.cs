@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 {
@@ -34,10 +35,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public override void Dispose()
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                TransportConnection.Log.LogDebug("InMemoryConnection.Dispose() started");
+            }
+
             TransportConnection.Input.Complete();
             TransportConnection.Output.Complete();
             TransportConnection.OnClosed();
             base.Dispose();
+
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                TransportConnection.Log.LogDebug("InMemoryConnection.Dispose() complete");
+            }
         }
     }
 }
