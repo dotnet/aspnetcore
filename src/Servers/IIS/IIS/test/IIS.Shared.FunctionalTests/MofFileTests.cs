@@ -17,7 +17,7 @@ namespace IIS.FunctionalTests
         [RequiresIIS(IISCapability.TracingModule)]
         public void CheckMofFile()
         {
-            var path = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "src", "aspnetcoremodulev2", "aspnetcore", "ancm.mof");
+            var path = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "aspnetcoremodulev2", "aspnetcore", "ancm.mof");
             var process = Process.Start("mofcomp.exe", path);
             process.WaitForExit();
             Assert.Equal(0, process.ExitCode);
