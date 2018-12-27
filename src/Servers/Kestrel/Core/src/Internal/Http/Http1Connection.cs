@@ -37,8 +37,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private int _remainingRequestHeadersBytesAllowed;
 
         public Http1Connection(HttpConnectionContext context)
-            : base(context)
         {
+            Initialize(context);
+
             _context = context;
             _parser = ServiceContext.HttpParser;
             _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;

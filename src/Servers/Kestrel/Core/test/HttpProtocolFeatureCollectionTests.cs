@@ -40,7 +40,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.Reset();
             _collection = _http1Connection;
 
-            var http2Stream = new TestHttp2Stream(context);
+            var http2Stream = new TestHttp2Stream();
+            http2Stream.Initialize(context);
             http2Stream.Reset();
             _http2Collection = http2Stream;
         }
@@ -223,10 +224,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class TestHttp2Stream : Http2Stream
         {
-            public TestHttp2Stream(Http2StreamContext context) : base(context)
-            {
-            }
-
             public override void Execute()
             {
             }

@@ -20,19 +20,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
     {
-        private readonly Http2StreamContext _context;
-        private readonly Http2OutputProducer _http2Output;
-        private readonly StreamInputFlowControl _inputFlowControl;
-        private readonly StreamOutputFlowControl _outputFlowControl;
+        private Http2StreamContext _context;
+        private Http2OutputProducer _http2Output;
+        private StreamInputFlowControl _inputFlowControl;
+        private StreamOutputFlowControl _outputFlowControl;
 
         internal long DrainExpirationTicks { get; set; }
 
         private StreamCompletionFlags _completionState;
         private readonly object _completionLock = new object();
 
-        public Http2Stream(Http2StreamContext context)
-            : base(context)
+        public virtual void Initialize(Http2StreamContext context)
         {
+            base.Initialize(context);
+
             _context = context;
 
             _inputFlowControl = new StreamInputFlowControl(

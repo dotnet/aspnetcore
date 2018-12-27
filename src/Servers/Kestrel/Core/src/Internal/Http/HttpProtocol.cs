@@ -62,12 +62,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private long _responseBytesWritten;
 
-        private readonly HttpConnectionContext _context;
+        private HttpConnectionContext _context;
 
         protected string _methodText = null;
         private string _scheme = null;
 
-        public HttpProtocol(HttpConnectionContext context)
+        protected void Initialize(HttpConnectionContext context)
         {
             _context = context;
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected IKestrelTrace Log => ServiceContext.Log;
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;
         // Hold direct reference to ServerOptions since this is used very often in the request processing path
-        protected KestrelServerOptions ServerOptions { get; }
+        protected KestrelServerOptions ServerOptions { get; set; }
         protected string ConnectionId => _context.ConnectionId;
 
         public string ConnectionIdFeature { get; set; }

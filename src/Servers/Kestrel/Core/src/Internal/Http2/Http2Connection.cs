@@ -205,16 +205,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private Http2Stream CreateStream<TContext>(IHttpApplication<TContext> application)
         {
+            Http2Stream<TContext> stream = null;
+
             lock (_streamPool)
             {
                 if (_pooledStreamCount > 0)
                 {
                     _pooledStreamCount--;
-                    return _streamPool[_pooledStreamCount];
+                    stream = (Http2Stream<TContext>)_streamPool[_pooledStreamCount];
                 }
             }
 
-            return new Http2Stream<TContext>(application, new Http2StreamContext
+            if (stream == null)
+            {
+                stream = new Http2Stream<TContext>();
+            }
+
+            stream.HttpApplication = application;
+            stream.Initialize(new Http2StreamContext
             {
                 ConnectionId = ConnectionId,
                 StreamId = _incomingFrame.StreamId,
@@ -231,6 +239,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 ConnectionOutputFlowControl = _outputFlowControl,
                 TimeoutControl = TimeoutControl,
             });
+
+            return stream;
         }
 
         private void ReturnStream(Http2Stream stream)
