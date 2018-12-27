@@ -55,8 +55,8 @@ $@"<Project>
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
     <ItemGroup>
-        <FrameworkReference Include=""Microsoft.AspNetCore.App"" />
-        <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorPackageVersion)"" />
+        <FrameworkReference Remove=""Microsoft.AspNetCore.App"" />
+        <PackageReference Include=""Microsoft.AspNetCore.App"" Version=""$(BundledAspNetCoreAppPackageVersion)"" IsImplicitlyDefined=""true"" />
     </ItemGroup>
 </Project>";
 
