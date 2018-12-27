@@ -82,10 +82,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public Task WebConfigAppendsHostingStartup_OutOfProcess() => WebConfigAppendsHostingStartup(HostingModel.OutOfProcess);
 
-        [ConditionalTheory]
-        [InlineData(HostingModel.InProcess)]
-        [InlineData(HostingModel.OutOfProcess)]
-        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         private async Task WebConfigAppendsHostingStartup(HostingModel hostingModel)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
@@ -115,6 +111,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm2";
             Assert.Equal("Asm2", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigExpandsVariables_InProcess() => WebConfigExpandsVariables(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigExpandsVariables_OutOfProcess() => WebConfigExpandsVariables(HostingModel.OutOfProcess);
+
+        private async Task WebConfigExpandsVariables(HostingModel hostingModel)
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            deploymentParameters.EnvironmentVariables["TestVariable"] = "World";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["OtherVariable"] = "%TestVariable%;Hello";
+            Assert.Equal("World;Hello", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=OtherVariable"));
         }
     }
 }

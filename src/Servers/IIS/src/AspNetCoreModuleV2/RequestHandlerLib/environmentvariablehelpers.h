@@ -78,6 +78,10 @@ public:
             environmentVariables.insert_or_assign(HOSTING_STARTUP_ASSEMBLIES_ENV_STR, hostingStartupValues);
         }
 
+        for (auto& environmentVariable : environmentVariables)
+        {
+            environmentVariable.second = Environment::ExpandEnvironmentVariables(environmentVariable.second);
+        }
 
         return environmentVariables;
     }
