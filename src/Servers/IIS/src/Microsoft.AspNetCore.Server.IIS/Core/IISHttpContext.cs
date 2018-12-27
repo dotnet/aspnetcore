@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             catch (Exception ex)
             {
-               _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(HandleRequest)}.");
+               _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
             }
             finally
             {
