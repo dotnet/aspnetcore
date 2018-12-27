@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
@@ -80,6 +81,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("ProcessRequestsAsync started");
+            }
+
             try
             {
                 AdaptedPipeline adaptedPipeline = null;
@@ -161,11 +167,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     }
 
                     _context.Transport.Input.OnWriterCompleted(
-                        (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
+                        (_, state) =>
+                        {
+                            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                            {
+                                Log.LogDebug("Transport.Input.OnWriterCompleted fired");
+                            }
+
+                            ((HttpConnection)state).OnInputOrOutputCompleted();
+                        },
                         this);
 
                     _context.Transport.Output.OnReaderCompleted(
-                        (_, state) => ((HttpConnection)state).OnInputOrOutputCompleted(),
+                        (_, state) =>
+                        {
+                            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                            {
+                                Log.LogDebug("Transport.Output.OnReaderCompleted fired");
+                            }
+
+                            ((HttpConnection)state).OnInputOrOutputCompleted();
+                        },
                         this);
 
                     if (requestProcessor != null)
@@ -187,6 +209,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 if (_http1Connection?.IsUpgraded == true)
                 {
                     _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
+                }
+
+                if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                {
+                    Log.LogDebug("ProcessRequestsAsync ended");
                 }
             }
         }
@@ -219,6 +246,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             lock (_protocolSelectionLock)
             {
+                if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                {
+                    Log.LogDebug("HttpConnection.StopProcessingNextRequest({state})", _protocolSelectionState);
+                }
+
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
@@ -238,6 +270,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             lock (_protocolSelectionLock)
             {
+                if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                {
+                    Log.LogDebug("HttpConnection.OnInputOrOutputCompleted({state})", _protocolSelectionState);
+                }
+
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
@@ -258,6 +295,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             lock (_protocolSelectionLock)
             {
+                if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                {
+                    Log.LogDebug("HttpConnection.Abort({exception})", ex);
+                }
+
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
@@ -364,6 +406,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void CloseUninitializedConnection(ConnectionAbortedException abortReason)
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogInformation("HttpConnection.CloseUninitializedConnection({reason})", abortReason);
+            }
+
             Debug.Assert(_adaptedTransport != null);
 
             _context.ConnectionContext.Abort(abortReason);

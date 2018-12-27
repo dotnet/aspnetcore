@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -505,6 +506,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application)
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("ProcessRequests started");
+            }
+
             while (_keepAlive)
             {
                 BeginRequestProcessing();
@@ -519,8 +525,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 } while (!TryParseRequest(result, out endConnection));
 
+                if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                {
+                    Log.LogDebug("Result IsCompleted={IsCompleted}, IsCancelled={IsCancelled} ", result.IsCompleted, result.IsCanceled);
+                }
+
                 if (endConnection)
                 {
+                    if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                    {
+                        Log.LogDebug("ProcessRequests ended because endConnection=true");
+                    }
                     // Connection finished, stop processing requests
                     return;
                 }
@@ -624,6 +639,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // Wait for Http1MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
                     await messageBody.StopAsync();
                 }
+            }
+
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("ProcessRequests ended normally (keepAlive={keepAlive})", _keepAlive);
             }
         }
 
