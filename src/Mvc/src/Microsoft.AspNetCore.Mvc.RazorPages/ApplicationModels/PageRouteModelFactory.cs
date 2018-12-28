@@ -152,10 +152,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 span = span.Slice(1);
 
                 areaNameValue.AsSpan().CopyTo(span);
-                span.Slice(areaNameValue.Length);
+                span = span.Slice(areaNameValue.Length);
 
                 viewEnginePathValue.AsSpan().CopyTo(span);
-                span.Slice(viewEnginePathValue.Length);
             });
         }
 
