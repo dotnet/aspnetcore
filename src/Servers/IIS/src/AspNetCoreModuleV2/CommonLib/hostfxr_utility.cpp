@@ -258,28 +258,25 @@ HOSTFXR_UTILITY::GetAbsolutePathToDotnet(
         return dotnetViaWhere.value();
     }
 
-    BOOL isWow64Process = false;
-    if (LOG_LAST_ERROR_IF_NOT(IsWow64Process(GetCurrentProcess(), &isWow64Process)))
+    auto isWow64Process = Environment::IsRunning64BitProcess();
+    const auto platform = isWow64Process? L"x64" : L"x86";
+
+    const auto installationLocation = RegistryKey::TryGetString(
+        HKEY_LOCAL_MACHINE,
+        std::wstring(L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\") + platform + L"\\sdk",
+        L"InstallLocation",
+        RRF_SUBKEY_WOW6432KEY);
+
+    if (installationLocation.has_value())
     {
-        const auto platform = isWow64Process? L"x64" : L"x86";
+        LOG_INFOF(L"InstallLocation registry key is set to '%ls'", installationLocation.value().c_str());
 
-        const auto installationLocation = RegistryKey::TryGetString(
-            HKEY_LOCAL_MACHINE,
-            std::wstring(L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\") +  platform+ L"\\sdk",
-            L"InstallLocation",
-            RRF_SUBKEY_WOW6432KEY);
+        auto const installationLocationDotnet = fs::path(installationLocation.value()) / "dotnet.exe";
 
-        if (installationLocation.has_value())
+        if (is_regular_file(installationLocationDotnet))
         {
-            LOG_INFOF(L"InstallLocation registry key is set to '%ls'", installationLocation.value().c_str());
-
-            auto const installationLocationDotnet = fs::path(installationLocation.value()) / "dotnet.exe";
-
-            if (is_regular_file(installationLocationDotnet))
-            {
-                LOG_INFOF(L"Found dotnet.exe in InstallLocation at '%ls'", installationLocationDotnet.c_str());
-                return installationLocationDotnet;
-            }
+            LOG_INFOF(L"Found dotnet.exe in InstallLocation at '%ls'", installationLocationDotnet.c_str());
+            return installationLocationDotnet;
         }
     }
 
@@ -354,7 +351,6 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
     HandleWrapper<InvalidHandleTraits>     hThread;
     CComBSTR            pwzDotnetName = NULL;
     DWORD               dwFilePointer;
-    BOOL                fIsWow64Process;
     BOOL                fIsCurrentProcess64Bit;
     DWORD               dwExitCode;
     STRU                struDotnetSubstring;
@@ -447,24 +443,10 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
 
     LOG_INFOF(L"where.exe invocation returned: '%ls'", struDotnetLocationsString.QueryStr());
 
-    // Check the bitness of the currently running process
-    // matches the dotnet.exe found.
-    FINISHED_LAST_ERROR_IF (!IsWow64Process(GetCurrentProcess(), &fIsWow64Process));
-
-    if (fIsWow64Process)
-    {
-        // 32 bit mode
-        fIsCurrentProcess64Bit = FALSE;
-    }
-    else
-    {
-        // Check the SystemInfo to see if we are currently 32 or 64 bit.
-        SYSTEM_INFO systemInfo;
-        GetNativeSystemInfo(&systemInfo);
-        fIsCurrentProcess64Bit = systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
-    }
+    fIsCurrentProcess64Bit = Environment::IsRunning64BitProcess();
 
     LOG_INFOF(L"Current process bitness type detected as isX64=%d", fIsCurrentProcess64Bit);
+
 
     while (TRUE)
     {

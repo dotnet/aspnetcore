@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var deploymentResult = await DeployAsync(deploymentParameters);
                 var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
 
-                Assert.True(!response.IsSuccessStatusCode);
+                Assert.False(response.IsSuccessStatusCode);
 
                 StopServer();
 

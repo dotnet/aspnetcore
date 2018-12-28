@@ -28,7 +28,7 @@ std::optional<std::wstring> RegistryKey::TryGetString(HKEY section, const std::w
     std::wstring data;
     data.resize(cbData);
 
-    if (LOG_LAST_ERROR_IF(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ | flags, nullptr, &data[0], &cbData) != NO_ERROR))
+    if (LOG_LAST_ERROR_IF(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ | flags, nullptr, data.data(), &cbData) != NO_ERROR))
     {
         return std::nullopt;
     }

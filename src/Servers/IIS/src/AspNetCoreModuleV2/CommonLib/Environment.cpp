@@ -4,6 +4,7 @@
 #include "Environment.h"
 
 #include <Windows.h>
+#include "exceptions.h"
 
 std::wstring
 Environment::ExpandEnvironmentVariables(const std::wstring & str)
@@ -119,4 +120,23 @@ std::wstring Environment::GetDllDirectoryValue()
     expandedStr.resize(requestedSize);
 
     return expandedStr;
+}
+
+bool Environment::IsRunning64BitProcess()
+{
+    // Check the bitness of the currently running process
+    // matches the dotnet.exe found.
+    BOOL fIsWow64Process = false;
+    THROW_LAST_ERROR_IF(!IsWow64Process(GetCurrentProcess(), &fIsWow64Process));
+
+    if (fIsWow64Process)
+    {
+        // 32 bit mode
+        return false;
+    }
+
+    // Check the SystemInfo to see if we are currently 32 or 64 bit.
+    SYSTEM_INFO systemInfo;
+    GetNativeSystemInfo(&systemInfo);
+    return systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
 }
