@@ -698,7 +698,8 @@ namespace Microsoft.Net.Http.Headers
 
             return string.Create(input.Length + backSlashCount + 2, input, (span, segment) => {
                 span[0] = span[span.Length - 1] = '\"';
-                var spanIndex = 0;
+
+                var spanIndex = 1;
                 for (var i = 0; i < segment.Length; i++)
                 {
                     if (segment[i] == '\\' || segment[i] == '\"')
