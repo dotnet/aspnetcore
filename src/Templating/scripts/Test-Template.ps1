@@ -2,7 +2,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     $tmpDir = "$PSScriptRoot/$templateName"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
 
-    & "$PSScriptRoot/../build.cmd" /t:Package
+    #& "$PSScriptRoot/../build.ps1" /t:Package
     Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/Debug/packages/product/$templateNupkg"
 
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory

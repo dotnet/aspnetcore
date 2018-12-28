@@ -62,6 +62,7 @@ namespace Templates.Test.Helpers
             output.WriteLine("Running ASP.NET application...");
             var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{DefaultFramework}/{projectName}.dll";
             _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
+            Assert.False(_process.Exited.IsCompleted, "ASP.NET application should have kept running.");
         }
 
         public static string GetPackageDirectory()
