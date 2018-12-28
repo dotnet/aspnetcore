@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.VisualStudio.LanguageServices.Razor.Serialization;
 using Newtonsoft.Json;
@@ -169,6 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var engine = RazorProjectEngine.Create(configuration, compositeFileSystem, b =>
             {
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
+                b.Features.Add(new DefaultTypeNameFeature());
 
                 if (GenerateDeclaration.HasValue())
                 {

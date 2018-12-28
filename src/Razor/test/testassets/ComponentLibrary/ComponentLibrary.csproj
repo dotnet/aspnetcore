@@ -7,16 +7,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 
-    <Copyright>© Microsoft</Copyright>
-    <Product>Razor Test</Product>
-    <Company>Microsoft</Company>
-    <Description>ClassLibrary Description</Description>
-
     <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
     <RazorLangVersion>3.0</RazorLangVersion>
     <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
-    <GenerateRazorAssemblyInfo>true</GenerateRazorAssemblyInfo>
-    <GenerateProvideApplicationPartFactoryAttribute>true</GenerateProvideApplicationPartFactoryAttribute>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
@@ -24,16 +17,34 @@
     <UseRazorBuildServer>false</UseRazorBuildServer>
   </PropertyGroup>
 
+  <!-- DO NOT add addition references here. This is meant to simulate a non-MVC library -->
   <ItemGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
   </ItemGroup>
+
+  <!-- 
+    BEGIN COMPONENT .cshtml WORKAROUND
+
+    This is the current workaround used by the components codebase to treat .cshtml files as components
+    so that we can have tooling support. Testing it here so it won't break.
+  -->
+  <ItemGroup>
+    <RazorComponent Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
+  </ItemGroup>
+
+  <Target Name="_RemoveFilesFromRazorGenerate" AfterTargets="ResolveRazorGenerateInputs">
+    <ItemGroup>
+      <RazorGenerate Remove="@(RazorGenerate)" />
+    </ItemGroup>
+  </Target>
+  <!--
+    END COMPONENT .cshtml WORKAROUND
+  -->
 
   <!-- Test Placeholder -->
 

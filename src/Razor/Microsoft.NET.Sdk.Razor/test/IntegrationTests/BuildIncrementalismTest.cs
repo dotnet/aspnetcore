@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Assert - 2
             Assert.BuildPassed(result);
-            Assert.FileContentEquals(result, tagHelperOutputCache, "[]");
+            Assert.FileDoesNotContain(result, tagHelperOutputCache, @"""Name"":""SimpleMvc.SimpleTagHelper""");
             var newThumbPrint = GetThumbPrint(generatedFile);
             Assert.NotEqual(fileThumbPrint, newThumbPrint);
         }

@@ -10,6 +10,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
+
+  <PropertyGroup>
+    <_TargetingNETCoreApp30OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">true</_TargetingNETCoreApp30OrLater>
+  </PropertyGroup>
+  
   <!--
       Initialize properties and items inferred using the project version. This file is not imported in projects referencing
       MVC \ Razor 2.2 or earlier since values specified here are provided via targets and props imported from NuGet packages
@@ -17,18 +22,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       The properties and items here are designed to be read by CPS so they should be just simple evaluation-time values
       and should not require targets to initialize.
+
+      Also, these values are based on whether the library is targeting netcoreapp3.0 for now. A better heuristic
+      would be to detect whether the ASP.NET Core shared framework is referenced.
   -->
   <PropertyGroup>
     <!--
       MVC uses a ProvideApplicationPartFactoryAttribute on the generated assembly to load compiled views from assembly. Set this to false, to prevent generating this attribute.
     -->
-    <GenerateProvideApplicationPartFactoryAttribute Condition="'$(GenerateProvideApplicationPartFactoryAttribute)'==''">true</GenerateProvideApplicationPartFactoryAttribute>
+    <GenerateProvideApplicationPartFactoryAttribute Condition="'$(GenerateProvideApplicationPartFactoryAttribute)'==''">$(_TargetingNETCoreApp30OrLater)</GenerateProvideApplicationPartFactoryAttribute>
 
     <!--
       Determines if the Sdk is allowed to add additional attributes to the project assembly.
       For instance, MVC will generally want to add attributes to support view discovery and runtime compilation.
     -->
-    <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'==''">true</GenerateRazorAssemblyInfo>
+    <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'==''">$(_TargetingNETCoreApp30OrLater)</GenerateRazorAssemblyInfo>
 
     <!--
       MVC will generally want to add support for runtime compilation, but only for applications.
@@ -42,10 +50,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Continue setting this property to maintain compat with legacy Razor.Design -->
     <IsRazorCompilerReferenced Condition="'$(IsRazorCompilerReferenced)'==''">true</IsRazorCompilerReferenced>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <_TargetingNETCoreApp30OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">true</_TargetingNETCoreApp30OrLater>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RazorLangVersion)'==''">

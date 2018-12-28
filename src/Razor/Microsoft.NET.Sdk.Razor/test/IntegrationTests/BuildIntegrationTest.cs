@@ -672,6 +672,22 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
         }
 
+        [Fact]
+        [InitializeTestProject("ComponentLibrary")]
+        public async Task Building_NetstandardComponentLibrary()
+        {
+            TargetFramework = "netstandard2.0";
+
+            // Build
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "ComponentLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ComponentLibrary.pdb");
+            Assert.FileDoesNotExist(result, OutputPath, "ComponentLibrary.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ComponentLibrary.Views.pdb");
+        }
+
         private static DependencyContext ReadDependencyContext(string depsFilePath)
         {
             var reader = new DependencyContextJsonReader();
