@@ -6,7 +6,6 @@
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCorePackageVersion)" />
-      <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
     </ItemGroup>
 
     <ItemGroup>
