@@ -55,7 +55,6 @@ $@"<Project>
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
     <ItemGroup>
-        <FrameworkReference Remove=""Microsoft.AspNetCore.App"" />
         <PackageReference Include=""Microsoft.AspNetCore.App"" Version=""$(BundledAspNetCoreAppPackageVersion)"" IsImplicitlyDefined=""true"" />
     </ItemGroup>
 </Project>";

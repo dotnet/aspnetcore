@@ -102,15 +102,8 @@ namespace Templates.Test.Helpers
             VerifyCannotFindTemplate(output, "reactredux");
             VerifyCannotFindTemplate(output, "angular");
 
-            // Locate the artifacts directory containing the built template packages
-            var solutionDir = FindAncestorDirectoryContaining("Templating.sln");
-#if DEBUG
-            var config = "Debug";
-#else
-            var config = "Release";
-#endif
-            var artifactsDir = Path.Combine(solutionDir, "..", "..", "artifacts", config ,"packages", "product");
-            var builtPackages = Directory.GetFiles(artifactsDir, "*.nupkg");
+            var packagesDir = AspNetProcess.GetPackageDirectory();
+            var builtPackages = Directory.GetFiles(packagesDir, "*.nupkg");
             Assert.NotEmpty(builtPackages);
             foreach (var packagePath in builtPackages)
             {
@@ -153,22 +146,6 @@ namespace Templates.Test.Helpers
             {
                 Directory.Delete(tempDir, recursive: true);
             }
-        }
-
-        private static string FindAncestorDirectoryContaining(string filename)
-        {
-            var dir = AppContext.BaseDirectory;
-            while (dir != null)
-            {
-                if (File.Exists(Path.Combine(dir, filename)))
-                {
-                    return dir;
-                }
-
-                dir = Directory.GetParent(dir)?.FullName;
-            }
-
-            throw new InvalidOperationException($"Could not find any ancestor directory containing {filename} at or above {AppContext.BaseDirectory}");
         }
     }
 }

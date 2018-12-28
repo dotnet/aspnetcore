@@ -64,9 +64,34 @@ namespace Templates.Test.Helpers
             _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
         }
 
+        public static string GetPackageDirectory()
+        {
+#if DEBUG
+            var config = "Debug";
+#else
+            var config = "Release";
+#endif
+            var solutionDir = GetSolutionDir();
+            return Path.Combine(solutionDir, "..", "..", "artifacts", config, "packages", "product");
+        }
+
         public void Dispose()
         {
             _process.Dispose();
+        }
+
+        private static string GetSolutionDir()
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
+            {
+                if (File.Exists(Path.Combine(dir.FullName, "Templating.sln")))
+                {
+                    break;
+                }
+                dir = dir.Parent;
+            }
+            return dir.FullName;
         }
     }
 }

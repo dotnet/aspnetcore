@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,16 +23,15 @@ namespace Templates.Test
     {
         private readonly ITestOutputHelper _output;
         private readonly HttpClient _httpClient;
-        private static readonly string _solutionDir;
-        private static readonly string _artifactsDir;
+        private static readonly string _packageDir;
         private static List<ScriptTag> _scriptTags;
         private static List<LinkTag> _linkTags;
 
         static CdnScriptTagTests()
         {
-            _solutionDir = GetSolutionDir();
-            _artifactsDir = Path.Combine(_solutionDir, "artifacts", "build");
-            var packages = Directory.GetFiles(_artifactsDir, "*.nupkg");
+            _packageDir = AspNetProcess.GetPackageDirectory();
+            var packages = Directory.GetFiles(_packageDir, "*.nupkg");
+            Assert.NotEmpty(packages);
 
             _scriptTags = new List<ScriptTag>();
             _linkTags = new List<LinkTag>();
@@ -164,7 +164,7 @@ namespace Templates.Test
 
         private static string GetFileContentFromArchive(ScriptTag scriptTag, string relativeFilePath)
         {
-            var file = Path.Combine(_artifactsDir, scriptTag.FileName);
+            var file = Path.Combine(_packageDir, scriptTag.FileName);
             using (var zip = new ZipArchive(File.OpenRead(file), ZipArchiveMode.Read, leaveOpen: false))
             {
                 var entry = zip.Entries
@@ -236,20 +236,6 @@ namespace Templates.Test
                 }
             }
             return (scriptTags, linkTags);
-        }
-
-        private static string GetSolutionDir()
-        {
-            var dir = new DirectoryInfo(AppContext.BaseDirectory);
-            while (dir != null)
-            {
-                if (File.Exists(Path.Combine(dir.FullName, "Templating.sln")))
-                {
-                    break;
-                }
-                dir = dir.Parent;
-            }
-            return dir.FullName;
         }
 
         private static string RemoveLineEndings(string originalString)
