@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
-                Log.LogDebug("HttpProtocol.OnRequestProcessingEnded");
+                Log.LogDebug("Http1Connection.OnRequestProcessingEnded");
             }
 
             Input.Complete();
@@ -86,6 +86,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void OnInputOrOutputCompleted()
         {
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("Http1Connection.OnInputOrOutputCompleted");
+            }
+
             _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
             AbortRequest();
         }
@@ -98,6 +103,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
             {
                 return;
+            }
+
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("Http1Connection.Abort");
             }
 
             _http1Output.Abort(abortReason);
