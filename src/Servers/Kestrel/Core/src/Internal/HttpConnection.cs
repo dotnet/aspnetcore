@@ -169,24 +169,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     _context.Transport.Input.OnWriterCompleted(
                         (_, state) =>
                         {
+                            var self = (HttpConnection)state;
                             if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
                             {
-                                Log.LogDebug("Transport.Input.OnWriterCompleted fired");
+                                self.Log.LogDebug("Transport.Input.OnWriterCompleted fired");
                             }
 
-                            ((HttpConnection)state).OnInputOrOutputCompleted();
+                            self.OnInputOrOutputCompleted();
                         },
                         this);
 
                     _context.Transport.Output.OnReaderCompleted(
                         (_, state) =>
                         {
+                            var self = (HttpConnection)state;
                             if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
                             {
-                                Log.LogDebug("Transport.Output.OnReaderCompleted fired");
+                                self.Log.LogDebug("Transport.Output.OnReaderCompleted fired");
                             }
 
-                            ((HttpConnection)state).OnInputOrOutputCompleted();
+                            self.OnInputOrOutputCompleted();
                         },
                         this);
 

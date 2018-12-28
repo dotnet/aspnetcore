@@ -44,10 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 ThreadPool.GetAvailableThreads(out int freeWorkerThreads, out int freeIoThreads);
                 ThreadPool.GetMinThreads(out int minWorkerThreads, out int minIoThreads);
 
-                int busyIoThreads = maxIoThreads - freeIoThreads;
                 int busyWorkerThreads = maxWorkerThreads - freeWorkerThreads;
 
-                TransportConnection.Log.LogDebug("(Busy={busyIoThreads},Free={freeIoThreads},Min={minIoThreads},Max={maxIoThreads})", busyIoThreads, freeIoThreads, minIoThreads, maxIoThreads);
                 TransportConnection.Log.LogDebug("(Busy={busyWorkerThreads},Free={freeWorkerThreads},Min={minWorkerThreads},Max={maxWorkerThreads})", busyWorkerThreads, freeWorkerThreads, minWorkerThreads, maxWorkerThreads);
             }
 
