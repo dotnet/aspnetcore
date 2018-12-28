@@ -6,8 +6,10 @@
 #include <string>
 #include <optional>
 #include <vector>
+#include <map>
 
 #include "NonCopyable.h"
+#include "StringHelpers.h"
 
 #define CS_ASPNETCORE_COLLECTION_ITEM_NAME               L"name"
 #define CS_ASPNETCORE_COLLECTION_ITEM_VALUE              L"value"
@@ -46,6 +48,7 @@ public:
     DWORD GetRequiredTimespan(const std::wstring& name)  const;
 
     virtual std::vector<std::pair<std::wstring, std::wstring>> GetKeyValuePairs(const std::wstring& name) const;
+    virtual std::map<std::wstring, std::wstring, ignore_case_comparer> GetMap(const std::wstring& name) const;
 
     virtual std::shared_ptr<ConfigurationSection> GetRequiredSection(const std::wstring & name) const;
 
