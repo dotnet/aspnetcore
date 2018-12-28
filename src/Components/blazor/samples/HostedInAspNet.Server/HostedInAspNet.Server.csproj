@@ -1,7 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <!--
+      This is a workaround that's needed because Microsoft.AspNetCore.App includes the OLD Razor.Design
+      package and MSBuild support. We don't want those features to be used with the new SDK. Basically
+      combining netcoreapp3.0 and and Razor.Design will result in duplicate assembly attributes.
+
+      See: https://github.com/aspnet/AspNetCore/issues/6182
+
+      This workaround can be removed when this project is converted to the shared framework.
+    -->
+    <GenerateProvideApplicationPartFactoryAttribute>false</GenerateProvideApplicationPartFactoryAttribute>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Build mechanism for ASP.NET Core Components.</Description>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -60,7 +60,7 @@
       repositorycommit=$(RepositoryCommit);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
-      <_TargetFramework Include="$(TargetFrameworks)" />
+      <_TargetFramework Include="$(TargetFramework)" />
     </ItemGroup>
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
   </Target>

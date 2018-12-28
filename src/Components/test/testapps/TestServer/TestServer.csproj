@@ -8,7 +8,6 @@
     <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(AspNetCorePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
