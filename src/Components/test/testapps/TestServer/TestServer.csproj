@@ -15,4 +15,9 @@
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Server\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Allow the build to specify the version of the Razor SDK directly -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
 </Project>
