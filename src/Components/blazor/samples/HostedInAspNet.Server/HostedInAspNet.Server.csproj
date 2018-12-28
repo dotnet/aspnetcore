@@ -13,4 +13,8 @@
     <ProjectReference Include="..\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Allow the build to specify the version of the Razor SDK directly -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
 </Project>
