@@ -625,7 +625,7 @@ namespace Microsoft.Net.Http.Headers
         {
             input = RemoveQuotes(input);
 
-            // First pass to calculate the size of the InplaceStringBuilder
+            // First pass to calculate the size of the string
             var backSlashCount = CountBackslashesForDecodingQuotedString(input);
 
             if (backSlashCount == 0)
@@ -633,12 +633,12 @@ namespace Microsoft.Net.Http.Headers
                 return input;
             }
 
-            return string.Create(input.Length - backSlashCount, input, (span, inputString) =>
+            return string.Create(input.Length - backSlashCount, input, (span, segment) =>
             {
-                int spanIndex = 0;
-                for (var i = 0; i < inputString.Length; i++)
+                var spanIndex = 0;
+                for (var i = 0; i < segment.Length; i++)
                 {
-                    if (i < inputString.Length - 1 && inputString[i] == '\\')
+                    if (i < segment.Length - 1 && segment[i] == '\\')
                     {
                         // If there is an backslash character as the last character in the string,
                         // we will assume that it should be included literally in the unescaped string
@@ -646,11 +646,11 @@ namespace Microsoft.Net.Http.Headers
                         // Also, if a sender adds a quoted pair like '\\''n',
                         // we will assume it is over escaping and just add a n to the string.
                         // Ex: "he\\llo" => "hello"
-                        span[spanIndex++] = inputString[i + 1];
+                        span[spanIndex++] = segment[i + 1];
                         i++;
                         continue;
                     }
-                    span[spanIndex++] = inputString[i];
+                    span[spanIndex++] = segment[i];
                 }
             });
         }
@@ -696,25 +696,24 @@ namespace Microsoft.Net.Http.Headers
             // By calling this, we know that the string requires quotes around it to be a valid token.
             var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
 
-            var stringBuilder = new InplaceStringBuilder(input.Length + backSlashCount + 2); // 2 for quotes
-            stringBuilder.Append('\"');
-
-            for (var i = 0; i < input.Length; i++)
-            {
-                if (input[i] == '\\' || input[i] == '\"')
+            return string.Create(input.Length + backSlashCount + 2, input, (span, segment) => {
+                span[0] = span[span.Length - 1] = '\"';
+                var spanIndex = 0;
+                for (var i = 0; i < segment.Length; i++)
                 {
-                    stringBuilder.Append('\\');
+                    if (segment[i] == '\\' || segment[i] == '\"')
+                    {
+                        span[spanIndex++] = '\\';
+                    }
+                    else if ((segment[i] <= 0x1F || segment[i] == 0x7F) && segment[i] != 0x09)
+                    {
+                        // Control characters are not allowed in a quoted-string, which include all characters
+                        // below 0x1F (except for 0x09 (TAB)) and 0x7F.
+                        throw new FormatException($"Invalid control character '{segment[i]}' in input.");
+                    }
+                    span[spanIndex++] = segment[i];
                 }
-                else if ((input[i] <= 0x1F || input[i] == 0x7F) && input[i] != 0x09)
-                {
-                    // Control characters are not allowed in a quoted-string, which include all characters
-                    // below 0x1F (except for 0x09 (TAB)) and 0x7F.
-                    throw new FormatException($"Invalid control character '{input[i]}' in input.");
-                }
-                stringBuilder.Append(input[i]);
-            }
-            stringBuilder.Append('\"');
-            return stringBuilder.ToString();
+            });
         }
 
         private static int CountAndCheckCharactersNeedingBackslashesWhenEncoding(StringSegment input)
