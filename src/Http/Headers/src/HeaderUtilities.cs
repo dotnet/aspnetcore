@@ -633,26 +633,26 @@ namespace Microsoft.Net.Http.Headers
                 return input;
             }
 
-            var stringBuilder = new InplaceStringBuilder(input.Length - backSlashCount);
-
-            for (var i = 0; i < input.Length; i++)
+            return string.Create(input.Length - backSlashCount, input, (span, inputString) =>
             {
-                if (i < input.Length - 1 && input[i] == '\\')
+                int spanIndex = 0;
+                for (var i = 0; i < inputString.Length; i++)
                 {
-                    // If there is an backslash character as the last character in the string,
-                    // we will assume that it should be included literally in the unescaped string
-                    // Ex: "hello\\" => "hello\\"
-                    // Also, if a sender adds a quoted pair like '\\''n',
-                    // we will assume it is over escaping and just add a n to the string.
-                    // Ex: "he\\llo" => "hello"
-                    stringBuilder.Append(input[i + 1]);
-                    i++;
-                    continue;
+                    if (i < inputString.Length - 1 && inputString[i] == '\\')
+                    {
+                        // If there is an backslash character as the last character in the string,
+                        // we will assume that it should be included literally in the unescaped string
+                        // Ex: "hello\\" => "hello\\"
+                        // Also, if a sender adds a quoted pair like '\\''n',
+                        // we will assume it is over escaping and just add a n to the string.
+                        // Ex: "he\\llo" => "hello"
+                        span[spanIndex++] = inputString[i + 1];
+                        i++;
+                        continue;
+                    }
+                    span[spanIndex++] = inputString[i];
                 }
-                stringBuilder.Append(input[i]);
-            }
-
-            return stringBuilder.ToString();
+            });
         }
 
         private static int CountBackslashesForDecodingQuotedString(StringSegment input)
