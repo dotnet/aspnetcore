@@ -3,10 +3,12 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics.Tracing;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -56,9 +58,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
             _isClosed = true;
 
+            if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+            {
+                Log.LogDebug("InMemoryTransportConnection.OnClosed() started");
+            }
+
             ThreadPool.UnsafeQueueUserWorkItem(state =>
             {
                 var self = (InMemoryTransportConnection)state;
+
+                if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
+                {
+                    self.Log.LogDebug("InMemoryTransportConnection.Dispose() fired token callback");
+                }
                 self._connectionClosedTokenSource.Cancel();
             }, this);
         }

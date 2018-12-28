@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.Tracing;
+using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -38,6 +39,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
                 TransportConnection.Log.LogDebug("InMemoryConnection.Dispose() started");
+
+                ThreadPool.GetMaxThreads(out int maxWorkerThreads, out int maxIoThreads);
+                ThreadPool.GetAvailableThreads(out int freeWorkerThreads, out int freeIoThreads);
+                ThreadPool.GetMinThreads(out int minWorkerThreads, out int minIoThreads);
+
+                int busyIoThreads = maxIoThreads - freeIoThreads;
+                int busyWorkerThreads = maxWorkerThreads - freeWorkerThreads;
+
+                TransportConnection.Log.LogDebug("(Busy={busyIoThreads},Free={freeIoThreads},Min={minIoThreads},Max={maxIoThreads})", busyIoThreads, freeIoThreads, minIoThreads, maxIoThreads);
+                TransportConnection.Log.LogDebug("(Busy={busyWorkerThreads},Free={freeWorkerThreads},Min={minWorkerThreads},Max={maxWorkerThreads})", busyWorkerThreads, freeWorkerThreads, minWorkerThreads, maxWorkerThreads);
             }
 
             TransportConnection.Input.Complete();
