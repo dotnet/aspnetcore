@@ -15,7 +15,4 @@
     <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.6.46" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Razor.Extensions\Microsoft.AspNetCore.Components.Razor.Extensions.csproj" />
-  </ItemGroup>
 </Project>
