@@ -3,13 +3,16 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Diagnostics.Tools.Dump;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -61,9 +64,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal($"127.0.0.1:{port}", GetProperty(start, "localEndPoint"));
             }
             {
-                var stop = Assert.Single(events, e => e.EventName == "ConnectionStop");
-                Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, stop.PayloadNames));
-                Assert.Same(KestrelEventSource.Log, stop.EventSource);
+                try
+                {
+                    var stop = Assert.Single(events, e => e.EventName == "ConnectionStop");
+                    Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, stop.PayloadNames));
+                    Assert.Same(KestrelEventSource.Log, stop.EventSource);
+                }
+                catch
+                {
+                    await Dumper.CollectDumpAsync(Process.GetCurrentProcess(), Path.Combine(ResolvedLogOutputDirectory, ResolvedTestMethodName + ".dmp"));
+                    throw;
+                }
             }
             {
                 var requestStart = Assert.Single(events, e => e.EventName == "RequestStart");
