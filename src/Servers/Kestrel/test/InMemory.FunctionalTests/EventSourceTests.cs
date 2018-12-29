@@ -1,12 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,15 +58,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         .DefaultTimeout();
                     await connection.Receive("HTTP/1.1 200");
 
+                    var getItems = typeof(ThreadPool).GetMethod("GetQueuedWorkItemsForDebugger", BindingFlags.Static | BindingFlags.NonPublic);
+
+                    var queuedItems = (object[])getItems.Invoke(null, Array.Empty<object>());
+
                     ThreadPool.GetMaxThreads(out int maxWorkerThreads, out _);
                     ThreadPool.GetAvailableThreads(out int freeWorkerThreads, out _);
                     ThreadPool.GetMinThreads(out int minWorkerThreads, out _);
 
                     int busyWorkerThreads = maxWorkerThreads - freeWorkerThreads;
 
+                    Logger.LogDebug("(WorkItems={workItems},Busy={busyWorkerThreads},Free={freeWorkerThreads},Min={minWorkerThreads},Max={maxWorkerThreads})", queuedItems.Length, busyWorkerThreads, freeWorkerThreads, minWorkerThreads, maxWorkerThreads);
+
                     if (busyWorkerThreads > minWorkerThreads)
                     {
-                        DumpThreadPoolStacks();
+                        await DumpThreadPoolStacks();
                     }
                 }
             }
@@ -98,9 +107,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        private void DumpThreadPoolStacks()
+        private async Task DumpThreadPoolStacks()
         {
-            var pid = Process.GetCurrentProcess().Id;
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            var path = Path.Combine(ResolvedLogOutputDirectory, ResolvedTestMethodName + ".dmp");
+
+            var process = Process.GetCurrentProcess();
+
+            await Dumper.CollectDumpAsync(process, path);
+
+            var pid = process.Id;
 
             var sb = new StringBuilder();
 
@@ -121,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     // id
                     // stacktrace
-                    var stackTrace = string.Join("\n", t.StackTrace.Select(f => f.DisplayString));
+                    var stackTrace = string.Join("\n", t.StackTrace.Select(f => f.ToString()));
                     sb.Append("\n====================================\n");
                     sb.Append($"Thread ID: {t.ManagedThreadId}\n");
 
