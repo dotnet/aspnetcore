@@ -1261,7 +1261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _connection.ServerSettings.MaxConcurrentStreams = 1;
 
-            var requestBlocker = new TaskCompletionSource<object>();
+            var requestBlocker = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             await InitializeConnectionAsync(context => requestBlocker.Task);
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
