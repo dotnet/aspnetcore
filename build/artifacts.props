@@ -36,7 +36,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Browser" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Build" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Components.Razor.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Server" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" Category="ship" />
