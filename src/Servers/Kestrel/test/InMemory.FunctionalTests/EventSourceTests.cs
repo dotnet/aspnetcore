@@ -7,13 +7,16 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Diagnostics.Runtime;
 using Microsoft.Diagnostics.Tools.Dump;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -34,9 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             string connectionId = null;
             string requestId = null;
             int port;
-
-            var dumpPath = Path.Combine(ResolvedLogOutputDirectory, ResolvedTestMethodName + ".dmp");
-            var tookDump = false;
 
             using (var server = new TestServer(context =>
             {
@@ -63,8 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     if (busyWorkerThreads > minWorkerThreads)
                     {
-                        tookDump = true;
-                        await Dumper.CollectDumpAsync(Process.GetCurrentProcess(), dumpPath);
+                        DumpThreadPoolStacks();
                     }
                 }
             }
@@ -81,17 +80,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal($"127.0.0.1:{port}", GetProperty(start, "localEndPoint"));
             }
             {
-                try
-                {
-                    var stop = Assert.Single(events, e => e.EventName == "ConnectionStop");
-                    Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, stop.PayloadNames));
-                    Assert.Same(KestrelEventSource.Log, stop.EventSource);
-                }
-                catch when (!tookDump)
-                {
-                    await Dumper.CollectDumpAsync(Process.GetCurrentProcess(), dumpPath);
-                    throw;
-                }
+                var stop = Assert.Single(events, e => e.EventName == "ConnectionStop");
+                Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, stop.PayloadNames));
+                Assert.Same(KestrelEventSource.Log, stop.EventSource);
             }
             {
                 var requestStart = Assert.Single(events, e => e.EventName == "RequestStart");
@@ -105,6 +96,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(requestId, GetProperty(requestStop, "requestId"));
                 Assert.Same(KestrelEventSource.Log, requestStop.EventSource);
             }
+        }
+
+        private void DumpThreadPoolStacks()
+        {
+            var pid = Process.GetCurrentProcess().Id;
+
+            var sb = new StringBuilder();
+
+            using (var dataTarget = DataTarget.AttachToProcess(pid, 5000, AttachFlag.Passive))
+            {
+                var runtime = dataTarget.ClrVersions[0].CreateRuntime();
+
+                var threadPoolThreads = runtime.Threads.Where(t => t.IsThreadpoolWorker).ToList();
+
+                sb.Append($"\nThreadPool Threads: {threadPoolThreads.Count}\n");
+
+                foreach (var t in threadPoolThreads)
+                {
+                    if (!t.IsThreadpoolWorker)
+                    {
+                        continue;
+                    }
+
+                    // id
+                    // stacktrace
+                    var stackTrace = string.Join("\n", t.StackTrace.Select(f => f.DisplayString));
+                    sb.Append("\n====================================\n");
+                    sb.Append($"Thread ID: {t.ManagedThreadId}\n");
+
+                    if (t.StackTrace.Count == 0)
+                    {
+                        sb.Append("No stack\n");
+                    }
+                    else
+                    {
+                        sb.Append(stackTrace + "\n");
+                    }
+                    sb.Append("====================================\n");
+                }
+            }
+
+            Logger.LogDebug(sb.ToString());
         }
 
         private string GetProperty(EventWrittenEventArgs data, string propName)

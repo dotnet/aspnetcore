@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.Diagnostics.Runtime" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
