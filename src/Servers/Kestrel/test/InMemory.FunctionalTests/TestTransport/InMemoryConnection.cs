@@ -41,18 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             if (KestrelEventSource.Log.IsEnabled(EventLevel.Verbose, EventKeywords.None))
             {
                 TransportConnection.Log.LogDebug("InMemoryConnection.Dispose() started");
-
-                var getItems = typeof(ThreadPool).GetMethod("GetQueuedWorkItemsForDebugger", BindingFlags.Static | BindingFlags.NonPublic);
-
-                var queuedItems = (object[])getItems.Invoke(null, Array.Empty<object>());
-
-                ThreadPool.GetMaxThreads(out int maxWorkerThreads, out int maxIoThreads);
-                ThreadPool.GetAvailableThreads(out int freeWorkerThreads, out int freeIoThreads);
-                ThreadPool.GetMinThreads(out int minWorkerThreads, out int minIoThreads);
-
-                int busyWorkerThreads = maxWorkerThreads - freeWorkerThreads;
-
-                TransportConnection.Log.LogDebug("(WorkItems={workItems},Busy={busyWorkerThreads},Free={freeWorkerThreads},Min={minWorkerThreads},Max={maxWorkerThreads})", queuedItems.Length, busyWorkerThreads, freeWorkerThreads, minWorkerThreads, maxWorkerThreads);
             }
 
             TransportConnection.Input.Complete();
