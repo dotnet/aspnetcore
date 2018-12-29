@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -33,6 +34,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             string connectionId = null;
             string requestId = null;
             int port;
+
+            var dumpPath = Path.Combine(ResolvedLogOutputDirectory, ResolvedTestMethodName + ".dmp");
+            var tookDump = false;
+
             using (var server = new TestServer(context =>
             {
                 connectionId = context.Features.Get<IHttpConnectionFeature>().ConnectionId;
@@ -49,6 +54,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "")
                         .DefaultTimeout();
                     await connection.Receive("HTTP/1.1 200");
+
+                    ThreadPool.GetMaxThreads(out int maxWorkerThreads, out _);
+                    ThreadPool.GetAvailableThreads(out int freeWorkerThreads, out _);
+                    ThreadPool.GetMinThreads(out int minWorkerThreads, out _);
+
+                    int busyWorkerThreads = maxWorkerThreads - freeWorkerThreads;
+
+                    if (busyWorkerThreads > minWorkerThreads)
+                    {
+                        tookDump = true;
+                        await Dumper.CollectDumpAsync(Process.GetCurrentProcess(), dumpPath);
+                    }
                 }
             }
 
@@ -70,9 +87,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.All(new[] { "connectionId" }, p => Assert.Contains(p, stop.PayloadNames));
                     Assert.Same(KestrelEventSource.Log, stop.EventSource);
                 }
-                catch
+                catch when (!tookDump)
                 {
-                    await Dumper.CollectDumpAsync(Process.GetCurrentProcess(), Path.Combine(ResolvedLogOutputDirectory, ResolvedTestMethodName + ".dmp"));
+                    await Dumper.CollectDumpAsync(Process.GetCurrentProcess(), dumpPath);
                     throw;
                 }
             }
