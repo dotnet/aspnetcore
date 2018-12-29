@@ -1,6 +1,7 @@
 bin/
 obj/
 .vs/
+.vscode/
 *.suo
 *.user
 _ReSharper.*
