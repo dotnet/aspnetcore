@@ -141,6 +141,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
     <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <LatestPackageReference Include="xunit" Version="2.4.0" />
+    <LatestPackageReference Include="Microsoft.Diagnostics.Runtime" Version="1.0.2" />
   </ItemGroup>
 
 </Project>
