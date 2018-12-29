@@ -152,6 +152,21 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _nativeApplication.Dispose();
         }
 
+        private void IncrementRequests()
+        {
+            Interlocked.Increment(ref _outstandingRequests);
+        }
+
+        internal void DecrementRequests()
+        {
+            if (Interlocked.Decrement(ref _outstandingRequests) == 0 && Stopping)
+            {
+                // All requests have been drained.
+                _nativeApplication.StopCallsIntoManaged();
+                _shutdownSignal.TrySetResult(null);
+            }
+        }
+
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
@@ -159,11 +174,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 // Unwrap the server so we can create an http context and process the request
                 server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
-                Interlocked.Increment(ref server._outstandingRequests);
+                server.IncrementRequests();
 
                 var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
 
-                ThreadPool.QueueUserWorkItem(state => _ = HandleRequest((IISHttpContext)state), context);
+                ThreadPool.UnsafeQueueUserWorkItem(context, preferLocal: false);
+
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
             }
             catch (Exception ex)
@@ -171,23 +187,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 server?._logger.LogError(0, ex, $"Unexpected exception in static {nameof(IISHttpServer)}.{nameof(HandleRequest)}.");
 
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
-            }
-        }
-
-        private static async Task HandleRequest(IISHttpContext context)
-        {
-            bool successfulRequest = false;
-            try
-            {
-                successfulRequest = await context.ProcessRequestAsync();
-            }
-            catch (Exception ex)
-            {
-                context.Server._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(HandleRequest)}.");
-            }
-            finally
-            {
-                CompleteRequest(context, successfulRequest);
             }
         }
 
@@ -236,28 +235,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
             }
-        }
-
-        private static void CompleteRequest(IISHttpContext context, bool result)
-        {
-            // Post completion after completing the request to resume the state machine
-            context.PostCompletion(ConvertRequestCompletionResults(result));
-
-            if (Interlocked.Decrement(ref context.Server._outstandingRequests) == 0 && context.Server.Stopping)
-            {
-                // All requests have been drained.
-                context.Server._nativeApplication.StopCallsIntoManaged();
-                context.Server._shutdownSignal.TrySetResult(null);
-            }
-
-            // Dispose the context
-            context.Dispose();
-        }
-
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
-        {
-            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
-                                                     : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
         }
 
         private class IISContextFactory<T> : IISContextFactory

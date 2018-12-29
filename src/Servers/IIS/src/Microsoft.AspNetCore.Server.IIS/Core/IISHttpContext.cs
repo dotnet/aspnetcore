@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    internal abstract partial class IISHttpContext : NativeRequestContext, IDisposable
+    internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
         private const int PauseWriterThreshold = 65536;
@@ -530,6 +530,41 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
             return null;
+        }
+
+        // Invoked by the thread pool
+        public void Execute()
+        {
+            _ = HandleRequest();
+        }
+
+        private async Task HandleRequest()
+        {
+            bool successfulRequest = false;
+            try
+            {
+                successfulRequest = await ProcessRequestAsync();
+            }
+            catch (Exception ex)
+            {
+               _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
+            }
+            finally
+            {
+                // Post completion after completing the request to resume the state machine
+                PostCompletion(ConvertRequestCompletionResults(successfulRequest));
+
+                Server.DecrementRequests();
+
+                // Dispose the context
+                Dispose();
+            }
+        }
+
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
+        {
+            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
+                           : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
         }
     }
 }
