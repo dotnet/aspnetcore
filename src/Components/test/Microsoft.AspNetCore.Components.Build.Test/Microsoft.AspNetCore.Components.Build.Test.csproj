@@ -36,7 +36,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\blazor\samples\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.Build\Microsoft.AspNetCore.Components.Build.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.Razor.Extensions\Microsoft.AspNetCore.Components.Razor.Extensions.csproj" />
 
     <!-- Shared sources -->
     <Compile Include="..\shared\**\*.cs" Link="Helpers\%(Filename)%(Extension)" />
