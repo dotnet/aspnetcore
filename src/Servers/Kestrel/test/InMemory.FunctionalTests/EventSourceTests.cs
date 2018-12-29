@@ -9,6 +9,7 @@ using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,9 +70,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     Logger.LogDebug("(WorkItems={workItems},Busy={busyWorkerThreads},Free={freeWorkerThreads},Min={minWorkerThreads},Max={maxWorkerThreads})", queuedItems.Length, busyWorkerThreads, freeWorkerThreads, minWorkerThreads, maxWorkerThreads);
 
-                    if (true)
+                    if (busyWorkerThreads > minWorkerThreads)
                     {
-                        DumpThreadPoolStacks();
+                        await DumpThreadPoolStacks();
                     }
                 }
             }
@@ -106,9 +107,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        private void DumpThreadPoolStacks()
+        private async Task DumpThreadPoolStacks()
         {
-            var pid = Process.GetCurrentProcess().Id;
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return;
+            }
+
+            var path = Path.Combine(ResolvedLogOutputDirectory, ResolvedTestMethodName + ".dmp");
+
+            var process = Process.GetCurrentProcess();
+
+            await Dumper.CollectDumpAsync(process, path);
+
+            var pid = process.Id;
 
             var sb = new StringBuilder();
 
