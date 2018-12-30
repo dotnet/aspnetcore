@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Build.Test
 {
@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Components.Build.Test
     // Includes running the component code to verify the output.
     public class RenderingRazorIntegrationTest : RazorIntegrationTestBase
     {
+        public RenderingRazorIntegrationTest(ITestOutputHelper output)
+            : base(output)
+        {
+        }
+
         [Fact]
         public void SupportsPlainText()
         {
@@ -83,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 frame => AssertFrame.Text(frame, "there", 2));
         }
 
-        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
+        [Fact]
         public void SupportsElementsAsStaticBlock()
         {
             // Arrange/Act
@@ -144,31 +149,31 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 frame => AssertFrame.Attribute(frame, "myattr", "val", 2));
         }
 
-        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
+        [Fact]
         public void SupportsSelfClosingElementsAsStaticBlock()
         {
             // Arrange/Act
             var component = CompileToComponent("Some text so elem isn't at position 0 <input attr='123' />");
 
             // Assert
-            Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
-                frame => AssertFrame.Markup(frame, "<input attr=\"123\">", 1));
+            Assert.Collection(
+                GetRenderTree(component),
+                frame => AssertFrame.Markup(frame, "Some text so elem isn't at position 0 <input attr=\"123\">", 0));
         }
 
-        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
+        [Fact]
         public void SupportsVoidHtmlElements()
         {
             // Arrange/Act
             var component = CompileToComponent("Some text so elem isn't at position 0 <img>");
 
             // Assert
-            Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
-                frame => AssertFrame.Markup(frame, "<img>", 1));
+            Assert.Collection(
+                GetRenderTree(component),
+                frame => AssertFrame.Markup(frame, "Some text so elem isn't at position 0 <img>", 0));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6184")]
         public void SupportsComments()
         {
             // Arrange/Act
@@ -281,7 +286,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 frame => AssertFrame.Attribute(frame, "abc-def", "My string", 1));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6186")]
         public void SupportsDataDashAttributes()
         {
             // Arrange/Act
@@ -299,7 +304,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 frame => AssertFrame.Attribute(frame, "data-def", "Expression value", 2));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6187")]
         public void SupportsAttributesWithEventHandlerValues()
         {
             // Arrange/Act
@@ -318,7 +323,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
             // Assert
             Assert.False((bool)handlerWasCalledProperty.GetValue(component));
             Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Element(frame, "elem", 3, 0),
                 frame =>
                 {
                     Assert.Equal(RenderTreeFrameType.Attribute, frame.FrameType);
@@ -327,7 +332,8 @@ namespace Microsoft.AspNetCore.Components.Build.Test
 
                     ((Action<UIEventArgs>)frame.AttributeValue)(null);
                     Assert.True((bool)handlerWasCalledProperty.GetValue(component));
-                });
+                },
+                frame => AssertFrame.Whitespace(frame, 2));
         }
 
         [Fact]
@@ -344,7 +350,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 frame => AssertFrame.Text(frame, typeof(List<string>).FullName, 0));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6187")]
         public void SupportsTwoWayBindingForTextboxes()
         {
             // Arrange/Act
@@ -373,7 +379,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6187")]
         public void SupportsTwoWayBindingForTextareas()
         {
             // Arrange/Act
@@ -402,7 +408,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6187")]
         public void SupportsTwoWayBindingForDateValues()
         {
             // Arrange/Act
@@ -432,7 +438,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6187")]
         public void SupportsTwoWayBindingForDateValuesWithFormatString()
         {
             // Arrange/Act
@@ -539,7 +545,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6187")]
         public void SupportsTwoWayBindingForBoolValues()
         {
             // Arrange/Act
@@ -568,7 +574,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6187")]
         public void SupportsTwoWayBindingForEnumValues()
         {
             // Arrange/Act

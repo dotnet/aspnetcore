@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         // This verifies that we've correctly configured the Razor language version via MSBuild.
         // See #974
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6186")]
         public void CanRenderComponentWithDataDash()
         {
             var appElement = MountTestComponent<DataDashComponent>();
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotNull(svgCircleElement);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6184")]
         public void LogicalElementInsertionWorksHierarchically()
         {
             var appElement = MountTestComponent<LogicalElementInsertionCases>();
