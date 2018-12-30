@@ -536,7 +536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void ProcessRequestsAsyncEnablesKeepAliveTimeout()
+        public async Task ProcessRequestsAsyncEnablesKeepAliveTimeout()
         {
             var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
@@ -546,7 +546,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.StopProcessingNextRequest();
             _application.Output.Complete();
 
-            requestProcessingTask.Wait();
+            await requestProcessingTask.DefaultTimeout();
         }
 
         [Fact]
