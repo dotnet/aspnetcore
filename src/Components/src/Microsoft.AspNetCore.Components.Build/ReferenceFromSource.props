@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <!--
   Importing this file is equivalent to having:
@@ -16,6 +16,20 @@
 
   <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
   <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
+
+  <!-- 
+    Debugging support using dotnet-blazor serve.
+
+    A few things to note here:
+      - We have to use dotnet exec to avoid launching another process and confusing the debugger.
+      - Since we're doing dotnet exec, it won't automatically rebuild the CLI project.
+      - $(AdditionalRunArguments) needs to be defined before importing this file.
+   -->
+  <PropertyGroup>
+    <RunCommand>dotnet</RunCommand>
+    <_BlazorCliLocation>$(MSBuildThisFileDirectory)../../blazor/src/Microsoft.AspNetCore.Blazor.Cli/bin/$(Configuration)/netcoreapp3.0/dotnet-blazor.dll </_BlazorCliLocation>
+    <RunArguments>exec $(_BlazorCliLocation) serve $(AdditionalRunArguments)</RunArguments>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
