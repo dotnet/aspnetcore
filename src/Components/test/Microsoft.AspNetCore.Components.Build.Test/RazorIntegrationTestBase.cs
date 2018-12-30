@@ -8,9 +8,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Razor;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -20,12 +19,15 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class RazorIntegrationTestBase
     {
+        private static readonly AsyncLocal<ITestOutputHelper> _output = new AsyncLocal<ITestOutputHelper>();
+
         internal const string ArbitraryWindowsPath = "x:\\dir\\subdir\\Test";
         internal const string ArbitraryMacLinuxPath = "/dir/subdir/Test";
 
@@ -59,16 +61,22 @@ namespace Microsoft.AspNetCore.Components.Build.Test
             CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
         }
 
-        public RazorIntegrationTestBase()
+        public RazorIntegrationTestBase(ITestOutputHelper output)
         {
+            _output.Value = output;
+
             AdditionalSyntaxTrees = new List<SyntaxTree>();
             AdditionalRazorItems = new List<RazorProjectItem>();
 
-            
-            Configuration = BlazorExtensionInitializer.DefaultConfiguration;
+            Configuration = RazorConfiguration.Create(RazorLanguageVersion.Latest, "MVC-3.0", Array.Empty<RazorExtension>());
+            FileKind = FileKinds.Component; // Treat input files as components by default.
             FileSystem = new VirtualRazorProjectFileSystem();
             PathSeparator = Path.DirectorySeparatorChar.ToString();
             WorkingDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ArbitraryWindowsPath : ArbitraryMacLinuxPath;
+
+            // Many of the rendering tests include line endings in the output.
+            LineEnding = "\n";
+            NormalizeSourceLineEndings = true;
 
             DefaultBaseNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
@@ -85,6 +93,8 @@ namespace Microsoft.AspNetCore.Components.Build.Test
         internal virtual string DefaultFileName { get; }
 
         internal virtual bool DesignTime { get; }
+
+        internal virtual string FileKind { get; }
         
         internal virtual VirtualRazorProjectFileSystem FileSystem { get; }
 
@@ -97,14 +107,15 @@ namespace Microsoft.AspNetCore.Components.Build.Test
         internal virtual string PathSeparator { get; }
 
         internal virtual bool NormalizeSourceLineEndings { get; }
-
+        
         internal virtual bool UseTwoPhaseCompilation { get; }
 
         internal virtual string WorkingDirectory { get; }
 
-        internal RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references)
+        // Intentionally private, we don't want tests messing with this because it's fragile.
+        private RazorProjectEngine CreateProjectEngine(MetadataReference[] references)
         {
-            return RazorProjectEngine.Create(configuration, FileSystem, b =>
+            return RazorProjectEngine.Create(Configuration, FileSystem, b =>
             {
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
@@ -114,7 +125,11 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                     b.Phases.Insert(0, new ForceLineEndingPhase(LineEnding));
                 }
 
-                BlazorExtensionInitializer.Register(b);
+                // Including MVC here so that we can find any issues that arise from mixed MVC + Components.
+                Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorExtensions.Register(b);
+
+                // Features that use Roslyn are mandatory for components
+                Microsoft.CodeAnalysis.Razor.CompilerFeatures.Register(b);
 
                 b.Features.Add(new CompilationTagHelperFeature());
                 b.Features.Add(new DefaultMetadataReferenceFeature()
@@ -141,10 +156,11 @@ namespace Microsoft.AspNetCore.Components.Build.Test
             }
 
             return new VirtualProjectItem(
-                WorkingDirectory, 
-                filePath, 
+                WorkingDirectory,
+                filePath,
                 fullPath,
                 cshtmlRelativePath,
+                FileKind,
                 Encoding.UTF8.GetBytes(cshtmlContent.TrimStart()));
         }
 
@@ -159,13 +175,13 @@ namespace Microsoft.AspNetCore.Components.Build.Test
             {
                 // The first phase won't include any metadata references for component discovery. This mirrors
                 // what the build does.
-                var projectEngine = CreateProjectEngine(BlazorExtensionInitializer.DeclarationConfiguration, Array.Empty<MetadataReference>());
+                var projectEngine = CreateProjectEngine(Array.Empty<MetadataReference>());
                 
                 RazorCodeDocument codeDocument;
                 foreach (var item in AdditionalRazorItems)
                 {
                     // Result of generating declarations
-                    codeDocument = projectEngine.Process(item);
+                    codeDocument = projectEngine.ProcessDeclarationOnly(item);
                     Assert.Empty(codeDocument.GetCSharpDocument().Diagnostics);
 
                     var syntaxTree = Parse(codeDocument.GetCSharpDocument().GeneratedCode, path: item.FilePath);
@@ -174,7 +190,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
 
                 // Result of generating declarations
                 var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent);
-                codeDocument = projectEngine.Process(projectItem);
+                codeDocument = projectEngine.ProcessDeclarationOnly(projectItem);
                 var declaration = new CompileToCSharpResult
                 {
                     BaseCompilation = BaseCompilation.AddSyntaxTrees(AdditionalSyntaxTrees),
@@ -188,13 +204,13 @@ namespace Microsoft.AspNetCore.Components.Build.Test
 
                 // Add the 'temp' compilation as a metadata reference 
                 var references = BaseCompilation.References.Concat(new[] { tempAssembly.Compilation.ToMetadataReference() }).ToArray();
-                projectEngine = CreateProjectEngine(BlazorExtensionInitializer.DefaultConfiguration, references);
+                projectEngine = CreateProjectEngine(references);
 
                 // Now update the any additional files
                 foreach (var item in AdditionalRazorItems)
                 {
                     // Result of generating declarations
-                    codeDocument = projectEngine.Process(item);
+                    codeDocument = DesignTime ? projectEngine.ProcessDesignTime(item) : projectEngine.Process(item);
                     Assert.Empty(codeDocument.GetCSharpDocument().Diagnostics);
 
                     // Replace the 'declaration' syntax tree
@@ -205,6 +221,30 @@ namespace Microsoft.AspNetCore.Components.Build.Test
 
                 // Result of real code generation for the document under test
                 codeDocument = DesignTime ? projectEngine.ProcessDesignTime(projectItem) : projectEngine.Process(projectItem);
+
+                _output.Value.WriteLine("Use this output when opening an issue");
+                _output.Value.WriteLine(string.Empty);
+
+                _output.Value.WriteLine($"## Main source file ({projectItem.FileKind}):");
+                _output.Value.WriteLine("```");
+                _output.Value.WriteLine(ReadProjectItem(projectItem));
+                _output.Value.WriteLine("```");
+                _output.Value.WriteLine(string.Empty);
+
+                foreach (var item in AdditionalRazorItems)
+                {
+                    _output.Value.WriteLine($"### Additional source file ({item.FileKind}):");
+                    _output.Value.WriteLine("```");
+                    _output.Value.WriteLine(ReadProjectItem(item));
+                    _output.Value.WriteLine("```");
+                    _output.Value.WriteLine(string.Empty);
+                }
+
+                _output.Value.WriteLine("## Generated C#:");
+                _output.Value.WriteLine("```C#");
+                _output.Value.WriteLine(codeDocument.GetCSharpDocument().GeneratedCode);
+                _output.Value.WriteLine("```");
+
                 return new CompileToCSharpResult
                 {
                     BaseCompilation = BaseCompilation.AddSyntaxTrees(AdditionalSyntaxTrees),
@@ -217,10 +257,26 @@ namespace Microsoft.AspNetCore.Components.Build.Test
             {
                 // For single phase compilation tests just use the base compilation's references.
                 // This will include the built-in Blazor components.
-                var projectEngine = CreateProjectEngine(Configuration, BaseCompilation.References.ToArray());
+                var projectEngine = CreateProjectEngine(BaseCompilation.References.ToArray());
 
                 var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent);
                 var codeDocument = DesignTime ? projectEngine.ProcessDesignTime(projectItem) : projectEngine.Process(projectItem);
+
+                // Log the generated code for test results.
+                _output.Value.WriteLine("Use this output when opening an issue");
+                _output.Value.WriteLine(string.Empty);
+
+                _output.Value.WriteLine($"## Main source file ({projectItem.FileKind}):");
+                _output.Value.WriteLine("```");
+                _output.Value.WriteLine(ReadProjectItem(projectItem));
+                _output.Value.WriteLine("```");
+                _output.Value.WriteLine(string.Empty);
+
+                _output.Value.WriteLine("## Generated C#:");
+                _output.Value.WriteLine("```");
+                _output.Value.WriteLine(codeDocument.GetCSharpDocument().GeneratedCode);
+                _output.Value.WriteLine("```");
+
                 return new CompileToCSharpResult
                 {
                     BaseCompilation = BaseCompilation.AddSyntaxTrees(AdditionalSyntaxTrees),
@@ -341,6 +397,14 @@ namespace Microsoft.AspNetCore.Components.Build.Test
 
             expected = expected.Trim();
             Assert.Equal(expected, generated.Code.Trim(), ignoreLineEndingDifferences: true);
+        }
+
+        private static string ReadProjectItem(RazorProjectItem item)
+        {
+            using (var reader = new StreamReader(item.Read()))
+            {
+                return reader.ReadToEnd();
+            }
         }
 
         protected class CompileToCSharpResult

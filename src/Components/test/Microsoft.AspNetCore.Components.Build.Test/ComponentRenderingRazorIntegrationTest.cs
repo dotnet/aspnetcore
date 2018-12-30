@@ -3,15 +3,20 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Build.Test
 {
     public class ComponentRenderingRazorIntegrationTest : RazorIntegrationTestBase
     {
+        public ComponentRenderingRazorIntegrationTest(ITestOutputHelper output)
+            : base(output)
+        {
+        }
+
         internal override bool UseTwoPhaseCompilation => true;
 
         [Fact]
@@ -469,12 +474,11 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "style", "background: #FFFFFF;", 2));
         }
 
-        // Text nodes decode HTML entities
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6185")]
         public void Render_Component_HtmlEncoded()
         {
             // Arrange
-            var component = CompileToComponent(@"&lt;span&gt;Hi&lt/span&gt;");
+            var component = CompileToComponent(@"&lt;span&gt;Hi&lt;/span&gt;");
 
             // Act
             var frames = GetRenderTree(component);
@@ -485,8 +489,23 @@ namespace Test
                 frame => AssertFrame.Text(frame, "<span>Hi</span>"));
         }
 
-        // Integration test for HTML block rewriting
         [Fact]
+        public void Render_Component_HtmlBlockEncoded()
+        {
+            // Arrange
+            var component = CompileToComponent(@"<div>&lt;span&gt;Hi&lt/span&gt;</div>");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Markup(frame, "<div>&lt;span&gt;Hi&lt/span&gt;</div>"));
+        }
+
+        // Integration test for HTML block rewriting
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6183")]
         public void Render_HtmlBlock_Integration()
         {
             // Arrange
