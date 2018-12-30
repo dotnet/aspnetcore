@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
                     });
                 }
+                await server.StopAsync();
             }
         }
 
