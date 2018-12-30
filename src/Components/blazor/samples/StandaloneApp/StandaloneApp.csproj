@@ -2,10 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-
-    <!-- Local alternative to <RunArguments>blazor serve</RunArguments> -->
-    <RunCommand>dotnet</RunCommand>
-    <RunArguments>run --project ../../src/Microsoft.AspNetCore.Blazor.Cli serve</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>
