@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class HttpConnectionManagerTests : LoggedTest
     {
-// This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
+        // This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
 #if !DEBUG
         [ConditionalFact]
         [NoDebuggerCondition]
@@ -69,6 +69,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 Assert.True(logWaitAttempts < 10);
+
+                await server.StopAsync();
             }
         }
 #endif
