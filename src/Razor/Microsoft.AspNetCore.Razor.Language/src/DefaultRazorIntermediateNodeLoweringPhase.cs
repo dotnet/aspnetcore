@@ -1192,7 +1192,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = BuildSourceSpanFromNode(node),
                 });
             }
-
+            
             // Example
             // <input checked="hello-world `@false`"/>
             //  Prefix= (space)
@@ -1348,6 +1348,22 @@ namespace Microsoft.AspNetCore.Razor.Language
             // We need to capture this in the IR so that we can give each piece the correct source mappings
             public override void VisitCSharpExplicitExpression(CSharpExplicitExpressionSyntax node)
             {
+                if (_builder.Current is HtmlAttributeIntermediateNode)
+                {
+                    // This can happen inside a data- attribute
+                    _builder.Push(new CSharpExpressionAttributeValueIntermediateNode()
+                    {
+                        Prefix = string.Empty,
+                        Source = this.BuildSourceSpanFromNode(node),
+                    });
+
+                    base.VisitCSharpExplicitExpression(node);
+
+                    _builder.Pop();
+
+                    return;
+                }
+
                 if (_builder.Current is CSharpExpressionAttributeValueIntermediateNode)
                 {
                     base.VisitCSharpExplicitExpression(node);
@@ -1385,6 +1401,22 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitCSharpImplicitExpression(CSharpImplicitExpressionSyntax node)
             {
+                if (_builder.Current is HtmlAttributeIntermediateNode)
+                {
+                    // This can happen inside a data- attribute
+                    _builder.Push(new CSharpExpressionAttributeValueIntermediateNode()
+                    {
+                        Prefix = string.Empty,
+                        Source = this.BuildSourceSpanFromNode(node),
+                    });
+
+                    base.VisitCSharpImplicitExpression(node);
+
+                    _builder.Pop();
+
+                    return;
+                }
+
                 if (_builder.Current is CSharpExpressionAttributeValueIntermediateNode)
                 {
                     base.VisitCSharpImplicitExpression(node);
