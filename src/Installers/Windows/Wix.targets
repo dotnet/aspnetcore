@@ -10,8 +10,6 @@
     <GuidInputs Condition="'$(IsFinalBuild)' != 'true'">$(GuidInputs);$(BuildNumberSuffix)</GuidInputs>
   </PropertyGroup>
 
-  <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GenerateGuid" />
-
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">

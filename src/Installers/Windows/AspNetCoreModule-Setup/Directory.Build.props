@@ -3,6 +3,9 @@
   <Import Project="$(RepositoryRoot)\.deps\dependencies.g.props" Condition="Exists('$(RepositoryRoot)\.deps\dependencies.g.props')" />
 
   <PropertyGroup>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion Condition="'$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)' == ''">$(PackageVersion)</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion Condition="'$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)' == ''">$(PackageVersion)</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
+
     <!-- Build number used by ANCM msis -->
     <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
     <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>

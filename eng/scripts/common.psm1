@@ -52,54 +52,6 @@ function LoadXml([string]$path) {
     return $obj
 }
 
-function Get-MSBuildPath {
-    param(
-        [switch]$Prerelease,
-        [string[]]$Requires
-    )
-
-    $vsInstallDir = $null
-    if ($env:VSINSTALLDIR -and (Test-Path $env:VSINSTALLDIR)) {
-        $vsInstallDir = $env:VSINSTALLDIR
-        Write-Verbose "Using VSINSTALLDIR=$vsInstallDir"
-    }
-    else {
-        $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
-        Write-Verbose "Using vswhere.exe from $vswhere"
-
-        if (-not (Test-Path $vswhere)) {
-            Write-Error "Missing prerequisite: could not find vswhere"
-        }
-
-        [string[]] $vswhereArgs = @()
-
-        if ($Prerelease) {
-            $vswhereArgs += '-prerelease'
-        }
-
-        if ($Requires) {
-            foreach ($r in $Requires) {
-                $vswhereArgs += '-requires', $r
-            }
-        }
-
-        $installs = & $vswhere -format json -version '[15.0, 16.0)' -latest -products * @vswhereArgs | ConvertFrom-Json
-        if (!$installs) {
-            Write-Error "Missing prerequisite: could not find any installations of Visual Studio"
-        }
-
-        $vs = $installs | Select-Object -First 1
-        $vsInstallDir = $vs.installationPath
-        Write-Host "Using $($vs.displayName)"
-    }
-
-    $msbuild = Join-Path  $vsInstallDir 'MSBuild/15.0/bin/msbuild.exe'
-    if (!(Test-Path $msbuild)) {
-        Write-Error "Missing prerequisite: could not find msbuild.exe"
-    }
-    return $msbuild
-}
-
 function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
     if ($RemotePath -notlike 'http*') {
         Copy-Item $RemotePath $LocalPath

@@ -41,5 +41,4 @@
   <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.targets" />
   <Import Project="$(WixTargetsPath)" Condition="'$(WixTargetsPath)' != '' " />
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != ''" />
-
 </Project>
