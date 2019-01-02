@@ -640,7 +640,7 @@ namespace Microsoft.Net.Http.Headers
                 for (var i = 0; i < segment.Length && (uint)spanIndex < (uint)spanLength; i++)
                 {
                     int nextIndex = i + 1;
-                    if ((uint)nextIndex < (uint)segment.Length - 1 && segment[i] == '\\')
+                    if ((uint)nextIndex < (uint)segment.Length && segment[i] == '\\')
                     {
                         // If there is an backslash character as the last character in the string,
                         // we will assume that it should be included literally in the unescaped string
