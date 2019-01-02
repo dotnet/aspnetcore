@@ -56,6 +56,7 @@
     <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
+  <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
