@@ -61,10 +61,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authorization.Policy" ProjectPath="$(RepositoryRoot)src\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.CookiePolicy" ProjectPath="$(RepositoryRoot)src\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Owin.Security.Interop" ProjectPath="$(RepositoryRoot)src\Security\Interop\src\Microsoft.Owin.Security.Interop.csproj" />
-    <ProjectReferenceProvider Include="dotnet-dev-certs" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-dev-certs\src\dotnet-dev-certs.csproj" />
-    <ProjectReferenceProvider Include="dotnet-sql-cache" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-sql-cache\src\dotnet-sql-cache.csproj" />
-    <ProjectReferenceProvider Include="dotnet-user-secrets" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-user-secrets\src\dotnet-user-secrets.csproj" />
-    <ProjectReferenceProvider Include="dotnet-watch" ProjectPath="$(RepositoryRoot)src\Tools\dotnet-watch\src\dotnet-watch.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" ProjectPath="$(RepositoryRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Cors" ProjectPath="$(RepositoryRoot)src\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.Abstractions" ProjectPath="$(RepositoryRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
@@ -120,5 +116,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.WebApiCompatShim\Microsoft.AspNetCore.Mvc.WebApiCompatShim.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.Extensions.ApiDescription.Design\Microsoft.Extensions.ApiDescription.Design.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
   </ItemGroup>
 </Project>

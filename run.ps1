@@ -38,6 +38,9 @@ The path to the configuration file that stores values. Defaults to korebuild.jso
 .PARAMETER CI
 Sets up CI specific settings and variables.
 
+.PARAMETER Projects
+A list of projects to build. (Must be an absolute path.) Globbing patterns are supported, such as "$(pwd)/**/*.csproj"
+
 .PARAMETER PackageVersionPropsUrl
 (optional) the url of the package versions props path containing dependency versions.
 
@@ -90,6 +93,7 @@ param(
     [switch]$Reinstall,
     [string]$ConfigFile = $null,
     [switch]$CI,
+    [string]$Projects,
     [string]$PackageVersionPropsUrl = $null,
     [string]$AccessTokenSuffix = $null,
     [string]$RestoreSources = $null,
@@ -235,6 +239,11 @@ if ($AccessTokenSuffix) {
 
 if ($ProductBuildId) {
     $MSBuildArguments += "-p:DotNetProductBuildId=$ProductBuildId"
+}
+
+if ($Projects) {
+    $MSBuildArguments += "-p:Projects=$Projects"
+    $MSBuildArguments += "-p:_ProjectsOnly=true"
 }
 
 # Execute

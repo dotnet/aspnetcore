@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
-    <RepositoryBuildOrder Include="AADIntegration" Order="15" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <RepositoryBuildOrder Include="Identity" Order="15" RootPath="$(RepositoryRoot)src\Identity\"  />
     <RepositoryBuildOrder Include="MvcPrecompilation" Order="15" RootPath="$(RepositoryRoot)src\MvcPrecompilation\" />
     <RepositoryBuildOrder Include="Scaffolding" Order="15" />
