@@ -17,15 +17,15 @@ SET PATH=%DOTNET_ROOT%;%PATH%
 
 SET sln=%1
 
-IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
-    echo .NET Core has not yet been installed. Run `build.cmd -restore` to install tools
-    exit /b 1
-)
-
 IF "%sln%"=="" (
     echo Error^: Expected argument ^<SLN_FILE^>
     echo Usage^: startvs.cmd ^<SLN_FILE^>
 
+    exit /b 1
+)
+
+IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
+    echo .NET Core has not yet been installed. Run `%~dp0restore.cmd` to install tools
     exit /b 1
 )
 
