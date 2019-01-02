@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
 
         internal abstract Task WriteMessagesAsync(IEnumerable<LogMessage> messages, CancellationToken token);
 
-        private async Task ProcessLogQueue(object state)
+        private async Task ProcessLogQueue()
         {
             while (!_cancellationTokenSource.IsCancellationRequested)
             {
@@ -143,10 +143,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
                 new BlockingCollection<LogMessage>(new ConcurrentQueue<LogMessage>(), _queueSize.Value);
 
             _cancellationTokenSource = new CancellationTokenSource();
-            _outputTask = Task.Factory.StartNew<Task>(
-                ProcessLogQueue,
-                null,
-                TaskCreationOptions.LongRunning);
+            _outputTask = Task.Run(ProcessLogQueue);
         }
 
         private void Stop()
