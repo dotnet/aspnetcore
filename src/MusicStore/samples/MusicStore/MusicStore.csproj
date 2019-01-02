@@ -10,6 +10,8 @@
     <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
   </PropertyGroup>
 
+  <Import Project="$(RepositoryRoot)src\Servers\IIS\build\testsite.props" />
+
   <ItemGroup>
     <Content Update="ForTesting\**\*" CopyToPublishDirectory="Never" Condition=" '$(PublishForTesting)' != 'true' " />
   </ItemGroup>
@@ -33,7 +35,6 @@
     <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <!-- <Reference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" PrivateAssets="All" /> -->
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.AspNetCore.Session" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
