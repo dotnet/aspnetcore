@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
             for (var i = 0; i < Documents.Length; i++)
             {
                 var filePath = Path.Combine(projectRoot, "Views", "Home", $"View00{i % 4}.cshtml");
-                Documents[i] = new HostDocument(filePath, $"/Views/Home/View00{i}.cshtml");
+                Documents[i] = new HostDocument(filePath, $"/Views/Home/View00{i}.cshtml", FileKinds.Legacy);
             }
 
             var tagHelpers = Path.Combine(root.FullName, "benchmarks", "Microsoft.AspNetCore.Razor.Performance", "taghelpers.json");
