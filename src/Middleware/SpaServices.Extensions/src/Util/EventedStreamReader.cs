@@ -83,6 +83,12 @@ namespace Microsoft.AspNetCore.NodeServices.Util
                 var chunkLength = await _streamReader.ReadAsync(buf, 0, buf.Length);
                 if (chunkLength == 0)
                 {
+                    if (_linesBuffer.Length > 0)
+                    {
+                        OnCompleteLine(_linesBuffer.ToString());
+                        _linesBuffer.Clear();
+                    }
+
                     OnClosed();
                     break;
                 }
