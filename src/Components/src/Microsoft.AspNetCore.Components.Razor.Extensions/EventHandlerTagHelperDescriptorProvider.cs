@@ -24,29 +24,26 @@ namespace Microsoft.AspNetCore.Components.Razor
             }
 
             var compilation = context.GetCompilation();
-            if (compilation == null)
+
+            // If we can't find BindMethods, then just bail. We won't be able to compile the
+            // generated code anyway.
+            if (BindMethodsExists(compilation))
             {
                 return;
             }
 
-            var bindMethods = compilation.GetTypeByMetadataName(ComponentsApi.BindMethods.FullTypeName);
-            if (bindMethods == null)
-            {
-                // If we can't find BindMethods, then just bail. We won't be able to compile the
-                // generated code anyway.
-                return;
-            }
-
-
-            var eventHandlerData = GetEventHandlerData(compilation);
-
-            foreach (var tagHelper in CreateEventHandlerTagHelpers(eventHandlerData))
+            foreach (var tagHelper in CreateEventHandlerTagHelpers(GetEventHandlerData(compilation)))
             {
                 context.Results.Add(tagHelper);
             }
         }
 
-        private List<EventHandlerData> GetEventHandlerData(Compilation compilation)
+        private static bool BindMethodsExists(Compilation compilation)
+        {
+            return compilation?.GetTypeByMetadataName(ComponentsApi.BindMethods.FullTypeName) == null;
+        }
+
+        private static IEnumerable<EventHandlerData> GetEventHandlerData(Compilation compilation)
         {
             var eventHandlerAttribute = compilation.GetTypeByMetadataName(ComponentsApi.EventHandlerAttribute.FullTypeName);
             if (eventHandlerAttribute == null)
@@ -70,42 +67,36 @@ namespace Microsoft.AspNetCore.Components.Razor
                 }
             }
 
-            var results = new List<EventHandlerData>();
+            return GetEventHandlerData(types, eventHandlerAttribute);
+        }
 
-            for (var i = 0; i < types.Count; i++)
+        private static IEnumerable<EventHandlerData> GetEventHandlerData(IEnumerable<INamedTypeSymbol> types, INamedTypeSymbol eventHandlerAttribute)
+        {
+            foreach (var type in types)
             {
-                var type = types[i];
                 var attributes = type.GetAttributes();
 
                 // Not handling duplicates here for now since we're the primary ones extending this.
                 // If we see users adding to the set of event handler constructs we will want to add deduplication
                 // and potentially diagnostics.
-                for (var j = 0; j < attributes.Length; j++)
+                foreach (var attribute in attributes)
                 {
-                    var attribute = attributes[j];
-
                     if (attribute.AttributeClass == eventHandlerAttribute)
                     {
-                        results.Add(new EventHandlerData(
+                        yield return new EventHandlerData(
                             type.ContainingAssembly.Name,
                             type.ToDisplayString(),
-                            (string)attribute.ConstructorArguments[0].Value,
-                            (INamedTypeSymbol)attribute.ConstructorArguments[1].Value));
+                            (string) attribute.ConstructorArguments[0].Value,
+                            (INamedTypeSymbol) attribute.ConstructorArguments[1].Value);
                     }
                 }
             }
-
-            return results;
         }
 
-        private List<TagHelperDescriptor> CreateEventHandlerTagHelpers(List<EventHandlerData> data)
+        private static IEnumerable<TagHelperDescriptor> CreateEventHandlerTagHelpers(IEnumerable<EventHandlerData> data)
         {
-            var results = new List<TagHelperDescriptor>();
-
-            for (var i = 0; i < data.Count; i++)
+            foreach (var entry in data)
             {
-                var entry = data[i];
-
                 var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.EventHandler.TagHelperKind, entry.Attribute, entry.Assembly);
                 builder.Documentation = string.Format(
                     Resources.EventHandlerTagHelper_Documentation,
@@ -124,9 +115,10 @@ namespace Microsoft.AspNetCore.Components.Razor
                 {
                     rule.TagName = "*";
 
+                    var entry1 = entry;
                     rule.Attribute(a =>
                     {
-                        a.Name = entry.Attribute;
+                        a.Name = entry1.Attribute;
                         a.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.FullMatch;
                     });
                 });
@@ -152,10 +144,8 @@ namespace Microsoft.AspNetCore.Components.Razor
                     a.SetPropertyName(entry.Attribute);
                 });
 
-                results.Add(builder.Build());
+                yield return builder.Build();
             }
-
-            return results;
         }
 
         private struct EventHandlerData
@@ -183,7 +173,7 @@ namespace Microsoft.AspNetCore.Components.Razor
 
         private class EventHandlerDataVisitor : SymbolVisitor
         {
-            private List<INamedTypeSymbol> _results;
+            private readonly List<INamedTypeSymbol> _results;
 
             public EventHandlerDataVisitor(List<INamedTypeSymbol> results)
             {
