@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using AngleSharp.Dom.Html;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var slnDir = GetSolutionDir();
-            var wwwrootDir = Path.Combine(slnDir, "src", "UI", "wwwroot", scriptTag.Version);
+            var wwwrootDir = Path.Combine(slnDir, "UI", "src", "wwwroot", scriptTag.Version);
 
             var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
             var fallbackSrcContent = File.ReadAllText(
@@ -96,8 +96,8 @@ namespace Microsoft.AspNetCore.Identity.Test
         private static List<ScriptTag> GetScriptTags()
         {
             var slnDir = GetSolutionDir();
-            var uiDirV3 = Path.Combine(slnDir, "src", "UI", "Areas", "Identity", "Pages", "V3");
-            var uiDirV4 = Path.Combine(slnDir, "src", "UI", "Areas", "Identity", "Pages", "V4");
+            var uiDirV3 = Path.Combine(slnDir, "UI", "src", "Areas", "Identity", "Pages", "V3");
+            var uiDirV4 = Path.Combine(slnDir, "UI", "src", "Areas", "Identity", "Pages", "V4");
             var cshtmlFiles = GetRazorFiles(uiDirV3).Concat(GetRazorFiles(uiDirV4));
 
             var scriptTags = new List<ScriptTag>();
