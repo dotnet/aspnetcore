@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             // Don't add Component imports for a non-component.
-            if (!string.Equals(projectItem.FileKind, FileKinds.Component, StringComparison.OrdinalIgnoreCase))
+            if (!FileKinds.IsComponent(projectItem.FileKind))
             {
                 return Array.Empty<RazorProjectItem>();
             }

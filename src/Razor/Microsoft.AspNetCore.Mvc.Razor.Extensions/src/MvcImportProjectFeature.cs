@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
 
             // Don't add MVC imports for a component
-            if (string.Equals(projectItem.FileKind, FileKinds.Component, StringComparison.OrdinalIgnoreCase))
+            if (FileKinds.IsComponent(projectItem.FileKind))
             {
                 return Array.Empty<RazorProjectItem>();
             }

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            return string.Equals(codeDocument.GetFileKind(), FileKinds.Component);
+            return FileKinds.IsComponent(codeDocument.GetFileKind());
         }
 
         protected override CodeTarget CreateTarget(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
