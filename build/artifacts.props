@@ -94,8 +94,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
       <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
 
     <!-- This packages are produce for testing purposes only. -->
-      <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
-      <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
       <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
 

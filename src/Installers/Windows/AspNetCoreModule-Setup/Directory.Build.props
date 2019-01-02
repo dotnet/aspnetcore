@@ -31,10 +31,6 @@
     <ANCMBuildDirectory>$(AspNetCoreSetupRoot)build\</ANCMBuildDirectory>
 
     <!-- Variables used by ANCM wxs projects. -->
-    <PreBuiltANCMSchema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModule\$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)\</PreBuiltANCMSchema>
-    <PreBuiltANCMV2Schema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModuleV2\$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)\</PreBuiltANCMV2Schema>
-    <PreBuiltANCMRoot>$(PreBuiltANCMSchema)contentFiles\any\any\</PreBuiltANCMRoot>
-    <PreBuiltANCMV2Root>$(PreBuiltANCMV2Schema)contentFiles\any\any\</PreBuiltANCMV2Root>
 
     <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
     <DefineConstants>ANCMMsiVersion=$(ANCMMsiVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
