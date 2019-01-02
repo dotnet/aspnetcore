@@ -88,18 +88,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             return CreateCodeDocumentCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null, configureParser, configureCodeGeneration);
         }
 
-        protected RazorCodeDocument CreateCodeDocumentCore(
+        protected internal RazorCodeDocument CreateCodeDocumentCore(
             RazorSourceDocument sourceDocument, 
-            string fileKind, 
-            IReadOnlyList<RazorSourceDocument> importSourceDocuments, 
-            IReadOnlyList<TagHelperDescriptor> tagHelpers,
-            Action<RazorParserOptionsBuilder> configureParser,
-            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
+            string fileKind = null, 
+            IReadOnlyList<RazorSourceDocument> importSourceDocuments = null, 
+            IReadOnlyList<TagHelperDescriptor> tagHelpers = null,
+            Action<RazorParserOptionsBuilder> configureParser = null,
+            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration = null)
         {
             if (sourceDocument == null)
             {
                 throw new ArgumentNullException(nameof(sourceDocument));
             }
+
+            importSourceDocuments = importSourceDocuments ?? Array.Empty<RazorSourceDocument>();
 
             var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(fileKind, builder =>
             {

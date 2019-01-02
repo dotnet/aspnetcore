@@ -348,16 +348,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         protected static string FullTypeName<T>() => typeof(T).FullName.Replace('+', '.');
 
-        protected RenderTreeFrame[] GetRenderTree(IComponent component)
-        {
-            throw null;
-        }
-
-        protected RenderTreeFrame[] GetFrames(RenderFragment fragment)
-        {
-            throw null;
-        }
-
         protected static void AssertSourceEquals(string expected, CompileToCSharpResult generated)
         {
             // Normalize the paths inside the expected result to match the OS paths
