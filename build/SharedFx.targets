@@ -43,6 +43,8 @@
       <CommonProps>$(CommonProps);AspNetUniverseBuildOffline=true</CommonProps>
       <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</CommonProps>
       <CommonProps>$(CommonProps);AppMetapackageVersion=$(PackageVersion)</CommonProps>
+
+      <_SiteExtensionProject></_SiteExtensionProject>
     </PropertyGroup>
 
     <Error
@@ -73,7 +75,7 @@
     <!-- Pack -->
     <MSBuild Projects="$(MetapackageWorkDirectory)$(MetapackageName).csproj" Targets="Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
     <!-- Pack logging site extension -->
-    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
+    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="Restore;Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
   </Target>
 
   <Target Name="BuildMetapackages">
