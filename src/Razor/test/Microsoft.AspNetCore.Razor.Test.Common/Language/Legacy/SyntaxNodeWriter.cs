@@ -67,6 +67,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             {
                 WriteTagHelperAttributeInfo(minimizedTagHelperAttribute.TagHelperAttributeInfo);
             }
+            else if (node is MarkupStartTagSyntax startTag)
+            {
+                if (startTag.IsMarkupTransition)
+                {
+                    WriteSeparator();
+                    Write("MarkupTransition");
+                }
+            }
+            else if (node is MarkupEndTagSyntax endTag)
+            {
+                if (endTag.IsMarkupTransition)
+                {
+                    WriteSeparator();
+                    Write("MarkupTransition");
+                }
+            }
 
             if (ShouldDisplayNodeContent(node))
             {

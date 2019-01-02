@@ -100,7 +100,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             SyntaxNode owner = null;
-            var children = node.ChildNodes();
+            IEnumerable<SyntaxNode> children = null;
+            if (node is MarkupStartTagSyntax startTag)
+            {
+                children = startTag.Children;
+            }
+            else if (node is MarkupEndTagSyntax endTag)
+            {
+                children = endTag.Children;
+            }
+            else
+            {
+                children = node.ChildNodes();
+            }
+
             foreach (var child in children)
             {
                 owner = LocateOwner(child, change);
@@ -192,7 +205,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             foreach (var child in node.DescendantNodes())
             {
-                if (child.IsSpanKind())
+                if (child is MarkupStartTagSyntax startTag)
+                {
+                    foreach (var tagChild in startTag.Children)
+                    {
+                        if (tagChild.IsSpanKind())
+                        {
+                            yield return tagChild;
+                        }
+                    }
+                }
+                else if (child is MarkupEndTagSyntax endTag)
+                {
+                    foreach (var tagChild in endTag.Children)
+                    {
+                        if (tagChild.IsSpanKind())
+                        {
+                            yield return tagChild;
+                        }
+                    }
+                }
+                else if (child.IsSpanKind())
                 {
                     yield return child;
                 }

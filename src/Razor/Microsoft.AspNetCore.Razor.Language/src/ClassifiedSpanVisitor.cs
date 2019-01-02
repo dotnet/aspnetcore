@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.AspNetCore.Razor.Language.Syntax;
 
@@ -108,12 +109,26 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Tag, base.VisitMarkupStartTag);
+            WriteBlock(node, BlockKindInternal.Tag, n =>
+            {
+                var children = GetRewrittenMarkupStartTagChildren(node);
+                foreach (var child in children)
+                {
+                    Visit(child);
+                }
+            });
         }
 
         public override void VisitMarkupEndTag(MarkupEndTagSyntax node)
         {
-            WriteBlock(node, BlockKindInternal.Tag, base.VisitMarkupEndTag);
+            WriteBlock(node, BlockKindInternal.Tag, n =>
+            {
+                var children = GetRewrittenMarkupEndTagChildren(node);
+                foreach (var child in children)
+                {
+                    Visit(child);
+                }
+            });
         }
 
         public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
@@ -274,6 +289,101 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var span = new ClassifiedSpanInternal(spanSource, blockSource, kind, _currentBlockKind, acceptedCharacters.Value);
             _spans.Add(span);
+        }
+
+        private static SyntaxList<RazorSyntaxNode> GetRewrittenMarkupStartTagChildren(MarkupStartTagSyntax node)
+        {
+            // Rewrites the children of the start tag to look like the legacy syntax tree.
+            if (node.IsMarkupTransition)
+            {
+                var tokens = node.DescendantNodes().Where(n => n is SyntaxToken token && !token.IsMissing).Cast<SyntaxToken>().ToArray();
+                var tokenBuilder = SyntaxListBuilder<SyntaxToken>.Create();
+                tokenBuilder.AddRange(tokens, 0, tokens.Length);
+                var markupTransition = SyntaxFactory.MarkupTransition(tokenBuilder.ToList()).Green.CreateRed(node, node.Position);
+                var spanContext = node.GetSpanContext();
+                if (spanContext != null)
+                {
+                    markupTransition = markupTransition.WithSpanContext(spanContext);
+                }
+
+                var builder = new SyntaxListBuilder(1);
+                builder.Add(markupTransition);
+                return new SyntaxList<RazorSyntaxNode>(builder.ToListNode().CreateRed(node, node.Position));
+            }
+
+            SpanContext latestSpanContext = null;
+            var children = node.Children;
+            var newChildren = new SyntaxListBuilder(children.Count);
+            var literals = new List<MarkupTextLiteralSyntax>();
+            foreach (var child in children)
+            {
+                if (child is MarkupTextLiteralSyntax literal)
+                {
+                    literals.Add(literal);
+                    latestSpanContext = literal.GetSpanContext() ?? latestSpanContext;
+                }
+                else if (child is MarkupMiscAttributeContentSyntax miscContent)
+                {
+                    foreach (var contentChild in miscContent.Children)
+                    {
+                        if (contentChild is MarkupTextLiteralSyntax contentLiteral)
+                        {
+                            literals.Add(contentLiteral);
+                            latestSpanContext = contentLiteral.GetSpanContext() ?? latestSpanContext;
+                        }
+                        else
+                        {
+                            // Pop stack
+                            AddLiteralIfExists();
+                            newChildren.Add(contentChild);
+                        }
+                    }
+                }
+                else
+                {
+                    AddLiteralIfExists();
+                    newChildren.Add(child);
+                }
+            }
+
+            AddLiteralIfExists();
+
+            return new SyntaxList<RazorSyntaxNode>(newChildren.ToListNode().CreateRed(node, node.Position));
+
+            void AddLiteralIfExists()
+            {
+                if (literals.Count > 0)
+                {
+                    var mergedLiteral = SyntaxUtilities.MergeTextLiterals(literals.ToArray());
+                    mergedLiteral = mergedLiteral.WithSpanContext(latestSpanContext);
+                    literals.Clear();
+                    latestSpanContext = null;
+                    newChildren.Add(mergedLiteral);
+                }
+            }
+        }
+
+        private static SyntaxList<RazorSyntaxNode> GetRewrittenMarkupEndTagChildren(MarkupEndTagSyntax node)
+        {
+            // Rewrites the children of the end tag to look like the legacy syntax tree.
+            if (node.IsMarkupTransition)
+            {
+                var tokens = node.DescendantNodes().Where(n => n is SyntaxToken token && !token.IsMissing).Cast<SyntaxToken>().ToArray();
+                var tokenBuilder = SyntaxListBuilder<SyntaxToken>.Create();
+                tokenBuilder.AddRange(tokens, 0, tokens.Length);
+                var markupTransition = SyntaxFactory.MarkupTransition(tokenBuilder.ToList()).Green.CreateRed(node, node.Position);
+                var spanContext = node.GetSpanContext();
+                if (spanContext != null)
+                {
+                    markupTransition = markupTransition.WithSpanContext(spanContext);
+                }
+
+                var builder = new SyntaxListBuilder(1);
+                builder.Add(markupTransition);
+                return new SyntaxList<RazorSyntaxNode>(builder.ToListNode().CreateRed(node, node.Position));
+            }
+
+            return node.Children;
         }
     }
 }

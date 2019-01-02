@@ -16,10 +16,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 throw new ArgumentNullException(nameof(syntaxTree));
             }
 
-            var rewriter = new ClassifiedSpanRewriter();
-            var rewritten = rewriter.Visit(syntaxTree.Root);
             var visitor = new ClassifiedSpanVisitor(syntaxTree.Source);
-            visitor.Visit(rewritten);
+            visitor.Visit(syntaxTree.Root);
 
             return visitor.ClassifiedSpans;
         }

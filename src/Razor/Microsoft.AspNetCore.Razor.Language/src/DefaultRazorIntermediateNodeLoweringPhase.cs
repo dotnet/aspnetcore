@@ -810,6 +810,22 @@ namespace Microsoft.AspNetCore.Razor.Language
                 base.VisitMarkupTextLiteral(node);
             }
 
+            public override void VisitMarkupStartTag(MarkupStartTagSyntax node)
+            {
+                foreach (var child in node.Children)
+                {
+                    Visit(child);
+                }
+            }
+
+            public override void VisitMarkupEndTag(MarkupEndTagSyntax node)
+            {
+                foreach (var child in node.Children)
+                {
+                    Visit(child);
+                }
+            }
+
             public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
             {
                 var info = node.TagHelperInfo;
@@ -1110,7 +1126,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Source = BuildSourceSpanFromNode(node),
 
                     // Could be empty while the tag is being typed in.
-                    TagName = node.StartTag?.GetTagName() ?? node.EndTag?.GetTagName() ?? string.Empty,
+                    TagName = node.StartTag?.GetTagNameWithOptionalBang() ?? node.EndTag?.GetTagName() ?? string.Empty,
                 });
 
                 base.VisitMarkupElement(node);

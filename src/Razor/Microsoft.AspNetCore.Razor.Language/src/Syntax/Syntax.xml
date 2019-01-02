@@ -65,10 +65,6 @@
     <Kind Name="MarkupCommentBlock" />
     <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
   </Node>
-  <Node Name="MarkupTagBlockSyntax" Base="RazorBlockSyntax">
-    <Kind Name="MarkupTagBlock" />
-    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
-  </Node>
   <Node Name="MarkupMinimizedAttributeBlockSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupMinimizedAttributeBlock" />
     <Field Name="NamePrefix" Type="MarkupTextLiteralSyntax" Optional="true" />
@@ -106,13 +102,43 @@
     <Field Name="Body" Type="SyntaxList&lt;RazorSyntaxNode&gt;" />
     <Field Name="EndTag" Type="MarkupEndTagSyntax" Optional="true" />
   </Node>
-  <Node Name="MarkupStartTagSyntax" Base="RazorBlockSyntax">
+  <Node Name="MarkupStartTagSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupStartTag" />
-    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
+    <Field Name="OpenAngle" Type="SyntaxToken">
+      <Kind Name="OpenAngle" />
+    </Field>
+    <Field Name="Bang" Type="SyntaxToken" Optional="true">
+      <Kind Name="Bang" />
+    </Field>
+    <Field Name="Name" Type="SyntaxToken">
+      <Kind Name="Text" />
+    </Field>
+    <Field Name="Attributes" Type="SyntaxList&lt;RazorSyntaxNode&gt;" />
+    <Field Name="ForwardSlash" Type="SyntaxToken" Optional="true">
+      <Kind Name="ForwardSlash" />
+    </Field>
+    <Field Name="CloseAngle" Type="SyntaxToken">
+      <Kind Name="CloseAngle" />
+    </Field>
   </Node>
-  <Node Name="MarkupEndTagSyntax" Base="RazorBlockSyntax">
+  <Node Name="MarkupEndTagSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupEndTag" />
-    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
+    <Field Name="OpenAngle" Type="SyntaxToken">
+      <Kind Name="OpenAngle" />
+    </Field>
+    <Field Name="ForwardSlash" Type="SyntaxToken">
+      <Kind Name="ForwardSlash" />
+    </Field>
+    <Field Name="Bang" Type="SyntaxToken" Optional="true">
+      <Kind Name="Bang" />
+    </Field>
+    <Field Name="Name" Type="SyntaxToken">
+      <Kind Name="Text" />
+    </Field>
+    <Field Name="MiscAttributeContent" Type="MarkupMiscAttributeContentSyntax" Optional="true" />
+    <Field Name="CloseAngle" Type="SyntaxToken">
+      <Kind Name="CloseAngle" />
+    </Field>
   </Node>
   <Node Name="MarkupTagHelperElementSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupTagHelperElement" />

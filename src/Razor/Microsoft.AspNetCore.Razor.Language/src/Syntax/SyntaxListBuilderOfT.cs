@@ -75,6 +75,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return _builder.ToList();
         }
 
+        public SyntaxList<TNode> Consume()
+        {
+            var list = ToList();
+            Clear();
+            return list;
+        }
+
         public static implicit operator SyntaxListBuilder(SyntaxListBuilder<TNode> builder)
         {
             return builder._builder;

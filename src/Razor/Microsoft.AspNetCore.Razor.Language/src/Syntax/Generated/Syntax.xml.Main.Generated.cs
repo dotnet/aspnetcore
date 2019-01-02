@@ -71,12 +71,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       return DefaultVisit(node);
     }
 
-    /// <summary>Called when the visitor visits a MarkupTagBlockSyntax node.</summary>
-    public virtual TResult VisitMarkupTagBlock(MarkupTagBlockSyntax node)
-    {
-      return DefaultVisit(node);
-    }
-
     /// <summary>Called when the visitor visits a MarkupMinimizedAttributeBlockSyntax node.</summary>
     public virtual TResult VisitMarkupMinimizedAttributeBlock(MarkupMinimizedAttributeBlockSyntax node)
     {
@@ -304,12 +298,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
     /// <summary>Called when the visitor visits a MarkupCommentBlockSyntax node.</summary>
     public virtual void VisitMarkupCommentBlock(MarkupCommentBlockSyntax node)
-    {
-      DefaultVisit(node);
-    }
-
-    /// <summary>Called when the visitor visits a MarkupTagBlockSyntax node.</summary>
-    public virtual void VisitMarkupTagBlock(MarkupTagBlockSyntax node)
     {
       DefaultVisit(node);
     }
@@ -549,12 +537,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       return node.Update(children);
     }
 
-    public override SyntaxNode VisitMarkupTagBlock(MarkupTagBlockSyntax node)
-    {
-      var children = VisitList(node.Children);
-      return node.Update(children);
-    }
-
     public override SyntaxNode VisitMarkupMinimizedAttributeBlock(MarkupMinimizedAttributeBlockSyntax node)
     {
       var namePrefix = (MarkupTextLiteralSyntax)Visit(node.NamePrefix);
@@ -604,14 +586,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
     public override SyntaxNode VisitMarkupStartTag(MarkupStartTagSyntax node)
     {
-      var children = VisitList(node.Children);
-      return node.Update(children);
+      var openAngle = (SyntaxToken)VisitToken(node.OpenAngle);
+      var bang = (SyntaxToken)VisitToken(node.Bang);
+      var name = (SyntaxToken)VisitToken(node.Name);
+      var attributes = VisitList(node.Attributes);
+      var forwardSlash = (SyntaxToken)VisitToken(node.ForwardSlash);
+      var closeAngle = (SyntaxToken)VisitToken(node.CloseAngle);
+      return node.Update(openAngle, bang, name, attributes, forwardSlash, closeAngle);
     }
 
     public override SyntaxNode VisitMarkupEndTag(MarkupEndTagSyntax node)
     {
-      var children = VisitList(node.Children);
-      return node.Update(children);
+      var openAngle = (SyntaxToken)VisitToken(node.OpenAngle);
+      var forwardSlash = (SyntaxToken)VisitToken(node.ForwardSlash);
+      var bang = (SyntaxToken)VisitToken(node.Bang);
+      var name = (SyntaxToken)VisitToken(node.Name);
+      var miscAttributeContent = (MarkupMiscAttributeContentSyntax)Visit(node.MiscAttributeContent);
+      var closeAngle = (SyntaxToken)VisitToken(node.CloseAngle);
+      return node.Update(openAngle, forwardSlash, bang, name, miscAttributeContent, closeAngle);
     }
 
     public override SyntaxNode VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
@@ -906,18 +898,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
       return SyntaxFactory.MarkupCommentBlock(default(SyntaxList<RazorSyntaxNode>));
     }
 
-    /// <summary>Creates a new MarkupTagBlockSyntax instance.</summary>
-    public static MarkupTagBlockSyntax MarkupTagBlock(SyntaxList<RazorSyntaxNode> children)
-    {
-      return (MarkupTagBlockSyntax)InternalSyntax.SyntaxFactory.MarkupTagBlock(children.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>()).CreateRed();
-    }
-
-    /// <summary>Creates a new MarkupTagBlockSyntax instance.</summary>
-    public static MarkupTagBlockSyntax MarkupTagBlock()
-    {
-      return SyntaxFactory.MarkupTagBlock(default(SyntaxList<RazorSyntaxNode>));
-    }
-
     /// <summary>Creates a new MarkupMinimizedAttributeBlockSyntax instance.</summary>
     public static MarkupMinimizedAttributeBlockSyntax MarkupMinimizedAttributeBlock(MarkupTextLiteralSyntax namePrefix, MarkupTextLiteralSyntax name)
     {
@@ -1010,27 +990,100 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
     }
 
     /// <summary>Creates a new MarkupStartTagSyntax instance.</summary>
-    public static MarkupStartTagSyntax MarkupStartTag(SyntaxList<RazorSyntaxNode> children)
+    public static MarkupStartTagSyntax MarkupStartTag(SyntaxToken openAngle, SyntaxToken bang, SyntaxToken name, SyntaxList<RazorSyntaxNode> attributes, SyntaxToken forwardSlash, SyntaxToken closeAngle)
     {
-      return (MarkupStartTagSyntax)InternalSyntax.SyntaxFactory.MarkupStartTag(children.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>()).CreateRed();
+      switch (openAngle.Kind)
+      {
+        case SyntaxKind.OpenAngle:
+          break;
+        default:
+          throw new ArgumentException("openAngle");
+      }
+      switch (bang.Kind)
+      {
+        case SyntaxKind.Bang:
+        case SyntaxKind.None:
+          break;
+        default:
+          throw new ArgumentException("bang");
+      }
+      switch (name.Kind)
+      {
+        case SyntaxKind.Text:
+          break;
+        default:
+          throw new ArgumentException("name");
+      }
+      switch (forwardSlash.Kind)
+      {
+        case SyntaxKind.ForwardSlash:
+        case SyntaxKind.None:
+          break;
+        default:
+          throw new ArgumentException("forwardSlash");
+      }
+      switch (closeAngle.Kind)
+      {
+        case SyntaxKind.CloseAngle:
+          break;
+        default:
+          throw new ArgumentException("closeAngle");
+      }
+      return (MarkupStartTagSyntax)InternalSyntax.SyntaxFactory.MarkupStartTag((Syntax.InternalSyntax.SyntaxToken)openAngle.Green, (Syntax.InternalSyntax.SyntaxToken)bang.Green, (Syntax.InternalSyntax.SyntaxToken)name.Green, attributes.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>(), (Syntax.InternalSyntax.SyntaxToken)forwardSlash.Green, (Syntax.InternalSyntax.SyntaxToken)closeAngle.Green).CreateRed();
     }
 
     /// <summary>Creates a new MarkupStartTagSyntax instance.</summary>
-    public static MarkupStartTagSyntax MarkupStartTag()
+    public static MarkupStartTagSyntax MarkupStartTag(SyntaxList<RazorSyntaxNode> attributes = default(SyntaxList<RazorSyntaxNode>))
     {
-      return SyntaxFactory.MarkupStartTag(default(SyntaxList<RazorSyntaxNode>));
+      return SyntaxFactory.MarkupStartTag(SyntaxFactory.Token(SyntaxKind.OpenAngle), default(SyntaxToken), SyntaxFactory.Token(SyntaxKind.Text), attributes, default(SyntaxToken), SyntaxFactory.Token(SyntaxKind.CloseAngle));
     }
 
     /// <summary>Creates a new MarkupEndTagSyntax instance.</summary>
-    public static MarkupEndTagSyntax MarkupEndTag(SyntaxList<RazorSyntaxNode> children)
+    public static MarkupEndTagSyntax MarkupEndTag(SyntaxToken openAngle, SyntaxToken forwardSlash, SyntaxToken bang, SyntaxToken name, MarkupMiscAttributeContentSyntax miscAttributeContent, SyntaxToken closeAngle)
     {
-      return (MarkupEndTagSyntax)InternalSyntax.SyntaxFactory.MarkupEndTag(children.Node.ToGreenList<InternalSyntax.RazorSyntaxNode>()).CreateRed();
+      switch (openAngle.Kind)
+      {
+        case SyntaxKind.OpenAngle:
+          break;
+        default:
+          throw new ArgumentException("openAngle");
+      }
+      switch (forwardSlash.Kind)
+      {
+        case SyntaxKind.ForwardSlash:
+          break;
+        default:
+          throw new ArgumentException("forwardSlash");
+      }
+      switch (bang.Kind)
+      {
+        case SyntaxKind.Bang:
+        case SyntaxKind.None:
+          break;
+        default:
+          throw new ArgumentException("bang");
+      }
+      switch (name.Kind)
+      {
+        case SyntaxKind.Text:
+          break;
+        default:
+          throw new ArgumentException("name");
+      }
+      switch (closeAngle.Kind)
+      {
+        case SyntaxKind.CloseAngle:
+          break;
+        default:
+          throw new ArgumentException("closeAngle");
+      }
+      return (MarkupEndTagSyntax)InternalSyntax.SyntaxFactory.MarkupEndTag((Syntax.InternalSyntax.SyntaxToken)openAngle.Green, (Syntax.InternalSyntax.SyntaxToken)forwardSlash.Green, (Syntax.InternalSyntax.SyntaxToken)bang.Green, (Syntax.InternalSyntax.SyntaxToken)name.Green, miscAttributeContent == null ? null : (InternalSyntax.MarkupMiscAttributeContentSyntax)miscAttributeContent.Green, (Syntax.InternalSyntax.SyntaxToken)closeAngle.Green).CreateRed();
     }
 
     /// <summary>Creates a new MarkupEndTagSyntax instance.</summary>
-    public static MarkupEndTagSyntax MarkupEndTag()
+    public static MarkupEndTagSyntax MarkupEndTag(MarkupMiscAttributeContentSyntax miscAttributeContent = default(MarkupMiscAttributeContentSyntax))
     {
-      return SyntaxFactory.MarkupEndTag(default(SyntaxList<RazorSyntaxNode>));
+      return SyntaxFactory.MarkupEndTag(SyntaxFactory.Token(SyntaxKind.OpenAngle), SyntaxFactory.Token(SyntaxKind.ForwardSlash), default(SyntaxToken), SyntaxFactory.Token(SyntaxKind.Text), miscAttributeContent, SyntaxFactory.Token(SyntaxKind.CloseAngle));
     }
 
     /// <summary>Creates a new MarkupTagHelperElementSyntax instance.</summary>

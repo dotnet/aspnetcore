@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var startTag = (MarkupStartTagSyntax)Visit(node.StartTag);
                 if (startTag != null)
                 {
-                    var tagName = startTag.GetTagName();
+                    var tagName = startTag.GetTagNameWithOptionalBang();
                     if (TryRewriteTagHelperStart(startTag, out tagHelperStart, out tagHelperInfo))
                     {
                         // This is a tag helper.
@@ -218,10 +218,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 tagHelperInfo = null;
 
                 // Get tag name of the current block
-                var tagName = startTag.GetTagName();
+                var tagName = startTag.GetTagNameWithOptionalBang();
 
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                if (tagName == null || tagName.StartsWith("!"))
+                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!"))
                 {
                     return false;
                 }
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 rewritten = null;
                 var tagName = tagBlock.GetTagName();
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
-                if (tagName == null || tagName.StartsWith("!"))
+                if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!"))
                 {
                     return false;
                 }
@@ -510,22 +510,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return true;
             }
 
-            private bool IsPotentialTagHelperStart(string tagName, MarkupStartTagSyntax childBlock)
+            private bool IsPotentialTagHelperStart(string tagName, MarkupStartTagSyntax startTag)
             {
-                Debug.Assert(childBlock.Children.Count > 0);
-                var child = childBlock.Children[0];
-
                 return !string.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) ||
-                       child.Kind != SyntaxKind.MarkupTransition;
+                       !startTag.IsMarkupTransition;
             }
 
-            private bool IsPotentialTagHelperEnd(string tagName, MarkupEndTagSyntax childBlock)
+            private bool IsPotentialTagHelperEnd(string tagName, MarkupEndTagSyntax endTag)
             {
-                Debug.Assert(childBlock.Children.Count > 0);
-                var child = childBlock.Children[0];
-
                 return !string.Equals(tagName, SyntaxConstants.TextTagName, StringComparison.OrdinalIgnoreCase) ||
-                       child.Kind != SyntaxKind.MarkupTransition;
+                       !endTag.IsMarkupTransition;
             }
 
             private static bool IsPartialStartTag(MarkupStartTagSyntax tagBlock)
@@ -605,7 +599,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             private void ValidateParentAllowsPlainStartTag(MarkupStartTagSyntax tagBlock)
             {
-                var tagName = tagBlock.GetTagName();
+                var tagName = tagBlock.GetTagNameWithOptionalBang();
 
                 // Treat partial tags such as '</' which have no tag names as content.
                 if (string.IsNullOrEmpty(tagName))
