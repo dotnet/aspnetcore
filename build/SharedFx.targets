@@ -72,6 +72,8 @@
     <MSBuild Projects="$(MetapackageWorkDirectory)$(MetapackageName).csproj" Targets="Restore" Properties="$(CommonProps);_Target=Restore" />
     <!-- Pack -->
     <MSBuild Projects="$(MetapackageWorkDirectory)$(MetapackageName).csproj" Targets="Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
+    <!-- Pack logging site extension -->
+    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
   </Target>
 
   <Target Name="BuildMetapackages">
