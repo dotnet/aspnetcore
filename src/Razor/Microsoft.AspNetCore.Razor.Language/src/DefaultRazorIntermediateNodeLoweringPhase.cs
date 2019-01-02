@@ -1255,6 +1255,27 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupTextLiteral(MarkupTextLiteralSyntax node)
             {
+                if (_builder.Current is HtmlAttributeIntermediateNode)
+                {
+                    // This can happen inside a data- attribute 
+                    _builder.Push(new HtmlAttributeValueIntermediateNode()
+                    {
+                        Prefix = string.Empty,
+                        Source = BuildSourceSpanFromNode(node),
+                    });
+
+                    _builder.Add(new IntermediateToken()
+                    {
+                        Content = node.GetContent() ?? string.Empty,
+                        Kind = TokenKind.Html,
+                        Source = BuildSourceSpanFromNode(node),
+                    });
+
+                    _builder.Pop();
+
+                    return;
+                }
+
                 var context = node.GetSpanContext();
                 if (context != null && context.ChunkGenerator == SpanChunkGenerator.Null)
                 {
