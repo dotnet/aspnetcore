@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UserSecretsId>aspnetcore-CreateDefaultBuilder-20170424224131</UserSecretsId>
+    <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 
   <ItemGroup>
