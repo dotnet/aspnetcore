@@ -48,6 +48,26 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Authentication.AzureAD.UI-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Authentication.AzureADB2C.UI-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Cookies-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>

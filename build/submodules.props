@@ -46,7 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ShippedRepository Include="AADIntegration" RootPath="$(RepositoryRoot)src\AADIntegration\" />
     <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
     <ShippedRepository Include="Identity" RootPath="$(RepositoryRoot)src\Identity\" />
     <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />

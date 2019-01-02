@@ -13,6 +13,8 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Core" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Facebook" Version="2.2.0" />

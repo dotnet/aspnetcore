@@ -38,6 +38,9 @@
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
     <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
 
+    <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
+    <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
+
     <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
     <VerifyVersion>false</VerifyVersion>
 
