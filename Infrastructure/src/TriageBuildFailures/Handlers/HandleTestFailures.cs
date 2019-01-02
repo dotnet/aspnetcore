@@ -44,36 +44,6 @@ namespace TriageBuildFailures.Handlers
             return result;
         }
 
-        private const string WorkFlowComment = @"Please use this workflow to address this flaky test issue, including checking applicable checkboxes and filling in the applicable ""TODO"" entries:
-
-* Is this actually a flaky test?
-  * No, this is a regular test failure, fix the test/product (TODO: Link to commit/PR)
-  * Yes, proceed below...
-
-* Is this test failure caused by product code flakiness? (Either this product, or another product this test depends on.)
-  * [ ] File a bug against the product (TODO: Link to other bug)
-  * Is it possible to change the test to avoid the flakiness?
-    * Yes? Go to the ""Change the test!"" section.
-    * No?
-      * [ ] Disable the test (TODO: Link to PR/commit)
-      * [ ] Wait for other bug to be resolved
-      * [ ] Wait for us to get build that has the fix
-      * [ ] Re-enable our test (TODO: Link to PR/commit)
-      * [ ] Close this bug
-
-* Is it that the test itself is flaky? This includes external transient problems (e.g. remote server problems, file system race condition, etc.)
-  * Is there is a way to change our test to avoid this flakiness?
-    * Yes? Change the test!
-      * [ ] Change the test to avoid the flakiness, for example by using a different test strategy, or by adding retries w/ timeouts (TODO: Link to PR/commit)
-      * [ ] Run the test 100 times locally as a sanity check.
-      * [ ] Close this bug
-    * No?
-      * Is there any logging or extra information that we could add to make this more diagnosable when it happens again?
-        * Yes?
-            * [ ] Add the logging (TODO: Link to PR/commit)
-        * No?
-            * [ ] Delete the test because flaky tests are not useful (TODO: Link to PR/commit)";
-
         public override async Task HandleFailure(ICIBuild build)
         {
             var client = GetClient(build);
@@ -131,8 +101,6 @@ CC {GetOwnerMentions(failureArea)}";
                     Reporter.Output($"Creating new issue for test failure {failure.Name}...");
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
-                    Reporter.Output($"Adding workflow comment to issue {issue.HtmlUrl}");
-                    await GHClient.CreateComment(issue, WorkFlowComment);
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.
                 else
