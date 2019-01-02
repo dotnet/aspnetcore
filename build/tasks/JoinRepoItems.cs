@@ -10,7 +10,7 @@ using Microsoft.Build.Utilities;
 
 namespace RepoTasks
 {
-    public class JoinItems : Task
+    public class JoinRepoItems : Task
     {
         [Required]
         public ITaskItem[] Left { get; set; }
