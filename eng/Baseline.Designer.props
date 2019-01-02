@@ -35,6 +35,37 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.1.1, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.ApplicationInsights.HostingStartup-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApplicationInsights.HostingStartup' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApplicationInsights.HostingStartup' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="[2.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApplicationInsights.HostingStartup' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <BaselinePackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="[2.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApplicationInsights.HostingStartup' AND '$(TargetFramework)' == 'netcoreapp2.1' ">
+    <BaselinePackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="[2.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[2.1.1, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Abstractions' ">
     <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
@@ -169,6 +200,30 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.AzureAppServices.HostingStartup-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.1.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'netcoreapp2.1' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.AzureAppServicesIntegration-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' ">
+    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Connections.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' ">
@@ -422,16 +477,6 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Identity-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' ">
-    <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.1.6, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Identity.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' ">
     <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
@@ -462,6 +507,16 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[2.1.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Identity-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' ">
+    <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.1.6, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
@@ -968,25 +1023,6 @@
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.5.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.Extensions.Identity.Core-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' ">
-    <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.5.0, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.Extensions.Identity.Stores-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' ">
-    <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.1.6, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.5.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore' ">
     <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
@@ -1023,6 +1059,25 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="[2.1.2, )" />
     <BaselinePackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="[2.8.0, )" />
     <BaselinePackageReference Include="Microsoft.CodeAnalysis.Common" Version="[2.8.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Identity.Core-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' ">
+    <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Identity.Stores-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' ">
+    <BaselinePackageVersion>2.1.6</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.1.6, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Net.Http.Headers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' ">
