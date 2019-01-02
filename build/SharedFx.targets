@@ -43,8 +43,6 @@
       <CommonProps>$(CommonProps);AspNetUniverseBuildOffline=true</CommonProps>
       <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</CommonProps>
       <CommonProps>$(CommonProps);AppMetapackageVersion=$(PackageVersion)</CommonProps>
-
-      <_SiteExtensionProject></_SiteExtensionProject>
     </PropertyGroup>
 
     <Error
