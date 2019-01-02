@@ -1331,6 +1331,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 });
             }
 
+            public override void VisitMarkupCommentBlock(MarkupCommentBlockSyntax node)
+            {
+                // Comments are ignored by components. We skip over anything that appears inside.
+            }
+
             public override void VisitCSharpTemplateBlock(CSharpTemplateBlockSyntax node)
             {
                 var templateNode = new TemplateIntermediateNode();
