@@ -30,13 +30,13 @@ namespace TriageBuildFailures.TeamCity
         {
             Config = config;
             _reporter = reporter;
-            
+
             if (TeamCityBuild.BuildNames == null)
             {
                 TeamCityBuild.BuildNames = GetBuildTypes();
             }
         }
-        
+
         public async Task<string> GetTestFailureText(ICITestOccurrence test)
         {
             var url = $"failedTestText.html?buildId={test.BuildId}&testId={test.TestId}";
@@ -55,7 +55,7 @@ namespace TriageBuildFailures.TeamCity
                 {
                     if (line.StartsWith("======= Failed test run", StringComparison.OrdinalIgnoreCase))
                     {
-                        if(firstEqualLineSeen)
+                        if (firstEqualLineSeen)
                         {
                             break;
                         }
@@ -77,7 +77,7 @@ namespace TriageBuildFailures.TeamCity
         public async Task<IEnumerable<ICITestOccurrence>> GetTests(ICIBuild build, BuildStatus? buildStatus = null)
         {
             var locator = $"build:(id:{build.Id})";
-            if(buildStatus != null)
+            if (buildStatus != null)
             {
                 locator += $",status:{Enum.GetName(typeof(BuildStatus), buildStatus)}";
             }
@@ -162,7 +162,7 @@ namespace TriageBuildFailures.TeamCity
             }
         }
 
-        private Task<Stream> MakeTeamCityRequest(HttpMethod method, string url, string body = null, TimeSpan? timeout = null)
+        private async Task<Stream> MakeTeamCityRequest(HttpMethod method, string url, string body = null, TimeSpan? timeout = null)
         {
             var requestUri = $"http://{Config.Server}/{url}";
 
@@ -172,7 +172,7 @@ namespace TriageBuildFailures.TeamCity
             var request = new HttpRequestMessage(method, requestUri);
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authEncoded);
 
-            if(body != null)
+            if (body != null)
             {
                 request.Content = new StringContent(body);
             }
@@ -184,15 +184,15 @@ namespace TriageBuildFailures.TeamCity
                     client.Timeout = timeout.Value;
                 }
 
-                var response = client.SendAsync(request).Result;
+                var response = await client.SendAsync(request);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    return response.Content.ReadAsStreamAsync();
+                    return await response.Content.ReadAsStreamAsync();
                 }
                 else
                 {
-                    var content = response.Content.ReadAsStringAsync().Result;
+                    var content = await response.Content.ReadAsStringAsync();
                     _reporter.Error($"HTTP error: {response.StatusCode}");
                     _reporter.Error($"Content: {content}");
                     throw new HttpRequestException(response.StatusCode.ToString());
