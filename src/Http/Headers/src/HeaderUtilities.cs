@@ -636,9 +636,11 @@ namespace Microsoft.Net.Http.Headers
             return string.Create(input.Length - backSlashCount, input, (span, segment) =>
             {
                 var spanIndex = 0;
-                for (var i = 0; i < segment.Length; i++)
+                var spanLength = span.Length;
+                for (var i = 0; i < segment.Length && (uint)spanIndex < (uint)spanLength; i++)
                 {
-                    if (i < segment.Length - 1 && segment[i] == '\\')
+                    int nextIndex = i + 1;
+                    if ((uint)nextIndex < (uint)segment.Length - 1 && segment[i] == '\\')
                     {
                         // If there is an backslash character as the last character in the string,
                         // we will assume that it should be included literally in the unescaped string
@@ -646,11 +648,15 @@ namespace Microsoft.Net.Http.Headers
                         // Also, if a sender adds a quoted pair like '\\''n',
                         // we will assume it is over escaping and just add a n to the string.
                         // Ex: "he\\llo" => "hello"
-                        span[spanIndex++] = segment[i + 1];
+                        span[spanIndex] = segment[nextIndex];
                         i++;
-                        continue;
                     }
-                    span[spanIndex++] = segment[i];
+                    else
+                    {
+                        span[spanIndex] = segment[i];
+                    }
+
+                    spanIndex++;
                 }
             });
         }
@@ -697,7 +703,8 @@ namespace Microsoft.Net.Http.Headers
             var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
 
             return string.Create(input.Length + backSlashCount + 2, input, (span, segment) => {
-                span[0] = span[span.Length - 1] = '\"';
+                // Helps to elide the bounds check for span[0]
+                span[span.Length - 1] = span[0] = '\"';
 
                 var spanIndex = 1;
                 for (var i = 0; i < segment.Length; i++)
