@@ -126,12 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     References = references,
                 });
 
-                b.Features.Add(new ComponentTagHelperDescriptorProvider());
-                b.Features.Add(new BindTagHelperDescriptorProvider());
-                b.Features.Add(new EventHandlerTagHelperDescriptorProvider());
-                b.Features.Add(new RefTagHelperDescriptorProvider());
-
-                b.Features.Add(new DefaultTypeNameFeature());
+                CompilerFeatures.Register(b);
             });
         }
 
