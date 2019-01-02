@@ -159,6 +159,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             // XmlSerializer wraps actual exceptions (like FormatException or XmlException) into an InvalidOperationException
             // https://github.com/dotnet/corefx/blob/master/src/System.Private.Xml/src/System/Xml/Serialization/XmlSerializer.cs#L652
+            catch (InvalidOperationException exception) when (exception.InnerException != null &&
+                exception.InnerException.InnerException == null &&
+                string.Equals("Microsoft.GeneratedCode", exception.InnerException.Source, StringComparison.InvariantCulture))
+            {
+                throw new InputFormatterException(Resources.ErrorDeserializingInputData, exception);
+            }
             catch (InvalidOperationException exception) when (exception.InnerException is FormatException || exception.InnerException is XmlException)
             {
                 throw new InputFormatterException(Resources.ErrorDeserializingInputData, exception);
