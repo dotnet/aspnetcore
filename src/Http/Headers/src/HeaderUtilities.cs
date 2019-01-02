@@ -702,6 +702,7 @@ namespace Microsoft.Net.Http.Headers
             // By calling this, we know that the string requires quotes around it to be a valid token.
             var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
 
+            // 2 for quotes
             return string.Create(input.Length + backSlashCount + 2, input, (span, segment) => {
                 // Helps to elide the bounds check for span[0]
                 span[span.Length - 1] = span[0] = '\"';
