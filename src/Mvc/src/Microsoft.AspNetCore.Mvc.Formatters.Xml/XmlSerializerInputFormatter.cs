@@ -163,9 +163,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 exception.InnerException.InnerException == null &&
                 string.Equals("Microsoft.GeneratedCode", exception.InnerException.Source, StringComparison.InvariantCulture))
             {
-                // In this case, the inner Exception was thrown in the generated assembly the XmlSerializer uses for
-                // parsing. The problem did not arise lower in the stack i.e. it's not (for example) an out-of-memory
-                // condition.
+                // Know this was an XML parsing error because the inner Exception was thrown in the (generated)
+                // assembly the XmlSerializer uses for parsing. The problem did not arise lower in the stack i.e. it's
+                // not (for example) an out-of-memory condition.
                 throw new InputFormatterException(Resources.ErrorDeserializingInputData, exception.InnerException);
             }
             catch (InvalidOperationException exception) when (exception.InnerException is FormatException ||
