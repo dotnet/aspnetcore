@@ -50,11 +50,12 @@ try {
         & $repoRoot/build.cmd /t:GenerateProjectList @generateArgs
     }
 
-    & git diff-index --quiet HEAD --
+    Write-Host "git diff"
+    & git diff --ignore-space-at-eol --exit-code
     if ($LastExitCode -ne 0) {
         $status = git status -s | Out-String
         $status = $status -replace "`n","`n    "
-        $errors += "Generated code is not up to date:`n    $status"
+        $errors += "Generated code is not up to date."
     }
 }
 finally {
