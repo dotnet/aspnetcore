@@ -13,5 +13,6 @@
         <NewtonsoftJsonPackageVersion>11.0.2</NewtonsoftJsonPackageVersion>
         <OctokitPackageVersion>0.29.0</OctokitPackageVersion>
         <SystemRuntimeCachingPackageVersion>4.5.0</SystemRuntimeCachingPackageVersion>
+        <SystemTextEncodingsWebPackageVersion>4.5.0</SystemTextEncodingsWebPackageVersion>
     </PropertyGroup>
 </Project>

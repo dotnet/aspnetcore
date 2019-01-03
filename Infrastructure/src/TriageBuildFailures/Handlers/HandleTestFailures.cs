@@ -62,11 +62,11 @@ namespace TriageBuildFailures.Handlers
                 var owner = "aspnet";
                 var repo = "AspNetCore-Internal";
 
-                var issuesTask = GHClient.GetFlakyIssues(owner, repo);
+                var flakyIssues = await GHClient.GetFlakyIssues(owner, repo);
 
-                var errors = client.GetTestFailureText(failure);
+                var errors = await client.GetTestFailureText(failure);
 
-                var applicableIssue = await GetApplicableIssue(client, await issuesTask, failure);
+                var applicableIssue = await GetApplicableIssue(client, flakyIssues, failure);
 
                 var shortTestName = GetTestName(failure);
                 if (applicableIssue == null)
@@ -76,7 +76,7 @@ namespace TriageBuildFailures.Handlers
                     var body = $@"This test [failed]({build.WebURL}) with the following error:
 
 ```
-{TrimTestFailureText(await errors)}
+{TrimTestFailureText(errors)}
 ```
 
 Other tests within that build may have failed with a similar message, but they are not listed here. Check the link above for more info.
@@ -98,8 +98,25 @@ CC {GetOwnerMentions(failureArea)}";
 
                     var assignees = GetOwnerNames(failureArea);
 
+                    var hiddenData = new List<KeyValuePair<string, object>>
+                    {
+                        new KeyValuePair<string, object>("_Type", build.GetType().FullName),
+                        new KeyValuePair<string, object>("Id", build.Id),
+                        new KeyValuePair<string, object>("CIType", build.CIType.FullName),
+                        new KeyValuePair<string, object>("BuildTypeID", build.BuildTypeID),
+                        new KeyValuePair<string, object>("BuildName", build.BuildName),
+                        new KeyValuePair<string, object>("Status", build.Status),
+                        new KeyValuePair<string, object>("Branch", build.Branch),
+                        new KeyValuePair<string, object>("StartDate", build.StartDate),
+                        new KeyValuePair<string, object>("WebURL", build.WebURL),
+                        new KeyValuePair<string, object>("Failure:Status", failure.Status),
+                        new KeyValuePair<string, object>("Failure:Name", failure.Name),
+                        new KeyValuePair<string, object>("Failure:BuildId", failure.BuildId),
+                        new KeyValuePair<string, object>("Failure:TestId", failure.TestId),
+                    };
+
                     Reporter.Output($"Creating new issue for test failure {failure.Name}...");
-                    var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees);
+                    var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees, hiddenData: hiddenData);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.

@@ -46,7 +46,7 @@ namespace TriageBuildFailures.Handlers
 
         public override async Task HandleFailure(ICIBuild build)
         {
-            var log = GetClient(build).GetBuildLog(build);
+            var log = await GetClient(build).GetBuildLog(build);
             var owner = "aspnet";
             var repo = GitHubUtils.PrivateRepo;
             var issues = await GHClient.GetIssues(owner, repo);
@@ -63,7 +63,7 @@ namespace TriageBuildFailures.Handlers
                 var body = $@"{build.BuildName} failed with the following errors:
 
 ```
-{ConstructErrorSummary(await log)}
+{ConstructErrorSummary(log)}
 ```
 
 {build.WebURL}
@@ -75,8 +75,21 @@ CC {GitHubUtils.GetAtMentions(_Notifiers)}";
                     GitHubUtils.GetBranchLabel(build.Branch)
                 };
 
+                var hiddenData = new List<KeyValuePair<string, object>>
+                {
+                    new KeyValuePair<string, object>("_Type", build.GetType().FullName),
+                    new KeyValuePair<string, object>("Id", build.Id),
+                    new KeyValuePair<string, object>("CIType", build.CIType.FullName),
+                    new KeyValuePair<string, object>("BuildTypeID", build.BuildTypeID),
+                    new KeyValuePair<string, object>("BuildName", build.BuildName),
+                    new KeyValuePair<string, object>("Status", build.Status),
+                    new KeyValuePair<string, object>("Branch", build.Branch),
+                    new KeyValuePair<string, object>("StartDate", build.StartDate),
+                    new KeyValuePair<string, object>("WebURL", build.WebURL),
+                };
+
                 // TODO: Would be nice if we could figure out how to map broken builds to failure areas
-                await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: null);
+                await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: null, hiddenData: hiddenData);
             }
         }
 

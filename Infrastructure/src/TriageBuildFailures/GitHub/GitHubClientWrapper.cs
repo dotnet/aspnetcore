@@ -5,8 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using Newtonsoft.Json;
 using Octokit;
 
 namespace TriageBuildFailures.GitHub
@@ -112,18 +115,56 @@ namespace TriageBuildFailures.GitHub
             await Client.Issue.Comment.Update(issue.RepositoryOwner, issue.RepositoryName, comment.Id, newBody);
         }
 
-        public async Task<GitHubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels, IEnumerable<string> assignees)
+        public async Task<GitHubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels, IEnumerable<string> assignees, IList<KeyValuePair<string, object>> hiddenData)
         {
-            body = $"This issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{body}";
+            var hiddenDataStringBuilder = new StringBuilder();
 
-            if (body.Length > MaxBodyLength)
+            if (hiddenData != null)
+            {
+                hiddenDataStringBuilder.AppendLine("<details>");
+                hiddenDataStringBuilder.AppendLine("<summary>Additional details</summary>");
+                hiddenDataStringBuilder.AppendLine("<table>");
+
+                hiddenDataStringBuilder.AppendLine("<thead>");
+                hiddenDataStringBuilder.AppendLine("<th>");
+                hiddenDataStringBuilder.AppendLine("Key");
+                hiddenDataStringBuilder.AppendLine("</th>");
+                hiddenDataStringBuilder.AppendLine("<th>");
+                hiddenDataStringBuilder.AppendLine("Value");
+                hiddenDataStringBuilder.AppendLine("</th>");
+                hiddenDataStringBuilder.AppendLine("</thead>");
+
+                hiddenDataStringBuilder.AppendLine("<tbody>");
+                foreach (var hiddenDataRow in hiddenData)
+                {
+                    hiddenDataStringBuilder.AppendLine("<tr>");
+                    hiddenDataStringBuilder.AppendLine(HtmlEncoder.Default.Encode(hiddenDataRow.Key));
+                    hiddenDataStringBuilder.AppendLine("</tr>");
+                    hiddenDataStringBuilder.AppendLine("<tr>");
+                    hiddenDataStringBuilder.AppendLine("<pre>");
+                    hiddenDataStringBuilder.AppendLine(HtmlEncoder.Default.Encode(JsonConvert.SerializeObject(hiddenDataRow.Value, Newtonsoft.Json.Formatting.Indented)));
+                    hiddenDataStringBuilder.AppendLine("</pre>");
+                    hiddenDataStringBuilder.AppendLine("</tr>");
+                }
+                hiddenDataStringBuilder.AppendLine("</tbody>");
+                hiddenDataStringBuilder.AppendLine("</table>");
+                hiddenDataStringBuilder.AppendLine("</details>");
+            }
+
+            var fullBody = $@"This issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.
+
+{body}
+
+{hiddenDataStringBuilder.ToString()}";
+
+            if (fullBody.Length > MaxBodyLength)
             {
                 throw new ArgumentOutOfRangeException($"Body must be less than or equal to {MaxBodyLength} characters long.");
             }
 
             var newIssue = new NewIssue(subject)
             {
-                Body = body
+                Body = fullBody,
             };
 
             if (assignees != null)
