@@ -14,7 +14,7 @@ namespace E2ETests
     public class OpenIdConnectTests : LoggedTest
     {
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel)
+            => TestMatrix.ForServers(/* ServerType.IISExpress https://github.com/aspnet/AspNetCore/issues/6170 */ ServerType.Kestrel)
                 .WithTfms(Tfm.NetCoreApp30);
 
         [ConditionalTheory]
