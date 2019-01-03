@@ -1,6 +1,0 @@
-<Project>
-
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
-  <Import Project="$(RepositoryRoot)src\Servers\IIS\ResolveIisReferences.targets" />
-
-</Project>
