@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <NativeProjectReference Include="$(RepositoryRoot)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(Configuration)' == 'RuntimeStore' ">
