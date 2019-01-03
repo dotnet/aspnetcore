@@ -1,4 +1,5 @@
 ﻿@using HtmlGenerationWebSite.Models
 @model AClass
-@Html.DisplayFor(x => x.DayOfWeek)
-@Html.DisplayFor(x => x.Month)
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<display for="DayOfWeek"/>
+<display for="Month" />

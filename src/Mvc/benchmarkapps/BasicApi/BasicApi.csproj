@@ -8,6 +8,7 @@
 
     <WarningsNotAsErrors>CS8002;$(WarningsNotAsErrors)</WarningsNotAsErrors>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <GenerateRazorAssemblyInfo>false</GenerateRazorAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>

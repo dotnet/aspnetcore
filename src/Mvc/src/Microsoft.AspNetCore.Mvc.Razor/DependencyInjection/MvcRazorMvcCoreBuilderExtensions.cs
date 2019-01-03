@@ -163,6 +163,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
             services.TryAddSingleton<TagHelperMemoryCacheProvider>();
             services.TryAddSingleton<IFileVersionProvider, DefaultFileVersionProvider>();
+            services.TryAddSingleton<IViewTemplateFactory, RazorViewTemplateFactory>();
+            services.TryAddSingleton<RazorViewLookup>();
         }
     }
 }

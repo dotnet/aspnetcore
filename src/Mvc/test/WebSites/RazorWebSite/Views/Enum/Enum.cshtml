@@ -1,6 +1,7 @@
 ﻿@model RazorWebSite.Models.EnumModel
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
 
 <div>
     @Html.DisplayNameFor(model => model.Id)
-    @Html.DisplayFor(model => model.Id)
+    <display for="Id" />
 </div>

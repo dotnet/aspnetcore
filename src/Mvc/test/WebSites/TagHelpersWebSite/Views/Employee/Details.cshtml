@@ -1,4 +1,5 @@
 @model TagHelpersWebSite.Models.Employee
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
 @{
     Layout = null;
 }
@@ -21,37 +22,37 @@
             @Html.DisplayNameFor(model => model.Age)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Age)
+            <display for="Age" />
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.Email)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Email)
+            <display for="Email" />
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.FullName)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.FullName)
+            <display for="FullName" />
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.Gender)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Gender)
+            <display for="Gender" />
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.JoinDate)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.JoinDate)
+            <display for="JoinDate" />
         </dd>
         <dt>
             @Html.DisplayNameFor(model => model.Salary)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Salary)
+            <display for="Salary" />
         </dd>
     </dl>
 </div>

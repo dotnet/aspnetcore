@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -123,6 +124,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<PageResultExecutor>();
 
             services.TryAddTransient<PageSaveTempDataPropertyFilter>();
+
+            services.TryAddSingleton<IActionResultExecutor<PageResult>, PageResultTemplateViewExecutor>();
         }
     }
 }

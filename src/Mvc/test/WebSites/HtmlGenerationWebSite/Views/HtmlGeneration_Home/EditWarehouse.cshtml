@@ -10,7 +10,7 @@
 <body>
     <form asp-controller="HtmlGeneration_Home" asp-action="EditWarehouse" asp-antiforgery="false">
         <div>
-            @Html.DisplayFor(m => m.City)
+            <display for="City" />
             <input asp-for="City" type="text" />
         </div>
         <div>
@@ -42,7 +42,7 @@
             }
             @Html.DropDownListFor(m => m.Employee.OfficeNumber, offices)
         </div>
-        @Html.EditorFor(m => m.Employee.Number)
+        <editor for="Employee.Number" />
         @Html.ValidationSummary()
         <input type="submit" />
     </form>

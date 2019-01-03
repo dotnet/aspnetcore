@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -29,14 +28,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private bool _hasFor;
         private ModelExpression _for;
 
-        private readonly ICompositeViewEngine _viewEngine;
+        private readonly IViewTemplateFactory _viewTemplateFactory;
         private readonly IViewBufferScope _viewBufferScope;
 
         public PartialTagHelper(
-            ICompositeViewEngine viewEngine,
+            IViewTemplateFactory viewTemplateFactory,
             IViewBufferScope viewBufferScope)
         {
-            _viewEngine = viewEngine ?? throw new ArgumentNullException(nameof(viewEngine));
+            _viewTemplateFactory = viewTemplateFactory ?? throw new ArgumentNullException(nameof(viewTemplateFactory));
             _viewBufferScope = viewBufferScope ?? throw new ArgumentNullException(nameof(viewBufferScope));
         }
 
@@ -111,14 +110,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Reset the TagName. We don't want `partial` to render.
             output.TagName = null;
 
-            var result = FindView(Name);
+            var viewFactoryContext = new ViewFactoryContext(ViewContext, ViewContext.ExecutingFilePath, Name, isMainPage: false);
+            var result = await _viewTemplateFactory.LocateViewAsync(viewFactoryContext);
+
             var viewSearchedLocations = result.SearchedLocations;
-            var fallBackViewSearchedLocations = Enumerable.Empty<string>();
 
             if (!result.Success && !string.IsNullOrEmpty(FallbackName))
             {
-                result = FindView(FallbackName);
-                fallBackViewSearchedLocations = result.SearchedLocations;
+                viewFactoryContext = new ViewFactoryContext(ViewContext, ViewContext.ExecutingFilePath, FallbackName, isMainPage: false);
+                result = await _viewTemplateFactory.LocateViewAsync(viewFactoryContext);
             }
 
             if (!result.Success)
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var viewBuffer = new ViewBuffer(_viewBufferScope, result.ViewName, ViewBuffer.PartialViewPageSize);
             using (var writer = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8))
             {
-                await RenderPartialViewAsync(writer, model, result.View);
+                await RenderPartialViewAsync(writer, model, result.ViewTemplate);
                 output.Content.SetHtmlContent(viewBuffer);
             }
         }
@@ -181,40 +181,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return ViewContext.ViewData.Model;
         }
 
-        private ViewEngineResult FindView(string partialName)
-        {
-            var viewEngineResult = _viewEngine.GetView(ViewContext.ExecutingFilePath, partialName, isMainPage: false);
-            var getViewLocations = viewEngineResult.SearchedLocations;
-            if (!viewEngineResult.Success)
-            {
-                viewEngineResult = _viewEngine.FindView(ViewContext, partialName, isMainPage: false);
-            }
-
-            if (!viewEngineResult.Success)
-            {
-                var searchedLocations = Enumerable.Concat(getViewLocations, viewEngineResult.SearchedLocations);
-                return ViewEngineResult.NotFound(partialName, searchedLocations);
-            }
-
-            return viewEngineResult;
-        }
-
-        private async Task RenderPartialViewAsync(TextWriter writer, object model, IView view)
+        private Task RenderPartialViewAsync(TextWriter writer, object model, IViewTemplatingSystem view)
         {
             // Determine which ViewData we should use to construct a new ViewData
             var baseViewData = ViewData ?? ViewContext.ViewData;
             var newViewData = new ViewDataDictionary<object>(baseViewData, model);
-            var partialViewContext = new ViewContext(ViewContext, view, newViewData, writer);
+            var partialViewContext = new ViewContext(ViewContext, NullView.Instance, newViewData, writer);
 
             if (For?.Name != null)
             {
                 newViewData.TemplateInfo.HtmlFieldPrefix = newViewData.TemplateInfo.GetFullHtmlFieldName(For.Name);
             }
 
-            using (view as IDisposable)
-            {
-                await view.RenderAsync(partialViewContext);
-            }
+            return view.InvokeAsync(partialViewContext);
         }
     }
 }

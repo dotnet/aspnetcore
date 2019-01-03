@@ -2,6 +2,7 @@
 @using HtmlGenerationWebSite.Models
 @using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 @model ViewModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @{
     var metadata = ViewData.ModelMetadata;
@@ -18,7 +19,7 @@
 </div>
 
 <div class="row">
-    @Html.DisplayFor(m => m)
+    <display for="@Model" />
 </div>
 <div class="row">
     @(await Html.PartialAsync("PartialForViewModel"))
@@ -27,11 +28,11 @@
     @(await Component.InvokeAsync<CheckViewData>())
 </div>
 <div class="row">
-    @Html.DisplayFor(m => m.Integer)
+    <display for="Integer" />
 </div>
 <div class="row">
-    @Html.DisplayFor(m => m.NullableLong)
+    <display for="NullableLong" />
 </div>
 <div class="row">
-    @Html.DisplayFor(m => m.Template)
+    <display for="Template" />
 </div>

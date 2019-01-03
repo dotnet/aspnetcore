@@ -1,4 +1,5 @@
 ﻿@using HtmlGenerationWebSite.Models
 @model Item
-@Html.EditorFor(model => model.Name)
-@Html.Editor("Id")
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<editor for="Name" />
+<editor for="Id" />

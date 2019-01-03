@@ -27,14 +27,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IViewBufferScope bufferScope,
             HtmlEncoder htmlEncoder,
             UrlEncoder urlEncoder,
-            ModelExpressionProvider modelExpressionProvider)
+            ModelExpressionProvider modelExpressionProvider,
+            IViewTemplateFactory viewFactory)
             : base(
                   htmlGenerator,
                   viewEngine,
                   metadataProvider,
                   bufferScope,
                   htmlEncoder,
-                  urlEncoder)
+                  urlEncoder,
+                  viewFactory)
         {
             _modelExpressionProvider = modelExpressionProvider ?? throw new ArgumentNullException(nameof(modelExpressionProvider));
         }

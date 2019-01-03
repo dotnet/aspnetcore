@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly ICompositeViewEngine _viewEngine;
         private readonly HtmlEncoder _htmlEncoder;
         private readonly IViewBufferScope _bufferScope;
+        private readonly IViewTemplateFactory _viewFactory;
 
         private ViewContext _viewContext;
 
@@ -45,7 +46,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IModelMetadataProvider metadataProvider,
             IViewBufferScope bufferScope,
             HtmlEncoder htmlEncoder,
-            UrlEncoder urlEncoder)
+            UrlEncoder urlEncoder,
+            IViewTemplateFactory viewFactory)
         {
             if (htmlGenerator == null)
             {
@@ -83,6 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _bufferScope = bufferScope;
             MetadataProvider = metadataProvider;
             UrlEncoder = urlEncoder;
+            _viewFactory = viewFactory ?? throw new ArgumentNullException(nameof(viewFactory));
         }
 
         /// <inheritdoc />
@@ -490,7 +493,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             object additionalViewData)
         {
             var templateBuilder = new TemplateBuilder(
-                _viewEngine,
+                _viewFactory,
                 _bufferScope,
                 ViewContext,
                 ViewData,
@@ -500,7 +503,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 readOnly: true,
                 additionalViewData: additionalViewData);
 
-            return templateBuilder.Build();
+            return templateBuilder.BuildAsync().GetAwaiter().GetResult();
         }
 
         protected virtual async Task RenderPartialCoreAsync(
@@ -810,7 +813,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             object additionalViewData)
         {
             var templateBuilder = new TemplateBuilder(
-                _viewEngine,
+                _viewFactory,
                 _bufferScope,
                 ViewContext,
                 ViewData,
@@ -820,7 +823,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 readOnly: false,
                 additionalViewData: additionalViewData);
 
-            return templateBuilder.Build();
+            return templateBuilder.BuildAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>

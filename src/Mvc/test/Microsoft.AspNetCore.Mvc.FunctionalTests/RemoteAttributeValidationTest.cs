@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetAsync(url);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
             Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
 

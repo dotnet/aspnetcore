@@ -151,8 +151,8 @@ namespace Microsoft.Extensions.DependencyInjection
             // View Engine and related infrastructure
             //
             services.TryAddSingleton<ICompositeViewEngine, CompositeViewEngine>();
-            services.TryAddSingleton<IActionResultExecutor<ViewResult>, ViewResultExecutor>();
-            services.TryAddSingleton<IActionResultExecutor<PartialViewResult>, PartialViewResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<ViewResult>, ViewResultTemplateExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<PartialViewResult>, PartialViewResultTemplateExecutor>();
 
             // Support for activating ViewDataDictionary
             services.TryAddEnumerable(

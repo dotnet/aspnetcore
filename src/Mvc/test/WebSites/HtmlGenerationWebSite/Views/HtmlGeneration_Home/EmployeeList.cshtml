@@ -1,4 +1,5 @@
 ﻿@using HtmlGenerationWebSite.Models
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
 
 @model List<Employee>
 
@@ -14,7 +15,7 @@
         {
             for (int i = 0; i < Model.Count; ++i)
             {
-                @Html.EditorFor(m => m[i])
+                <editor for="@Model[i]" />
             }
             <input type="submit" />
         }

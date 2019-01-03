@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     internal class TemplateBuilder
     {
-        private readonly IViewEngine _viewEngine;
+        private readonly IViewTemplateFactory _viewTemplateFactory;
         private readonly IViewBufferScope _bufferScope;
         private readonly ViewContext _viewContext;
         private readonly ViewDataDictionary _viewData;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly object _additionalViewData;
 
         public TemplateBuilder(
-            IViewEngine viewEngine,
+            IViewTemplateFactory viewTemplateFactory,
             IViewBufferScope bufferScope,
             ViewContext viewContext,
             ViewDataDictionary viewData,
@@ -37,9 +38,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             bool readOnly,
             object additionalViewData)
         {
-            if (viewEngine == null)
+            if (viewTemplateFactory == null)
             {
-                throw new ArgumentNullException(nameof(viewEngine));
+                throw new ArgumentNullException(nameof(viewTemplateFactory));
             }
 
             if (bufferScope == null)
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(modelExplorer));
             }
 
-            _viewEngine = viewEngine;
+            _viewTemplateFactory = viewTemplateFactory;
             _bufferScope = bufferScope;
             _viewContext = viewContext;
             _viewData = viewData;
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _metadata = modelExplorer.Metadata;
         }
 
-        public IHtmlContent Build()
+        public Task<IHtmlContent> BuildAsync()
         {
             if (_metadata.ConvertEmptyStringToNull && string.Empty.Equals(_model))
             {
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // don't check to make sure that the object hasn't already been displayed
             if (_viewData.TemplateInfo.Visited(_modelExplorer))
             {
-                return HtmlString.Empty;
+                return Task.FromResult<IHtmlContent>(HtmlString.Empty);
             }
 
             // Create VDD of type object so any model type is allowed.
@@ -151,14 +152,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             viewData.TemplateInfo.AddVisited(visitedObjectsKey);
 
             var templateRenderer = new TemplateRenderer(
-                _viewEngine,
+                _viewTemplateFactory,
                 _bufferScope,
                 _viewContext,
                 viewData,
                 _templateName,
                 _readOnly);
 
-            return templateRenderer.Render();
+            return templateRenderer.RenderAsync();
         }
     }
 }

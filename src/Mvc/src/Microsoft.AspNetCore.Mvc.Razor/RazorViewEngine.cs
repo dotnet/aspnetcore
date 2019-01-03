@@ -315,40 +315,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return ViewEnginePath.CombinePath(executingFilePath, pagePath);
         }
 
-        // internal for tests
-        internal IEnumerable<string> GetViewLocationFormats(ViewLocationExpanderContext context)
-        {
-            if (!string.IsNullOrEmpty(context.AreaName) &&
-                !string.IsNullOrEmpty(context.ControllerName))
-            {
-                return _options.AreaViewLocationFormats;
-            }
-            else if (!string.IsNullOrEmpty(context.ControllerName))
-            {
-                return _options.ViewLocationFormats;
-            }
-            else if (!string.IsNullOrEmpty(context.AreaName) &&
-                !string.IsNullOrEmpty(context.PageName))
-            {
-                return _options.AreaPageViewLocationFormats;
-            }
-            else if (!string.IsNullOrEmpty(context.PageName))
-            {
-                return _options.PageViewLocationFormats;
-            }
-            else
-            {
-                // If we don't match one of these conditions, we'll just treat it like regular controller/action
-                // and use those search paths. This is what we did in 1.0.0 without giving much thought to it.
-                return _options.ViewLocationFormats;
-            }
-        }
-
         private ViewLocationCacheResult OnCacheMiss(
             ViewLocationExpanderContext expanderContext,
             ViewLocationCacheKey cacheKey)
         {
-            var viewLocations = GetViewLocationFormats(expanderContext);
+            var viewLocations = RazorViewLookup.GetViewLocationFormats(_options, expanderContext);
 
             for (var i = 0; i < _options.ViewLocationExpanders.Count; i++)
             {

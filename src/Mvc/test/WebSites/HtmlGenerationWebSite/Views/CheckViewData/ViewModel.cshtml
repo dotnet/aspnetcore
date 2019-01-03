@@ -1,6 +1,7 @@
 ﻿@using HtmlGenerationWebSite.Components
 @using HtmlGenerationWebSite.Models
 @using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 @* Need the model directive in top-level view. Otherwise the controller would have to set the ViewData property. *@
 @* Put another way, Controller lacks the View<TModel>([...,] TModel) overloads that ViewComponent has. *@
@@ -21,7 +22,7 @@
 </div>
 
 <div class="row">
-    @Html.DisplayFor(m => m, templateName: "LackModel")
+    <display for="@Model" template-name="LackModel" />
 </div>
 <div class="row">
     @(await Html.PartialAsync(partialViewName: "DisplayTemplates/LackModel.cshtml"))
@@ -30,11 +31,11 @@
     @(await Component.InvokeAsync<CheckViewData___LackModel>())
 </div>
 <div class="row">
-    @Html.DisplayFor(m => m.Integer, templateName: "Int32 - LackModel")
+    <display for="Integer" template-name="Int32 - LackModel" />
 </div>
 <div class="row">
-    @Html.DisplayFor(m => m.NullableLong, templateName: "Int64 - LackModel")
+    <display for="NullableLong" template-name="Int64 - LackModel" />
 </div>
 <div class="row">
-    @Html.DisplayFor(m => m.Template, templateName: "LackModel")
+    <display for="Template" template-name="LackModel" />
 </div>

@@ -6,10 +6,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             };
         }
 
-        public static IHtmlContent CollectionTemplate(IHtmlHelper htmlHelper)
+        public static async Task<IHtmlContent> CollectionTemplate(IHtmlHelper htmlHelper)
         {
             var model = htmlHelper.ViewData.Model;
             if (model == null)
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
                 var collection = model as ICollection;
                 var result = collection == null ? new HtmlContentBuilder() : new HtmlContentBuilder(collection.Count);
-                var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
+                var viewFactory = serviceProvider.GetRequiredService<IViewTemplateFactory>();
                 var viewBufferScope = serviceProvider.GetRequiredService<IViewBufferScope>();
 
                 var index = 0;
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     var fieldName = string.Format(CultureInfo.InvariantCulture, "{0}[{1}]", oldPrefix, index++);
 
                     var templateBuilder = new TemplateBuilder(
-                        viewEngine,
+                        viewFactory,
                         viewBufferScope,
                         htmlHelper.ViewContext,
                         htmlHelper.ViewData,
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                         templateName: null,
                         readOnly: true,
                         additionalViewData: null);
-                    result.AppendHtml(templateBuilder.Build());
+                    result.AppendHtml(await templateBuilder.BuildAsync());
                 }
 
                 return result;
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return new HtmlString(htmlHelper.ViewData.TemplateInfo.FormattedModelValue.ToString());
         }
 
-        public static IHtmlContent ObjectTemplate(IHtmlHelper htmlHelper)
+        public static async Task<IHtmlContent> ObjectTemplate(IHtmlHelper htmlHelper)
         {
             var viewData = htmlHelper.ViewData;
             var templateInfo = viewData.TemplateInfo;
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
-            var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
+            var viewFactory = serviceProvider.GetRequiredService<IViewTemplateFactory>();
             var viewBufferScope = serviceProvider.GetRequiredService<IViewBufferScope>();
 
             var content = new HtmlContentBuilder(modelExplorer.Metadata.Properties.Count);
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
 
                 var templateBuilder = new TemplateBuilder(
-                    viewEngine,
+                    viewFactory,
                     viewBufferScope,
                     htmlHelper.ViewContext,
                     htmlHelper.ViewData,
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     readOnly: true,
                     additionalViewData: null);
 
-                var templateBuilderResult = templateBuilder.Build();
+                var templateBuilderResult = await templateBuilder.BuildAsync();
                 if (!propertyMetadata.HideSurroundingHtml)
                 {
                     var label = propertyMetadata.GetDisplayName();

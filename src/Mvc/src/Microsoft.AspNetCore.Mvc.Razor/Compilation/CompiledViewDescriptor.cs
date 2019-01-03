@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.Extensions.Primitives;
 
@@ -80,5 +82,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// Gets the type of the compiled item.
         /// </summary>
         public Type Type => Item?.Type ?? ViewAttribute?.ViewType;
+
+        internal Func<IRazorPage> CreatePageFactory()
+        {
+            Debug.Assert(typeof(IRazorPage).IsAssignableFrom(Type));
+
+            var newExpression = Expression.New(Type);
+            var pathProperty = Type.GetProperty(nameof(RazorPage.Path));
+
+            // Generate: page.Path = relativePath;
+            // Use the normalized path specified from the result.
+            var propertyBindExpression = Expression.Bind(pathProperty, Expression.Constant(RelativePath));
+            var objectInitializeExpression = Expression.MemberInit(newExpression, propertyBindExpression);
+            var pageFactory = Expression
+                .Lambda<Func<IRazorPage>>(objectInitializeExpression)
+                .Compile();
+
+            return pageFactory;
+        }
     }
 }

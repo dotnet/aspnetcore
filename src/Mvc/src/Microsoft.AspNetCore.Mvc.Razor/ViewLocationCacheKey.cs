@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             string areaName,
             string pageName,
             bool isMainPage,
-            IReadOnlyDictionary<string, string> values)
+            IDictionary<string, string> values)
         {
             ViewName = viewName;
             ControllerName = controllerName;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets the values populated by <see cref="IViewLocationExpander"/> instances.
         /// </summary>
-        public IReadOnlyDictionary<string, string> ViewLocationExpanderValues { get; }
+        public IDictionary<string, string> ViewLocationExpanderValues { get; }
 
         /// <inheritdoc />
         public bool Equals(ViewLocationCacheKey y)

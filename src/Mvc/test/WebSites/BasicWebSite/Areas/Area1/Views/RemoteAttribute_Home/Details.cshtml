@@ -1,4 +1,5 @@
 ﻿@model BasicWebSite.Models.RemoteAttributeUser
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
 @{
     Layout = "_Layout.cshtml";
     object areaName;
@@ -18,7 +19,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Id)
+            <display for="Id" />
         </dd>
     </dl>
 
@@ -28,7 +29,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.UserId1)
+            <display for="UserId1" />
         </dd>
     </dl>
 
@@ -38,7 +39,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.UserId2)
+            <display for="UserId2" />
         </dd>
     </dl>
 
@@ -48,7 +49,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.UserId3)
+            <display for="UserId3" />
         </dd>
     </dl>
 
@@ -58,7 +59,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.UserId4)
+            <display for="UserId4" />
         </dd>
     </dl>
 
@@ -68,7 +69,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.UserId5)
+            <display for="UserId5" />
         </dd>
     </dl>
 </div>

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             Debug.Assert(!string.IsNullOrEmpty(first));
 
-            if (second.StartsWith("/", StringComparison.Ordinal))
+            if (second.StartsWith("/", StringComparison.Ordinal) || second.StartsWith("~/", StringComparison.Ordinal))
             {
                 // "second" is already an app-rooted path. Return it as-is.
                 return second;

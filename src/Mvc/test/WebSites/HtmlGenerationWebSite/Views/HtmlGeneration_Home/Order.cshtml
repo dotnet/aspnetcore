@@ -1,17 +1,9 @@
 ﻿@model HtmlGenerationWebSite.Models.Order
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
 
 @{
     ViewBag.Title = "Order Page";
 }
-
-@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.FormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.InputTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.LabelTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.OptionTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.ValidationMessageTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.ValidationSummaryTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper Microsoft.AspNetCore.Mvc.TagHelpers.RenderAtEndOfFormTagHelper, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <html>
 <head>
@@ -109,7 +101,7 @@
         </div>
         <div>
             <label asp-for="Customer.Gender" class="order"></label>
-            @Html.EditorFor(model => model.Customer.Gender)
+            <editor for="Customer.Gender" />
             <span asp-validation-for="Customer.Gender"></span>
         </div>
         <div asp-validation-summary="All" class="order"></div>

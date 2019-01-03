@@ -4,13 +4,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,8 +23,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private const string EditorTemplateViewPath = "EditorTemplates";
         public const string IEnumerableOfIFormFileName = "IEnumerable`" + nameof(IFormFile);
 
-        private static readonly Dictionary<string, Func<IHtmlHelper, IHtmlContent>> _defaultDisplayActions =
-            new Dictionary<string, Func<IHtmlHelper, IHtmlContent>>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, Func<IHtmlHelper, object>> _defaultDisplayActions =
+            new Dictionary<string, Func<IHtmlHelper, object>>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Collection", DefaultDisplayTemplates.CollectionTemplate },
                 { "EmailAddress", DefaultDisplayTemplates.EmailAddressTemplate },
@@ -37,8 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 { typeof(object).Name, DefaultDisplayTemplates.ObjectTemplate },
             };
 
-        private static readonly Dictionary<string, Func<IHtmlHelper, IHtmlContent>> _defaultEditorActions =
-            new Dictionary<string, Func<IHtmlHelper, IHtmlContent>>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, Func<IHtmlHelper, object>> _defaultEditorActions =
+            new Dictionary<string, Func<IHtmlHelper, object>>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Collection", DefaultEditorTemplates.CollectionTemplate },
                 { "EmailAddress", DefaultEditorTemplates.EmailAddressInputTemplate },
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 { IEnumerableOfIFormFileName, DefaultEditorTemplates.FileCollectionInputTemplate },
             };
 
-        private readonly IViewEngine _viewEngine;
+        private readonly IViewTemplateFactory _viewEngine;
         private readonly IViewBufferScope _bufferScope;
         private readonly ViewContext _viewContext;
         private readonly ViewDataDictionary _viewData;
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly bool _readOnly;
 
         public TemplateRenderer(
-            IViewEngine viewEngine,
+            IViewTemplateFactory viewEngine,
             IViewBufferScope bufferScope,
             ViewContext viewContext,
             ViewDataDictionary viewData,
@@ -114,40 +115,40 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _readOnly = readOnly;
         }
 
-        public IHtmlContent Render()
+        public async Task<IHtmlContent> RenderAsync()
         {
             var defaultActions = GetDefaultActions();
-            var modeViewPath = _readOnly ? DisplayTemplateViewPath : EditorTemplateViewPath;
+            var templatePath = _readOnly ? DisplayTemplateViewPath : EditorTemplateViewPath;
 
             foreach (var viewName in GetViewNames())
             {
-                var viewEngineResult = _viewEngine.GetView(_viewContext.ExecutingFilePath, viewName, isMainPage: false);
-                if (!viewEngineResult.Success)
-                {
-                    var fullViewName = modeViewPath + "/" + viewName;
-                    viewEngineResult = _viewEngine.FindView(_viewContext, fullViewName, isMainPage: false);
-                }
+                var fullViewName = GetFullViewName(templatePath, viewName);
+                var context = new ViewFactoryContext(_viewContext, _viewContext.ExecutingFilePath, fullViewName, isMainPage: false);
+                var viewEngineResult = await _viewEngine.LocateViewAsync(context);
 
                 if (viewEngineResult.Success)
                 {
                     var viewBuffer = new ViewBuffer(_bufferScope, viewName, ViewBuffer.PartialViewPageSize);
                     using (var writer = new ViewBufferTextWriter(viewBuffer, _viewContext.Writer.Encoding))
                     {
-                        // Forcing synchronous behavior so users don't have to await templates.
-                        var view = viewEngineResult.View;
-                        using (view as IDisposable)
-                        {
-                            var viewContext = new ViewContext(_viewContext, viewEngineResult.View, _viewData, writer);
-                            var renderTask = viewEngineResult.View.RenderAsync(viewContext);
-                            renderTask.GetAwaiter().GetResult();
-                            return viewBuffer;
-                        }
+                        var viewTemplate = viewEngineResult.ViewTemplate;
+
+                        var viewContext = new ViewContext(_viewContext, NullView.Instance, _viewData, writer);
+                        await viewEngineResult.ViewTemplate.InvokeAsync(viewContext);
+
+                        return viewBuffer;
                     }
                 }
 
                 if (defaultActions.TryGetValue(viewName, out var defaultAction))
                 {
-                    return defaultAction(MakeHtmlHelper(_viewContext, _viewData));
+                    var result = defaultAction(MakeHtmlHelper(_viewContext, _viewData));
+                    if (result is Task<IHtmlContent> task)
+                    {
+                        return await task;
+                    }
+
+                    return (IHtmlContent)result;
                 }
             }
 
@@ -155,7 +156,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 Resources.FormatTemplateHelpers_NoTemplate(_viewData.ModelExplorer.ModelType.FullName));
         }
 
-        private Dictionary<string, Func<IHtmlHelper, IHtmlContent>> GetDefaultActions()
+        private static string GetFullViewName(string templatePath, string viewName)
+        {
+            if (viewName.StartsWith("~") || viewName.StartsWith("/") || !string.IsNullOrEmpty(Path.GetExtension(viewName)))
+            {
+                // If it looks like a path, leave it alone.
+                return viewName;
+            }
+
+            return templatePath + '/' + viewName;
+        }
+
+        private Dictionary<string, Func<IHtmlHelper, object>> GetDefaultActions()
         {
             return _readOnly ? _defaultDisplayActions : _defaultEditorActions;
         }
