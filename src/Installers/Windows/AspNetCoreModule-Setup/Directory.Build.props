@@ -3,6 +3,9 @@
   <Import Project="$(RepositoryRoot)\.deps\dependencies.g.props" Condition="Exists('$(RepositoryRoot)\.deps\dependencies.g.props')" />
 
   <PropertyGroup>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion Condition="'$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)' == ''">$(PackageVersion)</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion Condition="'$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)' == ''">$(PackageVersion)</MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion>
+
     <!-- Build number used by ANCM msis -->
     <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
     <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>
@@ -21,14 +24,13 @@
           The actual handler folder version is dependent on the ANCMMsiVersion -->
     <ANCMOutOfProcessNugetPackageHandlerVersion>2.0.0</ANCMOutOfProcessNugetPackageHandlerVersion>
 
-    <!-- Location of main folders--> 
+    <!-- Location of main folders-->
     <AspNetCoreSetupRoot>$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
     <IIS-Setup>$(AspNetCoreSetupRoot)IIS-Setup\</IIS-Setup>
     <IIS-Common>$(IIS-Setup)IIS-Common\</IIS-Common>
     <ANCMBuildDirectory>$(AspNetCoreSetupRoot)build\</ANCMBuildDirectory>
 
     <!-- Variables used by ANCM wxs projects. -->
-    <CustomActionVariable>CustomAction=$(AspNetCoreSetupRoot)CustomAction\bin\$(Configuration)\$(Platform)\aspnetcoreca.dll</CustomActionVariable>
     <PreBuiltANCMSchema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModule\$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)\</PreBuiltANCMSchema>
     <PreBuiltANCMV2Schema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModuleV2\$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)\</PreBuiltANCMV2Schema>
     <PreBuiltANCMRoot>$(PreBuiltANCMSchema)contentFiles\any\any\</PreBuiltANCMRoot>
@@ -37,7 +39,7 @@
     <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
     <DefineConstants>ANCMMsiVersion=$(ANCMMsiVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
     <DefineConstants>PreBuiltANCMRoot=$(PreBuiltANCMRoot);PreBuiltANCMV2Root=$(PreBuiltANCMV2Root);$(DefineConstants)</DefineConstants>
-    <DefineConstants>$(CustomActionVariable);PreBuiltANCMSchema=$(PreBuiltANCMSchema);PreBuiltANCMV2Schema=$(PreBuiltANCMV2Schema);$(DefineConstants)</DefineConstants>
+    <DefineConstants>PreBuiltANCMSchema=$(PreBuiltANCMSchema);PreBuiltANCMV2Schema=$(PreBuiltANCMV2Schema);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
 </Project>

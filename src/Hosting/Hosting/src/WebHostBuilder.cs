@@ -186,8 +186,8 @@ namespace Microsoft.AspNetCore.Hosting
             }
             catch
             {
-                // Dispose the host if there's a failure to initialize, this should clean up
-                // will dispose services that were constructed until the exception was thrown
+                // Dispose the host if there's a failure to initialize, this should dispose
+                // services that were constructed until the exception was thrown
                 host.Dispose();
                 throw;
             }

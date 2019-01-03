@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -90,7 +90,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 });
 
             _host = hostBuilder.Build();
-
             _host.Start();
         }
 
@@ -132,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
         {
             try
             {
-                var middlewareTask =  _transportFactory.ConnectionDispatcher.OnConnection(transportConnection);
+                var middlewareTask = _transportFactory.ConnectionDispatcher.OnConnection(transportConnection);
                 var transportTask = CancellationTokenAsTask(transportConnection.ConnectionClosed);
 
                 await transportTask;
@@ -142,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             }
             catch (Exception ex)
             {
-               Debug.Assert(false, $"Unexpected exception: {ex}.");
+                Debug.Assert(false, $"Unexpected exception: {ex}.");
             }
         }
 

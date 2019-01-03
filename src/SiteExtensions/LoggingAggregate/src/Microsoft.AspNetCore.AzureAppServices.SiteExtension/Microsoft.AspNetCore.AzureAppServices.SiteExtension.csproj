@@ -23,7 +23,7 @@
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
-    <Content Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="$(RepositoryRoot)bin\Microsoft.Web.Xdt.Extensions\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
     <SignedPackageFile
       Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll"
       PackagePath="content/Microsoft.Web.Xdt.Extensions.dll"
@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\..\src\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
   </ItemGroup>
 
   <Target Name="AddContent" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles">

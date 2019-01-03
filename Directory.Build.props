@@ -87,6 +87,15 @@
     <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">
+    <BaseOutputPath>$(RepositoryRoot)bin\$(Configuration)\$(MSBuildProjectName)\</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
+    <OutputPath Condition=" '$(AppendPlatformToOutputPath)' == 'true' AND '$(Platform)' != '' AND '$(Platform)' != 'AnyCPU' ">$(OutputPath)$(Platform)\</OutputPath>
+    <IntermediateOutputPath Condition=" '$(AppendPlatformToOutputPath)' == 'true' AND '$(Platform)' != '' AND '$(Platform)' != 'AnyCPU' ">$(IntermediateOutputPath)$(Platform)\</IntermediateOutputPath>
+  </PropertyGroup>
+
   <!-- Defines project type conventions. -->
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
@@ -95,6 +104,13 @@
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
+  </PropertyGroup>
+
+  <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
+
+  <PropertyGroup>
+    <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
+    <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
   </PropertyGroup>
 
   <Import Project="eng\Dependencies.props" />

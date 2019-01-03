@@ -74,7 +74,6 @@
       <SkipTestsDueToMissingSharedFx Condition="'$(InstallSharedRuntimeFromPreviousBuild)' != 'true' And '$(TestsRequiredTheSharedRuntime)' == 'true' ">true</SkipTestsDueToMissingSharedFx>
 
       <RepositoryBuildArguments Condition="'$(CI)'== 'true'">$(RepositoryBuildArguments) -ci</RepositoryBuildArguments>
-      <RepositoryBuildArguments Condition="'$(CI)'== 'true'">$(RepositoryBuildArguments) -DotNetHome '$(DOTNET_HOME)'</RepositoryBuildArguments>
       <!-- Should reduce allowable package feeds to only nuget.org. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsUniverseBuild=true</RepositoryBuildArguments>
@@ -87,36 +86,17 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumberSuffix=$(BuildNumberSuffix)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
+      <!-- Disable broken features of KoreBuild that we're planning to kill off anyways -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DisablePackageReferenceRestrictions=true</RepositoryBuildArguments>
       <!-- We collect all output and code sign at the end. We don't need to code sign when we build each submodule. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DisableCodeSigning=true</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetAssetRootAccessTokenSuffix=$(DotNetAssetRootAccessTokenSuffix)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetAssetRootUrl=$(DotNetAssetRootUrl)'</RepositoryBuildArguments>
       <RepositoryBuildArguments Condition=" '$(SkipTestsDueToMissingSharedFx)' == 'true' ">$(RepositoryBuildArguments) /p:SkipAspNetCoreRuntimeInstall=true</RepositoryBuildArguments>
-
-      <SourceLockFile>$(RepositoryRoot)korebuild-lock.txt</SourceLockFile>
-      <RepoLockFile>$(BuildRepositoryRoot)korebuild-lock.txt</RepoLockFile>
-      <BackupRepoLockFile>$(IntermediateDir)$(RepositoryToBuild)-korebuild-lock.txt</BackupRepoLockFile>
-      <RepoGlobalJsonFile>$(BuildRepositoryRoot)global.json</RepoGlobalJsonFile>
-      <BackupRepoGlobalJsonFile>$(IntermediateDir)$(RepositoryToBuild)-global.json</BackupRepoGlobalJsonFile>
     </PropertyGroup>
   </Target>
 
-  <Target Name="_UpdateRepoLockFile">
-    <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
-    <Message Text="Copying KoreBuild lockfile from repo to submodule $(BuildRepositoryRoot)"/>
-    <Move SourceFiles="$(RepoLockFile)" DestinationFiles="$(BackupRepoLockFile)" Condition="Exists($(RepoLockFile))" />
-    <Move SourceFiles="$(RepoGlobalJsonFile)" DestinationFiles="$(BackupRepoGlobalJsonFile)" Condition="Exists($(RepoGlobalJsonFile))" />
-    <Copy SourceFiles="$(SourceLockFile)" DestinationFiles="$(RepoLockFile)" />
-  </Target>
-
-  <Target Name="_RestoreOriginalRepoLockFile">
-    <!-- Restore original Korebuild lock file -->
-    <Delete Files="$(RepoLockFile)" ContinueOnError="true" />
-    <Move SourceFiles="$(BackupRepoLockFile)" DestinationFiles="$(RepoLockFile)" Condition="Exists($(BackupRepoLockFile))"  />
-    <Move SourceFiles="$(BackupRepoGlobalJsonFile)" DestinationFiles="$(RepoGlobalJsonFile)" Condition="Exists($(BackupRepoGlobalJsonFile))"  />
-  </Target>
-
-  <Target Name="_BuildRepository" DependsOnTargets="GetRepoBuildProps;_UpdateRepoLockFile">
+  <Target Name="_BuildRepository" DependsOnTargets="GetRepoBuildProps">
     <PropertyGroup>
       <BuildArguments>/t:CleanArtifacts /t:Build /p:SkipTests=true $(RepositoryBuildArguments)</BuildArguments>
       <BuildArguments Condition="'$(ProduceRepoBinLog)' == 'true'">$(BuildArguments) /bl:$(LogOutputDir)$(RepositoryToBuild).build.binlog</BuildArguments>
@@ -126,15 +106,13 @@
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
 
     <Exec
-      Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
+      Command="./$(_BuildScriptToExecute) -RepoRoot $(BuildRepositoryRoot) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(RepositoryRoot)"
       IgnoreExitCode="true"
       ContinueOnError="WarnAndContinue">
       <Output TaskParameter="ExitCode" PropertyName="BuildExitCode" />
     </Exec>
-
-    <CallTarget Targets="_RestoreOriginalRepoLockFile" />
 
     <!-- Fail if build.cmd didn't exit code 0 or process failed to start. -->
     <Error Text="Building $(RepositoryToBuild) failed: $(_BuildScriptToExecute) exited code $(BuildExitCode)" Condition=" '$(BuildExitCode)' != '0' " />
@@ -150,7 +128,7 @@
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
   </Target>
 
-  <Target Name="_TestRepository" DependsOnTargets="GetRepoBuildProps;_UpdateRepoLockFile" Returns="@(RepositoryTestResult)">
+  <Target Name="_TestRepository" DependsOnTargets="GetRepoBuildProps" Returns="@(RepositoryTestResult)">
     <PropertyGroup>
       <BuildArguments>/t:Test /p:NoBuild=$(_NoBuildRepos) $(RepositoryBuildArguments)</BuildArguments>
     </PropertyGroup>
@@ -165,14 +143,12 @@
     <Message Text="============ Testing $(RepositoryToBuild) ============" Importance="High" />
 
     <Exec Condition="'$(SkipTestsDueToMissingSharedFx)' != 'true' "
-      Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
+      Command="./$(_BuildScriptToExecute) -RepoRoot $(BuildRepositoryRoot) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(RepositoryRoot)"
       IgnoreExitCode="true">
       <Output TaskParameter="ExitCode" PropertyName="TestExitCode" />
     </Exec>
-
-    <CallTarget Targets="_RestoreOriginalRepoLockFile" />
 
     <ItemGroup>
       <RepositoryTestResult Update="$(RepositoryToBuild)" Success="true" Condition="'$(TestExitCode)' == '0' OR '$(SkipTestsDueToMissingSharedFx)' == 'true' " />

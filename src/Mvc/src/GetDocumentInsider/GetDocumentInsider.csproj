@@ -1,4 +1,4 @@
-﻿<Project Sdk="Internal.AspNetCore.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>GetDocument.Insider</AssemblyName>
     <Description>GetDocument Command-line Tool inside man</Description>
@@ -9,6 +9,7 @@
     <VerifyVersion>false</VerifyVersion>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <IsImplementationProject>false</IsImplementationProject>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">

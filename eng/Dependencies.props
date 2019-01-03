@@ -21,16 +21,21 @@ and are generated based on the last package release.
 
   <!-- These dependencies must use version variables because they may be overriden by ProdCon builds. -->
   <ItemGroup Label="ProdCon dependencies">
+    <LatestPackageReference Include="Microsoft.AspNetCore.Analyzer.Testing" Version="$(MicrosoftAspNetCoreAnalyzerTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="$(MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(MicrosoftEntityFrameworkCoreToolsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" Version="$(MicrosoftEntityFrameworkCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="$(MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
@@ -53,8 +58,10 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" />
@@ -72,7 +79,9 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="$(MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.ValueStopWatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.WebEncoders" Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="$(MicrosoftIdentityModelClientsActiveDirectoryPackageVersion)" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion)" />
@@ -80,10 +89,12 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" />
     <LatestPackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="System.Buffers" Version="$(SystemBuffersPackageVersion)" />
+    <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <LatestPackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
@@ -105,12 +116,18 @@ and are generated based on the last package release.
   </ItemGroup>
 
   <ItemGroup Label="External dependencies">
+    <LatestPackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
     <LatestPackageReference Include="FSharp.Core" Version="4.2.1" />
     <LatestPackageReference Include="Libuv" Version="1.10.0" />
+    <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <LatestPackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
+    <LatestPackageReference Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServer4AspNetIdentityPackageVersion)" />
+    <LatestPackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4EntityFrameworkPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="4.10.0" />
+    <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
     <LatestPackageReference Include="Newtonsoft.Json" Version="9.0.1" Condition="'$(UseMSBuildJsonNet)' == 'true'" />
     <!-- This version should be used by runtime packages -->

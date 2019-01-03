@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -555,8 +555,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
             {
                 CreateEndpoint("/One", 0),
-                CreateEndpoint("/{p:int}", 0),
-                CreateEndpoint("/x-{id}-y", 0),
+                CreateEndpoint("/{p:int}", 1),
+                CreateEndpoint("/x-{id}-y", 2),
             });
 
             var sink = new TestSink();

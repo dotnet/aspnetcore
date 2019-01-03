@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
-    <Reference Include="CodeGenerator" />
+    <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

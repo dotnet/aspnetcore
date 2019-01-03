@@ -4,41 +4,14 @@
 
   <PropertyGroup>
     <Name>AspNetCoreModuleIISExpress</Name>
+    <IsProductInstaller>true</IsProductInstaller>
     <ProjectGuid>2A6A4709-30D2-4716-A597-55DF0FB74D37</ProjectGuid>
     <OutputType>Package</OutputType>
+    <OutputName>ancm_iis_express_$(Platform)_en</OutputName>
     <SuppressIces>ICE03</SuppressIces>
     <DisableGuidGeneration>true</DisableGuidGeneration>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Platform)' == 'x86'">
-    <OutputName>ancm_iis_express_x86_en</OutputName>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Platform)' == 'x64'">
-    <OutputName>ancm_iis_express_x64_en</OutputName>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(SignType)' != '' ">
-    <SignOutput>True</SignOutput>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(IIS-Setup)iisca\wix3\iisca.wxs">
-      <Link>iisca.wxs</Link>
-    </Compile>
-  </ItemGroup>
-  <Target Name="BeforeBuild">
-    <CreateProperty Condition="$(IIS-Setup) != ''" Value="IIS-Setup=$(IIS-Setup);$(DefineConstants)">
-      <Output TaskParameter="Value" PropertyName="DefineConstants" />
-    </CreateProperty>
-  </Target>
-  <Target Name="EnsureImportsExist" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project is trying to import a missing file: {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '..\build\settings.props'))" />
-    <Error Condition="!Exists('..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '..\build\versions.props'))" />
-  </Target>
-
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <ItemGroup>
     <WixExtension Include="WixUtilExtension">
@@ -56,17 +29,28 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(IIS-Setup)iisca\wix3\iisca.wxs">
+      <Link>iisca.wxs</Link>
+    </Compile>
+    <Compile Include="ancm_iis_express.wxs" />
     <EmbeddedResource Include="..\setupstrings.wxl">
       <Link>setupstrings.wxl</Link>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="$(IIS-Setup)include.wxi">
       <Link>include.wxi</Link>
     </Content>
   </ItemGroup>
 
-  <Import Project="..\build\settings.props" Condition="Exists('..\build\settings.props')" />
-  <Import Project="..\build\versions.props" Condition="Exists('..\build\versions.props')" />
-  <!-- Overwrite standard versioning scheme -->
+  <ItemGroup>
+    <ProjectReference Include="..\CustomAction\aspnetcoreCA.vcxproj">
+      <Name>aspnetcoreCA</Name>
+      <Project>{7c27e72f-54d0-4820-8cfa-5e4be640974b}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+  <Import Project="..\build\settings.props" />
+  <Import Project="..\build\versions.props" />
 </Project>

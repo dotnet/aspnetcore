@@ -927,21 +927,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 var writer = new BufferWriter<PipeWriter>(writableBuffer);
 
-                ChunkWriter.WriteBeginChunkBytes(ref writer, buffer.Length);
+                writer.WriteBeginChunkBytes(buffer.Length);
                 writer.Write(buffer.Span);
-                ChunkWriter.WriteEndChunkBytes(ref writer);
+                writer.WriteEndChunkBytes();
                 writer.Commit();
 
                 bytesWritten = writer.BytesCommitted;
             }
 
             return bytesWritten;
-        }
-
-        private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
-        {
-            var bytes = Encoding.ASCII.GetBytes(text);
-            return new ArraySegment<byte>(bytes);
         }
 
         public void ProduceContinue()
@@ -1204,7 +1198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                    statusCode != StatusCodes.Status304NotModified;
         }
 
-        private void ThrowResponseAlreadyStartedException(string value)
+        private static void ThrowResponseAlreadyStartedException(string value)
         {
             throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(value));
         }

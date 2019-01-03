@@ -2,6 +2,8 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
+  <Import Project="..\Sdk\SiteExtension.targets" />
+
   <PropertyGroup>
     <!-- There is no build output -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -27,7 +29,5 @@
       </ArtifactInfo>
     </ItemGroup>
   </Target>
-
-  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
 
 </Project>

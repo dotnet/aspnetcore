@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     validateCertificate: false);
 
                 Assert.Equal("content=Hello+World%3F", result);
+                await server.StopAsync();
             }
         }
 
@@ -81,6 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("hello world", result);
+                await server.StopAsync();
             }
         }
 
@@ -104,6 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 await Assert.ThrowsAnyAsync<Exception>(
                     () => server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/"));
+                await server.StopAsync();
             }
         }
 
@@ -132,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("hello world", result);
+                await server.StopAsync();
             }
         }
 
@@ -165,6 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                 }
+                await server.StopAsync();
             }
         }
 
@@ -201,6 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -251,6 +257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2NoExt));
                     Assert.Equal(2, selectorCalled);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -284,6 +291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false));
                     Assert.Equal(1, selectorCalled);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -321,6 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -354,6 +363,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false));
                     Assert.Equal(1, selectorCalled);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -394,6 +404,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     await AssertConnectionResult(stream, true);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -412,6 +423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("https", result);
+                await server.StopAsync();
             }
         }
 
@@ -442,6 +454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     var ex = await Assert.ThrowsAsync<IOException>(
                         async () => await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls, false));
                 }
+                await server.StopAsync();
             }
         }
 
@@ -479,6 +492,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await AssertConnectionResult(stream, true);
                     Assert.True(clientCertificateValidationCalled);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -508,6 +522,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     await AssertConnectionResult(stream, false);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -536,6 +551,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     await AssertConnectionResult(stream, false);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -576,6 +592,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     await AssertConnectionResult(stream, true);
                 }
+                await server.StopAsync();
             }
         }
 
