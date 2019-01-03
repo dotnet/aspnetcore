@@ -65,8 +65,6 @@
     </When>
     <Otherwise>
       <ItemGroup Condition=" '$(BuildWindowsInstallers)' == 'true' ">
-        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMPackageResolver/ANCMPackageResolver.csproj" />
-
         <!-- Build the ANCM custom action -->
         <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/CustomAction/aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/CustomAction/aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x86" />

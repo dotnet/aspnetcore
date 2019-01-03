@@ -51,12 +51,24 @@
   </PropertyGroup>
 
  <ItemGroup>
-    <NativeProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="x64" />
-    <NativeProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="x64" />
-    <NativeProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64" />
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="x64">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="x64">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
 
-    <NativeProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="Win32" />
-    <NativeProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="Win32" />
-    <NativeProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32" />
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="Win32">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="Win32">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 </Project>
