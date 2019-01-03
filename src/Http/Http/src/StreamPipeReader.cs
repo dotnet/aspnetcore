@@ -70,6 +70,11 @@ namespace System.IO.Pipelines
             _pool = options.MemoryPool;
         }
 
+        /// <summary>
+        /// Gets the inner stream that is being read from.
+        /// </summary>
+        public Stream InnerStream { get { return _readingStream; } }
+
         /// <inheritdoc />
         public override void AdvanceTo(SequencePosition consumed)
         {

@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -151,7 +148,7 @@ namespace System.IO.Pipelines.Tests
             Assert.NotEqual(readResult, readResult2);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task ReadCanBeCancelledViaProvidedCancellationToken()
         {
             var pipeReader = new StreamPipeReader(new HangingStream());
@@ -533,6 +530,79 @@ namespace System.IO.Pipelines.Tests
             Assert.Throws<ArgumentNullException>(() => new StreamPipeReader(MemoryStream, null));
         }
 
+        [Fact]
+        public async Task UseBothStreamAndPipeToRead()
+        {
+            Write(Encoding.ASCII.GetBytes(new string('a', 8)));
+            var buffer = new byte[4];
+
+            var res = MemoryStream.Read(buffer, 0, buffer.Length);
+
+            Assert.Equal(4, res);
+            var readResult = await Reader.ReadAsync();
+
+            Assert.Equal(buffer, readResult.Buffer.ToArray());
+        }
+
+        [Fact]
+        public async Task UseStreamThenPipeToReadNoBytesLost()
+        {
+            CreateReader(minimumSegmentSize: 1, minimumReadThreshold: 1);
+            var expectedString = "abcdefghijklmnopqrstuvwxyz";
+            Write(Encoding.ASCII.GetBytes(expectedString));
+            var buffer = new byte[1];
+            var result = "";
+
+            for (var i = 0; i < 13; i++)
+            {
+                var res = MemoryStream.Read(buffer, 0, buffer.Length);
+                result += Encoding.ASCII.GetString(buffer);
+                var readResult = await Reader.ReadAsync();
+                result += Encoding.ASCII.GetString(readResult.Buffer.ToArray());
+                Reader.AdvanceTo(readResult.Buffer.End);
+            }
+
+            Assert.Equal(expectedString, result);
+        }
+
+
+        [Fact]
+        public async Task UsePipeThenStreamToReadNoBytesLost()
+        {
+            CreateReader(minimumSegmentSize: 1, minimumReadThreshold: 1);
+            var expectedString = "abcdefghijklmnopqrstuvwxyz";
+            Write(Encoding.ASCII.GetBytes(expectedString));
+            var buffer = new byte[1];
+            var result = "";
+
+            for (var i = 0; i < 13; i++)
+            {
+                var readResult = await Reader.ReadAsync();
+                result += Encoding.ASCII.GetString(readResult.Buffer.ToArray());
+                Reader.AdvanceTo(readResult.Buffer.End);
+                var res = MemoryStream.Read(buffer, 0, buffer.Length);
+                result += Encoding.ASCII.GetString(buffer);
+            }
+
+            Assert.Equal(expectedString, result);
+        }
+        [Fact]
+        public async Task UseBothStreamAndPipeToReadWithoutAdvance_StreamIgnoresAdvance()
+        {
+            CreateReader(minimumSegmentSize: 4, minimumReadThreshold: 4);
+            Write(Encoding.ASCII.GetBytes("aaaabbbbccccdddd"));
+            var buffer = new byte[4];
+            var res = MemoryStream.Read(buffer, 0, buffer.Length);
+            var readResult = await Reader.ReadAsync();
+
+            // No Advance
+            // Next call to Stream.Read will get the next 4 bytes rather than the bytes already read by the pipe
+            res = MemoryStream.Read(buffer, 0, buffer.Length);
+
+            Assert.Equal(4, res);
+            Assert.Equal(Encoding.ASCII.GetBytes("cccc"), buffer);
+        }
+
         private void CreateReader(int minimumSegmentSize = 16, int minimumReadThreshold = 4, MemoryPool<byte> memoryPool = null)
         {
             Reader = new StreamPipeReader(MemoryStream,
@@ -566,13 +636,11 @@ namespace System.IO.Pipelines.Tests
                 return await base.ReadAsync(buffer, offset, count, cancellationToken);
             }
 
-#if NETCOREAPP2_2
             public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
             {
                 await Task.Yield();
                 return await base.ReadAsync(buffer, cancellationToken);
             }
-#endif
         }
     }
 }

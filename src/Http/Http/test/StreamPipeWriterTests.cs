@@ -269,6 +269,66 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(16 * 10 * 2, Read().Length);
         }
 
+        [Fact]
+        public async Task UseBothStreamAndPipeToWrite()
+        {
+            var flushResult = await Writer.WriteAsync(Encoding.ASCII.GetBytes("aaaa"));
+            var buffer = Encoding.ASCII.GetBytes("cccc");
+            MemoryStream.Write(buffer, 0, buffer.Length);
+            var result = Read();
+
+            Assert.Equal(Encoding.ASCII.GetBytes("aaaacccc"), result);
+        }
+
+        [Fact]
+        public async Task UsePipeThenStreamToWriteMultipleTimes()
+        {
+            var expectedMemory = new Memory<byte>(Encoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz"));
+            var buffer = new byte[1];
+
+            for (var i = 0; i < 13; i++)
+            {
+                MemoryStream.Write(expectedMemory.Slice(i * 2, 1).Span);
+                await Writer.WriteAsync(expectedMemory.Slice(i * 2 + 1, 1));
+            }
+            var result = Read();
+            Assert.Equal(expectedMemory.ToArray(), result);
+        }
+
+        [Fact]
+        public async Task UseStreamThenPipeToWriteMultipleTimes()
+        {
+            var expectedMemory = new Memory<byte>(Encoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz"));
+            var buffer = new byte[1];
+
+            for (var i = 0; i < 13; i++)
+            {
+                await Writer.WriteAsync(expectedMemory.Slice(i * 2, 1));
+                MemoryStream.Write(expectedMemory.Slice(i * 2 + 1, 1).Span);
+            }
+            var result = Read();
+            Assert.Equal(expectedMemory.ToArray(), result);
+        }
+
+        [Fact]
+        public async Task UseBothStreamAndPipeToWriteWithGetMemoryAndFlush()
+        {
+            var cBuffer = Encoding.ASCII.GetBytes("cccc");
+            var aBuffer = Encoding.ASCII.GetBytes("aaaa");
+            var memory = Writer.GetMemory();
+
+            MemoryStream.Write(aBuffer, 0, aBuffer.Length);
+
+            cBuffer.CopyTo(memory);
+
+            Writer.Advance(cBuffer.Length);
+            await Writer.FlushAsync();
+
+            var result = Read();
+
+            Assert.Equal(Encoding.ASCII.GetBytes("aaaacccc"), result);
+        }
+
         private async Task CheckWriteIsNotCanceled()
         {
             var flushResult = await Writer.WriteAsync(Encoding.ASCII.GetBytes("data"));
@@ -291,7 +351,6 @@ namespace System.IO.Pipelines.Tests
 
     internal class HangingStream : MemoryStream
     {
-
         public HangingStream()
         {
         }
@@ -311,13 +370,11 @@ namespace System.IO.Pipelines.Tests
             await Task.Delay(30000, cancellationToken);
             return 0;
         }
-#if NETCOREAPP2_2
         public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             await Task.Delay(30000, cancellationToken);
             return 0;
         }
-#endif
     }
 
     internal class SingleWriteStream : MemoryStream
@@ -326,8 +383,6 @@ namespace System.IO.Pipelines.Tests
 
         public bool AllowAllWrites { get; set; }
 
-
-#if NETCOREAPP2_2
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             try
@@ -346,7 +401,6 @@ namespace System.IO.Pipelines.Tests
                 _shouldNextWriteFail = !_shouldNextWriteFail;
             }
         }
-#endif
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
