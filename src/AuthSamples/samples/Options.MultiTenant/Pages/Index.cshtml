@@ -1,0 +1,53 @@
+﻿@page
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.Extensions.Options
+@inject IAuthenticationSchemeProvider SchemeProvider
+@inject IOptionsMonitor<SimpleOptions> Options
+@inject TenantResolver Tenants
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="row">
+    <h2>Current Authentication Schemes for Tenant: @Tenants.ResolveTenant()</h2>
+    <ul>
+        @{
+            var schemes = await SchemeProvider.GetAllSchemesAsync();
+            foreach (var scheme in schemes)
+            {
+        <li><b>Scheme:</b> @scheme.Name -- <b>Client Id:Secret=</b> {@Options.Get(scheme.Name).ClientId}:{@Options.Get(scheme.Name).ClientSecret} <a asp-area="" asp-controller="Auth" asp-action="Remove" asp-route-scheme="@scheme.Name" asp-route-tenant="@Tenants.ResolveTenant()">Remove</a></li>
+            }
+        }
+    </ul>
+</div>
+<div class="row">
+    <h2>Add or update a scheme:</h2>
+    <form asp-controller="Auth" asp-action="AddOrUpdate" asp-route-tenant="@Tenants.ResolveTenant()" method="post" class="form-horizontal" role="form">
+        <div class="form-group">
+            <label class="col-md-2 control-label">Scheme</label>
+            <div class="col-md-10">
+                <input type="text" name="scheme" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-2 control-label">ClientId</label>
+            <div class="col-md-10">
+                <input type="text" name="ClientId" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-md-2 control-label">ClientSecret</label>
+            <div class="col-md-10">
+                <input type="text" name="ClientSecret" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <button type="submit" class="btn btn-default">Add/Update</button>
+            </div>
+        </div>
+    </form>
+</div>

@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\samples\CustomPolicyProvider\CustomPolicyProvider.csproj" />
     <ProjectReference Include="..\..\samples\DynamicSchemes\DynamicSchemes.csproj" />
     <ProjectReference Include="..\..\samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj" />
+    <ProjectReference Include="..\..\samples\Options.MultiTenant\Options.MultiTenant.csproj" />
     <ProjectReference Include="..\..\samples\PathSchemeSelection\PathSchemeSelection.csproj" />
     <ProjectReference Include="..\..\samples\StaticFilesAuth\StaticFilesAuth.csproj" />
 
