@@ -72,6 +72,7 @@ function Invoke-TeamCityRequest() {
 
     $webRequest = [System.Net.WebRequest]::Create($TeamCityURL)
     $webRequest.ContentType = "text/html"
+    $webRequest.Timeout = 60000
     $PostStr = [System.Text.Encoding]::Default.GetBytes("")
     $webrequest.ContentLength = $PostStr.Length
     $webRequest.Headers["Authorization"] = "Basic " + $authInfo
