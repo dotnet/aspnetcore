@@ -1356,7 +1356,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         case DirectiveKind.RazorBlock:
                             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
                             SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.AllWhitespace;
-                            directiveBuilder.Add(OutputAsMarkupLiteral());
+                            directiveBuilder.Add(OutputTokensAsUnclassifiedLiteral());
 
                             ParseDirectiveBlock(directiveBuilder, descriptor, parseChildren: (childBuilder, startingBraceLocation) =>
                             {
@@ -1380,7 +1380,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         case DirectiveKind.CodeBlock:
                             AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
                             SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.AllWhitespace;
-                            directiveBuilder.Add(OutputAsMarkupLiteral());
+                            directiveBuilder.Add(OutputTokensAsUnclassifiedLiteral());
 
                             ParseDirectiveBlock(directiveBuilder, descriptor, parseChildren: (childBuilder, startingBraceLocation) =>
                             {
