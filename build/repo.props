@@ -113,6 +113,7 @@
                           $(RepositoryRoot)src\Hosting\**\*.*proj;
                           $(RepositoryRoot)src\Http\**\*.*proj;
                           $(RepositoryRoot)src\Html\**\*.*proj;
+                          $(RepositoryRoot)src\Identity\**\*.*proj;
                           $(RepositoryRoot)src\Servers\**\*.csproj;
                           $(RepositoryRoot)src\Security\**\*.*proj;
                           $(RepositoryRoot)src\Shared\**\*.*proj;
@@ -120,6 +121,7 @@
                           $(RepositoryRoot)src\Middleware\**\*.*proj;
                           $(RepositoryRoot)src\Razor\**\*.*proj;
                           $(RepositoryRoot)src\Mvc\**\*.*proj;
+                          $(RepositoryRoot)src\Azure\**\*.*proj;
                           "
                         Exclude="
                           @(ProjectToExclude);
