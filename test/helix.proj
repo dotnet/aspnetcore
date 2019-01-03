@@ -1,11 +1,11 @@
 <Project DefaultTargets="Test">
 
   <!-- Version included until we get global.json generation to support this SDK. -->
-  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="1.0.0-beta.18614.1" />
+  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="1.0.0-beta.19052.1" />
 
   <Target Name="Gather" BeforeTargets="Test">
     <ItemGroup>
-      <ProjectsToTest Include="$(ProjectsToTest)" />
+      <ProjectsToTest Include="C:\Github\AspNetCore\src\Http\Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj" />
     </ItemGroup>
     <MSBuild Projects="@(ProjectsToTest)"
               Targets="CreateTestPayload"
