@@ -49,7 +49,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'%(RazorComponentWithTargetPath.GeneratedDeclaration)' == ''" />
 
     <ItemGroup>
-      <_RazorComponentDeclaration Include="%(RazorComponentWithTargetPath.GeneratedDeclaration)" />
+      <_RazorComponentDeclaration Include="@(RazorComponentWithTargetPath->'%(GeneratedDeclaration)')">
+        <DependentUpon>%(Identity)</DependentUpon>
+      </_RazorComponentDeclaration>
       <_RazorComponentDefinition Include="%(RazorComponentWithTargetPath.GeneratedOutput)" />
     </ItemGroup>
   </Target>

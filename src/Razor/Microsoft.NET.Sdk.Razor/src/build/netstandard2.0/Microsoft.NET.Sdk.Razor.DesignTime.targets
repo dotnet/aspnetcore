@@ -29,6 +29,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="DotNetCoreRazorConfiguration" Condition="'$(_TargetingNETCoreApp30OrLater)'=='true'"/>
   </ItemGroup>
 
+  <!-- 
+    For now we need to treat component files as if they have a single file generator. This will allow us
+    to trigger a workspace update for the declaration files when they change.
+  -->
+  <ItemGroup>
+    <Content Update="@(RazorComponent)">
+      <Generator>MSBuild:RazorGenerateComponentDeclarationDesignTime</Generator>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
   <!--
     WebSdk imports these capabilities for nesting in DotNetCoreWeb projects.
     Conditinally import these capabilities if the project isn't targeting the WebSdk.
@@ -67,6 +78,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     Name="RazorGenerateComponentDesignTime" 
     DependsOnTargets="ResolveRazorComponentInputs;AssignRazorComponentTargetPaths" 
     Returns="@(RazorComponentWithTargetPath)">
+  </Target>
+
+  <!-- Called by the project system to update generated declaration files -->
+  <Target 
+    Name="RazorGenerateComponentDeclarationDesignTime" 
+    DependsOnTargets="ResolveRazorConfiguration;ResolveRazorComponentInputs;AssignRazorComponentTargetPaths;RazorGenerateComponentDeclaration">
   </Target>
 
 </Project>

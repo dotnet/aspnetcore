@@ -1,12 +1,12 @@
 Document - 
-    NamespaceDeclaration -  - AspNetCore
+    NamespaceDeclaration -  - __BlazorGenerated
         UsingDirective -  - TModel = global::System.Object
         UsingDirective - (1:0,1 [12] ) - System
         UsingDirective - (16:1,1 [32] ) - System.Collections.Generic
         UsingDirective - (51:2,1 [17] ) - System.Linq
         UsingDirective - (71:3,1 [28] ) - System.Threading.Tasks
         UsingDirective - (102:4,1 [37] ) - Microsoft.AspNetCore.Components
-        ClassDeclaration -  - public - BasicComponent - Microsoft.AspNetCore.Components.ComponentBase - IDisposable
+        ClassDeclaration -  - public - AspNetCore_d3c3d6059615673cb46fc4974164d61eabadb890 - Microsoft.AspNetCore.Components.ComponentBase - IDisposable
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
                 DirectiveToken - (12:0,12 [11] BasicComponent.cshtml) - IDisposable

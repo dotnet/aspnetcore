@@ -17,6 +17,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         private static readonly char[] PathSeparators = new char[] { '/', '\\' };
         private static readonly char[] NamespaceSeparators = new char[] { '.' };
 
+        /// <summary>
+        /// The base namespace.
+        /// </summary>
+        // This is a fallback value and will only be used if we can't compute
+        // a reasonable namespace.
+        public string BaseNamespace { get; set; } = "__BlazorGenerated";
+
+        /// <summary>
+        /// Gets or sets whether to mangle class names.
+        /// 
+        /// Set to true in the IDE so we can generated mangled class names. This is needed
+        /// to avoid conflicts between generated design-time code and the code in the editor.
+        ///
+        /// A better workaround for this would be to create a singlefilegenerator that overrides
+        /// the codegen process when a document is open, but this is more involved, so hacking
+        /// it for now.
+        /// </summary>
+        public bool MangleClassNames { get; set; } = false;
+
         protected override string DocumentKind => ComponentDocumentKind;
 
         // Ensure this runs before the MVC classifiers which have Order = 0
@@ -32,40 +51,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return new ComponentCodeTarget(options, TargetExtensions);
         }
 
-        protected override void OnDocumentStructureCreated(RazorCodeDocument codeDocument, NamespaceDeclarationIntermediateNode @namespace, ClassDeclarationIntermediateNode @class, MethodDeclarationIntermediateNode method)
+        /// <inheritdoc />
+        protected override void OnDocumentStructureCreated(
+            RazorCodeDocument codeDocument,
+            NamespaceDeclarationIntermediateNode @namespace,
+            ClassDeclarationIntermediateNode @class,
+            MethodDeclarationIntermediateNode method)
         {
-            base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
-
             if (!TryComputeNamespaceAndClass(
-                   codeDocument.Source.FilePath,
-                   codeDocument.Source.RelativePath,
-                   out var computedNamespace,
-                   out var computedClass))
+                codeDocument.Source.FilePath,
+                codeDocument.Source.RelativePath,
+                out var computedNamespace,
+                out var computedClass))
             {
                 // If we can't compute a nice namespace (no relative path) then just generate something
                 // mangled.
-                computedNamespace = "AspNetCore";
+                computedNamespace = BaseNamespace;
                 var checksum = Checksum.BytesToString(codeDocument.Source.GetChecksum());
                 computedClass = $"AspNetCore_{checksum}";
             }
 
+            if (MangleClassNames)
+            {
+                computedClass = "__" + computedClass;
+            }
+
             @namespace.Content = computedNamespace;
 
+            @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
             @class.ClassName = computedClass;
-            @class.BaseType = $"{CodeGenerationConstants.ComponentBase.FullTypeName}";
-            var filePath = codeDocument.Source.RelativePath ?? codeDocument.Source.FilePath;
-            if (string.IsNullOrEmpty(filePath))
-            {
-                // It's possible for a Razor document to not have a file path.
-                // Eg. When we try to generate code for an in memory document like default imports.
-                var checksum = Checksum.BytesToString(codeDocument.Source.GetChecksum());
-                @class.ClassName = $"AspNetCore_{checksum}";
-            }
-            else
-            {
-                @class.ClassName = CSharpIdentifier.SanitizeIdentifier(Path.GetFileNameWithoutExtension(filePath));
-            }
-
             @class.Modifiers.Clear();
             @class.Modifiers.Add("public");
 
@@ -82,8 +96,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 @class.TypeParameters.Add(new TypeParameter() { ParameterName = typeParamNode.Tokens.First().Content, });
             }
 
-            method.MethodName = CodeGenerationConstants.ComponentBase.BuildRenderTree;
             method.ReturnType = "void";
+            method.MethodName = ComponentsApi.ComponentBase.BuildRenderTree;
             method.Modifiers.Clear();
             method.Modifiers.Add("protected");
             method.Modifiers.Add("override");
@@ -91,8 +105,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             method.Parameters.Clear();
             method.Parameters.Add(new MethodParameter()
             {
-                TypeName = CodeGenerationConstants.RenderTreeBuilder.FullTypeName,
-                ParameterName = CodeGenerationConstants.ComponentBase.BuildRenderTreeParameter,
+                ParameterName = "builder",
+                TypeName = ComponentsApi.RenderTreeBuilder.FullTypeName,
             });
 
             // We need to call the 'base' method as the first statement.
@@ -101,11 +115,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             callBase.Children.Add(new IntermediateToken
             {
                 Kind = TokenKind.CSharp,
-                Content = $"base.{CodeGenerationConstants.ComponentBase.BuildRenderTree}({CodeGenerationConstants.ComponentBase.BuildRenderTreeParameter});"
+                Content = $"base.{ComponentsApi.ComponentBase.BuildRenderTree}(builder);"
             });
             method.Children.Insert(0, callBase);
         }
 
+        // In general documents will have a relative path (relative to the project root).
+        // We can only really compute a nice class/namespace when we know a relative path.
+        //
+        // However all kinds of thing are possible in tools. We shouldn't barf here if the document isn't 
+        // set up correctly.
         private bool TryComputeNamespaceAndClass(string filePath, string relativePath, out string @namespace, out string @class)
         {
             if (filePath == null || relativePath == null || filePath.Length <= relativePath.Length)

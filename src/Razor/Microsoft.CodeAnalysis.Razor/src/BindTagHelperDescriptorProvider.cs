@@ -207,7 +207,9 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     var attribute = attributes[j];
 
-                    if (attribute.AttributeClass == bindElement)
+                    // We need to check the constructor argument length here, because this can show up as 0
+                    // if the language service fails to initialize. This is an invalid case, so skip it.
+                    if (attribute.AttributeClass == bindElement && attribute.ConstructorArguments.Length == 4)
                     {
                         results.Add(new ElementBindData(
                             type.ContainingAssembly.Name,
@@ -218,7 +220,7 @@ namespace Microsoft.CodeAnalysis.Razor
                             (string)attribute.ConstructorArguments[2].Value,
                             (string)attribute.ConstructorArguments[3].Value));
                     }
-                    else if (attribute.AttributeClass == bindInputElement)
+                    else if (attribute.AttributeClass == bindInputElement && attribute.ConstructorArguments.Length == 4)
                     {
                         results.Add(new ElementBindData(
                             type.ContainingAssembly.Name,
