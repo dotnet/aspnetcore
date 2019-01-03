@@ -287,6 +287,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         UpdateCompletedStreams();
                     }
 
+                    // This cancels keep-alive and request header timeouts, but not the response drain timeout.
+                    TimeoutControl.CancelTimeout();
                     TimeoutControl.StartDrainTimeout(Limits.MinResponseDataRate, Limits.MaxResponseBufferSize);
 
                     _frameWriter.Complete();
@@ -1235,8 +1237,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (Interlocked.Exchange(ref _isClosed, 1) == 0)
             {
-                // This cancels keep-alive and request header timeouts, but not the response drain timeout.
-                TimeoutControl.CancelTimeout();
                 Log.Http2ConnectionClosed(_context.ConnectionId, _highestOpenedStreamId);
                 return true;
             }
