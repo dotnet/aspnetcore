@@ -12,7 +12,6 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Antiforgery" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Core" Version="2.2.0" />
@@ -24,11 +23,12 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Twitter" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.WsFederation" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Authorization" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authorization.Policy" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Authorization" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Connections.Abstractions" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Cors" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.CookiePolicy" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Cors" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection.Abstractions" Version="2.2.0" />
@@ -59,12 +59,28 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Localization.Routing" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Localization" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Analyzers" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Core" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Cors" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Formatters.Xml" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Localization" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Razor" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.RazorPages" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.TagHelpers" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.NodeServices" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Owin" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Razor" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Razor.Language" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Razor.Runtime" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Razor" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.ResponseCaching" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
@@ -81,12 +97,14 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Session" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.SpaServices.Extensions" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.SpaServices" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
-  <Package Id="Microsoft.CodeAnalysis.Razor" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore" Version="2.2.0" />
+  <Package Id="Microsoft.CodeAnalysis.Razor" Version="2.2.0" />
   <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="2.2.0" />
   <Package Id="Microsoft.Net.Http.Headers" Version="2.2.0" />
   <Package Id="Microsoft.Net.Sdk.Razor" Version="2.2.0" />

@@ -8,11 +8,15 @@
     <PackageReference Include="Microsoft.AspNetCore" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(AspNetCorePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Server\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Allow the build to specify the version of the Razor SDK directly -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>

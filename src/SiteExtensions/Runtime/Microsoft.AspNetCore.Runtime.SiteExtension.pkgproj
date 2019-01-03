@@ -19,29 +19,23 @@
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
     <Content Include="install.cmd" />
-    <Content Include="$(RepositoryRoot)bin\Microsoft.Web.Xdt.Extensions\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(SharedFxArchitecture)' == 'x86'">
-    <Content Include="$(AspNetCoreModuleX86Location)" PackagePath="content\ancm" />
-    <Content Include="$(OutOfProcessRequestHandlerX86Location)" PackagePath="content\ancm\$(AspNetCoreModuleOutOfProcessVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(SharedFxArchitecture)' == 'x64'">
-    <Content Include="$(AspNetCoreModuleX64Location)" PackagePath="content\ancm" />
-    <Content Include="$(OutOfProcessRequestHandlerX64Location)" PackagePath="content\ancm\$(AspNetCoreModuleOutOfProcessVersion)" />
+    <Content Include="$(RepositoryRoot)bin\$(Configuration)\Microsoft.Web.Xdt.Extensions\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
     <!-- Make sure redist folder is built and ready -->
     <ProjectReference Include="..\..\Installers\Archive\Archive.Redist.zipproj" PrivateAssets="All" ReferenceOutputAssembly="False" />
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(PackageVersion)" />
+
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(SharedFxArchitecture)" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(SharedFxArchitecture)" />
+
   </ItemGroup>
 
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
       <Content Include="$(DotNetUnpackFolder)\**\*.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
+      <Content Include="%(NativeContent.Identity)" PackagePath="content\ancm\%(NativeContent.HandlerPath)" />
     </ItemGroup>
   </Target>
 

@@ -16,7 +16,10 @@ Building ASP.NET Core on Windows requires:
 * Windows 7 or higher
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Visual Studio 2017. <https://visualstudio.com>
-    * To install the exact required components, run scripts\install_vs.ps1. This will use VS2017.
+    * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1). This will use VS2017.
+        ```ps1
+        PS> ./eng/scripts/InstallVisualStudio.ps1 -Edition Community
+        ```
 * Git. <https://git-scm.org>
 * (Optional) some optional components, like the SignalR Java client, may require
     * NodeJS. LTS version of 10.14.2 or newer recommended <https://nodejs.org>
@@ -58,13 +61,14 @@ Before opening our .sln files in Visual Studio or VS Code, you need to perform t
 
 1. Executing the following on command-line:
    ```
-   .\build.cmd /p:SkipTests=true /p:_ProjectsOnly=true
+   .\restore.cmd
    ```
    This will download required tools and build the entire repository once. At that point, you should be able to open .sln files to work on the projects you care about.
 
-2. Use the `startvs.cmd` script to open Visual Studio .sln files. This script first sets required environment variables.
+   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master branch, we regularly update the versions of .NET Core SDK required to build the repo.
+   > You will need to restart Visual Studio every time we update the .NET Core SDK.
 
-> :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. Visual Studio will only build projects in a solution file, and makes a best effort to use other files on disk. If you pull many changes, the files on disk may be stale and will need to re-build.
+2. Use the `startvs.cmd` script to open Visual Studio .sln files. This script first sets required environment variables.
 
 ### Solution files
 
@@ -129,15 +133,27 @@ On macOS/Linux:
 ./build.sh
 ```
 
-### Building a subset of the code
+## Running tests on command-line
+
+Tests are not run by default. Use the `-test` option to run tests in addition to building.
+
+On Windows:
+```
+.\build.cmd -test
+```
+
+On macOS/Linux:
+```
+./build.sh --test
+```
+
+## Building a subset of the code
 
 This repository is large. Look for `build.cmd`/`.sh` scripts in subfolders. These scripts can be used to invoke build and test on a smaller set of projects.
 
-#### Known issue: not every subfolder has a build.cmd script
+Furthermore, you can use flags on `build.cmd`/`.sh` to build subsets based on language type, like C++, TypeScript, or C#. Run `build.sh --help` or `build.cmd -help` for details.
 
-We'll be adding more. See https://github.com/aspnet/AspNetCore/issues/4247.
-
-#### Build properties
+## Build properties
 
 Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
 ```
@@ -150,8 +166,7 @@ Property                 | Description
 -------------------------|-------------------------------------------------------------------------------------------------------------
 BuildNumberSuffix        | (string). A specific build number, typically from a CI counter, which is appended to the pre-release label.
 Configuration            | `Debug` or `Release`. Default = `Debug`.
-SkipTests                | `true` or `false`. When true, builds without running tests.
-NoBuild                  | `true` or `false`. Runs tests without rebuilding.
+SharedFxRID              | The runtime identifier of the shared framework.
 
 ## Use the result of your build
 
@@ -183,3 +198,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
 
 Some features, such as new target frameworks, may require prerelease tooling builds for Visual Studio.
 These are available in the [Visual Studio Preview](https://www.visualstudio.com/vs/preview/).
+
+## Resx files
+
+If you need to make changes to a .resx file, run `dotnet msbuild /t:Resx <path to csproj>`. This will update the generated C#.

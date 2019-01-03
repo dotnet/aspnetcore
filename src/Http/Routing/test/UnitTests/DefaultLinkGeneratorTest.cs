@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -527,6 +527,42 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal("ftp://example.com:5000/Home/Index", uri);
+        }
+
+        [Fact]
+        public void GetPathByAddress_WithHttpContext_ContextPassedToConstraint()
+        {
+            // Arrange
+            var constraint = new TestRouteConstraint();
+
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id?}", policies: new { controller = constraint }, metadata: new object[] { new IntMetadata(1), });
+
+            var linkGenerator = CreateLinkGenerator(endpoint1);
+
+            var httpContext = CreateHttpContext();
+            httpContext.Request.PathBase = "/Foo";
+
+            // Act
+            var uri = linkGenerator.GetPathByAddress(
+                httpContext,
+                1,
+                values: new RouteValueDictionary(new { action = "Index", controller = "Home", }),
+                pathBase: "/");
+
+            // Assert
+            Assert.Equal("/Home/Index", uri);
+            Assert.True(constraint.HasHttpContext);
+        }
+
+        private class TestRouteConstraint : IRouteConstraint
+        {
+            public bool HasHttpContext { get; set; }
+
+            public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+            {
+                HasHttpContext = (httpContext != null);
+                return true;
+            }
         }
 
         [Fact]

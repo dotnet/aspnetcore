@@ -307,7 +307,7 @@
     </Fragment>
 
     <Fragment>
-        <Binary Id="IISCustomActionDll" SourceFile="$(var.CustomAction)"/>
+        <Binary Id="IISCustomActionDll" SourceFile="$(var.aspnetcoreCA.TargetPath)"/>
         <Binary Id="AncmMofFile" SourceFile="$(var.PreBuiltANCMV2Schema)ancm.mof"/>
     </Fragment>
 </Wix>

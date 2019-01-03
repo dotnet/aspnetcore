@@ -90,4 +90,20 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             }
         }
     }
+
+    [ApiConventionType(typeof(DefaultApiConventions))]
+    public class GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnType : Controller
+    {
+        public IActionResult Post(object model) => null;
+    }
+
+    [ApiConventionType(typeof(DefaultApiConventions))]
+    public class GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnBaseTypeBase
+    {
+    }
+
+    public class GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnBaseType : GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnBaseTypeBase
+    {
+        public IActionResult Post(object model) => null;
+    }
 }

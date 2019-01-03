@@ -144,12 +144,18 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Debug.Assert(!string.IsNullOrEmpty(viewEnginePath));
             Debug.Assert(viewEnginePath.StartsWith("/", StringComparison.Ordinal));
 
-            var builder = new InplaceStringBuilder(1 + areaName.Length + viewEnginePath.Length);
-            builder.Append('/');
-            builder.Append(areaName);
-            builder.Append(viewEnginePath);
+            return string.Create(1 + areaName.Length + viewEnginePath.Length, (areaName, viewEnginePath), (span, tuple) =>
+            {
+                var (areaNameValue, viewEnginePathValue) = tuple;
 
-            return builder.ToString();
+                span[0] = '/';
+                span = span.Slice(1);
+
+                areaNameValue.AsSpan().CopyTo(span);
+                span = span.Slice(areaNameValue.Length);
+
+                viewEnginePathValue.AsSpan().CopyTo(span);
+            });
         }
 
         private static SelectorModel CreateSelectorModel(string prefix, string routeTemplate)

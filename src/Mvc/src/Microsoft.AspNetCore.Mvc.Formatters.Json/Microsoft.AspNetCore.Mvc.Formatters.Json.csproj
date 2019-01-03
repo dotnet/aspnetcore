@@ -1,4 +1,4 @@
-﻿<Project Sdk="Internal.AspNetCore.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC formatters for JSON input and output and for JSON PATCH input using Json.NET.</Description>
@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
 
-    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="$(MicrosoftAspNetCoreJsonPatchPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.JsonPatch" />
   </ItemGroup>
 </Project>

@@ -17,6 +17,7 @@
     <HarvestSource>$(SharedFrameworkHarvestRootPath)\$(Platform)\</HarvestSource>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,6 +40,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="DependencyProvider.wxs" />
+    <Compile Include="Product.wxs" />
+    <EmbeddedResource Include="Strings.wxl" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <HarvestDirectory Include="$(HarvestSource)">
       <SuppressRootDirectory>true</SuppressRootDirectory>
       <ComponentGroupName>CG_AspNetCoreSharedFramework</ComponentGroupName>

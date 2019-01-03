@@ -38,8 +38,6 @@
     </TargetPathWithTargetPlatformMoniker>
   </ItemDefinitionGroup>
 
-  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
-
   <Target Name="PrepareOutputPaths">
     <MakeDir Directories="$(IntermediateOutputPath)" />
   </Target>

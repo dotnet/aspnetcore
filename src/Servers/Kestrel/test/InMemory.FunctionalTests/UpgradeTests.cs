@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive("New protocol data");
                     await upgrade.Task.DefaultTimeout();
                 }
+                await server.StopAsync();
             }
         }
 
@@ -104,6 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await upgrade.Task.DefaultTimeout();
                 }
+                await server.StopAsync();
             }
         }
 
@@ -131,15 +133,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await Task.Delay(100);
                 }
             }, new TestServiceContext(LoggerFactory)))
-            using (var connection = server.CreateConnection())
             {
-                await connection.SendEmptyGetWithUpgrade();
-                await connection.Receive("HTTP/1.1 101 Switching Protocols",
-                    "Connection: Upgrade",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "",
-                    "");
-                await connection.WaitForConnectionClose();
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEmptyGetWithUpgrade();
+                    await connection.Receive("HTTP/1.1 101 Switching Protocols",
+                        "Connection: Upgrade",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                    await connection.WaitForConnectionClose();
+                }
+                await server.StopAsync();
             }
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.DefaultTimeout());
@@ -150,22 +155,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task RejectsRequestWithContentLengthAndUpgrade()
         {
             using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
-            using (var connection = server.CreateConnection())
             {
-                await connection.Send("POST / HTTP/1.1",
-                    "Host:",
-                    "Content-Length: 1",
-                    "Connection: Upgrade",
-                    "",
-                    "");
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send("POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 1",
+                        "Connection: Upgrade",
+                        "",
+                        "");
 
-                await connection.ReceiveEnd(
-                    "HTTP/1.1 400 Bad Request",
-                    "Connection: close",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "Content-Length: 0",
-                    "",
-                    "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
             }
         }
 
@@ -190,6 +198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGetWithUpgrade();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -197,21 +206,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task RejectsRequestWithChunkedEncodingAndUpgrade()
         {
             using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
-            using (var connection = server.CreateConnection())
             {
-                await connection.Send("POST / HTTP/1.1",
-                    "Host:",
-                    "Transfer-Encoding: chunked",
-                    "Connection: Upgrade",
-                    "",
-                    "");
-                await connection.ReceiveEnd(
-                    "HTTP/1.1 400 Bad Request",
-                    "Connection: close",
-                    $"Date: {server.Context.DateHeaderValue}",
-                    "Content-Length: 0",
-                    "",
-                    "");
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send("POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "Connection: Upgrade",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
             }
         }
 
@@ -242,6 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGet();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
+                await server.StopAsync();
             }
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task).DefaultTimeout();
@@ -293,6 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         await connection.Receive("HTTP/1.1 200");
                     }
                 }
+                await server.StopAsync();
             }
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(60)));
@@ -333,6 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 await appCompletedTcs.Task.DefaultTimeout();
+                await server.StopAsync();
             }
         }
     }

@@ -8,10 +8,8 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    public class IOQueue : PipeScheduler
+    public class IOQueue : PipeScheduler, IThreadPoolWorkItem
     {
-        private static readonly WaitCallback _doWorkCallback = s => ((IOQueue)s).DoWork();
-
         private readonly object _workSync = new object();
         private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
         private bool _doingWork;
@@ -30,13 +28,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 if (!_doingWork)
                 {
-                    System.Threading.ThreadPool.UnsafeQueueUserWorkItem(_doWorkCallback, this);
+                    System.Threading.ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
                     _doingWork = true;
                 }
             }
         }
 
-        private void DoWork()
+        void IThreadPoolWorkItem.Execute()
         {
             while (true)
             {

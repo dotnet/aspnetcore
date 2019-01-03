@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 if (routeEndpointY != null)
                 {
-                    return routeEndpointX.RoutePattern.RawText.CompareTo(routeEndpointY.RoutePattern.RawText);
+                    return string.Compare(routeEndpointX.RoutePattern.RawText, routeEndpointY.RoutePattern.RawText, StringComparison.OrdinalIgnoreCase);
                 }
 
                 return 1;
