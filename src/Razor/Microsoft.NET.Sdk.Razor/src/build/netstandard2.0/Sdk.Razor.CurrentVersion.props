@@ -68,11 +68,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <RazorGenerateOutputFileExtension>.g.cs</RazorGenerateOutputFileExtension>
 
-    <!--
-    Configures the file extension used for the generated C# definition files.
-    -->
-    <RazorGenerateOutputDefinitionFileExtension>.g.i.cs</RazorGenerateOutputDefinitionFileExtension>
-
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 

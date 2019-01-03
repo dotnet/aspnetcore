@@ -3,6 +3,10 @@
     <Message Text="RazorGenerateWithTargetPath: %(RazorGenerateWithTargetPath.Identity) %(RazorGenerateWithTargetPath.TargetPath) %(RazorGenerateWithTargetPath.GeneratedOutput)" Importance="High" />
   </Target>
 
+  <Target Name="_IntrospectRazorComponentWithTargetPath">
+    <Message Text="RazorComponentWithTargetPath: %(RazorComponentWithTargetPath.Identity) %(RazorComponentWithTargetPath.TargetPath) %(RazorComponentWithTargetPath.GeneratedOutput) %(RazorComponentWithTargetPath.GeneratedDeclaration)" Importance="High" />
+  </Target>
+
   <Target Name="_IntrospectRazorEmbeddedResources">
     <Message Text="CompileResource: %(_RazorCoreCompileResourceInputs.Identity) %(_RazorCoreCompileResourceInputs.LogicalName)" Importance="High" />
   </Target>

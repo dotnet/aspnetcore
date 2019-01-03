@@ -52,9 +52,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorGenerateWithTargetPath.xaml">
       <Context>Project</Context>
     </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorComponentWithTargetPath.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
   </ItemGroup>
 
-  <Target Name="RazorGenerateDesignTime" DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths" Returns="@(RazorGenerateWithTargetPath)">
+  <Target 
+    Name="RazorGenerateDesignTime" 
+    DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths;ResolveRazorComponentInputs;AssignRazorComponentTargetPaths" 
+    Returns="@(RazorGenerateWithTargetPath);@(RazorComponentWithTargetPath)">
   </Target>
 
 </Project>

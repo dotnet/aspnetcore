@@ -64,5 +64,29 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     $@"RazorGenerateWithTargetPath: {filePath} {filePath} {Path.Combine(RazorIntermediateOutputPath, filePath + ".g.cs")}");
             }
         }
+
+        [Fact]
+        [InitializeTestProject("ComponentLibrary")]
+        public async Task RazorGenerateDesignTime_ReturnsRazorComponentWithTargetPath()
+        {
+            TargetFramework = "netstandard2.0";
+
+            var result = await DotnetMSBuild("RazorGenerateDesignTime;_IntrospectRazorComponentWithTargetPath");
+
+            Assert.BuildPassed(result);
+
+            var filePaths = new string[]
+            {
+                Path.Combine("MyComponent.cshtml"),
+                Path.Combine("GenericComponent.razor"),
+            };
+
+            foreach (var filePath in filePaths)
+            {
+                Assert.BuildOutputContainsLine(
+                    result,
+                    $@"RazorComponentWithTargetPath: {filePath} {filePath} {Path.Combine(RazorIntermediateOutputPath, filePath + ".g.cs")} {Path.Combine(RazorComponentIntermediateOutputPath, filePath + ".g.cs")}");
+            }
+        }
     }
 }
