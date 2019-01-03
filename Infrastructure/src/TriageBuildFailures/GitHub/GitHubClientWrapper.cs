@@ -126,24 +126,31 @@ namespace TriageBuildFailures.GitHub
                 hiddenDataStringBuilder.AppendLine("<table>");
 
                 hiddenDataStringBuilder.AppendLine("<thead>");
+                hiddenDataStringBuilder.AppendLine("<tr>");
                 hiddenDataStringBuilder.AppendLine("<th>");
                 hiddenDataStringBuilder.AppendLine("Key");
                 hiddenDataStringBuilder.AppendLine("</th>");
                 hiddenDataStringBuilder.AppendLine("<th>");
                 hiddenDataStringBuilder.AppendLine("Value");
                 hiddenDataStringBuilder.AppendLine("</th>");
+                hiddenDataStringBuilder.AppendLine("</tr>");
                 hiddenDataStringBuilder.AppendLine("</thead>");
 
                 hiddenDataStringBuilder.AppendLine("<tbody>");
                 foreach (var hiddenDataRow in hiddenData)
                 {
                     hiddenDataStringBuilder.AppendLine("<tr>");
+
+                    hiddenDataStringBuilder.AppendLine("<td>");
                     hiddenDataStringBuilder.AppendLine(HtmlEncoder.Default.Encode(hiddenDataRow.Key));
-                    hiddenDataStringBuilder.AppendLine("</tr>");
-                    hiddenDataStringBuilder.AppendLine("<tr>");
+                    hiddenDataStringBuilder.AppendLine("</td>");
+
+                    hiddenDataStringBuilder.AppendLine("<td>");
                     hiddenDataStringBuilder.AppendLine("<pre>");
-                    hiddenDataStringBuilder.AppendLine(HtmlEncoder.Default.Encode(JsonConvert.SerializeObject(hiddenDataRow.Value, Newtonsoft.Json.Formatting.Indented)));
+                    hiddenDataStringBuilder.AppendLine(HtmlEncoder.Default.Encode(JsonConvert.SerializeObject(hiddenDataRow.Value, Formatting.Indented)));
                     hiddenDataStringBuilder.AppendLine("</pre>");
+                    hiddenDataStringBuilder.AppendLine("</td>");
+
                     hiddenDataStringBuilder.AppendLine("</tr>");
                 }
                 hiddenDataStringBuilder.AppendLine("</tbody>");
