@@ -14,7 +14,7 @@ with the right MSBuild incantations to get output copied to the right place.
           <!-- Set the arch-->
           <SetPlatform>Platform=%(Platform)</SetPlatform>
           <!-- The base path for the output. -->
-           <LinkBase>%(Platform)\%(HandlerPath)\</LinkBase>
+          <LinkBase>%(Platform)\%(HandlerPath)\</LinkBase>
           <!-- This reference assembly doesn't need -->
           <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
           <!-- NativeContent is a custom type of item group which is assigned a target path after project references are resolved.  -->
