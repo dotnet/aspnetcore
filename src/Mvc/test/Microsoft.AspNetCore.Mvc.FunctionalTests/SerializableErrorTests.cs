@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        public static TheoryData AcceptHeadersData
+        public static TheoryData<string> AcceptHeadersData
         {
             get
             {
@@ -77,24 +77,39 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             XmlAssert.Equal(expectedXml, responseData);
         }
 
+        public static TheoryData<string, string> InvalidInputAndHeadersData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    {
+                        "application/xml-dcs",
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Employee xmlns =\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite.Models\">" +
+                        "<Id>2</Id><Name>foo</Name></Employee>"
+                    },
+                    {
+                        "application/xml-xmlser",
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Employee>" +
+                        "<Id>2</Id><Name>foo</Name></Employee>"
+                    },
+                };
+            }
+        }
+
         [Theory]
-        [MemberData(nameof(AcceptHeadersData))]
-        public async Task IsReturnedInExpectedFormat(string acceptHeader)
+        [MemberData(nameof(InvalidInputAndHeadersData))]
+        public async Task IsReturnedInExpectedFormat(string acceptHeader, string inputXml)
         {
             // Arrange
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<Employee" +
-                (string.Equals("application/xml-dcs", acceptHeader) ?
-                    " xmlns =\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite.Models\"" :
-                    string.Empty) +
-                ">" +
-                "<Id>2</Id><Name>foo</Name></Employee>";
             var expected = "<Error><Id>The field Id must be between 10 and 100.</Id>" +
                 "<Name>The field Name must be a string or array type with a minimum " +
                 "length of '15'.</Name></Error>";
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SerializableError/CreateEmployee");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse(acceptHeader));
-            request.Content = new StringContent(input, Encoding.UTF8, acceptHeader);
+            request.Content = new StringContent(inputXml, Encoding.UTF8, acceptHeader);
 
             // Act
             var response = await Client.SendAsync(request);
@@ -105,22 +120,37 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             XmlAssert.Equal(expected, responseData);
         }
 
+        public static TheoryData<string, string> IncorrectTopLevelInputAndHeadersData
+        {
+            get
+            {
+                return new TheoryData<string, string>
+                {
+                    {
+                        "application/xml-dcs",
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Employees xmlns =\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite.Models\">" +
+                        "<Id>2</Id><Name>foo</Name></Employee>"
+                    },
+                    {
+                        "application/xml-xmlser",
+                        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Employees>" +
+                        "<Id>2</Id><Name>foo</Name></Employee>"
+                    },
+                };
+            }
+        }
+
         [Theory]
-        [MemberData(nameof(AcceptHeadersData))]
-        public async Task IncorrectTopLevelElement_ReturnsExpectedError(string acceptHeader)
+        [MemberData(nameof(IncorrectTopLevelInputAndHeadersData))]
+        public async Task IncorrectTopLevelElement_ReturnsExpectedError(string acceptHeader, string inputXml)
         {
             // Arrange
-            var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-                "<Employees" +
-                (string.Equals("application/xml-dcs", acceptHeader) ?
-                    " xmlns =\"http://schemas.datacontract.org/2004/07/XmlFormattersWebSite.Models\"" :
-                    string.Empty) +
-                ">" +
-                "<Id>2</Id><Name>foo</Name></Employees>";
             var expected = "<Error><MVC-Empty>An error occurred while deserializing input data.</MVC-Empty></Error>";
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SerializableError/CreateEmployee");
             request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse(acceptHeader));
-            request.Content = new StringContent(input, Encoding.UTF8, acceptHeader);
+            request.Content = new StringContent(inputXml, Encoding.UTF8, acceptHeader);
 
             // Act
             var response = await Client.SendAsync(request);
