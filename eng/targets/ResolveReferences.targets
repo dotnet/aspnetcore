@@ -165,7 +165,7 @@
   </Target>
 
   <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
-    <ItemGroup Condition=" '$(IsImplementationProject)' == 'true' OR '$(IsProjectReferenceProvider)' == 'true' ">
+    <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
       </ProvidesReference>

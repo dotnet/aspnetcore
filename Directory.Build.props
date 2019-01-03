@@ -108,6 +108,11 @@
 
   <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
 
+  <PropertyGroup>
+    <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
+    <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
+  </PropertyGroup>
+
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />

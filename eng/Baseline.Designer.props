@@ -31,6 +31,19 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.ApiAuthorization.IdentityServer-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' ">
+    <BaselinePackageVersion>2.2.0-preview-35687</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="IdentityServer4" Version="[2.3.0-preview1-update2, )" />
+    <BaselinePackageReference Include="IdentityServer4.AspNetIdentity" Version="[2.3.0-preview1-update2, )" />
+    <BaselinePackageReference Include="IdentityServer4.EntityFramework" Version="[2.3.0-preview1-update1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.2.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModule-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -47,6 +60,26 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Authentication.AzureAD.UI-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Authentication.AzureADB2C.UI-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Cookies-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Cookies' ">
@@ -423,6 +456,48 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Identity.EntityFrameworkCore-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Identity.Specification.Tests-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.Specification.Tests' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.Specification.Tests' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="xunit.assert" Version="[2.3.1, )" />
+    <BaselinePackageReference Include="xunit.extensibility.core" Version="[2.3.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Identity.UI-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Identity" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Identity-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.JsonPatch-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.JsonPatch' ">
@@ -996,6 +1071,25 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Identity.Core-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.Extensions.Identity.Stores-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' ">
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Net.Http.Headers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' ">
