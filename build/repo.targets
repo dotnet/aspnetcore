@@ -1,7 +1,6 @@
 <Project>
   <Import Project="RepositoryBuild.targets" />
   <Import Project="PackageArchive.targets" />
-  <Import Project="AzureIntegration.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="SharedFxInstaller.targets" />
   <Import Project="Publish.targets" />
@@ -19,7 +18,7 @@
     <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
     <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects;BuildRepositories</CompileDependsOn>
     <PackageDependsOn Condition=" '$(_ProjectsOnly)' == 'true'">$(PackageDependsOn);PackProjects</PackageDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;CheckExpectedPackagesExist</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;BuildSiteExtension;CheckExpectedPackagesExist</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
     <TestDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(TestDependsOn);_TestRepositories</TestDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetProjectArtifactInfo</GetArtifactInfoDependsOn>

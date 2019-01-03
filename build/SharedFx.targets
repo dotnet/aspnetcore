@@ -72,8 +72,6 @@
     <MSBuild Projects="$(MetapackageWorkDirectory)$(MetapackageName).csproj" Targets="Restore" Properties="$(CommonProps);_Target=Restore" />
     <!-- Pack -->
     <MSBuild Projects="$(MetapackageWorkDirectory)$(MetapackageName).csproj" Targets="Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
-    <!-- Pack logging site extension -->
-    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Condition="'$(OS)' == 'Windows_NT'" Targets="Restore;Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
   </Target>
 
   <Target Name="BuildMetapackages">
@@ -99,6 +97,22 @@
       Projects="@(_MetapackageBuilderProject)"
       Targets="_BuildMetapackage"
       BuildInParallel="false" />
+  </Target>
+
+  <Target Name="BuildSiteExtension" DependsOnTargets="BuildMetapackages">
+    <PropertyGroup>
+      <AzureIntegrationProjProperties>
+        AspNetUniverseBuildOffline=true;
+        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
+        BuildNumber=$(BuildNumber);
+        Configuration=$(Configuration);
+        IsFinalBuild=$(IsFinalBuild);
+      </AzureIntegrationProjProperties>
+    </PropertyGroup>
+
+    <!-- Pack logging site extension -->
+    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Condition="'$(OS)' == 'Windows_NT'" Targets="Restore;Pack" Properties="$(AzureIntegrationProjProperties);PackageOutputPath=$(BuildDir)" />
   </Target>
 
   <Target Name="DefineSharedFxPrerequisites" DependsOnTargets="ResolveCommitHash">
