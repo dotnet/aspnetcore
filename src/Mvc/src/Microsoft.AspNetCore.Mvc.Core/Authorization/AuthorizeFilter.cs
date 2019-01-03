@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     /// </summary>
     public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
+        // Property key set by authorization middleware when it is run
+        private const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareInvoked";
+
         private AuthorizationPolicy _effectivePolicy;
 
         /// <summary>
@@ -170,11 +173,18 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (context.HttpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
+            {
+                // Authorization has already run in middleware. Don't re-run for performance
+                return;
+            }
+
             if (!context.IsEffectivePolicy(this))
             {
                 return;
             }
 
+            // IMPORTANT: Changes to authorization logic should be mirrored in security's AuthorizationMiddleware
             var effectivePolicy = await GetEffectivePolicyAsync(context);
             if (effectivePolicy == null)
             {
