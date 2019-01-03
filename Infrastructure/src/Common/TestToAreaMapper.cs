@@ -42,6 +42,7 @@ namespace Common
                 ("ServerComparison", "area-servers"),
                 ("Templates", "area-tools"),
                 ("Microsoft.DotNet.Watcher", "area-tools"),
+                ("Microsoft.AspNetCore.Identity", "area-identity"),
 
                 // Tools
                 ("Microsoft.VisualStudio.Web.CodeGeneration", "area-webtools"),
