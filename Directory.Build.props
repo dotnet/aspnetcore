@@ -38,6 +38,8 @@
 
   <PropertyGroup>
     <StandardTestTfms>netcoreapp2.1;net461</StandardTestTfms>
+    <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
+    <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
   </PropertyGroup>
 
   <Import Project="eng\Dependencies.props" />

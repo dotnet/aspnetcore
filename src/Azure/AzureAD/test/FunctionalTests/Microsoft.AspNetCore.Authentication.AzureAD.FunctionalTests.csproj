@@ -17,6 +17,5 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
-
-  <Import Project="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.targets" />
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 </Project>

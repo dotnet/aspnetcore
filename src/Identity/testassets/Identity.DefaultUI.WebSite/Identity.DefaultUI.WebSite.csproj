@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\test\InMemory.Test\InMemoryUserStore.cs" Link="Services\InMemoryUserStore.cs" />
-    <Compile Include="..\..\..\Shared\Poco*.cs" Link="Data\%(FileName)%(Extension)" />
+    <Compile Include="..\..\test\InMemory.Test\InMemoryUserStore.cs" LinkBase="Services" />
+    <Compile Include="$(IdentityTestSharedSourceRoot)PocoModel\**\*.cs" LinkBase="Data" />
   </ItemGroup>
 
   <ItemGroup>
