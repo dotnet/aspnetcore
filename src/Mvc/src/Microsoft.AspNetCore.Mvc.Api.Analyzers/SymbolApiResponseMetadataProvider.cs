@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         internal static IReadOnlyList<ITypeSymbol> GetConventionTypes(in ApiControllerSymbolCache symbolCache, IMethodSymbol method)
         {
-            var attributes = method.ContainingType.GetAttributes(symbolCache.ApiConventionTypeAttribute).ToArray();
+            var attributes = method.ContainingType.GetAttributes(symbolCache.ApiConventionTypeAttribute, inherit: true).ToArray();
             if (attributes.Length == 0)
             {
                 attributes = method.ContainingAssembly.GetAttributes(symbolCache.ApiConventionTypeAttribute).ToArray();

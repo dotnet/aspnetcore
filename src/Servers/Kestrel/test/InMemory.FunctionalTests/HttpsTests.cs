@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -134,6 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
+                await server.StopAsync();
             }
 
             Assert.Equal(1, loggerProvider.FilterLogger.LastEventId.Id);
@@ -162,6 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
+                await server.StopAsync();
             }
 
             Assert.Equal(1, loggerProvider.FilterLogger.LastEventId.Id);
@@ -211,6 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await sslStream.ReadAsync(new byte[32], 0, 32);
                 }
+                await server.StopAsync();
             }
 
             Assert.False(loggerProvider.ErrorLogger.ObjectDisposedExceptionLogged);
@@ -280,6 +283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
                         checkCertificateRevocation: false);
                 }
+                await server.StopAsync();
             }
 
             Assert.False(loggerProvider.ErrorLogger.ObjectDisposedExceptionLogged);
@@ -287,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/pull/1197
         [Fact]
-        public void ConnectionFilterDoesNotLeakBlock()
+        public async Task ConnectionFilterDoesNotLeakBlock()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
             LoggerFactory.AddProvider(loggerProvider);
@@ -303,6 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     connection.Reset();
                 }
+                await server.StopAsync();
             }
         }
 
@@ -343,6 +348,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     Assert.Equal(0, await connection.Stream.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
                 }
+                await server.StopAsync();
             }
 
             await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
@@ -372,6 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                             enabledSslProtocols: SslProtocols.Tls,
                             checkCertificateRevocation: false));
                 }
+                await server.StopAsync();
             }
 
             await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();

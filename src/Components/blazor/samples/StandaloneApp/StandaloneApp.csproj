@@ -2,10 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-
-    <!-- Local alternative to <RunArguments>blazor serve</RunArguments> -->
-    <RunCommand>dotnet</RunCommand>
-    <RunArguments>run --project ../../src/Microsoft.AspNetCore.Blazor.Cli serve</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,4 +11,8 @@
   <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" /> -->
   <Import Project="..\..\..\src\Microsoft.AspNetCore.Components.Build\ReferenceFromSource.props" />
 
+  <ItemGroup>
+    <!-- Allow the build to specify the version of the Razor SDK directly -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
 </Project>

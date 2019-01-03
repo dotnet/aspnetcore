@@ -1,4 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
   <PropertyGroup>
     <TargetFramework>netstandard1.0</TargetFramework>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
@@ -14,14 +16,10 @@
 
   <PropertyGroup>
     <RestoreSources Condition="Exists('$(RepositoryRoot).deps\ANCM')">
-        $(RepositoryRoot).deps\ANCM;
-    </RestoreSources>
-    <RestoreSources>
       $(RestoreSources);
-      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
-      https://api.nuget.org/v3/index.json;
-      https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
+      $(RepositoryRoot).deps\ANCM;
     </RestoreSources>
   </PropertyGroup>
-
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Target Name="Build" />
 </Project>

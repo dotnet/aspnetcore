@@ -1,15 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Razor;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Test.Helpers;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Build.Test
 {
@@ -80,6 +79,11 @@ namespace Test
     }
 }
 ");
+
+        public GenericComponentRazorIntegrationTest(ITestOutputHelper output)
+            : base(output)
+        {
+        }
 
         internal override bool UseTwoPhaseCompilation => true;
 
@@ -312,46 +316,6 @@ namespace Test
                 frame => AssertFrame.Text(frame, "3", 0),
                 frame => AssertFrame.Text(frame, "FOO", 1),
                 frame => AssertFrame.Text(frame, "39", 2));
-        }
-
-        [Fact]
-        public void GenericComponent_WithoutAnyTypeParameters_TriggersDiagnostic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(GenericContextComponent);
-
-            // Act
-            var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
-<GenericContext />");
-
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(BlazorDiagnosticFactory.GenericComponentTypeInferenceUnderspecified.Id, diagnostic.Id);
-            Assert.Equal(
-                "The type of component 'GenericContext' cannot be inferred based on the values provided. Consider " +
-                "specifying the type arguments directly using the following attributes: 'TItem'.",
-                diagnostic.GetMessage());
-        }
-
-        [Fact]
-        public void GenericComponent_WithMissingTypeParameters_TriggersDiagnostic()
-        {
-            // Arrange
-            AdditionalSyntaxTrees.Add(MultipleGenericParameterComponent);
-
-            // Act
-            var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
-<MultipleGenericParameter TItem1=int />");
-
-            // Assert
-            var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Same(BlazorDiagnosticFactory.GenericComponentMissingTypeArgument.Id, diagnostic.Id);
-            Assert.Equal(
-                "The component 'MultipleGenericParameter' is missing required type arguments. " +
-                "Specify the missing types using the attributes: 'TItem2', 'TItem3'.",
-                diagnostic.GetMessage());
         }
     }
 }

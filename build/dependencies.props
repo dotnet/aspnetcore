@@ -107,7 +107,7 @@
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview.18604.3</MicrosoftEntityFrameworkCorePackageVersion>
 
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview.18623.1</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview.19051.4</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
@@ -142,9 +142,9 @@
     <DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>
     <DevDependency_WindowsAzureStoragePackageVersion>8.7.0</DevDependency_WindowsAzureStoragePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <IdentityServer4PackageVersion>2.3.0-preview1-update2</IdentityServer4PackageVersion>
-    <IdentityServer4AspNetIdentityPackageVersion>2.3.0-preview1-update2</IdentityServer4AspNetIdentityPackageVersion>
-    <IdentityServer4EntityFrameworkPackageVersion>2.3.0-preview1-update1</IdentityServer4EntityFrameworkPackageVersion>
+    <IdentityServer4AspNetIdentityPackageVersion>2.3.0</IdentityServer4AspNetIdentityPackageVersion>
+    <IdentityServer4EntityFrameworkPackageVersion>2.3.0</IdentityServer4EntityFrameworkPackageVersion>
+    <IdentityServer4PackageVersion>2.3.0</IdentityServer4PackageVersion>
     <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
     <MessagePackPackageVersion>1.7.3.4</MessagePackPackageVersion>

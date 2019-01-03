@@ -45,6 +45,9 @@ Build native projects (C++).
 .PARAMETER NodeJS
 Build NodeJS projects (TypeScript, JS).
 
+.PARAMETER Installers
+Build Windows Installers. Required .NET 3.5 to be installed (WiX toolset requirement).
+
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
@@ -96,6 +99,8 @@ param(
     [switch]$Native,
     [Parameter(ParameterSetName = 'Groups')]
     [switch]$NodeJS,
+    [Parameter(ParameterSetName = 'Groups')]
+    [switch]$Installers,
 
     # Other lifecycle targets
     [switch]$Help, # Show help
@@ -236,18 +241,20 @@ elseif ($Projects) {
 }
 else {
     # When adding new sub-group build flags, add them to this check.
-    if((-not $Native) -and (-not $Managed) -and (-not $NodeJS)) {
-        Write-Warning "No default group of projects was specified, so building the 'managed' subset of projects. Run ``build.cmd -help`` for more details."
+    if((-not $Native) -and (-not $Managed) -and (-not $NodeJS) -and (-not $Installers)) {
+        Write-Warning "No default group of projects was specified, so building the 'managed' and 'native' subsets of projects. Run ``build.cmd -help`` for more details."
 
         # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
-        # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
+        # Now that we support subfolder invokations of build.cmd, we will be pushing to have build.cmd build everything (-all) by default
 
         $Managed = $true
+        $Native = $true
     }
 
     $MSBuildArguments += "/p:BuildManaged=$Managed"
     $MSBuildArguments += "/p:BuildNative=$Native"
     $MSBuildArguments += "/p:BuildNodeJS=$NodeJS"
+    $MSBuildArguments += "/p:BuildWindowsInstallers=$Installers"
 }
 
 # Target selection

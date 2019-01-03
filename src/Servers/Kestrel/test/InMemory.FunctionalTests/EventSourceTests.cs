@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         .DefaultTimeout();
                     await connection.Receive("HTTP/1.1 200");
                 }
+
+                await server.StopAsync();
             }
 
             // capture list here as other tests executing in parallel may log events

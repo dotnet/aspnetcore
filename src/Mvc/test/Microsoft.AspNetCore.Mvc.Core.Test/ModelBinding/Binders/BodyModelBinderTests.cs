@@ -839,8 +839,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }
 
-            public override InputFormatterExceptionPolicy ExceptionPolicy => InputFormatterExceptionPolicy.AllExceptions;
-
             public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
             {
                 if (_throwNonInputFormatterException)

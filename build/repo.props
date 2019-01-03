@@ -64,6 +64,35 @@
       </ItemGroup>
     </When>
     <Otherwise>
+      <ItemGroup Condition=" '$(BuildWindowsInstallers)' == 'true' ">
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMPackageResolver/ANCMPackageResolver.csproj" />
+
+        <!-- Build the ANCM custom action -->
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/CustomAction/aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/CustomAction/aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x86" />
+
+        <!-- Build the ANCM msis -->
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV1/AncmIISExpressV1.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV1/AncmIISExpressV1.wixproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMV1/ANCMV1.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMV1/ANCMV1.wixproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMV2/ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/AspNetCoreModule-Setup/ANCMV2/ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
+
+        <!-- Build the SharedFramework installers -->
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/SharedFrameworkBundle/SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
+
+        <!-- Build the SharedFramework wixlib -->
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/SharedFrameworkLib/SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/SharedFrameworkLib/SharedFrameworkLib.wixproj" AdditionalProperties="Platform=x86" />
+
+        <!-- Windows hosting bundled -->
+        <ProjectToBuild Include="$(RepositoryRoot)src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
+      </ItemGroup>
+
       <ItemGroup>
         <NpmProjectDirectory Include="$(RepositoryRoot)src\Middleware\CORS\test\FunctionalTests\" />
 
@@ -84,6 +113,7 @@
                           $(RepositoryRoot)src\Hosting\**\*.*proj;
                           $(RepositoryRoot)src\Http\**\*.*proj;
                           $(RepositoryRoot)src\Html\**\*.*proj;
+                          $(RepositoryRoot)src\Identity\**\*.*proj;
                           $(RepositoryRoot)src\Servers\**\*.csproj;
                           $(RepositoryRoot)src\Security\**\*.*proj;
                           $(RepositoryRoot)src\Shared\**\*.*proj;
@@ -91,6 +121,7 @@
                           $(RepositoryRoot)src\Middleware\**\*.*proj;
                           $(RepositoryRoot)src\Razor\**\*.*proj;
                           $(RepositoryRoot)src\Mvc\**\*.*proj;
+                          $(RepositoryRoot)src\Azure\**\*.*proj;
                           "
                         Exclude="
                           @(ProjectToExclude);
