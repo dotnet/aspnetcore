@@ -36,10 +36,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="AADIntegration" />
     <Repository Include="AzureIntegration" />
     <Repository Include="Components" />
-    <Repository Include="Identity" />
     <Repository Include="SignalR" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
