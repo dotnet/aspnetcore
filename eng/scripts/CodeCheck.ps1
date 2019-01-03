@@ -3,6 +3,9 @@
 .SYNOPSIS
 This script runs a quick check for common errors, such as checking that Visual Studio solutions are up to date or that generated code has been committed to source.
 #>
+param(
+    [switch]$ci
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
@@ -40,7 +43,11 @@ try {
     Write-Host "Re-running code generation"
 
     Invoke-Block {
-        & $repoRoot/build.cmd /t:GenerateProjectList
+        [string[]] $generateArgs = @()
+        if ($ci) {
+            $generateArgs += '-ci'
+        }
+        & $repoRoot/build.cmd /t:GenerateProjectList @generateArgs
     }
 
     & git diff-index --quiet HEAD --
