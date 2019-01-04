@@ -35,6 +35,27 @@
     <Reference Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" />
   </ItemGroup>
 
+  <Target Name="GenerateBuildVariablesFile" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <GeneratedFileContents>
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
+{
+    internal static partial class BuildVariables
+    {
+        static partial void InitializeVariables()
+        {
+            _msBuildPath = @"$(MSBuildBinPath)\MSBuild.exe"%3B
+        }
+    }
+}
+      </GeneratedFileContents>
+    </PropertyGroup>
+    <WriteLinesToFile Lines="$(GeneratedFileContents)" File="$(BuildVariablesGeneratedFile)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+  
   <Target Name="EnsureBuildVariablesGeneratedFile">
     <Error Text="BuildVariables.generated.cs was not found. Run .\build /t:Prepare from the root of the repository to generate it." Condition="!Exists('$(BuildVariablesGeneratedFile)')" />
   </Target>
