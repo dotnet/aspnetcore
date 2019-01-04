@@ -24,24 +24,4 @@
   </ItemGroup>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
-
-  <Target Name="CopyViews" AfterTargets="Build" Condition="$(TargetFramework) != ''">
-    <ItemGroup>
-      <_IdentityUIViewsAssemblies Include="$(MSBuildThisFileDirectory)..\..\UI\src\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
-    </ItemGroup>
-    <Copy
-      SourceFiles="@(_IdentityUIViewsAssemblies)"
-      DestinationFolder="$(OutputPath)" />
-  </Target>
-
-  <Target Name="VerifyBuildOutputs" AfterTargets="Build" Condition="$(TargetFramework) != ''">
-    <ItemGroup>
-      <ExpectedOutputFile Include="$(OutputPath)Microsoft.AspNetCore.Identity.UI.Views.V3.dll" />
-      <ExpectedOutputFile Include="$(OutputPath)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
-    </ItemGroup>
-
-    <Error Text="Unable to find precompiled view file %(ExpectedOutputFile.Identity)"
-           Condition="!Exists('%(ExpectedOutputFile.Identity)')" />
-  </Target>
-
 </Project>
