@@ -35,12 +35,8 @@
   <Target Name="RestoreNpm" Condition="@(NpmProjectDirectory->Count()) != 0">
     <Message Text="Restoring NPM modules" Importance="high" />
 
-    <PropertyGroup>
-      <NpmInstallCommand Condition=" '$(CI)' != 'true' ">install --no-optional</NpmInstallCommand>
-      <NpmInstallCommand Condition=" '$(CI)' == 'true' ">ci</NpmInstallCommand>
-    </PropertyGroup>
-
-    <Exec Command="npm $(NpmInstallCommand)" WorkingDirectory="%(NpmProjectDirectory.Identity)" Condition=" '%(NpmProjectDirectory.Identity)' != '' " />
+    <!-- Always run `npm ci` because `npm install` has a tendancy to churn package-lock.json for no apparent reason. -->
+    <Exec Command="npm ci" WorkingDirectory="%(NpmProjectDirectory.Identity)" Condition=" '%(NpmProjectDirectory.Identity)' != '' " />
   </Target>
 
   <Target Name="PrepareOutputPaths">

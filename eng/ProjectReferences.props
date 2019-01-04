@@ -123,7 +123,10 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.WebApiCompatShim\Microsoft.AspNetCore.Mvc.WebApiCompatShim.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.Extensions.ApiDescription.Design\Microsoft.Extensions.ApiDescription.Design.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" ProjectPath="$(RepositoryRoot)src\Azure\ApplicationInsights.HostingStartup\src\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" ProjectPath="$(RepositoryRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServicesIntegration" ProjectPath="$(RepositoryRoot)src\Azure\AzureAppServicesIntegration\src\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
   </ItemGroup>
 </Project>

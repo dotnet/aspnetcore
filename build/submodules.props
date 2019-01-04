@@ -46,8 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ShippedRepository Include="AzureIntegration" RootPath="$(RepositoryRoot)src\AzureIntegration\" />
-    <ShippedRepository Include="MetaPackages" RootPath="$(RepositoryRoot)src\MetaPackages\" PatchPolicy="CascadeVersions" />
     <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\"/>
     <ShippedRepository Include="SignalR" RootPath="$(RepositoryRoot)src\SignalR\" />
   </ItemGroup>

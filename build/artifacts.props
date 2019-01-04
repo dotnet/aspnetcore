@@ -170,7 +170,6 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" Category="ship" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.ApiDescription.Design" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" />
@@ -185,7 +184,6 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" />
-    <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
 
     <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship"/>
   </ItemGroup>
