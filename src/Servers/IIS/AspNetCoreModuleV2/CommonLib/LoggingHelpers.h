@@ -7,14 +7,12 @@
 
 class LoggingHelpers
 {
-
     class Redirection: NonCopyable
     {
     public:
 
-        Redirection(HostFxrErrorRedirector redirector, std::unique_ptr<BaseOutputManager> outputManager)
-            : m_redirector(std::move(redirector)),
-              m_outputManager(std::move(outputManager))
+        Redirection(std::unique_ptr<BaseOutputManager> outputManager)
+            : m_outputManager(std::move(outputManager))
         {
             m_outputManager->TryStartRedirection();
         }
@@ -25,7 +23,6 @@ class LoggingHelpers
         }
 
     private:
-        HostFxrErrorRedirector m_redirector;
         std::unique_ptr<BaseOutputManager> m_outputManager;
     };
 
@@ -33,14 +30,16 @@ public:
 
     static
     Redirection
-    StartRedirection(
-        RedirectionOutput& output,
-        HostFxr& hostFxr,
-        const IHttpServer& server,
-        bool enableLogging,
-        std::wstring outputFileName,
-        std::wstring applicationPath
+    StartStdOutRedirection(
+        RedirectionOutput& output
     );
 
+    static std::shared_ptr<RedirectionOutput>
+    CreateOutputs(
+        bool enableLogging,
+        std::wstring outputFileName,
+        std::wstring applicationPath,
+        std::shared_ptr<RedirectionOutput> stringStreamOutput
+    );
 };
 

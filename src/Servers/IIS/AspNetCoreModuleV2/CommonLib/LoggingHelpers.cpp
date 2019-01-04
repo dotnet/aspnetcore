@@ -3,44 +3,33 @@
 
 #include "stdafx.h"
 #include "LoggingHelpers.h"
-#include "FileOutputManager.h"
 #include "PipeOutputManager.h"
-#include "NullOutputManager.h"
 #include <Windows.h>
 #include "exceptions.h"
 #include "BaseOutputManager.h"
 
 LoggingHelpers::Redirection
-LoggingHelpers::StartRedirection(
-    RedirectionOutput& output,
-    HostFxr& hostFxr,
-    const IHttpServer& server,
-    bool enableLogging,
-    std::wstring outputFileName,
-    std::wstring applicationPath
+LoggingHelpers::StartStdOutRedirection(
+    RedirectionOutput& output
 )
 {
-    // Check if there is an existing active console window before redirecting
-    // Window == IISExpress with active console window, don't redirect to a pipe
-    // if true.
-    CONSOLE_SCREEN_BUFFER_INFO dummy;
+    LOG_INFOF(L"Redirecting stdout/stderr to a pipe.");
+    auto outputManager = std::make_unique<PipeOutputManager>(output, true);
+    return Redirection(std::move(outputManager));
+}
 
-    auto enableNativeLogging = !server.IsCommandLineLaunch() & !hostFxr.SupportsOutputRedirection();
-    auto hostFxrRedirection = hostFxr.RedirectOutput(output);
-    std::unique_ptr<BaseOutputManager> outputManager;
-
+std::shared_ptr<RedirectionOutput> LoggingHelpers::CreateOutputs(
+    bool enableLogging,
+    std::wstring outputFileName,
+    std::wstring applicationPath,
+    std::shared_ptr<RedirectionOutput> stringStreamOutput)
+{
+    auto stdOutOutput = std::make_shared<StandardOutputRedirectionOutput>();
+    std::shared_ptr<RedirectionOutput> fileOutput;
     if (enableLogging)
     {
-        outputManager = std::make_unique<FileOutputManager>(output, outputFileName, applicationPath, enableNativeLogging);
-    }
-    else if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &dummy))
-    {
-        outputManager = std::make_unique<PipeOutputManager>(output, enableNativeLogging);
-    }
-    else
-    {
-        outputManager = std::make_unique<NullOutputManager>(output);
+        fileOutput = std::make_shared<FileRedirectionOutput>(applicationPath, outputFileName);
     }
 
-    return Redirection(std::move(hostFxrRedirection), std::move(outputManager));
+    return std::make_shared<AggregateRedirectionOutput>(std::move(fileOutput), std::move(stdOutOutput), std::move(stringStreamOutput));
 }

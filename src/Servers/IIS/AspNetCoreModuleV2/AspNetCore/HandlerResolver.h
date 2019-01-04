@@ -25,9 +25,9 @@ private:
         const HostFxrResolutionResult& hostfxrOptions,
         PCWSTR libraryName,
         std::wstring& handlerDllPath,
-        RedirectionOutput& redirectionOutput,
         const IHttpApplication &pApplication,
-        const ShimOptions& pConfiguration);
+        const ShimOptions& pConfiguration,
+        std::shared_ptr<RedirectionOutput> stringRedirectionOutput);
 
     HMODULE m_hModule;
     const IHttpServer &m_pServer;

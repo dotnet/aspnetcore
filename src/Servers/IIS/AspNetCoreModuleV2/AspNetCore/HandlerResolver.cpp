@@ -6,18 +6,16 @@
 #include "SRWExclusiveLock.h"
 #include "applicationinfo.h"
 #include "EventLog.h"
-#include "HostFxrResolver.h"
 #include "GlobalVersionUtility.h"
 #include "HandleWrapper.h"
 #include "file_utility.h"
 #include "LoggingHelpers.h"
 #include "resources.h"
-#include "ConfigurationLoadException.h"
-#include "WebConfigConfigurationSource.h"
 #include "ModuleHelpers.h"
 #include "BaseOutputManager.h"
 #include "Environment.h"
 #include "HostFxr.h"
+#include "RedirectionOutput.h"
 
 const PCWSTR HandlerResolver::s_pwzAspnetcoreInProcessRequestHandlerName = L"aspnetcorev2_inprocess.dll";
 const PCWSTR HandlerResolver::s_pwzAspnetcoreOutOfProcessRequestHandlerName = L"aspnetcorev2_outofprocess.dll";
@@ -67,13 +65,13 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
             location = options->GetDotnetExeLocation();
 
-            StringStreamRedirectionOutput redirectionOutput;
+            auto redirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 
-            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, redirectionOutput, pApplication, pConfiguration);
+            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, pApplication, pConfiguration, redirectionOutput);
 
             if (FAILED_LOG(hr))
             {
-                auto output = redirectionOutput.GetOutput();
+                auto output = redirectionOutput->GetOutput();
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
@@ -205,9 +203,9 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
     const HostFxrResolutionResult& hostfxrOptions,
     PCWSTR libraryName,
     std::wstring& handlerDllPath,
-    RedirectionOutput& redirectionOutput,
     const IHttpApplication &pApplication,
-    const ShimOptions& pConfiguration
+    const ShimOptions& pConfiguration,
+    std::shared_ptr<RedirectionOutput> stringRedirectionOutput
 )
 try
 {
@@ -222,13 +220,15 @@ try
     HostFxr hostFxr = HostFxr::CreateFromLoadedModule();
 
     {
-        auto outputManager = LoggingHelpers::StartRedirection(
-                    redirectionOutput,
-                    hostFxr,
-                    m_pServer,
-                    pConfiguration.QueryStdoutLogEnabled(),
-                    pConfiguration.QueryStdoutLogFile(),
-                    pApplication.GetApplicationPhysicalPath());
+        auto redirectionOutput = LoggingHelpers::CreateOutputs(
+                pConfiguration.QueryStdoutLogEnabled(),
+                pConfiguration.QueryStdoutLogFile(),
+                pApplication.GetApplicationPhysicalPath(),
+                std::move(stringRedirectionOutput)
+            );
+
+        auto stdOutRedirection = LoggingHelpers::StartStdOutRedirection(*redirectionOutput.get());
+        auto hostFxrErrorRedirection = hostFxr.RedirectOutput(*redirectionOutput.get());
 
         struNativeSearchPaths.resize(dwBufferSize);
         while (TRUE)

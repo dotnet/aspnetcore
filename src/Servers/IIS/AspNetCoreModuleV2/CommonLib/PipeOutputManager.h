@@ -11,7 +11,7 @@ class PipeOutputManager : public BaseOutputManager
     #define PIPE_OUTPUT_THREAD_TIMEOUT 2000
 
     // Max event log message is ~32KB, limit pipe size just below that.
-    #define MAX_PIPE_READ_SIZE 30000
+    #define PIPE_READ_SIZE 4 * 1024
 public:
     PipeOutputManager(RedirectionOutput& output, bool fEnableNativeLogging);
 
@@ -27,6 +27,4 @@ private:
     HANDLE                          m_hErrReadPipe;
     HANDLE                          m_hErrWritePipe;
     HANDLE                          m_hErrThread;
-    CHAR                            m_pipeContents[MAX_PIPE_READ_SIZE] = { 0 };
-    DWORD                           m_numBytesReadTotal;
 };

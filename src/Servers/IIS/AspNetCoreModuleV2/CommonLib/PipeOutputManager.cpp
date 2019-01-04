@@ -18,8 +18,7 @@ PipeOutputManager::PipeOutputManager(RedirectionOutput& output, bool fEnableNati
     BaseOutputManager(output, fEnableNativeLogging),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
-    m_hErrThread(nullptr),
-    m_numBytesReadTotal(0)
+    m_hErrThread(nullptr)
 {
 }
 
@@ -146,22 +145,6 @@ void PipeOutputManager::Stop()
         CloseHandle(m_hErrReadPipe);
         m_hErrReadPipe = INVALID_HANDLE_VALUE;
     }
-
-    // If we captured any output, relog it to the original stdout
-    // Useful for the IIS Express scenario as it is running with stdout and stderr
-    auto capturedText = to_wide_string(std::string(m_pipeContents, m_numBytesReadTotal), GetConsoleOutputCP());
-
-    m_output.Append(capturedText);
-
-    if (!capturedText.empty())
-    {
-        // printf will fail in in full IIS
-        if (wprintf(capturedText.c_str()) != -1)
-        {
-            // Need to flush contents for the new stdout and stderr
-            _flushall();
-        }
-    }
 }
 
 
@@ -178,38 +161,23 @@ PipeOutputManager::ReadStdErrHandle(
 void
 PipeOutputManager::ReadStdErrHandleInternal()
 {
+    std::string tempBuffer;
+    tempBuffer.resize(PIPE_READ_SIZE);
+
     // If ReadFile ever returns false, exit the thread
     DWORD dwNumBytesRead = 0;
     while (true)
     {
         // Fill a maximum of MAX_PIPE_READ_SIZE into a buffer.
         if (ReadFile(m_hErrReadPipe,
-            &m_pipeContents[m_numBytesReadTotal],
-            MAX_PIPE_READ_SIZE - m_numBytesReadTotal,
+            tempBuffer.data(),
+            PIPE_READ_SIZE,
             &dwNumBytesRead,
             nullptr))
         {
-            m_numBytesReadTotal += dwNumBytesRead;
-            if (m_numBytesReadTotal >= MAX_PIPE_READ_SIZE)
-            {
-                break;
-            }
+            m_output.Append(to_wide_string(tempBuffer.substr(dwNumBytesRead), GetConsoleOutputCP()));
         }
         else
-        {
-            return;
-        }
-    }
-
-    // Using std::string as a wrapper around new char[] so we don't need to call delete
-    // Also don't allocate on stack as stack size is 128KB by default.
-    std::string tempBuffer;
-    tempBuffer.resize(MAX_PIPE_READ_SIZE);
-
-    // After reading the maximum amount of data, keep reading in a loop until Stop is called on the output manager.
-    while (true)
-    {
-        if (!ReadFile(m_hErrReadPipe, tempBuffer.data(), MAX_PIPE_READ_SIZE, &dwNumBytesRead, nullptr))
         {
             return;
         }

@@ -156,6 +156,17 @@ private:
     return hr;
 }
 
+ __declspec(noinline) inline HRESULT LogHResultFailed(LOCATION_ARGUMENTS const std::error_code& error_code) noexcept(true)
+{
+    if (error_code)
+    {
+        TraceHRESULT(LOCATION_CALL error_code.value());
+        DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,  "Failed error_code returned: 0x%x 0xs at " LOCATION_FORMAT, error_code.value(), error_code.message().c_str(), LOCATION_CALL_ONLY);
+        return E_FAIL;
+    }
+    return ERROR_SUCCESS;
+}
+
 __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ONLY)
 {
     try

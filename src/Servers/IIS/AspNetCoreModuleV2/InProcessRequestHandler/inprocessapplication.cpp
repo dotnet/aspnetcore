@@ -224,15 +224,16 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         DWORD waitResult;
 
         {
-            auto redirection = LoggingHelpers::StartRedirection(
-                    m_redirectionOutput,
-                    context->m_hostFxr,
-                    m_pHttpServer,
+            auto redirectionOutput = LoggingHelpers::CreateOutputs(
                     m_pConfig->QueryStdoutLogEnabled(),
                     m_pConfig->QueryStdoutLogFile(),
-                    QueryApplicationPhysicalPath());
+                    QueryApplicationPhysicalPath(),
+                    m_stringRedirectionOutput
+                );
 
-            context->m_redirectionOutput = &m_redirectionOutput;
+            auto redirection = LoggingHelpers::StartStdOutRedirection(*redirectionOutput.get());
+
+            context->m_redirectionOutput = redirectionOutput.get();
 
             //Start CLR thread
             m_clrThread = std::thread(ClrThreadEntryPoint, context);
@@ -242,10 +243,11 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
             // Wait for shutdown request
             waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
-            THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
 
             // Disconnect output
             context->m_redirectionOutput = nullptr;
+
+            THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
         }
 
         LOG_INFOF(L"Starting shutdown sequence %d", waitResult);
@@ -453,7 +455,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
 VOID
 IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) const
 {
-    auto content = m_redirectionOutput.GetOutput();
+    auto content = m_stringRedirectionOutput->GetOutput();
 
     if (context.m_exceptionCode != 0)
     {

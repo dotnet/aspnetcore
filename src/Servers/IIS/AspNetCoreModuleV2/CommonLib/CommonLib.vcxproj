@@ -209,7 +209,6 @@
     <ClInclude Include="EventTracing.h" />
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="file_utility.h" />
-    <ClInclude Include="FileOutputManager.h" />
     <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="HandleWrapper.h" />
@@ -219,12 +218,11 @@
     <ClInclude Include="iapplication.h" />
     <ClInclude Include="debugutil.h" />
     <ClInclude Include="InvalidOperationException.h" />
-    <ClInclude Include="IOutputManager.h" />
+    <ClInclude Include="RedirectionOutput.h" />
     <ClInclude Include="irequesthandler.h" />
     <ClInclude Include="LoggingHelpers.h" />
     <ClInclude Include="ModuleHelpers.h" />
     <ClInclude Include="NonCopyable.h" />
-    <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="PipeOutputManager.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />

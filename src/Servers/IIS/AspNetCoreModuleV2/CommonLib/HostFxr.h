@@ -4,11 +4,11 @@
 #include "exceptions.h"
 #include <functional>
 #include "EventLog.h"
-#include "IOutputManager.h"
+#include "RedirectionOutput.h"
 
 typedef INT(*hostfxr_get_native_search_directories_fn) (INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
 typedef INT(*hostfxr_main_fn) (DWORD argc, CONST PCWSTR argv[]);
-typedef void(*corehost_error_writer_fn) (const CHAR* message);
+typedef void(*corehost_error_writer_fn) (const WCHAR* message);
 typedef corehost_error_writer_fn(*corehost_set_error_writer_fn) (corehost_error_writer_fn error_writer);
 
 class HostFxrErrorRedirector: NonCopyable
@@ -45,12 +45,12 @@ public:
         }
     }
 
-    static void HostFxrErrorRedirectorCallback(const CHAR* message)
+    static void HostFxrErrorRedirectorCallback(const WCHAR* message)
     {
         auto const writeFunction = m_writeFunction;
         if (writeFunction)
         {
-            writeFunction->Append(to_wide_string(message, GetConsoleCP()));
+            writeFunction->Append(std::wstring(message) + L"\r\n");
         }
     }
 
@@ -105,7 +105,7 @@ public:
             return HostFxr(
                 ModuleHelpers::GetKnownProcAddress<hostfxr_main_fn>(hModule, "hostfxr_main"),
                 ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(hModule, "hostfxr_get_native_search_directories"),
-                ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(hModule, "set_error_writer", true));
+                ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(hModule, "hostfxr_set_error_writer", true));
         }
         catch (...)
         {

@@ -25,10 +25,7 @@ FileOutputManager::FileOutputManager(RedirectionOutput& output, std::wstring  pw
 void
 FileOutputManager::Start()
 {
-    SYSTEMTIME systemTime;
     SECURITY_ATTRIBUTES saAttr = { 0 };
-    FILETIME processCreationTime;
-    FILETIME dummyFileTime;
 
     // To make Console.* functions work, allocate a console
     // in the current process.
@@ -36,30 +33,6 @@ FileOutputManager::Start()
     {
         THROW_LAST_ERROR_IF(GetLastError() != ERROR_ACCESS_DENIED);
     }
-
-    // Concatenate the log file name and application path
-    auto logPath = m_applicationPath / m_stdOutLogFileName;
-    create_directories(logPath.parent_path());
-
-    THROW_LAST_ERROR_IF(!GetProcessTimes(
-        GetCurrentProcess(),
-        &processCreationTime,
-        &dummyFileTime,
-        &dummyFileTime,
-        &dummyFileTime));
-
-    THROW_LAST_ERROR_IF(!FileTimeToSystemTime(&processCreationTime, &systemTime));
-
-    m_logFilePath = format(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
-        logPath.c_str(),
-        systemTime.wYear,
-        systemTime.wMonth,
-        systemTime.wDay,
-        systemTime.wHour,
-        systemTime.wMinute,
-        systemTime.wSecond,
-        GetCurrentProcessId());
-
     saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = NULL;

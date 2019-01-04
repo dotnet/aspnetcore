@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
-#include "IOutputManager.h"
 #include "StdWrapper.h"
 #include "EventLog.h"
 #include "exceptions.h"
 #include "StringHelpers.h"
 #include "HostFxr.h"
 #include "debugutil.h"
+#include "RedirectionOutput.h"
 
 class BaseOutputManager
 {

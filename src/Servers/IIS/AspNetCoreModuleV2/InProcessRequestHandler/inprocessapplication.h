@@ -166,7 +166,7 @@ private:
 
     static IN_PROCESS_APPLICATION*  s_Application;
 
-    StringStreamRedirectionOutput   m_redirectionOutput;
+    std::shared_ptr<StringStreamRedirectionOutput> m_stringRedirectionOutput;
 
     inline static const LPCSTR      s_exeLocationParameterName = "InProcessExeLocation";
 
