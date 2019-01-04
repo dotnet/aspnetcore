@@ -270,6 +270,23 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Fact]
+        public async Task FindByPhoneNumberCallsStore()
+        {
+            // Setup
+            var store = new Mock<IUserPhoneNumberStore<PocoUser>>();
+            var user = new PocoUser { PhoneNumber = "222-2222" };
+            store.Setup(s => s.FindByPhoneNumberAsync(user.PhoneNumber, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+
+            // Act
+            var result = await userManager.FindByPhoneNumberAsync(user.PhoneNumber);
+
+            // Assert
+            Assert.Equal(user, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
         public async Task AddToRolesCallsStore()
         {
             // Setup
@@ -788,9 +805,9 @@ namespace Microsoft.AspNetCore.Identity.Test
                     .AddLogging();
 
             services.AddIdentity<PocoUser, PocoRole>(o => o.Tokens.ProviderMap.Add(TokenOptions.DefaultProvider, new TokenProviderDescriptor(typeof(ATokenProvider))
-                {
-                    ProviderInstance = provider
-                })).AddUserStore<NoopUserStore>().AddDefaultTokenProviders();
+            {
+                ProviderInstance = provider
+            })).AddUserStore<NoopUserStore>().AddDefaultTokenProviders();
             var manager = services.BuildServiceProvider().GetService<UserManager<PocoUser>>();
             Assert.ThrowsAsync<NotImplementedException>(() => manager.GenerateUserTokenAsync(new PocoUser(), TokenOptions.DefaultProvider, "purpose"));
         }
@@ -1261,6 +1278,11 @@ namespace Microsoft.AspNetCore.Identity.Test
                 return Task.FromResult(0);
             }
 
+            public Task<PocoUser> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.FromResult<PocoUser>(null);
+            }
+
             public Task AddToRoleAsync(PocoUser user, string roleName, CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
@@ -1533,6 +1555,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
 
             public Task SetPhoneNumberConfirmedAsync(PocoUser user, bool confirmed, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<PocoUser> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
             {
                 throw new NotImplementedException();
             }

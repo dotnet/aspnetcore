@@ -304,6 +304,13 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             return Task.FromResult(0);
         }
 
+        public Task<TUser> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return
+                Task.FromResult(
+                    Users.FirstOrDefault(u => u.PhoneNumber == phoneNumber));
+        }
+
         public Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken cancellationToken = default(CancellationToken))
         {
             user.SecurityStamp = stamp;
