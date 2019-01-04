@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Output = _http1Output;
         }
 
-        public PipeReader Input { get; private set; }
+        public PipeReader Input { get; }
 
         public bool RequestTimedOut => _requestTimedOut;
 
