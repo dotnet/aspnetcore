@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         private static readonly AsyncLocal<ProjectDirectory> _project = new AsyncLocal<ProjectDirectory>();
         private static readonly AsyncLocal<string> _projectTfm = new AsyncLocal<string>();
 
-        protected MSBuildIntegrationTestBase(BuildServerTestFixture buildServer)
+        protected MSBuildIntegrationTestBase(BuildServerTestFixtureBase buildServer)
         {
             BuildServer = buildServer;
         }
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             set => _projectTfm.Value = value;
         }
 
-        protected BuildServerTestFixture BuildServer { get; set; }
+        protected BuildServerTestFixtureBase BuildServer { get; set; }
 
         internal Task<MSBuildResult> DotnetMSBuild(
             string target,

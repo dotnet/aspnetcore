@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -16,6 +17,10 @@
   <ItemGroup>
     <Compile Include="Models/ErrorViewModel.fs" />
     <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.App" IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'==''">

@@ -617,22 +617,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc21")]
-        public async Task Building_NETCoreApp21TargetingProject()
-        {
-            TargetFramework = "netcoreapp2.1";
-
-            // Build
-            var result = await DotnetMSBuild("Build");
-
-            Assert.BuildPassed(result);
-            Assert.FileExists(result, OutputPath, "SimpleMvc21.dll");
-            Assert.FileExists(result, OutputPath, "SimpleMvc21.pdb");
-            Assert.FileExists(result, OutputPath, "SimpleMvc21.Views.dll");
-            Assert.FileExists(result, OutputPath, "SimpleMvc21.Views.pdb");
-        }
-
-        [Fact]
-        [InitializeTestProject("SimpleMvc21")]
         public async Task Building_WorksWhenMultipleRazorConfigurationsArePresent()
         {
             TargetFramework = "netcoreapp2.1";
