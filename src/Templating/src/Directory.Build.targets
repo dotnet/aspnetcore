@@ -2,8 +2,6 @@
   <PropertyGroup>
     <IncludeSource>false</IncludeSource>
     <IncludeSymbols>false</IncludeSymbols>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
   </PropertyGroup>
 
   <Import Project="..\Directory.Build.targets" />
