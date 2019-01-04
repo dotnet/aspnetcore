@@ -39,7 +39,7 @@
     <MakeDir Directories="$(OutputPath);$(IntermediateOutputPath)" />
   </Target>
 
-  <Target Name="GenerateMetadataFiles" DependsOnTargets="PrepareForBuild">
+  <Target Name="GenerateMetadataFiles" BeforeTargets="PrepareForBuild">
     <!--
       Used by the dotnet/core-sdk build to determine which version of Microsoft.NETCore.App is used.
     -->
