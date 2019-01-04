@@ -14,7 +14,6 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
     public class HelloWorldTests : LoggedTest
     {
         public HelloWorldTests(ITestOutputHelper output) : base(output)
