@@ -19,7 +19,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             var current = new DirectoryInfo(AppContext.BaseDirectory);
             while (current != null)
             {
-                if (File.Exists(Path.Combine(current.FullName, "AzureIntegration.sln")))
+                if (File.Exists(Path.Combine(current.FullName, "Azure.sln")))
                 {
                     break;
                 }
@@ -31,7 +31,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                 throw new InvalidOperationException("Could not find the solution directory");
             }
 
-            return Path.GetFullPath(Path.Combine(current.FullName, "sample", "ApplicationInsightsHostingStartupSample"));
+            return Path.GetFullPath(Path.Combine(current.FullName, "ApplicationInsights.HostingStartup", "test", "testassets", "ApplicationInsightsHostingStartupSample"));
         }
 
         protected static bool PreservePublishedApplicationForDebugging
