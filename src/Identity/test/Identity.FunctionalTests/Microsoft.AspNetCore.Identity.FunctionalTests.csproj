@@ -4,7 +4,7 @@
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "></PlatformTarget>
 
-    <!-- These tests are completely busted in Azure Pipelines right now due to deadlocks in EFCore, and OutOfMemoryExceptions caused by https://github.com/aspnet/Extensions/issues/844 -->
+    <!-- These tests are completely busted in Azure Pipelines due to OutOfMemoryExceptions caused by https://github.com/aspnet/Extensions/issues/844 -->
     <SkipTests Condition=" '$(BuildReason)' == 'PullRequest' ">true</SkipTests>
   </PropertyGroup>
 
