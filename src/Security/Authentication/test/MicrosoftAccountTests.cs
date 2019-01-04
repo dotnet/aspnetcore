@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                         }
                         else if (req.Path == new PathString("/me"))
                         {
-                            await res.Describe(context.User);
+                            await res.DescribeAsync(context.User);
                         }
                         else if (req.Path == new PathString("/signIn"))
                         {

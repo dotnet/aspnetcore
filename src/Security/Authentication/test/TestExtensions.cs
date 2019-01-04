@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Authentication
             return transaction;
         }
 
-        public static Task Describe(this HttpResponse res, ClaimsPrincipal principal)
+        public static Task DescribeAsync(this HttpResponse res, ClaimsPrincipal principal)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Authentication
             return res.Body.WriteAsync(xmlBytes, 0, xmlBytes.Length);
         }
 
-        public static Task Describe(this HttpResponse res, IEnumerable<AuthenticationToken> tokens)
+        public static Task DescribeAsync(this HttpResponse res, IEnumerable<AuthenticationToken> tokens)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";

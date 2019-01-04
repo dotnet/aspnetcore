@@ -1302,7 +1302,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                     app.Use(async (context, next) =>
                     {
                         var result = await context.AuthenticateAsync("Cookies");
-                        await Describe(context.Response, result);
+                        await DescribeAsync(context.Response, result);
                     });
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie("Cookies", o =>
@@ -1478,12 +1478,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                         }
                         else if (req.Path == new PathString("/me"))
                         {
-                            await Describe(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme)));
+                            await DescribeAsync(res, AuthenticateResult.Success(new AuthenticationTicket(context.User, new AuthenticationProperties(), CookieAuthenticationDefaults.AuthenticationScheme)));
                         }
                         else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
                         {
                             var ticket = await context.AuthenticateAsync(remainder.Value.Substring(1));
-                            await Describe(res, ticket);
+                            await DescribeAsync(res, ticket);
                         }
                         else if (req.Path == new PathString("/testpath") && testpath != null)
                         {
@@ -1510,7 +1510,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             return server;
         }
 
-        private static Task Describe(HttpResponse res, AuthenticateResult result)
+        private static Task DescribeAsync(HttpResponse res, AuthenticateResult result)
         {
             res.StatusCode = 200;
             res.ContentType = "text/xml";

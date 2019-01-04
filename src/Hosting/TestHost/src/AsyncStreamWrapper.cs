@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         public override void Flush()
         {
-            // Not bocking Flush because things like StreamWriter.Dispose() always call it.
+            // Not blocking Flush because things like StreamWriter.Dispose() always call it.
             _inner.Flush();
         }
 
