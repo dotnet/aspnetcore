@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
 
-    <!-- These tests are completely busted in Azure Pipelines right now due to deadlocks in EFCore on machines with few CPU cores. -->
-    <SkipTests Condition=" '$(BuildReason)' == 'PullRequest' ">true</SkipTests>
+    <!-- These tests are broken in Azure Pipelines right now due to deadlocks in EFCore on machines with few CPU cores. -->
+    <SkipTests Condition=" '$(BUILD_BUILDREASON)' == 'PullRequest' ">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
