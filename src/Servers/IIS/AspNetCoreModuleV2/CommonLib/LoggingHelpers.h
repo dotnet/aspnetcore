@@ -3,33 +3,15 @@
 
 #pragma once
 
-#include "BaseOutputManager.h"
+#include "NonCopyable.h"
+#include "PipeOutputManager.h"
 
 class LoggingHelpers
 {
-    class Redirection: NonCopyable
-    {
-    public:
-
-        Redirection(std::unique_ptr<BaseOutputManager> outputManager)
-            : m_outputManager(std::move(outputManager))
-        {
-            m_outputManager->TryStartRedirection();
-        }
-
-        ~Redirection() noexcept(false)
-        {
-            m_outputManager->TryStopRedirection();
-        }
-
-    private:
-        std::unique_ptr<BaseOutputManager> m_outputManager;
-    };
-
 public:
 
     static
-    Redirection
+    PipeOutputManager
     StartStdOutRedirection(
         RedirectionOutput& output
     );

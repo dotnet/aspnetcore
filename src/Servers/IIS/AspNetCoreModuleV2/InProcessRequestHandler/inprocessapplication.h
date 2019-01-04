@@ -6,7 +6,6 @@
 #include <thread>
 #include "InProcessApplicationBase.h"
 #include "InProcessOptions.h"
-#include "BaseOutputManager.h"
 #include "HostFxr.h"
 
 class IN_PROCESS_HANDLER;

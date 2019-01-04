@@ -67,6 +67,7 @@ namespace IIS.FunctionalTests.Inprocess
 
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [SkipIfDebug]
         public async Task EnableCoreHostTraceLogging_TwoLogFilesCreated()
         {
             var deploymentParameters =
@@ -92,6 +93,7 @@ namespace IIS.FunctionalTests.Inprocess
 
         [ConditionalTheory]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [SkipIfDebug]
         [InlineData("CheckLargeStdErrWrites")]
         [InlineData("CheckLargeStdOutWrites")]
         [InlineData("CheckOversizedStdErrWrites")]

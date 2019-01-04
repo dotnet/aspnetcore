@@ -4,18 +4,16 @@
 #include "stdafx.h"
 #include "LoggingHelpers.h"
 #include "PipeOutputManager.h"
-#include <Windows.h>
 #include "exceptions.h"
-#include "BaseOutputManager.h"
+#include "debugutil.h"
 
-LoggingHelpers::Redirection
+PipeOutputManager
 LoggingHelpers::StartStdOutRedirection(
     RedirectionOutput& output
 )
 {
     LOG_INFOF(L"Redirecting stdout/stderr to a pipe.");
-    auto outputManager = std::make_unique<PipeOutputManager>(output, true);
-    return Redirection(std::move(outputManager));
+    return PipeOutputManager(output);
 }
 
 std::shared_ptr<RedirectionOutput> LoggingHelpers::CreateOutputs(

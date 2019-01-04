@@ -3,29 +3,12 @@
 
 #include "stdafx.h"
 #include "gtest/internal/gtest-port.h"
-#include "FileOutputManager.h"
+#include "PipeOutputManager.h"
 
-class FileManagerWrapper
-{
-public:
-    FileOutputManager* manager;
-    FileManagerWrapper(FileOutputManager* m)
-        : manager(m)
-    {
-        manager->TryStartRedirection();
-    }
-
-    ~FileManagerWrapper()
-    {
-        manager->TryStopRedirection();
-        delete manager;
-    }
-};
-
-namespace FileOutManagerStartupTests
+namespace FileRedirectionOutputTests
 {
     using ::testing::Test;
-    class FileOutputManagerTest : public Test
+    class FileRedirectionOutputTest : public Test
     {
     protected:
         void
@@ -34,11 +17,10 @@ namespace FileOutManagerStartupTests
             PCWSTR expected = L"test";
 
             auto tempDirectory = TempDirectory();
-            StringStreamRedirectionOutput redirectionOutput;
-            FileOutputManager* pManager = new FileOutputManager(redirectionOutput, fileNamePrefix, tempDirectory.path(), true);
 
             {
-                FileManagerWrapper wrapper(pManager);
+                FileRedirectionOutput redirectionOutput(tempDirectory.path(), fileNamePrefix);
+                PipeOutputManager pManager(redirectionOutput);
 
                 wprintf(expected, out);
             }
@@ -53,34 +35,31 @@ namespace FileOutManagerStartupTests
         }
     };
 
-    TEST_F(FileOutputManagerTest, WriteToFileCheckContentsWritten)
+    TEST_F(FileRedirectionOutputTest, WriteToFileCheckContentsWritten)
     {
         Test(L"", stdout);
         Test(L"log", stdout);
     }
 
-    TEST_F(FileOutputManagerTest, WriteToFileCheckContentsWrittenErr)
+    TEST_F(FileRedirectionOutputTest, WriteToFileCheckContentsWrittenErr)
     {
         Test(L"", stderr);
         Test(L"log", stderr);
     }
 }
 
-namespace FileOutManagerOutputTests
+namespace StringStreamRedirectionOutputTests
 {
-    TEST(FileOutManagerOutputTest, StdOut)
+    TEST(StringStreamRedirectionOutputTest, StdOut)
     {
         PCWSTR expected = L"test";
 
-        auto tempDirectory = TempDirectory();
-
-        StringStreamRedirectionOutput redirectionOutput;
-        FileOutputManager* pManager = new FileOutputManager(redirectionOutput, L"", tempDirectory.path(), true);
         {
-            FileManagerWrapper wrapper(pManager);
+            StringStreamRedirectionOutput redirectionOutput;
+            PipeOutputManager pManager(redirectionOutput);
 
             fwprintf(stdout, expected);
-            pManager->Stop();
+            pManager.Stop();
 
             auto output = redirectionOutput.GetOutput();
             ASSERT_FALSE(output.empty());
@@ -89,70 +68,55 @@ namespace FileOutManagerOutputTests
         }
     }
 
-    TEST(FileOutManagerOutputTest, StdErr)
+    TEST(StringStreamRedirectionOutputTest, StdErr)
     {
         PCWSTR expected = L"test";
 
-        auto tempDirectory = TempDirectory();
-
         StringStreamRedirectionOutput redirectionOutput;
-        FileOutputManager* pManager = new FileOutputManager(redirectionOutput, L"", tempDirectory.path().c_str(), true);
-        {
-            FileManagerWrapper wrapper(pManager);
+        PipeOutputManager pManager(redirectionOutput);
 
-            fwprintf(stderr, expected);
-            pManager->Stop();
+        fwprintf(stderr, expected);
+        pManager.Stop();
 
-            auto output = redirectionOutput.GetOutput();
-            ASSERT_FALSE(output.empty());
+        auto output = redirectionOutput.GetOutput();
+        ASSERT_FALSE(output.empty());
 
-            ASSERT_STREQ(output.c_str(), expected);
-        }
+        ASSERT_STREQ(output.c_str(), expected);
     }
 
-    TEST(FileOutManagerOutputTest, CapAt30KB)
+    TEST(StringStreamRedirectionOutputTest, CapAt30KB)
     {
         PCWSTR expected = L"hello world";
 
         auto tempDirectory = TempDirectory();
 
         StringStreamRedirectionOutput redirectionOutput;
-        FileOutputManager* pManager = new FileOutputManager(redirectionOutput, L"", tempDirectory.path(), true);
+        PipeOutputManager pManager(redirectionOutput);
+        for (int i = 0; i < 3000; i++)
         {
-            FileManagerWrapper wrapper(pManager);
-
-            for (int i = 0; i < 3000; i++)
-            {
-                wprintf(expected);
-            }
-            pManager->Stop();
-            auto output = redirectionOutput.GetOutput();
-            ASSERT_FALSE(output.empty());
-
-            ASSERT_EQ(output.size(), 30000);
+            wprintf(expected);
         }
+        pManager.Stop();
+        auto output = redirectionOutput.GetOutput();
+        ASSERT_FALSE(output.empty());
+
+        ASSERT_EQ(output.size(), 30000);
     }
 
-    TEST(FileOutManagerOutputTest, StartStopRestoresCorrectly)
+    TEST(StringStreamRedirectionOutputTest, StartStopRestoresCorrectly)
     {
         PCWSTR expected = L"test";
-
-        auto tempDirectory = TempDirectory();
 
         for (int i = 0; i < 10; i++)
         {
             StringStreamRedirectionOutput redirectionOutput;
-            FileOutputManager* pManager = new FileOutputManager(redirectionOutput, L"", tempDirectory.path(), true);
-            {
-                FileManagerWrapper wrapper(pManager);
+            PipeOutputManager pManager(redirectionOutput);
+            wprintf(expected);
+            pManager.Stop();
+            auto output = redirectionOutput.GetOutput();
+            ASSERT_FALSE(output.empty());
 
-                wprintf(expected);
-                pManager->Stop();
-                auto output = redirectionOutput.GetOutput();
-                ASSERT_FALSE(output.empty());
-
-                ASSERT_STREQ(output.c_str(), expected);
-            }
+            ASSERT_STREQ(output.c_str(), expected);
         }
     }
 }

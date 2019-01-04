@@ -5,9 +5,8 @@
 
 #include "SRWExclusiveLock.h"
 #include "NonCopyable.h"
-#include "exceptions.h"
+#include "HandleWrapper.h"
 #include <fstream>
-#include <filesystem>
 
 class RedirectionOutput
 {
@@ -19,26 +18,10 @@ public:
 class AggregateRedirectionOutput: NonCopyable, public RedirectionOutput
 {
 public:
-    AggregateRedirectionOutput(std::shared_ptr<RedirectionOutput> outputA, std::shared_ptr<RedirectionOutput> outputB, std::shared_ptr<RedirectionOutput> outputC)
-        : m_outputA(std::move(outputA)), m_outputB(std::move(outputB)), m_outputC(std::move(outputC))
-    {
-    }
+    AggregateRedirectionOutput(std::shared_ptr<RedirectionOutput> outputA, std::shared_ptr<RedirectionOutput> outputB,
+                               std::shared_ptr<RedirectionOutput> outputC) noexcept(true);
 
-    void Append(const std::wstring& text) override
-    {
-        if (m_outputA != nullptr)
-        {
-            m_outputA->Append(text);
-        }
-        if (m_outputB != nullptr)
-        {
-            m_outputB->Append(text);
-        }
-        if (m_outputC != nullptr)
-        {
-            m_outputC->Append(text);
-        }
-    }
+    void Append(const std::wstring& text) override;
 
 private:
     std::shared_ptr<RedirectionOutput> m_outputA;
@@ -49,59 +32,11 @@ private:
 class FileRedirectionOutput: NonCopyable, public RedirectionOutput
 {
 public:
-    FileRedirectionOutput(const std::wstring& applicationPath, const std::wstring& fileName)
-    {
-        try
-        {
-            SYSTEMTIME systemTime;
-            FILETIME processCreationTime;
-            FILETIME dummyFileTime;
+    FileRedirectionOutput(const std::wstring& applicationPath, const std::wstring& fileName);
 
-            // Concatenate the log file name and application path
-            auto logPath = std::filesystem::path(applicationPath) / fileName;
-            create_directories(logPath.parent_path());
+    void Append(const std::wstring& text) override;
 
-            THROW_LAST_ERROR_IF(!GetProcessTimes(
-                GetCurrentProcess(),
-                &processCreationTime,
-                &dummyFileTime,
-                &dummyFileTime,
-                &dummyFileTime));
-
-            THROW_LAST_ERROR_IF(!FileTimeToSystemTime(&processCreationTime, &systemTime));
-
-            m_fileName = format(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
-                logPath.c_str(),
-                systemTime.wYear,
-                systemTime.wMonth,
-                systemTime.wDay,
-                systemTime.wHour,
-                systemTime.wMinute,
-                systemTime.wSecond,
-                GetCurrentProcessId());
-
-            m_file.open(m_fileName, std::wofstream::out | std::wofstream::app);
-        }
-        catch (...)
-        {
-            OBSERVE_CAUGHT_EXCEPTION();
-        }
-    }
-
-    void Append(const std::wstring& text)
-    {
-        m_file << text;
-    }
-
-    ~FileRedirectionOutput()
-    {
-        m_file.close();
-        std::error_code ec;
-        if (std::filesystem::file_size(m_fileName, ec) == 0 && SUCCEEDED_LOG(ec))
-        {
-            std::filesystem::remove(m_fileName, ec) && LOG_IF_FAILED(ec);
-        }
-    }
+    ~FileRedirectionOutput() override;
 
 private:
     std::wstring m_fileName;
@@ -111,22 +46,12 @@ private:
 class StandardOutputRedirectionOutput: NonCopyable, public RedirectionOutput
 {
 public:
-    StandardOutputRedirectionOutput(): m_handle(GetStdHandle(STD_OUTPUT_HANDLE))
-    {
-    }
+    StandardOutputRedirectionOutput();
 
-    void Append(const std::wstring& text) override
-    {
-        DWORD nBytesWritten = 0;
-        auto const codePage = GetConsoleOutputCP();
-        auto const encodedByteCount = WideCharToMultiByte(codePage, 0, text.data(), -1, nullptr, 0, nullptr, nullptr);
-        auto encodedBytes = std::shared_ptr<CHAR[]>(new CHAR[encodedByteCount]);
-        WideCharToMultiByte(codePage, 0, text.data(), -1, encodedBytes.get(), encodedByteCount, nullptr, nullptr);
-        WriteFile(m_handle, encodedBytes.get(), encodedByteCount - 1, &nBytesWritten, nullptr);
-    }
+    void Append(const std::wstring& text) override;
 
 private:
-    HANDLE m_handle;
+    HandleWrapper<InvalidHandleTraits> m_handle;
 };
 
 class ForwardingRedirectionOutput: NonCopyable, public RedirectionOutput
@@ -153,16 +78,9 @@ private:
 class StringStreamRedirectionOutput: public RedirectionOutput
 {
 public:
-    StringStreamRedirectionOutput()
-    {
-        InitializeSRWLock(&m_srwLock);
-    }
+    StringStreamRedirectionOutput();
 
-    void Append(const std::wstring& text) override
-    {
-        SRWExclusiveLock lock(m_srwLock);
-        m_output << text;
-    }
+    void Append(const std::wstring& text) override;
 
     std::wstring GetOutput() const
     {
@@ -170,6 +88,7 @@ public:
     }
 
 private:
+    std::size_t m_charactersLeft = 30000;
     std::wstringstream m_output;
     SRWLOCK m_srwLock{};
 };

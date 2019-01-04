@@ -9,7 +9,7 @@
 #include "HostFxrResolutionResult.h"
 #include "HandleWrapper.h"
 #include "ApplicationFactory.h"
-#include "BaseOutputManager.h"
+#include "RedirectionOutput.h"
 
 class HandlerResolver
 {

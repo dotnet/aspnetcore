@@ -28,7 +28,7 @@ namespace PipeOutputManagerTests
         PCWSTR expected = L"test";
 
         StringStreamRedirectionOutput redirectionOutput;
-        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput, true);
+        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput);
 
         pManager->Start();
         fwprintf(stdout, expected);
@@ -42,7 +42,7 @@ namespace PipeOutputManagerTests
     TEST(PipeManagerOutputTest, StdOutMultiToWide)
     {
         StringStreamRedirectionOutput redirectionOutput;
-        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput, true);
+        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput);
 
         pManager->Start();
         fprintf(stdout, "test");
@@ -58,7 +58,7 @@ namespace PipeOutputManagerTests
         PCWSTR expected = L"test";
 
         StringStreamRedirectionOutput redirectionOutput;
-        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput, true);
+        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput);
 
         pManager->Start();
         fwprintf(stderr, expected);
@@ -78,7 +78,7 @@ namespace PipeOutputManagerTests
         }
 
         StringStreamRedirectionOutput redirectionOutput;
-        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput, true);
+        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput);
 
         pManager->Start();
         wprintf(test.c_str());
@@ -100,7 +100,7 @@ namespace PipeOutputManagerTests
         PCWSTR expected = L"test";
 
         StringStreamRedirectionOutput redirectionOutput;
-        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput, true);
+        PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput);
         pManager->Start();
 
         _dup2(m_fdPreviousStdOut, _fileno(stdout));
@@ -121,7 +121,7 @@ namespace PipeOutputManagerTests
             PCWSTR expected = L"test";
 
             StringStreamRedirectionOutput redirectionOutput;
-            PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput, true);
+            PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput);
 
             pManager->Start();
             fwprintf(stdout, expected);
@@ -148,7 +148,7 @@ namespace PipeOutputManagerTests
             PCWSTR expected = L"test";
 
             StringStreamRedirectionOutput redirectionOutput;
-            PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput, true);
+            PipeOutputManager* pManager = new PipeOutputManager(redirectionOutput);
 
             pManager->Start();
             fwprintf(stderr, expected);

@@ -156,7 +156,7 @@ private:
     return hr;
 }
 
- __declspec(noinline) inline HRESULT LogHResultFailed(LOCATION_ARGUMENTS const std::error_code& error_code) noexcept(true)
+ __declspec(noinline) inline HRESULT LogHResultFailed(LOCATION_ARGUMENTS const std::error_code& error_code)
 {
     if (error_code)
     {

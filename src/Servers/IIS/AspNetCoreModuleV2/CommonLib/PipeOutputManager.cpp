@@ -14,12 +14,19 @@
 #define LOG_IF_ERRNO(err) do { if (err != 0) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
 
 
-PipeOutputManager::PipeOutputManager(RedirectionOutput& output, bool fEnableNativeLogging) :
-    BaseOutputManager(output, fEnableNativeLogging),
+PipeOutputManager::PipeOutputManager(RedirectionOutput& output) :
+    m_output(output),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
-    m_hErrThread(nullptr)
+    m_hErrThread(nullptr),
+    m_disposed(false)
 {
+        TryStartRedirection();
+}
+
+PipeOutputManager::~PipeOutputManager() noexcept(false)
+{
+    TryStopRedirection();
 }
 
 // Start redirecting stdout and stderr into a pipe
@@ -47,8 +54,8 @@ void PipeOutputManager::Start()
     m_hErrReadPipe = hStdErrReadPipe;
     m_hErrWritePipe = hStdErrWritePipe;
 
-    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, m_enableNativeRedirection);
-    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, m_enableNativeRedirection);
+    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, true);
+    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, true);
 
     LOG_IF_FAILED(stdoutWrapper->StartRedirection());
     LOG_IF_FAILED(stderrWrapper->StartRedirection());
@@ -113,6 +120,7 @@ void PipeOutputManager::Stop()
     // Don't check return value as IO may or may not be completed already.
     if (m_hErrThread != nullptr)
     {
+        LOG_INFO(L"Cancelling standard stream pipe reader");
         CancelSynchronousIo(m_hErrThread);
     }
 
@@ -168,14 +176,13 @@ PipeOutputManager::ReadStdErrHandleInternal()
     DWORD dwNumBytesRead = 0;
     while (true)
     {
-        // Fill a maximum of MAX_PIPE_READ_SIZE into a buffer.
         if (ReadFile(m_hErrReadPipe,
             tempBuffer.data(),
             PIPE_READ_SIZE,
             &dwNumBytesRead,
             nullptr))
         {
-            m_output.Append(to_wide_string(tempBuffer.substr(dwNumBytesRead), GetConsoleOutputCP()));
+            m_output.Append(to_wide_string(tempBuffer.substr(0, dwNumBytesRead), GetConsoleOutputCP()));
         }
         else
         {

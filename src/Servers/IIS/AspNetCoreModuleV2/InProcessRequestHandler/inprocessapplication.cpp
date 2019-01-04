@@ -35,6 +35,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     {
         m_dotnetExeKnownLocation = knownLocation;
     }
+
+    m_stringRedirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 }
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()

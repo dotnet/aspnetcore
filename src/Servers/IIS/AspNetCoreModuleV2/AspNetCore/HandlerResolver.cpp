@@ -12,7 +12,6 @@
 #include "LoggingHelpers.h"
 #include "resources.h"
 #include "ModuleHelpers.h"
-#include "BaseOutputManager.h"
 #include "Environment.h"
 #include "HostFxr.h"
 #include "RedirectionOutput.h"
