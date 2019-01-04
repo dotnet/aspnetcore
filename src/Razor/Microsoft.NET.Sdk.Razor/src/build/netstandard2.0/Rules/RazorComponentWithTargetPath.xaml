@@ -2,14 +2,14 @@
 <Rule
   Description="Razor Document Properties"
   DisplayName="Razor Document Properties"
-  Name="RazorGenerateWithTargetPath"
+  Name="RazorComponentWithTargetPath"
   PageTemplate="generic"
   xmlns="http://schemas.microsoft.com/build/2009/properties">
   <Rule.DataSource>
     <DataSource
       Persistence="ProjectFile"
       ItemType="RazorComponentWithTargetPath"
-      MSBuildTarget="RazorGenerateDesignTime"
+      MSBuildTarget="RazorGenerateComponentDesignTime"
       HasConfigurationCondition="False"
       SourceOfDefaultValue="AfterContext"
       SourceType="TargetResults" />

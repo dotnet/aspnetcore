@@ -42,6 +42,10 @@
       <RazorGenerate Remove="@(RazorGenerate)" />
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <ProjectCapability Include="DotNetCoreRazorConfiguration" />
+  </ItemGroup>
   <!--
     END COMPONENT .cshtml WORKAROUND
   -->
