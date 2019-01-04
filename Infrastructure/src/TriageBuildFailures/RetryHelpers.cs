@@ -38,7 +38,7 @@ namespace TriageBuildFailures
                     TotalRetriesUsed++;
                 }
             }
-            throw new InvalidOperationException("Max exception retries reached, giving up.");
+            throw new InvalidOperationException("Max exception retries reached, giving up.", firstException);
         }
 
         public static async Task<T> RetryAsync<T>(Func<Task<T>> action, IReporter reporter)
@@ -62,7 +62,7 @@ namespace TriageBuildFailures
                     TotalRetriesUsed++;
                 }
             }
-            throw new InvalidOperationException("Max exception retries reached, giving up.");
+            throw new InvalidOperationException("Max exception retries reached, giving up.", firstException);
         }
     }
 }
