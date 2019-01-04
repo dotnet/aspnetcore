@@ -126,7 +126,7 @@ void PipeOutputManager::Stop()
 
     // GetExitCodeThread returns 0 on failure; thread status code is invalid.
     if (m_hErrThread != nullptr &&
-        !LOG_LAST_ERROR_IF(GetExitCodeThread(m_hErrThread, &dwThreadStatus) == 0) &&
+        !LOG_LAST_ERROR_IF(!GetExitCodeThread(m_hErrThread, &dwThreadStatus)) &&
         dwThreadStatus == STILL_ACTIVE)
     {
         // Wait for graceful shutdown, i.e., the exit of the background thread or timeout

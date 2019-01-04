@@ -5,7 +5,6 @@
 
 #include "HostFxrResolver.h"
 #include "exceptions.h"
-#include <functional>
 #include "RedirectionOutput.h"
 
 typedef INT(*hostfxr_get_native_search_directories_fn) (INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
@@ -16,33 +15,11 @@ typedef corehost_error_writer_fn(*corehost_set_error_writer_fn) (corehost_error_
 class HostFxrErrorRedirector: NonCopyable
 {
 public:
-    HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput& writeFunction) noexcept :
-        m_setErrorWriter(setErrorWriterFn)
-    {
-        if (m_setErrorWriter)
-        {
-            m_writeFunction = &writeFunction;
-            m_setErrorWriter(HostFxrErrorRedirectorCallback);
-        }
-    }
+    HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput& writeFunction) noexcept;
 
-    ~HostFxrErrorRedirector()
-    {
-        if (m_setErrorWriter)
-        {
-            m_setErrorWriter(nullptr);
-            m_writeFunction = nullptr;
-        }
-    }
+    ~HostFxrErrorRedirector();
 
-    static void HostFxrErrorRedirectorCallback(const WCHAR* message)
-    {
-        auto const writeFunction = m_writeFunction;
-        if (writeFunction)
-        {
-            writeFunction->Append(std::wstring(message) + L"\r\n");
-        }
-    }
+    static void HostFxrErrorRedirectorCallback(const WCHAR* message);
 
 private:
     corehost_set_error_writer_fn m_setErrorWriter;
@@ -64,25 +41,13 @@ public:
 
 	~HostFxr() = default;
 
-    int Main(DWORD argc, CONST PCWSTR* argv) const noexcept(false)
-    {
-        return m_hostfxr_main_fn(argc, argv);
-    }
+    int Main(DWORD argc, CONST PCWSTR* argv) const noexcept(false);
 
-    int GetNativeSearchDirectories(INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD * required_buffer_size) noexcept
-    {
-        return m_hostfxr_get_native_search_directories_fn(argc, argv, buffer, buffer_size, required_buffer_size);
-    }
+    int GetNativeSearchDirectories(INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size) const noexcept;
 
-    HostFxrErrorRedirector RedirectOutput(RedirectionOutput & writer) noexcept
-    {
-        return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
-    }
+    HostFxrErrorRedirector RedirectOutput(RedirectionOutput& writer) const noexcept;
 
-    bool SupportsOutputRedirection() const noexcept
-    {
-        return m_corehost_set_error_writer_fn != nullptr;
-    }
+    bool SupportsOutputRedirection() const noexcept;
 
     static
     HostFxr CreateFromLoadedModule();

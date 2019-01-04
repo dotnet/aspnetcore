@@ -216,7 +216,7 @@ try
 
     RETURN_LAST_ERROR_IF_NULL(m_hHostFxrDll = LoadLibraryW(hostfxrOptions.GetHostFxrLocation().c_str()));
 
-    HostFxr hostFxr = HostFxr::CreateFromLoadedModule();
+    auto const hostFxr = HostFxr::CreateFromLoadedModule();
 
     {
         auto redirectionOutput = LoggingHelpers::CreateOutputs(

@@ -6,6 +6,54 @@
 #include "ModuleHelpers.h"
 #include "EventLog.h"
 
+HostFxrErrorRedirector::HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput& writeFunction) noexcept
+    : m_setErrorWriter(setErrorWriterFn)
+{
+    if (m_setErrorWriter)
+    {
+        m_writeFunction = &writeFunction;
+        m_setErrorWriter(HostFxrErrorRedirectorCallback);
+    }
+}
+
+HostFxrErrorRedirector::~HostFxrErrorRedirector()
+{
+    if (m_setErrorWriter)
+    {
+        m_setErrorWriter(nullptr);
+        m_writeFunction = nullptr;
+    }
+}
+
+void HostFxrErrorRedirector::HostFxrErrorRedirectorCallback(const WCHAR* message)
+{
+    auto const writeFunction = m_writeFunction;
+    if (writeFunction)
+    {
+        writeFunction->Append(std::wstring(message) + L"\r\n");
+    }
+}
+
+int HostFxr::Main(DWORD argc, const PCWSTR* argv) const noexcept(false)
+{
+    return m_hostfxr_main_fn(argc, argv);
+}
+
+int HostFxr::GetNativeSearchDirectories(INT argc, const PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size) const noexcept
+{
+    return m_hostfxr_get_native_search_directories_fn(argc, argv, buffer, buffer_size, required_buffer_size);
+}
+
+HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput& writer) const noexcept
+{
+    return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
+}
+
+bool HostFxr::SupportsOutputRedirection() const noexcept
+{
+    return m_corehost_set_error_writer_fn != nullptr;
+}
+
 HostFxr HostFxr::CreateFromLoadedModule()
 {
     HMODULE hModule;
