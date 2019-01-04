@@ -34,6 +34,7 @@
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
 
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <DisableDeterministicSourceRoot Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">true</DisableDeterministicSourceRoot>
   </PropertyGroup>
 
   <PropertyGroup>
