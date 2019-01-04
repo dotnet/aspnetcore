@@ -1,9 +1,11 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the MIT License. See License.txt in the project root for license information.
+
 #pragma once
-#include "ModuleHelpers.h"
+
 #include "HostFxrResolver.h"
 #include "exceptions.h"
 #include <functional>
-#include "EventLog.h"
 #include "RedirectionOutput.h"
 
 typedef INT(*hostfxr_get_native_search_directories_fn) (INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
@@ -22,18 +24,6 @@ public:
             m_writeFunction = &writeFunction;
             m_setErrorWriter(HostFxrErrorRedirectorCallback);
         }
-    }
-
-    HostFxrErrorRedirector(HostFxrErrorRedirector&& other) noexcept
-    {
-        m_setErrorWriter = nullptr;
-        std::swap(m_setErrorWriter, other.m_setErrorWriter);
-    }
-
-    HostFxrErrorRedirector& operator= (HostFxrErrorRedirector && other) noexcept
-    {
-        std::swap(m_setErrorWriter, other.m_setErrorWriter);
-        return *this;
     }
 
     ~HostFxrErrorRedirector()
@@ -95,29 +85,7 @@ public:
     }
 
     static
-    HostFxr CreateFromLoadedModule()
-    {
-        HMODULE hModule;
-        THROW_LAST_ERROR_IF_NULL(hModule = GetModuleHandle(L"hostfxr.dll"));
-
-        try
-        {
-            return HostFxr(
-                ModuleHelpers::GetKnownProcAddress<hostfxr_main_fn>(hModule, "hostfxr_main"),
-                ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(hModule, "hostfxr_get_native_search_directories"),
-                ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(hModule, "hostfxr_set_error_writer", true));
-        }
-        catch (...)
-        {
-            EventLog::Error(
-                ASPNETCORE_EVENT_GENERAL_ERROR,
-                ASPNETCORE_EVENT_HOSTFXR_DLL_INVALID_VERSION_MSG,
-                ModuleHelpers::GetModuleFileNameValue(hModule).c_str()
-            );
-
-            throw;
-        }
-    }
+    HostFxr CreateFromLoadedModule();
 
 private:
     hostfxr_main_fn m_hostfxr_main_fn;

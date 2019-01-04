@@ -6,6 +6,7 @@
 #include "RedirectionOutput.h"
 #include "EventLog.h"
 #include "StdWrapper.h"
+#include "ModuleHelpers.h"
 
 class PipeOutputManager: NonCopyable
 {

@@ -18,8 +18,7 @@ public:
 class AggregateRedirectionOutput: NonCopyable, public RedirectionOutput
 {
 public:
-    AggregateRedirectionOutput(std::shared_ptr<RedirectionOutput> outputA, std::shared_ptr<RedirectionOutput> outputB,
-                               std::shared_ptr<RedirectionOutput> outputC) noexcept(true);
+    AggregateRedirectionOutput(std::shared_ptr<RedirectionOutput> outputA, std::shared_ptr<RedirectionOutput> outputB, std::shared_ptr<RedirectionOutput> outputC) noexcept(true);
 
     void Append(const std::wstring& text) override;
 
