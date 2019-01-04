@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <!-- There are currently no tests in this project which can run on a non-Windows platform. -->
+    <SkipTests Condition="'$(OS)' != 'Windows_NT'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>

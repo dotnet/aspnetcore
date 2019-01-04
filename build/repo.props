@@ -63,12 +63,9 @@
         <ProjectToExclude Include="
                           $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
                           $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\TestServer.csproj;
+                          $(RepositoryRoot)src\Identity\samples\NativeWPFClient\NativeWPFClient.csproj;
                           "
                           Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
-
-
-    <!-- Exclude the WPF samples for now because they use classic .csproj, which is not yet supported in our build. -->
-    <ProjectToExclude Include="$(RepositoryRoot)src\Identity\Identity\samples\NativeWPFClient\NativeWPFClient.csproj;" />
 
         <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
         <ProjectToExclude Include="
