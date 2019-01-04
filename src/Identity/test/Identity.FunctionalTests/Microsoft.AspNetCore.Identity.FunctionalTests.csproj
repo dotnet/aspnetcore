@@ -28,6 +28,4 @@
     <Reference Include="AngleSharp" />
   </ItemGroup>
 
-  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
-
 </Project>
