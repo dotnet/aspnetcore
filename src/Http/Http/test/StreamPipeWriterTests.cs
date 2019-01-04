@@ -370,11 +370,14 @@ namespace System.IO.Pipelines.Tests
             await Task.Delay(30000, cancellationToken);
             return 0;
         }
+
+#if NETCOREAPP3_0
         public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             await Task.Delay(30000, cancellationToken);
             return 0;
         }
+#endif
     }
 
     internal class SingleWriteStream : MemoryStream
@@ -383,6 +386,7 @@ namespace System.IO.Pipelines.Tests
 
         public bool AllowAllWrites { get; set; }
 
+ #if NETCOREAPP3_0
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             try
@@ -401,6 +405,7 @@ namespace System.IO.Pipelines.Tests
                 _shouldNextWriteFail = !_shouldNextWriteFail;
             }
         }
+#endif
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {

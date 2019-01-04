@@ -47,8 +47,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
                 else
                 {
-                    // TODO set the Response body
-                    // HttpResponseFeature.Body = new PipeStreamWriter();
+                    // TODO set the Response body to adapted pipe https://github.com/aspnet/AspNetCore/issues/3971
                 }
             }
         }

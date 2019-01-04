@@ -148,7 +148,7 @@ namespace System.IO.Pipelines.Tests
             Assert.NotEqual(readResult, readResult2);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
         public async Task ReadCanBeCancelledViaProvidedCancellationToken()
         {
             var pipeReader = new StreamPipeReader(new HangingStream());
@@ -565,7 +565,6 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(expectedString, result);
         }
 
-
         [Fact]
         public async Task UsePipeThenStreamToReadNoBytesLost()
         {
@@ -635,12 +634,13 @@ namespace System.IO.Pipelines.Tests
                 await Task.Yield();
                 return await base.ReadAsync(buffer, offset, count, cancellationToken);
             }
-
+#if NETCOREAPP3_0
             public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
             {
                 await Task.Yield();
                 return await base.ReadAsync(buffer, cancellationToken);
             }
+#endif
         }
     }
 }
