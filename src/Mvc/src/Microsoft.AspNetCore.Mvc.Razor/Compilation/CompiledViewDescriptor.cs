@@ -22,12 +22,30 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         }
 
         /// <summary>
+        /// Creates a new <see cref="CompiledViewDescriptor"/>.
+        /// </summary>
+        /// <param name="item">The <see cref="RazorCompiledItem"/>.</param>
+        public CompiledViewDescriptor(RazorCompiledItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            Item = item;
+            ExpirationTokens = Array.Empty<IChangeToken>();
+            RelativePath = ViewPath.NormalizePath(item.Identifier);
+        }
+
+#pragma warning disable CS0618// Type or member is obsolete
+        /// <summary>
         /// Creates a new <see cref="CompiledViewDescriptor"/>. At least one of <paramref name="attribute"/> or
         /// <paramref name="item"/> must be non-<c>null</c>.
         /// </summary>
         /// <param name="item">The <see cref="RazorCompiledItem"/>.</param>
         /// <param name="attribute">The <see cref="RazorViewAttribute"/>.</param>
         public CompiledViewDescriptor(RazorCompiledItem item, RazorViewAttribute attribute)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             if (item == null && attribute == null)
             {
@@ -44,7 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             //
             // In theory we could look at the 'Item.Kind' to determine what kind of thing we're dealing
             // with, but for compat reasons we're basing it on ViewAttribute since that's what 2.0 had.
+#pragma warning disable CS0618 // Type or member is obsolete
             ViewAttribute = attribute;
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // We don't have access to the file provider here so we can't check if the files
             // even exist or what their checksums are. For now leave this empty, it will be updated
@@ -58,13 +78,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// </summary>
         public string RelativePath { get; set; }
 
+#pragma warning disable CS0618 
+        // Type or member is obsolete
         /// <summary>
         /// Gets or sets the <see cref="RazorViewAttribute"/> decorating the view.
         /// </summary>
         /// <remarks>
         /// May be <c>null</c>.
         /// </remarks>
+        [Obsolete("Use Item instead. RazorViewAttribute has been superseded by RazorCompiledItem and will not be used by the runtime.")]
         public RazorViewAttribute ViewAttribute { get; set; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// <see cref="IChangeToken"/> instances that indicate when this result has expired.
@@ -79,6 +103,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// <summary>
         /// Gets the type of the compiled item.
         /// </summary>
-        public Type Type => Item?.Type ?? ViewAttribute?.ViewType;
+        public Type Type => Item?.Type;
     }
 }

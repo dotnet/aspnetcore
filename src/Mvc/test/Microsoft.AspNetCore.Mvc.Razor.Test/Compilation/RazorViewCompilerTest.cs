@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             var result2 = await viewCompiler.CompileAsync(path);
 
             // Assert
-            Assert.Null(result1.ViewAttribute);
             Assert.Empty(result1.ExpirationTokens);
         }
 
