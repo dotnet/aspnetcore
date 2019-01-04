@@ -55,7 +55,7 @@ namespace TriageBuildFailures.GitHub
                     State = ItemStateFilter.Open
                 };
 
-                var issues = await Client.Issue.GetAllForRepository(owner, repo, request);
+                var issues = await RetryHelpers.RetryAsync(async () => await Client.Issue.GetAllForRepository(owner, repo, request), _reporter);
                 var results = issues.Select(i => new GitHubIssue(i));
 
                 var policy = new CacheItemPolicy
@@ -90,29 +90,29 @@ namespace TriageBuildFailures.GitHub
         public async Task AddIssueToProject(GitHubIssue issue, int columnId)
         {
             var newCard = new NewProjectCard($"{issue.RepositoryOwner}/{issue.RepositoryName}#{issue.Number}");
-            await Client.Repository.Project.Card.Create(columnId, newCard);
+            await RetryHelpers.RetryAsync(async () => await Client.Repository.Project.Card.Create(columnId, newCard), _reporter);
         }
 
         public async Task AddLabel(GitHubIssue issue, string label)
         {
-            await Client.Issue.Labels.AddToIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number, new string[] { label });
+            await RetryHelpers.RetryAsync(async () => await Client.Issue.Labels.AddToIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number, new string[] { label }), _reporter);
         }
 
         public async Task<IEnumerable<IssueComment>> GetIssueComments(GitHubIssue issue)
         {
-            return await Client.Issue.Comment.GetAllForIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number);
+            return await RetryHelpers.RetryAsync(async () => await Client.Issue.Comment.GetAllForIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number), _reporter);
         }
 
         public async Task CreateComment(GitHubIssue issue, string comment)
         {
             comment = $"This comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{comment}";
 
-            await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment);
+            await RetryHelpers.RetryAsync(async () => await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment), _reporter);
         }
 
         public async Task EditComment(GitHubIssue issue, IssueComment comment, string newBody)
         {
-            await Client.Issue.Comment.Update(issue.RepositoryOwner, issue.RepositoryName, comment.Id, newBody);
+            await RetryHelpers.RetryAsync(async () => await Client.Issue.Comment.Update(issue.RepositoryOwner, issue.RepositoryName, comment.Id, newBody), _reporter);
         }
 
         public async Task<GitHubIssue> CreateIssue(string owner, string repo, string subject, string body, IList<string> labels, IEnumerable<string> assignees, IList<KeyValuePair<string, object>> hiddenData)
@@ -194,20 +194,21 @@ namespace TriageBuildFailures.GitHub
             await EnsureLabelsExist(owner, repo, labels);
 
             MemoryCache.Default.Remove(GetIssueCacheKey(owner, repo));
-            return new GitHubIssue(await Client.Issue.Create(owner, repo, newIssue));
+            return new GitHubIssue(await RetryHelpers.RetryAsync(async () => await Client.Issue.Create(owner, repo, newIssue), _reporter));
         }
 
         private async Task EnsureLabelsExist(string owner, string repo, IList<string> labels)
         {
             // TODO: Do caching stuff?
 
-            var allLabelsInRepo = await Client.Issue.Labels.GetAllForRepository(owner, repo);
+            var allLabelsInRepo = await RetryHelpers.RetryAsync(async () => await Client.Issue.Labels.GetAllForRepository(owner, repo), _reporter);
             var labelsThatDontExist = labels.Except(allLabelsInRepo.Select(label => label.Name), StringComparer.OrdinalIgnoreCase).ToList();
             if (labelsThatDontExist.Any())
             {
                 foreach (var labelThatDoesntExist in labelsThatDontExist)
                 {
-                    await Client.Issue.Labels.Create(owner, repo, new NewLabel(labelThatDoesntExist, "e89f02")); // ugly orange
+                    var newLabel = new NewLabel(labelThatDoesntExist, "e89f02"); // ugly orange
+                    await RetryHelpers.RetryAsync(async () => await Client.Issue.Labels.Create(owner, repo, newLabel), _reporter);
                 }
             }
         }

@@ -5,6 +5,7 @@ using McMaster.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TriageBuildFailures.Abstractions;
@@ -46,21 +47,26 @@ namespace TriageBuildFailures.Commands
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            var untriagedBuildFailures = (await GetUntriagedBuildFailures()).ToList();
-            _reporter.Output($"We found {untriagedBuildFailures.Count} failed builds since {CutoffDate}. Let's triage!");
-
-            // Write out some stats for TeamCity
-            // More info here: https://confluence.jetbrains.com/display/TCD10/Build+Script+Interaction+with+TeamCity#BuildScriptInteractionwithTeamCity-ReportingBuildStatistics
-            _reporter.Output($"##teamcity[buildStatisticValue key='RAAS:UntriagedBuildFailures' value='{untriagedBuildFailures.Count}']");
-
-            foreach (var build in untriagedBuildFailures)
+            try
             {
-                _reporter.Output($"Triaging {build.WebURL} ...");
-                await HandleFailure(build);
-            }
-            stopWatch.Stop();
+                var untriagedBuildFailures = (await GetUntriagedBuildFailures()).ToList();
+                _reporter.Output($"We found {untriagedBuildFailures.Count} failed builds since {CutoffDate}. Let's triage!");
 
-            _reporter.Output($"Done! Finished in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
+                _reporter.LogTeamCityStatistic("RAAS:UntriagedBuildFailures", untriagedBuildFailures.Count);
+
+                foreach (var build in untriagedBuildFailures)
+                {
+                    _reporter.Output($"Triaging {build.WebURL} ...");
+                    await HandleFailure(build);
+                }
+                stopWatch.Stop();
+
+                _reporter.Output($"Done! Finished in {stopWatch.Elapsed.TotalMinutes} minutes. Let's get some coffee!");
+            }
+            finally
+            {
+                _reporter.LogTeamCityStatistic("RAAS:RetriesUsed", RetryHelpers.GetTotalRetriesUsed());
+            }
         }
 
         private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase>
@@ -136,7 +142,7 @@ namespace TriageBuildFailures.Commands
 
         private bool IsWatchedBuild(ICIBuild build)
         {
-            if (_watchedBranches.Any(b => build.Branch.StartsWith(b)))
+            if (_watchedBranches.Any(b => build.Branch.StartsWith(b, StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
