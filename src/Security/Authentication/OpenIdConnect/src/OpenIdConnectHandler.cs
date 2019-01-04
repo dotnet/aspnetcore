@@ -122,10 +122,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // If the identifier cannot be found, bypass the session identifier checks: this may indicate that the
             // authentication cookie was already cleared, that the session identifier was lost because of a lossy
             // external/application cookie conversion or that the identity provider doesn't support sessions.
-            var sid = (await Context.AuthenticateAsync(Options.SignOutScheme))
-                          ?.Principal
-                          ?.FindFirst(JwtRegisteredClaimNames.Sid)
-                          ?.Value;
+            var principal = (await Context.AuthenticateAsync(Options.SignOutScheme))?.Principal;
+
+            var sid = principal?.FindFirst(JwtRegisteredClaimNames.Sid)?.Value;
             if (!string.IsNullOrEmpty(sid))
             {
                 // Ensure a 'sid' parameter was sent by the identity provider.
@@ -138,6 +137,23 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 if (!string.Equals(sid, message.Sid, StringComparison.Ordinal))
                 {
                     Logger.RemoteSignOutSessionIdInvalid();
+                    return true;
+                }
+            }
+
+            var iss = principal?.FindFirst(JwtRegisteredClaimNames.Iss)?.Value;
+            if (!string.IsNullOrEmpty(iss))
+            {
+                // Ensure a 'iss' parameter was sent by the identity provider.
+                if (string.IsNullOrEmpty(message.Iss))
+                {
+                    Logger.RemoteSignOutIssuerMissing();
+                    return true;
+                }
+                // Ensure the 'iss' parameter corresponds to the 'iss' stored in the authentication ticket.
+                if (!string.Equals(sid, message.Iss, StringComparison.Ordinal))
+                {
+                    Logger.RemoteSignOutIssuerInvalid();
                     return true;
                 }
             }

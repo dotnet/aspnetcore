@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,6 +56,8 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _remoteSignOutSessionIdMissing;
         private static Action<ILogger, Exception> _remoteSignOutSessionIdInvalid;
         private static Action<ILogger, string, Exception> _signOut;
+        private static Action<ILogger, Exception> _remoteSignOutIssuerMissing;
+        private static Action<ILogger, Exception> _remoteSignOutIssuerInvalid;
 
         static LoggingExtensions()
         {
@@ -258,6 +260,16 @@ namespace Microsoft.Extensions.Logging
                 eventId: 51,
                 logLevel: LogLevel.Debug,
                 formatString: "RedirectToSignedOutRedirectUri.Skipped");
+            _remoteSignOutIssuerMissing = LoggerMessage.Define(
+              eventId: 52,
+              logLevel: LogLevel.Error,
+              formatString: "The remote signout request was ignored because the 'iss' parameter " +
+                            "was missing, which may indicate an unsolicited logout.");
+            _remoteSignOutIssuerInvalid = LoggerMessage.Define(
+               eventId: 53,
+               logLevel: LogLevel.Error,
+               formatString: "The remote signout request was ignored because the 'iss' parameter didn't match " +
+                             "the expected value, which may indicate an unsolicited logout.");
         }
 
         public static void UpdatingConfiguration(this ILogger logger)
@@ -503,6 +515,16 @@ namespace Microsoft.Extensions.Logging
         public static void SignedOut(this ILogger logger, string authenticationScheme)
         {
             _signOut(logger, authenticationScheme, null);
+        }
+
+        public static void RemoteSignOutIssuerMissing(this ILogger logger)
+        {
+            _remoteSignOutIssuerMissing(logger, null);
+        }
+
+        public static void RemoteSignOutIssuerInvalid(this ILogger logger)
+        {
+            _remoteSignOutIssuerInvalid(logger, null);
         }
     }
 }
