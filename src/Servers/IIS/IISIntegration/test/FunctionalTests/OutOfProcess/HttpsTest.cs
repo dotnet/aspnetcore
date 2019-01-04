@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -19,19 +20,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     // IIS Express preregisteres 44300-44399 ports with SSL bindings.
     // So these tests always have to use ports in this range, and we can't rely on OS-allocated ports without a whole lot of ceremony around
     // creating self-signed certificates and registering SSL bindings with HTTP.sys
+    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
     public class HttpsTest : LoggedTest
     {
         public HttpsTest(ITestOutputHelper output) : base(output)
         {
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task Https_HelloWorld_CLR_X64()
         {
             return HttpsHelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44396, "V1");
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task Https_HelloWorld_CoreCLR_X64_Portable()
         {
             return HttpsHelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44394, "V1");
@@ -95,13 +97,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable()
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44397, sendClientCert: false, "V1");
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task Https_HelloWorld_NoClientCert_Clr_X64()
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44398, sendClientCert: false, "V1");

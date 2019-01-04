@@ -11,6 +11,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -19,19 +20,20 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
     public class NtlmAuthenticationTests : LoggedTest
     {
         public NtlmAuthenticationTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task NtlmAuthentication_Clr_X64_Portable()
         {
             return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051, "V1");
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task NtlmAuthentication_CoreClr_X64_Portable()
         {
             return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052, "V1");

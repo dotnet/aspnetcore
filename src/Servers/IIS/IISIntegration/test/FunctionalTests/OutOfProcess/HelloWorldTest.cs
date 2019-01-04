@@ -5,6 +5,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -13,19 +14,20 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
+    [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux)]
     public class HelloWorldTests : LoggedTest
     {
         public HelloWorldTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HelloWorld_IISExpress_Clr_X64_Portable()
         {
             return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, "V1");
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HelloWorld_IISExpress_CoreClr_X64_Portable()
         {
             return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, "V1");
