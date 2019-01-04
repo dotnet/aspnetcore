@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -493,7 +494,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             var descriptor = new CompiledViewDescriptor
             {
-                ViewAttribute = new RazorPageAttribute("/Views/Index.cshtml", typeof(object), null),
+                Item = TestRazorCompiledItem.CreateForView(typeof(object), "/Views/Index.cshtml"),
             };
 
             var compiler = new Mock<IViewCompiler>();

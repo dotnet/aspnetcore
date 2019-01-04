@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             var descriptor = new CompiledViewDescriptor
             {
                 RelativePath = relativePath,
-                ViewAttribute = new RazorViewAttribute(relativePath, typeof(TestRazorPage)),
+                Item = TestRazorCompiledItem.CreateForView(typeof(TestRazorPage), relativePath),
                 ExpirationTokens = expirationTokens,
             };
             var compilerCache = new Mock<IViewCompiler>();
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             var descriptor = new CompiledViewDescriptor
             {
                 RelativePath = relativePath,
-                ViewAttribute = new RazorViewAttribute(relativePath, typeof(TestRazorPage)),
+                Item = TestRazorCompiledItem.CreateForView(typeof(TestRazorPage), relativePath),
                 ExpirationTokens = Array.Empty<IChangeToken>(),
             };
             var viewCompiler = new Mock<IViewCompiler>();

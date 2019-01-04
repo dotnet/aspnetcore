@@ -17,30 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [Fact]
-        public async Task PrecompiledPage_LocalPageWithDifferentContent_NotUsed()
-        {
-            // Act
-            var response = await Client.GetAsync("http://localhost/Precompilation/Page");
-            var responseBody = await response.Content.ReadAsStringAsync();
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("Hello from buildtime-compiled precompilation page!", responseBody.Trim());
-        }
-
-        [Fact]
-        public async Task PrecompiledView_LocalViewWithDifferentContent_NotUsed()
-        {
-            // Act
-            var response = await Client.GetAsync("http://localhost/Precompilation/View");
-            var responseBody = await response.Content.ReadAsStringAsync();
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("Hello from buildtime-compiled precompilation view!", responseBody.Trim());
-        }
-
         [Fact(Skip = "https://github.com/aspnet/Mvc/issues/8753")]
         public async Task Rzc_LocalPageWithDifferentContent_IsUsed()
         {
@@ -66,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task RzcViewsArePreferredToPrecompiledViews()
+        public async Task RzcViewsArePreferredToRuntimeViews()
         {
             // Verifies that when two views have the same paths, the one compiled using rzc is preferred to the one from Precompilation.
             // Act
