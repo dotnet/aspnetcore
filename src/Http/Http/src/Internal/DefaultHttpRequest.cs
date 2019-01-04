@@ -167,7 +167,8 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { RouteValuesFeature.RouteValues = value; }
         }
 
-        public override PipeReader BodyPipe {
+        public override PipeReader BodyPipe
+        {
             get { return RequestBodyPipeFeature.PipeReader; }
             set { RequestBodyPipeFeature.PipeReader = value; }
         }

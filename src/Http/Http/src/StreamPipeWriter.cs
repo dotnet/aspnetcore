@@ -67,7 +67,7 @@ namespace System.IO.Pipelines
         /// <summary>
         /// Gets the inner stream that is being written to.
         /// </summary>
-        public Stream InnerStream { get { return _writingStream; } }
+        public Stream InnerStream => _writingStream;
 
         /// <inheritdoc />
         public override void Advance(int count)
@@ -146,7 +146,7 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
-            if (_bytesWritten == 0)
+            if (== 0)
             {
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, IsCompletedOrThrow()));
             }
