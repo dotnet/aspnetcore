@@ -3042,34 +3042,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(2, callOrder.Pop());
         }
 
-
         [Fact]
-        public async Task SynchronousWritesAllowedByDefault()
+        public async Task SynchronousWritesDisallowedByDefault()
         {
-            var firstRequest = true;
-
             using (var server = new TestServer(async context =>
             {
                 var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
-                Assert.True(bodyControlFeature.AllowSynchronousIO);
+                Assert.False(bodyControlFeature.AllowSynchronousIO);
 
                 context.Response.ContentLength = 6;
 
-                if (firstRequest)
-                {
-                    context.Response.Body.Write(Encoding.ASCII.GetBytes("Hello1"), 0, 6);
-                    firstRequest = false;
-                }
-                else
-                {
-                    bodyControlFeature.AllowSynchronousIO = false;
+                // Synchronous writes now throw.
+                var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
+                Assert.Equal(CoreStrings.SynchronousWritesDisallowed, ioEx.Message);
+                await context.Response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello1"), 0, 6);
 
-                    // Synchronous writes now throw.
-                    var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
-                    Assert.Equal(CoreStrings.SynchronousWritesDisallowed, ioEx.Message);
-
-                    await context.Response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello2"), 0, 6));
-                }
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -3081,14 +3068,67 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 6",
                         "",
                         "Hello1");
+                }
+            }
+        }
 
+        [Fact]
+        public async Task SynchronousWritesAllowedByOptIn()
+        {
+            using (var server = new TestServer(context =>
+            {
+                var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                Assert.False(bodyControlFeature.AllowSynchronousIO);
+                bodyControlFeature.AllowSynchronousIO = true;
+                context.Response.ContentLength = 6;
+                context.Response.Body.Write(Encoding.ASCII.GetBytes("Hello1"), 0, 6);
+                return Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
                     await connection.SendEmptyGet();
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Content-Length: 6",
                         "",
-                        "Hello2");
+                        "Hello1");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SynchronousWritesCanBeAllowedGlobally()
+        {
+            var testContext = new TestServiceContext(LoggerFactory)
+            {
+                ServerOptions = { AllowSynchronousIO = true }
+            };
+
+            using (var server = new TestServer(context =>
+            {
+                var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                Assert.True(bodyControlFeature.AllowSynchronousIO);
+
+                context.Response.ContentLength = 6;
+                context.Response.Body.Write(Encoding.ASCII.GetBytes("Hello!"), 0, 6);
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 6",
+                        "",
+                        "Hello!");
                 }
                 await server.StopAsync();
             }

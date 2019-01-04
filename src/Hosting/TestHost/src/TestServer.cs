@@ -81,9 +81,9 @@ namespace Microsoft.AspNetCore.TestHost
         /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
         /// </summary>
         /// <remarks>
-        /// Defaults to true.
+        /// Defaults to false.
         /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = true;
+        public bool AllowSynchronousIO { get; set; } = false;
 
         private IHttpApplication<Context> Application
         {

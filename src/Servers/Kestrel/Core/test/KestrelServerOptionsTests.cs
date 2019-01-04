@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void AllowSynchronousIODefaultsToTrue()
+        public void AllowSynchronousIODefaultsToFalse()
         {
             var options = new KestrelServerOptions();
 
-            Assert.True(options.AllowSynchronousIO);
+            Assert.False(options.AllowSynchronousIO);
         }
 
         [Fact]

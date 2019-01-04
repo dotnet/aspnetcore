@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
 
-        bool IHttpBodyControlFeature.AllowSynchronousIO { get; set; } = true;
+        bool IHttpBodyControlFeature.AllowSynchronousIO { get; set; }
 
         void IHttpBufferingFeature.DisableRequestBuffering()
         {
