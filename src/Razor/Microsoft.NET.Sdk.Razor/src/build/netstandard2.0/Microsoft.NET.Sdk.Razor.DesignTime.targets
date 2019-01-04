@@ -59,8 +59,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target 
     Name="RazorGenerateDesignTime" 
-    DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths;ResolveRazorComponentInputs;AssignRazorComponentTargetPaths" 
-    Returns="@(RazorGenerateWithTargetPath);@(RazorComponentWithTargetPath)">
+    DependsOnTargets="ResolveRazorGenerateInputs;AssignRazorGenerateTargetPaths" 
+    Returns="@(RazorGenerateWithTargetPath)">
+  </Target>
+
+  <Target 
+    Name="RazorGenerateComponentDesignTime" 
+    DependsOnTargets="ResolveRazorComponentInputs;AssignRazorComponentTargetPaths" 
+    Returns="@(RazorComponentWithTargetPath)">
   </Target>
 
 </Project>
