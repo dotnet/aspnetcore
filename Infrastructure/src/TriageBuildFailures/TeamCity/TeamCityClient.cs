@@ -184,7 +184,9 @@ namespace TriageBuildFailures.TeamCity
                     client.Timeout = timeout.Value;
                 }
 
-                var response = await client.SendAsync(request);
+                var response = await RetryHelpers.RetryAsync(
+                    async () => await client.SendAsync(request),
+                    _reporter);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {

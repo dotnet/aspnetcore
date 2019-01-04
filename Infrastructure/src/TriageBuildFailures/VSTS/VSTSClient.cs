@@ -30,10 +30,12 @@ namespace TriageBuildFailures.VSTS
         }
 
         private VSTSConfig Config;
+        private readonly IReporter _reporter;
 
         public VSTSClient(VSTSConfig vstsConfig, IReporter reporter)
         {
             Config = vstsConfig;
+            _reporter = reporter;
         }
 
         public async Task<IEnumerable<ICIBuild>> GetFailedBuilds(DateTime startDate)
@@ -172,12 +174,12 @@ namespace TriageBuildFailures.VSTS
             var queryItems = new Dictionary<string, string>();
             if (result != null)
             {
-                queryItems["resultFilter"] = Enum.GetName(typeof(VSTSBuildResult), result.Value).ToLower();
+                queryItems["resultFilter"] = Enum.GetName(typeof(VSTSBuildResult), result.Value).ToLowerInvariant();
             }
 
             if (status != null)
             {
-                queryItems["statusFilter"] = Enum.GetName(typeof(BuildStatus), status.Value).ToLower();
+                queryItems["statusFilter"] = Enum.GetName(typeof(BuildStatus), status.Value).ToLowerInvariant();
             }
 
             if (minTime != null)
@@ -266,7 +268,9 @@ namespace TriageBuildFailures.VSTS
                 };
                 var request = new HttpRequestMessage(verb, uriBuilder.Uri);
 
-                var response = await client.SendAsync(request);
+                var response = await RetryHelpers.RetryAsync(
+                    async () => await client.SendAsync(request),
+                    _reporter);
 
                 if (response.IsSuccessStatusCode)
                 {
