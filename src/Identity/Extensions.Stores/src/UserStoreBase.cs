@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="user">The user to retrieve the password hash for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>A <see cref="Task{TResult}"/> containing a flag indicating if the specified user has a password. If the 
+        /// <returns>A <see cref="Task{TResult}"/> containing a flag indicating if the specified user has a password. If the
         /// user has a password the returned value with be true, otherwise it will be false.</returns>
         public virtual Task<bool> HasPasswordAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -791,6 +791,16 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
+        /// Gets the user, if any, associated with the specified, phone number.
+        /// </summary>
+        /// <param name="phoneNumber">The phone number to return the user for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified phone number.
+        /// </returns>
+        public abstract Task<TUser> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
         /// Sets the provided security <paramref name="stamp"/> for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose security stamp should be set.</param>
@@ -857,7 +867,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="user">The user whose two factor authentication enabled status should be set.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified 
+        /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified
         /// <paramref name="user"/> has two factor authentication enabled or not.
         /// </returns>
         public virtual Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken))
@@ -877,7 +887,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="claim">The claim whose users should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> contains a list of users, if any, that contain the specified claim. 
+        /// The <see cref="Task"/> contains a list of users, if any, that contain the specified claim.
         /// </returns>
         public abstract Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken));
 
@@ -1088,7 +1098,7 @@ namespace Microsoft.AspNetCore.Identity
         UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>,
         IUserRoleStore<TUser>
         where TUser : IdentityUser<TKey>
-        where TRole : IdentityRole<TKey> 
+        where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>, new()
         where TUserRole : IdentityUserRole<TKey>, new()
@@ -1124,7 +1134,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="normalizedRoleName">The role whose users should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> contains a list of users, if any, that are in the specified role. 
+        /// The <see cref="Task"/> contains a list of users, if any, that are in the specified role.
         /// </returns>
         public abstract Task<IList<TUser>> GetUsersInRoleAsync(string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
 
@@ -1160,7 +1170,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="user">The user whose role membership should be checked.</param>
         /// <param name="normalizedRoleName">The role to check membership of</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>A <see cref="Task{TResult}"/> containing a flag indicating if the specified user is a member of the given group. If the 
+        /// <returns>A <see cref="Task{TResult}"/> containing a flag indicating if the specified user is a member of the given group. If the
         /// user is a member of the group the returned value with be true, otherwise it will be false.</returns>
         public abstract Task<bool> IsInRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
 

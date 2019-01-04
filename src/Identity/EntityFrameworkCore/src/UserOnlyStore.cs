@@ -506,6 +506,21 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         }
 
         /// <summary>
+        /// Gets the user, if any, associated with the specified, phone number.
+        /// </summary>
+        /// <param name="phoneNumber">The phone number to return the user for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified phone number.
+        /// </returns>
+        public override Task<TUser> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ThrowIfDisposed();
+            return Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
+        }
+
+        /// <summary>
         /// Retrieves all users with the specified claim.
         /// </summary>
         /// <param name="claim">The claim whose users should be retrieved.</param>
@@ -552,7 +567,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             UserTokens.Add(token);
             return Task.CompletedTask;
         }
-
 
         /// <summary>
         /// Remove a new user token.

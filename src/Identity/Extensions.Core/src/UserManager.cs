@@ -105,8 +105,8 @@ namespace Microsoft.AspNetCore.Identity
                 foreach (var providerName in Options.Tokens.ProviderMap.Keys)
                 {
                     var description = Options.Tokens.ProviderMap[providerName];
-                    
-                    var provider = (description.ProviderInstance ?? services.GetRequiredService(description.ProviderType)) 
+
+                    var provider = (description.ProviderInstance ?? services.GetRequiredService(description.ProviderType))
                         as IUserTwoFactorTokenProvider<TUser>;
                     if (provider != null)
                     {
@@ -1589,6 +1589,47 @@ namespace Microsoft.AspNetCore.Identity
             return await UpdateUserAsync(user);
         }
 
+
+        /// <summary>
+        /// Gets the user, if any, associated with the specified, phone number.
+        /// </summary>
+        /// <param name="phoneNumber">The phone number to return the user for.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The task object containing the results of the asynchronous lookup operation, the user if any associated with the specified phone number.
+        /// </returns>
+        public virtual async Task<TUser> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            var store = GetPhoneNumberStore();
+            if (phoneNumber == null)
+            {
+                throw new ArgumentNullException(nameof(phoneNumber));
+            }
+
+            var user = await store.FindByPhoneAsync(phoneNumber, CancellationToken);
+
+            // Need to potentially check all keys
+            if (user == null && Options.Stores.ProtectPersonalData)
+            {
+                var keyRing = _services.GetService<ILookupProtectorKeyRing>();
+                var protector = _services.GetService<ILookupProtector>();
+                if (keyRing != null && protector != null)
+                {
+                    foreach (var key in keyRing.GetAllKeyIds())
+                    {
+                        var oldKey = protector.Protect(key, phoneNumber);
+                        user = await store.FindByPhoneNumberAsync(oldKey, CancellationToken);
+                        if (user != null)
+                        {
+                            return user;
+                        }
+                    }
+                }
+            }
+            return user;
+        }
+
         /// <summary>
         /// Sets the phone number for the specified <paramref name="user"/> if the specified
         /// change <paramref name="token"/> is valid.
@@ -1673,7 +1714,7 @@ namespace Microsoft.AspNetCore.Identity
             }
 
             // Make sure the token is valid and the stamp matches
-            return VerifyUserTokenAsync(user, Options.Tokens.ChangePhoneNumberTokenProvider, ChangePhoneNumberTokenPurpose+":"+ phoneNumber, token);
+            return VerifyUserTokenAsync(user, Options.Tokens.ChangePhoneNumberTokenProvider, ChangePhoneNumberTokenPurpose + ":" + phoneNumber, token);
         }
 
         /// <summary>
