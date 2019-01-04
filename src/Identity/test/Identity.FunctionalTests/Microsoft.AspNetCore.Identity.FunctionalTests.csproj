@@ -3,11 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "></PlatformTarget>
+
+    <!-- These tests are completely busted in Azure Pipelines due to OutOfMemoryExceptions caused by https://github.com/aspnet/Extensions/issues/844 -->
+    <SkipTests Condition=" '$(BUILD_REASON)' == 'PullRequest' ">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Extensions\Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
-    <Compile Include="..\..\..\Extensions\Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
+    <Compile Include="..\..\Extensions.Core\src\Base32.cs" Link="Infrastructure\Base32.cs" />
+    <Compile Include="..\..\Extensions.Core\src\Rfc6238AuthenticationService.cs" Link="Infrastructure\Rfc6238AuthenticationService.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,5 +26,6 @@
     <Reference Include="AngleSharp" />
   </ItemGroup>
 
-  <Import Project="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.targets" />
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
+
 </Project>

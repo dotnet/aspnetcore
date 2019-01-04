@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task UpgradeFeatureDetectionDisabled_OutOfProcess_IISExpress_CoreClr_x64_Portable()
         {
             return UpgradeFeatureDetectionDeployer(RuntimeFlavor.CoreClr,

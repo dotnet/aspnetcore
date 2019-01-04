@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\Shared\*.cs" />
+    <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -13,8 +13,7 @@
     <Reference Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.Extensions.Configuration" />
-    <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
   </ItemGroup>
 
 </Project>

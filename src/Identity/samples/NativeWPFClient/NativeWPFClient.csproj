@@ -15,6 +15,7 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <!-- Workaround for Visual Studio complaining about inexisting project.json file -->
+    <IsPackable>false</IsPackable>
     <RuntimeIdentifier Condition="'$(BaseNuGetRuntimeIdentifier)' != ''">$(BaseNuGetRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -104,4 +105,5 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="Pack" />
 </Project>
