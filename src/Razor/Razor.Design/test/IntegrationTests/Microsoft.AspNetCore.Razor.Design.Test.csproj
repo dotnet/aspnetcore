@@ -13,7 +13,6 @@
     <!-- Copy references locally so that we can use them in the test. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <BuildVariablesGeneratedFile>$(MSBuildProjectDirectory)\obj\BuildVariables.generated.cs</BuildVariablesGeneratedFile>
-    <CompileDependsOn>EnsureBuildVariablesGeneratedFile;$(CompileDependsOn)</CompileDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,7 +34,10 @@
     <Reference Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" />
   </ItemGroup>
 
-  <Target Name="GenerateBuildVariablesFile" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="BeforeBuild">
+  <Target Name="GenerateBuildVariablesFile" BeforeTargets="BeforeBuild">
+    <Warning Text="Some SDK tests on Windows require the project to be built once using Desktop MSBuild, but the current build is executed using .NET Core MSBuild. This may result in test failures."
+        Condition="!Exists('$(BuildVariablesGeneratedFile)') and '$(MSBuildRuntimeType)' != 'Full' and '$(OS)' == 'Windows_NT'" />
+
     <PropertyGroup>
       <GeneratedFileContents>
 // Copyright (c) .NET Foundation. All rights reserved.
@@ -53,11 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 }
       </GeneratedFileContents>
     </PropertyGroup>
-    <WriteLinesToFile Lines="$(GeneratedFileContents)" File="$(BuildVariablesGeneratedFile)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-  </Target>
-  
-  <Target Name="EnsureBuildVariablesGeneratedFile">
-    <Error Text="BuildVariables.generated.cs was not found. Run .\build /t:Prepare from the root of the repository to generate it." Condition="!Exists('$(BuildVariablesGeneratedFile)')" />
+    <WriteLinesToFile Lines="$(GeneratedFileContents)" File="$(BuildVariablesGeneratedFile)" Overwrite="true" WriteOnlyWhenDifferent="true" Condition="'$(MSBuildRuntimeType)' == 'Full'" />
   </Target>
 
 </Project>
