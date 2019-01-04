@@ -169,7 +169,7 @@ namespace ServerComparison.FunctionalTests
         }
 
         // Nginx
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Nginx tests are broken in PR checks: https://github.com/aspnet/AspNetCore-Internal/issues/1525")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
@@ -178,7 +178,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(ServerType.Nginx, runtimeFlavor, RuntimeArchitecture.x64, CheckContentLengthAsync, applicationType);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Nginx tests are broken in PR checks: https://github.com/aspnet/AspNetCore-Internal/issues/1525")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
@@ -187,9 +187,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(ServerType.Nginx, runtimeFlavor, RuntimeArchitecture.x64, CheckChunkedAsync, applicationType);
         }
 
-
-
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Nginx tests are broken in PR checks: https://github.com/aspnet/AspNetCore-Internal/issues/1525")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Portable)]
         [InlineData(RuntimeFlavor.CoreClr, ApplicationType.Standalone)]
