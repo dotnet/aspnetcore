@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private async Task ProcessReceives()
         {
-            // Resolve `input` PipeWriter via the IDuplexPipe interface prior to loop start
+            // Resolve `input` PipeWriter via the IDuplexPipe interface prior to loop start for performance.
             var input = Input;
             while (true)
             {
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private async Task ProcessSends()
         {
-            // Resolve `output` PipeReader via the IDuplexPipe interface prior to loop start
+            // Resolve `output` PipeReader via the IDuplexPipe interface prior to loop start for performance.
             var output = Output;
             while (true)
             {
