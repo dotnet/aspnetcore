@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,11 +13,11 @@ namespace Microsoft.Extensions.Logging
         static LoggingExtensions()
         {
             _authSchemeSignedIn = LoggerMessage.Define<string>(
-                eventId: 10,
+                eventId: new EventId(10, "AuthSchemeSignedIn"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed in.");
             _authSchemeSignedOut = LoggerMessage.Define<string>(
-                eventId: 11,
+                eventId: new EventId(11, "AuthSchemeSignedOut"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed out.");
         }

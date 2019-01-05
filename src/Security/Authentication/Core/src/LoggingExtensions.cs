@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,59 +25,59 @@ namespace Microsoft.Extensions.Logging
         static LoggingExtensions()
         {
             _remoteAuthenticationError = LoggerMessage.Define<string>(
-                eventId: 4,
+                eventId: new EventId(4, "RemoteAuthenticationFailed"),
                 logLevel: LogLevel.Information,
                 formatString: "Error from RemoteAuthentication: {ErrorMessage}.");
             _signInHandled = LoggerMessage.Define(
-                eventId: 5,
+                eventId: new EventId(5, "SignInHandled"),
                 logLevel: LogLevel.Debug,
                 formatString: "The SigningIn event returned Handled.");
             _signInSkipped = LoggerMessage.Define(
-                eventId: 6,
+                eventId: new EventId(6, "SignInSkipped"),
                 logLevel: LogLevel.Debug,
                 formatString: "The SigningIn event returned Skipped.");
             _authSchemeNotAuthenticatedWithFailure = LoggerMessage.Define<string, string>(
-                eventId: 7,
+                eventId: new EventId(7, "AuthSchemeNotAuthenticatedWithFailure"),
                 logLevel: LogLevel.Information,
                 formatString: "{AuthenticationScheme} was not authenticated. Failure message: {FailureMessage}");
             _authSchemeAuthenticated = LoggerMessage.Define<string>(
-                eventId: 8,
+                eventId: new EventId(8, "AuthSchemeAuthenticated"),
                 logLevel: LogLevel.Debug,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was successfully authenticated.");
             _authSchemeNotAuthenticated = LoggerMessage.Define<string>(
-                eventId: 9,
+                eventId: new EventId(9, "AuthSchemeNotAuthenticated"),
                 logLevel: LogLevel.Debug,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was not authenticated.");
             _authSchemeChallenged = LoggerMessage.Define<string>(
-                eventId: 12,
+                eventId: new EventId(12, "AuthSchemeChallenged"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was challenged.");
             _authSchemeForbidden = LoggerMessage.Define<string>(
-                eventId: 13,
+                eventId: new EventId(13, "AuthSchemeForbidden"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was forbidden.");
             _correlationPropertyNotFound = LoggerMessage.Define<string>(
-                eventId: 14,
+                eventId: new EventId(14, "CorrelationPropertyNotFound"),
                 logLevel: LogLevel.Warning,
                 formatString: "{CorrelationProperty} state property not found.");
             _correlationCookieNotFound = LoggerMessage.Define<string>(
-                eventId: 15,
+                eventId: new EventId(15, "CorrelationCookieNotFound"),
                 logLevel: LogLevel.Warning,
                 formatString: "'{CorrelationCookieName}' cookie not found.");
             _unexpectedCorrelationCookieValue = LoggerMessage.Define<string, string>(
-               eventId: 16,
+                eventId: new EventId(16, "UnexpectedCorrelationCookie"),
                logLevel: LogLevel.Warning,
                formatString: "The correlation cookie value '{CorrelationCookieName}' did not match the expected value '{CorrelationCookieValue}'.");
             _accessDeniedError = LoggerMessage.Define(
-                eventId: 17,
+                eventId: new EventId(17, "AccessDenied"),
                 logLevel: LogLevel.Information,
                 formatString: "Access was denied by the resource owner or by the remote server.");
             _accessDeniedContextHandled = LoggerMessage.Define(
-                eventId: 18,
+                eventId: new EventId(18, "AccessDeniedHandled"),
                 logLevel: LogLevel.Debug,
                 formatString: "The AccessDenied event returned Handled.");
             _accessDeniedContextSkipped = LoggerMessage.Define(
-                eventId: 19,
+                eventId: new EventId(19, "AccessDeniedSkipped"),
                 logLevel: LogLevel.Debug,
                 formatString: "The AccessDenied event returned Skipped.");
         }
