@@ -65,7 +65,7 @@ namespace System.IO.Pipelines
         }
 
         /// <summary>
-        /// Gets the inner stream that is being written to.
+        /// Gets the inner stream that is being read from.
         /// </summary>
         public Stream InnerStream => _writingStream;
 
@@ -146,7 +146,7 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
-            if (== 0)
+            if (_bytesWritten == 0)
             {
                 return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, IsCompletedOrThrow()));
             }

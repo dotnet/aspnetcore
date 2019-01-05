@@ -40,5 +40,26 @@ namespace Microsoft.AspNetCore.Http.Features
 
             Assert.Equal(pipeReader, provider.PipeReader);
         }
+
+
+        [Fact]
+        public void RequestBodyGetPipeReaderAfterSettingBodyTwice()
+        {
+            var features = new FeatureCollection();
+            var request = new HttpRequestFeature();
+            var expectedStream = new MemoryStream();
+            request.Body = new MemoryStream();
+            features[typeof(IHttpRequestFeature)] = request;
+
+            var provider = new RequestBodyPipeFeature(features);
+
+            var pipeBody = provider.PipeReader;
+            // Requery the PipeReader after setting the body again.
+            request.Body = expectedStream;
+            pipeBody = provider.PipeReader;
+
+            Assert.True(pipeBody is StreamPipeReader);
+            Assert.Equal(expectedStream, (pipeBody as StreamPipeReader).InnerStream);
+        }
     }
 }

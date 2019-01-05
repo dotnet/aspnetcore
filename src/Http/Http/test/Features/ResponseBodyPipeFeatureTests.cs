@@ -40,5 +40,24 @@ namespace Microsoft.AspNetCore.Http.Features
 
             Assert.Equal(pipeWriter, provider.PipeWriter);
         }
+
+        [Fact]
+        public void ResponseBodyGetPipeWriterAfterSettingBodyTwice()
+        {
+            var features = new FeatureCollection();
+            var response = new HttpResponseFeature();
+            var expectedStream = new MemoryStream();
+            response.Body = new MemoryStream();
+            features[typeof(IHttpResponseFeature)] = response;
+
+            var provider = new ResponseBodyPipeFeature(features);
+
+            var pipeBody = provider.PipeWriter;
+            response.Body = expectedStream;
+            pipeBody = provider.PipeWriter;
+
+            Assert.True(pipeBody is StreamPipeWriter);
+            Assert.Equal(expectedStream, (pipeBody as StreamPipeWriter).InnerStream);
+        }
     }
 }

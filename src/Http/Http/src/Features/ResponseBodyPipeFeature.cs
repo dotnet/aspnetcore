@@ -31,7 +31,9 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             get
             {
-                if (_pipeWriter == null)
+                if (_pipeWriter == null ||
+                    // If the Response.Body has been updated, recreate the pipeWriter
+                    (_pipeWriter is StreamPipeWriter writer && !object.ReferenceEquals(writer.InnerStream, HttpResponseFeature.Body)))
                 {
                     _pipeWriter = new StreamPipeWriter(HttpResponseFeature.Body);
                 }

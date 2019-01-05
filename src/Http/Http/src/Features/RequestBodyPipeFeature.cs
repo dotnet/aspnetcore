@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -31,7 +32,8 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             get
             {
-                if (_pipeReader == null)
+                if (_pipeReader == null ||
+                    (_pipeReader is StreamPipeReader reader && !object.ReferenceEquals(reader.InnerStream, HttpRequestFeature.Body)))
                 {
                     _pipeReader = new StreamPipeReader(HttpRequestFeature.Body);
                 }
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 _pipeReader = value;
                 if (_pipeReader == null)
                 {
-                    HttpRequestFeature.Body = null;
+                    HttpRequestFeature.Body = Stream.Null;
                 }
                 else
                 {
