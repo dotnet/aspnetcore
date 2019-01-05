@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -63,6 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _responseBytesWritten;
 
         private readonly HttpConnectionContext _context;
+        private ReusableHttpContext _httpContext;
 
         protected string _methodText = null;
         private string _scheme = null;
@@ -275,6 +277,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
+        internal ReusableHttpContext HttpContext => _httpContext;
+
         public void InitializeStreams(MessageBody messageBody)
         {
             if (_streams == null)
@@ -358,6 +362,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
+
+            _httpContext?.Uninitialize();
 
             OnReset();
         }
@@ -535,14 +541,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 InitializeStreams(messageBody);
 
-                var httpContext = application.CreateContext(this);
+                // Initialize the HttpContext before we call into the IHttpApplication
+                if (_httpContext is null)
+                {
+                    _httpContext = new ReusableHttpContext(this);
+                }
+                else
+                {
+                    _httpContext.Initialize(this);
+                }
+
+                var context = application.CreateContext(this);
 
                 try
                 {
                     KestrelEventSource.Log.RequestStart(this);
 
                     // Run the application code for this request
-                    await application.ProcessRequestAsync(httpContext);
+                    await application.ProcessRequestAsync(context);
 
                     if (!_requestAborted)
                     {
@@ -609,7 +625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     await FireOnCompleted();
                 }
 
-                application.DisposeContext(httpContext, _applicationException);
+                application.DisposeContext(context, _applicationException);
 
                 // Even for non-keep-alive requests, try to consume the entire body to avoid RSTs.
                 if (!_requestAborted && _requestRejectedException == null && !messageBody.IsEmpty)

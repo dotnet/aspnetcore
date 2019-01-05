@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(featureCollection));
             }
 
-            var httpContext = new DefaultHttpContext(featureCollection);
+            var httpContext = CreateHttpContext(featureCollection);
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = httpContext;
@@ -45,6 +46,11 @@ namespace Microsoft.AspNetCore.Http
             featureCollection.Set<IFormFeature>(formFeature);
 
             return httpContext;
+        }
+
+        protected virtual HttpContext CreateHttpContext(IFeatureCollection featureCollection)
+        {
+            return new ReusableHttpContext(featureCollection);
         }
 
         public void Dispose(HttpContext httpContext)
