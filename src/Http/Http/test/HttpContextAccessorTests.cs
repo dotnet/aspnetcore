@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http
 
             await Task.Delay(100);
 
-            Assert.True(accessor.HttpContext.Equals(context));
+            Assert.True(accessor.HttpContext.Equals(context), "HttpContexts don't represent the same context");
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
             ThreadPool.QueueUserWorkItem(async _ =>
             {
                 // The HttpContext flows with the execution context
-                Assert.True(accessor.HttpContext.Equals(context));
+                Assert.True(accessor.HttpContext.Equals(context), "HttpContexts don't represent the same context");
 
                 checkAsyncFlowTcs.SetResult(null);
 
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Http
             ThreadPool.QueueUserWorkItem(async _ =>
             {
                 // The HttpContext flows with the execution context
-                Assert.True(accessor.HttpContext.Equals(context));
+                Assert.True(accessor.HttpContext.Equals(context), "HttpContexts don't represent the same context");
 
                 checkAsyncFlowTcs.SetResult(null);
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http
             ThreadPool.QueueUserWorkItem(async _ =>
             {
                 // The HttpContext flows with the execution context
-                Assert.True(accessor.HttpContext.Equals(context));
+                Assert.True(accessor.HttpContext.Equals(context), "HttpContexts don't represent the same context");
 
                 checkAsyncFlowTcs.SetResult(null);
 

@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
             var context = contextFactory.Create(new FeatureCollection());
 
             // Assert
-            Assert.True(accessor.HttpContext.Equals(context));
+            Assert.True(accessor.HttpContext.Equals(context), "HttpContexts don't represent the same context");
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
             var context = contextFactory.Create(new FeatureCollection());
 
             // Assert
-            Assert.True(accessor.HttpContext.Equals(context));
+            Assert.True(accessor.HttpContext.Equals(context), "HttpContexts don't represent the same context");
 
             contextFactory.Dispose(context);
 
