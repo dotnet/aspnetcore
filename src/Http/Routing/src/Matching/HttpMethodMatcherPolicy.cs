@@ -266,9 +266,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
         {
-            const string AllowHeaderName = "Allow";
             var allow = string.Join(", ", httpMethods);
-
             return new Endpoint(
                 (context) =>
                 {
@@ -276,10 +274,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     // Prevent ArgumentException from duplicate key if header already added, such as when the
                     // request is re-executed by an error handler (see https://github.com/aspnet/AspNetCore/issues/6415)
-                    if (!context.Response.Headers.ContainsKey(AllowHeaderName))
-                    {
-                        context.Response.Headers.Add(AllowHeaderName, allow);
-                    }
+                    context.Response.Headers["Allow"] = allow;
 
                     return Task.CompletedTask;
                 },
