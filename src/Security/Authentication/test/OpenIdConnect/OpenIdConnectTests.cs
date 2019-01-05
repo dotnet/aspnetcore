@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -292,6 +293,50 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(DefaultHost + TestServerBuilder.Signout));
             Assert.Equal("Cannot redirect to the end session endpoint, the configuration may be missing or invalid.", exception.Message);
+        }
+
+        [Fact]
+        public async Task SignOut_WithMissingIssuer()
+        {
+            var settings = new TestSettings(o =>
+            {
+                o.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.Authority = TestServerBuilder.DefaultAuthority;
+                o.ClientId = "Test Id";
+            });
+            var server = settings.CreateTestServer(handler: async context =>
+            {
+                var claimsIdentity = new ClaimsIdentity("Cookies");
+                claimsIdentity.AddClaim(new Claim("iss", "test"));
+                await context.SignInAsync(new ClaimsPrincipal(claimsIdentity));
+            });
+
+            var signInTransaction = await server.SendAsync(DefaultHost);
+
+            var remoteSignOutTransaction = await server.SendAsync(DefaultHost + "/signout-oidc", signInTransaction.AuthenticationCookieValue);
+            Assert.Equal(HttpStatusCode.OK, remoteSignOutTransaction.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task SignOut_WithInvalidIssuer()
+        {
+            var settings = new TestSettings(o =>
+            {
+                o.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.Authority = TestServerBuilder.DefaultAuthority;
+                o.ClientId = "Test Id";
+            });
+            var server = settings.CreateTestServer(handler: async context =>
+            {
+                var claimsIdentity = new ClaimsIdentity("Cookies");
+                claimsIdentity.AddClaim(new Claim("iss", "test"));
+                await context.SignInAsync(new ClaimsPrincipal(claimsIdentity));
+            });
+
+            var signInTransaction = await server.SendAsync(DefaultHost);
+
+            var remoteSignOutTransaction = await server.SendAsync(DefaultHost + "/signout-oidc?iss=invalid", signInTransaction.AuthenticationCookieValue);
+            Assert.Equal(HttpStatusCode.OK, remoteSignOutTransaction.Response.StatusCode);
         }
 
         // Test Cases for calculating the expiration time of cookie from cookie name
