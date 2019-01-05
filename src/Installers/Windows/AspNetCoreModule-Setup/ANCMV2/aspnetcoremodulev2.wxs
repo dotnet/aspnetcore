@@ -138,7 +138,7 @@
                            <Component Id="AspNetCoreModuleV2" Guid="3a692941-59be-43cf-98a8-6ed01b12a519" Win64="$(var.IsWin64)">
                                <File Id="AspNetCoreModuleV2Dll"
                                      Name="aspnetcorev2.dll"
-                                     Source="$(var.AspNetCoreV2TargetPath)"
+                                     Source="$(var.AspNetCoreV2.TargetPath)"
                                      DiskId="1"
                                      Vital="yes">
                                </File>
@@ -152,7 +152,7 @@
                                <Component Id="AspNetCoreModuleHandler" Guid="4b62060a-deb8-4de3-9557-9c0be21dc844" Win64="$(var.IsWin64)">
                                    <File Id="AspNetCoreModuleHandlerDll"
                                          Name="aspnetcorev2_outofprocess.dll"
-                                         Source="$(var.AspNetCoreV2HandlerTargetPath)"
+                                         Source="$(var.AspNetCoreV2Handler.TargetPath)"
                                          DiskId="1"
                                          Vital="yes">
                                    </File>
@@ -181,7 +181,7 @@
                             <Component Id="AspNetCoreModuleV2.wow" Guid="1b8ecba0-c002-442a-92c0-0fa9c0f21df4" Win64="no">
                                 <File Id="AspNetCoreModuleV2Dll.wow"
                                     Name="aspnetcorev2.dll"
-                                    Source="$(var.AspNetCoreV2WoW64TargetPath)"
+                                    Source="$(var.AspNetCoreV2WoW64.TargetPath)"
                                     DiskId="1"
                                     Vital="yes">
                                 </File>
@@ -195,7 +195,7 @@
                                 <Component Id="AspNetCoreModuleHandler.wow" Guid="d927e5d3-c8b2-400c-b85c-ae5c2772d6c3" Win64="no">
                                     <File Id="AspNetCoreModuleHandlerDll.wow"
                                           Name="aspnetcorev2_outofprocess.dll"
-                                          Source="$(var.AspNetCoreV2HandlerWoW64TargetPath)"
+                                          Source="$(var.AspNetCoreV2HandlerWoW64.TargetPath)"
                                           DiskId="1"
                                           Vital="yes">
                                     </File>

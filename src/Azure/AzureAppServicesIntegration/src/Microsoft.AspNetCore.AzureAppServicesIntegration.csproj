@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging.AzureAppServices" />
   </ItemGroup>
 
 </Project>

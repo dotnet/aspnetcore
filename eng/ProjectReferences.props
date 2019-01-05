@@ -111,5 +111,7 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.Extensions.ApiDescription.Design\Microsoft.Extensions.ApiDescription.Design.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" ProjectPath="$(RepositoryRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServicesIntegration" ProjectPath="$(RepositoryRoot)src\Azure\AzureAppServicesIntegration\src\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
   </ItemGroup>
 </Project>
