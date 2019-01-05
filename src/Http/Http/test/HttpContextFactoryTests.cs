@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
             var context = contextFactory.Create(new FeatureCollection());
 
             // Assert
-            Assert.Same(context, accessor.HttpContext);
+            Assert.True(accessor.HttpContext.Equals(context));
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
             var context = contextFactory.Create(new FeatureCollection());
 
             // Assert
-            Assert.Same(context, accessor.HttpContext);
+            Assert.True(accessor.HttpContext.Equals(context));
 
             contextFactory.Dispose(context);
 
