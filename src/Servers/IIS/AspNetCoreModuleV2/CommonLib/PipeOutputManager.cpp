@@ -21,7 +21,7 @@ PipeOutputManager::PipeOutputManager(RedirectionOutput& output) :
     m_hErrThread(nullptr),
     m_disposed(false)
 {
-        TryStartRedirection();
+    TryStartRedirection();
 }
 
 PipeOutputManager::~PipeOutputManager() noexcept(false)

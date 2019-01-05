@@ -39,7 +39,7 @@ public:
 
 private:
     std::wstring m_fileName;
-    std::wofstream m_file;
+    std::ofstream m_file;
 };
 
 class StandardOutputRedirectionOutput: NonCopyable, public RedirectionOutput

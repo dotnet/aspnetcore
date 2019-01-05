@@ -199,6 +199,30 @@ __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ON
     }
 }
 
+__declspec(noinline) inline std::wstring CaughtExceptionToString()
+{
+    try
+    {
+        throw;
+    }
+    catch (const InvalidOperationException& exception)
+    {
+        return exception.as_wstring();
+    }
+    catch (const std::system_error& exception)
+    {
+        return to_wide_string(exception.what(), CP_ACP);
+    }
+    catch (const std::exception& exception)
+    {
+        return to_wide_string(exception.what(), CP_ACP);
+    }
+    catch (...)
+    {
+        return L"Unknown exception type";
+    }
+}
+
 [[noreturn]]
  __declspec(noinline) inline void ThrowResultException(LOCATION_ARGUMENTS HRESULT hr)
 {

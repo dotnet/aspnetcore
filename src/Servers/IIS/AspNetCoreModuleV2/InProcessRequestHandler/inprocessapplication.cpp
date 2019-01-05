@@ -223,7 +223,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        DWORD waitResult;
+        bool clrThreadExited;
 
         {
             auto redirectionOutput = LoggingHelpers::CreateOutputs(
@@ -244,28 +244,27 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             const HANDLE waitHandles[2] = { m_pShutdownEvent, m_clrThread.native_handle() };
 
             // Wait for shutdown request
-            waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
+            const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
 
             // Disconnect output
             context->m_redirectionOutput = nullptr;
 
             THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
+
+            LOG_INFOF(L"Starting shutdown sequence %d", waitResult);
+
+            clrThreadExited = waitResult == (WAIT_OBJECT_0 + 1);
+            // shutdown was signaled
+            // only wait for shutdown in case of successful startup
+            if (m_waitForShutdown)
+            {
+                const auto clrWaitResult = WaitForSingleObject(m_clrThread.native_handle(), m_pConfig->QueryShutdownTimeLimitInMS());
+                THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
+
+                clrThreadExited = clrWaitResult != WAIT_TIMEOUT;
+            }
+            LOG_INFOF(L"Clr thread wait ended: clrThreadExited: %d", clrThreadExited);
         }
-
-        LOG_INFOF(L"Starting shutdown sequence %d", waitResult);
-
-        bool clrThreadExited = waitResult == (WAIT_OBJECT_0 + 1);
-        // shutdown was signaled
-        // only wait for shutdown in case of successful startup
-        if (m_waitForShutdown)
-        {
-            const auto clrWaitResult = WaitForSingleObject(m_clrThread.native_handle(), m_pConfig->QueryShutdownTimeLimitInMS());
-            THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
-
-            clrThreadExited = clrWaitResult != WAIT_TIMEOUT;
-        }
-
-        LOG_INFOF(L"Clr thread wait ended: clrThreadExited: %d", clrThreadExited);
 
         // At this point CLR thread either finished or timed out, abandon it.
         m_clrThread.detach();
