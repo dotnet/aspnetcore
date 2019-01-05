@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
     <Fragment>
+        <Variable Name="DISABLESHAREDCONFIGCHECK" Value="0" bal:Overridable="yes" />
+
         <PackageGroup Id="PG_ANCM">
             <RollbackBoundary Id="RB_ANCM" />
 
@@ -9,28 +11,36 @@
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM)" />
+                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM)">
+                <MsiProperty Name="DISABLESHAREDCONFIGCHECK" Value="[DISABLESHAREDCONFIGCHECK]" />
+            </MsiPackage>
 
             <MsiPackage Id="AspNetCoreModule_x64" SourceFile="$(var.BinPath)aspnetcoremodule_x64_en.msi"
                         Name="aspnetcoremodule_x64_en.msi"
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM)" />
+                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM)">
+                <MsiProperty Name="DISABLESHAREDCONFIGCHECK" Value="[DISABLESHAREDCONFIGCHECK]" />
+            </MsiPackage>
 
             <MsiPackage Id="AspNetCoreModuleV2_x86" SourceFile="$(var.BinPath)aspnetcoremodule_x86_en_v2.msi"
                         Name="aspnetcoremodule_x86_en_v2.msi"
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM)" />
+                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM)">
+                <MsiProperty Name="DISABLESHAREDCONFIGCHECK" Value="[DISABLESHAREDCONFIGCHECK]" />
+            </MsiPackage>
 
             <MsiPackage Id="AspNetCoreModuleV2_x64" SourceFile="$(var.BinPath)aspnetcoremodule_x64_en_v2.msi"
                         Name="aspnetcoremodule_x64_en_v2.msi"
                         Compressed="yes"
                         Vital="yes"
                         Visible="no"
-                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM)" />
+                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM)">
+                <MsiProperty Name="DISABLESHAREDCONFIGCHECK" Value="[DISABLESHAREDCONFIGCHECK]" />
+            </MsiPackage>
         </PackageGroup>
 
         <util:RegistrySearch Id="IISCoreWebEngineInstalledSearch_x86"
