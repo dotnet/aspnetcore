@@ -35,7 +35,13 @@
   </ItemGroup>
 
   <Target Name="BuildX64" AfterTargets="Build" Condition="'$(TargetFramework)'=='net461' AND '$(PlatformTarget)'!='x64'">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Build" Properties="&#xD;&#xA;        Configuration=$(Configuration);&#xD;&#xA;        TargetFramework=net461;&#xD;&#xA;        Platform=x64;" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="Build"
+      Properties="
+        Configuration=$(Configuration);
+        TargetFramework=net461;
+        Platform=x64;" />
   </Target>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuildX64;">
