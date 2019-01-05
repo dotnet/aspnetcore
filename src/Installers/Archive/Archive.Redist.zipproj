@@ -39,7 +39,7 @@
     <MakeDir Directories="$(OutputPath);$(IntermediateOutputPath)" />
   </Target>
 
-  <Target Name="GenerateMetadataFiles" BeforeTargets="PrepareForBuild">
+  <Target Name="GenerateMetadataFiles" DependsOnTargets="PrepareForBuild">
     <!--
       Used by the dotnet/core-sdk build to determine which version of Microsoft.NETCore.App is used.
     -->
@@ -71,7 +71,7 @@
     <WriteLinesToFile File="$(SvgBadgeOutputPath)" Lines="$(SvgBadgeContent)" Overwrite="true" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;GetTargetPath">
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;GetTargetPath;GenerateMetadataFiles">
     <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
       SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
       DestinationFolder="$(BaseIntermediateOutputPath)"
