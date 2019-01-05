@@ -36,7 +36,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Browser" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Build" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Components.Razor.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Server" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" Category="ship" />
@@ -79,7 +78,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
 
     <!-- Experimental packages which are not ready for production yet -->
       <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.NodeServices.Sockets" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(BuildSiteExtensions)' == 'true' " />
 
     <!-- Packages for internal use only. -->
@@ -92,12 +90,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <!-- This package contains API for the .NET CLI to generate the aspnet HTTPs dev cert during CLI first-run initialization. -->
       <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="noship" />
 
-    <!-- This packages contain bits used by Azure site extensions, and are not currently deployed to NuGet.org automatically like the rest of our packages. -->
-      <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
-
     <!-- This packages are produce for testing purposes only. -->
-      <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
-      <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
       <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
 

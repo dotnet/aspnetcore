@@ -169,7 +169,12 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 }
 
                 var statusCode = metadata.IsDefaultResponse ? 200 : metadata.StatusCode;
-                statusCodes.Add(statusCode, (statusCode, metadata.ReturnType));
+                if (!statusCodes.ContainsKey(statusCode))
+                {
+                    // If a status code appears multiple times in the actual metadata, pick the first one to
+                    // appear in the codefix
+                    statusCodes.Add(statusCode, (statusCode, metadata.ReturnType));
+                }
             }
 
             return statusCodes.Values;

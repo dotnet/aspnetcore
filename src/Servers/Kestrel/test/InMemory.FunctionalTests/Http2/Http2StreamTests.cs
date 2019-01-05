@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -1567,7 +1567,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 0);
 
-            VerifyGoAway(goAway, 1, Http2ErrorCode.INTERNAL_ERROR);
+            VerifyGoAway(goAway, int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
 
             _pair.Application.Output.Complete();
             await _connectionTask;
@@ -1995,7 +1995,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _pair.Application.Output.Complete();
 
-            await WaitForConnectionErrorAsync<HPackEncodingException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1, Http2ErrorCode.INTERNAL_ERROR,
+            await WaitForConnectionErrorAsync<HPackEncodingException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: int.MaxValue, Http2ErrorCode.INTERNAL_ERROR,
                 CoreStrings.HPackErrorNotEnoughBuffer);
         }
 

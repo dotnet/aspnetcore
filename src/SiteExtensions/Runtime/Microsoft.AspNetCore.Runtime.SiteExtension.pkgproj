@@ -19,7 +19,7 @@
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
     <Content Include="install.cmd" />
-    <Content Include="$(RepositoryRoot)bin\Microsoft.Web.Xdt.Extensions\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="$(RepositoryRoot)bin\$(Configuration)\Microsoft.Web.Xdt.Extensions\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,8 +27,8 @@
     <!-- Make sure redist folder is built and ready -->
     <ProjectReference Include="..\..\Installers\Archive\Archive.Redist.zipproj" PrivateAssets="All" ReferenceOutputAssembly="False" />
 
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\src\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(SharedFxArchitecture)" />
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\src\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(SharedFxArchitecture)" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(SharedFxArchitecture)" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(SharedFxArchitecture)" />
 
   </ItemGroup>
 

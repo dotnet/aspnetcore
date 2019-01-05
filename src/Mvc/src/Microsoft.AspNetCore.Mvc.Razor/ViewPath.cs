@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Primitives;
-
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
     internal static class ViewPath
@@ -23,23 +21,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 length++;
             }
 
-            var builder = new InplaceStringBuilder(length);
-            if (addLeadingSlash)
+            return string.Create(length, (path, addLeadingSlash), (span, tuple) =>
             {
-                builder.Append('/');
-            }
+                var (pathValue, addLeadingSlashValue) = tuple;
+                var spanIndex = 0;
 
-            for (var i = 0; i < path.Length; i++)
-            {
-                var ch = path[i];
-                if (ch == '\\')
+                if (addLeadingSlashValue)
                 {
-                    ch = '/';
+                    span[spanIndex++] = '/';
                 }
-                builder.Append(ch);
-            }
 
-            return builder.ToString();
+                foreach (var ch in pathValue)
+                {
+                    span[spanIndex++] = ch == '\\' ? '/' : ch;
+                }
+            });
         }
     }
 }

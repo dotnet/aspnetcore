@@ -30,6 +30,4 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
-
 </Project>

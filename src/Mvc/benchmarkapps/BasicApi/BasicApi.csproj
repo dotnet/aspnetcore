@@ -7,42 +7,38 @@
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_SQL_SCRIPTS</DefineConstants>
 
     <WarningsNotAsErrors>CS8002;$(WarningsNotAsErrors)</WarningsNotAsErrors>
+    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
-    <PackageReference Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" />
-
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
+    <PackageReference Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion)" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" />
   </ItemGroup>
 
-  <!-- These references are used when running locally -->
+  <!-- These references are used when building locally or on CI. -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="$(MicrosoftAspNetCoreAuthenticationPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
-
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
   </ItemGroup>
 
-  <!--
-    These references are used when running on the Benchmarks Server.
-    Use All meta-package and not App to include Microsoft.EntityFrameworkCore.Sqlite.
-  -->
+  <!-- These references are used when building on the Benchmarks Server. -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <KnownFrameworkReference 
+    <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
       DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
       LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
       TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+
+    <!-- Special-case the JwtBearer package because assembly no longer ships in Microsoft.AspNetCore.App. -->
+    <!-- Cannot use <Reference> because it's unsupported when building an isolated project. -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(BenchmarksAspNetCoreVersion)" />
   </ItemGroup>
 </Project>

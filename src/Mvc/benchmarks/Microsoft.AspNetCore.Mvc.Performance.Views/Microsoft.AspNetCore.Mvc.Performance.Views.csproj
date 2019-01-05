@@ -6,11 +6,12 @@
     <GenerateDependencyFile>false</GenerateDependencyFile>
 
     <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
+    <IsBenchmarkProject>true</IsBenchmarkProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

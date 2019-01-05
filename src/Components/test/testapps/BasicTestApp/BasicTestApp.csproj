@@ -3,9 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 
-    <!-- Local alternative to <RunArguments>blazor serve</RunArguments> -->
-    <RunCommand>dotnet</RunCommand>
-    <RunArguments>run --project ../../../blazor/src/Microsoft.AspNetCore.Blazor.Cli serve --pathbase /subdir</RunArguments>
+    <!-- Must be defined before ReferenceFromSource.props is imported -->
+    <AdditionalRunArguments>--pathbase /subdir</AdditionalRunArguments>
   </PropertyGroup>
 
   <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Components.Build" /> -->
@@ -14,5 +13,9 @@
     <ProjectReference Include="..\..\..\blazor\src\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj" />
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <!-- Allow the build to specify the version of the Razor SDK directly -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
 </Project>

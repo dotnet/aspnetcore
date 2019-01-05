@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Build.Test
 {
@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Components.Build.Test
     // Includes running the component code to verify the output.
     public class RenderingRazorIntegrationTest : RazorIntegrationTestBase
     {
+        public RenderingRazorIntegrationTest(ITestOutputHelper output)
+            : base(output)
+        {
+        }
+
         [Fact]
         public void SupportsPlainText()
         {
@@ -83,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 frame => AssertFrame.Text(frame, "there", 2));
         }
 
-        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
+        [Fact]
         public void SupportsElementsAsStaticBlock()
         {
             // Arrange/Act
@@ -144,28 +149,28 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 frame => AssertFrame.Attribute(frame, "myattr", "val", 2));
         }
 
-        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
+        [Fact]
         public void SupportsSelfClosingElementsAsStaticBlock()
         {
             // Arrange/Act
             var component = CompileToComponent("Some text so elem isn't at position 0 <input attr='123' />");
 
             // Assert
-            Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
-                frame => AssertFrame.Markup(frame, "<input attr=\"123\">", 1));
+            Assert.Collection(
+                GetRenderTree(component),
+                frame => AssertFrame.Markup(frame, "Some text so elem isn't at position 0 <input attr=\"123\">", 0));
         }
 
-        [Fact(Skip = "Temporarily disable compiling markup frames in 0.5.1")]
+        [Fact]
         public void SupportsVoidHtmlElements()
         {
             // Arrange/Act
             var component = CompileToComponent("Some text so elem isn't at position 0 <img>");
 
             // Assert
-            Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
-                frame => AssertFrame.Markup(frame, "<img>", 1));
+            Assert.Collection(
+                GetRenderTree(component),
+                frame => AssertFrame.Markup(frame, "Some text so elem isn't at position 0 <img>", 0));
         }
 
         [Fact]

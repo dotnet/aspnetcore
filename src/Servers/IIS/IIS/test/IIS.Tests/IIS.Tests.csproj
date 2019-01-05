@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\..\build\testsite.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <InProcessTestSite>true</InProcessTestSite>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="System.Diagnostics.EventLog" />
+    <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="AppHostConfig\HostableWebCore.config" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
+    <None Include="$(AspNetCoreModuleV2ShimDll)" Condition="$(PackNativeAssets) == 'true'" CopyToOutputDirectory="PreserveNewest" Link="%(FileName)%(Extension)" />
+  </ItemGroup>
+
+</Project>
