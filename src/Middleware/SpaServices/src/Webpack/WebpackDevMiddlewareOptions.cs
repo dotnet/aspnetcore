@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SpaServices.Webpack
 {
@@ -30,10 +33,10 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         /// </summary>
         public bool ReactHotModuleReplacement { get; set; }
 
-        /// <summary> 
+        /// <summary>
         /// Specifies additional options to be passed to the Webpack Hot Middleware client, if used.
-        /// </summary> 
-        public IDictionary<string, string> HotModuleReplacementClientOptions { get; set; } 
+        /// </summary>
+        public IDictionary<string, string> HotModuleReplacementClientOptions { get; set; }
 
         /// <summary>
         /// Specifies the Webpack configuration file to be used. If not set, defaults to 'webpack.config.js'.
@@ -57,5 +60,11 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         /// configuration is exported as a function.
         /// </summary>
         public object EnvParam { get; set; }
+
+        /// <summary>
+        /// Specifies an action to be executed on the contex just before the response starts to be generated.
+        /// This allows an extension point to modify the response, for example adding headers.
+        /// </summary>
+        [JsonIgnore]public Action<HttpContext> OnPrepareResponse { get; set; }
     }
 }

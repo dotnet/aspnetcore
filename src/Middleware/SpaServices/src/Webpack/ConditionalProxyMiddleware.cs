@@ -103,6 +103,8 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
                 // SendAsync removes chunking from the response. This removes the header so it doesn't expect a chunked response.
                 context.Response.Headers.Remove("transfer-encoding");
 
+                _options.OnPrepareResponse?.Invoke(context);
+
                 using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
                 {
                     try

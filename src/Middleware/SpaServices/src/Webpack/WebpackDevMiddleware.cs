@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.SpaServices.Webpack;
 using Newtonsoft.Json;
@@ -111,12 +112,12 @@ namespace Microsoft.AspNetCore.Builder
             // plus /__webpack_hmr is proxied with infinite timeout, because it's an EventSource (long-lived request).
             foreach (var publicPath in devServerInfo.PublicPaths)
             {
-                appBuilder.UseProxyToLocalWebpackDevMiddleware(publicPath + hmrEndpoint, devServerInfo.Port, Timeout.InfiniteTimeSpan);
-                appBuilder.UseProxyToLocalWebpackDevMiddleware(publicPath, devServerInfo.Port, TimeSpan.FromSeconds(100));
+                appBuilder.UseProxyToLocalWebpackDevMiddleware(publicPath + hmrEndpoint, devServerInfo.Port, Timeout.InfiniteTimeSpan, options?.OnPrepareResponse);
+                appBuilder.UseProxyToLocalWebpackDevMiddleware(publicPath, devServerInfo.Port, TimeSpan.FromSeconds(100), options?.OnPrepareResponse);
             }
         }
 
-        private static void UseProxyToLocalWebpackDevMiddleware(this IApplicationBuilder appBuilder, string publicPath, int proxyToPort, TimeSpan requestTimeout)
+        private static void UseProxyToLocalWebpackDevMiddleware(this IApplicationBuilder appBuilder, string publicPath, int proxyToPort, TimeSpan requestTimeout, Action<HttpContext> onPrepareResponse = null)
         {
             // Note that this is hardcoded to make requests to "localhost" regardless of the hostname of the
             // server as far as the client is concerned. This is because ConditionalProxyMiddlewareOptions is
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.Builder
             // to it is proxied), and the HMR service couldn't use HTTPS anyway (in general it wouldn't have
             // the necessary certificate).
             var proxyOptions = new ConditionalProxyMiddlewareOptions(
-                "http", "localhost", proxyToPort.ToString(), requestTimeout);
+                "http", "localhost", proxyToPort.ToString(), requestTimeout, onPrepareResponse);
             appBuilder.UseMiddleware<ConditionalProxyMiddleware>(publicPath, proxyOptions);
         }
 
