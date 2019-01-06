@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Testing;
 
 namespace System.Threading.Tasks
 {
@@ -21,23 +22,9 @@ namespace System.Threading.Tasks
             return OrTimeout(task, new TimeSpan(0, 0, 0, 0, milliseconds), memberName, filePath, lineNumber);
         }
 
-        public static async Task OrTimeout(this Task task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
+        public static Task OrTimeout(this Task task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
         {
-            if (task.IsCompleted)
-            {
-                await task;
-                return;
-            }
-
-            var cts = new CancellationTokenSource();
-            var completed = await Task.WhenAny(task, Task.Delay(Debugger.IsAttached ? Timeout.InfiniteTimeSpan : timeout, cts.Token));
-            if (completed != task)
-            {
-                throw new TimeoutException(GetMessage(memberName, filePath, lineNumber));
-            }
-            cts.Cancel();
-
-            await task;
+            return task.TimeoutAfter(timeout, filePath, lineNumber ?? 0);
         }
 
         public static Task<T> OrTimeout<T>(this ValueTask<T> task, int milliseconds = DefaultTimeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null) =>
@@ -51,22 +38,9 @@ namespace System.Threading.Tasks
             return OrTimeout(task, new TimeSpan(0, 0, 0, 0, milliseconds), memberName, filePath, lineNumber);
         }
 
-        public static async Task<T> OrTimeout<T>(this Task<T> task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
+        public static Task<T> OrTimeout<T>(this Task<T> task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
         {
-            if (task.IsCompleted)
-            {
-                return await task;
-            }
-
-            var cts = new CancellationTokenSource();
-            var completed = await Task.WhenAny(task, Task.Delay(Debugger.IsAttached ? Timeout.InfiniteTimeSpan : timeout, cts.Token));
-            if (completed != task)
-            {
-                throw new TimeoutException(GetMessage(memberName, filePath, lineNumber));
-            }
-            cts.Cancel();
-
-            return await task;
+            return task.TimeoutAfter(timeout, filePath, lineNumber ?? 0);
         }
 
         public static async Task OrThrowIfOtherFails(this Task task, Task otherTask)
@@ -91,18 +65,6 @@ namespace System.Threading.Tasks
 
             // If we get here, 'task' is finished and succeeded.
             return task.GetAwaiter().GetResult();
-        }
-
-        private static string GetMessage(string memberName, string filePath, int? lineNumber)
-        {
-            if (!string.IsNullOrEmpty(memberName))
-            {
-                return $"Operation in {memberName} timed out at {filePath}:{lineNumber}";
-            }
-            else
-            {
-                return "Operation timed out";
-            }
         }
     }
 }
