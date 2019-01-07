@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -384,18 +385,37 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             assemblyPath = Path.Combine(result.Project.DirectoryPath, Path.Combine(assemblyPath));
+
+            var typeNames = GetDeclaredTypeNames(assemblyPath);
+            Assert.Contains(fullTypeName, typeNames);
+        }
+
+        public static void AssemblyDoesNotContainType(MSBuildResult result, string assemblyPath, string fullTypeName)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            var typeNames = GetDeclaredTypeNames(assemblyPath);
+            Assert.DoesNotContain(fullTypeName, typeNames);
+        }
+
+        private static IEnumerable<string> GetDeclaredTypeNames(string assemblyPath)
+        {
+            IEnumerable<string> typeNames;
             using (var file = File.OpenRead(assemblyPath))
             {
                 var peReader = new PEReader(file);
                 var metadataReader = peReader.GetMetadataReader();
-                var typeNames = metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
+                typeNames = metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
                 {
                     var type = metadataReader.GetTypeDefinition(t);
                     return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
                 });
-
-                Assert.Contains(fullTypeName, typeNames);
             }
+
+            return typeNames;
         }
 
         private abstract class MSBuildXunitException : Xunit.Sdk.XunitException

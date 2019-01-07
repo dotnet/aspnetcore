@@ -27,28 +27,13 @@
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
   </ItemGroup>
 
-  <!-- 
-    BEGIN COMPONENT .cshtml WORKAROUND
-
-    This is the current workaround used by the components codebase to treat .cshtml files as components
-    so that we can have tooling support. Testing it here so it won't break.
-  -->
   <ItemGroup>
     <RazorComponent Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
   </ItemGroup>
 
-  <Target Name="_RemoveFilesFromRazorGenerate" AfterTargets="ResolveRazorGenerateInputs">
-    <ItemGroup>
-      <RazorGenerate Remove="@(RazorGenerate)" />
-    </ItemGroup>
-  </Target>
-
   <ItemGroup>
     <ProjectCapability Include="DotNetCoreRazorConfiguration" />
   </ItemGroup>
-  <!--
-    END COMPONENT .cshtml WORKAROUND
-  -->
 
   <!-- Test Placeholder -->
 

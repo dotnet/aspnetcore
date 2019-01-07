@@ -29,6 +29,10 @@
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <RazorComponent Include="Components/**/*.cshtml" />
+  </ItemGroup>
+
   <!-- Test Placeholder -->
 
 </Project>

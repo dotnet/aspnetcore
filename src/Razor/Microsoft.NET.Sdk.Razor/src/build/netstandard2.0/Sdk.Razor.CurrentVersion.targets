@@ -367,7 +367,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <ItemGroup Condition="'$(EnableDefaultRazorGenerateItems)'=='true'">
-      <RazorGenerate Include="@(Content)" Condition="'%(Content.Extension)'=='.cshtml'" />
+      <RazorGenerate
+        Include="@(Content)"
+        Exclude="@(RazorComponent)"
+        Condition="'%(Content.Extension)'=='.cshtml'" />
     </ItemGroup>
 
     <!--

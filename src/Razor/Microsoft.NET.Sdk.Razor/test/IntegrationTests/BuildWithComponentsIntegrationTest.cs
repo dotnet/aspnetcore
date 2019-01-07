@@ -36,6 +36,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "MvcWithComponents.TestComponent");
             Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "MvcWithComponents.Views.Shared.NavMenu");
+            Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "MvcWithComponents.Components.Counter");
+            Assert.AssemblyDoesNotContainType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "MvcWithComponents.Views.Home.Index");
         }
     }
 }
