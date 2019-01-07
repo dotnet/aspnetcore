@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <RazorComponent Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
+    <RazorComponent Include="**/*.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

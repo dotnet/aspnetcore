@@ -36,8 +36,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "MvcWithComponents.TestComponent");
             Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "MvcWithComponents.Views.Shared.NavMenu");
+
+            // This is a component file with a .cshtml extension. It should appear in the main assembly, but not in the views dll.
             Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "MvcWithComponents.Components.Counter");
-            Assert.AssemblyDoesNotContainType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "MvcWithComponents.Views.Home.Index");
+            Assert.AssemblyDoesNotContainType(result, Path.Combine(OutputPath, "MvcWithComponents.Views.dll"), "MvcWithComponents.Components.Counter");
+            Assert.AssemblyDoesNotContainType(result, Path.Combine(OutputPath, "MvcWithComponents.Views.dll"), "AspNetCore.Components_Counter");
+
+            // Verify a regular View appears in the views dll, but not in the main assembly.
+            Assert.AssemblyDoesNotContainType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "AspNetCore.Views.Home.Index");
+            Assert.AssemblyDoesNotContainType(result, Path.Combine(OutputPath, "MvcWithComponents.dll"), "AspNetCore.Views_Home_Index");
+            Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "MvcWithComponents.Views.dll"), "AspNetCore.Views_Home_Index");
         }
     }
 }

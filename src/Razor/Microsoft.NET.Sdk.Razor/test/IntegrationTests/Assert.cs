@@ -397,25 +397,24 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw new ArgumentNullException(nameof(result));
             }
 
+            assemblyPath = Path.Combine(result.Project.DirectoryPath, Path.Combine(assemblyPath));
+
             var typeNames = GetDeclaredTypeNames(assemblyPath);
             Assert.DoesNotContain(fullTypeName, typeNames);
         }
 
         private static IEnumerable<string> GetDeclaredTypeNames(string assemblyPath)
         {
-            IEnumerable<string> typeNames;
             using (var file = File.OpenRead(assemblyPath))
             {
                 var peReader = new PEReader(file);
                 var metadataReader = peReader.GetMetadataReader();
-                typeNames = metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
+                return metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
                 {
                     var type = metadataReader.GetTypeDefinition(t);
                     return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
-                });
+                }).ToArray();
             }
-
-            return typeNames;
         }
 
         private abstract class MSBuildXunitException : Xunit.Sdk.XunitException
