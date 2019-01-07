@@ -4,6 +4,7 @@
   <PropertyGroup>
     <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
     <IsPackable>false</IsPackable>
+    <FilesToSign Include="$(MSBuildProjectDirectory)\$(OutDir)$(TargetName)$(TargetExt)" Authenticode="Microsoft400" />
   </PropertyGroup>
 
   <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />
