@@ -151,6 +151,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
         public async Task ConsumePartialBody()
         {
             using (var connection = _fixture.CreateTestConnection())
