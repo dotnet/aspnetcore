@@ -197,13 +197,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task AsyncChunkedPostIsAccepted()
         {
-            while (true)
+            // This test sends a lot of request because we are trying to force
+            // different async completion modes from IIS
+            for (int i = 0; i < 100; i++)
             {
-
                 using (var connection = _fixture.CreateTestConnection())
                 {
                     await connection.Send(
-                        "POST /ReadRequestBody HTTP/1.1",
+                        "POST /ReadFullBody HTTP/1.1",
                         $"Transfer-Encoding: chunked",
                         "Host: localhost",
                         "Connection: close",
@@ -223,19 +224,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         "HTTP/1.1 200 OK",
                         "");
 
-                    var headers = await connection.ReceiveHeaders();
-
-                    if (!headers.Contains("Content-Length: 0"))
-                    {
-                        await connection.Receive(
-                            "0",
-                            "",
-                            "");
-                    }
-                    else
-                    {
-
-                    }
+                    await connection.ReceiveHeaders();
+                    await connection.Receive("Completed");
 
                     await connection.WaitForConnectionClose();
                 }
