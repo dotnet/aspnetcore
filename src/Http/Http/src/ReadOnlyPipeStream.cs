@@ -6,15 +6,14 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
 
 namespace Microsoft.AspNetCore.Http
 {
-    public class StreamWriterAdapter : WriteOnlyStream
+    public class ReadOnlyPipeStream : WriteOnlyStream
     {
         private PipeWriter _pipeWriter;
 
-        public StreamWriterAdapter(PipeWriter pipeWriter)
+        public ReadOnlyPipeStream(PipeWriter pipeWriter)
         {
             _pipeWriter = pipeWriter;
         }
@@ -93,21 +92,15 @@ namespace Microsoft.AspNetCore.Http
             return tcs.Task;
         }
 
-        //public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default(CancellationToken))
-        //{
-        //    // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
-        //    if (cancellationToken.IsCancellationRequested)
-        //    {
-        //        return Task.FromCanceled(cancellationToken);
-        //    }
-
-        //    return _pipeWriter.WriteAsync(data, cancellationToken).AsTask();
-        //}
-
-        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
         {
-            return _pipeWriter.WriteAsync(data, cancellationToken);
-        }
+            // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
+            //if (cancellationToken.IsCancellationRequested)
+            //{
+            //    return Task.FromCanceled(cancellationToken);
+            //}
 
+            //return _pipeWriter.WriteAsync(data, cancellationToken).AsTask();
+        }
     }
 }

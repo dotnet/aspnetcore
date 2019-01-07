@@ -7,15 +7,14 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
 
-namespace Microsoft.AspNetCore.Http
+namespace System.IO.Pipelines
 {
-    public class StreamReaderAdapter : ReadOnlyStream
+    public class WriteOnlyPipeStream : ReadOnlyStream
     {
         private readonly PipeReader _pipeReader;
 
-        public StreamReaderAdapter(PipeReader pipeReader)
+        public WriteOnlyPipeStream(PipeReader pipeReader)
         {
             _pipeReader = pipeReader;
         }
