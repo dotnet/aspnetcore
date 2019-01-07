@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
         private readonly static Func<IFeatureCollection, IResponseCookiesFeature> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
-        private readonly static Func<IFeatureCollection, IResponseBodyPipeFeature> _newResponseBodyPipeFeature = f => new ResponseBodyPipeFeature(f);
+        private readonly static Func<HttpContext, IResponseBodyPipeFeature> _newResponseBodyPipeFeature = context => new ResponseBodyPipeFeature(context);
 
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature);
 
         private IResponseBodyPipeFeature ResponseBodyPipeFeature =>
-            _features.Fetch(ref _features.Cache.BodyPipe, _newResponseBodyPipeFeature);
+            _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, _newResponseBodyPipeFeature);
 
         public override HttpContext HttpContext { get { return _context; } }
 

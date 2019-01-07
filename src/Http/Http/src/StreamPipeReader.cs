@@ -17,7 +17,7 @@ namespace System.IO.Pipelines
     /// <summary>
     /// Implements PipeReader using an underlying stream.
     /// </summary>
-    public class StreamPipeReader : PipeReader
+    public class StreamPipeReader : PipeReader, IDisposable
     {
         private readonly int _minimumSegmentSize;
         private readonly int _minimumReadThreshold;

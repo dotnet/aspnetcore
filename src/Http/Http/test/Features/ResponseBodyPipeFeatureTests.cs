@@ -12,13 +12,11 @@ namespace Microsoft.AspNetCore.Http.Features
         [Fact]
         public void ResponseBodyReturnsStreamPipeReader()
         {
-            var features = new FeatureCollection();
-            var response = new HttpResponseFeature();
+            var context = new DefaultHttpContext();
             var expectedStream = new MemoryStream();
-            response.Body = expectedStream;
-            features[typeof(IHttpResponseFeature)] = response;
+            context.Response.Body = expectedStream;
 
-            var provider = new ResponseBodyPipeFeature(features);
+            var provider = new ResponseBodyPipeFeature(context);
 
             var pipeBody = provider.ResponseBodyPipe;
 
@@ -29,11 +27,8 @@ namespace Microsoft.AspNetCore.Http.Features
         [Fact]
         public void ResponseBodySetPipeReaderReturnsSameValue()
         {
-            var features = new FeatureCollection();
-            var response = new HttpResponseFeature();
-            features[typeof(IHttpResponseFeature)] = response;
-
-            var provider = new ResponseBodyPipeFeature(features);
+            var context = new DefaultHttpContext();
+            var provider = new ResponseBodyPipeFeature(context);
 
             var pipeWriter = new Pipe().Writer;
             provider.ResponseBodyPipe = pipeWriter;
@@ -44,16 +39,14 @@ namespace Microsoft.AspNetCore.Http.Features
         [Fact]
         public void ResponseBodyGetPipeWriterAfterSettingBodyTwice()
         {
-            var features = new FeatureCollection();
-            var response = new HttpResponseFeature();
+            var context = new DefaultHttpContext();
             var expectedStream = new MemoryStream();
-            response.Body = new MemoryStream();
-            features[typeof(IHttpResponseFeature)] = response;
+            context.Response.Body = new MemoryStream();
 
-            var provider = new ResponseBodyPipeFeature(features);
+            var provider = new ResponseBodyPipeFeature(context);
 
             var pipeBody = provider.ResponseBodyPipe;
-            response.Body = expectedStream;
+            context.Response.Body = expectedStream;
             pipeBody = provider.ResponseBodyPipe;
 
             Assert.True(pipeBody is StreamPipeWriter);

@@ -2,40 +2,34 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
     public class RequestBodyPipeFeature : IRequestBodyPipeFeature
     {
-        // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
-
         private PipeReader _pipeReader;
-        private FeatureReferences<IHttpRequestFeature> _features;
+        private HttpContext _context;
 
-        public RequestBodyPipeFeature(IFeatureCollection features)
+        public RequestBodyPipeFeature(HttpContext context)
         {
-            if (features == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(features));
+                throw new ArgumentNullException(nameof(context));
             }
-
-            _features = new FeatureReferences<IHttpRequestFeature>(features);
+            _context = context;
         }
-
-        private IHttpRequestFeature HttpRequestFeature =>
-            _features.Fetch(ref _features.Cache, _nullRequestFeature);
 
         public PipeReader RequestBodyPipe
         {
             get
             {
                 if (_pipeReader == null ||
-                    (_pipeReader is StreamPipeReader reader && !object.ReferenceEquals(reader.InnerStream, HttpRequestFeature.Body)))
+                    (_pipeReader is StreamPipeReader reader && !object.ReferenceEquals(reader.InnerStream, _context.Request.Body)))
                 {
-                    _pipeReader = new StreamPipeReader(HttpRequestFeature.Body);
+                    var streamPipeReader = new StreamPipeReader(_context.Request.Body);
+                    _pipeReader = streamPipeReader;
+                    _context.Response.RegisterForDispose(streamPipeReader);
                 }
 
                 return _pipeReader;

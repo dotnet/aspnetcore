@@ -9,23 +9,18 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class ResponseBodyPipeFeature : IResponseBodyPipeFeature
     {
-        private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullRequestFeature = f => null;
-
         private PipeWriter _pipeWriter;
-        private FeatureReferences<IHttpResponseFeature> _features;
+        private HttpContext _context;
 
-        public ResponseBodyPipeFeature(IFeatureCollection features)
+        public ResponseBodyPipeFeature(HttpContext context)
         {
-            if (features == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(features));
+                throw new ArgumentNullException(nameof(context));
             }
 
-            _features = new FeatureReferences<IHttpResponseFeature>(features);
+            _context = context;
         }
-
-        private IHttpResponseFeature HttpResponseFeature =>
-            _features.Fetch(ref _features.Cache, _nullRequestFeature);
 
         public PipeWriter ResponseBodyPipe
         {
@@ -33,9 +28,12 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 if (_pipeWriter == null ||
                     // If the Response.Body has been updated, recreate the pipeWriter
-                    (_pipeWriter is StreamPipeWriter writer && !object.ReferenceEquals(writer.InnerStream, HttpResponseFeature.Body)))
+                    (_pipeWriter is StreamPipeWriter writer && !object.ReferenceEquals(writer.InnerStream, _context.Response.Body)))
                 {
-                    _pipeWriter = new StreamPipeWriter(HttpResponseFeature.Body);
+                    var streamPipeWriter = new StreamPipeWriter(_context.Response.Body);
+                    _pipeWriter = streamPipeWriter;
+                    _context.Response.RegisterForDispose(streamPipeWriter);
+
                 }
 
                 return _pipeWriter;

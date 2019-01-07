@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         private readonly static Func<HttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r);
         private readonly static Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
         private readonly static Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
-        private readonly static Func<IFeatureCollection, IRequestBodyPipeFeature> _newRequestBodyPipeFeature = f => new RequestBodyPipeFeature(f);
+        private readonly static Func<HttpContext, IRequestBodyPipeFeature> _newRequestBodyPipeFeature = context => new RequestBodyPipeFeature(context);
 
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             _features.Fetch(ref _features.Cache.RouteValues, _newRouteValuesFeature);
 
         private IRequestBodyPipeFeature RequestBodyPipeFeature =>
-            _features.Fetch(ref _features.Cache.BodyPipe, _newRequestBodyPipeFeature);
+            _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, _newRequestBodyPipeFeature);
 
         public override PathString PathBase
         {

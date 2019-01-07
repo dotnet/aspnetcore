@@ -12,13 +12,11 @@ namespace Microsoft.AspNetCore.Http.Features
         [Fact]
         public void RequestBodyReturnsStreamPipeReader()
         {
-            var features = new FeatureCollection();
-            var request = new HttpRequestFeature();
+            var context = new DefaultHttpContext();
             var expectedStream = new MemoryStream();
-            request.Body = expectedStream;
-            features[typeof(IHttpRequestFeature)] = request;
+            context.Request.Body = expectedStream;
 
-            var provider = new RequestBodyPipeFeature(features);
+            var provider = new RequestBodyPipeFeature(context);
 
             var pipeBody = provider.RequestBodyPipe;
 
@@ -29,11 +27,9 @@ namespace Microsoft.AspNetCore.Http.Features
         [Fact]
         public void RequestBodySetPipeReaderReturnsSameValue()
         {
-            var features = new FeatureCollection();
-            var request = new HttpRequestFeature();
-            features[typeof(IHttpRequestFeature)] = request;
+            var context = new DefaultHttpContext();
 
-            var provider = new RequestBodyPipeFeature(features);
+            var provider = new RequestBodyPipeFeature(context);
 
             var pipeReader = new Pipe().Reader;
             provider.RequestBodyPipe = pipeReader;
@@ -41,21 +37,19 @@ namespace Microsoft.AspNetCore.Http.Features
             Assert.Equal(pipeReader, provider.RequestBodyPipe);
         }
 
-
         [Fact]
         public void RequestBodyGetPipeReaderAfterSettingBodyTwice()
         {
-            var features = new FeatureCollection();
-            var request = new HttpRequestFeature();
-            var expectedStream = new MemoryStream();
-            request.Body = new MemoryStream();
-            features[typeof(IHttpRequestFeature)] = request;
+            var context = new DefaultHttpContext();
 
-            var provider = new RequestBodyPipeFeature(features);
+            var expectedStream = new MemoryStream();
+            context.Request.Body = new MemoryStream();
+
+            var provider = new RequestBodyPipeFeature(context);
 
             var pipeBody = provider.RequestBodyPipe;
             // Requery the PipeReader after setting the body again.
-            request.Body = expectedStream;
+            context.Request.Body = expectedStream;
             pipeBody = provider.RequestBodyPipe;
 
             Assert.True(pipeBody is StreamPipeReader);
