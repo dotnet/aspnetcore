@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Tests for users to verify their own implementations of SignalR types</Description>
@@ -19,6 +19,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <PackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
     <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
   </ItemGroup>
