@@ -9,8 +9,8 @@ namespace Microsoft.Extensions.Logging
     {
         private static Action<ILogger, Exception> _redirectToIdentityProviderForSignOutHandledResponse;
         private static Action<ILogger, Exception> _redirectToIdentityProviderHandledResponse;
-        private static Action<ILogger, Exception> _signoutCallbackRedirectHandledResponse;
-        private static Action<ILogger, Exception> _signoutCallbackRedirectSkipped;
+        private static Action<ILogger, Exception> _signOutCallbackRedirectHandledResponse;
+        private static Action<ILogger, Exception> _signOutCallbackRedirectSkipped;
         private static Action<ILogger, Exception> _updatingConfiguration;
         private static Action<ILogger, Exception> _receivedIdToken;
         private static Action<ILogger, Exception> _redeemingCodeForTokens;
@@ -250,12 +250,12 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(49, "AuthenticationSchemeSignedOut"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed out.");
-            _signoutCallbackRedirectHandledResponse = LoggerMessage.Define(
-                eventId: new EventId(50, "SignoutCallbackRedirectHandledResponse"),
+            _signOutCallbackRedirectHandledResponse = LoggerMessage.Define(
+                eventId: new EventId(50, "SignOutCallbackRedirectHandledResponse"),
                 logLevel: LogLevel.Debug,
                 formatString: "RedirectToSignedOutRedirectUri.HandledResponse");
-            _signoutCallbackRedirectSkipped = LoggerMessage.Define(
-                eventId: new EventId(51, "SignoutCallbackRedirectSkipped"),
+            _signOutCallbackRedirectSkipped = LoggerMessage.Define(
+                eventId: new EventId(51, "SignOutCallbackRedirectSkipped"),
                 logLevel: LogLevel.Debug,
                 formatString: "RedirectToSignedOutRedirectUri.Skipped");
 
@@ -357,14 +357,14 @@ namespace Microsoft.Extensions.Logging
             _redirectToIdentityProviderHandledResponse(logger, null);
         }
 
-        public static void SignoutCallbackRedirectHandledResponse(this ILogger logger)
+        public static void SignOutCallbackRedirectHandledResponse(this ILogger logger)
         {
-            _signoutCallbackRedirectHandledResponse(logger, null);
+            _signOutCallbackRedirectHandledResponse(logger, null);
         }
 
-        public static void SignoutCallbackRedirectSkipped(this ILogger logger)
+        public static void SignOutCallbackRedirectSkipped(this ILogger logger)
         {
-            _signoutCallbackRedirectSkipped(logger, null);
+            _signOutCallbackRedirectSkipped(logger, null);
         }
 
         public static void UserInformationReceivedHandledResponse(this ILogger logger)

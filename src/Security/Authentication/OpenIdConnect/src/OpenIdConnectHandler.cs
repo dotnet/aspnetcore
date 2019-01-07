@@ -276,12 +276,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 if (signOut.Result.Handled)
                 {
-                    Logger.SignoutCallbackRedirectHandledResponse();
+                    Logger.SignOutCallbackRedirectHandledResponse();
                     return true;
                 }
                 if (signOut.Result.Skipped)
                 {
-                    Logger.SignoutCallbackRedirectSkipped();
+                    Logger.SignOutCallbackRedirectSkipped();
                     return false;
                 }
                 if (signOut.Result.Failure != null)
