@@ -2,7 +2,6 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <StandardTestTfms>netcoreapp2.1;net461</StandardTestTfms>
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 

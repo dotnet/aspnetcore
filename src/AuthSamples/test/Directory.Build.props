@@ -1,7 +1,0 @@
-﻿<Project>
-  <Import Project="..\Directory.Build.props" />
-
-  <PropertyGroup>
-    <StandardTestTfms>netcoreapp2.1</StandardTestTfms>
-  </PropertyGroup>
-</Project>

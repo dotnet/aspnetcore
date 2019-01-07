@@ -1,10 +1,6 @@
 <Project>
   <Import Project="..\Directory.Build.props" />
 
-  <PropertyGroup>
-    <StandardTestTfms>netcoreapp2.1;net461</StandardTestTfms>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
