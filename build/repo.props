@@ -94,6 +94,7 @@
                           $(RepositoryRoot)src\Razor\**\*.*proj;
                           $(RepositoryRoot)src\Mvc\**\*.*proj;
                           $(RepositoryRoot)src\Azure\**\*.*proj;
+                          $(RepositoryRoot)src\MusicStore\**\*.*proj;
                           "
                         Exclude="
                           @(ProjectToExclude);

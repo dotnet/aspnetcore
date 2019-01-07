@@ -41,7 +41,6 @@
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\AuthSamples\" />
-    <Repository Include="MusicStore" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\MusicStore\" />
   </ItemGroup>
 
   <ItemGroup>
