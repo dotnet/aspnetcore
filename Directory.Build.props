@@ -88,6 +88,7 @@
     <GoogleTestSubmoduleRoot>$(RepositoryRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
 
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <DisableDeterministicSourceRoot Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">true</DisableDeterministicSourceRoot>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -10,17 +10,19 @@
     <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
   </PropertyGroup>
 
+  <Import Project="$(RepositoryRoot)src\Servers\IIS\build\testsite.props" />
+
   <ItemGroup>
     <Content Update="ForTesting\**\*" CopyToPublishDirectory="Never" Condition=" '$(PublishForTesting)' != 'true' " />
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModule\AspNetCore\AspNetCore.vcxproj" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(Configuration)' == 'RuntimeStore' ">
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.All" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' OR '$(Configuration)' != 'RuntimeStore' ">
