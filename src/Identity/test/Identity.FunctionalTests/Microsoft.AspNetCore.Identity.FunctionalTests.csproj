@@ -14,6 +14,8 @@
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
+
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj" />
 
@@ -23,5 +25,4 @@
     <Reference Include="AngleSharp" />
   </ItemGroup>
 
-  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 </Project>

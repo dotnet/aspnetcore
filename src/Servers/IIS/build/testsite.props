@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <RuntimeIdentifiers>win7-x64;win7-x86</RuntimeIdentifiers>
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);win7-x64;win7-x86</RuntimeIdentifiers>
     <Platforms>x64;x86</Platforms>
     <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
