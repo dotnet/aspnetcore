@@ -11,6 +11,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnableApiCheck>false</EnableApiCheck>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <PackageId>Microsoft.AspNetCore.Mvc.Razor.ViewCompilation</PackageId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)'=='net461'">
