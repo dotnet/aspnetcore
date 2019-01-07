@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
             var provider = new ResponseBodyPipeFeature(features);
 
-            var pipeBody = provider.PipeWriter;
+            var pipeBody = provider.ResponseBodyPipe;
 
             Assert.True(pipeBody is StreamPipeWriter);
             Assert.Equal(expectedStream, (pipeBody as StreamPipeWriter).InnerStream);
@@ -36,9 +36,9 @@ namespace Microsoft.AspNetCore.Http.Features
             var provider = new ResponseBodyPipeFeature(features);
 
             var pipeWriter = new Pipe().Writer;
-            provider.PipeWriter = pipeWriter;
+            provider.ResponseBodyPipe = pipeWriter;
 
-            Assert.Equal(pipeWriter, provider.PipeWriter);
+            Assert.Equal(pipeWriter, provider.ResponseBodyPipe);
         }
 
         [Fact]
@@ -52,9 +52,9 @@ namespace Microsoft.AspNetCore.Http.Features
 
             var provider = new ResponseBodyPipeFeature(features);
 
-            var pipeBody = provider.PipeWriter;
+            var pipeBody = provider.ResponseBodyPipe;
             response.Body = expectedStream;
-            pipeBody = provider.PipeWriter;
+            pipeBody = provider.ResponseBodyPipe;
 
             Assert.True(pipeBody is StreamPipeWriter);
             Assert.Equal(expectedStream, (pipeBody as StreamPipeWriter).InnerStream);

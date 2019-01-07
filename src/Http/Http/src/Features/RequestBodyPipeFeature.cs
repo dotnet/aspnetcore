@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Http.Features
         private IHttpRequestFeature HttpRequestFeature =>
             _features.Fetch(ref _features.Cache, _nullRequestFeature);
 
-        public PipeReader PipeReader
+        public PipeReader RequestBodyPipe
         {
             get
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http.Features
             set
             {
                 _pipeReader = value ?? throw new ArgumentNullException(nameof(value));
-                // TODO set the Response body to adapted pipe https://github.com/aspnet/AspNetCore/issues/3971
+                // TODO set the request body Stream to an adapted pipe https://github.com/aspnet/AspNetCore/issues/3971
             }
         }
     }

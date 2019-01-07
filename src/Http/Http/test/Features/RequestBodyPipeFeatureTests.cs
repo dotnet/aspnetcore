@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
             var provider = new RequestBodyPipeFeature(features);
 
-            var pipeBody = provider.PipeReader;
+            var pipeBody = provider.RequestBodyPipe;
 
             Assert.True(pipeBody is StreamPipeReader);
             Assert.Equal(expectedStream, (pipeBody as StreamPipeReader).InnerStream);
@@ -36,9 +36,9 @@ namespace Microsoft.AspNetCore.Http.Features
             var provider = new RequestBodyPipeFeature(features);
 
             var pipeReader = new Pipe().Reader;
-            provider.PipeReader = pipeReader;
+            provider.RequestBodyPipe = pipeReader;
 
-            Assert.Equal(pipeReader, provider.PipeReader);
+            Assert.Equal(pipeReader, provider.RequestBodyPipe);
         }
 
 
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Http.Features
 
             var provider = new RequestBodyPipeFeature(features);
 
-            var pipeBody = provider.PipeReader;
+            var pipeBody = provider.RequestBodyPipe;
             // Requery the PipeReader after setting the body again.
             request.Body = expectedStream;
-            pipeBody = provider.PipeReader;
+            pipeBody = provider.RequestBodyPipe;
 
             Assert.True(pipeBody is StreamPipeReader);
             Assert.Equal(expectedStream, (pipeBody as StreamPipeReader).InnerStream);

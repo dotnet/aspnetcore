@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Gets or sets the request body pipe <see cref="PipeReader"/>
+        /// Gets or sets the request body pipe <see cref="PipeReader"/>.
         /// </summary>
         public abstract PipeReader BodyPipe { get; set; }
 

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Features
         private IHttpResponseFeature HttpResponseFeature =>
             _features.Fetch(ref _features.Cache, _nullRequestFeature);
 
-        public PipeWriter PipeWriter
+        public PipeWriter ResponseBodyPipe
         {
             get
             {

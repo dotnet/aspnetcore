@@ -169,8 +169,8 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override PipeReader BodyPipe
         {
-            get { return RequestBodyPipeFeature.PipeReader; }
-            set { RequestBodyPipeFeature.PipeReader = value; }
+            get { return RequestBodyPipeFeature.RequestBodyPipe; }
+            set { RequestBodyPipeFeature.RequestBodyPipe = value; }
         }
 
         struct FeatureInterfaces

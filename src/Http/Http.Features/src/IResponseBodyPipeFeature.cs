@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// A <see cref="PipeWriter"/> representing the response body, if any.
         /// </summary>
-        PipeWriter PipeWriter { get; set; }
+        PipeWriter ResponseBodyPipe { get; set; }
     }
 }
