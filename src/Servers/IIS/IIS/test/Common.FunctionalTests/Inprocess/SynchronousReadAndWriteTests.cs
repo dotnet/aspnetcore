@@ -193,5 +193,53 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 await connection.WaitForConnectionClose();
             }
         }
+
+        [ConditionalFact]
+        public async Task AsyncChunkedPostIsAccepted()
+        {
+            while (true)
+            {
+
+                using (var connection = _fixture.CreateTestConnection())
+                {
+                    await connection.Send(
+                        "POST /ReadRequestBody HTTP/1.1",
+                        $"Transfer-Encoding: chunked",
+                        "Host: localhost",
+                        "Connection: close",
+                        "",
+                        "");
+
+                    await connection.Send("5",
+                        "Hello",
+                        "");
+
+                    await connection.Send(
+                        "0",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "");
+
+                    var headers = await connection.ReceiveHeaders();
+
+                    if (!headers.Contains("Content-Length: 0"))
+                    {
+                        await connection.Receive(
+                            "0",
+                            "",
+                            "");
+                    }
+                    else
+                    {
+
+                    }
+
+                    await connection.WaitForConnectionClose();
+                }
+            }
+        }
     }
 }
