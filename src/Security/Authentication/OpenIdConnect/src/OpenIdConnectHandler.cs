@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
             }
 
-            Logger.SignedOut(Scheme.Name);
+            Logger.AuthenticationSchemeSignedOut(Scheme.Name);
         }
 
         /// <summary>

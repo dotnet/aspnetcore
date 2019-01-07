@@ -7,11 +7,11 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static readonly Action<ILogger, string, Exception> _authSchemeAuthenticated;
-        private static readonly Action<ILogger, string, Exception> _authSchemeNotAuthenticated;
-        private static readonly Action<ILogger, string, string, Exception> _authSchemeNotAuthenticatedWithFailure;
-        private static readonly Action<ILogger, string, Exception> _authSchemeChallenged;
-        private static readonly Action<ILogger, string, Exception> _authSchemeForbidden;
+        private static readonly Action<ILogger, string, Exception> _authenticationSchemeAuthenticated;
+        private static readonly Action<ILogger, string, Exception> _authenticationSchemeNotAuthenticated;
+        private static readonly Action<ILogger, string, string, Exception> _authenticationSchemeNotAuthenticatedWithFailure;
+        private static readonly Action<ILogger, string, Exception> _authenticationSchemeChallenged;
+        private static readonly Action<ILogger, string, Exception> _authenticationSchemeForbidden;
         private static readonly Action<ILogger, string, Exception> _remoteAuthenticationError;
         private static readonly Action<ILogger, Exception> _signInHandled;
         private static readonly Action<ILogger, Exception> _signInSkipped;
@@ -36,24 +36,24 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(6, "SignInSkipped"),
                 logLevel: LogLevel.Debug,
                 formatString: "The SigningIn event returned Skipped.");
-            _authSchemeNotAuthenticatedWithFailure = LoggerMessage.Define<string, string>(
-                eventId: new EventId(7, "AuthSchemeNotAuthenticatedWithFailure"),
+            _authenticationSchemeNotAuthenticatedWithFailure = LoggerMessage.Define<string, string>(
+                eventId: new EventId(7, "AuthenticationSchemeNotAuthenticatedWithFailure"),
                 logLevel: LogLevel.Information,
                 formatString: "{AuthenticationScheme} was not authenticated. Failure message: {FailureMessage}");
-            _authSchemeAuthenticated = LoggerMessage.Define<string>(
-                eventId: new EventId(8, "AuthSchemeAuthenticated"),
+            _authenticationSchemeAuthenticated = LoggerMessage.Define<string>(
+                eventId: new EventId(8, "AuthenticationSchemeAuthenticated"),
                 logLevel: LogLevel.Debug,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was successfully authenticated.");
-            _authSchemeNotAuthenticated = LoggerMessage.Define<string>(
-                eventId: new EventId(9, "AuthSchemeNotAuthenticated"),
+            _authenticationSchemeNotAuthenticated = LoggerMessage.Define<string>(
+                eventId: new EventId(9, "AuthenticationSchemeNotAuthenticated"),
                 logLevel: LogLevel.Debug,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was not authenticated.");
-            _authSchemeChallenged = LoggerMessage.Define<string>(
-                eventId: new EventId(12, "AuthSchemeChallenged"),
+            _authenticationSchemeChallenged = LoggerMessage.Define<string>(
+                eventId: new EventId(12, "AuthenticationSchemeChallenged"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was challenged.");
-            _authSchemeForbidden = LoggerMessage.Define<string>(
-                eventId: new EventId(13, "AuthSchemeForbidden"),
+            _authenticationSchemeForbidden = LoggerMessage.Define<string>(
+                eventId: new EventId(13, "AuthenticationSchemeForbidden"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was forbidden.");
             _correlationPropertyNotFound = LoggerMessage.Define<string>(
@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Warning,
                 formatString: "'{CorrelationCookieName}' cookie not found.");
             _unexpectedCorrelationCookieValue = LoggerMessage.Define<string, string>(
-                eventId: new EventId(16, "UnexpectedCorrelationCookie"),
+                eventId: new EventId(16, "UnexpectedCorrelationCookieValue"),
                logLevel: LogLevel.Warning,
                formatString: "The correlation cookie value '{CorrelationCookieName}' did not match the expected value '{CorrelationCookieValue}'.");
             _accessDeniedError = LoggerMessage.Define(
@@ -73,38 +73,38 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Information,
                 formatString: "Access was denied by the resource owner or by the remote server.");
             _accessDeniedContextHandled = LoggerMessage.Define(
-                eventId: new EventId(18, "AccessDeniedHandled"),
+                eventId: new EventId(18, "AccessDeniedContextHandled"),
                 logLevel: LogLevel.Debug,
                 formatString: "The AccessDenied event returned Handled.");
             _accessDeniedContextSkipped = LoggerMessage.Define(
-                eventId: new EventId(19, "AccessDeniedSkipped"),
+                eventId: new EventId(19, "AccessDeniedContextSkipped"),
                 logLevel: LogLevel.Debug,
                 formatString: "The AccessDenied event returned Skipped.");
         }
 
         public static void AuthenticationSchemeAuthenticated(this ILogger logger, string authenticationScheme)
         {
-            _authSchemeAuthenticated(logger, authenticationScheme, null);
+            _authenticationSchemeAuthenticated(logger, authenticationScheme, null);
         }
 
         public static void AuthenticationSchemeNotAuthenticated(this ILogger logger, string authenticationScheme)
         {
-            _authSchemeNotAuthenticated(logger, authenticationScheme, null);
+            _authenticationSchemeNotAuthenticated(logger, authenticationScheme, null);
         }
 
         public static void AuthenticationSchemeNotAuthenticatedWithFailure(this ILogger logger, string authenticationScheme, string failureMessage)
         {
-            _authSchemeNotAuthenticatedWithFailure(logger, authenticationScheme, failureMessage, null);
+            _authenticationSchemeNotAuthenticatedWithFailure(logger, authenticationScheme, failureMessage, null);
         }
 
         public static void AuthenticationSchemeChallenged(this ILogger logger, string authenticationScheme)
         {
-            _authSchemeChallenged(logger, authenticationScheme, null);
+            _authenticationSchemeChallenged(logger, authenticationScheme, null);
         }
 
         public static void AuthenticationSchemeForbidden(this ILogger logger, string authenticationScheme)
         {
-            _authSchemeForbidden(logger, authenticationScheme, null);
+            _authenticationSchemeForbidden(logger, authenticationScheme, null);
         }
 
         public static void RemoteAuthenticationError(this ILogger logger, string errorMessage)
@@ -112,12 +112,12 @@ namespace Microsoft.Extensions.Logging
             _remoteAuthenticationError(logger, errorMessage, null);
         }
 
-        public static void SigninHandled(this ILogger logger)
+        public static void SignInHandled(this ILogger logger)
         {
             _signInHandled(logger, null);
         }
 
-        public static void SigninSkipped(this ILogger logger)
+        public static void SignInSkipped(this ILogger logger)
         {
             _signInSkipped(logger, null);
         }

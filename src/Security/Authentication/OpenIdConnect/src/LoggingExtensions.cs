@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _remoteSignOut;
         private static Action<ILogger, Exception> _remoteSignOutSessionIdMissing;
         private static Action<ILogger, Exception> _remoteSignOutSessionIdInvalid;
-        private static Action<ILogger, string, Exception> _signOut;
+        private static Action<ILogger, string, Exception> _authenticationSchemeSignedOut;
 
         static LoggingExtensions()
         {
@@ -246,8 +246,8 @@ namespace Microsoft.Extensions.Logging
                 logLevel: LogLevel.Error,
                 formatString: "The remote signout request was ignored because the 'sid' parameter didn't match " +
                              "the expected value, which may indicate an unsolicited logout.");
-            _signOut = LoggerMessage.Define<string>(
-                eventId: new EventId(49, "AuthSchemeSignedOut"),
+            _authenticationSchemeSignedOut = LoggerMessage.Define<string>(
+                eventId: new EventId(49, "AuthenticationSchemeSignedOut"),
                 logLevel: LogLevel.Information,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed out.");
             _signoutCallbackRedirectHandledResponse = LoggerMessage.Define(
@@ -258,6 +258,8 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(51, "SignoutCallbackRedirectSkipped"),
                 logLevel: LogLevel.Debug,
                 formatString: "RedirectToSignedOutRedirectUri.Skipped");
+
+            //  EventId 52 is used by ResponseErrorWithStatusCode
         }
 
         public static void UpdatingConfiguration(this ILogger logger)
@@ -500,9 +502,9 @@ namespace Microsoft.Extensions.Logging
             _remoteSignOutSessionIdInvalid(logger, null);
         }
 
-        public static void SignedOut(this ILogger logger, string authenticationScheme)
+        public static void AuthenticationSchemeSignedOut(this ILogger logger, string authenticationScheme)
         {
-            _signOut(logger, authenticationScheme, null);
+            _authenticationSchemeSignedOut(logger, authenticationScheme, null);
         }
     }
 }
