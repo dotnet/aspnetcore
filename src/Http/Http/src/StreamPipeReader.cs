@@ -73,7 +73,7 @@ namespace System.IO.Pipelines
         /// <summary>
         /// Gets the inner stream that is being read from.
         /// </summary>
-        public Stream InnerStream =>_readingStream;
+        public Stream InnerStream => _readingStream;
 
         /// <inheritdoc />
         public override void AdvanceTo(SequencePosition consumed)
