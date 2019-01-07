@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
-    <FileExtensionsToSign Include=".js" Certificate="None" />
+    <FileExtensionsToSign Include=".js" CertificateName="None" />
   </ItemGroup>
 
   <ItemGroup>
