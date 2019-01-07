@@ -8,7 +8,7 @@ with the right MSBuild incantations to get output copied to the right place.
     <When Condition="'$(OS)' == 'Windows_NT' AND '$(MSBuildRuntimeType)' != 'Core' ">
       <ItemGroup Condition=" '@(Reference->AnyHaveMetadataValue('Identity', 'AspNetCoreModuleV1'))' == 'true' ">
         <Reference Remove="AspNetCoreModuleV1" />
-        <NativeProjectReference Include="$(MSBuildThisFileDirectory)src\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
+        <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" />
       </ItemGroup>
 
       <ItemGroup Condition="@(NativeProjectReference->Count()) != 0">

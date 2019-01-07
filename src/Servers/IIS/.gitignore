@@ -43,10 +43,10 @@ x64/
 *.pdb
 *.lib
 *.idb
-AspNetCoreModuleV1/AspNetCore/aspnetcoremodule.h
-AspNetCoreModuleV1/AspNetCore/aspnetcore_msg.h
-AspNetCoreModuleV1/AspNetCore/aspnetcore_msg.rc
-AspNetCoreModuleV1/AspNetCore/version.h
+aspnetcoremodule.h
+aspnetcore_msg.h
+aspnetcore_msg.rc
+version.h
 test/*/Debug
 test/*/Release
 .build

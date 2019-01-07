@@ -1,9 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
-    <!-- There are currently no tests in this project which can run on a non-Windows platform. -->
-    <SkipTests Condition="'$(OS)' != 'Windows_NT'">true</SkipTests>
+    <TestGroupName>IISIntegration.E2ETests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
