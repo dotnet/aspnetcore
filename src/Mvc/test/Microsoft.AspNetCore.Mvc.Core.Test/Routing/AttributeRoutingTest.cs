@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 #pragma warning restore CS0618 // Type or member is obsolete
 
             var services = new ServiceCollection()
-                .AddSingleton<IInlineConstraintResolver>(inlineConstraintResolver)
+                .AddSingleton<IInlineConstraintResolver>(inlineConstraintResolver);
 
             services.AddRouting();
             services.AddOptions();
