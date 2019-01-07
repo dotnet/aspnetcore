@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
 
                 if (wsFederationMessage.Wresult == null)
                 {
-                    Logger.SignInWithoutWresult();
+                    Logger.SignInWithoutWResult();
                     return HandleRequestResult.Fail(Resources.SignInMessageWresultIsMissing, properties);
                 }
 

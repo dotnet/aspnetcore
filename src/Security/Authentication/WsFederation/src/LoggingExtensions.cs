@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, Exception> _signInWithoutWresult;
+        private static Action<ILogger, Exception> _signInWithoutWResult;
         private static Action<ILogger, Exception> _signInWithoutToken;
         private static Action<ILogger, Exception> _exceptionProcessingMessage;
         private static Action<ILogger, string, Exception> _malformedRedirectUri;
@@ -17,8 +17,8 @@ namespace Microsoft.Extensions.Logging
 
         static LoggingExtensions()
         {
-            _signInWithoutWresult = LoggerMessage.Define(
-                eventId: new EventId(1, "SignInWithoutWresult"),
+            _signInWithoutWResult = LoggerMessage.Define(
+                eventId: new EventId(1, "SignInWithoutWResult"),
                 logLevel: LogLevel.Debug,
                 formatString: "Received a sign-in message without a WResult.");
             _signInWithoutToken = LoggerMessage.Define(
@@ -47,9 +47,9 @@ namespace Microsoft.Extensions.Logging
                formatString: "Remote signout request processed.");
         }
 
-        public static void SignInWithoutWresult(this ILogger logger)
+        public static void SignInWithoutWResult(this ILogger logger)
         {
-            _signInWithoutWresult(logger, null);
+            _signInWithoutWResult(logger, null);
         }
 
         public static void SignInWithoutToken(this ILogger logger)
