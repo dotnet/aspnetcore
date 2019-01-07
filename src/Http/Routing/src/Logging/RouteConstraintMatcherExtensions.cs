@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Logging
         {
             _routeValueDoesNotMatchConstraint = LoggerMessage.Define<object, string, IRouteConstraint>(
                 LogLevel.Debug,
-                1,
+                new EventId(1, "RouteValueDoesNotMatchConstraint"),
                 "Route value '{RouteValue}' with key '{RouteKey}' did not match " +
                             "the constraint '{RouteConstraint}'");
         }
