@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Build mechanism for ASP.NET Core Components.</Description>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -19,7 +19,6 @@
   <ItemGroup>
     <!-- Assemblies built by this project -->
     <SignedPackageFile Include="$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="Microsoft.AspNetCore.Components.TagHelperWorkaround.dll" Certificate="$(AssemblySigningCertName)" />
     <SignedPackageFile Include="Microsoft.AspNetCore.Components.Browser.JS.dll" Certificate="$(AssemblySigningCertName)" />
     <SignedPackageFile Include="Microsoft.AspNetCore.Components.Build.exe" Certificate="$(AssemblySigningCertName)" />
 
@@ -31,10 +30,6 @@
     <SignedPackageFile Include="Mono.Cecil.Rocks.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
 
     <!-- Assemblies which should be signed by other build. -->
-    <ExcludePackageFileFromSigning Include="Microsoft.AspNetCore.Razor.Language.dll" />
-    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.CSharp.dll" />
-    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.dll" />
-    <ExcludePackageFileFromSigning Include="Microsoft.CodeAnalysis.Razor.dll" />
     <ExcludePackageFileFromSigning Include="Microsoft.Extensions.CommandLineUtils.dll" />
     <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Abstractions.dll" />
     <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Composite.dll" />
@@ -60,19 +55,14 @@
       repositorycommit=$(RepositoryCommit);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
-      <_TargetFramework Include="$(TargetFrameworks)" />
+      <_TargetFramework Include="$(TargetFramework)" />
     </ItemGroup>
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
   </Target>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Components.Razor.Extensions\Microsoft.AspNetCore.Components.Razor.Extensions.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Components.TagHelperWorkaround\Microsoft.AspNetCore.Components.TagHelperWorkaround.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
-
-    <!-- Intentionally include Razor.Design's MSBuild assets for everyone who reference Blazor.Build -->
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" PrivateAssets="None" />
 
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(AspNetCorePackageVersion)" />

@@ -3,6 +3,7 @@
   <Import Project="$(RepositoryRoot)\.deps\dependencies.g.props" Condition="Exists('$(RepositoryRoot)\.deps\dependencies.g.props')" />
 
   <PropertyGroup>
+
     <!-- Build number used by ANCM msis -->
     <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
     <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>
@@ -28,15 +29,54 @@
     <ANCMBuildDirectory>$(AspNetCoreSetupRoot)build\</ANCMBuildDirectory>
 
     <!-- Variables used by ANCM wxs projects. -->
-    <PreBuiltANCMSchema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModule\$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)\</PreBuiltANCMSchema>
-    <PreBuiltANCMV2Schema>$(RepositoryRoot).deps\ANCM\Microsoft.AspNetCore.AspNetCoreModuleV2\$(MicrosoftAspNetCoreAspNetCoreModuleV2PackageVersion)\</PreBuiltANCMV2Schema>
-    <PreBuiltANCMRoot>$(PreBuiltANCMSchema)contentFiles\any\any\</PreBuiltANCMRoot>
-    <PreBuiltANCMV2Root>$(PreBuiltANCMV2Schema)contentFiles\any\any\</PreBuiltANCMV2Root>
 
+    <_ServerIISBasePath>$(RepositoryRoot)\src\Servers\IIS\</_ServerIISBasePath>
     <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
     <DefineConstants>ANCMMsiVersion=$(ANCMMsiVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
-    <DefineConstants>PreBuiltANCMRoot=$(PreBuiltANCMRoot);PreBuiltANCMV2Root=$(PreBuiltANCMV2Root);$(DefineConstants)</DefineConstants>
-    <DefineConstants>PreBuiltANCMSchema=$(PreBuiltANCMSchema);PreBuiltANCMV2Schema=$(PreBuiltANCMV2Schema);$(DefineConstants)</DefineConstants>
+    <DefineConstants>
+      AspNetCoreSchemaPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml;
+      AspNetCoreMofPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\ancm.mof;
+      $(DefineConstants)
+    </DefineConstants>
   </PropertyGroup>
 
+ <ItemGroup>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="x64">
+      <Name>AspNetCoreV1WoW64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="x64">
+      <Name>AspNetCoreV2WoW64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64">
+      <Name>AspNetCoreV2HandlerWoW64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="Win32">
+      <Name>AspNetCoreV1</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="Win32">
+      <Name>AspNetCoreV2</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32">
+      <Name>AspNetCoreV2Handler</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-            using (var host = StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+            using (var host = await StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -204,6 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     await AssertStreamContains(stream, $"bytesRead: {data.Length}");
                 }
+                await host.StopAsync();
             }
 
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-            using (var host = StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+            using (var host = await StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -278,6 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Dispose host prior to closing connection to verify the server doesn't throw during shutdown
                     // if a connection no longer has alloc and read callbacks configured.
+                    await host.StopAsync();
                     host.Dispose();
                 }
             }
@@ -287,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
-        private IWebHost StartWebHost(long? maxRequestBufferSize,
+        private async Task<IWebHost> StartWebHost(long? maxRequestBufferSize,
             byte[] expectedBody,
             bool useConnectionAdapter,
             TaskCompletionSource<object> startReadingRequestBody,
@@ -350,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }))
                 .Build();
 
-            host.Start();
+            await host.StartAsync();
 
             return host;
         }

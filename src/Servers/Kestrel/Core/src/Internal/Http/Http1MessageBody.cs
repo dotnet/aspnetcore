@@ -280,16 +280,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return new ForContentLength(keepAlive, contentLength, context);
             }
 
-            // Avoid slowing down most common case
-            if (!object.ReferenceEquals(context.Method, HttpMethods.Get))
+            // If we got here, request contains no Content-Length or Transfer-Encoding header.
+            // Reject with 411 Length Required.
+            if (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put)
             {
-                // If we got here, request contains no Content-Length or Transfer-Encoding header.
-                // Reject with 411 Length Required.
-                if (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put)
-                {
-                    var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
-                    BadHttpRequestException.Throw(requestRejectionReason, context.Method);
-                }
+                var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
+                BadHttpRequestException.Throw(requestRejectionReason, context.Method);
             }
 
             return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;

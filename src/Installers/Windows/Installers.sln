@@ -25,8 +25,6 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "WindowsHostingBundle", "Win
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "SharedFramework", "SharedFramework\SharedFramework.wixproj", "{C681D730-4505-42C6-9E6C-87F757C4FB32}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InstallerTasks", "InstallerTasks\InstallerTasks.csproj", "{D58277B2-4C1F-46D6-B9E1-845C711E3B55}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,18 +129,6 @@ Global
 		{C681D730-4505-42C6-9E6C-87F757C4FB32}.Release|x64.ActiveCfg = Release|x86
 		{C681D730-4505-42C6-9E6C-87F757C4FB32}.Release|x86.ActiveCfg = Release|x86
 		{C681D730-4505-42C6-9E6C-87F757C4FB32}.Release|x86.Build.0 = Release|x86
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Debug|x64.Build.0 = Debug|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Debug|x86.Build.0 = Debug|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Release|x64.ActiveCfg = Release|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Release|x64.Build.0 = Release|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Release|x86.ActiveCfg = Release|Any CPU
-		{D58277B2-4C1F-46D6-B9E1-845C711E3B55}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

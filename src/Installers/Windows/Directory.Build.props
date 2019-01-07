@@ -1,13 +1,8 @@
 <Project>
 
   <PropertyGroup>
-    <RepositoryRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)..\..\..\'))</RepositoryRoot>
-    <InstallersOutputPath>$(RepositoryRoot)artifacts\$(Configuration)\installers\</InstallersOutputPath>
-    <BaseOutputPath>$(RepositoryRoot)bin\$(Configuration)\$(MSBuildProjectName)\</BaseOutputPath>
-    <OutputPath>$(BaseOutputPath)</OutputPath>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
-    <IntermediateOutputPath Condition=" '$(Platform)' != '' AND '$(Platform)' != 'AnyCPU' ">$(IntermediateOutputPath)$(Platform)\</IntermediateOutputPath>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
+    <AppendPlatformToOutputPath>true</AppendPlatformToOutputPath>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />

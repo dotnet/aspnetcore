@@ -30,10 +30,6 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="$(RepositoryRoot)build\tasks\RepoTasks.tasks" />
-
-  <Import Project="$(RepositoryRoot)src\Servers\IIS\ResolveIisReferences.targets" />
-
   <Target Name="CopyFilesToOutputDirectory" />
   <Target Name="CoreCompile" />
   <Target Name="CreateManifestResourceNames" />

@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var testUrlWithPort = $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}";
 
@@ -309,6 +309,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // Compare the response with Uri.ToString(), rather than testUrl directly.
                 // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                 Assert.Equal(new Uri(testUrlWithPort).ToString(), response);
+
+                await host.StopAsync();
             }
         }
 
@@ -348,7 +350,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
                 {
@@ -358,6 +360,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                     Assert.Equal(new Uri(testUrl).ToString(), response);
                 }
+
+                await host.StopAsync();
             }
         }
 
@@ -389,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
                 {
@@ -399,6 +403,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
                     Assert.Equal(new Uri(testUrl).ToString(), response);
                 }
+
+                await host.StopAsync();
             }
         }
 
@@ -468,7 +474,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(5000, host.GetPort());
 
@@ -485,6 +491,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     Assert.Equal(new Uri(address).ToString(), await HttpClientSlim.GetStringAsync(address, validateCertificate: false));
                 }
+
+                await host.StopAsync();
             }
         }
 
@@ -555,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
@@ -571,6 +579,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     log.Message, StringComparison.Ordinal));
 
                 Assert.Equal(new Uri(useUrlsAddressWithPort).ToString(), await HttpClientSlim.GetStringAsync(useUrlsAddressWithPort));
+
+                await host.StopAsync();
             }
         }
 
@@ -594,7 +604,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
@@ -610,6 +620,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     log.Message, StringComparison.Ordinal));
 
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));
+                await host.StopAsync();
             }
         }
 
@@ -630,7 +641,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 var port = host.GetPort();
 
@@ -641,6 +652,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 Assert.Equal(serverAddresses.First(), endPointAddress);
 
                 Assert.Equal(new Uri(endPointAddress).ToString(), await HttpClientSlim.GetStringAsync(endPointAddress, validateCertificate: false));
+
+                await host.StopAsync();
             }
         }
 
@@ -709,9 +722,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(endPointAddress, await HttpClientSlim.GetStringAsync(endPointAddress));
+
+                await host.StopAsync();
             }
 
             hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -723,9 +738,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(endPointAddress, await HttpClientSlim.GetStringAsync(endPointAddress));
+
+                await host.StopAsync();
             }
         }
 
@@ -748,10 +765,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(ipv4endPointAddress, await HttpClientSlim.GetStringAsync(ipv4endPointAddress));
                 Assert.Equal(ipv6endPointAddress, await HttpClientSlim.GetStringAsync(ipv6endPointAddress));
+
+                await host.StopAsync();
             }
 
             hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -764,10 +783,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
 
                 Assert.Equal(ipv4endPointAddress, await HttpClientSlim.GetStringAsync(ipv4endPointAddress));
                 Assert.Equal(ipv6endPointAddress, await HttpClientSlim.GetStringAsync(ipv6endPointAddress));
+
+                await host.StopAsync();
             }
         }
 
@@ -775,7 +796,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
-        public void EndpointDefaultsConfig_CanSetProtocolForUrlsConfig(string input, HttpProtocols expected)
+        public async Task EndpointDefaultsConfig_CanSetProtocolForUrlsConfig(string input, HttpProtocols expected)
         {
             KestrelServerOptions capturedOptions = null;
             var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -795,9 +816,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var host = hostBuilder.Build())
             {
-                host.Start();
+                await host.StartAsync();
                 Assert.Single(capturedOptions.ListenOptions);
                 Assert.Equal(expected, capturedOptions.ListenOptions[0].Protocols);
+                await host.StopAsync();
             }
         }
 

@@ -1,7 +1,3 @@
-#
-# This script requires internal-only access to the code which generates ANCM installers.
-#
-
 #requires -version 5
 [cmdletbinding()]
 param(
@@ -14,19 +10,19 @@ param(
     [string]$Runtime64Zip,
     [string]$BuildNumber = 't000',
     [switch]$IsFinalBuild,
-    [string]$SignType = '',
-    [switch]$clean
+    [string]$SignType = ''
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path "$PSScriptRoot/../../../"
 Import-Module -Scope Local "$repoRoot/eng/scripts/common.psm1" -Force
-$msbuild = Get-MSBuildPath -Prerelease -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
 
 $harvestRoot = "$repoRoot/obj/sfx/"
 if ($clean) {
     Remove-Item -Recurse -Force $harvestRoot -ErrorAction Ignore | Out-Null
 }
+
+# TODO: harvest shared frameworks from a project reference
 
 New-Item "$harvestRoot/x86", "$harvestRoot/x64" -ItemType Directory -ErrorAction Ignore | Out-Null
 
@@ -40,40 +36,14 @@ if (-not (Test-Path "$harvestRoot/x64/shared/")) {
 
 Push-Location $PSScriptRoot
 try {
-    Invoke-Block { & $msbuild `
-            InstallerTasks/InstallerTasks.csproj `
-            -nologo `
-            -m `
-            -v:m `
-            -nodeReuse:false `
-            -restore `
-            -t:Build `
-            "-p:Configuration=$Configuration"
-    }
-
-    [string[]] $msbuildArgs = @()
-
-    if ($clean) {
-        $msbuildArgs += '-t:Clean'
-    }
-
-    Invoke-Block { & $msbuild `
-            WindowsInstallers.proj `
-            -restore `
-            -nologo `
-            -m `
-            -v:m `
-            -nodeReuse:false `
-            -clp:Summary `
+    & $repoRoot/build.ps1 `
+            -Installers `
             "-p:SharedFrameworkHarvestRootPath=$repoRoot/obj/sfx/" `
             "-p:Configuration=$Configuration" `
             "-p:BuildNumberSuffix=$BuildNumber" `
             "-p:SignType=$SignType" `
             "-p:IsFinalBuild=$IsFinalBuild" `
-            "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `
-            '-t:Build' `
-            @msbuildArgs
-    }
+            "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog"
 }
 finally {
     Pop-Location

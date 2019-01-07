@@ -168,14 +168,14 @@
     <Move SourceFiles="%(SubmoduleGlobalJsonFiles.BackupPath)" DestinationFiles="%(SubmoduleGlobalJsonFiles.Identity)" Condition="Exists(%(SubmoduleGlobalJsonFiles.BackupPath))" />
 
     <!-- Join required because shipping category is stored in artifact.props (PackageArtifact), but information about package ID and version comes from repos (ArtifactInfo). -->
-    <RepoTasks.JoinItems
+    <RepoTasks.JoinRepoItems
       Left="@(_Temp)"
       LeftMetadata="*"
       Right="@(ArtifactInfo->WithMetadataValue('ArtifactType','NuGetPackage'));@(ShippedArtifactInfo->WithMetadataValue('ArtifactType','NuGetPackage'))"
       RightKey="PackageId"
       RightMetadata="Version">
       <Output TaskParameter="JoinResult" ItemName="PackageArtifact" />
-    </RepoTasks.JoinItems>
+    </RepoTasks.JoinRepoItems>
 
     <ItemGroup>
       <_PackageArtifactWithoutMatchingInfo Include="@(_Temp)" Exclude="@(PackageArtifact)" />

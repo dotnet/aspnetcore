@@ -9,10 +9,11 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http
+namespace System.IO.Pipelines.Tests
 {
     public class DefaultHttpContextTests
     {

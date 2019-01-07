@@ -13,4 +13,8 @@
     <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Components.Build" /> -->
     <Import Project="..\..\src\Microsoft.AspNetCore.Components.Build\ReferenceFromSource.props" />
 
+  <ItemGroup>
+    <!-- Allow the build to specify the version of the Razor SDK directly -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
 </Project>
