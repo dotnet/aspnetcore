@@ -18,27 +18,13 @@ namespace TriageBuildFailures
 
         public static async Task RetryAsync(Func<Task> action, IReporter reporter)
         {
-            Exception firstException = null;
-
-            var retriesRemaining = 10;
-            while (retriesRemaining > 0)
-            {
-                try
+            await RetryAsync<object>(
+                async () =>
                 {
                     await action();
-                    break;
-                }
-                catch (Exception e)
-                {
-                    firstException = firstException ?? e;
-                    reporter.Output($"Exception thrown! {e.Message}");
-                    reporter.Output($"Waiting 1 minute to retry ({retriesRemaining} left)...");
-                    await Task.Delay(1 * 60 * 1000);
-                    retriesRemaining--;
-                    TotalRetriesUsed++;
-                }
-            }
-            throw new InvalidOperationException("Max exception retries reached, giving up.", firstException);
+                    return null;
+                },
+                reporter);
         }
 
         public static async Task<T> RetryAsync<T>(Func<Task<T>> action, IReporter reporter)
