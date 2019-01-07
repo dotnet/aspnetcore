@@ -112,23 +112,7 @@ namespace Microsoft.AspNetCore.Hosting
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
         }
-
-        [Theory]
-        [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
-        public async Task DefaultObjectPoolProvider_IsRegistered(IWebHostBuilder builder)
-        {
-            var server = new TestServer();
-            var host = builder
-                .UseServer(server)
-                .Configure(app => { })
-                .Build();
-            using (host)
-            {
-                await host.StartAsync();
-                Assert.IsType<DefaultObjectPoolProvider>(host.Services.GetService<ObjectPoolProvider>());
-            }
-        }
-
+        
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
         public async Task StartupConfigureServicesThrows_Fallback(IWebHostBuilder builder)

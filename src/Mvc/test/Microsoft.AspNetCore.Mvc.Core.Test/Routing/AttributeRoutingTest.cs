@@ -180,9 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var services = new ServiceCollection()
                 .AddSingleton<IInlineConstraintResolver>(inlineConstraintResolver)
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddRouting();
             services.AddOptions();
             services.AddLogging();
