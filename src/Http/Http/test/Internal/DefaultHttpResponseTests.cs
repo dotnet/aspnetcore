@@ -93,11 +93,10 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         [Fact]
-        public void BodyPipe_NullOutBody()
+        public void BodyPipe_ThrowsWhenSettingNull()
         {
             var context = new DefaultHttpContext();
-            context.Response.BodyPipe = null;
-            Assert.Equal(Stream.Null, context.Response.Body);
+            Assert.Throws<ArgumentNullException>(() => context.Response.BodyPipe = null);
         }
 
         private static HttpResponse CreateResponse(IHeaderDictionary headers)

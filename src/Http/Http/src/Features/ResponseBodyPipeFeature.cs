@@ -42,15 +42,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
             set
             {
-                _pipeWriter = value;
-                if (_pipeWriter == null)
-                {
-                    HttpResponseFeature.Body = Stream.Null;
-                }
-                else
-                {
-                    // TODO set the Response body to adapted pipe https://github.com/aspnet/AspNetCore/issues/3971
-                }
+                _pipeWriter = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
     }

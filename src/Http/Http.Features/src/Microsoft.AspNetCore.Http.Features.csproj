@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP feature interface definitions.</Description>
@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Primitives" />
-    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

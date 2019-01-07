@@ -275,11 +275,10 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         [Fact]
-        public void BodyPipe_NullOutBody()
+        public void BodyPipe_ThrowsWhenSettingNull()
         {
             var context = new DefaultHttpContext();
-            context.Request.BodyPipe = null;
-            Assert.Null(context.Request.Body);
+            Assert.Throws<ArgumentNullException>(() => context.Request.BodyPipe = null);
         }
 
         private class CustomRouteValuesFeature : IRouteValuesFeature
