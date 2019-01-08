@@ -54,13 +54,7 @@ namespace ServerComparison.FunctionalTests
             }
             else if (runtimeFlavor == RuntimeFlavor.CoreClr)
             {
-#if NETCOREAPP2_0
-                return "netcoreapp2.0";
-#elif NETCOREAPP2_1 || NET461
                 return "netcoreapp2.1";
-#else
-#error Target frameworks need to be updated.
-#endif
             }
 
             throw new ArgumentException($"Unknown RuntimeFlavor '{runtimeFlavor}'");

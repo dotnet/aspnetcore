@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Empty(response.Headers.WwwAuthenticate);
             }
         }
-#if !NETCOREAPP2_0
+
         // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal("Negotiate, NTLM, basic", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
         }
-#endif
+
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
-#if !NETCOREAPP2_0
+
         // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(authTypeList.Count(), response.Headers.WwwAuthenticate.Count);
             }
         }
-#endif
+
         [ConditionalFact]
         public async Task AuthTypes_Forbid_Forbidden()
         {

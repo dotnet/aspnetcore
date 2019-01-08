@@ -17,19 +17,10 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         {
         }
 
-        [Fact(Skip="https://github.com/aspnet/AzureIntegration/issues/171")]
-        public Task ScriptIsInjected_ForNetCoreApp20_Standalone() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.0", ApplicationType.Standalone);
-
-        [Fact(Skip="https://github.com/aspnet/AzureIntegration/issues/171")]
-        public Task ScriptIsInjected_ForNetCoreApp20_Portable() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.0", ApplicationType.Portable);
-
-        [Fact(Skip="https://github.com/aspnet/AzureIntegration/issues/171")]
-        public Task ScriptIsInjected_ForNetCoreApp21_Standalone() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.1", ApplicationType.Standalone);
-
-        [Fact(Skip="https://github.com/aspnet/AzureIntegration/issues/171")]
-        public Task ScriptIsInjected_ForNetCoreApp21_Portable() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.1", ApplicationType.Portable);
-
-        private async Task JavaScriptSnippetInjectionTestSuite(string targetFramework, ApplicationType applicationType)
+        [Theory]
+        [InlineData(ApplicationType.Portable)]
+        [InlineData(ApplicationType.Standalone)]
+        public async Task JavaScriptSnippetInjectionTestSuite(ApplicationType applicationType)
         {
             var testName = $"ApplicationInsightsJavaScriptSnippetTest_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
@@ -39,7 +30,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = PreservePublishedApplicationForDebugging,
-                    TargetFramework = targetFramework,
+                    TargetFramework = "netcoreapp2.1",
                     Configuration = GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     EnvironmentName = "JavaScript",

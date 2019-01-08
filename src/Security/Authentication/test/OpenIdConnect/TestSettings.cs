@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             ValidateParameter(OpenIdConnectParameterNames.State, ExpectedState, actualParams, errors, htmlEncoded);
 
         private void ValidateSkuTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-#if NETCOREAPP2_0 || NETCOREAPP2_1
+#if NETCOREAPP2_1
             ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NETSTANDARD1_4", actualParams, errors, htmlEncoded);
 #elif NET461
             ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET451", actualParams, errors, htmlEncoded);
