@@ -9,6 +9,11 @@ namespace TriageBuildFailures
 {
     internal static class RetryHelpers
     {
+        /// <summary>
+        /// Constrain the exponential back-off to this many minutes.
+        /// </summary>
+        private const int MaxRetryMinutes = 15;
+
         private static int TotalRetriesUsed;
 
         public static int GetTotalRetriesUsed()
@@ -32,6 +37,8 @@ namespace TriageBuildFailures
             Exception firstException = null;
 
             var retriesRemaining = 10;
+            var retryDelayInMinutes = 1;
+
             while (retriesRemaining > 0)
             {
                 try
@@ -42,8 +49,12 @@ namespace TriageBuildFailures
                 {
                     firstException = firstException ?? e;
                     reporter.Output($"Exception thrown! {e.Message}");
-                    reporter.Output($"Waiting 1 minute to retry ({retriesRemaining} left)...");
-                    await Task.Delay(1 * 60 * 1000);
+                    reporter.Output($"Waiting {retryDelayInMinutes} minute(s) to retry ({retriesRemaining} left)...");
+                    await Task.Delay(retryDelayInMinutes * 60 * 1000);
+
+                    // Do exponential back-off, but limit it (1, 2, 4, 8, 15, 15, 15, ...)
+                    // With MaxRetryMinutes=15 and MaxRetries=10, this will delay a maximum of 105 minutes
+                    retryDelayInMinutes = Math.Min(2 * retryDelayInMinutes, MaxRetryMinutes);
                     retriesRemaining--;
                     TotalRetriesUsed++;
                 }
