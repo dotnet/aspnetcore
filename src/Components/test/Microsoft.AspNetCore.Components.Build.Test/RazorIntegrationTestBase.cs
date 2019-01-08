@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
         internal virtual bool DesignTime { get; }
 
         internal virtual string FileKind { get; }
-        
+
         internal virtual VirtualRazorProjectFileSystem FileSystem { get; }
 
         // Used to force a specific style of line-endings for testing. This matters
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
         internal virtual string PathSeparator { get; }
 
         internal virtual bool NormalizeSourceLineEndings { get; }
-        
+
         internal virtual bool UseTwoPhaseCompilation { get; }
 
         internal virtual string WorkingDirectory { get; }
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 // The first phase won't include any metadata references for component discovery. This mirrors
                 // what the build does.
                 var projectEngine = CreateProjectEngine(Array.Empty<MetadataReference>());
-                
+
                 RazorCodeDocument codeDocument;
                 foreach (var item in AdditionalRazorItems)
                 {
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 // Result of doing 'temp' compilation
                 var tempAssembly = CompileToAssembly(declaration);
 
-                // Add the 'temp' compilation as a metadata reference 
+                // Add the 'temp' compilation as a metadata reference
                 var references = BaseCompilation.References.Concat(new[] { tempAssembly.Compilation.ToMetadataReference() }).ToArray();
                 projectEngine = CreateProjectEngine(references);
 
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
                 _output.Value.WriteLine(string.Empty);
 
                 _output.Value.WriteLine("## Generated C#:");
-                _output.Value.WriteLine("```");
+                _output.Value.WriteLine("```C#");
                 _output.Value.WriteLine(codeDocument.GetCSharpDocument().GeneratedCode);
                 _output.Value.WriteLine("```");
 
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
 
         private class CompilationFailedException : XunitException
         {
-            public CompilationFailedException(Compilation compilation) 
+            public CompilationFailedException(Compilation compilation)
             {
                 Compilation = compilation;
             }

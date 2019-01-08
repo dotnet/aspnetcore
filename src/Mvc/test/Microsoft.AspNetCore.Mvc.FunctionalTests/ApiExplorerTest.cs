@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var type1 = typeof(ApiExplorerWebSite.Product).FullName;
             var type2 = typeof(SerializableError).FullName;
-            var expectedMediaTypes = new[] { "application/json", "text/json", "application/xml", "text/xml" };
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
 
             // Act
             var response = await Client.GetAsync(
@@ -592,13 +592,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(201, responseType.StatusCode);
             Assert.Equal(
                 expectedMediaTypes,
-                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).OrderBy(o => o).ToArray());
             responseType = description.SupportedResponseTypes[1];
             Assert.Equal(type2, responseType.ResponseType);
             Assert.Equal(400, responseType.StatusCode);
             Assert.Equal(
                 expectedMediaTypes,
-                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).OrderBy(o => o).ToArray());
         }
 
         [Fact]
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var type1 = typeof(ApiExplorerWebSite.Product).FullName;
             var type2 = typeof(SerializableError).FullName;
-            var expectedMediaTypes = new[] { "application/json", "text/json", "application/xml", "text/xml" };
+            var expectedMediaTypes = new[] { "application/json", "application/xml", "text/json", "text/xml" };
 
             // Act
             var response = await Client.GetAsync(
@@ -656,13 +656,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(200, responseType.StatusCode);
             Assert.Equal(
                 expectedMediaTypes,
-                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).OrderBy(o => o).ToArray());
             responseType = description.SupportedResponseTypes[1];
             Assert.Equal(type2, responseType.ResponseType);
             Assert.Equal(400, responseType.StatusCode);
             Assert.Equal(
                 expectedMediaTypes,
-                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).ToArray());
+                responseType.ResponseFormats.Select(responseFormat => responseFormat.MediaType).OrderBy(o => o).ToArray());
         }
 
         [Fact]
@@ -789,9 +789,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(typeof(XmlDataContractSerializerOutputFormatter).FullName, applicationXml.FormatterType);
 
             var textJson = Assert.Single(responseType.ResponseFormats, f => f.MediaType == "text/json");
-            Assert.Equal(typeof(JsonOutputFormatter).FullName, textJson.FormatterType);
+            Assert.Equal(typeof(NewtonsoftJsonOutputFormatter).FullName, textJson.FormatterType);
             var applicationJson = Assert.Single(responseType.ResponseFormats, f => f.MediaType == "application/json");
-            Assert.Equal(typeof(JsonOutputFormatter).FullName, applicationJson.FormatterType);
+            Assert.Equal(typeof(NewtonsoftJsonOutputFormatter).FullName, applicationJson.FormatterType);
         }
 
         [Fact]
@@ -812,10 +812,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var applicationJson = Assert.Single(
                 responseType.ResponseFormats,
                 format => format.MediaType == "application/json");
-            Assert.Equal(typeof(JsonOutputFormatter).FullName, applicationJson.FormatterType);
+            Assert.Equal(typeof(NewtonsoftJsonOutputFormatter).FullName, applicationJson.FormatterType);
 
             var textJson = Assert.Single(responseType.ResponseFormats, f => f.MediaType == "text/json");
-            Assert.Equal(typeof(JsonOutputFormatter).FullName, textJson.FormatterType);
+            Assert.Equal(typeof(NewtonsoftJsonOutputFormatter).FullName, textJson.FormatterType);
         }
 
         [Fact]
@@ -840,7 +840,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 responseFormat =>
                 {
                     Assert.Equal("application/hal+json", responseFormat.MediaType);
-                    Assert.Equal(typeof(JsonOutputFormatter).FullName, responseFormat.FormatterType);
+                    Assert.Equal(typeof(NewtonsoftJsonOutputFormatter).FullName, responseFormat.FormatterType);
                 });
         }
 
@@ -869,12 +869,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [ConditionalTheory]
         // Mono issue - https://github.com/aspnet/External/issues/18
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [InlineData("Controller", "text/xml", "Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter")]
-        [InlineData("Action", "application/json", "Microsoft.AspNetCore.Mvc.Formatters.JsonOutputFormatter")]
+        [InlineData("Controller", "text/xml", typeof(XmlDataContractSerializerOutputFormatter))]
+        [InlineData("Action", "application/json", typeof(NewtonsoftJsonOutputFormatter))]
         public async Task ApiExplorer_ResponseContentType_OverrideOnAction(
             string action,
             string contentType,
-            string formatterType)
+            Type formatterType)
         {
             // Arrange & Act
             var response = await Client.GetAsync(
@@ -889,7 +889,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var responseType = Assert.Single(description.SupportedResponseTypes);
             var responseFormat = Assert.Single(responseType.ResponseFormats);
             Assert.Equal(contentType, responseFormat.MediaType);
-            Assert.Equal(formatterType, responseFormat.FormatterType);
+            Assert.Equal(formatterType.FullName, responseFormat.FormatterType);
         }
 
         [Fact]

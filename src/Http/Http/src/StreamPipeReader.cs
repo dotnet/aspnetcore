@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http
+namespace System.IO.Pipelines
 {
     /// <summary>
     /// Implements PipeReader using an underlying stream.

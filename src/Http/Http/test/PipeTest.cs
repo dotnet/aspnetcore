@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Http.Tests
+namespace System.IO.Pipelines.Tests
 {
     public abstract class PipeTest : IDisposable
     {

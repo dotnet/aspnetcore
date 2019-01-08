@@ -1,10 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace BasicWebSite.Controllers
 {
@@ -13,25 +11,25 @@ namespace BasicWebSite.Controllers
     {
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult RequestSizeLimitCheckBeforeAntiforgeryValidation(Product product)
+        public ActionResult<Product> RequestSizeLimitCheckBeforeAntiforgeryValidation(Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            return Json(product);
+            return product;
         }
 
         [HttpPost]
         [DisableRequestSizeLimit]
-        public IActionResult DisableRequestSizeLimit([FromBody] Product product)
+        public ActionResult<Product> DisableRequestSizeLimit([FromBody] Product product)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            return Json(product);
+            return product;
         }
     }
 }

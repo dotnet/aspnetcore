@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
                 _engine.ReturnOperation(this);
             }
+
+            protected override bool IsSuccessfulResult(int hr) => hr == NativeMethods.ERROR_HANDLE_EOF;
         }
     }
 }

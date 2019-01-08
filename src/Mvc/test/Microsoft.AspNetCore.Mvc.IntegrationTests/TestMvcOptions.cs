@@ -36,11 +36,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             dataAnnotationOptionsSetup.Configure(Value);
 
             var loggerFactory = new LoggerFactory();
-            var jsonOptions = Options.Create(new MvcJsonOptions());
+            var jsonOptions = Options.Create(new MvcNewtonsoftJsonOptions());
             var charPool = ArrayPool<char>.Shared;
             var objectPoolProvider = new DefaultObjectPoolProvider();
 
-            var mvcJsonMvcOptionsSetup = new MvcJsonMvcOptionsSetup(
+            var mvcJsonMvcOptionsSetup = new NewtonosftJsonMvcOptionsSetup(
                 loggerFactory,
                 jsonOptions,
                 charPool,

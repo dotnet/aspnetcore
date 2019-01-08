@@ -4,21 +4,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class SessionStateTempDataProviderTest
     {
+        private static readonly byte[] Bytes = Encoding.UTF8.GetBytes("test value");
+        private static readonly IDictionary<string, object> Dictionary = new Dictionary<string, object>
+        {
+            { "key", "value" },
+        };
+
         [Fact]
         public void Load_ThrowsException_WhenSessionIsNotEnabled()
         {
             // Arrange
-            var testProvider = new SessionStateTempDataProvider();
+            var testProvider = CreateTempDataProvider();
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -31,14 +39,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public void Save_ThrowsException_WhenSessionIsNotEnabled()
         {
             // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var values = new Dictionary<string, object>();
-            values.Add("key1", "value1");
+            var testProvider = CreateTempDataProvider();
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                testProvider.SaveTempData(GetHttpContext(sessionEnabled: false), values);
+                testProvider.SaveTempData(GetHttpContext(sessionEnabled: false), Dictionary);
             });
         }
 
@@ -46,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public void Load_ReturnsEmptyDictionary_WhenNoSessionDataIsAvailable()
         {
             // Arrange
-            var testProvider = new SessionStateTempDataProvider();
+            var testProvider = CreateTempDataProvider();
 
             // Act
             var tempDataDictionary = testProvider.LoadTempData(GetHttpContext());
@@ -56,223 +62,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
-        public void SaveAndLoad_StringCanBeStoredAndLoaded()
+        public void SaveAndLoad_Works()
         {
             // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "string", "value" }
-            };
+            var testProvider = CreateTempDataProvider();
             var context = GetHttpContext();
 
             // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
+            testProvider.SaveTempData(context, Dictionary);
+            var result = testProvider.LoadTempData(context);
 
             // Assert
-            var stringVal = Assert.IsType<string>(TempData["string"]);
-            Assert.Equal("value", stringVal);
-        }
-
-        [Theory]
-        [InlineData(10)]
-        [InlineData(int.MaxValue)]
-        [InlineData(int.MinValue)]
-        public void SaveAndLoad_IntCanBeStoredAndLoaded(int expected)
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "int", expected }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var intVal = Assert.IsType<int>(TempData["int"]);
-            Assert.Equal(expected, intVal);
-        }
-
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void SaveAndLoad_BoolCanBeStoredAndLoaded(bool value)
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "bool", value }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var boolVal = Assert.IsType<bool>(TempData["bool"]);
-            Assert.Equal(value, boolVal);
-        }
-
-        [Fact]
-        public void SaveAndLoad_DateTimeCanBeStoredAndLoaded()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var inputDatetime = new DateTime(2010, 12, 12, 1, 2, 3, DateTimeKind.Local);
-            var input = new Dictionary<string, object>
-            {
-                { "DateTime", inputDatetime }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var datetime = Assert.IsType<DateTime>(TempData["DateTime"]);
-            Assert.Equal(inputDatetime, datetime);
-        }
-
-        [Fact]
-        public void SaveAndLoad_GuidCanBeStoredAndLoaded()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var inputGuid = Guid.NewGuid();
-            var input = new Dictionary<string, object>
-            {
-                { "Guid", inputGuid }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var guidVal = Assert.IsType<Guid>(TempData["Guid"]);
-            Assert.Equal(inputGuid, guidVal);
-        }
-
-        [Fact]
-        public void SaveAndLoad_EnumCanBeSavedAndLoaded()
-        {
-            // Arrange
-            var key = "EnumValue";
-            var testProvider = new SessionStateTempDataProvider();
-            var expected = DayOfWeek.Friday;
-            var input = new Dictionary<string, object>
-            {
-                { key, expected }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-            var result = TempData[key];
-
-            // Assert
-            var actual = (DayOfWeek)result;
-            Assert.Equal(expected, actual);
-        }
-
-        [Theory]
-        [InlineData(3100000000L)]
-        [InlineData(-3100000000L)]
-        public void SaveAndLoad_LongCanBeSavedAndLoaded(long expected)
-        {
-            // Arrange
-            var key = "LongValue";
-            var testProvider = new SessionStateTempDataProvider();
-            var input = new Dictionary<string, object>
-            {
-                { key, expected }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-            var result = TempData[key];
-
-            // Assert
-            var actual = Assert.IsType<long>(result);
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public void SaveAndLoad_ListCanBeStoredAndLoaded()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "List`string", new List<string> { "one", "two" } }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var list = (IList<string>)TempData["List`string"];
-            Assert.Equal(2, list.Count);
-            Assert.Equal("one", list[0]);
-            Assert.Equal("two", list[1]);
-        }
-
-        [Fact]
-        public void SaveAndLoad_DictionaryCanBeStoredAndLoaded()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var inputDictionary = new Dictionary<string, string>
-            {
-                { "Hello", "World" },
-            };
-            var input = new Dictionary<string, object>
-            {
-                { "Dictionary", inputDictionary }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var dictionary = Assert.IsType<Dictionary<string, string>>(TempData["Dictionary"]);
-            Assert.Equal("World", dictionary["Hello"]);
-        }
-
-        [Fact]
-        public void SaveAndLoad_EmptyDictionary_RoundTripsAsNull()
-        {
-            // Arrange
-            var testProvider = new SessionStateTempDataProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "EmptyDictionary", new Dictionary<string, int>() }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var emptyDictionary = (IDictionary<string, int>)TempData["EmptyDictionary"];
-            Assert.Null(emptyDictionary);
+            Assert.Same(Dictionary, result);
         }
 
         private class TestItem
@@ -288,6 +89,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 httpContext.Features.Set<ISessionFeature>(new SessionFeature() { Session = new TestSession() });
             }
             return httpContext;
+        }
+
+        private static SessionStateTempDataProvider CreateTempDataProvider()
+        {
+            var tempDataSerializer = new TestTempDataSerializer();
+            return new SessionStateTempDataProvider(tempDataSerializer);
         }
 
         private class SessionFeature : ISessionFeature
@@ -333,6 +140,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             public bool TryGetValue(string key, out byte[] value)
             {
                 return _innerDictionary.TryGetValue(key, out value);
+            }
+        }
+
+        private class TestTempDataSerializer : TempDataSerializer
+        {
+            public override IDictionary<string, object> Deserialize(byte[] unprotectedData)
+            {
+                return Dictionary;
+            }
+
+            public override byte[] Serialize(IDictionary<string, object> values)
+            {
+                return Bytes;
             }
         }
     }
