@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="..\..\..\..\Directory.Build.targets" />
+
   <PropertyGroup>
     <_MvcViewCompilationAddDesktopReferences>false</_MvcViewCompilationAddDesktopReferences>
     <TestIncludeViewCompilationTargets Condition="'$(TestIncludeViewCompilationTargets)'==''">$(MvcRazorCompileOnPublish)</TestIncludeViewCompilationTargets>
