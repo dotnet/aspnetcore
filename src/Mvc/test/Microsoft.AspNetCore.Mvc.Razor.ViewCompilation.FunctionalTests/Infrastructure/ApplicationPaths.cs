@@ -8,14 +8,12 @@ namespace FunctionalTests
 {
     public static class ApplicationPaths
     {
-        private const string SolutionName = "RazorViewCompilation.sln";
+        private const string SolutionName = "Mvc.sln";
 
         public static string SolutionDirectory { get; } = GetSolutionDirectory();
 
-        public static string ArtifactPackagesDirectory => Path.Combine(SolutionDirectory, "artifacts", "build");
-
         public static string GetTestAppDirectory(string appName) =>
-            Path.Combine(SolutionDirectory, "testapps", appName);
+            Path.Combine(SolutionDirectory, "test", "ViewCompilationApps", appName);
 
         private static string GetSolutionDirectory()
         {

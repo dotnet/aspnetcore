@@ -6,9 +6,9 @@
     <IsPackable>false</IsPackable>
     <EnableApiCheck>false</EnableApiCheck>
 
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <IsImplementationProject>false</IsImplementationProject>
+    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>

@@ -21,12 +21,11 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\net461\win7-$(PlatformTarget)</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\net461\win7-$(PlatformTarget)</IntermediateOutputPath>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(TasksProjectDirectory)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" />
-
-    <!-- <Reference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks" PrivateAssets="true" ReferenceOutputAssembly="false" /> -->
 
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
@@ -35,7 +34,7 @@
     <PackageReference Update="Microsoft.NETCore.App" PrivateAssets="All" />
   </ItemGroup>
 
-  <Target Name="BuildX64" AfterTargets="Build" Condition="'$(TargetFramework)'=='net461' AND '$(PlatformTarget)'!='x64'">
+  <Target Name="BuildX64" AfterTargets="AfterBuild" Condition="'$(TargetFramework)'=='net461' AND '$(PlatformTarget)'!='x64'">
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="Build"
