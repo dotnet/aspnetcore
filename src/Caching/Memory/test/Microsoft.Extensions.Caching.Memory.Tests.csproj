@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
