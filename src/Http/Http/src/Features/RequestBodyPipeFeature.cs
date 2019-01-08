@@ -8,7 +8,8 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class RequestBodyPipeFeature : IRequestBodyPipeFeature
     {
-        private PipeReader _pipeReader;
+        private StreamPipeReader _internalPipeReader;
+        private PipeReader _userSetPipeReader;
         private HttpContext _context;
 
         public RequestBodyPipeFeature(HttpContext context)
@@ -24,19 +25,26 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             get
             {
-                if (_pipeReader == null ||
-                    (_pipeReader is StreamPipeReader reader && !object.ReferenceEquals(reader.InnerStream, _context.Request.Body)))
+                if (_userSetPipeReader != null)
                 {
-                    var streamPipeReader = new StreamPipeReader(_context.Request.Body);
-                    _pipeReader = streamPipeReader;
-                    _context.Response.RegisterForDispose(streamPipeReader);
+                    return _userSetPipeReader;
                 }
 
-                return _pipeReader;
+                if (_internalPipeReader == null)
+                {
+                    _internalPipeReader = new StreamPipeReader(_context.Request.Body);
+                }
+                else if (!object.ReferenceEquals(_internalPipeReader.InnerStream, _context.Request.Body))
+                {
+                    _internalPipeReader = new StreamPipeReader(_context.Request.Body);
+                    _context.Response.RegisterForDispose(_internalPipeReader);
+                }
+
+                return _internalPipeReader;
             }
             set
             {
-                _pipeReader = value ?? throw new ArgumentNullException(nameof(value));
+                _userSetPipeReader = value ?? throw new ArgumentNullException(nameof(value));
                 // TODO set the request body Stream to an adapted pipe https://github.com/aspnet/AspNetCore/issues/3971
             }
         }

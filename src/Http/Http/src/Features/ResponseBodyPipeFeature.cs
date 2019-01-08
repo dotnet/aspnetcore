@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
     public class ResponseBodyPipeFeature : IResponseBodyPipeFeature
     {
-        private PipeWriter _pipeWriter;
+        private StreamPipeWriter _internalPipeWriter;
+        private PipeWriter _userSetPipeWriter;
         private HttpContext _context;
 
         public ResponseBodyPipeFeature(HttpContext context)
@@ -26,21 +26,27 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             get
             {
-                if (_pipeWriter == null ||
-                    // If the Response.Body has been updated, recreate the pipeWriter
-                    (_pipeWriter is StreamPipeWriter writer && !object.ReferenceEquals(writer.InnerStream, _context.Response.Body)))
+                if (_userSetPipeWriter != null)
                 {
-                    var streamPipeWriter = new StreamPipeWriter(_context.Response.Body);
-                    _pipeWriter = streamPipeWriter;
-                    _context.Response.RegisterForDispose(streamPipeWriter);
-
+                    return _userSetPipeWriter;
                 }
 
-                return _pipeWriter;
+                if (_internalPipeWriter == null)
+                {
+                    var streamPipeWriter = new StreamPipeWriter(_context.Response.Body);
+                    _internalPipeWriter = streamPipeWriter;
+                }
+                else if (!object.ReferenceEquals(_internalPipeWriter.InnerStream, _context.Response.Body))
+                {
+                    _internalPipeWriter = new StreamPipeWriter(_context.Response.Body);
+                    _context.Response.RegisterForDispose(_internalPipeWriter);
+                }
+
+                return _internalPipeWriter;
             }
             set
             {
-                _pipeWriter = value ?? throw new ArgumentNullException(nameof(value));
+                _userSetPipeWriter = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
     }

@@ -272,61 +272,59 @@ namespace System.IO.Pipelines.Tests
         [Fact]
         public async Task UseBothStreamAndPipeToWrite()
         {
-            var flushResult = await Writer.WriteAsync(Encoding.ASCII.GetBytes("aaaa"));
-            var buffer = Encoding.ASCII.GetBytes("cccc");
-            MemoryStream.Write(buffer, 0, buffer.Length);
-            var result = Read();
+            await WriteStringToPipeWriter("a");
+            WriteStringToStream("c");
 
-            Assert.Equal(Encoding.ASCII.GetBytes("aaaacccc"), result);
+            Assert.Equal("ac", ReadAsString());
         }
 
         [Fact]
         public async Task UsePipeThenStreamToWriteMultipleTimes()
         {
-            var expectedMemory = new Memory<byte>(Encoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz"));
-            var buffer = new byte[1];
-
-            for (var i = 0; i < 13; i++)
+            var expectedString = "abcdef";
+            for (var i = 0; i < expectedString.Length; i++)
             {
-                MemoryStream.Write(expectedMemory.Slice(i * 2, 1).Span);
-                await Writer.WriteAsync(expectedMemory.Slice(i * 2 + 1, 1));
+                if (i % 2 == 0)
+                {
+                    WriteStringToStream(expectedString[i].ToString());
+                }
+                else
+                {
+                    await WriteStringToPipeWriter(expectedString[i].ToString());
+                }
             }
-            var result = Read();
-            Assert.Equal(expectedMemory.ToArray(), result);
+
+            Assert.Equal(expectedString, ReadAsString());
         }
 
         [Fact]
         public async Task UseStreamThenPipeToWriteMultipleTimes()
         {
-            var expectedMemory = new Memory<byte>(Encoding.ASCII.GetBytes("abcdefghijklmnopqrstuvwxyz"));
-            var buffer = new byte[1];
-
-            for (var i = 0; i < 13; i++)
+            var expectedString = "abcdef";
+            for (var i = 0; i < expectedString.Length; i++)
             {
-                await Writer.WriteAsync(expectedMemory.Slice(i * 2, 1));
-                MemoryStream.Write(expectedMemory.Slice(i * 2 + 1, 1).Span);
+                if (i % 2 == 0)
+                {
+                    await WriteStringToPipeWriter(expectedString[i].ToString());
+                }
+                else
+                {
+                    WriteStringToStream(expectedString[i].ToString());
+                }
             }
-            var result = Read();
-            Assert.Equal(expectedMemory.ToArray(), result);
+
+            Assert.Equal(expectedString, ReadAsString());
         }
 
-        [Fact]
-        public async Task UseBothStreamAndPipeToWriteWithGetMemoryAndFlush()
+        private void WriteStringToStream(string input)
         {
-            var cBuffer = Encoding.ASCII.GetBytes("cccc");
-            var aBuffer = Encoding.ASCII.GetBytes("aaaa");
-            var memory = Writer.GetMemory();
+            var buffer = Encoding.ASCII.GetBytes(input);
+            MemoryStream.Write(buffer, 0, buffer.Length);
+        }
 
-            MemoryStream.Write(aBuffer, 0, aBuffer.Length);
-
-            cBuffer.CopyTo(memory);
-
-            Writer.Advance(cBuffer.Length);
-            await Writer.FlushAsync();
-
-            var result = Read();
-
-            Assert.Equal(Encoding.ASCII.GetBytes("aaaacccc"), result);
+        private async Task WriteStringToPipeWriter(string input)
+        {
+            await Writer.WriteAsync(Encoding.ASCII.GetBytes(input));
         }
 
         private async Task CheckWriteIsNotCanceled()

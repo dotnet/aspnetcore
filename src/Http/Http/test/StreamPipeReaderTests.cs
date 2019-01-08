@@ -531,14 +531,12 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
-        public async Task UseBothStreamAndPipeToRead()
+        public async Task UseBothStreamAndPipeToReadConfirmSameSize()
         {
-            Write(Encoding.ASCII.GetBytes(new string('a', 8)));
+            Write(new byte[8]);
             var buffer = new byte[4];
 
-            var res = MemoryStream.Read(buffer, 0, buffer.Length);
-
-            Assert.Equal(4, res);
+            MemoryStream.Read(buffer, 0, buffer.Length);
             var readResult = await Reader.ReadAsync();
 
             Assert.Equal(buffer, readResult.Buffer.ToArray());
@@ -548,58 +546,73 @@ namespace System.IO.Pipelines.Tests
         public async Task UseStreamThenPipeToReadNoBytesLost()
         {
             CreateReader(minimumSegmentSize: 1, minimumReadThreshold: 1);
-            var expectedString = "abcdefghijklmnopqrstuvwxyz";
-            Write(Encoding.ASCII.GetBytes(expectedString));
-            var buffer = new byte[1];
-            var result = "";
 
-            for (var i = 0; i < 13; i++)
+            var expectedString = WriteString("abcdef");
+            var accumulatedResult = "";
+            var buffer = new byte[1];
+
+            for (var i = 0; i < expectedString.Length / 2; i++)
             {
-                var res = MemoryStream.Read(buffer, 0, buffer.Length);
-                result += Encoding.ASCII.GetString(buffer);
-                var readResult = await Reader.ReadAsync();
-                result += Encoding.ASCII.GetString(readResult.Buffer.ToArray());
-                Reader.AdvanceTo(readResult.Buffer.End);
+                // Read from stream then pipe to guarantee no bytes are lost.
+                accumulatedResult += ReadFromStreamAsString(buffer);
+                accumulatedResult += await ReadFromPipeAsString();
             }
 
-            Assert.Equal(expectedString, result);
+            Assert.Equal(expectedString, accumulatedResult);
         }
 
         [Fact]
         public async Task UsePipeThenStreamToReadNoBytesLost()
         {
             CreateReader(minimumSegmentSize: 1, minimumReadThreshold: 1);
-            var expectedString = "abcdefghijklmnopqrstuvwxyz";
-            Write(Encoding.ASCII.GetBytes(expectedString));
-            var buffer = new byte[1];
-            var result = "";
 
-            for (var i = 0; i < 13; i++)
+            var expectedString = WriteString("abcdef");
+            var accumulatedResult = "";
+            var buffer = new byte[1];
+
+            for (var i = 0; i < expectedString.Length / 2; i++)
             {
-                var readResult = await Reader.ReadAsync();
-                result += Encoding.ASCII.GetString(readResult.Buffer.ToArray());
-                Reader.AdvanceTo(readResult.Buffer.End);
-                var res = MemoryStream.Read(buffer, 0, buffer.Length);
-                result += Encoding.ASCII.GetString(buffer);
+                // Read from pipe then stream to guarantee no bytes are lost.
+                accumulatedResult += await ReadFromPipeAsString();
+                accumulatedResult += ReadFromStreamAsString(buffer);
             }
 
-            Assert.Equal(expectedString, result);
+            Assert.Equal(expectedString, accumulatedResult);
         }
+
         [Fact]
         public async Task UseBothStreamAndPipeToReadWithoutAdvance_StreamIgnoresAdvance()
         {
-            CreateReader(minimumSegmentSize: 4, minimumReadThreshold: 4);
-            Write(Encoding.ASCII.GetBytes("aaaabbbbccccdddd"));
-            var buffer = new byte[4];
-            var res = MemoryStream.Read(buffer, 0, buffer.Length);
+            var buffer = new byte[1];
+            CreateReader(minimumSegmentSize: 1, minimumReadThreshold: 1);
+
+            WriteString("abc");
+            ReadFromStreamAsString(buffer);
             var readResult = await Reader.ReadAsync();
 
             // No Advance
             // Next call to Stream.Read will get the next 4 bytes rather than the bytes already read by the pipe
-            res = MemoryStream.Read(buffer, 0, buffer.Length);
+            Assert.Equal("c", ReadFromStreamAsString(buffer));
+        }
 
-            Assert.Equal(4, res);
-            Assert.Equal(Encoding.ASCII.GetBytes("cccc"), buffer);
+        private async Task<string> ReadFromPipeAsString()
+        {
+            var readResult = await Reader.ReadAsync();
+            var result = Encoding.ASCII.GetString(readResult.Buffer.ToArray());
+            Reader.AdvanceTo(readResult.Buffer.End);
+            return result;
+        }
+
+        private string ReadFromStreamAsString(byte[] buffer)
+        {
+            var res = MemoryStream.Read(buffer, 0, buffer.Length);
+            return Encoding.ASCII.GetString(buffer);
+        }
+
+        private string WriteString(string expectedString)
+        {
+            Write(Encoding.ASCII.GetBytes(expectedString));
+            return expectedString;
         }
 
         private void CreateReader(int minimumSegmentSize = 16, int minimumReadThreshold = 4, MemoryPool<byte> memoryPool = null)
