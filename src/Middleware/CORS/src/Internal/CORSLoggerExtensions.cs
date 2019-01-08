@@ -25,47 +25,47 @@ namespace Microsoft.AspNetCore.Cors.Internal
         {
             _isPreflightRequest = LoggerMessage.Define(
                 LogLevel.Debug,
-                 new EventId(1, "IsPreflightRequest"),
+                new EventId(1, "IsPreflightRequest"),
                 "The request is a preflight request.");
 
             _requestHasOriginHeader = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                 new EventId(2, "RequestHasOriginHeader"),
+                new EventId(2, "RequestHasOriginHeader"),
                 "The request has an origin header: '{origin}'.");
 
             _requestDoesNotHaveOriginHeader = LoggerMessage.Define(
                 LogLevel.Debug,
-                 new EventId(3, "RequestDoesNotHaveOriginHeader"),
+                new EventId(3, "RequestDoesNotHaveOriginHeader"),
                 "The request does not have an origin header.");
 
             _policySuccess = LoggerMessage.Define(
                 LogLevel.Information,
-                 new EventId(4, "PolicySuccess"),
+                new EventId(4, "PolicySuccess"),
                 "CORS policy execution successful.");
 
             _policyFailure = LoggerMessage.Define(
                 LogLevel.Information,
-                 new EventId(5, "PolicyFailure"),
+                new EventId(5, "PolicyFailure"),
                 "CORS policy execution failed.");
 
             _originNotAllowed = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                 new EventId(6, "OriginNotAllowed"),
+                new EventId(6, "OriginNotAllowed"),
                 "Request origin {origin} does not have permission to access the resource.");
 
             _accessControlMethodNotAllowed = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                 new EventId(7, "AccessControlMethodNotAllowed"),
+                new EventId(7, "AccessControlMethodNotAllowed"),
                 "Request method {accessControlRequestMethod} not allowed in CORS policy.");
 
             _requestHeaderNotAllowed = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                 new EventId(8, "RequestHeaderNotAllowed"),
+                new EventId(8, "RequestHeaderNotAllowed"),
                 "Request header '{requestHeader}' not allowed in CORS policy.");
 
             _failedToSetCorsHeaders = LoggerMessage.Define(
                 LogLevel.Warning,
-                 new EventId(9, "FailedToSetCorsHeaders"),
+                new EventId(9, "FailedToSetCorsHeaders"),
                 "Failed to apply CORS Response headers.");
 
             _noCorsPolicyFound = LoggerMessage.Define(
