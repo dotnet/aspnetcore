@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     //
     // Does not preserve insignificant details of the HTML, like tag closing style
     // or quote style.
-    internal class ComponentHtmlBlockPass : ComponentIntermediateNodePassBase, IRazorOptimizationPass
+    internal class ComponentMarkupBlockPass : ComponentIntermediateNodePassBase, IRazorOptimizationPass
     {
         // Runs LATE because we want to destroy structure.
         public override int Order => 10000;
@@ -322,6 +322,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 for (var i = 0; i < node.Children.Count; i++)
                 {
+                    Builder.Append(node.Prefix);
+
                     if (node.Children[i] is IntermediateToken token)
                     {
                         Builder.Append(token.Content);
