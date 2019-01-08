@@ -1,9 +1,8 @@
 param($Mode)
 
-$DumpFolder = "$env:ASPNETCORE_TEST_LOG_DIR\dumps"
 if (!($DumpFolder))
 {
-    $DumpFolder = "$PSScriptRoot\..\artifacts\dumps"
+    $DumpFolder = "$PSScriptRoot\..\..\..\..\artifacts\dumps"
 }
 if (!(Test-Path $DumpFolder))
 {
