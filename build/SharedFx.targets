@@ -100,7 +100,7 @@
       BuildInParallel="false" />
   </Target>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="BuildMetapackages">
+  <Target Name="BuildSiteExtension" DependsOnTargets="BuildMetapackages" Condition="'$(OS)' == 'Windows_NT'" >
     <PropertyGroup>
       <AzureIntegrationProjProperties>
         AspNetUniverseBuildOffline=true;
@@ -113,7 +113,13 @@
     </PropertyGroup>
 
     <!-- Pack logging site extension -->
-    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Condition="'$(OS)' == 'Windows_NT'" Targets="Restore;Pack" Properties="$(AzureIntegrationProjProperties);PackageOutputPath=$(BuildDir)" />
+    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="Restore;Pack" Properties="$(AzureIntegrationProjProperties);PackageOutputPath=$(BuildDir)" />
+  </Target>
+
+  <Target Name="GetSiteExtensionArtifactInfo" Condition="'$(OS)' == 'Windows_NT'" >
+    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="GetArtifactInfo" Properties="PackageOutputPath=$(BuildDir);BuildNumber=$(BuildNumber);DesignTimeBuild=true;IsFinalBuild=$(IsFinalBuild)">
+      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
+    </MSBuild>
   </Target>
 
   <Target Name="DefineSharedFxPrerequisites" DependsOnTargets="ResolveCommitHash">

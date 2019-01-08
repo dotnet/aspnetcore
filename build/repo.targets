@@ -83,7 +83,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ResolveRepoInfo" DependsOnTargets="_ResolveProjectArtifactsInfoShipped;_PrepareRepositories;GetMetapackageArtifactInfo">
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_ResolveProjectArtifactsInfoShipped;_PrepareRepositories;GetMetapackageArtifactInfo;GetSiteExtensionArtifactInfo">
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
