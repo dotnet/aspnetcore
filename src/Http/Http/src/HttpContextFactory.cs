@@ -48,8 +48,13 @@ namespace Microsoft.AspNetCore.Http
             return httpContext;
         }
 
-        protected virtual HttpContext CreateHttpContext(IFeatureCollection featureCollection)
+        private static HttpContext CreateHttpContext(IFeatureCollection featureCollection)
         {
+            if (featureCollection is IHttpContextContainer container)
+            {
+                return container.HttpContext;
+            }
+
             return new ReusableHttpContext(featureCollection);
         }
 

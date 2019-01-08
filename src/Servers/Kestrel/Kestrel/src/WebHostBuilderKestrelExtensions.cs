@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Hosting
                 services.TryAddSingleton<ITransportFactory, SocketTransportFactory>();
 
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
-                services.AddSingleton<IHttpContextFactory, KestrelHttpContextFactory>();
                 services.AddSingleton<IServer, KestrelServer>();
             });
         }

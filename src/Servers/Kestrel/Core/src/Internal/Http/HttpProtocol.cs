@@ -24,7 +24,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract partial class HttpProtocol : IHttpResponseControl
+    public abstract partial class HttpProtocol : IHttpContextContainer, IHttpResponseControl
     {
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
-        internal ReusableHttpContext HttpContext => _httpContext;
+        HttpContext IHttpContextContainer.HttpContext => _httpContext;
 
         public void InitializeStreams(MessageBody messageBody)
         {
