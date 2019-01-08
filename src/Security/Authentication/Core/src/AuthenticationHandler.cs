@@ -224,11 +224,8 @@ namespace Microsoft.AspNetCore.Authentication
 
             properties = properties ?? new AuthenticationProperties();
             await HandleChallengeAsync(properties);
-            Logger.AuthenticationSchemeChallenged(Scheme.Name, GenerateChallengeLogData(properties));
+            Logger.AuthenticationSchemeChallenged(Scheme.Name);
         }
-
-        protected virtual string GenerateChallengeLogData(AuthenticationProperties properties)
-            => string.Empty;
 
         public async Task ForbidAsync(AuthenticationProperties properties)
         {

@@ -306,6 +306,22 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <returns></returns>
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            await HandleChallengeAsyncInternal(properties);
+            var location = Context.Response.Headers["Location"];
+            if (location == StringValues.Empty)
+            {
+                location = "not set";
+            }
+            var cookie = Context.Response.Headers["Set-Cookie"];
+            if (cookie == StringValues.Empty)
+            {
+                cookie = "not set";
+            }
+            Logger.HandleChallenge(location, cookie);
+        }
+
+        private async Task HandleChallengeAsyncInternal(AuthenticationProperties properties)
+        {
             Logger.EnteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync(GetType().FullName);
 
             // order for local RedirectUri
@@ -419,21 +435,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
 
             throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
-        }
-
-        protected override string GenerateChallengeLogData(AuthenticationProperties properties)
-        {
-            var location = Context.Response.Headers["Location"];
-            if (location == StringValues.Empty)
-            {
-                location = "not set";
-            }
-            var cookie = Context.Response.Headers["Set-Cookie"];
-            if (cookie == StringValues.Empty)
-            {
-                cookie = "not set";
-            }
-            return String.Format($"Location: [{location}] Set-Cookie: [{cookie}]");
         }
 
         /// <summary>

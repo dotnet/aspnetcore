@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Logging
         private static readonly Action<ILogger, string, Exception> _authenticationSchemeAuthenticated;
         private static readonly Action<ILogger, string, Exception> _authenticationSchemeNotAuthenticated;
         private static readonly Action<ILogger, string, string, Exception> _authenticationSchemeNotAuthenticatedWithFailure;
-        private static readonly Action<ILogger, string, string, Exception> _authenticationSchemeChallenged;
+        private static readonly Action<ILogger, string, Exception> _authenticationSchemeChallenged;
         private static readonly Action<ILogger, string, Exception> _authenticationSchemeForbidden;
         private static readonly Action<ILogger, string, Exception> _remoteAuthenticationError;
         private static readonly Action<ILogger, Exception> _signInHandled;
@@ -48,10 +48,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(9, "AuthenticationSchemeNotAuthenticated"),
                 logLevel: LogLevel.Debug,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was not authenticated.");
-            _authenticationSchemeChallenged = LoggerMessage.Define<string, string>(
+            _authenticationSchemeChallenged = LoggerMessage.Define<string>(
                 eventId: new EventId(12, "AuthenticationSchemeChallenged"),
                 logLevel: LogLevel.Information,
-                formatString: "AuthenticationScheme: {AuthenticationScheme} was challenged. {ExtraData}");
+                formatString: "AuthenticationScheme: {AuthenticationScheme} was challenged.");
             _authenticationSchemeForbidden = LoggerMessage.Define<string>(
                 eventId: new EventId(13, "AuthenticationSchemeForbidden"),
                 logLevel: LogLevel.Information,
@@ -97,9 +97,9 @@ namespace Microsoft.Extensions.Logging
             _authenticationSchemeNotAuthenticatedWithFailure(logger, authenticationScheme, failureMessage, null);
         }
 
-        public static void AuthenticationSchemeChallenged(this ILogger logger, string authenticationScheme, string extraData)
+        public static void AuthenticationSchemeChallenged(this ILogger logger, string authenticationScheme)
         {
-            _authenticationSchemeChallenged(logger, authenticationScheme, extraData, null);
+            _authenticationSchemeChallenged(logger, authenticationScheme, null);
         }
 
         public static void AuthenticationSchemeForbidden(this ILogger logger, string authenticationScheme)

@@ -215,10 +215,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 Context, Scheme, Options,
                 properties, authorizationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
-        }
 
-        protected override string GenerateChallengeLogData(AuthenticationProperties properties)
-        {
             var location = Context.Response.Headers["Location"];
             if (location == StringValues.Empty)
             {
@@ -229,7 +226,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             {
                 cookie = "not set";
             }
-            return String.Format($"Location: [{location}] Set-Cookie: [{cookie}]");
+            Logger.HandleChallenge(location, cookie);
         }
 
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)

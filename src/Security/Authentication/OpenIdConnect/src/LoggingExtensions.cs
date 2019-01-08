@@ -56,6 +56,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _remoteSignOutSessionIdMissing;
         private static Action<ILogger, Exception> _remoteSignOutSessionIdInvalid;
         private static Action<ILogger, string, Exception> _authenticationSchemeSignedOut;
+        private static Action<ILogger, string, string, Exception> _handleChallenge;
 
         static LoggingExtensions()
         {
@@ -260,6 +261,11 @@ namespace Microsoft.Extensions.Logging
                 formatString: "RedirectToSignedOutRedirectUri.Skipped");
 
             //  EventId 52 is used by ResponseErrorWithStatusCode
+            _handleChallenge = LoggerMessage.Define<string, string>(
+                eventId: new EventId(53, "HandleChallenge"),
+                logLevel: LogLevel.Debug,
+                formatString: "HandleChallenge with Location {Location} and Set-Cookie {Cookie}.");
+
         }
 
         public static void UpdatingConfiguration(this ILogger logger)
@@ -506,5 +512,8 @@ namespace Microsoft.Extensions.Logging
         {
             _authenticationSchemeSignedOut(logger, authenticationScheme, null);
         }
+
+        public static void HandleChallenge(this ILogger logger, string location, string cookie)
+            => _handleChallenge(logger, location, cookie, null);
     }
 }
