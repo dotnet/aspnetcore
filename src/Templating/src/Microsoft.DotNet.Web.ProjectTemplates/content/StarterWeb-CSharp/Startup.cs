@@ -124,9 +124,11 @@ namespace Company.WebApplication1
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            });
+            })
+            .AddNewtonsoftJson();
 #else
-            services.AddMvc();
+            services.AddMvc()
+                .AddNewtonsoftJson();
 #endif
         }
 
