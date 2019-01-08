@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                         }
                         break;
                     case StaticFileContext.PreconditionState.NotModified:
-                        _logger.PathNotModified(fileContext.SubPath);
+                        _logger.FileNotModified(fileContext.SubPath);
                         await fileContext.SendStatusAsync(Constants.Status304NotModified);
                         return;
 

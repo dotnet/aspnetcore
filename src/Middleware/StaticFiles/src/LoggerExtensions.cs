@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         private static Action<ILogger, string, Exception> _pathMismatch;
         private static Action<ILogger, string, Exception> _fileTypeNotSupported;
         private static Action<ILogger, string, Exception> _fileNotFound;
-        private static Action<ILogger, string, Exception> _pathNotModified;
+        private static Action<ILogger, string, Exception> _fileNotModified;
         private static Action<ILogger, string, Exception> _preconditionFailed;
         private static Action<ILogger, int, string, Exception> _handled;
         private static Action<ILogger, string, Exception> _rangeNotSatisfiable;
@@ -47,9 +47,9 @@ namespace Microsoft.AspNetCore.StaticFiles
                 logLevel: LogLevel.Debug,
                 eventId: new EventId(5, "FileNotFound"),
                 formatString: "The request path {Path} does not match an existing file");
-            _pathNotModified = LoggerMessage.Define<string>(
+            _fileNotModified = LoggerMessage.Define<string>(
                 logLevel: LogLevel.Information,
-                eventId: new EventId(6, "PathNotModified"),
+                eventId: new EventId(6, "FileNotModified"),
                 formatString: "The file {Path} was not modified");
             _preconditionFailed = LoggerMessage.Define<string>(
                 logLevel: LogLevel.Information,
@@ -106,9 +106,9 @@ namespace Microsoft.AspNetCore.StaticFiles
             _fileNotFound(logger, path, null);
         }
 
-        public static void PathNotModified(this ILogger logger, string path)
+        public static void FileNotModified(this ILogger logger, string path)
         {
-            _pathNotModified(logger, path, null);
+            _fileNotModified(logger, path, null);
         }
 
         public static void PreconditionFailed(this ILogger logger, string path)
