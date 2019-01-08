@@ -16,25 +16,15 @@ namespace E2ETests
     {
         // ANCM tests disabled, see: https://github.com/aspnet/websdk/issues/422
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
                 .WithAllAncmVersions()
                 .WithAllHostingModels()
                 .WithAllArchitectures();
 
-        // ANCM In-process cannot run on netcoreapp2.1 and below
-        public static TestMatrix TestVariantsWithoutInproc
-            => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
-                .WithAllApplicationTypes()
-                .WithAllAncmVersions()
-                .WithHostingModels(HostingModel.OutOfProcess)
-                .WithAllArchitectures();
-
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [MemberData(nameof(TestVariantsWithoutInproc))]
         public async Task PublishAndRun_Test(TestVariant variant)
         {
             var testName = $"PublishAndRunTests_{variant}";
