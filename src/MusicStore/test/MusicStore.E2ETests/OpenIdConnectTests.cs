@@ -28,15 +28,15 @@ namespace E2ETests
         {
             return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
-#if !NETCOREAPP2_0 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task OpenIdConnect_Kestrel_CLR()
         {
             return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.Clr, ApplicationType.Portable);
         }
-#endif
         private async Task OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
+
         {
             var architecture = RuntimeArchitecture.x64;
             var testName = $"OpenIdConnectTestSuite_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";

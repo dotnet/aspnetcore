@@ -44,19 +44,17 @@ namespace E2ETests
             return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
 
-#if !NETCOREAPP2_0 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
         [ConditionalFact]
         public Task NtlmAuthenticationTest_WebListener_CLR()
         {
             return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.Clr, ApplicationType.Portable);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/websdk/pull/322")]
+        [ConditionalFact]
         public Task NtlmAuthenticationTest_IISExpress_CLR()
         {
             return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.Clr, ApplicationType.Standalone);
         }
-#endif
 
         private async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
         {

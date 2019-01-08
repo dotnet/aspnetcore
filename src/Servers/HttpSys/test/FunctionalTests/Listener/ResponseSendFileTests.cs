@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_1
 #else
 #error Target framework needs to be updated
 #endif
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 writeTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, cts.Token);
                 Assert.True(writeTask.IsCanceled);
                 context.Dispose();
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#elif NETCOREAPP2_1
 #else
 #error Target framework needs to be updated
 #endif

@@ -1,8 +1,4 @@
 <Project>
   <!-- Skip the parent folder to prevent getting test package references. -->
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.props))\Directory.Build.props" />
-
-  <PropertyGroup>
-    <StandardTestWebsiteTfms>netcoreapp2.1;net461</StandardTestWebsiteTfms>
-  </PropertyGroup>
 </Project>

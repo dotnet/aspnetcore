@@ -48,13 +48,7 @@ namespace E2ETests
             }
             else if (flavor == RuntimeFlavor.CoreClr)
             {
-#if NETCOREAPP2_0
-                return "netcoreapp2.0";
-#elif NETCOREAPP2_1
                 return "netcoreapp2.1";
-#else
-#error Target Frameworks need to be updated
-#endif
             }
 
             throw new ArgumentException($"Unknown runtime flavor '{flavor}.");

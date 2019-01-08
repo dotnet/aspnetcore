@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Empty(response.Headers.WwwAuthenticate);
             }
         }
-#if !NETCOREAPP2_0
+
         // https://github.com/aspnet/ServerTests/issues/82
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Equal("Negotiate, NTLM, basic", response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
         }
-#endif
+
         [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]

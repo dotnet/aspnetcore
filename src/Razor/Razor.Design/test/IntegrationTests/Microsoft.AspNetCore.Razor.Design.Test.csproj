@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- 
+    <!--
       There's not much value in multi-targeting here, this doesn't run much .NET code, it tests MSBuild.
-      
+
       This is also a partial workaround for https://github.com/Microsoft/msbuild/issues/2661 - this project
       has netcoreapp2.0 dependencies that need to be built first.
-    --> 
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    -->
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefineConstants Condition="'$(PreserveWorkingDirectory)'=='true'">$(DefineConstants);PRESERVE_WORKING_DIRECTORY</DefineConstants>
     <!-- Copy references locally so that we can use them in the test. -->
@@ -20,7 +20,7 @@
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(BuildVariablesGeneratedFile)" Condition="Exists('$(BuildVariablesGeneratedFile)')" />
   </ItemGroup>
-  
+
   <!-- The test projects rely on these binaries being available -->
   <ItemGroup>
     <Reference Include="System.Diagnostics.DiagnosticSource" />
@@ -38,5 +38,5 @@
   <Target Name="EnsureBuildVariablesGeneratedFile">
     <Error Text="BuildVariables.generated.cs was not found. Run .\build /t:Prepare from the root of the repository to generate it." Condition="!Exists('$(BuildVariablesGeneratedFile)')" />
   </Target>
-  
+
 </Project>

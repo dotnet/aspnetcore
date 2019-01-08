@@ -12,7 +12,7 @@
   <Import Project="$(SolutionRoot)Mvc.Razor.Extensions\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>1</TargetFramework>
   </PropertyGroup>
 
   <!-- Test Placeholder -->
