@@ -14,7 +14,7 @@ class StandardStreamRedirection : NonCopyable
     #define PIPE_READ_SIZE 4096
 
 public:
-    StandardStreamRedirection(RedirectionOutput& output);
+    StandardStreamRedirection(RedirectionOutput& output, bool commandLineLaunch);
 
     ~StandardStreamRedirection() noexcept(false);
 
@@ -57,6 +57,7 @@ private:
     HANDLE                          m_hErrThread;
 
     bool m_disposed;
+    bool m_commandLineLaunch;
     SRWLOCK m_srwLock{};
     std::unique_ptr<StdWrapper> stdoutWrapper;
     std::unique_ptr<StdWrapper> stderrWrapper;

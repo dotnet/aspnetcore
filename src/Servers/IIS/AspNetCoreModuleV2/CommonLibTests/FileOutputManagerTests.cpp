@@ -20,7 +20,7 @@ namespace FileRedirectionOutputTests
 
             {
                 FileRedirectionOutput redirectionOutput(tempDirectory.path(), fileNamePrefix);
-                StandardStreamRedirection pManager(redirectionOutput);
+                StandardStreamRedirection pManager(redirectionOutput, false);
 
                 wprintf(expected, out);
             }
@@ -56,7 +56,7 @@ namespace StringStreamRedirectionOutputTests
 
         {
             StringStreamRedirectionOutput redirectionOutput;
-            StandardStreamRedirection pManager(redirectionOutput);
+            StandardStreamRedirection pManager(redirectionOutput, false);
 
             fwprintf(stdout, expected);
             pManager.Stop();
@@ -73,7 +73,7 @@ namespace StringStreamRedirectionOutputTests
         PCWSTR expected = L"test";
 
         StringStreamRedirectionOutput redirectionOutput;
-        StandardStreamRedirection pManager(redirectionOutput);
+        StandardStreamRedirection pManager(redirectionOutput, false);
 
         fwprintf(stderr, expected);
         pManager.Stop();
@@ -91,7 +91,7 @@ namespace StringStreamRedirectionOutputTests
         auto tempDirectory = TempDirectory();
 
         StringStreamRedirectionOutput redirectionOutput;
-        StandardStreamRedirection pManager(redirectionOutput);
+        StandardStreamRedirection pManager(redirectionOutput, false);
         for (int i = 0; i < 3000; i++)
         {
             wprintf(expected);
@@ -110,7 +110,7 @@ namespace StringStreamRedirectionOutputTests
         for (int i = 0; i < 10; i++)
         {
             StringStreamRedirectionOutput redirectionOutput;
-            StandardStreamRedirection pManager(redirectionOutput);
+            StandardStreamRedirection pManager(redirectionOutput, false);
             wprintf(expected);
             pManager.Stop();
             auto output = redirectionOutput.GetOutput();

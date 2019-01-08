@@ -226,7 +226,7 @@ try
                 std::move(stringRedirectionOutput)
             );
 
-        StandardStreamRedirection stdOutRedirection(*redirectionOutput.get());
+        StandardStreamRedirection stdOutRedirection(*redirectionOutput.get(), m_pServer.IsCommandLineLaunch());
         auto hostFxrErrorRedirection = hostFxr.RedirectOutput(redirectionOutput.get());
 
         struNativeSearchPaths.resize(dwBufferSize);

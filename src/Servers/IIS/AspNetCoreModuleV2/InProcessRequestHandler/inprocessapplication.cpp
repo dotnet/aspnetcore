@@ -233,7 +233,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                     m_stringRedirectionOutput
                 );
 
-            StandardStreamRedirection redirection(*redirectionOutput.get());
+            StandardStreamRedirection redirection(*redirectionOutput.get(), m_pHttpServer.IsCommandLineLaunch());
 
             context->m_redirectionOutput = redirectionOutput.get();
 

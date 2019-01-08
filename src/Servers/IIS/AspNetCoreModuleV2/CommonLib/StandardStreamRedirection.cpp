@@ -14,12 +14,13 @@
 #define LOG_IF_ERRNO(err) do { if (err != 0) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
 
 
-StandardStreamRedirection::StandardStreamRedirection(RedirectionOutput& output) :
+StandardStreamRedirection::StandardStreamRedirection(RedirectionOutput& output, bool commandLineLaunch) :
     m_output(output),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
     m_hErrThread(nullptr),
-    m_disposed(false)
+    m_disposed(false),
+    m_commandLineLaunch(commandLineLaunch)
 {
     TryStartRedirection();
 }
@@ -54,8 +55,8 @@ void StandardStreamRedirection::Start()
     m_hErrReadPipe = hStdErrReadPipe;
     m_hErrWritePipe = hStdErrWritePipe;
 
-    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, true);
-    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, true);
+    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, !m_commandLineLaunch);
+    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, !m_commandLineLaunch);
 
     LOG_IF_FAILED(stdoutWrapper->StartRedirection());
     LOG_IF_FAILED(stderrWrapper->StartRedirection());
