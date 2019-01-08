@@ -26,6 +26,11 @@ class TestHttpClient extends HttpClient {
         return this.handler.invoke(request);
     }
 
+    @Override
+    public Single<HttpResponse> send(HttpRequest request, String body) {
+        return null;
+    }
+
     public List<HttpRequest> getSentRequests() {
         return sentRequests;
     }
@@ -64,6 +69,11 @@ class TestHttpClient extends HttpClient {
     @Override
     public WebSocketWrapper createWebSocket(String url, Map<String, String> headers) {
         throw new RuntimeException("WebSockets isn't supported in testing currently.");
+    }
+
+    @Override
+    public HttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
+        return this;
     }
 
     interface TestHttpRequestHandler {
