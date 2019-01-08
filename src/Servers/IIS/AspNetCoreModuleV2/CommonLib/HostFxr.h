@@ -15,7 +15,7 @@ typedef corehost_error_writer_fn(*corehost_set_error_writer_fn) (corehost_error_
 class HostFxrErrorRedirector: NonCopyable
 {
 public:
-    HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput& writeFunction) noexcept;
+    HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput* writeFunction) noexcept;
 
     ~HostFxrErrorRedirector();
 
@@ -39,15 +39,13 @@ public:
     {
     }
 
-	~HostFxr() = default;
+    ~HostFxr() = default;
 
     int Main(DWORD argc, CONST PCWSTR* argv) const noexcept(false);
 
     int GetNativeSearchDirectories(INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size) const noexcept;
 
-    HostFxrErrorRedirector RedirectOutput(RedirectionOutput& writer) const noexcept;
-
-    bool SupportsOutputRedirection() const noexcept;
+    HostFxrErrorRedirector RedirectOutput(RedirectionOutput* writer) const noexcept;
 
     static
     HostFxr CreateFromLoadedModule();

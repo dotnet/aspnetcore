@@ -24,15 +24,7 @@ public:
     {}
 
     void
-    GetArguments(DWORD &hostfxrArgc, std::unique_ptr<PCWSTR[]> &hostfxrArgv) const
-    {
-        hostfxrArgc = static_cast<DWORD>(m_arguments.size());
-        hostfxrArgv = std::make_unique<PCWSTR[]>(hostfxrArgc);
-        for (DWORD i = 0; i < hostfxrArgc; ++i)
-        {
-            hostfxrArgv[i] = m_arguments[i].c_str();
-        }
-    }
+    GetArguments(DWORD& hostfxrArgc, std::unique_ptr<PCWSTR[]>& hostfxrArgv) const;
 
     const std::filesystem::path&
     GetHostFxrLocation() const noexcept

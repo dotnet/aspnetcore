@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "gtest/internal/gtest-port.h"
-#include "PipeOutputManager.h"
+#include "StandardStreamRedirection.h"
 
 namespace FileRedirectionOutputTests
 {
@@ -20,7 +20,7 @@ namespace FileRedirectionOutputTests
 
             {
                 FileRedirectionOutput redirectionOutput(tempDirectory.path(), fileNamePrefix);
-                PipeOutputManager pManager(redirectionOutput);
+                StandardStreamRedirection pManager(redirectionOutput);
 
                 wprintf(expected, out);
             }
@@ -56,7 +56,7 @@ namespace StringStreamRedirectionOutputTests
 
         {
             StringStreamRedirectionOutput redirectionOutput;
-            PipeOutputManager pManager(redirectionOutput);
+            StandardStreamRedirection pManager(redirectionOutput);
 
             fwprintf(stdout, expected);
             pManager.Stop();
@@ -73,7 +73,7 @@ namespace StringStreamRedirectionOutputTests
         PCWSTR expected = L"test";
 
         StringStreamRedirectionOutput redirectionOutput;
-        PipeOutputManager pManager(redirectionOutput);
+        StandardStreamRedirection pManager(redirectionOutput);
 
         fwprintf(stderr, expected);
         pManager.Stop();
@@ -91,7 +91,7 @@ namespace StringStreamRedirectionOutputTests
         auto tempDirectory = TempDirectory();
 
         StringStreamRedirectionOutput redirectionOutput;
-        PipeOutputManager pManager(redirectionOutput);
+        StandardStreamRedirection pManager(redirectionOutput);
         for (int i = 0; i < 3000; i++)
         {
             wprintf(expected);
@@ -110,7 +110,7 @@ namespace StringStreamRedirectionOutputTests
         for (int i = 0; i < 10; i++)
         {
             StringStreamRedirectionOutput redirectionOutput;
-            PipeOutputManager pManager(redirectionOutput);
+            StandardStreamRedirection pManager(redirectionOutput);
             wprintf(expected);
             pManager.Stop();
             auto output = redirectionOutput.GetOutput();

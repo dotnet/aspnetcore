@@ -6,12 +6,12 @@
 #include "ModuleHelpers.h"
 #include "EventLog.h"
 
-HostFxrErrorRedirector::HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput& writeFunction) noexcept
+HostFxrErrorRedirector::HostFxrErrorRedirector(corehost_set_error_writer_fn setErrorWriterFn, RedirectionOutput* writeFunction) noexcept
     : m_setErrorWriter(setErrorWriterFn)
 {
     if (m_setErrorWriter)
     {
-        m_writeFunction = &writeFunction;
+        m_writeFunction = writeFunction;
         m_setErrorWriter(HostFxrErrorRedirectorCallback);
     }
 }
@@ -27,11 +27,7 @@ HostFxrErrorRedirector::~HostFxrErrorRedirector()
 
 void HostFxrErrorRedirector::HostFxrErrorRedirectorCallback(const WCHAR* message)
 {
-    auto const writeFunction = m_writeFunction;
-    if (writeFunction)
-    {
-        writeFunction->Append(std::wstring(message) + L"\r\n");
-    }
+    m_writeFunction->Append(std::wstring(message) + L"\r\n");
 }
 
 int HostFxr::Main(DWORD argc, const PCWSTR* argv) const noexcept(false)
@@ -44,14 +40,9 @@ int HostFxr::GetNativeSearchDirectories(INT argc, const PCWSTR* argv, PWSTR buff
     return m_hostfxr_get_native_search_directories_fn(argc, argv, buffer, buffer_size, required_buffer_size);
 }
 
-HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput& writer) const noexcept
+HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput* writer) const noexcept
 {
     return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
-}
-
-bool HostFxr::SupportsOutputRedirection() const noexcept
-{
-    return m_corehost_set_error_writer_fn != nullptr;
 }
 
 HostFxr HostFxr::CreateFromLoadedModule()
@@ -64,7 +55,7 @@ HostFxr HostFxr::CreateFromLoadedModule()
         return HostFxr(
             ModuleHelpers::GetKnownProcAddress<hostfxr_main_fn>(hModule, "hostfxr_main"),
             ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(hModule, "hostfxr_get_native_search_directories"),
-            ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(hModule, "hostfxr_set_error_writer", true));
+            ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(hModule, "hostfxr_set_error_writer", /* optional */ true));
     }
     catch (...)
     {

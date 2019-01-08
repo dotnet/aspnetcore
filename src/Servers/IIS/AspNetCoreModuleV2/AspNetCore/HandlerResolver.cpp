@@ -226,8 +226,8 @@ try
                 std::move(stringRedirectionOutput)
             );
 
-        auto stdOutRedirection = LoggingHelpers::StartStdOutRedirection(*redirectionOutput.get());
-        auto hostFxrErrorRedirection = hostFxr.RedirectOutput(*redirectionOutput.get());
+        StandardStreamRedirection stdOutRedirection(*redirectionOutput.get());
+        auto hostFxrErrorRedirection = hostFxr.RedirectOutput(redirectionOutput.get());
 
         struNativeSearchPaths.resize(dwBufferSize);
         while (TRUE)

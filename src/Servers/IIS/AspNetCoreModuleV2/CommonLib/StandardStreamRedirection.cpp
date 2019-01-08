@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "PipeOutputManager.h"
+#include "StandardStreamRedirection.h"
 
 #include "stdafx.h"
 #include "Exceptions.h"
@@ -14,7 +14,7 @@
 #define LOG_IF_ERRNO(err) do { if (err != 0) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
 
 
-PipeOutputManager::PipeOutputManager(RedirectionOutput& output) :
+StandardStreamRedirection::StandardStreamRedirection(RedirectionOutput& output) :
     m_output(output),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
@@ -24,7 +24,7 @@ PipeOutputManager::PipeOutputManager(RedirectionOutput& output) :
     TryStartRedirection();
 }
 
-PipeOutputManager::~PipeOutputManager() noexcept(false)
+StandardStreamRedirection::~StandardStreamRedirection() noexcept(false)
 {
     TryStopRedirection();
 }
@@ -32,7 +32,7 @@ PipeOutputManager::~PipeOutputManager() noexcept(false)
 // Start redirecting stdout and stderr into a pipe
 // Continuously read the pipe on a background thread
 // until Stop is called.
-void PipeOutputManager::Start()
+void StandardStreamRedirection::Start()
 {
     SECURITY_ATTRIBUTES     saAttr = { 0 };
     HANDLE                  hStdErrReadPipe;
@@ -77,7 +77,7 @@ void PipeOutputManager::Start()
 // and prints any output that was captured in the pipe.
 // If more than 30Kb was written to the pipe, that output will
 // be thrown away.
-void PipeOutputManager::Stop()
+void StandardStreamRedirection::Stop()
 {
     DWORD    dwThreadStatus = 0;
 
@@ -120,7 +120,7 @@ void PipeOutputManager::Stop()
     // Don't check return value as IO may or may not be completed already.
     if (m_hErrThread != nullptr)
     {
-        LOG_INFO(L"Cancelling standard stream pipe reader");
+        LOG_INFO(L"Canceling standard stream pipe reader");
         CancelSynchronousIo(m_hErrThread);
     }
 
@@ -157,17 +157,17 @@ void PipeOutputManager::Stop()
 
 
 void
-PipeOutputManager::ReadStdErrHandle(
+StandardStreamRedirection::ReadStdErrHandle(
     LPVOID pContext
 )
 {
-    auto pLoggingProvider = static_cast<PipeOutputManager*>(pContext);
+    auto pLoggingProvider = static_cast<StandardStreamRedirection*>(pContext);
     DBG_ASSERT(pLoggingProvider != NULL);
     pLoggingProvider->ReadStdErrHandleInternal();
 }
 
 void
-PipeOutputManager::ReadStdErrHandleInternal()
+StandardStreamRedirection::ReadStdErrHandleInternal()
 {
     std::string tempBuffer;
     tempBuffer.resize(PIPE_READ_SIZE);

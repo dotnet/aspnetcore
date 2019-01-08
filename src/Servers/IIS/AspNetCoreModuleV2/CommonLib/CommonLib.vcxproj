@@ -222,7 +222,7 @@
     <ClInclude Include="LoggingHelpers.h" />
     <ClInclude Include="ModuleHelpers.h" />
     <ClInclude Include="NonCopyable.h" />
-    <ClInclude Include="PipeOutputManager.h" />
+    <ClInclude Include="StandardStreamRedirection.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="ServerErrorApplication.h" />
@@ -250,7 +250,7 @@
     <ClCompile Include="HostFxrResolver.cpp" />
     <ClCompile Include="HostFxrResolutionResult.cpp" />
     <ClCompile Include="LoggingHelpers.cpp" />
-    <ClCompile Include="PipeOutputManager.cpp" />
+    <ClCompile Include="StandardStreamRedirection.cpp" />
     <ClCompile Include="RedirectionOutput.cpp" />
     <ClCompile Include="StdWrapper.cpp" />
     <ClCompile Include="SRWExclusiveLock.cpp" />

@@ -173,7 +173,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 {
     try
     {
-        std::unique_ptr<HostFxrResolutionResult> hostFxrOptions;
+        std::unique_ptr<HostFxrResolutionResult> hostFxrResolutionResult;
 
         auto context = std::make_shared<ExecuteClrContext>();
 
@@ -184,10 +184,10 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 m_pConfig->QueryProcessPath(),
                 QueryApplicationPhysicalPath(),
                 m_pConfig->QueryArguments(),
-                hostFxrOptions
+                hostFxrResolutionResult
                 ));
 
-            hostFxrOptions->GetArguments(context->m_argc, context->m_argv);
+            hostFxrResolutionResult->GetArguments(context->m_argc, context->m_argv);
             THROW_IF_FAILED(SetEnvironmentVariablesOnWorkerProcess());
             context->m_hostFxr = HostFxr::CreateFromLoadedModule();
         }
@@ -233,7 +233,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                     m_stringRedirectionOutput
                 );
 
-            auto redirection = LoggingHelpers::StartStdOutRedirection(*redirectionOutput.get());
+            StandardStreamRedirection redirection(*redirectionOutput.get());
 
             context->m_redirectionOutput = redirectionOutput.get();
 
@@ -425,7 +425,7 @@ IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrCont
         // We use forwarder here instead of context->m_errorWriter itself to be able to
         // disconnect listener before CLR exits
         ForwardingRedirectionOutput redirectionForwarder(&context->m_redirectionOutput);
-        const auto redirect = context->m_hostFxr.RedirectOutput(redirectionForwarder);
+        const auto redirect = context->m_hostFxr.RedirectOutput(&redirectionForwarder);
 
         ExecuteClr(context);
     }

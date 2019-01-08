@@ -74,7 +74,7 @@ private:
     RedirectionOutput** m_target;
 };
 
-class StringStreamRedirectionOutput: public RedirectionOutput
+class StringStreamRedirectionOutput: NonCopyable, public RedirectionOutput
 {
 public:
     StringStreamRedirectionOutput();
@@ -87,6 +87,7 @@ public:
     }
 
 private:
+    // Logs collected by this output are mostly used for Event Log messages where size limit is 32K
     std::size_t m_charactersLeft = 30000;
     std::wstringstream m_output;
     SRWLOCK m_srwLock{};

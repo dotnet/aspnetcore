@@ -4,21 +4,15 @@
 #pragma once
 
 #include "NonCopyable.h"
-#include "PipeOutputManager.h"
+#include "StandardStreamRedirection.h"
 
 class LoggingHelpers
 {
 public:
 
-    static
-    PipeOutputManager
-    StartStdOutRedirection(
-        RedirectionOutput& output
-    );
-
     static std::shared_ptr<RedirectionOutput>
     CreateOutputs(
-        bool enableLogging,
+        bool enableFileLogging,
         std::wstring outputFileName,
         std::wstring applicationPath,
         std::shared_ptr<RedirectionOutput> stringStreamOutput

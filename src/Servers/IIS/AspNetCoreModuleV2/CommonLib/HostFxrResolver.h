@@ -65,7 +65,6 @@ private:
         const std::filesystem::path & dotnetPath
     );
 
-
     static
     std::optional<std::filesystem::path>
     InvokeWhereToFindDotnet();

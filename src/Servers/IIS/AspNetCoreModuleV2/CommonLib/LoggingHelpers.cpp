@@ -3,28 +3,18 @@
 
 #include "stdafx.h"
 #include "LoggingHelpers.h"
-#include "PipeOutputManager.h"
+#include "StandardStreamRedirection.h"
 #include "exceptions.h"
-#include "debugutil.h"
-
-PipeOutputManager
-LoggingHelpers::StartStdOutRedirection(
-    RedirectionOutput& output
-)
-{
-    LOG_INFOF(L"Redirecting stdout/stderr to a pipe.");
-    return PipeOutputManager(output);
-}
 
 std::shared_ptr<RedirectionOutput> LoggingHelpers::CreateOutputs(
-    bool enableLogging,
+    bool enableFileLogging,
     std::wstring outputFileName,
     std::wstring applicationPath,
     std::shared_ptr<RedirectionOutput> stringStreamOutput)
 {
     auto stdOutOutput = std::make_shared<StandardOutputRedirectionOutput>();
     std::shared_ptr<RedirectionOutput> fileOutput;
-    if (enableLogging)
+    if (enableFileLogging)
     {
         fileOutput = std::make_shared<FileRedirectionOutput>(applicationPath, outputFileName);
     }

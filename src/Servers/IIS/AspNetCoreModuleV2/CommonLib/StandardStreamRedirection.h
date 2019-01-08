@@ -4,20 +4,19 @@
 #pragma once
 
 #include "RedirectionOutput.h"
-#include "EventLog.h"
 #include "StdWrapper.h"
 #include "ModuleHelpers.h"
 
-class PipeOutputManager: NonCopyable
+class StandardStreamRedirection : NonCopyable
 {
     // Timeout to be used if a thread never exits
     #define PIPE_OUTPUT_THREAD_TIMEOUT 2000
     #define PIPE_READ_SIZE 4096
 
 public:
-    PipeOutputManager(RedirectionOutput& output);
+    StandardStreamRedirection(RedirectionOutput& output);
 
-    ~PipeOutputManager() noexcept(false);
+    ~StandardStreamRedirection() noexcept(false);
 
     void Start();
     void Stop();
