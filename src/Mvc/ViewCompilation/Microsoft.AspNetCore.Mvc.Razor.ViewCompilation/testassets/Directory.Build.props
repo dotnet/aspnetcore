@@ -2,11 +2,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <DeveloperBuildTestWebsiteTfms>netcoreapp2.1</DeveloperBuildTestWebsiteTfms>
-    <StandardTestAppTfms>$(DeveloperBuildTestWebsiteTfms)</StandardTestAppTfms>
-    <StandardTestAppTfms Condition=" '$(DeveloperBuild)' != 'true' ">netcoreapp2.1</StandardTestAppTfms>
-    <StandardTestAppTfms Condition=" '$(DeveloperBuild)' != 'true' AND '$(OS)' == 'Windows_NT' ">$(StandardTestWebsiteTfms);net461</StandardTestAppTfms>
-
     <!-- Override some repo-level properties not required for tests. -->
     <Version>1.0.0</Version>
     <SignAssembly>false</SignAssembly>

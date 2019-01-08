@@ -5,7 +5,7 @@
     <_MvcViewCompilationAddDesktopReferences>false</_MvcViewCompilationAddDesktopReferences>
     <TestIncludeViewCompilationTargets Condition="'$(TestIncludeViewCompilationTargets)'==''">$(MvcRazorCompileOnPublish)</TestIncludeViewCompilationTargets>
     <SolutionConfiguration Condition="'$(SolutionConfiguration)'==''">$(Configuration)</SolutionConfiguration>
-    <_MvcViewCompilationTasksPath>$(MSBuildThisFileDirectory)..\src\bin\$(SolutionConfiguration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll</_MvcViewCompilationTasksPath>
+    <_MvcViewCompilationTasksPath>$(MSBuildThisFileDirectory)..\..\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\bin\$(SolutionConfiguration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll</_MvcViewCompilationTasksPath>
   </PropertyGroup>
 
   <Import Project="..\src\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
