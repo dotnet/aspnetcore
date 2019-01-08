@@ -20,7 +20,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         [Theory]
         [InlineData(ApplicationType.Portable)]
         [InlineData(ApplicationType.Standalone)]
-        public async Task DefaultAILogFiltersApplied(pplicationType applicationType)
+        public async Task DefaultAILogFiltersApplied(ApplicationType applicationType)
         {
             var responseText = await RunRequest(applicationType, "DefaultLogging");
 

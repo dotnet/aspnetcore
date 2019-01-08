@@ -2,10 +2,6 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <StandardTestAppTfms>netcoreapp2.1;net461</StandardTestAppTfms>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <!-- Override some repo-level properties not required for tests. -->
     <Version>1.0.0</Version>
     <SignAssembly>false</SignAssembly>

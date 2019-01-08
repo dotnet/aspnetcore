@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             {
                 ApplicationBaseUriHint = baseUrl,
                 ApplicationType = ApplicationType.Portable,
-
+                TargetFramework = "netcoreapp2.1",
                 EnvironmentName = environment,
                 SiteName = "HttpTestSite", // This is configured in the Http.config
                 ServerConfigTemplateContent = (server == ServerType.IISExpress) ? File.ReadAllText(configPath) : null,
