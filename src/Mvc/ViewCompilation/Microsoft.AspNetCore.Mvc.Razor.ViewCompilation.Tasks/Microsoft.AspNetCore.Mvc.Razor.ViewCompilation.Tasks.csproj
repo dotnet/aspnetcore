@@ -8,7 +8,6 @@
 
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <IsImplementationProject>false</IsImplementationProject>
-    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>

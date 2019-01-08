@@ -2,7 +2,7 @@
 ASP.NET Core MVC Precompilation
 ===
 
-## NOTE: This repo is solely for maintenance of the existing MVC precompilation feature. Future work on Razor compilation is now being handled in the [Razor](https://github.com/aspnet/razor) repo. See [aspnet/Razor#1740](https://github.com/aspnet/Razor/issues/1740) for additional details.
+## NOTE: This project is solely for maintenance of the existing MVC precompilation feature. Future work on Razor compilation is now being handled in the [Razor](https://github.com/aspnet/razor) repo. See [aspnet/Razor#1740](https://github.com/aspnet/Razor/issues/1740) for additional details.
 
 The Razor syntax provides a fast, terse, clean, and lightweight way to combine server code with HTML to create dynamic web content. This repo contains tooling that allows compilation of MVC Razor views as part of build and publish.
 

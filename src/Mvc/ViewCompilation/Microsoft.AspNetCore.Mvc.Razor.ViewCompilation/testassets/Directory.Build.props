@@ -1,10 +1,7 @@
 <Project>
-  <!-- Skip the parent folder to prevent getting test package references. -->
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.props))\Directory.Build.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Required to build test asset projects -->
-    <IsTestAssetProject>true</IsTestAssetProject>
     <DeveloperBuildTestWebsiteTfms>netcoreapp2.1</DeveloperBuildTestWebsiteTfms>
     <StandardTestAppTfms>$(DeveloperBuildTestWebsiteTfms)</StandardTestAppTfms>
     <StandardTestAppTfms Condition=" '$(DeveloperBuild)' != 'true' ">netcoreapp2.1</StandardTestAppTfms>

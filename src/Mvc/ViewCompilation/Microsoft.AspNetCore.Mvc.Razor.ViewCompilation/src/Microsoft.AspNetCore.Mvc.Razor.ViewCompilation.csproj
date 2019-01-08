@@ -7,7 +7,7 @@
     <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>exe</OutputType>
-    <TasksProjectDirectory>..\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\</TasksProjectDirectory>
+    <TasksProjectDirectory>..\..\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\</TasksProjectDirectory>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnableApiCheck>false</EnableApiCheck>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
