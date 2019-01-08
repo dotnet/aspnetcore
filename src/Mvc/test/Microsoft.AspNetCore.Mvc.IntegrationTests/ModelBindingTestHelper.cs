@@ -193,7 +193,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             serviceCollection.AddMvc();
             serviceCollection
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>();
 

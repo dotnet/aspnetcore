@@ -195,7 +195,6 @@ namespace Microsoft.AspNetCore.Routing
             services.AddLogging();
             services.AddRouting();
             services
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<UrlEncoder>(UrlEncoder.Default);
             services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(new DefaultEndpointDataSource(endpoints)));
             return services.BuildServiceProvider();

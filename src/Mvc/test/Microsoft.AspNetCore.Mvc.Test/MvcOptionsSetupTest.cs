@@ -269,7 +269,6 @@ namespace Microsoft.AspNetCore.Mvc
             serviceCollection.AddSingleton<DiagnosticListener>(diagnosticListener);
             serviceCollection.AddMvc();
             serviceCollection
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddTransient<ILoggerFactory, LoggerFactory>();
 
             if (action != null)
