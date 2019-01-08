@@ -277,7 +277,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
-        HttpContext IHttpContextContainer.HttpContext => _httpContext;
+        HttpContext IHttpContextContainer.HttpContext
+        {
+            get
+            {
+                if (_httpContext is null)
+                {
+                    _httpContext = new ReusableHttpContext(this);
+                }
+                else
+                {
+                    _httpContext.Initialize(this);
+                }
+
+                return _httpContext;
+            }
+        }
 
         public void InitializeStreams(MessageBody messageBody)
         {
@@ -540,16 +555,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 IsUpgradableRequest = messageBody.RequestUpgrade;
 
                 InitializeStreams(messageBody);
-
-                // Initialize the HttpContext before we call into the IHttpApplication
-                if (_httpContext is null)
-                {
-                    _httpContext = new ReusableHttpContext(this);
-                }
-                else
-                {
-                    _httpContext.Initialize(this);
-                }
 
                 var context = application.CreateContext(this);
 
