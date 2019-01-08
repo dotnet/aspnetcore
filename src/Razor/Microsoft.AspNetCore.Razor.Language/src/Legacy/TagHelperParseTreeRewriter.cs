@@ -144,8 +144,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         // Non-TagHelper tag.
                         ValidateParentAllowsPlainStartTag(startTag);
 
-                        if (!startTag.IsSelfClosing() && !startTag.IsVoidElement())
+                        if (node.EndTag != null || (!startTag.IsSelfClosing() && !startTag.IsVoidElement()))
                         {
+                            // Ideally we don't want to keep track of self-closing or void tags.
+                            // But if a matching end tag exists, keep track of the start tag no matter what.
+                            // We will just assume the parser had a good reason to do this.
                             var tracker = new TagTracker(tagName, isTagHelper: false);
                             _trackerStack.Push(tracker);
                         }
