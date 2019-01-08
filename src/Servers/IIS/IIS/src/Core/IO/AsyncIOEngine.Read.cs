@@ -58,6 +58,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             {
                 _inputHandle.Dispose();
             }
+
+            protected override bool IsSuccessfulResult(int hr) => hr == NativeMethods.ERROR_HANDLE_EOF;
         }
     }
 }

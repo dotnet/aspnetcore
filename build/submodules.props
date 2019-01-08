@@ -36,7 +36,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="AzureIntegration" />
     <Repository Include="Components" />
     <Repository Include="SignalR" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />

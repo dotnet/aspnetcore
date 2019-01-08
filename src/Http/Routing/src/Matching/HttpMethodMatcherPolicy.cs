@@ -1,13 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
@@ -274,7 +271,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 (context) =>
                 {
                     context.Response.StatusCode = 405;
-                    context.Response.Headers.Add("Allow", allow);
+
+                    // Prevent ArgumentException from duplicate key if header already added, such as when the
+                    // request is re-executed by an error handler (see https://github.com/aspnet/AspNetCore/issues/6415)
+                    context.Response.Headers["Allow"] = allow;
+
                     return Task.CompletedTask;
                 },
                 EndpointMetadataCollection.Empty,

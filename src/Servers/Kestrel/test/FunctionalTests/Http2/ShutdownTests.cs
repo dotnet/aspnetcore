@@ -56,13 +56,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
                 .Callback(() => requestStopping.SetResult(null));
 
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
+
+            testContext.InitializeHeartbeat();
+
             using (var server = new TestServer(async context =>
             {
                 requestStarted.SetResult(null);
                 await requestUnblocked.Task.DefaultTimeout();
                 await context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
-            new TestServiceContext(LoggerFactory, mockKestrelTrace.Object),
+            testContext,
             kestrelOptions =>
             {
                 kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
