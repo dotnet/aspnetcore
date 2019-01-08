@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
         /// This method is not intended for direct use. Its sole purpose is to allow
         /// the service to be started by the tests.
         /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
         internal void Start() => OnStart(Array.Empty<string>());
 
         protected sealed override void OnStart(string[] args)
