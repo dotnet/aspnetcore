@@ -14,7 +14,7 @@
     <EmbeddedResource Include="Resources\*" />
     <Compile Include="Infrastructure\*.cs" />
     <Compile Include="DesktopTests\*.cs" Condition="'$(TargetFramework)'=='net461'" />
-    <Compile Include="CoreCLRTests\*.cs" Condition="'$(TargetFramework)'=='netcoreapp2.0' OR '$(TargetFramework)'=='netcoreapp2.1'" />
+    <Compile Include="CoreCLRTests\*.cs" Condition="'$(TargetFramework)'=='netcoreapp2.1'" />
   </ItemGroup>
 
   <ItemGroup>

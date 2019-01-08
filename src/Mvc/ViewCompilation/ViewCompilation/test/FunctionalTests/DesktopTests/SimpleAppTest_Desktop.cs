@@ -25,7 +25,7 @@ namespace FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip="Doesn't work on full framework: https://github.com/aspnet/AspNetCore/issues/6499")]
         public async Task Precompilation_WorksForSimpleApps()
         {
             using (StartLog(out var loggerFactory))
