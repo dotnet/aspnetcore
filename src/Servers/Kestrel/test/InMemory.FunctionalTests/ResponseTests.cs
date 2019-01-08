@@ -104,10 +104,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ResponseBodyWriteAsyncCanBeCancelled()
         {
             var serviceContext = new TestServiceContext(LoggerFactory);
-            serviceContext.ServerOptions.Limits.MaxResponseBufferSize = 5;
             var cts = new CancellationTokenSource();
             var appTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var writeStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writeBlockedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async context =>
             {
@@ -115,21 +114,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await context.Response.WriteAsync("hello", cts.Token).DefaultTimeout();
 
-                    var task = context.Response.WriteAsync("world", cts.Token);
-                    Assert.False(task.IsCompleted);
+                    var data = new byte[1024 * 1024 * 10];
 
-                    writeStartedTcs.TrySetResult(null);
+                    var timerTask = Task.Delay(TimeSpan.FromSeconds(1));
+                    var writeTask = context.Response.Body.WriteAsync(data, 0, data.Length, cts.Token).DefaultTimeout();
+                    var completedTask = await Task.WhenAny(writeTask, timerTask);
 
-                    await task.DefaultTimeout();
+                    while (completedTask == writeTask)
+                    {
+                        await writeTask;
+                        timerTask = Task.Delay(TimeSpan.FromSeconds(1));
+                        writeTask = context.Response.Body.WriteAsync(data, 0, data.Length, cts.Token).DefaultTimeout();
+                        completedTask = await Task.WhenAny(writeTask, timerTask);
+                    }
+
+                    writeBlockedTcs.TrySetResult(null);
+
+                    await writeTask;
                 }
                 catch (Exception ex)
                 {
                     appTcs.TrySetException(ex);
+                    writeBlockedTcs.TrySetException(ex);
                 }
                 finally
                 {
                     appTcs.TrySetResult(null);
-                    writeStartedTcs.TrySetCanceled();
                 }
             }, serviceContext))
             {
@@ -148,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "5",
                         "hello");
 
-                    await writeStartedTcs.Task.DefaultTimeout();
+                    await writeBlockedTcs.Task.DefaultTimeout();
 
                     cts.Cancel();
 
