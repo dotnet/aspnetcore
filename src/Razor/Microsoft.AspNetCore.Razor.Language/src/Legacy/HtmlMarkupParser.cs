@@ -1591,6 +1591,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var node = tagBlock.Attributes[i];
 
                 if (node is MarkupAttributeBlockSyntax attributeBlock &&
+                    attributeBlock.Value != null &&
                     attributeBlock.Value.Children.Count > 0 &&
                     IsTypeAttribute(attributeBlock))
                 {
