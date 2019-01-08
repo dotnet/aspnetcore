@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             var hostEnv = (IHostingEnvironment) serviceProvider.GetService(typeof(IHostingEnvironment));
             _nodeServices = (INodeServices) serviceProvider.GetService(typeof(INodeServices)) ?? _fallbackNodeServices;
             _applicationBasePath = hostEnv.ContentRootPath;
-            
+
             var applicationLifetime = (IApplicationLifetime) serviceProvider.GetService(typeof(IApplicationLifetime));
             _applicationStoppingToken = applicationLifetime.ApplicationStopping;
 
@@ -101,8 +101,10 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
 
             if (!string.IsNullOrEmpty(result.RedirectUrl))
             {
+                var permanentRedirect = result?.StatusCode == 301;
+
                 // It's a redirection
-                ViewContext.HttpContext.Response.Redirect(result.RedirectUrl);
+                ViewContext.HttpContext.Response.Redirect(result.RedirectUrl, permanentRedirect);
                 return;
             }
 
