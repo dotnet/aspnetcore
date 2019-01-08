@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -418,6 +419,21 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
 
             throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
+        }
+
+        protected override string GenerateChallengeLogData(AuthenticationProperties properties)
+        {
+            var location = Context.Response.Headers["Location"];
+            if (location == StringValues.Empty)
+            {
+                location = "not set";
+            }
+            var cookie = Context.Response.Headers["Set-Cookie"];
+            if (cookie == StringValues.Empty)
+            {
+                cookie = "not set";
+            }
+            return String.Format($"Location: [{location}] Set-Cookie: [{cookie}]");
         }
 
         /// <summary>

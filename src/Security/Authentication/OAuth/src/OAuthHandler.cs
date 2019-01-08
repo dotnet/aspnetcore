@@ -217,6 +217,21 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
         }
 
+        protected override string GenerateChallengeLogData(AuthenticationProperties properties)
+        {
+            var location = Context.Response.Headers["Location"];
+            if (location == StringValues.Empty)
+            {
+                location = "not set";
+            }
+            var cookie = Context.Response.Headers["Set-Cookie"];
+            if (cookie == StringValues.Empty)
+            {
+                cookie = "not set";
+            }
+            return String.Format($"Location: [{location}] Set-Cookie: [{cookie}]");
+        }
+
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)
         {
             var scopeParameter = properties.GetParameter<ICollection<string>>(OAuthChallengeProperties.ScopeKey);
