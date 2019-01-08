@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(Configuration)' == 'RuntimeStore' ">
-    <Reference Include="Microsoft.AspNetCore.All" />
+    <Reference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' OR '$(Configuration)' != 'RuntimeStore' ">

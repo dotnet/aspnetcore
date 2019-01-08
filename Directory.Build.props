@@ -105,13 +105,6 @@
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
 
-    <IncludeSource>false</IncludeSource>
-    <IncludeSymbols>true</IncludeSymbols>
-
-    <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
-    <GoogleTestSubmoduleRoot>$(RepositoryRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
-
-    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <DisableDeterministicSourceRoot Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">true</DisableDeterministicSourceRoot>
   </PropertyGroup>
 
