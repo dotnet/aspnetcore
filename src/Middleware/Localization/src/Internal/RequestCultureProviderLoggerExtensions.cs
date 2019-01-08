@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Localization.Internal
         {
             _unsupportedCulture = LoggerMessage.Define<string, IList<StringSegment>>(
                 LogLevel.Warning,
-                1,
+                 new EventId (1, "UnsupportedCulture"),
                 "{requestCultureProvider} returned the following unsupported cultures '{cultures}'.");
             _unsupportedUICulture = LoggerMessage.Define<string, IList<StringSegment>>(
                 LogLevel.Warning,
-                2,
+                 new EventId(2, "UnsupportedUICulture"),
                 "{requestCultureProvider} returned the following unsupported UI Cultures '{uiCultures}'.");
         }
 
