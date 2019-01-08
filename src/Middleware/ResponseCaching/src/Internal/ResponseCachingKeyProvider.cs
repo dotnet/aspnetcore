@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 throw new InvalidOperationException($"{nameof(CachedVaryByRules)} must not be null on the {nameof(ResponseCachingContext)}");
             }
 
-            if ((StringValues.IsNullOrEmpty(varyByRules.Headers) && StringValues.IsNullOrEmpty(varyByRules.QueryKeys)))
+            if (StringValues.IsNullOrEmpty(varyByRules.Headers) && StringValues.IsNullOrEmpty(varyByRules.QueryKeys))
             {
                 return varyByRules.VaryByKeyPrefix;
             }
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         private class QueryKeyComparer : IComparer<KeyValuePair<string, StringValues>>
         {
-            private StringComparer _stringComparer;
+            private readonly StringComparer _stringComparer;
 
             public static QueryKeyComparer OrdinalIgnoreCase { get; } = new QueryKeyComparer(StringComparer.OrdinalIgnoreCase);
 

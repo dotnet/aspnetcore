@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         // Instance components
         private string _idString;
-        internal long IdValue { get; private set; }
+
+        internal long IdValue { get; }
 
         internal string IdString
         {
