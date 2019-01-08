@@ -122,6 +122,8 @@ namespace Microsoft.AspNetCore.Http.Features
             var provider = new RequestBodyPipeFeature(context);
 
             var pipeBody = provider.RequestBodyPipe;
+
+            // TODO.
         }
 
         private RequestBodyPipeFeature InitializeFeatureWithData(string input)
@@ -142,7 +144,5 @@ namespace Microsoft.AspNetCore.Http.Features
             await pipe.Writer.WriteAsync(Encoding.ASCII.GetBytes(input));
             return pipe.Reader;
         }
-        // Check for double set
-        // Check for if object is disposed or not (tricky)
     }
 }
