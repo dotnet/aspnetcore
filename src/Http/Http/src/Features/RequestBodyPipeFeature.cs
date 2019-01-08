@@ -30,11 +30,8 @@ namespace Microsoft.AspNetCore.Http.Features
                     return _userSetPipeReader;
                 }
 
-                if (_internalPipeReader == null)
-                {
-                    _internalPipeReader = new StreamPipeReader(_context.Request.Body);
-                }
-                else if (!object.ReferenceEquals(_internalPipeReader.InnerStream, _context.Request.Body))
+                if (_internalPipeReader == null ||
+                    !object.ReferenceEquals(_internalPipeReader.InnerStream, _context.Request.Body))
                 {
                     _internalPipeReader = new StreamPipeReader(_context.Request.Body);
                     _context.Response.RegisterForDispose(_internalPipeReader);

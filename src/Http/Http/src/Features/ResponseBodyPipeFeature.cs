@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 throw new ArgumentNullException(nameof(context));
             }
-
             _context = context;
         }
 
@@ -31,12 +30,8 @@ namespace Microsoft.AspNetCore.Http.Features
                     return _userSetPipeWriter;
                 }
 
-                if (_internalPipeWriter == null)
-                {
-                    var streamPipeWriter = new StreamPipeWriter(_context.Response.Body);
-                    _internalPipeWriter = streamPipeWriter;
-                }
-                else if (!object.ReferenceEquals(_internalPipeWriter.InnerStream, _context.Response.Body))
+                if (_internalPipeWriter == null ||
+                    !object.ReferenceEquals(_internalPipeWriter.InnerStream, _context.Response.Body))
                 {
                     _internalPipeWriter = new StreamPipeWriter(_context.Response.Body);
                     _context.Response.RegisterForDispose(_internalPipeWriter);
@@ -47,6 +42,7 @@ namespace Microsoft.AspNetCore.Http.Features
             set
             {
                 _userSetPipeWriter = value ?? throw new ArgumentNullException(nameof(value));
+                // TODO set the response body Stream to an adapted pipe https://github.com/aspnet/AspNetCore/issues/3971
             }
         }
     }
