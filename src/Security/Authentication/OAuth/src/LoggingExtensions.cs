@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Logging
             _handleChallenge = LoggerMessage.Define<string, string>(
                 eventId: new EventId(1, "HandleChallenge"),
                 logLevel: LogLevel.Debug,
-                formatString: "HandleChallenge with Location {Location} and Set-Cookie {Cookie}.");
+                formatString: "HandleChallenge with Location: {Location}; and Set-Cookie: {Cookie}.");
         }
 
         public static void HandleChallenge(this ILogger logger, string location, string cookie)
