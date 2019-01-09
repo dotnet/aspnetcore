@@ -225,6 +225,7 @@
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="NullOutputManager.h" />
     <ClInclude Include="PipeOutputManager.h" />
+    <ClInclude Include="RegistryKey.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="ServerErrorApplication.h" />
@@ -253,6 +254,7 @@
     <ClCompile Include="hostfxroptions.cpp" />
     <ClCompile Include="LoggingHelpers.cpp" />
     <ClCompile Include="PipeOutputManager.cpp" />
+    <ClCompile Include="RegistryKey.cpp" />
     <ClCompile Include="StdWrapper.cpp" />
     <ClCompile Include="SRWExclusiveLock.cpp" />
     <ClCompile Include="SRWSharedLock.cpp" />
