@@ -14,4 +14,9 @@ public:
 
     static
     std::optional<std::wstring> TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName, DWORD flags = 0);
+
+private:
+    static
+    bool
+    CheckReturnValue(int errorCode);
 };

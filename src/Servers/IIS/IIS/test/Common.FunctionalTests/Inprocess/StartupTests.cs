@@ -122,18 +122,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             // Key is always in 32bit view
             using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
-            using (new TestRegistryKey(
-                localMachine,
-                "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
-                "InstallLocation",
-                DotNetCommands.GetDotNetExecutable(runtimeArchitecture)))
             {
-                var deploymentResult = await DeployAsync(deploymentParameters);
-                await deploymentResult.AssertStarts();
-
-                StopServer();
-                // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
-                Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
+                var installDir = DotNetCommands.GetDotNetInstallDir(runtimeArchitecture);
+                using (new TestRegistryKey(
+                    localMachine,
+                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
+                    "InstallLocation",
+                    installDir))
+                {
+                    var deploymentResult = await DeployAsync(deploymentParameters);
+                    await deploymentResult.AssertStarts();
+                    StopServer();
+                    // Verify that in this scenario dotnet.exe was found using InstallLocation lookup
+                    // I would've liked to make a copy of dotnet directory in this test and use it for verification
+                    // but dotnet roots are usually very large on dev machines so this test would take disproportionally long time and disk space
+                    Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains($"Found dotnet.exe in InstallLocation at '{installDir}\\dotnet.exe'")));
+                }
             }
         }
 
