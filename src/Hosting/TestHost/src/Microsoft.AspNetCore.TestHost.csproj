@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core web server for writing and running tests.</Description>
@@ -10,11 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Hosting.WebHostBuilderFactory\**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 

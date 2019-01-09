@@ -11,10 +11,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.TestHost" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
   <ItemGroup>

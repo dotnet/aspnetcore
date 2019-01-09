@@ -8,8 +8,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Mvc.Testing
 {
@@ -22,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     {
         private bool _disposed;
         private TestServer _server;
+        private IHost _host;
         private Action<IWebHostBuilder> _configuration;
         private IList<HttpClient> _clients = new List<HttpClient>();
         private List<WebApplicationFactory<TEntryPoint>> _derivedFactories =
@@ -119,6 +123,21 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             EnsureDepsFile();
 
+            var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)?.Invoke(Array.Empty<string>());
+            if (hostBuilder != null)
+            {
+                hostBuilder.ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder.UseEnvironment("Development");
+                    SetContentRoot(webHostBuilder);
+                    _configuration(webHostBuilder);
+                    webHostBuilder.UseTestServer();
+                });
+                _host = hostBuilder.Build();
+                _host.Start();
+                _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+                return;
+            }
 
             var builder = CreateWebHostBuilder();
             SetContentRoot(builder);
@@ -425,6 +444,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 }
 
                 _server?.Dispose();
+                _host?.Dispose();
             }
 
             _disposed = true;
