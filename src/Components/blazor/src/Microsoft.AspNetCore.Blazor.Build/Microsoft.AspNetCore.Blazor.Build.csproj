@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <Description>Build mechanism for ASP.NET Core Components.</Description>
+    <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IsProductPackage>true</IsProductPackage>
@@ -11,7 +11,7 @@
   <!-- Pack settings -->
   <PropertyGroup>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <NuspecFile>Microsoft.AspNetCore.Components.Build.nuspec</NuspecFile>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
     <IntermediatePackDir>obj\publish\</IntermediatePackDir>
     <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
   </PropertyGroup>
@@ -20,7 +20,7 @@
     <!-- Assemblies built by this project -->
     <SignedPackageFile Include="$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
     <SignedPackageFile Include="Microsoft.AspNetCore.Components.Browser.JS.dll" Certificate="$(AssemblySigningCertName)" />
-    <SignedPackageFile Include="Microsoft.AspNetCore.Components.Build.exe" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Blazor.Build.exe" Certificate="$(AssemblySigningCertName)" />
 
     <!-- 3rd party assemblies we redistribute. -->
     <SignedPackageFile Include="AngleSharp.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
@@ -61,8 +61,8 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
 
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(AspNetCorePackageVersion)" />

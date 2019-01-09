@@ -2,7 +2,7 @@
 
   <!--
   Importing this file is equivalent to having:
-    <PackageDependency Include="Microsoft.AspNetCore.Components.Build" />
+    <PackageDependency Include="Microsoft.AspNetCore.Blazor.Build" />
   ... except it's much more convenient when working in this repo, because it consumes the
   Blazor.Build targets/exe directly without needing this project to be packed into a .nupkg.
 
@@ -11,13 +11,13 @@
 
   <PropertyGroup>
     <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
-    <BlazorJsPath>$(MSBuildThisFileDirectory)../Microsoft.AspNetCore.Components.Browser.JS/dist/blazor.*.js</BlazorJsPath>
+    <BlazorJsPath>$(MSBuildThisFileDirectory)../../../src/Microsoft.AspNetCore.Components.Browser.JS/dist/blazor.*.js</BlazorJsPath>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
   <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
 
-  <!-- 
+  <!--
     Debugging support using dotnet-blazor serve.
 
     A few things to note here:
@@ -27,8 +27,8 @@
    -->
   <PropertyGroup>
     <RunCommand>dotnet</RunCommand>
-    <_BlazorCliLocation>$(MSBuildThisFileDirectory)../../blazor/src/Microsoft.AspNetCore.Blazor.Cli/bin/$(Configuration)/netcoreapp3.0/dotnet-blazor.dll </_BlazorCliLocation>
-    <RunArguments>exec $(_BlazorCliLocation) serve $(AdditionalRunArguments)</RunArguments>
+    <_BlazorCliLocation>$(MSBuildThisFileDirectory)../Microsoft.AspNetCore.Blazor.Cli/bin/$(Configuration)/netcoreapp3.0/dotnet-blazor.dll</_BlazorCliLocation>
+    <RunArguments>exec &quot;$(_BlazorCliLocation)&quot; serve $(AdditionalRunArguments)</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +40,7 @@
     <!-- Ensures these projects are built before the consuming project, but without
          adding a runtime dependency on the .dll (to be equivalent to a <PackageDependency>
          given that the packed version of this project wouldn't add a .dll reference) -->
-    <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Components.Build.csproj">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <!-- Optimization. Do not require framework compatibility between these projects. -->
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
