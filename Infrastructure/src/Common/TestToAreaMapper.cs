@@ -43,6 +43,7 @@ namespace Common
                 ("Templates", "area-tools"),
                 ("Microsoft.DotNet.Watcher", "area-tools"),
                 ("Microsoft.AspNetCore.Identity", "area-identity"),
+                ("Microsoft.VisualStudio.Editor.Razor", "area-mvc"),
 
                 // Tools
                 ("Microsoft.VisualStudio.Web.CodeGeneration", "area-webtools"),
