@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class FormOptions
     {
-        public static readonly FormOptions Default = new FormOptions();
+        internal static readonly FormOptions Default = new FormOptions();
 
         public const int DefaultMemoryBufferThreshold = 1024 * 64;
         public const int DefaultBufferBodyLengthLimit = 1024 * 1024 * 128;
