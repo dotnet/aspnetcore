@@ -86,7 +86,7 @@ get_korebuild() {
             tmpfile="$(mktemp)"
             echo -e "${MAGENTA}Downloading KoreBuild ${version}${RESET}"
             if __get_remote_file "$remote_path" "$tmpfile"; then
-                unzip -q -d "$korebuild_path" "$tmpfile"
+                tar -C "$korebuild_path" -xf "$tmpfile"
             fi
             rm "$tmpfile" || true
         fi
@@ -213,11 +213,6 @@ while [[ $# -gt 0 ]]; do
     esac
     shift
 done
-
-if ! __machine_has unzip; then
-    __error 'Missing required command: unzip'
-    exit 1
-fi
 
 if ! __machine_has curl && ! __machine_has wget; then
     __error 'Missing required command. Either wget or curl is required.'
