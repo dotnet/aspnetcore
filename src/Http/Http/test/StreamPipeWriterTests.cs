@@ -369,6 +369,7 @@ namespace System.IO.Pipelines.Tests
             return 0;
         }
 
+        // Keeping as this code will eventually be ported to corefx
 #if NETCOREAPP3_0
         public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
@@ -384,7 +385,8 @@ namespace System.IO.Pipelines.Tests
 
         public bool AllowAllWrites { get; set; }
 
- #if NETCOREAPP3_0
+        // Keeping as this code will eventually be ported to corefx
+#if NETCOREAPP3_0
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             try

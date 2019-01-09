@@ -112,20 +112,6 @@ namespace Microsoft.AspNetCore.Http.Features
             Assert.Equal(expectedString, GetStringFromReadResult(data));
         }
 
-        [Fact]
-        public void RequestBodyCheckObjectRegisteredForDispose()
-        {
-            var context = new DefaultHttpContext();
-            var expectedStream = new MemoryStream();
-            context.Request.Body = expectedStream;
-
-            var provider = new RequestBodyPipeFeature(context);
-
-            var pipeBody = provider.RequestBodyPipe;
-
-            // TODO.
-        }
-
         private RequestBodyPipeFeature InitializeFeatureWithData(string input)
         {
             var context = new DefaultHttpContext();

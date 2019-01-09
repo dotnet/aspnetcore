@@ -647,6 +647,7 @@ namespace System.IO.Pipelines.Tests
                 await Task.Yield();
                 return await base.ReadAsync(buffer, offset, count, cancellationToken);
             }
+
             // Keeping as this code will eventually be ported to corefx
 #if NETCOREAPP3_0
             public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
