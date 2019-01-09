@@ -39,7 +39,7 @@
 
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(OS)' == 'Windows_NT'">
     <ItemGroup>
-      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.HandlerPath)\%(ShimComponents.NativeAsset).dll" />
+      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
 
