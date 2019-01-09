@@ -12,35 +12,35 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     /// </summary>
     internal static class LoggerExtensions
     {
-        private static Action<ILogger, string, Exception> _requestMethodNotCacheable;
-        private static Action<ILogger, Exception> _requestWithAuthorizationNotCacheable;
-        private static Action<ILogger, Exception> _requestWithNoCacheNotCacheable;
-        private static Action<ILogger, Exception> _requestWithPragmaNoCacheNotCacheable;
-        private static Action<ILogger, TimeSpan, Exception> _expirationMinFreshAdded;
-        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _expirationSharedMaxAgeExceeded;
-        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _expirationMustRevalidate;
-        private static Action<ILogger, TimeSpan, TimeSpan, TimeSpan, Exception> _expirationMaxStaleSatisfied;
-        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _expirationMaxAgeExceeded;
-        private static Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _expirationExpiresExceeded;
-        private static Action<ILogger, Exception> _responseWithoutPublicNotCacheable;
-        private static Action<ILogger, Exception> _responseWithNoStoreNotCacheable;
-        private static Action<ILogger, Exception> _responseWithNoCacheNotCacheable;
-        private static Action<ILogger, Exception> _responseWithSetCookieNotCacheable;
-        private static Action<ILogger, Exception> _responseWithVaryStarNotCacheable;
-        private static Action<ILogger, Exception> _responseWithPrivateNotCacheable;
-        private static Action<ILogger, int, Exception> _responseWithUnsuccessfulStatusCodeNotCacheable;
-        private static Action<ILogger, Exception> _notModifiedIfNoneMatchStar;
-        private static Action<ILogger, EntityTagHeaderValue, Exception> _notModifiedIfNoneMatchMatched;
-        private static Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _notModifiedIfModifiedSinceSatisfied;
-        private static Action<ILogger, Exception> _notModifiedServed;
-        private static Action<ILogger, Exception> _cachedResponseServed;
-        private static Action<ILogger, Exception> _gatewayTimeoutServed;
-        private static Action<ILogger, Exception> _noResponseServed;
-        private static Action<ILogger, string, string, Exception> _varyByRulesUpdated;
-        private static Action<ILogger, Exception> _responseCached;
-        private static Action<ILogger, Exception> _responseNotCached;
-        private static Action<ILogger, Exception> _responseContentLengthMismatchNotCached;
-        private static Action<ILogger, TimeSpan, TimeSpan, Exception> _expirationInfiniteMaxStaleSatisfied;
+        private static readonly Action<ILogger, string, Exception> _requestMethodNotCacheable;
+        private static readonly Action<ILogger, Exception> _requestWithAuthorizationNotCacheable;
+        private static readonly Action<ILogger, Exception> _requestWithNoCacheNotCacheable;
+        private static readonly Action<ILogger, Exception> _requestWithPragmaNoCacheNotCacheable;
+        private static readonly Action<ILogger, TimeSpan, Exception> _expirationMinFreshAdded;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, Exception> _expirationSharedMaxAgeExceeded;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, Exception> _expirationMustRevalidate;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, TimeSpan, Exception> _expirationMaxStaleSatisfied;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, Exception> _expirationMaxAgeExceeded;
+        private static readonly Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _expirationExpiresExceeded;
+        private static readonly Action<ILogger, Exception> _responseWithoutPublicNotCacheable;
+        private static readonly Action<ILogger, Exception> _responseWithNoStoreNotCacheable;
+        private static readonly Action<ILogger, Exception> _responseWithNoCacheNotCacheable;
+        private static readonly Action<ILogger, Exception> _responseWithSetCookieNotCacheable;
+        private static readonly Action<ILogger, Exception> _responseWithVaryStarNotCacheable;
+        private static readonly Action<ILogger, Exception> _responseWithPrivateNotCacheable;
+        private static readonly Action<ILogger, int, Exception> _responseWithUnsuccessfulStatusCodeNotCacheable;
+        private static readonly Action<ILogger, Exception> _notModifiedIfNoneMatchStar;
+        private static readonly Action<ILogger, EntityTagHeaderValue, Exception> _notModifiedIfNoneMatchMatched;
+        private static readonly Action<ILogger, DateTimeOffset, DateTimeOffset, Exception> _notModifiedIfModifiedSinceSatisfied;
+        private static readonly Action<ILogger, Exception> _notModifiedServed;
+        private static readonly Action<ILogger, Exception> _cachedResponseServed;
+        private static readonly Action<ILogger, Exception> _gatewayTimeoutServed;
+        private static readonly Action<ILogger, Exception> _noResponseServed;
+        private static readonly Action<ILogger, string, string, Exception> _varyByRulesUpdated;
+        private static readonly Action<ILogger, Exception> _responseCached;
+        private static readonly Action<ILogger, Exception> _responseNotCached;
+        private static readonly Action<ILogger, Exception> _responseContentLengthMismatchNotCached;
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, Exception> _expirationInfiniteMaxStaleSatisfied;
 
         static LoggerExtensions()
         {

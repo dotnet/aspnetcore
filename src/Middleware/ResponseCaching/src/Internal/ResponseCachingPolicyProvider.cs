@@ -47,7 +47,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             else
             {
                 // Support for legacy HTTP 1.0 cache directive
-                var pragmaHeaderValues = request.Headers[HeaderNames.Pragma];
                 if (HeaderUtilities.ContainsCacheDirective(request.Headers[HeaderNames.Pragma], CacheControlHeaderValue.NoCacheString))
                 {
                     context.Logger.RequestWithPragmaNoCacheNotCacheable();

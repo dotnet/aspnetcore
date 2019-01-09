@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -53,7 +54,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 // Assert
                 await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
                 Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
-                var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(await response.Content.ReadAsStringAsync());
+                var problemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(
+                    await response.Content.ReadAsStringAsync(),
+                    new JsonSerializerSettings
+                    {
+                        Converters = { new ValidationProblemDetailsConverter() }
+                    });
                 Assert.Collection(
                     problemDetails.Errors.OrderBy(kvp => kvp.Key),
                     kvp =>
@@ -273,7 +279,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 // Assert
                 await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
                 var content = await response.Content.ReadAsStringAsync();
-                var problemDetails = JsonConvert.DeserializeObject<ProblemDetails>(content);
+                var problemDetails = JsonConvert.DeserializeObject<ProblemDetails>(
+                    content,
+                    new JsonSerializerSettings
+                    {
+                        Converters = { new ProblemDetailsConverter() }
+                    });
                 Assert.Equal(404, problemDetails.Status);
                 Assert.Collection(
                     problemDetails.Extensions,
@@ -328,7 +339,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
             var content = await response.Content.ReadAsStringAsync();
-            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(content);
+            var validationProblemDetails = JsonConvert.DeserializeObject<ValidationProblemDetails>(
+                content,
+                new JsonSerializerSettings
+                {
+                    Converters = { new ValidationProblemDetailsConverter() }
+                });
 
             Assert.Equal("Error", validationProblemDetails.Title);
             Assert.Equal(400, validationProblemDetails.Status);
