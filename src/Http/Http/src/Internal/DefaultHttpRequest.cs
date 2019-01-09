@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         private readonly static Func<HttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r);
         private readonly static Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
         private readonly static Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
+        private readonly static Func<HttpContext, IRequestBodyPipeFeature> _newRequestBodyPipeFeature = context => new RequestBodyPipeFeature(context);
 
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -56,6 +58,9 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         private IRouteValuesFeature RouteValuesFeature =>
             _features.Fetch(ref _features.Cache.RouteValues, _newRouteValuesFeature);
+
+        private IRequestBodyPipeFeature RequestBodyPipeFeature =>
+            _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, _newRequestBodyPipeFeature);
 
         public override PathString PathBase
         {
@@ -162,6 +167,12 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { RouteValuesFeature.RouteValues = value; }
         }
 
+        public override PipeReader BodyPipe
+        {
+            get { return RequestBodyPipeFeature.RequestBodyPipe; }
+            set { RequestBodyPipeFeature.RequestBodyPipe = value; }
+        }
+
         struct FeatureInterfaces
         {
             public IHttpRequestFeature Request;
@@ -169,6 +180,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             public IFormFeature Form;
             public IRequestCookiesFeature Cookies;
             public IRouteValuesFeature RouteValues;
+            public IRequestBodyPipeFeature BodyPipe;
         }
     }
 }

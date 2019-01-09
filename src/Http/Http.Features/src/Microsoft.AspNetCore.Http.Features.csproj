@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Primitives" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

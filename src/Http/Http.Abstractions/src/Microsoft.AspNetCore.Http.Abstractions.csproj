@@ -22,6 +22,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" PrivateAssets="All" />
     <Reference Include="System.Text.Encodings.Web" />
+    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>
