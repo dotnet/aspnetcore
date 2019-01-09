@@ -1,20 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <OutputType>Exe</OutputType>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCorePackageVersion)" />
-        <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
-    </ItemGroup>
+  <!-- Required temporarily until the .Build package is split in two (one for Razor Components, one for Blazor) -->
+  <Import Project="..\..\src\Microsoft.AspNetCore.Components.Build\targets\RazorCompilation.targets" />
 
-    <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" /> -->
-    <Import Project="..\..\blazor\src\Microsoft.AspNetCore.Blazor.Build\ReferenceFromSource.props" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCorePackageVersion)" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Allow the build to specify the version of the Razor SDK directly -->
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
+
 </Project>
+

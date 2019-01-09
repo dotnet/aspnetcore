@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using ComponentsApp.App;
 
 namespace ComponentsApp.Server
 {
@@ -12,11 +11,7 @@ namespace ComponentsApp.Server
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            // Adds the Server-Side Blazor services, and those registered by the client startup.
-            services.AddServerSideBlazor<App.Startup>();
-
-            // Since Blazor is running on the server, we can use an application service
-            // to read the forecast data.
+            services.AddRazorComponents<App.Startup>();
             services.AddSingleton<WeatherForecastService, DefaultWeatherForecastService>();
         }
 
@@ -27,8 +22,8 @@ namespace ComponentsApp.Server
                 app.UseDeveloperExceptionPage();
             }
 
-            // Use component registrations and static files from the client startup.
-            app.UseServerSideBlazor<App.Startup>();
+            app.UseStaticFiles();
+            app.UseRazorComponents<App.Startup>();
         }
     }
 }
