@@ -2,7 +2,7 @@
   <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core' ">netcoreapp2.0</TargetFramework>
+    <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core' ">netcoreapp2.2</TargetFramework>
     <TargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core' ">net461</TargetFramework>
   </PropertyGroup>
 

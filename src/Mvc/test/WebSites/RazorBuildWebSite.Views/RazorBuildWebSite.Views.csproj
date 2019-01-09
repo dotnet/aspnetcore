@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
     <DefineConstants>$(DefineConstants)</DefineConstants>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>

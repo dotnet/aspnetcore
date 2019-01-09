@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyName>NewAssemblyName</AssemblyName>
-    <TargetFrameworks>$(StandardTestAppTfms)</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
 
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
   </PropertyGroup>

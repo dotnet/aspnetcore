@@ -16,24 +16,14 @@ namespace E2ETests
     {
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22)
+                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
                 .WithAllApplicationTypes()
                 .WithAllAncmVersions()
                 .WithAllHostingModels()
                 .WithAllArchitectures();
 
-        // ANCM In-process cannot run on netcoreapp2.1 and below
-        public static TestMatrix TestVariantsWithoutInproc
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp21, Tfm.NetCoreApp20, Tfm.Net461)
-                .WithAllApplicationTypes()
-                .WithAllAncmVersions()
-                .WithHostingModels(HostingModel.OutOfProcess)
-                .WithAllArchitectures();
-        
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [MemberData(nameof(TestVariantsWithoutInproc))]
         public async Task PublishAndRun_Test(TestVariant variant)
         {
             var testName = $"PublishAndRunTests_{variant}";

@@ -34,7 +34,7 @@ namespace E2ETests
                     EnvironmentName = "SocialTesting",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = Tfm.NetCoreApp20, // There's only a Store on 2.0
+                    TargetFramework = Tfm.NetCoreApp22,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
