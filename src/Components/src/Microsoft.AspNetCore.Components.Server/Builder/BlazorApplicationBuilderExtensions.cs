@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Builder
             return null;
         }
 
-        private static void SetCacheHeaders(StaticFileResponseContext ctx)
+        internal static void SetCacheHeaders(StaticFileResponseContext ctx)
         {
             // By setting "Cache-Control: no-cache", we're allowing the browser to store
             // a cached copy of the response, but telling it that it must check with the
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        internal static bool IsNotFrameworkDir(HttpContext context)
+        private static bool IsNotFrameworkDir(HttpContext context)
             => !context.Request.Path.StartsWithSegments("/_framework");
 
         private static IContentTypeProvider CreateContentTypeProvider(bool enableDebugging)

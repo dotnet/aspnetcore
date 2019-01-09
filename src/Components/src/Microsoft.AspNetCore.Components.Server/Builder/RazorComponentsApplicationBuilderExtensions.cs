@@ -51,11 +51,18 @@ namespace Microsoft.AspNetCore.Builder
                 builder.UseSignalR(route => route.MapHub<BlazorHub>(BlazorHub.DefaultPath));
             }
 
-            // Use SPA fallback routing for anything except /_framework/*
-            builder.MapWhen(BlazorApplicationBuilderExtensions.IsNotFrameworkDir, childAppBuilder =>
+            // Use embedded static content for /_framework
+            builder.Map("/_framework", frameworkBuilder =>
             {
-                childAppBuilder.UseSpa(spa => { });
+                frameworkBuilder.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new FrameworkFilesProvider(),
+                    OnPrepareResponse = BlazorApplicationBuilderExtensions.SetCacheHeaders
+                });
             });
+
+            // Use SPA fallback routing for anything else
+            builder.UseSpa(spa => { });
 
             return builder;
         }

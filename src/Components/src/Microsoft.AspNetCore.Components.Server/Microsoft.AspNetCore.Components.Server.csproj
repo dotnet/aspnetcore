@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.server.js" LogicalName="%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>
