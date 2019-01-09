@@ -117,7 +117,7 @@
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
 
     <ItemGroup>
-      <TestPayload Include="$(PublishAbsoluteDir.TrimEnd('\').TrimEnd('\'))">
+      <TestPayload Include="$(PublishAbsoluteDir)">
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
         <!-- Look into how to be able to use $(NETCoreSdkVersion) -->

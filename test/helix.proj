@@ -1,12 +1,13 @@
 <Project DefaultTargets="Test">
 
   <!-- Version included until we get global.json generation to support this SDK. -->
-  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="1.0.0-beta.19052.1" />
+  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="1.0.0-beta.19057.4" />
 
   <Target Name="Gather" BeforeTargets="Test">
-    <ItemGroup>
-      <ProjectsToTest Include="C:\Github\AspNetCore\src\Http\Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj" />
-    </ItemGroup>
+    <ReadLinesFromFile File="$(MSBuildThisFileDirectory)csprojs">
+      <Output TaskParameter="Lines" ItemName="ProjectsToTest"/>  
+    </ReadLinesFromFile>
+
     <MSBuild Projects="@(ProjectsToTest)"
               Targets="CreateTestPayload"
               BuildInParallel="true">
@@ -29,8 +30,10 @@
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+    <IsExternal>true</IsExternal>
+    <Creator>aspnetcore</Creator>
 
-    <HelixTargetQueues>Windows.10.Amd64.Open;OSX.1012.Amd64.Open;Ubuntu.1604.Amd64.Open;Ubuntu.1810.Amd64.Open;Centos.7.Amd64.Open;Debian.8.Amd64.Open;Debian.9.Amd64.Open;Fedora.27.Amd64.Open;Fedora.28.Amd64.Open;Redhat.7.Amd64.Open;Redhat.6.Amd64.Open;</HelixTargetQueues>
+    <HelixTargetQueues>Windows.10.Amd64.Open;OSX.1012.Amd64.Open;Ubuntu.1604.Amd64.Open;Ubuntu.1810.Amd64.Open;Centos.7.Amd64.Open;Debian.8.Amd64.Open;Debian.9.Amd64.Open;Fedora.27.Amd64.Open;Fedora.28.Amd64.Open;Redhat.7.Amd64.Open;</HelixTargetQueues>
     
     <!--
       xml file found in the work item working directory.
