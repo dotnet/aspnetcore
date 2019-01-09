@@ -111,18 +111,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             var tagHelperElement = SyntaxFactory.MarkupTagHelperElement(tagHelperStart, body: new SyntaxList<RazorSyntaxNode>(), endTag: null);
                             var rewrittenTagHelper = tagHelperElement.WithTagHelperInfo(tagHelperInfo);
-                            if (node.Body.Count == 0)
+                            if (node.Body.Count == 0 && node.EndTag == null)
                             {
                                 return rewrittenTagHelper;
                             }
 
-                            // This tag contains a body which needs to be moved to the parent.
+                            // This tag contains a body and/or an end tag which needs to be moved to the parent.
                             var rewrittenNodes = SyntaxListBuilder<RazorSyntaxNode>.Create();
                             rewrittenNodes.Add(rewrittenTagHelper);
                             var rewrittenBody = VisitList(node.Body);
                             rewrittenNodes.AddRange(rewrittenBody);
 
-                            return SyntaxFactory.MarkupElement(startTag: null, body: rewrittenNodes.ToList(), endTag: null);
+                            return SyntaxFactory.MarkupElement(startTag: null, body: rewrittenNodes.ToList(), endTag: node.EndTag);
                         }
                         else if (node.EndTag == null)
                         {
