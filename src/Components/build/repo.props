@@ -27,6 +27,13 @@
     <ProjectsToPack Include="$(RepositoryRoot)blazor\src\*\*.csproj" />
   </ItemGroup>
 
+  <!--
+    Temporarily disabled until this runs on macOS
+  -->
+  <ItemGroup Condition="'$(BlazorAllTests)'!='true'">
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Components.E2ETest\Microsoft.AspNetCore.Components.E2ETest.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
 
