@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,47 +25,47 @@ namespace Microsoft.AspNetCore.Cors.Internal
         {
             _isPreflightRequest = LoggerMessage.Define(
                 LogLevel.Debug,
-                1,
+                new EventId(1, "IsPreflightRequest"),
                 "The request is a preflight request.");
 
             _requestHasOriginHeader = LoggerMessage.Define<string>(
                 LogLevel.Debug,
-                2,
+                new EventId(2, "RequestHasOriginHeader"),
                 "The request has an origin header: '{origin}'.");
 
             _requestDoesNotHaveOriginHeader = LoggerMessage.Define(
                 LogLevel.Debug,
-                3,
+                new EventId(3, "RequestDoesNotHaveOriginHeader"),
                 "The request does not have an origin header.");
 
             _policySuccess = LoggerMessage.Define(
                 LogLevel.Information,
-                4,
+                new EventId(4, "PolicySuccess"),
                 "CORS policy execution successful.");
 
             _policyFailure = LoggerMessage.Define(
                 LogLevel.Information,
-                5,
+                new EventId(5, "PolicyFailure"),
                 "CORS policy execution failed.");
 
             _originNotAllowed = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                6,
+                new EventId(6, "OriginNotAllowed"),
                 "Request origin {origin} does not have permission to access the resource.");
 
             _accessControlMethodNotAllowed = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                7,
+                new EventId(7, "AccessControlMethodNotAllowed"),
                 "Request method {accessControlRequestMethod} not allowed in CORS policy.");
 
             _requestHeaderNotAllowed = LoggerMessage.Define<string>(
                 LogLevel.Information,
-                8,
+                new EventId(8, "RequestHeaderNotAllowed"),
                 "Request header '{requestHeader}' not allowed in CORS policy.");
 
             _failedToSetCorsHeaders = LoggerMessage.Define(
                 LogLevel.Warning,
-                9,
+                new EventId(9, "FailedToSetCorsHeaders"),
                 "Failed to apply CORS Response headers.");
 
             _noCorsPolicyFound = LoggerMessage.Define(
@@ -75,12 +75,12 @@ namespace Microsoft.AspNetCore.Cors.Internal
 
             _insecureConfiguration = LoggerMessage.Define(
                 LogLevel.Warning,
-                new EventId(11, "CorsInsecureConfiguration"),
+                new EventId(11, "InsecureConfiguration"),
                 "The CORS protocol does not allow specifying a wildcard (any) origin and credentials at the same time. Configure the policy by listing individual origins if credentials needs to be supported.");
 
             _isNotPreflightRequest = LoggerMessage.Define(
                 LogLevel.Debug,
-                new EventId(12, "OptionsRequestWithoutAccessControlRequestMethodHeader"),
+                new EventId(12, "IsNotPreflightRequest"),
                 "This request uses the HTTP OPTIONS method but does not have an Access-Control-Request-Method header. This request will not be treated as a CORS preflight request.");
         }
 
