@@ -29,6 +29,24 @@ namespace Microsoft.AspNetCore.Http.Features
             Assert.Same(FormCollection.Empty, formCollection);
         }
 
+        [Fact]
+        public async Task FormFeatureReadsOptionsFromDefaultHttpContext()
+        {
+            var context = new DefaultHttpContext();
+            context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
+            context.FormOptions = new FormOptions
+            {
+                ValueCountLimit = 1
+            };
+
+            var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
+
+            Assert.Equal("Form value count limit 1 exceeded.", exception.Message);
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -391,7 +409,7 @@ namespace Microsoft.AspNetCore.Http.Features
             IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest, ValueCountLimit = 2 });
             context.Features.Set<IFormFeature>(formFeature);
 
-            var exception = await Assert.ThrowsAsync<InvalidDataException> (() => context.Request.ReadFormAsync());
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
             Assert.Equal("Form value count limit 2 exceeded.", exception.Message);
         }
 
@@ -416,7 +434,7 @@ namespace Microsoft.AspNetCore.Http.Features
             IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest, ValueCountLimit = 2 });
             context.Features.Set<IFormFeature>(formFeature);
 
-            var exception = await Assert.ThrowsAsync<InvalidDataException> (() => context.Request.ReadFormAsync());
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
             Assert.Equal("Form value count limit 2 exceeded.", exception.Message);
         }
 

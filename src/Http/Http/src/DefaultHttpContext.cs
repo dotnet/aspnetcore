@@ -62,6 +62,8 @@ namespace Microsoft.AspNetCore.Http
             _websockets?.Uninitialize();
         }
 
+        public FormOptions FormOptions { get; set; }
+
         private IItemsFeature ItemsFeature =>
             _features.Fetch(ref _features.Cache.Items, _newItemsFeature);
 
