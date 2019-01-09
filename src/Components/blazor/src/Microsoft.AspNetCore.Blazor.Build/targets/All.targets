@@ -13,7 +13,6 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
-  <Import Project="RazorCompilation.targets" />
   <Import Project="Blazor.MonoRuntime.targets" />
   <Import Project="Publish.targets" />
 

@@ -9,6 +9,8 @@
   This is only intended for use by other projects in this repo.
   -->
 
+  <Import Project="$(MSBuildThisFileDirectory)../../../src/Microsoft.AspNetCore.Components.Build/ReferenceFromSource.props" />
+
   <PropertyGroup>
     <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
     <BlazorJsPath>$(MSBuildThisFileDirectory)../../../src/Microsoft.AspNetCore.Components.Browser.JS/dist/blazor.*.js</BlazorJsPath>
