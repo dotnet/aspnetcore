@@ -13,32 +13,10 @@
 
 extern utility::string_t url;
 
-TEST(hub_connection_tests, connection_status_start_stop_start_reconnect)
+TEST(hub_connection_tests, connection_status_start_stop_start)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
     auto weak_hub_conn = std::weak_ptr<signalr::hub_connection>(hub_conn);
-    auto reconnecting_event = std::make_shared<signalr::event>();
-    auto reconnected_event = std::make_shared<signalr::event>();
-
-    hub_conn->set_reconnecting([weak_hub_conn, reconnecting_event]()
-    {
-        auto conn = weak_hub_conn.lock();
-        if (conn)
-        {
-            ASSERT_EQ(conn->get_connection_state(), signalr::connection_state::reconnecting);
-        }
-        reconnecting_event->set();
-    });
-
-    hub_conn->set_reconnected([weak_hub_conn, reconnected_event]()
-    {
-        auto conn = weak_hub_conn.lock();
-        if (conn)
-        {
-            ASSERT_EQ(conn->get_connection_state(), signalr::connection_state::connected);
-        }
-        reconnected_event->set();
-    });
 
     hub_conn->start().get();
     ASSERT_EQ(hub_conn->get_connection_state(), signalr::connection_state::connected);
@@ -48,22 +26,11 @@ TEST(hub_connection_tests, connection_status_start_stop_start_reconnect)
 
     hub_conn->start().get();
     ASSERT_EQ(hub_conn->get_connection_state(), signalr::connection_state::connected);
-
-    try
-    {
-        hub_conn->send(U("forceReconnect")).get();
-    }
-    catch (...)
-    {
-    }
-
-    ASSERT_FALSE(reconnecting_event->wait(2000));
-    ASSERT_FALSE(reconnected_event->wait(2000));
 }
 
 TEST(hub_connection_tests, send_message)
 {
-    auto hub_conn = std::make_shared<signalr::hub_connection>(url + U("custom"), U(""), signalr::trace_level::all, nullptr, false);
+    auto hub_conn = std::make_shared<signalr::hub_connection>(url + U("custom"), U(""), signalr::trace_level::all, nullptr);
     auto message = std::make_shared<utility::string_t>();
     auto received_event = std::make_shared<signalr::event>();
 
@@ -127,46 +94,6 @@ TEST(hub_connection_tests, send_message_after_connection_restart)
         return hub_conn->send(U("invokeWithString"), obj);
 
     }).get();
-
-    ASSERT_FALSE(received_event->wait(2000));
-
-    ASSERT_EQ(*message, U("[\"Send: test\"]"));
-}
-
-TEST(hub_connection_tests, send_message_after_reconnect)
-{
-    auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
-    auto reconnected_event = std::make_shared<signalr::event>();
-    auto received_event = std::make_shared<signalr::event>();
-
-    hub_conn->set_reconnected([reconnected_event]()
-    {
-        reconnected_event->set();
-    });
-
-    hub_conn->on(U("sendString"), [message, received_event](const web::json::value& arguments)
-    {
-        *message = arguments.serialize();
-        received_event->set();
-    });
-
-    hub_conn->start().get();
-
-    try
-    {
-        hub_conn->send(U("forceReconnect")).get();
-    }
-    catch (...)
-    {
-    }
-
-    ASSERT_FALSE(reconnected_event->wait(2000));
-
-    web::json::value obj{};
-    obj[0] = web::json::value(U("test"));
-
-    hub_conn->invoke(U("invokeWithString"), obj).get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
@@ -288,34 +215,12 @@ TEST(hub_connection_tests, send_message_complex_type_return)
     ASSERT_EQ(test.serialize(), U("{\"Address\":{\"Street\":\"main st\",\"Zip\":\"98052\"},\"Age\":15,\"Name\":\"test\"}"));
 }
 
-TEST(hub_connection_tests, connection_id_start_stop_start_reconnect)
+TEST(hub_connection_tests, connection_id_start_stop_start)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
     auto weak_hub_conn = std::weak_ptr<signalr::hub_connection>(hub_conn);
-    auto reconnecting_event = std::make_shared<signalr::event>();
-    auto reconnected_event = std::make_shared<signalr::event>();
 
     utility::string_t connection_id;
-
-    hub_conn->set_reconnecting([weak_hub_conn, reconnecting_event, &connection_id]()
-    {
-        auto conn = weak_hub_conn.lock();
-        if (conn)
-        {
-            ASSERT_EQ(conn->get_connection_id(), connection_id);
-        }
-        reconnecting_event->set();
-    });
-
-    hub_conn->set_reconnected([weak_hub_conn, reconnected_event, &connection_id]()
-    {
-        auto conn = weak_hub_conn.lock();
-        if (conn)
-        {
-            ASSERT_EQ(conn->get_connection_id(), connection_id);
-        }
-        reconnected_event->set();
-    });
 
     ASSERT_EQ(U(""), hub_conn->get_connection_id());
 
@@ -331,17 +236,6 @@ TEST(hub_connection_tests, connection_id_start_stop_start_reconnect)
     ASSERT_NE(hub_conn->get_connection_id(), connection_id);
 
     connection_id = hub_conn->get_connection_id();
-
-    try
-    {
-        hub_conn->send(U("forceReconnect")).get();
-    }
-    catch (...)
-    {
-    }
-
-    ASSERT_FALSE(reconnecting_event->wait(2000));
-    ASSERT_FALSE(reconnected_event->wait(2000));
 }
 
 //TEST(hub_connection_tests, mirror_header)

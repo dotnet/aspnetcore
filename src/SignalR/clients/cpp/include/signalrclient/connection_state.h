@@ -9,7 +9,6 @@ namespace signalr
     {
         connecting,
         connected,
-        reconnecting,
         disconnecting,
         disconnected
     };
