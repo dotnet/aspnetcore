@@ -6,6 +6,6 @@ namespace Microsoft.AspNetCore.Http
 {
     public interface IHttpContextContainer
     {
-        HttpContext HttpContext { get; }
+        DefaultHttpContext HttpContext { get; }
     }
 }

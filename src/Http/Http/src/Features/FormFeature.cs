@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class FormFeature : IFormFeature
     {
-        private static readonly FormOptions DefaultFormOptions = new FormOptions();
-
         private readonly HttpRequest _request;
         private readonly FormOptions _options;
         private Task<IFormCollection> _parsedFormTask;
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.Http.Features
             Form = form;
         }
         public FormFeature(HttpRequest request)
-            : this(request, DefaultFormOptions)
+            : this(request, FormOptions.Default)
         {
         }
 
