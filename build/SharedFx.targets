@@ -100,7 +100,7 @@
       BuildInParallel="false" />
   </Target>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="BuildMetapackages" Condition="'$(OS)' == 'Windows_NT'" >
+  <Target Name="BuildSiteExtension" DependsOnTargets="BuildMetapackages" Condition="'$(BuildSiteExtension)' == 'true'" >
     <PropertyGroup>
       <AzureIntegrationProjProperties>
         AspNetUniverseBuildOffline=true;
@@ -116,7 +116,7 @@
     <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="Restore;Pack" Properties="$(AzureIntegrationProjProperties);PackageOutputPath=$(BuildDir)" />
   </Target>
 
-  <Target Name="GetSiteExtensionArtifactInfo" Condition="'$(OS)' == 'Windows_NT'" >
+  <Target Name="GetSiteExtensionArtifactInfo" Condition="'$(BuildSiteExtension)' == 'true'" >
     <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="GetArtifactInfo" Properties="PackageOutputPath=$(BuildDir);BuildNumber=$(BuildNumber);DesignTimeBuild=true;IsFinalBuild=$(IsFinalBuild)">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>

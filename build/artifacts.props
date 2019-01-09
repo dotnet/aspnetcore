@@ -43,7 +43,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" AllMetapackage="true" AppMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization" AllMetapackage="true" AppMetapackage="true" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" AllMetapackage="false" Category="noship" Condition="'$(OS)' == 'Windows_NT'" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" AllMetapackage="false" Category="noship" Condition="'$(BuildSiteExtension)' == 'true'" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" AllMetapackage="true" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Connections.Abstractions" AllMetapackage="true" AppMetapackage="true" Category="ship" />

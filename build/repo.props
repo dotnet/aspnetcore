@@ -15,6 +15,7 @@
     <SignedDependencyPackageDir>$(RepositoryRoot).deps\Signed\Packages\</SignedDependencyPackageDir>
     <SharedSourcesFolder>$(RepositoryRoot)src\Shared\</SharedSourcesFolder>
     <SharedFxArchitecture Condition="'$(SharedFxArchitecture)' == ''">$(SharedFxRid.Substring($([MSBuild]::Add($(SharedFxRid.LastIndexOf('-')), 1))))</SharedFxArchitecture>
+    <BuildSiteExtension Condition="'$(OS)' == 'Windows_NT'">true</BuildSiteExtension>
   </PropertyGroup>
 
   <ItemGroup>
