@@ -1,0 +1,25 @@
+{
+  "name": "@dotnet/jsinterop",
+  "version": "0.1.1",
+  "description": "Provides abstractions and features for interop between .NET and JavaScript code.",
+  "main": "dist/Microsoft.JSInterop.js",
+  "types": "dist/Microsoft.JSInterop.d.js",
+  "scripts": {
+    "prepublish": "rimraf dist && dotnet build && echo 'Finished building NPM package \"@dotnet/jsinterop\"'"
+  },
+  "files": [
+    "dist/**"
+  ],
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/dotnet/jsinterop/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dotnet/jsinterop.git"
+  },
+  "devDependencies": {
+    "rimraf": "^2.5.4"
+  }
+}
