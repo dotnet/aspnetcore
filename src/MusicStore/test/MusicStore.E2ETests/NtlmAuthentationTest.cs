@@ -45,7 +45,7 @@ namespace E2ETests
                         DbUtils.DropDatabase(musicStoreDbName, logger);
                     },
                     //AdditionalPublishParameters = " /bl:" + this.GetType().Assembly.GetAttribute<TestFrameworkFileLogger>()
-                    AdditionalPublishParameters = " /bl:" + fileLoggerAttr.BaseDirectory
+                    AdditionalPublishParameters = " /bl:" + fileLoggerAttr.BaseDirectory + variant.Server.ToString() + ".binlog"
                 };
 
                 // Override the connection strings using environment based configuration

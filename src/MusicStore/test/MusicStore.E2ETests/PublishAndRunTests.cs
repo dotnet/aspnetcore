@@ -28,6 +28,10 @@ namespace E2ETests
         public async Task PublishAndRun_Test(TestVariant variant)
         {
             var testName = $"PublishAndRunTests_{variant}";
+
+            var assemblyAttribute = this.GetType().Assembly.GetCustomAttributes(typeof(TestFrameworkFileLoggerAttribute), false);
+            var fileLoggerAttr = assemblyAttribute[0] as TestFrameworkFileLoggerAttribute;
+
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("Publish_And_Run_Tests");
@@ -41,7 +45,8 @@ namespace E2ETests
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
-                    }
+                    },
+                    AdditionalPublishParameters = " /bl:" + fileLoggerAttr.BaseDirectory + variant.Server.ToString() + ".binlog"
                 };
 
                 // Override the connection strings using environment based configuration
