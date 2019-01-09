@@ -89,8 +89,6 @@ HRESULT
 
 --*/
 {
-    BOOL                                fDisableANCM = FALSE;
-
     UNREFERENCED_PARAMETER(dwServerVersion);
 
     if (pHttpServer->IsCommandLineLaunch())
@@ -102,14 +100,11 @@ HRESULT
         g_hEventLog = RegisterEventSource(nullptr, ASPNETCORE_EVENT_PROVIDER);
     }
 
-    fDisableANCM = RegistryKey::TryGetDWORD(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters", L"DisableANCM").value_or(0) != 0;
+    auto fDisableModule = RegistryKey::TryGetDWORD(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters", L"DisableANCM");
 
-    if (fDisableANCM)
+    if (fDisableModule.has_value() && fDisableModule.value() != 0)
     {
-        // Logging
-        EventLog::Warn(
-            ASPNETCORE_EVENT_MODULE_DISABLED,
-            ASPNETCORE_EVENT_MODULE_DISABLED_MSG);
+        EventLog::Warn(ASPNETCORE_EVENT_MODULE_DISABLED, ASPNETCORE_EVENT_MODULE_DISABLED_MSG);
         // this will return 500 error to client
         // as we did not register the module
         return S_OK;
