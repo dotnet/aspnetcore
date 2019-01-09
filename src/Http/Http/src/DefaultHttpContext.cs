@@ -96,7 +96,6 @@ namespace Microsoft.AspNetCore.Http
 
         public override WebSocketManager WebSockets => _websockets ?? (_websockets = new DefaultWebSocketManager(_features.Collection));
 
-
         public override ClaimsPrincipal User
         {
             get
