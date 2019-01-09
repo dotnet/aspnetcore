@@ -22,42 +22,42 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             _validationFailed = LoggerMessage.Define<string>(
                 LogLevel.Warning,
-                 new EventId(1, "ValidationFailed"),
+                new EventId(1, "ValidationFailed"),
                 "Antiforgery validation failed with message '{Message}'.");
             _validated = LoggerMessage.Define(
                 LogLevel.Debug,
-                 new EventId(2, "Validated"),
+                new EventId(2, "Validated"),
                 "Antiforgery successfully validated a request.");
             _missingCookieToken = LoggerMessage.Define<string>(
                 LogLevel.Warning,
-                 new EventId(3, "MissingCookieToken"),
+                new EventId(3, "MissingCookieToken"),
                 "The required antiforgery cookie '{CookieName}' is not present.");
             _missingRequestToken = LoggerMessage.Define<string, string>(
                 LogLevel.Warning,
-                 new EventId(4, "MissingRequestToken"),
+                new EventId(4, "MissingRequestToken"),
                 "The required antiforgery request token was not provided in either form field '{FormFieldName}' "
                     + "or header '{HeaderName}'.");
             _newCookieToken = LoggerMessage.Define(
                 LogLevel.Debug,
-                 new EventId(5, "NewCookieToken"),
+                new EventId(5, "NewCookieToken"),
                 "A new antiforgery cookie token was created.");
             _reusedCookieToken = LoggerMessage.Define(
                 LogLevel.Debug,
-                 new EventId(6, "ReusedCookieToken"),
+                new EventId(6, "ReusedCookieToken"),
                 "An antiforgery cookie token was reused.");
             _tokenDeserializeException = LoggerMessage.Define(
                 LogLevel.Error,
-                 new EventId(7, "TokenDeserializeException"),
+                new EventId(7, "TokenDeserializeException"),
                 "An exception was thrown while deserializing the token.");
             _responseCacheHeadersOverridenToNoCache = LoggerMessage.Define(
                 LogLevel.Warning,
-                 new EventId(8, "ResponseCacheHeadersOverridenToNoCache"),
-                 "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and " +
+                new EventId(8, "ResponseCacheHeadersOverridenToNoCache"),
+                "The 'Cache-Control' and 'Pragma' headers have been overridden and set to 'no-cache, no-store' and " +
                 "'no-cache' respectively to prevent caching of this response. Any response that uses antiforgery " +
                 "should not be cached.");
             _failedToDeserialzeTokens = LoggerMessage.Define(
                 LogLevel.Debug,
-                 new EventId(9, "FailedToDeserialzeTokens"),
+                new EventId(9, "FailedToDeserialzeTokens"),
                 "Failed to deserialize antiforgery tokens.");
         }
 
