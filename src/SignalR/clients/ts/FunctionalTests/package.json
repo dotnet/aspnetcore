@@ -26,7 +26,7 @@
     "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
     "build:webpack": "node ../common/node_modules/webpack-cli/bin/cli.js",
     "pretest": "npm run build",
-    "test": "dotnet build && npm run test-only",
+    "test": "dotnet build FunctionalTests.csproj && npm run test-only",
     "test-only": "ts-node --project ./selenium/tsconfig-selenium.json ./selenium/run-tests.ts",
     "ci-test": "ts-node --project ./selenium/tsconfig-selenium.json ./selenium/run-ci-tests.ts"
   },

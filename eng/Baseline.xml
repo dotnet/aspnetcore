@@ -51,6 +51,9 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Hosting" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Html.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Http.Abstractions" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Http.Connections.Client" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.Http.Connections.Common" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.Http.Connections" Version="1.0.4" />
   <Package Id="Microsoft.AspNetCore.Http.Extensions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Http.Features" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Http" Version="2.1.1" />
@@ -102,6 +105,14 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.1.3" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.3" />
   <Package Id="Microsoft.AspNetCore.Session" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Client.Core" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Client" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Common" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Core" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Redis" Version="1.0.4" />
+  <Package Id="Microsoft.AspNetCore.SignalR" Version="1.0.4" />
   <Package Id="Microsoft.AspNetCore.SpaServices.Extensions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.SpaServices" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />

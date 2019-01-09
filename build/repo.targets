@@ -27,21 +27,6 @@
     <GetArtifactInfoDependsOn  Condition="'$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <RestoreDependsOn Condition=" '$(SkipNpm)' != 'true' ">$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
-  </PropertyGroup>
-
-  <Target Name="RestoreNpm" Condition="@(NpmProjectDirectory->Count()) != 0">
-    <Message Text="Restoring NPM modules" Importance="high" />
-
-    <PropertyGroup>
-      <NpmInstallCommand Condition=" '$(CI)' != 'true' ">install --no-optional</NpmInstallCommand>
-      <NpmInstallCommand Condition=" '$(CI)' == 'true' ">ci</NpmInstallCommand>
-    </PropertyGroup>
-
-    <Exec Command="npm $(NpmInstallCommand)" WorkingDirectory="%(NpmProjectDirectory.Identity)" Condition=" '%(NpmProjectDirectory.Identity)' != '' " />
-  </Target>
-
   <Target Name="PrepareOutputPaths">
     <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
   </Target>
