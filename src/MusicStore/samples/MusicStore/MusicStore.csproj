@@ -10,6 +10,7 @@
     <RuntimeIdentifiers Condition="'$(Configuration)' != 'RuntimeStore'">win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Configurations>Debug;Release;RuntimeStore</Configurations>
     <InProcessTestSite>true</InProcessTestSite>
+    <!--<AspNetCoreModuleVersion>AspNetCoreModuleV2</AspNetCoreModuleVersion>-->
   </PropertyGroup>
 
   <ItemGroup>

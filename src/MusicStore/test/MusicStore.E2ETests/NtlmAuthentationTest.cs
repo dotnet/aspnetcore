@@ -32,6 +32,9 @@ namespace E2ETests
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
+                var assemblyAttribute = this.GetType().Assembly.GetCustomAttributes(typeof(TestFrameworkFileLoggerAttribute), false);
+                var fileLoggerAttr = assemblyAttribute[0] as TestFrameworkFileLoggerAttribute;
+
                 var deploymentParameters = new DeploymentParameters(variant)
                 {
                     ApplicationPath = Helpers.GetApplicationPath(),
@@ -40,7 +43,9 @@ namespace E2ETests
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
-                    }
+                    },
+                    //AdditionalPublishParameters = " /bl:" + this.GetType().Assembly.GetAttribute<TestFrameworkFileLogger>()
+                    AdditionalPublishParameters = " /bl:" + fileLoggerAttr.BaseDirectory
                 };
 
                 // Override the connection strings using environment based configuration
