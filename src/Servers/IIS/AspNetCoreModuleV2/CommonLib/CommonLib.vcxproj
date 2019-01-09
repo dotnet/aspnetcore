@@ -223,6 +223,7 @@
     <ClInclude Include="ModuleHelpers.h" />
     <ClInclude Include="NonCopyable.h" />
     <ClInclude Include="StandardStreamRedirection.h" />
+    <ClInclude Include="RegistryKey.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
     <ClInclude Include="ServerErrorApplication.h" />
@@ -252,6 +253,7 @@
     <ClCompile Include="LoggingHelpers.cpp" />
     <ClCompile Include="StandardStreamRedirection.cpp" />
     <ClCompile Include="RedirectionOutput.cpp" />
+    <ClCompile Include="RegistryKey.cpp" />
     <ClCompile Include="StdWrapper.cpp" />
     <ClCompile Include="SRWExclusiveLock.cpp" />
     <ClCompile Include="SRWSharedLock.cpp" />

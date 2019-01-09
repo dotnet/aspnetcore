@@ -64,6 +64,11 @@ namespace System.IO.Pipelines
             _pool = pool ?? MemoryPool<byte>.Shared;
         }
 
+        /// <summary>
+        /// Gets the inner stream that is being read from.
+        /// </summary>
+        public Stream InnerStream => _writingStream;
+
         /// <inheritdoc />
         public override void Advance(int count)
         {

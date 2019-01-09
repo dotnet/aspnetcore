@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
+using System.Text;
 
 namespace System.IO.Pipelines.Tests
 {
@@ -36,6 +37,12 @@ namespace System.IO.Pipelines.Tests
         {
             Writer.FlushAsync().GetAwaiter().GetResult();
             return ReadWithoutFlush();
+        }
+
+        public string ReadAsString()
+        {
+            Writer.FlushAsync().GetAwaiter().GetResult();
+            return Encoding.ASCII.GetString(ReadWithoutFlush());
         }
 
         public void Write(byte[] data)

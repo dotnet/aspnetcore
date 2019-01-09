@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
-                new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
+                Mock.Of<ITempDataDictionaryFactory>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance,
                 new EmptyModelMetadataProvider());

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         internal const string TempDataSessionStateKey = "__ControllerTempData";
         private readonly TempDataSerializer _tempDataSerializer;
 
-        public SessionStateTempDataProvider()
+        public SessionStateTempDataProvider(TempDataSerializer tempDataSerializer)
         {
-            _tempDataSerializer = new TempDataSerializer();
+            _tempDataSerializer = tempDataSerializer;
         }
 
         /// <inheritdoc />

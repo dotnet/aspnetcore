@@ -19,8 +19,6 @@ with the right MSBuild incantations to get output copied to the right place.
           <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
           <!-- NativeContent is a custom type of item group which is assigned a target path after project references are resolved.  -->
           <OutputItemType>NativeContent</OutputItemType>
-          <!-- Set the copy policy. -->
-          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
           <!-- This instructs the ProjectRef protocol to collect symbols as well as built output -->
           <Targets>Build;BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup</Targets>
           <!-- Optimization. Native projects don't have a .NET TargetFramework -->
@@ -43,22 +41,4 @@ with the right MSBuild incantations to get output copied to the right place.
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -native` to build native projects. Run `build.cmd -managed -native` to build both C# and C++." />
   </Target>
 
-  <Target Name="_GetNativeContentCopyToOutputDirectoryItems"
-          BeforeTargets="GetCopyToOutputDirectoryItems"
-          DependsOnTargets="ResolveProjectReferences">
-
-    <ItemGroup>
-      <!-- Prepend LinkBase to output path. -->
-      <NativeContent>
-        <Link>%(LinkBase)%(FileName)%(Extension)</Link>
-        <!-- Don't put this content in a nuget package. -->
-        <Pack>false</Pack>
-      </NativeContent>
-    </ItemGroup>
-
-    <!-- Add the item to the ContentWithTargetPath group, which is then used by GetCopyToOutputDirectoryItems to copy to the correct output location. -->
-    <AssignTargetPath Files="@(NativeContent)" RootFolder="$(MSBuildProjectDirectory)">
-      <Output TaskParameter="AssignedFiles" ItemName="ContentWithTargetPath" />
-    </AssignTargetPath>
-  </Target>
 </Project>

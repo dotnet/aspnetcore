@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
@@ -38,6 +39,11 @@ namespace Microsoft.AspNetCore.Http
         /// Gets or sets the response body <see cref="Stream"/>.
         /// </summary>
         public abstract Stream Body { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response body pipe <see cref="PipeWriter"/>
+        /// </summary>
+        public abstract PipeWriter BodyPipe { get; set; }
 
         /// <summary>
         /// Gets or sets the value for the <c>Content-Length</c> response header.

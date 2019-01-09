@@ -12,7 +12,7 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Identity.DefaultUI.WebSite
 {
-    public class StartupBase<TUser,TContext> 
+    public class StartupBase<TUser,TContext>
         where TUser : class
         where TContext : DbContext
     {
@@ -45,7 +45,8 @@ namespace Identity.DefaultUI.WebSite
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<TContext>();
 
-            services.AddMvc();
+            services.AddMvc()
+                .AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

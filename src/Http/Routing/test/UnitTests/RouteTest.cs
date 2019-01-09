@@ -654,11 +654,10 @@ namespace Microsoft.AspNetCore.Routing
         public void GetVirtualPath_AlwaysUsesDefaultUrlEncoder()
         {
             // Arrange
-            var nameRouteValue = "name with %special #characters Jörn";
+            var nameRouteValue = "name with %special #characters JÃ¶rn";
             var expected = "/Home/Index?name=" + UrlEncoder.Default.Encode(nameRouteValue);
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddRouting();
             // This test encoder should not be used by Routing and should always use the default one.
             services.AddSingleton<UrlEncoder>(new UrlTestEncoder());
@@ -1521,7 +1520,6 @@ namespace Microsoft.AspNetCore.Routing
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddRouting();
 
             var context = new DefaultHttpContext

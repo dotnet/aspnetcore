@@ -34,7 +34,8 @@ namespace Identity.DefaultUI.WebSite
                 {
                     options.Conventions.AuthorizeFolder("/Areas/Identity/Pages/Account/Manage");
                     options.Conventions.AuthorizePage("/Areas/Identity/Pages/Account/Logout");
-                });
+                })
+                .AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

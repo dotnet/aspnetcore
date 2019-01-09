@@ -1018,7 +1018,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             services.AddLogging();
             services.AddRouting();
             services
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<UrlEncoder>(UrlEncoder.Default);
             return services;
         }

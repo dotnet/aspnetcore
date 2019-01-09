@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Test
@@ -332,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
             // Arrange
             var controller = new TestableController();
             var data = new object();
-            var serializerSettings = new JsonSerializerSettings();
+            var serializerSettings = new object();
 
             // Act
             var actualJsonResult = controller.Json(data, serializerSettings);
@@ -340,6 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
             // Assert
             Assert.IsType<JsonResult>(actualJsonResult);
             Assert.Same(data, actualJsonResult.Value);
+            Assert.Same(serializerSettings, actualJsonResult.SerializerSettings);
         }
 
         // These tests share code with the ActionFilterAttribute tests because the various filter
