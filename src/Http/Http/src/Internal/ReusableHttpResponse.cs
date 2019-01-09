@@ -1,15 +1,14 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
-    public class DefaultHttpResponse : HttpResponse
+    public sealed class ReusableHttpResponse : HttpResponse
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
@@ -18,21 +17,21 @@ namespace Microsoft.AspNetCore.Http.Internal
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
 
-        public DefaultHttpResponse(HttpContext context)
+        public ReusableHttpResponse(HttpContext context)
         {
             Initialize(context);
         }
 
-        public virtual void Initialize(HttpContext context)
+        public void Initialize(HttpContext context)
         {
             _context = context;
             _features = new FeatureReferences<FeatureInterfaces>(context.Features);
         }
 
-        public virtual void Uninitialize()
+        public void Uninitialize()
         {
             _context = null;
-            _features = default(FeatureReferences<FeatureInterfaces>);
+            _features = default;
         }
 
         private IHttpResponseFeature HttpResponseFeature =>
