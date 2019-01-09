@@ -87,12 +87,6 @@ namespace Microsoft.AspNetCore.Builder
                 });
             }
 
-            // Accept debugger connections
-            if (config.EnableDebugging)
-            {
-                app.UseMonoDebugProxy();
-            }
-
             // Finally, use SPA fallback routing (serve default page for anything else,
             // excluding /_framework/*)
             app.MapWhen(IsNotFrameworkDir, childAppBuilder =>
