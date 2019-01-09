@@ -307,15 +307,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             await HandleChallengeAsyncInternal(properties);
-            var location = Context.Response.Headers["Location"];
+            var location = Context.Response.Headers[HeaderNames.Location];
             if (location == StringValues.Empty)
             {
-                location = "not set";
+                location = "(not set)";
             }
-            var cookie = Context.Response.Headers["Set-Cookie"];
+            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
             if (cookie == StringValues.Empty)
             {
-                cookie = "not set";
+                cookie = "(not set)";
             }
             Logger.HandleChallenge(location, cookie);
         }
