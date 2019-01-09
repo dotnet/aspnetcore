@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.Build.Test
+namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     // Integration tests for the end-to-end of successful Razor compilation of component definitions
     // Includes running the component code to verify the output.
@@ -291,7 +292,7 @@ namespace Microsoft.AspNetCore.Components.Build.Test
         {
             // Arrange/Act
             var component = CompileToComponent(@"
-@{ 
+@{
   var myValue = ""Expression value"";
 }
 <elem data-abc=""Literal value"" data-def=""@myValue"" />");

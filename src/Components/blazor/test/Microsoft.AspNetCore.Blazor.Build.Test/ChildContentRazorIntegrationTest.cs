@@ -1,13 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.Build.Test
+namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     public class ChildContentRazorIntegrationTest : RazorIntegrationTestBase
     {
@@ -296,7 +297,7 @@ namespace Test
 @addTagHelper *, TestAssembly
 @{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <RenderChildContent ChildContent=""@template(""HI"")"">
-       
+
 </RenderChildContent>");
 
             // Act

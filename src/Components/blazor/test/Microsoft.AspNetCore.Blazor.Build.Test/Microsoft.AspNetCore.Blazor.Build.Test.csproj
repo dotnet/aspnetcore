@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -34,11 +34,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\blazor\samples\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\..\blazor\src\Microsoft.AspNetCore.Blazor.Build\Microsoft.AspNetCore.Blazor.Build.csproj" />
+    <ProjectReference Include="..\..\samples\StandaloneApp\StandaloneApp.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Build\Microsoft.AspNetCore.Blazor.Build.csproj" />
 
     <!-- Shared sources -->
-    <Compile Include="..\shared\**\*.cs" Link="Helpers\%(Filename)%(Extension)" />
+    <Compile Include="..\..\..\test\shared\**\*.cs" Link="Helpers\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <!-- A bit of msbuild magic to support reference resolver tests -->

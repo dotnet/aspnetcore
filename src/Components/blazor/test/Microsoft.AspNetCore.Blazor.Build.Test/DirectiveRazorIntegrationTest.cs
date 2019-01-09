@@ -4,12 +4,13 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.Build.Test
+namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     // Integration tests for Blazor's directives
     public class DirectiveRazorIntegrationTest : RazorIntegrationTestBase

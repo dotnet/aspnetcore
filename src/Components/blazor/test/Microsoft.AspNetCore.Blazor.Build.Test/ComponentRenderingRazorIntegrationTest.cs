@@ -3,12 +3,13 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.Build.Test
+namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     public class ComponentRenderingRazorIntegrationTest : RazorIntegrationTestBase
     {
@@ -72,7 +73,7 @@ namespace Test
 
             var component = CompileToComponent(@"
 @addTagHelper *, TestAssembly
-<MyComponent 
+<MyComponent
     IntProperty=""123""
     BoolProperty=""true""
     StringProperty=""My string""

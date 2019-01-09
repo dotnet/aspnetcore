@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.Build.Test
+namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     public class GenericComponentRazorIntegrationTest : RazorIntegrationTestBase
     {
@@ -152,7 +153,7 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(GenericContextComponent);
-            
+
             var component = CompileToComponent(@"
 @addTagHelper *, TestAssembly
 <GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"">
