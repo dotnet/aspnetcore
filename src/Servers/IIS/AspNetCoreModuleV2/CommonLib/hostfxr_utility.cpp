@@ -447,7 +447,6 @@ HOSTFXR_UTILITY::InvokeWhereToFindDotnet()
 
     LOG_INFOF(L"Current process bitness type detected as isX64=%d", fIsCurrentProcess64Bit);
 
-
     while (TRUE)
     {
         index = struDotnetLocationsString.IndexOf(L"\r\n", prevIndex);

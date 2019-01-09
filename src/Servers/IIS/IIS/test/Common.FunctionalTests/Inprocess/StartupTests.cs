@@ -169,17 +169,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             private readonly RegistryKey _baseHive;
             private readonly RegistryKey _subKey;
+            private readonly string _keyName;
 
             public TestRegistryKey(RegistryKey baseHive, string keyName, string valueName, object value)
             {
                 _baseHive = baseHive;
+                _keyName = keyName;
                 _subKey = baseHive.CreateSubKey(keyName);
                 _subKey.SetValue(valueName, value);
             }
 
             public void Dispose()
             {
-                _baseHive.DeleteSubKeyTree(_subKey.Name, throwOnMissingSubKey: false);
+                _baseHive.DeleteSubKeyTree(_keyName, throwOnMissingSubKey: true);
             }
         }
 
