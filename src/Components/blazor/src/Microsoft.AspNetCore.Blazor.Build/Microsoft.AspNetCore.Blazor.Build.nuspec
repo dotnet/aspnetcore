@@ -13,7 +13,7 @@
     <repository type="git" url="https://github.com/aspnet/aspnetcore" commit="$repositorycommit$" />
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <dependencies>
-      <dependency id="Microsoft.AspNetCore.Components.Build" version="$version$" include="all" />
+      <dependency id="Microsoft.AspNetCore.Components.Build" version="$componentsversion$" include="all" />
       <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$blazormonoversion$" include="all" />
     </dependencies>
   </metadata>
@@ -22,6 +22,6 @@
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
     <file src="$publishdir$netcoreapp3.0\**\*" target="tools/" />
-    <file src="..\..\..\src\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.*.js" target="tools\blazor" />
+    <file src="..\..\..\src\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.*.js" target="tools/blazor" />
   </files>
 </package>
