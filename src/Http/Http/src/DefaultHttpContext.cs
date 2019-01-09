@@ -8,6 +8,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Http
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IItemsFeature> _newItemsFeature = f => new ItemsFeature();
-        private readonly static Func<IFeatureCollection, IServiceProvidersFeature> _newServiceProvidersFeature = f => new ServiceProvidersFeature();
+        private readonly static Func<DefaultHttpContext, IServiceProvidersFeature> _newServiceProvidersFeature = context => new RequestServicesFeature(context, context.ServiceScopeFactory);
         private readonly static Func<IFeatureCollection, IHttpAuthenticationFeature> _newHttpAuthenticationFeature = f => new HttpAuthenticationFeature();
         private readonly static Func<IFeatureCollection, IHttpRequestLifetimeFeature> _newHttpRequestLifetimeFeature = f => new HttpRequestLifetimeFeature();
         private readonly static Func<IFeatureCollection, ISessionFeature> _newSessionFeature = f => new DefaultSessionFeature();
@@ -64,11 +65,13 @@ namespace Microsoft.AspNetCore.Http
 
         public FormOptions FormOptions { get; set; }
 
+        public IServiceScopeFactory ServiceScopeFactory { get; set; }
+
         private IItemsFeature ItemsFeature =>
             _features.Fetch(ref _features.Cache.Items, _newItemsFeature);
 
         private IServiceProvidersFeature ServiceProvidersFeature =>
-            _features.Fetch(ref _features.Cache.ServiceProviders, _newServiceProvidersFeature);
+            _features.Fetch(ref _features.Cache.ServiceProviders, this, _newServiceProvidersFeature);
 
         private IHttpAuthenticationFeature HttpAuthenticationFeature =>
             _features.Fetch(ref _features.Cache.Authentication, _newHttpAuthenticationFeature);
