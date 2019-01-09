@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Win32;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -111,13 +110,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [InlineData(RuntimeArchitecture.x64)]
         [InlineData(RuntimeArchitecture.x86)]
+        [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
             deploymentParameters.RuntimeArchitecture = runtimeArchitecture;
 
-            deploymentParameters.EnvironmentVariables["PATH"] = "";
+            // IIS doesn't allow empty PATH
+            deploymentParameters.EnvironmentVariables["PATH"] = ".";
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "dotnet"));
 
             // Key is always in 32bit view
@@ -154,6 +155,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 1))
             {
                 var deploymentResult = await DeployAsync(deploymentParameters);
+                // Disabling ANCM produces no log files
+                deploymentResult.AllowNoLogs();
+
                 var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
 
                 Assert.False(response.IsSuccessStatusCode);
@@ -161,27 +165,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 StopServer();
 
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, "AspNetCore Module is disabled");
-            }
-        }
-
-
-        public class TestRegistryKey : IDisposable
-        {
-            private readonly RegistryKey _baseHive;
-            private readonly RegistryKey _subKey;
-            private readonly string _keyName;
-
-            public TestRegistryKey(RegistryKey baseHive, string keyName, string valueName, object value)
-            {
-                _baseHive = baseHive;
-                _keyName = keyName;
-                _subKey = baseHive.CreateSubKey(keyName);
-                _subKey.SetValue(valueName, value);
-            }
-
-            public void Dispose()
-            {
-                _baseHive.DeleteSubKeyTree(_keyName, throwOnMissingSubKey: true);
             }
         }
 
