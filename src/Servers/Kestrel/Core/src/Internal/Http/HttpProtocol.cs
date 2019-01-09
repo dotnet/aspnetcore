@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _responseBytesWritten;
 
         private readonly HttpConnectionContext _context;
-        private ReusableHttpContext _httpContext;
+        private DefaultHttpContext _httpContext;
 
         protected string _methodText = null;
         private string _scheme = null;
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_httpContext is null)
                 {
-                    _httpContext = new ReusableHttpContext(this);
+                    _httpContext = new DefaultHttpContext(this);
                 }
                 else
                 {

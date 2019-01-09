@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Http
                 return container.HttpContext;
             }
 
-            return new ReusableHttpContext(featureCollection);
+            return new DefaultHttpContext(featureCollection);
         }
 
         public void Dispose(HttpContext httpContext)
