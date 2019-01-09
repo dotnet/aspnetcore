@@ -141,9 +141,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         // Skipping on MacOS because of https://github.com/dotnet/corefx/issues/33141.
-        // Skipping on Linux because of https://github.com/aspnet/Razor/issues/2525.
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
         public async Task ManualServerShutdown_NoPipeName_ShutsDownServer()
         {
