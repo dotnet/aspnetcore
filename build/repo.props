@@ -46,6 +46,26 @@
     <SharedFrameworkName Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
+    <ProjectToExclude Include="
+                      $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
+                      $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\TestServer.csproj;
+                      $(RepositoryRoot)src\Identity\samples\NativeWPFClient\NativeWPFClient.csproj;
+                      "
+                      Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
+
+    <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
+    <ProjectToExclude Include="
+                      $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
+                      $(RepositoryRoot)src\Middleware\NodeServices.Sockets\**\*.csproj;
+                      $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
+                      $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
+                      $(RepositoryRoot)src\SignalR\clients\cpp\**\*.*proj;
+                      $(RepositoryRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
+                      " />
+  </ItemGroup>
+
   <Choose>
     <!-- Project selection can be overridden on the command line by passing in -projects -->
     <When Condition="'$(Projects)' != ''">
@@ -59,23 +79,10 @@
 
         <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
 
-        <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
-        <ProjectToExclude Include="
-                          $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
-                          $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\TestServer.csproj;
-                          $(RepositoryRoot)src\Identity\samples\NativeWPFClient\NativeWPFClient.csproj;
-                          "
-                          Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
+        <ProjectToBuild Condition="'$(SkipSignalRTypescriptClient)' != 'true'"
+                        Include="$(RepositoryRoot)src\SignalR\**\*.npmproj"
+                        Exclude="@(ProjectToExclude)" />
 
-        <!-- Exclude the websockets samples for now because they use classic .csproj, which is not yet supported in our build. -->
-        <ProjectToExclude Include="
-                          $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
-                          $(RepositoryRoot)src\Middleware\NodeServices.Sockets\**\*.csproj;
-                          $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
-                          $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj
-                          " />
-
-        <ProjectToBuild Include="@(NativeProjects)" Condition="'$(OS)' == 'Windows_NT'"/>
         <ProjectToBuild Include="
                           $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
@@ -95,9 +102,11 @@
                           $(RepositoryRoot)src\Mvc\**\*.*proj;
                           $(RepositoryRoot)src\Azure\**\*.*proj;
                           $(RepositoryRoot)src\MusicStore\**\*.*proj;
+                          $(RepositoryRoot)src\SignalR\**\*.csproj;
                           "
                         Exclude="
                           @(ProjectToExclude);
+                          $(RepositoryRoot)**\node_modules\**\*;
                           $(RepositoryRoot)**\bin\**\*;
                           $(RepositoryRoot)**\obj\**\*;" />
       </ItemGroup>

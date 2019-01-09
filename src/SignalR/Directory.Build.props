@@ -1,22 +1,30 @@
 ﻿<Project>
-  <Import
-    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
-    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
-
-  <Import Project="version.props" />
-  <Import Project="build\dependencies.props" />
-  <Import Project="build\sources.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <Product>Microsoft ASP.NET Core</Product>
-    <RepositoryUrl>https://github.com/aspnet/SignalR</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	  <LangVersion>latest</LangVersion>
-    <SharedSourceRoot>$(MSBuildThisFileDirectory)..\Shared\</SharedSourceRoot>
+    <!-- Override the version settings from the repo root. -->
+    <VersionPrefix>1.0.$(AspNetCorePatchVersion)</VersionPrefix>
+    <PackageVersion>$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+    <!-- These packages do not align with the repo version. -->
+    <VerifyVersions>false</VerifyVersions>
+
+    <!-- Don't run SignalR tests in parallel with others. This causes OutOfMemoryException on hosted Azure Pipelines agents. -->
+    <TestGroupName>SignalR</TestGroupName>
+
+    <SignalRSharedSourceRoot>$(MSBuildThisFileDirectory)common\Shared\</SignalRSharedSourceRoot>
+    <SignalRTestUtilsProject>$(MSBuildThisFileDirectory)common\testassets\Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj</SignalRTestUtilsProject>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;signalr</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

@@ -14,8 +14,10 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <!-- Workaround for Visual Studio complaining about inexisting project.json file -->
     <IsPackable>false</IsPackable>
+    <!-- Suppress KoreBuild warning about versions on this sample. -->
+    <VerifyVersion>false</VerifyVersion>
+    <!-- Workaround for Visual Studio complaining about inexisting project.json file -->
     <RuntimeIdentifier Condition="'$(BaseNuGetRuntimeIdentifier)' != ''">$(BaseNuGetRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

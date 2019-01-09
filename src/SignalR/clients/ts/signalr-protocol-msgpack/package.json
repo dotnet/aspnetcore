@@ -1,6 +1,6 @@
 {
   "name": "@aspnet/signalr-protocol-msgpack",
-  "version": "1.0.1-rtm-t000",
+  "version": "1.0.7-servicing-t000",
   "description": "MsgPack Protocol support for ASP.NET Core SignalR",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",

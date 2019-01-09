@@ -10,7 +10,6 @@
     <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
     <RepositoryBuildOrder Include="MvcPrecompilation" Order="15" RootPath="$(RepositoryRoot)src\MvcPrecompilation\" />
     <RepositoryBuildOrder Include="Scaffolding" Order="15" />
-    <RepositoryBuildOrder Include="SignalR" Order="16" RootPath="$(RepositoryRoot)src\SignalR\" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" RootPath="$(RepositoryRoot)src\AuthSamples\" />
     <RepositoryBuildOrder Include="Templating" Order="17" RootPath="$(RepositoryRoot)src\Templating\" />
   </ItemGroup>

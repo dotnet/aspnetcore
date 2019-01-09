@@ -28,3 +28,4 @@ scripts/tmp/
 launchSettings.json
 korebuild-lock.txt
 .gradle/
+src/SignalR/clients/**/dist/
