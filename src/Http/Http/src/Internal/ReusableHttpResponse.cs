@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
         private readonly static Func<IFeatureCollection, IResponseCookiesFeature> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
+        private readonly static Func<HttpContext, IResponseBodyPipeFeature> _newResponseBodyPipeFeature = context => new ResponseBodyPipeFeature(context);
 
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -39,7 +41,8 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         private IResponseCookiesFeature ResponseCookiesFeature =>
             _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature);
-
+        private IResponseBodyPipeFeature ResponseBodyPipeFeature =>
+            _features.Fetch(ref _features.Cache.BodyPipe, this.HttpContext, _newResponseBodyPipeFeature);
 
         public override HttpContext HttpContext { get { return _context; } }
 
@@ -90,6 +93,12 @@ namespace Microsoft.AspNetCore.Http.Internal
             get { return ResponseCookiesFeature.Cookies; }
         }
 
+        public override PipeWriter BodyPipe
+        {
+            get { return ResponseBodyPipeFeature.ResponseBodyPipe; }
+            set { ResponseBodyPipeFeature.ResponseBodyPipe = value; }
+        }
+
         public override bool HasStarted
         {
             get { return HttpResponseFeature.HasStarted; }
@@ -133,6 +142,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             public IHttpResponseFeature Response;
             public IResponseCookiesFeature Cookies;
+            public IResponseBodyPipeFeature BodyPipe;
         }
     }
 }
