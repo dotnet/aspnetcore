@@ -246,12 +246,6 @@ http_read_request_bytes(
             fAsync,
             pdwBytesReceived,
             pfCompletionPending);
-
-        if (hr == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
-        {
-            // We reached the end of the data
-            hr = S_OK;
-        }
     }
     else
     {
@@ -332,12 +326,6 @@ http_websockets_read_bytes(
         pvCompletionContext,
         pDwBytesReceived,
         pfCompletionPending);
-
-    if (hr == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
-    {
-        // We reached the end of the data
-        hr = S_OK;
-    }
 
     return hr;
 }

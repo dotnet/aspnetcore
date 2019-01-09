@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Tests
+namespace System.IO.Pipelines.Tests
 {
     public class StreamPipeWriterTests : PipeTest
     {
@@ -269,6 +269,64 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.Equal(16 * 10 * 2, Read().Length);
         }
 
+        [Fact]
+        public async Task UseBothStreamAndPipeToWrite()
+        {
+            await WriteStringToPipeWriter("a");
+            WriteStringToStream("c");
+
+            Assert.Equal("ac", ReadAsString());
+        }
+
+        [Fact]
+        public async Task UsePipeThenStreamToWriteMultipleTimes()
+        {
+            var expectedString = "abcdef";
+            for (var i = 0; i < expectedString.Length; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    WriteStringToStream(expectedString[i].ToString());
+                }
+                else
+                {
+                    await WriteStringToPipeWriter(expectedString[i].ToString());
+                }
+            }
+
+            Assert.Equal(expectedString, ReadAsString());
+        }
+
+        [Fact]
+        public async Task UseStreamThenPipeToWriteMultipleTimes()
+        {
+            var expectedString = "abcdef";
+            for (var i = 0; i < expectedString.Length; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    await WriteStringToPipeWriter(expectedString[i].ToString());
+                }
+                else
+                {
+                    WriteStringToStream(expectedString[i].ToString());
+                }
+            }
+
+            Assert.Equal(expectedString, ReadAsString());
+        }
+
+        private void WriteStringToStream(string input)
+        {
+            var buffer = Encoding.ASCII.GetBytes(input);
+            MemoryStream.Write(buffer, 0, buffer.Length);
+        }
+
+        private async Task WriteStringToPipeWriter(string input)
+        {
+            await Writer.WriteAsync(Encoding.ASCII.GetBytes(input));
+        }
+
         private async Task CheckWriteIsNotCanceled()
         {
             var flushResult = await Writer.WriteAsync(Encoding.ASCII.GetBytes("data"));
@@ -291,7 +349,6 @@ namespace Microsoft.AspNetCore.Http.Tests
 
     internal class HangingStream : MemoryStream
     {
-
         public HangingStream()
         {
         }
@@ -311,7 +368,9 @@ namespace Microsoft.AspNetCore.Http.Tests
             await Task.Delay(30000, cancellationToken);
             return 0;
         }
-#if NETCOREAPP2_2
+
+        // Keeping as this code will eventually be ported to corefx
+#if NETCOREAPP3_0
         public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             await Task.Delay(30000, cancellationToken);
@@ -326,8 +385,8 @@ namespace Microsoft.AspNetCore.Http.Tests
 
         public bool AllowAllWrites { get; set; }
 
-
-#if NETCOREAPP2_2
+        // Keeping as this code will eventually be ported to corefx
+#if NETCOREAPP3_0
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             try

@@ -12,10 +12,10 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http
+namespace System.IO.Pipelines
 {
     /// <summary>
-    /// Implements PipeWriter using a underlying stream. 
+    /// Implements PipeWriter using a underlying stream.
     /// </summary>
     public class StreamPipeWriter : PipeWriter, IDisposable
     {
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Creates a new StreamPipeWrapper 
+        /// Creates a new StreamPipeWrapper
         /// </summary>
         /// <param name="writingStream">The stream to write to</param>
         public StreamPipeWriter(Stream writingStream) : this(writingStream, 4096)
@@ -63,6 +63,11 @@ namespace Microsoft.AspNetCore.Http
             _writingStream = writingStream;
             _pool = pool ?? MemoryPool<byte>.Shared;
         }
+
+        /// <summary>
+        /// Gets the inner stream that is being read from.
+        /// </summary>
+        public Stream InnerStream => _writingStream;
 
         /// <inheritdoc />
         public override void Advance(int count)

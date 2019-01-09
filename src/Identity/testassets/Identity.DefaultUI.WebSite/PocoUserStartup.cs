@@ -31,7 +31,8 @@ namespace Identity.DefaultUI.WebSite
                 .AddUserManager<UserManager<Microsoft.AspNetCore.Identity.Test.PocoUser>>();
             services.AddSingleton<IUserStore<Microsoft.AspNetCore.Identity.Test.PocoUser>, InMemoryUserStore<Microsoft.AspNetCore.Identity.Test.PocoUser>>();
 
-            services.AddMvc();
+            services.AddMvc()
+                .AddNewtonsoftJson();
         }
     }
 }

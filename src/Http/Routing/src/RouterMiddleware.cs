@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (context.Handler == null)
             {
-                _logger.RequestDidNotMatchRoutes();
+                _logger.RequestNotMatched();
                 await _next.Invoke(httpContext);
             }
             else

@@ -772,7 +772,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private static TreeRouteBuilder CreateBuilder()
         {
             var services = new ServiceCollection()
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddLogging()
                 .AddRouting()
@@ -815,7 +814,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             IActionDescriptorCollectionProvider actionDescriptorProvider)
         {
             var services = new ServiceCollection()
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddLogging()
                 .AddRouting()

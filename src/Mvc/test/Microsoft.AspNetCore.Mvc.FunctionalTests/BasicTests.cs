@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
 
             var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedBody, actualBody.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
 
             var actualBody = await response.Content.ReadAsStringAsync();
-            Assert.Equal(expectedBody, actualBody, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedBody, actualBody.Trim(), ignoreLineEndingDifferences: true);
         }
 
         public static IEnumerable<object[]> HtmlHelperLinkGenerationData

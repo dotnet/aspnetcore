@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,13 +16,31 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Internal
 
         static HttpsLoggingExtensions()
         {
-            _redirectingToHttps = LoggerMessage.Define<string>(LogLevel.Debug, 1, "Redirecting to '{redirect}'.");
-            _portLoadedFromConfig = LoggerMessage.Define<int>(LogLevel.Debug, 2, "Https port '{port}' loaded from configuration.");
-            _failedToDeterminePort = LoggerMessage.Define(LogLevel.Warning, 3, "Failed to determine the https port for redirect.");
-            _failedMultiplePorts = LoggerMessage.Define(LogLevel.Warning, 4,
+            _redirectingToHttps = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                new EventId(1, "RedirectingToHttps"),
+                "Redirecting to '{redirect}'.");
+
+            _portLoadedFromConfig = LoggerMessage.Define<int>(
+                LogLevel.Debug,
+                new EventId(2, "PortLoadedFromConfig"),
+                "Https port '{port}' loaded from configuration.");
+
+            _failedToDeterminePort = LoggerMessage.Define(
+                LogLevel.Warning,
+                new EventId(3, "FailedToDeterminePort"),
+                "Failed to determine the https port for redirect.");
+
+            _failedMultiplePorts = LoggerMessage.Define(
+                LogLevel.Warning,
+                new EventId(4, "FailedMultiplePorts"),
                 "Cannot determine the https port from IServerAddressesFeature, multiple values were found. " +
                 "Please set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.");
-            _portFromServer = LoggerMessage.Define<int>(LogLevel.Debug, 5, "Https port '{httpsPort}' discovered from server endpoints.");
+
+            _portFromServer = LoggerMessage.Define<int>(
+                LogLevel.Debug,
+                new EventId(5, "PortFromServer"),
+                "Https port '{httpsPort}' discovered from server endpoints.");
         }
 
         public static void RedirectingToHttps(this ILogger logger, string redirect)

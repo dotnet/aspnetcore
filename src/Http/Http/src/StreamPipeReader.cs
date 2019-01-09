@@ -12,12 +12,12 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http
+namespace System.IO.Pipelines
 {
     /// <summary>
     /// Implements PipeReader using an underlying stream.
     /// </summary>
-    public class StreamPipeReader : PipeReader
+    public class StreamPipeReader : PipeReader, IDisposable
     {
         private readonly int _minimumSegmentSize;
         private readonly int _minimumReadThreshold;
@@ -69,6 +69,11 @@ namespace Microsoft.AspNetCore.Http
             _minimumReadThreshold = Math.Min(options.MinimumReadThreshold, options.MinimumSegmentSize);
             _pool = options.MemoryPool;
         }
+
+        /// <summary>
+        /// Gets the inner stream that is being read from.
+        /// </summary>
+        public Stream InnerStream => _readingStream;
 
         /// <inheritdoc />
         public override void AdvanceTo(SequencePosition consumed)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.Reset();
             _collection = _http1Connection;
 
-            var http2Stream = new Http2Stream(context);
+            var http2Stream = new TestHttp2Stream(context);
             http2Stream.Reset();
             _http2Collection = http2Stream;
         }
@@ -220,5 +220,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         private Http1Connection CreateHttp1Connection() => new TestHttp1Connection(_httpConnectionContext);
+
+        private class TestHttp2Stream : Http2Stream
+        {
+            public TestHttp2Stream(Http2StreamContext context) : base(context)
+            {
+            }
+
+            public override void Execute()
+            {
+            }
+        }
     }
 }
