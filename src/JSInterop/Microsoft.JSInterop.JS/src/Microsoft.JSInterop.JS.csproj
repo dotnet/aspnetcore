@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="2.9.2" />
+    <Reference Include="Microsoft.TypeScript.MSBuild" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
