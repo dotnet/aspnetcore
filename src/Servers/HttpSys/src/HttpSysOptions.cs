@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,6 +27,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public HttpSysOptions()
         {
         }
+
+        /// <summary>
+        /// If true the server should set HttpContext.User. If false the server will only provide an
+        /// identity when explicitly requested by the AuthenticationScheme.
+        /// </summary>
+        public bool AutomaticAuthentication { get; set; } = true;
 
         /// <summary>
         /// The maximum number of concurrent accepts.
